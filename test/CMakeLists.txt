@@ -1,7 +1,7 @@
 # test definitions
 function(primitiv_test name)
   add_executable(${name}_test ${name}_test.cc)
-  target_link_libraries(${name}_test primitiv)
+  target_link_libraries(${name}_test primitiv gtest gtest_main)
   add_test(
     NAME ${name}_test
     COMMAND ${name}_test
@@ -9,4 +9,4 @@ function(primitiv_test name)
   )
 endfunction()
 
-#primitiv_test(shape)
+primitiv_test(shape)
