@@ -10,3 +10,4 @@ function(primitiv_test name)
 endfunction()
 
 primitiv_test(shape)
+primitiv_test(tensor)
