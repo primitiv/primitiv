@@ -11,23 +11,9 @@ using std::vector;
 
 namespace primitiv {
 
-Shape::Shape(const initializer_list<unsigned> &dim, const unsigned k)
+Shape::Shape(const initializer_list<unsigned> dim, const unsigned k)
 : dim_(dim), k_(k) {
-  // erase redundant dimensions.
-  while (!dim_.empty() && dim_.back() == 1) {
-    dim_.pop_back();
-  }
-
-  // check size of each dimension.
-  for (const unsigned d : dim_) {
-    if (d == 0) {
-      throw std::runtime_error("invalid shape: " + to_string());
-    }
-  }
-
-  if (k_ == 0) {
-    throw std::runtime_error("invalid shape: " + to_string());
-  }
+  adjust();
 }
 
 string Shape::to_string() const {
@@ -41,6 +27,19 @@ string Shape::to_string() const {
   }
   s << "]x" << k_;
   return s.str();
+}
+
+void Shape::adjust() {
+  // erase redundant dimensions.
+  while (!dim_.empty() && dim_.back() == 1) {
+    dim_.pop_back();
+  }
+
+  // check size of the shape.
+  // if more than 1 dimensions or the batch size is 0, then size() returns 0.
+  if (size() == 0) {
+    throw std::runtime_error("invalid shape: " + to_string());
+  }
 }
 
 }  // namespace primitiv

@@ -30,7 +30,7 @@ public:
    * @param dim Integer list to represent the dimension.
    * @param k Batch size.
    */
-  Shape(const std::initializer_list<unsigned> &dim, const unsigned k = 1);
+  Shape(const std::initializer_list<unsigned> dim, const unsigned k = 1);
 
   /**
    * Returns the size of the i-th dimension.
@@ -88,6 +88,11 @@ public:
 private:
   std::vector<unsigned> dim_;
   unsigned k_;
+
+  /**
+   * Check internal values and adjust them.
+   */
+  void adjust();
 };
 
 }  // namespace primitiv
