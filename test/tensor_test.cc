@@ -88,12 +88,18 @@ TEST_F(TensorTest, CheckNewWithData) {
 
 TEST_F(TensorTest, CheckMove) {
   Tensor tmp1(Shape({2}, 3), {1, 2, 3, 4, 5, 6});
+  void *ptr1 = tmp1.data();
   Tensor tmp2(Shape({6}), {2, 4, 6, 8, 10 ,12});
+  void *ptr2 = tmp2.data();
+
   Tensor x(std::move(tmp1));
   EXPECT_EQ(Shape({2}, 3), x.shape());
+  EXPECT_EQ(ptr1, x.data());
   EXPECT_TRUE(::vector_match({1, 2, 3, 4, 5, 6}, x.to_vector()));
+
   x = std::move(tmp2);
   EXPECT_EQ(Shape({6}), x.shape());
+  EXPECT_EQ(ptr2, x.data());
   EXPECT_TRUE(::vector_match({2, 4, 6, 8, 10 ,12}, x.to_vector()));
 }
 
