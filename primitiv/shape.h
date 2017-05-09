@@ -21,8 +21,9 @@ public:
   Shape() = delete;
   Shape(const Shape &) = default;
   Shape(Shape &&) = default;
-  Shape & operator=(const Shape &) = default;
-  Shape & operator=(Shape && ) = default;
+  Shape &operator=(const Shape &) = default;
+  Shape &operator=(Shape && ) = default;
+  ~Shape() = default;
 
   /**
    * Creates a new Shape object.

@@ -1,5 +1,6 @@
 #include <config.h>
 
+#include <stdexcept>
 #include <utility>
 #include <vector>
 #include <gtest/gtest.h>
@@ -13,7 +14,7 @@ namespace primitiv {
 
 class ShapeTest : public testing::Test {};
 
-TEST_F(ShapeTest, CheckNewObject) {
+TEST_F(ShapeTest, CheckNew) {
   {
     const Shape shape({});
     EXPECT_EQ(1u, shape.dim_size(0));
@@ -32,6 +33,16 @@ TEST_F(ShapeTest, CheckNewObject) {
     EXPECT_EQ(4u, shape.batch_size());
     EXPECT_EQ(24u, shape.size());
   }
+}
+
+TEST_F(ShapeTest, CheckInvalidNew) {
+  EXPECT_THROW(Shape({0}), std::runtime_error);
+  EXPECT_THROW(Shape({2, 0}), std::runtime_error);
+  EXPECT_THROW(Shape({2, 3, 0}), std::runtime_error);
+  EXPECT_THROW(Shape({0}, 0), std::runtime_error);
+  EXPECT_THROW(Shape({2, 0}, 0), std::runtime_error);
+  EXPECT_THROW(Shape({2, 3, 0}, 0), std::runtime_error);
+  EXPECT_THROW(Shape({}, 0), std::runtime_error);
 }
 
 TEST_F(ShapeTest, CheckString) {
