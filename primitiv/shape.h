@@ -37,17 +37,21 @@ public:
    * @param i Dimension number to check.
    * @return Size of the i-th dimension.
    */
-  inline unsigned dim_size(const unsigned i) const {
+  inline unsigned dim(const unsigned i) const {
     return i < dim_.size() ? dim_[i] : 1;
   }
+
+  /**
+   * Returns the number of the dimension.
+   * @return Number of the dimension.
+   */
+  inline unsigned dim_size() const { return dim_.size(); }
 
   /**
    * Returns the batch size.
    * @return Batch size.
    */
-  inline unsigned batch_size() const {
-    return k_;
-  }
+  inline unsigned batch_size() const { return k_; }
 
   /**
    * Returns the number of actual data in the node.
@@ -81,9 +85,7 @@ public:
    * @param rhs target Shape object to compare.
    * @return true if this and rhs are not same, false otherwise.
    */
-  inline bool operator!=(const Shape &rhs) const {
-    return !operator==(rhs);
-  }
+  inline bool operator!=(const Shape &rhs) const { return !operator==(rhs); }
 
 private:
   std::vector<unsigned> dim_;

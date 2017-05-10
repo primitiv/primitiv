@@ -17,19 +17,21 @@ class ShapeTest : public testing::Test {};
 TEST_F(ShapeTest, CheckNew) {
   {
     const Shape shape({});
-    EXPECT_EQ(1u, shape.dim_size(0));
-    EXPECT_EQ(1u, shape.dim_size(1));
-    EXPECT_EQ(1u, shape.dim_size(100));
+    EXPECT_EQ(1u, shape.dim(0));
+    EXPECT_EQ(1u, shape.dim(1));
+    EXPECT_EQ(1u, shape.dim(100));
+    EXPECT_EQ(0u, shape.dim_size());
     EXPECT_EQ(1u, shape.batch_size());
     EXPECT_EQ(1u, shape.size());
   }
   {
     const Shape shape({1, 2, 3}, 4);
-    EXPECT_EQ(1u, shape.dim_size(0));
-    EXPECT_EQ(2u, shape.dim_size(1));
-    EXPECT_EQ(3u, shape.dim_size(2));
-    EXPECT_EQ(1u, shape.dim_size(3));
-    EXPECT_EQ(1u, shape.dim_size(100));
+    EXPECT_EQ(1u, shape.dim(0));
+    EXPECT_EQ(2u, shape.dim(1));
+    EXPECT_EQ(3u, shape.dim(2));
+    EXPECT_EQ(1u, shape.dim(3));
+    EXPECT_EQ(1u, shape.dim(100));
+    EXPECT_EQ(3u, shape.dim_size());
     EXPECT_EQ(4u, shape.batch_size());
     EXPECT_EQ(24u, shape.size());
   }
