@@ -17,12 +17,16 @@ class CPUDevice : public Device {
 
 public:
   CPUDevice() = default;
-  ~CPUDevice();
+  ~CPUDevice() override;
 
-  void *allocate(const unsigned size);
-  void free(void *ptr);
+  void *allocate(const unsigned size) override;
+  void free(void *ptr) override;
+  void copy_to_device(
+      void *dest, const void *src, const unsigned size) override;
+  void copy_to_host(
+      void *dest, const void *src, const unsigned size) override;
 
-  unsigned num_blocks() const { return blocks_.size(); }
+  unsigned num_blocks() const override { return blocks_.size(); }
 
 private:
   std::map<void *, unsigned> blocks_;

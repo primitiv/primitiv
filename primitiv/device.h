@@ -35,6 +35,24 @@ public:
   virtual void free(void *ptr) = 0;
 
   /**
+   * Copies memories from host to device.
+   * @param dest Handle of the device memory.
+   * @param src Pointer of the host memory.
+   * @param size Size to copy.
+   */
+  virtual void copy_to_device(
+      void *dest, const void *src, const unsigned size) = 0;
+
+  /**
+   * Copies memories from device to host.
+   * @param dest Pointer of the host memory.
+   * @param src Handle of the device memory.
+   * @param size Size to copy.
+   */
+  virtual void copy_to_host(
+      void *src, const void *dest, const unsigned size) = 0;
+
+  /**
    * Returns the number of allocated memory blocks.
    * @return Number of memory blocks.
    */

@@ -1,6 +1,7 @@
 #include <config.h>
 
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -52,6 +53,16 @@ void CPUDevice::free(void *ptr) {
   blocks_.erase(it);
 
   std::free(ptr);
+}
+
+void CPUDevice::copy_to_device(
+    void *dest, const void *src, const unsigned size) {
+  std::memcpy(dest, src, size);
+}
+
+void CPUDevice::copy_to_host(
+    void *dest, const void *src, const unsigned size) {
+  std::memcpy(dest, src, size);
 }
 
 }  // namespace primitiv
