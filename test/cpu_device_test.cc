@@ -59,8 +59,8 @@ TEST_F(CPUDeviceTest, CheckMemCopy) {
   void *ptr = dev.allocate(4 * sizeof(int));
   const int src[4] = {1, 4, 9, 16};
   int dest[4] = {42, 42, 42, 42};
-  dev.copy_to_device(ptr, static_cast<const void *>(src), 4 * sizeof(int));
-  dev.copy_to_host(static_cast<void *>(dest), ptr, 4 * sizeof(int));
+  dev.copy_to_device(ptr, src, 4 * sizeof(int));
+  dev.copy_to_host(dest, ptr, 4 * sizeof(int));
   for (unsigned i = 0; i < 4; ++i) {
     EXPECT_EQ(src[i], dest[i]);
   }
