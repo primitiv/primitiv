@@ -1,9 +1,12 @@
 set(nmtkit_LIBRARY_HDRS
+  cpu_device.h
+  device.h
   shape.h
   tensor.h
 )
 
 set(nmtkit_LIBRARY_SRCS
+  cpu_device.cc
   shape.cc
   tensor.cc
 )
