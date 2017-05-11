@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <utility>
+#include <primitiv/device.h>
 #include <primitiv/tensor.h>
 
 using std::move;

@@ -25,8 +25,9 @@ public:
       void *dest, const void *src, const unsigned size) override;
   void copy_to_host(
       void *dest, const void *src, const unsigned size) override;
-
   unsigned num_blocks() const override { return blocks_.size(); }
+
+  Tensor add_const(const Tensor &x, const float k) override;
 
 private:
   std::map<void *, unsigned> blocks_;

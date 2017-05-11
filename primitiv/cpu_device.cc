@@ -65,4 +65,26 @@ void CPUDevice::copy_to_host(
   std::memcpy(dest, src, size);
 }
 
+#define CHECK_DEVICE(x) { \
+  if ((x).device().get() != this) { \
+    std::stringstream ss; \
+    ss << "Device mismatched. (" #x ").device(): " << (x).device().get() \
+       << "!= this:" << this; \
+    throw std::runtime_error(ss.str()); \
+  } \
+}
+
+Tensor CPUDevice::add_const(const Tensor &x, const float k) {
+  CHECK_DEVICE(x);
+
+  Tensor ret(x.shape(), x.device());
+  float *dest = static_cast<float *>(ret.data());
+  const float *src = static_cast<const float *>(x.data());
+  const unsigned size = x.shape().size();
+  for (unsigned i = 0; i < size; ++i) {
+    dest[i] = src[i] + k;
+  }
+  return ret;
+}
+
 }  // namespace primitiv

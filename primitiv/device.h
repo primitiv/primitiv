@@ -1,9 +1,9 @@
 #ifndef PRIMITIV_DEVICE_H_
 #define PRIMITIV_DEVICE_H_
 
-namespace primitiv {
+#include <primitiv/tensor.h>
 
-class Tensor;
+namespace primitiv {
 
 /**
  * Interface of the allocator/calculator on a specific device.
@@ -29,7 +29,7 @@ public:
    * Unallocate an existing memory block.
    * @param ptr Handle of an existing memory.
    * @remarks Users should dispose all handles before exitting the program.
-   *          And users should use the same Device object used for allocate().
+   *          And users should use the same Device object used for `allocate()`.
    *          Otherwise the Device object will abort the program.
    */
   virtual void free(void *ptr) = 0;
@@ -57,6 +57,14 @@ public:
    * @return Number of memory blocks.
    */
   virtual unsigned num_blocks() const = 0;
+
+  /**
+   * Add constant to each element of the Tensor.
+   * @param x A Tensor.
+   * @param k Constant to add.
+   * @return `x + k * ones(x.shape())`
+   */
+  virtual Tensor add_const(const Tensor &x, const float k) = 0;
 };
 
 }  // namespace primitiv

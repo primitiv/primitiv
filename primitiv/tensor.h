@@ -3,10 +3,11 @@
 
 #include <memory>
 #include <vector>
-#include <primitiv/device.h>
 #include <primitiv/shape.h>
 
 namespace primitiv {
+
+class Device;
 
 /**
  * Value with any dimensions.
@@ -59,6 +60,12 @@ public:
    * @return Pointer of the internal memory.
    */
   void *data() { return data_; }
+
+  /**
+   * Returns the raw const-pointer of the internal memory.
+   * @return Const-pointer of the internal memory.
+   */
+  const void *data() const { return data_; }
 
   /**
    * Returns a copied list of internal values.
