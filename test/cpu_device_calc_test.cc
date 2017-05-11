@@ -67,6 +67,7 @@ TEST_F(CPUDeviceCalcTest, CheckAddConst) {
     const vector<float> y_data {1001, 101, 11, 2, 1.1, 1.01, 1.001, 1.0001};
     const Tensor x(Shape({2, 2}, 2), device, x_data);
     const Tensor y = x.device()->add_const(x, k);
+    EXPECT_EQ(Shape({2, 2}, 2), y.shape());
     EXPECT_TRUE(::vector_match(y_data, y.to_vector()));
   }
 }
@@ -79,6 +80,7 @@ TEST_F(CPUDeviceCalcTest, CheckAdd) {
     const Tensor a(Shape({2, 2}, 2), device, a_data);
     const Tensor b(Shape({2, 2}, 2), device, b_data);
     const Tensor y = a.device()->add(a, b);
+    EXPECT_EQ(Shape({2, 2}, 2), y.shape());
     EXPECT_TRUE(::vector_match(y_data, y.to_vector()));
   }
   {
@@ -88,6 +90,7 @@ TEST_F(CPUDeviceCalcTest, CheckAdd) {
     const Tensor a(Shape({2, 2}), device, a_data);
     const Tensor b(Shape({2, 2}, 2), device, b_data);
     const Tensor y = a.device()->add(a, b);
+    EXPECT_EQ(Shape({2, 2}, 2), y.shape());
     EXPECT_TRUE(::vector_match(y_data, y.to_vector()));
   }
   {
@@ -97,6 +100,7 @@ TEST_F(CPUDeviceCalcTest, CheckAdd) {
     const Tensor a(Shape({2, 2}, 2), device, a_data);
     const Tensor b(Shape({2, 2}), device, b_data);
     const Tensor y = a.device()->add(a, b);
+    EXPECT_EQ(Shape({2, 2}, 2), y.shape());
     EXPECT_TRUE(::vector_match(y_data, y.to_vector()));
   }
 }
