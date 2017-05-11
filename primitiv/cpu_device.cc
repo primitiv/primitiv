@@ -77,7 +77,7 @@ void CPUDevice::copy_to_host(
 #define DATA(x) static_cast<float *>((x).data());
 #define CDATA(x) static_cast<const float *>((x).data());
 
-Tensor CPUDevice::add_const(const Tensor &x, const float k) {
+Tensor CPUDevice::add(const Tensor &x, const float k) {
   CHECK_DEVICE(x);
 
   Tensor ret(x.shape(), x.device());

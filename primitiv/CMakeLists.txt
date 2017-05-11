@@ -3,6 +3,7 @@ set(nmtkit_LIBRARY_HDRS
   device.h
   shape.h
   tensor.h
+  tensor_ops.h
 )
 
 set(nmtkit_LIBRARY_SRCS

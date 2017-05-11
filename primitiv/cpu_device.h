@@ -27,7 +27,7 @@ public:
       void *dest, const void *src, const unsigned size) override;
   unsigned num_blocks() const override { return blocks_.size(); }
 
-  Tensor add_const(const Tensor &x, const float k) override;
+  Tensor add(const Tensor &x, const float k) override;
   Tensor add(const Tensor &a, const Tensor &b) override;
 
 private:

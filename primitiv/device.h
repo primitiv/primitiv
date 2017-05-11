@@ -64,7 +64,7 @@ public:
    * @param k Constant to add.
    * @return `x + k * ones(x.shape())`
    */
-  virtual Tensor add_const(const Tensor &x, const float k) = 0;
+  virtual Tensor add(const Tensor &x, const float k) = 0;
 
   /**
    * Adds two Tensors.
