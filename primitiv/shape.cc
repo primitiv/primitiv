@@ -12,18 +12,18 @@ using std::vector;
 namespace primitiv {
 
 Shape::Shape(const initializer_list<unsigned> dim, const unsigned k)
-: dim_(dim), k_(k) {
+: dims_(dim), k_(k) {
   adjust();
 }
 
 string Shape::to_string() const {
   std::stringstream s;
   s << '[';
-  for (unsigned i = 0; i < dim_.size(); ++i) {
+  for (unsigned i = 0; i < dims_.size(); ++i) {
     if (i > 0) {
       s << ',';
     }
-    s << dim_[i];
+    s << dims_[i];
   }
   s << "]x" << k_;
   return s.str();
@@ -31,8 +31,8 @@ string Shape::to_string() const {
 
 void Shape::adjust() {
   // erase redundant dimensions.
-  while (!dim_.empty() && dim_.back() == 1) {
-    dim_.pop_back();
+  while (!dims_.empty() && dims_.back() == 1) {
+    dims_.pop_back();
   }
 
   // check size of the shape.

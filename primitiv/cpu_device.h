@@ -28,6 +28,7 @@ public:
   unsigned num_blocks() const override { return blocks_.size(); }
 
   Tensor add_const(const Tensor &x, const float k) override;
+  Tensor add(const Tensor &a, const Tensor &b) override;
 
 private:
   std::map<void *, unsigned> blocks_;

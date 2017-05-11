@@ -27,10 +27,10 @@ public:
 
   /**
    * Creates a new Shape object.
-   * @param dim Integer list to represent the dimension.
+   * @param dims Integer list to represent the dimension.
    * @param k Batch size.
    */
-  Shape(const std::initializer_list<unsigned> dim, const unsigned k = 1);
+  Shape(const std::initializer_list<unsigned> dims, const unsigned k = 1);
 
   /**
    * Returns the size of the i-th dimension.
@@ -38,14 +38,14 @@ public:
    * @return Size of the i-th dimension.
    */
   inline unsigned dim(const unsigned i) const {
-    return i < dim_.size() ? dim_[i] : 1;
+    return i < dims_.size() ? dims_[i] : 1;
   }
 
   /**
-   * Returns the number of the dimension.
-   * @return Number of the dimension.
+   * Returns the list of dimension sizes.
+   * @return List of the dimension sizes.
    */
-  inline unsigned dim_size() const { return dim_.size(); }
+  inline const std::vector<unsigned> dims() const { return dims_; }
 
   /**
    * Returns the batch size.
@@ -55,12 +55,12 @@ public:
 
   /**
    * Returns the number of actual data in the node.
-   * This value is equal to batch_size() * dim_size(0) * dim_size(1) * ...
+   * This value is equal to batch_size() * dim(0) * dim(1) * ...
    * @return Number of actual data in the node.
    */
   inline unsigned size() const {
     unsigned s = k_;
-    for (const unsigned d : dim_) s *= d;
+    for (const unsigned d : dims_) s *= d;
     return s;
   }
 
@@ -77,7 +77,7 @@ public:
    * @return true if this and rhs are same, false otherwise.
    */
   inline bool operator==(const Shape &rhs) const {
-    return dim_ == rhs.dim_ && k_ == rhs.k_;
+    return dims_ == rhs.dims_ && k_ == rhs.k_;
   }
 
   /**
@@ -88,7 +88,7 @@ public:
   inline bool operator!=(const Shape &rhs) const { return !operator==(rhs); }
 
 private:
-  std::vector<unsigned> dim_;
+  std::vector<unsigned> dims_;
   unsigned k_;
 
   /**

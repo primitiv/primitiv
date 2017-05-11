@@ -59,12 +59,22 @@ public:
   virtual unsigned num_blocks() const = 0;
 
   /**
-   * Add constant to each element of the Tensor.
+   * Adds constant to each element of the Tensor.
    * @param x A Tensor.
    * @param k Constant to add.
    * @return `x + k * ones(x.shape())`
    */
   virtual Tensor add_const(const Tensor &x, const float k) = 0;
+
+  /**
+   * Adds two Tensors.
+   * @param a A Tensor.
+   * @param b Other Tensor.
+   * @return `a + b`
+   * @remarks If the batch size of `a` or `b` is 1, the data is broadcasted to
+   *          all minibatches in opposite data.
+   */
+  virtual Tensor add(const Tensor &a, const Tensor &b) = 0;
 };
 
 }  // namespace primitiv

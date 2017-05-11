@@ -71,4 +71,57 @@ TEST_F(CPUDeviceCalcTest, CheckAddConst) {
   }
 }
 
+TEST_F(CPUDeviceCalcTest, CheckAdd) {
+  {
+    const vector<float> a_data {1000, 100, 10, 1, 0.1, 0.01, 0.001, 0.0001};
+    const vector<float> b_data {   0, 100, 20, 3, 0.4, 0.05, 0.006, 0.0007};
+    const vector<float> y_data {1000, 200, 30, 4, 0.5, 0.06, 0.007, 0.0008};
+    const Tensor a(Shape({2, 2}, 2), device, a_data);
+    const Tensor b(Shape({2, 2}, 2), device, b_data);
+    const Tensor y = a.device()->add(a, b);
+    EXPECT_TRUE(::vector_match(y_data, y.to_vector()));
+  }
+  {
+    const vector<float> a_data {0, 1, 2, 3};
+    const vector<float> b_data {0, 0, 0, 0, 4, 4, 4, 4};
+    const vector<float> y_data {0, 1, 2, 3, 4, 5, 6, 7};
+    const Tensor a(Shape({2, 2}), device, a_data);
+    const Tensor b(Shape({2, 2}, 2), device, b_data);
+    const Tensor y = a.device()->add(a, b);
+    EXPECT_TRUE(::vector_match(y_data, y.to_vector()));
+  }
+  {
+    const vector<float> a_data {0, 0, 0, 0, 4, 4, 4, 4};
+    const vector<float> b_data {0, 1, 2, 3};
+    const vector<float> y_data {0, 1, 2, 3, 4, 5, 6, 7};
+    const Tensor a(Shape({2, 2}, 2), device, a_data);
+    const Tensor b(Shape({2, 2}), device, b_data);
+    const Tensor y = a.device()->add(a, b);
+    EXPECT_TRUE(::vector_match(y_data, y.to_vector()));
+  }
+}
+
+TEST_F(CPUDeviceCalcTest, CheckInvalidAdd) {
+  {
+    const Tensor a(Shape({2, 2}), device);
+    const Tensor b(Shape({3, 3}), device);
+    EXPECT_THROW(a.device()->add(a, b), std::runtime_error);
+  }
+  {
+    const Tensor a(Shape({2, 2}, 2), device);
+    const Tensor b(Shape({2, 2}, 3), device);
+    EXPECT_THROW(a.device()->add(a, b), std::runtime_error);
+  }
+  {
+    const Tensor a(Shape({2, 2}, 2), device);
+    const Tensor b(Shape({3, 3}, 2), device);
+    EXPECT_THROW(a.device()->add(a, b), std::runtime_error);
+  }
+  {
+    const Tensor a(Shape({2, 2}, 2), device);
+    const Tensor b(Shape({3, 3}, 3), device);
+    EXPECT_THROW(a.device()->add(a, b), std::runtime_error);
+  }
+}
+
 }  // namespace primitiv

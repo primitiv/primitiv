@@ -20,7 +20,7 @@ TEST_F(ShapeTest, CheckNew) {
     EXPECT_EQ(1u, shape.dim(0));
     EXPECT_EQ(1u, shape.dim(1));
     EXPECT_EQ(1u, shape.dim(100));
-    EXPECT_EQ(0u, shape.dim_size());
+    EXPECT_EQ(0u, shape.dims().size());
     EXPECT_EQ(1u, shape.batch_size());
     EXPECT_EQ(1u, shape.size());
   }
@@ -31,7 +31,7 @@ TEST_F(ShapeTest, CheckNew) {
     EXPECT_EQ(3u, shape.dim(2));
     EXPECT_EQ(1u, shape.dim(3));
     EXPECT_EQ(1u, shape.dim(100));
-    EXPECT_EQ(3u, shape.dim_size());
+    EXPECT_EQ(3u, shape.dims().size());
     EXPECT_EQ(4u, shape.batch_size());
     EXPECT_EQ(24u, shape.size());
   }
