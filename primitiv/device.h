@@ -59,7 +59,7 @@ public:
   virtual unsigned num_blocks() const = 0;
 
   /**
-   * Adds a constant to each element of the tensor.
+   * Adds a constant to each element in the tensor.
    * @param x A tensor.
    * @param k Constant to add.
    * @return `x + k * ones(x.shape())`
@@ -71,13 +71,13 @@ public:
    * @param a A tensor.
    * @param b Other tensor.
    * @return `a + b`
-   * @remarks If the batch size of `a` or `b` is 1, the data is broadcasted to
-   *          all minibatches in opposite data.
+   * @remarks If the batch size of `a` or `b` is 1, the single-batch side is
+   *          broadcasted to all minibatches in the opposite side.
    */
   virtual Tensor add(const Tensor &a, const Tensor &b) = 0;
 
   /**
-   * Subtracts a constant from each element of the tensor.
+   * Subtracts a constant from each element in a tensor.
    * @param x A tensor.
    * @param k Constant to subtract.
    * @return `x - k * ones(x.shape())`
@@ -85,7 +85,7 @@ public:
   virtual Tensor subtract(const Tensor &x, const float k) = 0;
 
   /**
-   * Subtracts a tensor from a tensor initialized by a constant.
+   * Subtracts a tensor from a constant.
    * @param k Constant to be subtracted.
    * @param x A tensor.
    * @return `k * ones(x.shape()) - x`
@@ -97,8 +97,57 @@ public:
    * @param a Tensor to be subtracted.
    * @param b Tensor to subtract.
    * @return `a - b`
+   * @remarks If the batch size of `a` or `b` is 1, the single-batch side is
+   *          broadcasted to all minibatches in the opposite side.
    */
   virtual Tensor subtract(const Tensor &a, const Tensor &b) = 0;
+
+  /**
+   * Multiples each element in a tensor by a constant.
+   * @param x A tensor.
+   * @param k Multiplier.
+   * @return `k * x`
+   */
+  virtual Tensor multiply(const Tensor &x, const float k) = 0;
+
+  /**
+   * Element-wise multiplication of two tensors.
+   * @param a A tensor.
+   * @param b Other tensor.
+   * @return `a \circ b`
+   * @remarks If the batch size of `a` or `b` is 1, the single-batch side is
+   *          broadcasted to all minibatches in the opposite side.
+   */
+  virtual Tensor multiply(const Tensor &a, const Tensor &b) = 0;
+
+  /**
+   * Divides each element in a tensor by a constant.
+   * @param x A tensor.
+   * @param k Divisor.
+   * @return `x / k`
+   * @remarks This function won't check the zero-division.
+   */
+  virtual Tensor divide(const Tensor &x, const float k) = 0;
+
+  /**
+   * Divides a constant by each element in a tensor.
+   * @param k Constant to be divided.
+   * @param x A divisor tensor.
+   * @return `k * ones(x.shape()) ./ x`
+   * @remarks This function won't check the zero-division.
+   */
+  virtual Tensor divide(const float k, const Tensor &x) = 0;
+
+  /**
+   * Divides the first tensor by the second tensor.
+   * @param a Dividend tensor.
+   * @param b Divisor tensor.
+   * @return `a ./ b`
+   * @remarks If the batch size of `a` or `b` is 1, the single-batch side is
+   *          broadcasted to all minibatches in the opposite side.
+   *          This function won't check the zero-division.
+   */
+  virtual Tensor divide(const Tensor &a, const Tensor &b) = 0;
 };
 
 }  // namespace primitiv

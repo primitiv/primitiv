@@ -32,6 +32,11 @@ public:
   Tensor subtract(const Tensor &x, const float k) override;
   Tensor subtract(const float k, const Tensor &x) override;
   Tensor subtract(const Tensor &a, const Tensor &b) override;
+  Tensor multiply(const Tensor &x, const float k) override;
+  Tensor multiply(const Tensor &a, const Tensor &b) override;
+  Tensor divide(const Tensor &x, const float k) override;
+  Tensor divide(const float k, const Tensor &x) override;
+  Tensor divide(const Tensor &a, const Tensor &b) override;
 
 private:
   std::map<void *, unsigned> blocks_;

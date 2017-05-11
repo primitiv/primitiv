@@ -31,6 +31,8 @@ inline Tensor operator+(const float k, const Tensor &x) {
  * @param a A tensor.
  * @param b Other tensor.
  * @return `a + b`
+ * @remarks If the batch size of `a` or `b` is 1, the single-batch side is
+ *          broadcasted to all minibatches in the opposite side.
  */
 inline Tensor operator+(const Tensor &a, const Tensor &b) {
   return a.device()->add(a, b);
@@ -47,7 +49,7 @@ inline Tensor operator-(const Tensor &x, const float k) {
 }
 
 /**
- * Subtracts a tensor from a tensor initialized by a constant.
+ * Subtracts a tensor from a constant.
  * @param k Constant to be subtracted.
  * @param x A tensor.
  * @return `k * ones(x.shape()) - x`
@@ -60,9 +62,78 @@ inline Tensor operator-(const float k, const Tensor &x) {
  * @param a Tensor to be subtracted.
  * @param b Tensor to subtract.
  * @return `a - b`
+ * @remarks If the batch size of `a` or `b` is 1, the single-batch side is
+ *          broadcasted to all minibatches in the opposite side.
  */
 inline Tensor operator-(const Tensor &a, const Tensor &b) {
   return a.device()->subtract(a, b);
+}
+
+/**
+ * Multiples each element in a tensor by a constant.
+ * @param x A tensor.
+ * @param k Multiplier.
+ * @return `k * x`
+ */
+inline Tensor operator*(const Tensor &x, const float k) {
+  return x.device()->multiply(x, k);
+}
+
+/**
+ * Multiples each element in a tensor by a constant.
+ * @param k A constant.
+ * @param x A multiplier tensor.
+ * @return `k * x`
+ */
+inline Tensor operator*(const float k, const Tensor &x) {
+  return x.device()->multiply(x, k);
+}
+
+/**
+ * Element-wise multiplication of two tensors.
+ * @param a A tensor.
+ * @param b Other tensor.
+ * @return `a \circ b`
+ * @remarks If the batch size of `a` or `b` is 1, the single-batch side is
+ *          broadcasted to all minibatches in the opposite side.
+ */
+inline Tensor operator*(const Tensor &a, const Tensor &b) {
+  return a.device()->multiply(a, b);
+}
+
+/**
+ * Divides each element in a tensor by a constant.
+ * @param x A tensor.
+ * @param k Divisor.
+ * @return `x / k`
+ * @remarks This function won't check the zero-division.
+ */
+inline Tensor operator/(const Tensor &x, const float k) {
+  return x.device()->divide(x, k);
+}
+
+/**
+ * Divides a constant by each element in a tensor.
+ * @param k Constant to be divided.
+ * @param x A divisor tensor.
+ * @return `k * ones(x.shape()) ./ x`
+ * @remarks This function won't check the zero-division.
+ */
+inline Tensor operator/(const float k, const Tensor &x) {
+  return x.device()->divide(k, x);
+}
+
+/**
+ * Divides the first tensor by the second tensor.
+ * @param a Dividend tensor.
+ * @param b Divisor tensor.
+ * @return `a ./ b`
+ * @remarks If the batch size of `a` or `b` is 1, the single-batch side is
+ *          broadcasted to all minibatches in the opposite side.
+ *          This function won't check the zero-division.
+ */
+inline Tensor operator/(const Tensor &a, const Tensor &b) {
+  return a.device()->divide(a, b);
 }
 
 }  // namespace primitiv

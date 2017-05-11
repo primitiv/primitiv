@@ -102,29 +102,6 @@ TEST_F(TensorOpsTest, CheckAddBatchBroadcast) {
   EXPECT_TRUE(::vector_match(y_data, y2.to_vector()));
 }
 
-TEST_F(TensorOpsTest, CheckInvalidAdd) {
-  {
-    const Tensor a(Shape({2, 2}), device);
-    const Tensor b(Shape({3, 3}), device);
-    EXPECT_THROW(a + b, std::runtime_error);
-  }
-  {
-    const Tensor a(Shape({2, 2}, 2), device);
-    const Tensor b(Shape({2, 2}, 3), device);
-    EXPECT_THROW(a + b, std::runtime_error);
-  }
-  {
-    const Tensor a(Shape({2, 2}, 2), device);
-    const Tensor b(Shape({3, 3}, 2), device);
-    EXPECT_THROW(a + b, std::runtime_error);
-  }
-  {
-    const Tensor a(Shape({2, 2}, 2), device);
-    const Tensor b(Shape({3, 3}, 3), device);
-    EXPECT_THROW(a + b, std::runtime_error);
-  }
-}
-
 TEST_F(TensorOpsTest, CheckSubtractConst) {
   const vector<float> x_data {1000, 100, 10, 1, 0.1, 0.01, 0.001, 0.0001};
   const float k = 1;
@@ -169,26 +146,109 @@ TEST_F(TensorOpsTest, CheckSubtractBatchBroadcast) {
   EXPECT_TRUE(::vector_match(y2_data, y2.to_vector()));
 }
 
-TEST_F(TensorOpsTest, CheckInvalidSubtract) {
-  {
-    const Tensor a(Shape({2, 2}), device);
-    const Tensor b(Shape({3, 3}), device);
+TEST_F(TensorOpsTest, CheckMultiplyConst) {
+  const vector<float> x_data {1000, -100, 10, -1, 0.1, -0.01, 0.001, -0.0001};
+  const float k = 10;
+  const vector<float> y_data {10000, -1000, 100, -10, 1, -0.1, 0.01, -0.001};
+  const Tensor x(Shape({2, 2}, 2), device, x_data);
+  const Tensor y1 = k * x;
+  EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
+  EXPECT_TRUE(::vector_match(y_data, y1.to_vector()));
+  const Tensor y2 = x * k;
+  EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
+  EXPECT_TRUE(::vector_match(y_data, y2.to_vector()));
+}
+
+TEST_F(TensorOpsTest, CheckMultiply) {
+  const vector<float> a_data {1000, -100, 10, -1, 0.1, -0.01, 0.001, -0.0001};
+  const vector<float> b_data {0, 1, 2, 3, -4, -5, -6, -7};
+  const vector<float> y_data {0, -100, 20, -3, -0.4, 0.05, -0.006, 0.0007};
+  const Tensor a(Shape({2, 2}, 2), device, a_data);
+  const Tensor b(Shape({2, 2}, 2), device, b_data);
+  const Tensor y1 = a * b;
+  EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
+  EXPECT_TRUE(::vector_match(y_data, y1.to_vector()));
+  const Tensor y2 = b * a;
+  EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
+  EXPECT_TRUE(::vector_match(y_data, y2.to_vector()));
+}
+
+TEST_F(TensorOpsTest, CheckMultiplyBatchBroadcast) {
+  const vector<float> a_data {0, 1, 2, 3};
+  const vector<float> b_data {1 ,1, 1, 1, 0, 1, 2, 3};
+  const vector<float> y_data {0, 1, 2, 3, 0, 1, 4, 9};
+  const Tensor a(Shape({2, 2}), device, a_data);
+  const Tensor b(Shape({2, 2}, 2), device, b_data);
+  const Tensor y1 = a * b;
+  EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
+  EXPECT_TRUE(::vector_match(y_data, y1.to_vector()));
+  const Tensor y2 = b * a;
+  EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
+  EXPECT_TRUE(::vector_match(y_data, y2.to_vector()));
+}
+
+TEST_F(TensorOpsTest, CheckDivideConst) {
+  const vector<float> x_data {1000, -100, 10, -1, 0.1, -0.01, 0.001, -0.0001};
+  const float k = 10;
+  const vector<float> y1_data {0.01, -0.1, 1, -10, 100, -1000, 10000, -100000};
+  const vector<float> y2_data {
+    100, -10, 1, -0.1, 0.01, -0.001, 0.0001, -0.00001,
+  };
+  const Tensor x(Shape({2, 2}, 2), device, x_data);
+  const Tensor y1 = k / x;
+  EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
+  EXPECT_TRUE(::vector_match(y1_data, y1.to_vector()));
+  const Tensor y2 = x / k;
+  EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
+  EXPECT_TRUE(::vector_match(y2_data, y2.to_vector()));
+}
+
+TEST_F(TensorOpsTest, CheckDivide) {
+  const vector<float> a_data {1000, -100, 10, -1, 0.1, -0.01, 0.001, -0.0001};
+  const vector<float> b_data {1, 2, 3, 4, -5, -6, -7, -8};
+  const vector<float> y1_data {
+    1000, -50, 3.33333333, -0.25, -0.02, 0.00166666667, -1.42857143e-4, 1.25e-5,
+  };
+  const vector<float> y2_data {0.001, -0.02, 0.3, -4, -50, 600, -7000, 80000};
+  const Tensor a(Shape({2, 2}, 2), device, a_data);
+  const Tensor b(Shape({2, 2}, 2), device, b_data);
+  const Tensor y1 = a / b;
+  EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
+  EXPECT_TRUE(::vector_match(y1_data, y1.to_vector()));
+  const Tensor y2 = b / a;
+  EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
+  EXPECT_TRUE(::vector_match(y2_data, y2.to_vector()));
+}
+
+TEST_F(TensorOpsTest, CheckDivideBatchBroadcast) {
+  const vector<float> a_data {1, 2, 3, 4};
+  const vector<float> b_data {1, 1, 1, 1, 1, 2, 3, 4};
+  const vector<float> y1_data {1, 2, 3, 4, 1, 1, 1, 1};
+  const vector<float> y2_data {1, 0.5, 0.333333333, 0.25, 1, 1, 1, 1};
+  const Tensor a(Shape({2, 2}), device, a_data);
+  const Tensor b(Shape({2, 2}, 2), device, b_data);
+  const Tensor y1 = a / b;
+  EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
+  EXPECT_TRUE(::vector_match(y1_data, y1.to_vector()));
+  const Tensor y2 = b / a;
+  EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
+  EXPECT_TRUE(::vector_match(y2_data, y2.to_vector()));
+}
+
+TEST_F(TensorOpsTest, CheckInvalidArithmeticOps) {
+  const vector<Shape> sa {
+    Shape({2, 2}, 2), Shape({2, 2}, 2), Shape({2, 2}, 2),
+  };
+  const vector<Shape> sb {
+    Shape({2, 2}, 3), Shape({3, 3}, 2), Shape({3, 3}, 3),
+  };
+  for (unsigned i = 0; i < sa.size(); ++i) {
+    const Tensor a(sa[i], device, vector<float>(sa[i].size()));
+    const Tensor b(sb[i], device, vector<float>(sb[i].size()));
+    EXPECT_THROW(a + b, std::runtime_error);
     EXPECT_THROW(a - b, std::runtime_error);
-  }
-  {
-    const Tensor a(Shape({2, 2}, 2), device);
-    const Tensor b(Shape({2, 2}, 3), device);
-    EXPECT_THROW(a - b, std::runtime_error);
-  }
-  {
-    const Tensor a(Shape({2, 2}, 2), device);
-    const Tensor b(Shape({3, 3}, 2), device);
-    EXPECT_THROW(a - b, std::runtime_error);
-  }
-  {
-    const Tensor a(Shape({2, 2}, 2), device);
-    const Tensor b(Shape({3, 3}, 3), device);
-    EXPECT_THROW(a - b, std::runtime_error);
+    EXPECT_THROW(a * b, std::runtime_error);
+    EXPECT_THROW(a / b, std::runtime_error);
   }
 }
 
