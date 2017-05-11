@@ -29,6 +29,9 @@ public:
 
   Tensor add(const Tensor &x, const float k) override;
   Tensor add(const Tensor &a, const Tensor &b) override;
+  Tensor subtract(const Tensor &x, const float k) override;
+  Tensor subtract(const float k, const Tensor &x) override;
+  Tensor subtract(const Tensor &a, const Tensor &b) override;
 
 private:
   std::map<void *, unsigned> blocks_;

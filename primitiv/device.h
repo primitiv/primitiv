@@ -59,22 +59,46 @@ public:
   virtual unsigned num_blocks() const = 0;
 
   /**
-   * Adds constant to each element of the Tensor.
-   * @param x A Tensor.
+   * Adds a constant to each element of the tensor.
+   * @param x A tensor.
    * @param k Constant to add.
    * @return `x + k * ones(x.shape())`
    */
   virtual Tensor add(const Tensor &x, const float k) = 0;
 
   /**
-   * Adds two Tensors.
-   * @param a A Tensor.
-   * @param b Other Tensor.
+   * Adds two tensors.
+   * @param a A tensor.
+   * @param b Other tensor.
    * @return `a + b`
    * @remarks If the batch size of `a` or `b` is 1, the data is broadcasted to
    *          all minibatches in opposite data.
    */
   virtual Tensor add(const Tensor &a, const Tensor &b) = 0;
+
+  /**
+   * Subtracts a constant from each element of the tensor.
+   * @param x A tensor.
+   * @param k Constant to subtract.
+   * @return `x - k * ones(x.shape())`
+   */
+  virtual Tensor subtract(const Tensor &x, const float k) = 0;
+
+  /**
+   * Subtracts a tensor from a tensor initialized by a constant.
+   * @param k Constant to be subtracted.
+   * @param x A tensor.
+   * @return `k * ones(x.shape()) - x`
+   */
+  virtual Tensor subtract(const float k, const Tensor &x) = 0;
+
+  /**
+   * Subtracts the second tensor from the first tensor.
+   * @param a Tensor to be subtracted.
+   * @param b Tensor to subtract.
+   * @return `a - b`
+   */
+  virtual Tensor subtract(const Tensor &a, const Tensor &b) = 0;
 };
 
 }  // namespace primitiv
