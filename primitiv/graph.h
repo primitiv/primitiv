@@ -1,10 +1,11 @@
 #ifndef PRIMITIV_GRAPH_H_
 #define PRIMITIV_GRAPH_H_
 
-#include <memory>
+#include <initializer_list>
 #include <vector>
 #include <primitiv/function.h>
 #include <primitiv/node.h>
+#include <primitiv/shape.h>
 
 namespace primitiv {
 
@@ -19,7 +20,7 @@ class Graph {
 
 public:
   Graph() = default;
-  ~Graph() = default;
+  ~Graph();
 
   /**
    * Adds a function subgraph.
@@ -28,9 +29,7 @@ public:
    *        computation graph.
    * @return A new Node object of the resulting value.
    */
-  Node add_function(
-      std::unique_ptr<Function> &&func,
-      const std::vector<Node> &args);
+  Node add_function(Function *func, const std::initializer_list<Node> &args);
 
   /**
    * Dump internal graphs.
@@ -39,12 +38,13 @@ public:
 
 private:
   struct ValueNode {
+    Shape shape;
     unsigned src_func_id;
     std::vector<unsigned> sink_func_ids;
   };
 
   struct FunctionNode {
-    std::unique_ptr<Function> func;
+    Function *func;
     std::vector<unsigned> arg_val_ids;
     unsigned ret_val_id;
   };
