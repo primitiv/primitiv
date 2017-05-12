@@ -1,6 +1,9 @@
 set(nmtkit_LIBRARY_HDRS
   cpu_device.h
   device.h
+  function.h
+  graph.h
+  node.h
   shape.h
   tensor.h
   tensor_ops.h
@@ -8,6 +11,7 @@ set(nmtkit_LIBRARY_HDRS
 
 set(nmtkit_LIBRARY_SRCS
   cpu_device.cc
+  graph.cc
   shape.cc
   tensor.cc
 )
