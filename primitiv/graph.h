@@ -36,6 +36,18 @@ public:
    */
   void dump() const;
 
+  /**
+   * Returns the number of value nodes in the computation graph.
+   * @return Number of value nodes.
+   */
+  inline unsigned num_value_nodes() const { return vals_.size(); }
+
+  /**
+   * Returns the number of function nodes in the computation graph.
+   * @return Number of function nodes.
+   */
+  inline unsigned num_function_nodes() const { return funcs_.size(); }
+
 private:
   struct ValueNode {
     Shape shape;

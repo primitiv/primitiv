@@ -11,8 +11,13 @@ using std::vector;
 
 namespace primitiv {
 
-Shape::Shape(const initializer_list<unsigned> dim, const unsigned k)
-: dims_(dim), k_(k) {
+Shape::Shape(const initializer_list<unsigned> &dims, const unsigned k)
+: dims_(dims), k_(k) {
+  adjust();
+}
+
+Shape::Shape(const vector<unsigned> &dims, const unsigned k)
+: dims_(dims), k_(k) {
   adjust();
 }
 

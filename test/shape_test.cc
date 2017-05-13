@@ -14,7 +14,7 @@ namespace primitiv {
 
 class ShapeTest : public testing::Test {};
 
-TEST_F(ShapeTest, CheckNew) {
+TEST_F(ShapeTest, CheckNewByInitializerList) {
   {
     const Shape shape({});
     EXPECT_EQ(1u, shape.dim(0));
@@ -26,6 +26,29 @@ TEST_F(ShapeTest, CheckNew) {
   }
   {
     const Shape shape({1, 2, 3}, 4);
+    EXPECT_EQ(1u, shape.dim(0));
+    EXPECT_EQ(2u, shape.dim(1));
+    EXPECT_EQ(3u, shape.dim(2));
+    EXPECT_EQ(1u, shape.dim(3));
+    EXPECT_EQ(1u, shape.dim(100));
+    EXPECT_EQ(3u, shape.dims().size());
+    EXPECT_EQ(4u, shape.batch_size());
+    EXPECT_EQ(24u, shape.size());
+  }
+}
+
+TEST_F(ShapeTest, CheckNewByVector) {
+  {
+    const Shape shape(vector<unsigned> {});
+    EXPECT_EQ(1u, shape.dim(0));
+    EXPECT_EQ(1u, shape.dim(1));
+    EXPECT_EQ(1u, shape.dim(100));
+    EXPECT_EQ(0u, shape.dims().size());
+    EXPECT_EQ(1u, shape.batch_size());
+    EXPECT_EQ(1u, shape.size());
+  }
+  {
+    const Shape shape(vector<unsigned> {1, 2, 3}, 4);
     EXPECT_EQ(1u, shape.dim(0));
     EXPECT_EQ(2u, shape.dim(1));
     EXPECT_EQ(3u, shape.dim(2));

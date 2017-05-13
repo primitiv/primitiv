@@ -61,14 +61,14 @@ Node Graph::add_function(
 }
 
 void Graph::dump() const {
-  cout << "Computation graph dumping:" << endl;
+  cout << "Computation graph:" << endl;
   cout << "  Value Nodes:" << endl;
   for (unsigned i = 0; i < vals_.size(); ++i) {
     const ValueNode &v = vals_[i];
     cout << "    [" << i << "]"
          << ": shape=" << v.shape.to_string()
          << ", src=" << v.src_func_id
-         << ", sink=[";
+         << ", sinks=[";
     for (unsigned j = 0; j < v.sink_func_ids.size(); ++j) {
       if (j > 0) cout << ',';
       cout << v.sink_func_ids[j];

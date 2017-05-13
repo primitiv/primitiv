@@ -10,6 +10,7 @@ function(primitiv_test name)
 endfunction()
 
 primitiv_test(cpu_device)
+primitiv_test(function_impl)
 primitiv_test(graph)
 primitiv_test(shape)
 primitiv_test(tensor)

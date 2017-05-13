@@ -27,10 +27,17 @@ public:
 
   /**
    * Creates a new Shape object.
-   * @param dims Integer list to represent the dimension.
+   * @param dims List of the dimension sizes.
    * @param k Batch size.
    */
-  Shape(const std::initializer_list<unsigned> dims, const unsigned k = 1);
+  Shape(const std::initializer_list<unsigned> &dims, const unsigned k = 1);
+
+  /**
+   * Creates a new Shape object.
+   * @param dims List of the dimension sizes.
+   * @param k Batch size.
+   */
+  Shape(const std::vector<unsigned> &dims, const unsigned k = 1);
 
   /**
    * Returns the size of the i-th dimension.
