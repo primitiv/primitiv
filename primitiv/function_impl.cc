@@ -14,7 +14,7 @@ namespace functions {
     std::stringstream ss; \
     ss << "Number of arguments mismatched." \
        << " function: " << #name \
-       << ", expected: " << n \
+       << ", required: " << n \
        << " != actual: " << args.size(); \
     throw std::runtime_error(ss.str()); \
   }
@@ -33,6 +33,21 @@ namespace functions {
   return Shape((a).dims(), std::max(a_bs, b_bs)); \
 }
 
+Input::Input(const Shape &shape, Device *device, const std::vector<float> &data)
+: shape_(shape)
+, device_(device)
+, data_(data) {
+  const unsigned shape_size = shape_.size();
+  if (data_.size() != shape_size) {
+    std::stringstream ss;
+    ss << "Data sizes mismatched."
+       << " function: Input"
+       << ", required: " << shape_size << " (" << shape_.to_string() << ")"
+       << ", actual: " << data_.size();
+    throw std::runtime_error(ss.str());
+  }
+}
+
 Shape Input::forward_shape(const std::vector<const Shape *> &args) const {
   CHECK_ARGNUM(Input, args, 0);
   return shape_;
@@ -40,7 +55,7 @@ Shape Input::forward_shape(const std::vector<const Shape *> &args) const {
 
 Tensor Input::forward(const std::vector<const Tensor *> &args) const {
   CHECK_ARGNUM(Input, args, 0);
-  throw 123;
+  return Tensor(shape_, device_, data_);
 }
 
 #define FWD_SHAPE_ARITHMETIC_TT(name) \

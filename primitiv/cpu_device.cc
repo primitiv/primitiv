@@ -66,9 +66,9 @@ void CPUDevice::copy_to_host(
 }
 
 #define CHECK_DEVICE(x) \
-  if ((x).device().get() != this) { \
+  if ((x).device() != this) { \
     std::stringstream ss; \
-    ss << "Device mismatched. (" #x ").device(): " << (x).device().get() \
+    ss << "Device mismatched. (" #x ").device(): " << (x).device() \
        << "!= this:" << this; \
     throw std::runtime_error(ss.str()); \
   }

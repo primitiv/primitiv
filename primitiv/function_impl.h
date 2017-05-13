@@ -2,8 +2,12 @@
 #define PRIMITIV_FUNCTION_IMPL_H_
 
 #include <primitiv/function.h>
+#include <primitiv/shape.h>
 
 namespace primitiv {
+
+class Device;
+
 namespace functions {
 
 /**
@@ -12,12 +16,14 @@ namespace functions {
 class Input : public primitiv::Function {
   Input() = delete;
 public:
-  inline Input(const Shape &shape) : shape_(shape) {}
+  Input(const Shape &shape, Device *device, const std::vector<float> &data);
   Shape forward_shape(const std::vector<const Shape *> &args) const override;
   Tensor forward(const std::vector<const Tensor *> &args) const override;
   inline std::string name() const override { return "Input"; }
 private:
   Shape shape_;
+  Device *device_;
+  std::vector<float> data_;
 };
 
 // Arithmetic functions between two tensors.

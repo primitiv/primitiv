@@ -11,7 +11,7 @@ namespace primitiv {
 
 Tensor::Tensor(Tensor &&src)
 : shape_(move(src.shape_))
-, device_(move(src.device_))
+, device_(src.device_)
 , data_(src.data_) {
   src.data_ = nullptr;
 }
@@ -26,14 +26,14 @@ Tensor &Tensor::operator=(Tensor &&src) {
   if (this != &src) {
     device_->free(data_);
     shape_ = move(src.shape_);
-    device_ = move(src.device_);
+    device_ = src.device_;
     data_ = src.data_;
     src.data_ = nullptr;
   }
   return *this;
 }
 
-Tensor::Tensor(const Shape &shape, const std::shared_ptr<Device> &device)
+Tensor::Tensor(const Shape &shape, Device *device)
 : shape_(shape)
 , device_(device) {
   data_ = device_->allocate(sizeof(float) * shape_.size());
@@ -41,16 +41,16 @@ Tensor::Tensor(const Shape &shape, const std::shared_ptr<Device> &device)
 
 Tensor::Tensor(
     const Shape &shape,
-    const std::shared_ptr<Device> &device,
+    Device *device,
     const std::vector<float> &data)
 : shape_(shape)
 , device_(device) {
   const unsigned shape_size = shape_.size();
   if (data.size() != shape_size) {
     std::stringstream ss;
-    ss << "Data sizes mismatched. "
-       << "requied: " << shape_size << " (" << shape_.to_string() << "), "
-       << "actual: " << data.size() << ".";
+    ss << "Data sizes mismatched."
+       << " requied: " << shape_size << " (" << shape_.to_string() << ")"
+       << ", actual: " << data.size();
     throw std::runtime_error(ss.str());
   }
   const unsigned mem_size = sizeof(float) * shape_size;

@@ -1,6 +1,5 @@
 #include <config.h>
 
-#include <memory>
 #include <utility>
 #include <vector>
 #include <gtest/gtest.h>
@@ -37,51 +36,47 @@ namespace primitiv {
 
 class TensorTest : public testing::Test {
 protected:
-  virtual void SetUp() override {
-    device.reset(new CPUDevice());
-  }
-
-  std::shared_ptr<Device> device;
+  CPUDevice dev;
 };
 
 TEST_F(TensorTest, CheckNew) {
   {
-    const Tensor x(Shape({}), device);
+    const Tensor x(Shape({}), &dev);
     EXPECT_EQ(Shape({}), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     const vector<float> d = x.to_vector();
     EXPECT_EQ(1u, d.size());
-    EXPECT_EQ(device, x.device());
+    EXPECT_EQ(&dev, x.device());
   }
   {
-    const Tensor x({2, 3}, device);
+    const Tensor x({2, 3}, &dev);
     EXPECT_EQ(Shape({2, 3}), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     const vector<float> d = x.to_vector();
     EXPECT_EQ(6u, d.size());
-    EXPECT_EQ(device, x.device());
+    EXPECT_EQ(&dev, x.device());
   }
   {
-    const Tensor x(Shape({2, 3}, 4), device);
+    const Tensor x(Shape({2, 3}, 4), &dev);
     EXPECT_EQ(Shape({2, 3}, 4), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     const vector<float> d = x.to_vector();
     EXPECT_EQ(24u, d.size());
-    EXPECT_EQ(device, x.device());
+    EXPECT_EQ(&dev, x.device());
   }
 }
 
 TEST_F(TensorTest, CheckNewWithData) {
   {
     const vector<float> data {1};
-    const Tensor x(Shape({}), device, data);
+    const Tensor x(Shape({}), &dev, data);
     EXPECT_EQ(Shape({}), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     EXPECT_TRUE(::vector_match(data, x.to_vector()));
   }
   {
     const vector<float> data {1, 2, 3, 4, 5, 6};
-    const Tensor x({2, 3}, device, data);
+    const Tensor x({2, 3}, &dev, data);
     EXPECT_EQ(Shape({2, 3}), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     EXPECT_TRUE(::vector_match(data, x.to_vector()));
@@ -91,7 +86,7 @@ TEST_F(TensorTest, CheckNewWithData) {
       3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8,
       9, 7, 9, 3, 2, 3, 8, 4, 6, 2, 6, 4,
     };
-    const Tensor x(Shape({2, 3}, 4), device, data);
+    const Tensor x(Shape({2, 3}, 4), &dev, data);
     EXPECT_EQ(Shape({2, 3}, 4), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     EXPECT_TRUE(::vector_match(data, x.to_vector()));
@@ -99,9 +94,9 @@ TEST_F(TensorTest, CheckNewWithData) {
 }
 
 TEST_F(TensorTest, CheckMove) {
-  Tensor tmp1(Shape({2}, 3), device, {1, 2, 3, 4, 5, 6});
+  Tensor tmp1(Shape({2}, 3), &dev, {1, 2, 3, 4, 5, 6});
   void *ptr1 = tmp1.data();
-  Tensor tmp2(Shape({6}), device, {2, 4, 6, 8, 10 ,12});
+  Tensor tmp2(Shape({6}), &dev, {2, 4, 6, 8, 10 ,12});
   void *ptr2 = tmp2.data();
 
   Tensor x(std::move(tmp1));
