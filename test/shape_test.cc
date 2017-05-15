@@ -14,6 +14,18 @@ namespace primitiv {
 
 class ShapeTest : public testing::Test {};
 
+TEST_F(ShapeTest, CheckNewDefault) {
+  {
+    const Shape shape;
+    EXPECT_EQ(1u, shape.dim(0));
+    EXPECT_EQ(1u, shape.dim(1));
+    EXPECT_EQ(1u, shape.dim(100));
+    EXPECT_EQ(0u, shape.dims().size());
+    EXPECT_EQ(1u, shape.batch_size());
+    EXPECT_EQ(1u, shape.size());
+  }
+}
+
 TEST_F(ShapeTest, CheckNewByInitializerList) {
   {
     const Shape shape({});
@@ -72,6 +84,7 @@ TEST_F(ShapeTest, CheckInvalidNew) {
 
 TEST_F(ShapeTest, CheckString) {
   vector<pair<Shape, string>> cases {
+    {Shape(), "[]x1"},
     {Shape({}), "[]x1"},
     {Shape({1}), "[]x1"},
     {Shape({1, 1}), "[]x1"},
@@ -101,13 +114,14 @@ TEST_F(ShapeTest, CheckString) {
 
 TEST_F(ShapeTest, CheckCmp) {
   {
-    const Shape target({});
+    const Shape target({1, 1}, 1);
     const vector<Shape> eq {
+      Shape(),
+      Shape({}),
       Shape({}, 1),
       Shape({1}),
       Shape({1}, 1),
       Shape({1, 1}),
-      Shape({1, 1}, 1)
     };
     const vector<Shape> ne {
       Shape({}, 2),
@@ -130,6 +144,7 @@ TEST_F(ShapeTest, CheckCmp) {
       Shape({2, 3, 1}, 5),
     };
     const vector<Shape> ne {
+      Shape(),
       Shape({}),
       Shape({2}),
       Shape({2, 3}),
@@ -148,23 +163,31 @@ TEST_F(ShapeTest, CheckCmp) {
 }
 
 TEST_F(ShapeTest, CheckCopy) {
-  const Shape src({2, 3, 5}, 7);
-  {
-    const Shape copied = src;
-    EXPECT_EQ(src, copied);
-    Shape temp = src;
-    const Shape moved = std::move(temp);
-    EXPECT_EQ(src, moved);
-  }
-  {
-    Shape copied({});
-    copied = src;
-    EXPECT_EQ(src, copied);
-    Shape temp = src;
-    Shape moved({});
-    moved = std::move(temp);
-    EXPECT_EQ(src, moved);
-  }
+  const Shape src1({2, 3, 5}, 7);
+  const Shape src2({1, 4}, 9);
+
+  // c-tor
+  Shape copied = src1;
+  EXPECT_EQ(src1, copied);
+
+  // operator=
+  copied = src2;
+  EXPECT_EQ(src2, copied);
+}
+
+TEST_F(ShapeTest, CheckMove) {
+  Shape src1({2, 3, 5}, 7);
+  const Shape trg1({2, 3, 5}, 7);
+  Shape src2({1, 4}, 9);
+  const Shape trg2({1, 4}, 9);
+
+  // c-tor
+  Shape moved = std::move(src1);
+  EXPECT_EQ(trg1, moved);
+
+  // operator=
+  moved = std::move(src2);
+  EXPECT_EQ(trg2, moved);
 }
 
 }  // namespace primitiv

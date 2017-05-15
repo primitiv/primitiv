@@ -11,6 +11,7 @@ namespace primitiv {
  * Data structure to represent the shape of the node.
  *
  * Examples:
+ *   Shape()         == Shape({1, 1, 1, ...}, 1): scalar
  *   Shape({})       == Shape({1, 1, 1, ...}, 1): scalar
  *   Shape({n})      == Shape({n, 1, 1, ...}, 1): row vector
  *   Shape({n, m})   == Shape({n, m, 1, ...}, 1): matrix
@@ -18,12 +19,16 @@ namespace primitiv {
  */
 class Shape {
 public:
-  Shape() = delete;
   Shape(const Shape &) = default;
   Shape(Shape &&) = default;
   Shape &operator=(const Shape &) = default;
   Shape &operator=(Shape && ) = default;
   ~Shape() = default;
+
+  /**
+   * Creates a new scalar Shape object.
+   */
+  inline Shape() : dims_(), k_(1) {}
 
   /**
    * Creates a new Shape object.

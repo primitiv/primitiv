@@ -39,9 +39,15 @@ protected:
   CPUDevice dev;
 };
 
+TEST_F(TensorTest, CheckNewDefault) {
+  const Tensor x;
+  EXPECT_FALSE(x.valid());
+}
+
 TEST_F(TensorTest, CheckNew) {
   {
     const Tensor x(Shape({}), &dev);
+    EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({}), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     const vector<float> d = x.to_vector();
@@ -50,6 +56,7 @@ TEST_F(TensorTest, CheckNew) {
   }
   {
     const Tensor x({2, 3}, &dev);
+    EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({2, 3}), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     const vector<float> d = x.to_vector();
@@ -58,6 +65,7 @@ TEST_F(TensorTest, CheckNew) {
   }
   {
     const Tensor x(Shape({2, 3}, 4), &dev);
+    EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({2, 3}, 4), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     const vector<float> d = x.to_vector();
@@ -70,6 +78,7 @@ TEST_F(TensorTest, CheckNewWithData) {
   {
     const vector<float> data {1};
     const Tensor x(Shape({}), &dev, data);
+    EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({}), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     EXPECT_TRUE(::vector_match(data, x.to_vector()));
@@ -77,6 +86,7 @@ TEST_F(TensorTest, CheckNewWithData) {
   {
     const vector<float> data {1, 2, 3, 4, 5, 6};
     const Tensor x({2, 3}, &dev, data);
+    EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({2, 3}), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     EXPECT_TRUE(::vector_match(data, x.to_vector()));
@@ -87,6 +97,7 @@ TEST_F(TensorTest, CheckNewWithData) {
       9, 7, 9, 3, 2, 3, 8, 4, 6, 2, 6, 4,
     };
     const Tensor x(Shape({2, 3}, 4), &dev, data);
+    EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({2, 3}, 4), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     EXPECT_TRUE(::vector_match(data, x.to_vector()));
@@ -100,11 +111,15 @@ TEST_F(TensorTest, CheckMove) {
   void *ptr2 = tmp2.data();
 
   Tensor x(std::move(tmp1));
+  EXPECT_TRUE(x.valid());
+  EXPECT_FALSE(tmp1.valid());
   EXPECT_EQ(Shape({2}, 3), x.shape());
   EXPECT_EQ(ptr1, x.data());
   EXPECT_TRUE(::vector_match({1, 2, 3, 4, 5, 6}, x.to_vector()));
 
   x = std::move(tmp2);
+  EXPECT_TRUE(x.valid());
+  EXPECT_FALSE(tmp2.valid());
   EXPECT_EQ(Shape({6}), x.shape());
   EXPECT_EQ(ptr2, x.data());
   EXPECT_TRUE(::vector_match({2, 4, 6, 8, 10 ,12}, x.to_vector()));

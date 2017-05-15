@@ -12,14 +12,17 @@ class Device;
  * Value with any dimensions.
  */
 class Tensor {
-  Tensor() = delete;
-
 public:
   Tensor(const Tensor &) = delete;
   Tensor(Tensor &&);
   Tensor &operator=(const Tensor &) = delete;
   Tensor &operator=(Tensor &&);
   ~Tensor();
+
+  /**
+   * Creates an invalid Tensor.
+   */
+  inline Tensor() : shape_(), device_(nullptr), data_(nullptr) {}
 
   /**
    * Creates a new uninitialized Tensor.
@@ -50,7 +53,6 @@ public:
    */
   Device *device() const { return device_; }
 
-
   /**
    * Returns the raw pointer of the internal memory.
    * @return Pointer of the internal memory.
@@ -68,6 +70,14 @@ public:
    * @return List of copied values.
    */
   std::vector<float> to_vector() const;
+
+  /**
+   * Check whether the object is valid or not.
+   * @return true if the object is valid, false otherwise.
+   * @remarks This returns false when the object is created through the default
+   *          constructor or the object had been moved.
+   */
+  bool valid() const { return !!data_; }
 
 private:
   Shape shape_;
