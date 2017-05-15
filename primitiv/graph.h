@@ -29,7 +29,21 @@ public:
    *        computation graph.
    * @return A new Node object of the resulting value.
    */
-  Node add_function(Function *func, const std::initializer_list<Node> &args);
+  Node add_function(
+      Function *func,
+      const std::initializer_list<const Node> &args);
+
+  /**
+   * Calculates the value of given node.
+   * @param node Node object specifying the target value node.
+   * @return Calculated value.
+   * @remarks This function calculates only the subgraph which is required to
+   *          calculate the target node. Each intermediate result is stored to
+   *          the corresponding node in the subgraph and they are re-used for
+   *          future calculation. I.e., each node is calculated only once while
+   *          the lifetime of the Graph object.
+   */
+  const Tensor &forward(const Node &node);
 
   /**
    * Dump internal graphs.
@@ -56,6 +70,7 @@ private:
 
   public:
     Shape shape;
+    Tensor value;
     unsigned src_func_id;
     std::vector<unsigned> sink_func_ids;
   };

@@ -1,6 +1,12 @@
 # test definitions
+
+include_directories(
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${PROJECT_SOURCE_DIR}/submodules/googletest/googletest/include
+)
+
 function(primitiv_test name)
-  add_executable(${name}_test ${name}_test.cc)
+  add_executable(${name}_test test_utils.h ${name}_test.cc)
   target_link_libraries(${name}_test primitiv gtest gtest_main)
   add_test(
     NAME ${name}_test

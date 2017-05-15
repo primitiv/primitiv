@@ -17,14 +17,16 @@ Tensor::Tensor(Tensor &&src)
 }
 
 Tensor::~Tensor() {
-  if (data_) {
+  if (valid()) {
     device_->free(data_);
   }
 }
 
 Tensor &Tensor::operator=(Tensor &&src) {
   if (this != &src) {
-    device_->free(data_);
+    if (valid()) {
+      device_->free(data_);
+    }
     shape_ = move(src.shape_);
     device_ = src.device_;
     data_ = src.data_;

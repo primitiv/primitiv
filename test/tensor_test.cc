@@ -5,32 +5,9 @@
 #include <gtest/gtest.h>
 #include <primitiv/cpu_device.h>
 #include <primitiv/tensor.h>
+#include <test_utils.h>
 
 using std::vector;
-
-namespace {
-
-// helper to check vector equality.
-template <typename T>
-::testing::AssertionResult vector_match(
-    const vector<T> &expected,
-    const vector<T> &actual) {
-  if (expected.size() != actual.size()) {
-    return ::testing::AssertionFailure()
-      << "expected.size() (" << expected.size()
-      << ") != actual.size() (" << actual.size() << ")";
-  }
-  for (unsigned i = 0; i < expected.size(); ++i) {
-    if (expected[i] != actual[i]) {
-      return ::testing::AssertionFailure()
-        << "expected[" << i << "] (" << expected[i]
-        << ") != actual[" << i << "] (" << actual[i] << ")";
-    }
-  }
-  return ::testing::AssertionSuccess();
-}
-
-}  // namespace
 
 namespace primitiv {
 
@@ -81,7 +58,7 @@ TEST_F(TensorTest, CheckNewWithData) {
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({}), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
-    EXPECT_TRUE(::vector_match(data, x.to_vector()));
+    EXPECT_TRUE(test_utils::vector_match(data, x.to_vector()));
   }
   {
     const vector<float> data {1, 2, 3, 4, 5, 6};
@@ -89,7 +66,7 @@ TEST_F(TensorTest, CheckNewWithData) {
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({2, 3}), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
-    EXPECT_TRUE(::vector_match(data, x.to_vector()));
+    EXPECT_TRUE(test_utils::vector_match(data, x.to_vector()));
   }
   {
     const vector<float> data {
@@ -100,29 +77,54 @@ TEST_F(TensorTest, CheckNewWithData) {
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({2, 3}, 4), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
-    EXPECT_TRUE(::vector_match(data, x.to_vector()));
+    EXPECT_TRUE(test_utils::vector_match(data, x.to_vector()));
   }
 }
 
 TEST_F(TensorTest, CheckMove) {
-  Tensor tmp1(Shape({2}, 3), &dev, {1, 2, 3, 4, 5, 6});
-  void *ptr1 = tmp1.data();
-  Tensor tmp2(Shape({6}), &dev, {2, 4, 6, 8, 10 ,12});
-  void *ptr2 = tmp2.data();
+  // c-tor
+  {
+    Tensor tmp(Shape({2}, 3), &dev, {1, 2, 3, 4, 5, 6});
+    void *ptr = tmp.data();
 
-  Tensor x(std::move(tmp1));
-  EXPECT_TRUE(x.valid());
-  EXPECT_FALSE(tmp1.valid());
-  EXPECT_EQ(Shape({2}, 3), x.shape());
-  EXPECT_EQ(ptr1, x.data());
-  EXPECT_TRUE(::vector_match({1, 2, 3, 4, 5, 6}, x.to_vector()));
+    Tensor x = std::move(tmp);
 
-  x = std::move(tmp2);
-  EXPECT_TRUE(x.valid());
-  EXPECT_FALSE(tmp2.valid());
-  EXPECT_EQ(Shape({6}), x.shape());
-  EXPECT_EQ(ptr2, x.data());
-  EXPECT_TRUE(::vector_match({2, 4, 6, 8, 10 ,12}, x.to_vector()));
+    EXPECT_TRUE(x.valid());
+    EXPECT_FALSE(tmp.valid());
+    EXPECT_EQ(Shape({2}, 3), x.shape());
+    EXPECT_EQ(ptr, x.data());
+    EXPECT_TRUE(test_utils::vector_match({1, 2, 3, 4, 5, 6}, x.to_vector()));
+  }
+
+  // operator= (move to valid tensor)
+  {
+    Tensor tmp(Shape({6}), &dev, {2, 4, 6, 8, 10 ,12});
+    void *ptr = tmp.data();
+
+    Tensor x(Shape(), &dev, {1});
+    x = std::move(tmp);
+
+    EXPECT_TRUE(x.valid());
+    EXPECT_FALSE(tmp.valid());
+    EXPECT_EQ(Shape({6}), x.shape());
+    EXPECT_EQ(ptr, x.data());
+    EXPECT_TRUE(test_utils::vector_match({2, 4, 6, 8, 10 ,12}, x.to_vector()));
+  }
+
+  // operator= (move to invalid tensor)
+  {
+    Tensor tmp(Shape({1}, 6), &dev, {3, 6, 9, 12, 15, 18});
+    void *ptr = tmp.data();
+
+    Tensor x;
+    x = std::move(tmp);
+
+    EXPECT_TRUE(x.valid());
+    EXPECT_FALSE(tmp.valid());
+    EXPECT_EQ(Shape({1}, 6), x.shape());
+    EXPECT_EQ(ptr, x.data());
+    EXPECT_TRUE(test_utils::vector_match({3, 6, 9, 12, 15, 18}, x.to_vector()));
+  }
 }
 
 }  // namespace primitiv

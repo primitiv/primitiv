@@ -28,7 +28,6 @@ configure_file(
 include_directories(
   ${PROJECT_SOURCE_DIR}
   ${PROJECT_BINARY_DIR}
-  ${PROJECT_SOURCE_DIR}/submodules/googletest/googletest/include
 )
 
 link_directories(

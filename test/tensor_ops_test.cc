@@ -6,48 +6,9 @@
 #include <primitiv/cpu_device.h>
 #include <primitiv/tensor.h>
 #include <primitiv/tensor_ops.h>
+#include <test_utils.h>
 
 using std::vector;
-
-namespace {
-
-// float <-> int32_t bits converter.
-union f2i32 {
-  float f;
-  int32_t i;
-};
-
-// check if two float are near than the ULP-based threshold.
-bool float_eq(const float a, const float b) {
-  static const int MAX_ULPS = 4;
-  int ai = reinterpret_cast<const f2i32 *>(&a)->i;
-  if (ai < 0) ai = 0x80000000 - ai;
-  int bi = reinterpret_cast<const f2i32 *>(&b)->i;
-  if (bi < 0) bi = 0x80000000 - bi;
-  const int diff = ai > bi ? ai - bi : bi - ai;
-  return (diff <= MAX_ULPS);
-}
-
-// helper to check vector equality.
-::testing::AssertionResult vector_match(
-    const vector<float> &expected,
-    const vector<float> &actual) {
-  if (expected.size() != actual.size()) {
-    return ::testing::AssertionFailure()
-      << "expected.size() (" << expected.size()
-      << ") != actual.size() (" << actual.size() << ")";
-  }
-  for (unsigned i = 0; i < expected.size(); ++i) {
-    if (!::float_eq(expected[i], actual[i])) {
-      return ::testing::AssertionFailure()
-        << "expected[" << i << "] (" << expected[i]
-        << ") != actual[" << i << "] (" << actual[i] << ")";
-    }
-  }
-  return ::testing::AssertionSuccess();
-}
-
-}  // namespace
 
 namespace primitiv {
 
@@ -63,10 +24,10 @@ TEST_F(TensorOpsTest, CheckAddConst) {
   const Tensor x(Shape({2, 2}, 2), &dev, x_data);
   const Tensor y1 = k + x;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(::vector_match(y_data, y1.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y_data, y1.to_vector()));
   const Tensor y2 = x + k;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(::vector_match(y_data, y2.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckAdd) {
@@ -77,10 +38,10 @@ TEST_F(TensorOpsTest, CheckAdd) {
   const Tensor b(Shape({2, 2}, 2), &dev, b_data);
   const Tensor y1 = a + b;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(::vector_match(y_data, y1.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y_data, y1.to_vector()));
   const Tensor y2 = b + a;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(::vector_match(y_data, y2.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckAddBatchBroadcast) {
@@ -91,10 +52,10 @@ TEST_F(TensorOpsTest, CheckAddBatchBroadcast) {
   const Tensor b(Shape({2, 2}, 2), &dev, b_data);
   const Tensor y1 = a + b;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(::vector_match(y_data, y1.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y_data, y1.to_vector()));
   const Tensor y2 = b + a;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(::vector_match(y_data, y2.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckSubtractConst) {
@@ -105,10 +66,10 @@ TEST_F(TensorOpsTest, CheckSubtractConst) {
   const Tensor x(Shape({2, 2}, 2), &dev, x_data);
   const Tensor y1 = k - x;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(::vector_match(y1_data, y1.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y1_data, y1.to_vector()));
   const Tensor y2 = x - k;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(::vector_match(y2_data, y2.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y2_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckSubtract) {
@@ -120,10 +81,10 @@ TEST_F(TensorOpsTest, CheckSubtract) {
   const Tensor b(Shape({2, 2}, 2), &dev, b_data);
   const Tensor y1 = a - b;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(::vector_match(y1_data, y1.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y1_data, y1.to_vector()));
   const Tensor y2 = b - a;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(::vector_match(y2_data, y2.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y2_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckSubtractBatchBroadcast) {
@@ -135,10 +96,10 @@ TEST_F(TensorOpsTest, CheckSubtractBatchBroadcast) {
   const Tensor b(Shape({2, 2}, 2), &dev, b_data);
   const Tensor y1 = a - b;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(::vector_match(y1_data, y1.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y1_data, y1.to_vector()));
   const Tensor y2 = b - a;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(::vector_match(y2_data, y2.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y2_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckMultiplyConst) {
@@ -148,10 +109,10 @@ TEST_F(TensorOpsTest, CheckMultiplyConst) {
   const Tensor x(Shape({2, 2}, 2), &dev, x_data);
   const Tensor y1 = k * x;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(::vector_match(y_data, y1.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y_data, y1.to_vector()));
   const Tensor y2 = x * k;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(::vector_match(y_data, y2.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckMultiply) {
@@ -162,10 +123,10 @@ TEST_F(TensorOpsTest, CheckMultiply) {
   const Tensor b(Shape({2, 2}, 2), &dev, b_data);
   const Tensor y1 = a * b;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(::vector_match(y_data, y1.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y_data, y1.to_vector()));
   const Tensor y2 = b * a;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(::vector_match(y_data, y2.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckMultiplyBatchBroadcast) {
@@ -176,10 +137,10 @@ TEST_F(TensorOpsTest, CheckMultiplyBatchBroadcast) {
   const Tensor b(Shape({2, 2}, 2), &dev, b_data);
   const Tensor y1 = a * b;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(::vector_match(y_data, y1.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y_data, y1.to_vector()));
   const Tensor y2 = b * a;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(::vector_match(y_data, y2.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckDivideConst) {
@@ -192,10 +153,10 @@ TEST_F(TensorOpsTest, CheckDivideConst) {
   const Tensor x(Shape({2, 2}, 2), &dev, x_data);
   const Tensor y1 = k / x;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(::vector_match(y1_data, y1.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y1_data, y1.to_vector()));
   const Tensor y2 = x / k;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(::vector_match(y2_data, y2.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y2_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckDivide) {
@@ -209,10 +170,10 @@ TEST_F(TensorOpsTest, CheckDivide) {
   const Tensor b(Shape({2, 2}, 2), &dev, b_data);
   const Tensor y1 = a / b;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(::vector_match(y1_data, y1.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y1_data, y1.to_vector()));
   const Tensor y2 = b / a;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(::vector_match(y2_data, y2.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y2_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckDivideBatchBroadcast) {
@@ -224,10 +185,10 @@ TEST_F(TensorOpsTest, CheckDivideBatchBroadcast) {
   const Tensor b(Shape({2, 2}, 2), &dev, b_data);
   const Tensor y1 = a / b;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(::vector_match(y1_data, y1.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y1_data, y1.to_vector()));
   const Tensor y2 = b / a;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(::vector_match(y2_data, y2.to_vector()));
+  EXPECT_TRUE(test_utils::vector_match(y2_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckInvalidArithmeticOps) {
