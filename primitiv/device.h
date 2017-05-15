@@ -148,6 +148,62 @@ public:
    *          This function won't check the zero-division.
    */
   virtual Tensor divide(const Tensor &a, const Tensor &b) = 0;
+
+  /**
+   * Directly adds a constant to a tensor.
+   * @param x A tensor to be updated.
+   * @param k A parameter constant.
+   */
+  virtual void aug_add(Tensor &x, const float k) = 0;
+
+  /**
+   * Directly adds the second tensor to the first tensor.
+   * @param a A tensor to be udpated.
+   * @param b A parameter tensor.
+   */
+  virtual void aug_add(Tensor &a, const Tensor &b) = 0;
+
+  /**
+   * Directly subtracts a constant from a tensor.
+   * @param x A tensor to be updated.
+   * @param k A parameter constant.
+   */
+  virtual void aug_subtract(Tensor &x, const float k) = 0;
+
+  /**
+   * Directly subtracts the second tensor from the first tensor.
+   * @param a A tensor to be udpated.
+   * @param b A parameter tensor.
+   */
+  virtual void aug_subtract(Tensor &a, const Tensor &b) = 0;
+
+  /**
+   * Directly multiplies a tensor by a constant.
+   * @param x A tensor to be updated.
+   * @param k A parameter constant.
+   */
+  virtual void aug_multiply(Tensor &x, const float k) = 0;
+
+  /**
+   * Directly multiplies the first tensor by the second tensor.
+   * @param a A tensor to be udpated.
+   * @param b A parameter tensor.
+   */
+  virtual void aug_multiply(Tensor &a, const Tensor &b) = 0;
+
+  /**
+   * Directly divides a tensor by a constant.
+   * @param x A tensor to be updated.
+   * @param k A parameter constant.
+   */
+  virtual void aug_divide(Tensor &x, const float k) = 0;
+
+  /**
+   * Directly divides the first tensor by the second tensor.
+   * @param a A tensor to be udpated.
+   * @param b A parameter tensor.
+   */
+  virtual void aug_divide(Tensor &a, const Tensor &b) = 0;
 };
 
 }  // namespace primitiv

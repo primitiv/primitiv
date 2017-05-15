@@ -331,4 +331,48 @@ Tensor CPUDevice::divide(const Tensor &a, const Tensor &b) {
   throw std::runtime_error(ss.str());
 }
 
+void CPUDevice::aug_add(Tensor &x, const float k) {
+  CHECK_DEVICE(x);
+  throw std::runtime_error("not implemented.");
+}
+
+void CPUDevice::aug_add(Tensor &a, const Tensor &b) {
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
+  throw std::runtime_error("not implemented.");
+}
+
+void CPUDevice::aug_subtract(Tensor &x, const float k) {
+  CHECK_DEVICE(x);
+  throw std::runtime_error("not implemented.");
+}
+
+void CPUDevice::aug_subtract(Tensor &a, const Tensor &b) {
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
+  throw std::runtime_error("not implemented.");
+}
+
+void CPUDevice::aug_multiply(Tensor &x, const float k) {
+  CHECK_DEVICE(x);
+  throw std::runtime_error("not implemented.");
+}
+
+void CPUDevice::aug_multiply(Tensor &a, const Tensor &b) {
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
+  throw std::runtime_error("not implemented.");
+}
+
+void CPUDevice::aug_divide(Tensor &x, const float k) {
+  CHECK_DEVICE(x);
+  throw std::runtime_error("not implemented.");
+}
+
+void CPUDevice::aug_divide(Tensor &a, const Tensor &b) {
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
+  throw std::runtime_error("not implemented.");
+}
+
 }  // namespace primitiv
