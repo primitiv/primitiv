@@ -32,10 +32,8 @@ TEST_F(GraphTest, CheckConstruction) {
   const Node n4 = g.add_function(new functions::Subtract(), {n1, n2});
   const Node n5 = g.add_function(new functions::Multiply(), {n3, n4});
   const Node n6 = g.add_function(new functions::AddConst(1), {n5});
-  // for now, the numbers of value/function nodes are same because a function
-  // node generates only one value node.
-  EXPECT_EQ(7u, g.num_value_nodes());
-  EXPECT_EQ(7u, g.num_function_nodes());
+
+  EXPECT_EQ(7u, g.num_nodes());
 
   // Dump the graph to the output log.
   g.dump();

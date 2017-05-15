@@ -35,7 +35,7 @@ public:
 
   /**
    * Calculates the value of given node.
-   * @param node Node object specifying the target value node.
+   * @param node Node object specifying the target node.
    * @return Calculated value.
    * @remarks This function calculates only the subgraph which is required to
    *          calculate the target node. Each intermediate result is stored to
@@ -51,43 +51,26 @@ public:
   void dump() const;
 
   /**
-   * Returns the number of value nodes in the computation graph.
-   * @return Number of value nodes.
+   * Returns the number of nodes in the computation graph.
+   * @return Number of nodes.
    */
-  inline unsigned num_value_nodes() const { return vals_.size(); }
-
-  /**
-   * Returns the number of function nodes in the computation graph.
-   * @return Number of function nodes.
-   */
-  inline unsigned num_function_nodes() const { return funcs_.size(); }
+  inline unsigned num_nodes() const { return nodes_.size(); }
 
 private:
-  struct ValueNode {
+  struct NodeInfo {
   private:
-    ValueNode(const ValueNode &) = delete;
-    ValueNode &operator=(const ValueNode &) = delete;
+    NodeInfo(const NodeInfo &) = delete;
+    NodeInfo &operator=(const NodeInfo &) = delete;
 
   public:
     Shape shape;
-    Tensor value;
-    unsigned src_func_id;
-    std::vector<unsigned> sink_func_ids;
-  };
-
-  struct FunctionNode {
-  private:
-    FunctionNode(const FunctionNode &) = delete;
-    FunctionNode &operator=(const FunctionNode &) = delete;
-
-  public:
     Function *func;
-    std::vector<unsigned> arg_val_ids;
-    unsigned ret_val_id;
+    Tensor value;
+    std::vector<unsigned> args;
+    std::vector<unsigned> sinks;
   };
 
-  std::vector<ValueNode *> vals_;
-  std::vector<FunctionNode *> funcs_;
+  std::vector<NodeInfo *> nodes_;
 };
 
 }  // namespace primitiv
