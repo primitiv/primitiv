@@ -50,19 +50,29 @@ public:
 
 private:
   struct ValueNode {
+  private:
+    ValueNode(const ValueNode &) = delete;
+    ValueNode &operator=(const ValueNode &) = delete;
+
+  public:
     Shape shape;
     unsigned src_func_id;
     std::vector<unsigned> sink_func_ids;
   };
 
   struct FunctionNode {
+  private:
+    FunctionNode(const FunctionNode &) = delete;
+    FunctionNode &operator=(const FunctionNode &) = delete;
+
+  public:
     Function *func;
     std::vector<unsigned> arg_val_ids;
     unsigned ret_val_id;
   };
 
-  std::vector<ValueNode> vals_;
-  std::vector<FunctionNode> funcs_;
+  std::vector<ValueNode *> vals_;
+  std::vector<FunctionNode *> funcs_;
 };
 
 }  // namespace primitiv
