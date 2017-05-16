@@ -76,9 +76,9 @@ void CPUDevice::copy_to_host(
 #define DATA(x) static_cast<float *>((x).data());
 #define CDATA(x) static_cast<const float *>((x).data());
 
-#define REPEAT_OP(i, n, dest, op) \
+#define REPEAT_OP(i, n, op) \
   for (unsigned (i) = 0; (i) < (n); ++(i)) { \
-    (dest) = (op); \
+    (op); \
   }
 
 Tensor CPUDevice::add(const Tensor &x, const float k) {
@@ -88,7 +88,7 @@ Tensor CPUDevice::add(const Tensor &x, const float k) {
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   const unsigned size = x.shape().size();
-  REPEAT_OP(i, size, dest[i], src[i] + k);
+  REPEAT_OP(i, size, dest[i] = src[i] + k);
   return ret;
 }
 
@@ -106,7 +106,7 @@ Tensor CPUDevice::add(const Tensor &a, const Tensor &b) {
       Tensor ret(sa, a.device());
       float *dest = DATA(ret);
       const unsigned size = sa.size();
-      REPEAT_OP(i, size, dest[i], src_a[i] + src_b[i]);
+      REPEAT_OP(i, size, dest[i] = src_a[i] + src_b[i]);
       return ret;
     } else if (sa.batch_size() == 1) {
       // ret = batch_broadcast(a) + b
@@ -115,7 +115,7 @@ Tensor CPUDevice::add(const Tensor &a, const Tensor &b) {
       const unsigned ms = sa.size();
       const unsigned bs = sb.batch_size();
       for (unsigned k = 0; k < bs; ++k, dest += ms, src_b += ms) {
-        REPEAT_OP(i, ms, dest[i], src_a[i] + src_b[i]);
+        REPEAT_OP(i, ms, dest[i] = src_a[i] + src_b[i]);
       }
       return ret;
     } else if (sb.batch_size() == 1) {
@@ -125,7 +125,7 @@ Tensor CPUDevice::add(const Tensor &a, const Tensor &b) {
       const unsigned ms = sb.size();
       const unsigned bs = sa.batch_size();
       for (unsigned k = 0; k < bs; ++k, dest += ms, src_a += ms) {
-        REPEAT_OP(i, ms, dest[i], src_a[i] + src_b[i]);
+        REPEAT_OP(i, ms, dest[i] = src_a[i] + src_b[i]);
       }
       return ret;
     }
@@ -145,7 +145,7 @@ Tensor CPUDevice::subtract(const Tensor &x, const float k) {
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   const unsigned size = x.shape().size();
-  REPEAT_OP(i, size, dest[i], src[i] - k);
+  REPEAT_OP(i, size, dest[i] = src[i] - k);
   return ret;
 }
 
@@ -156,7 +156,7 @@ Tensor CPUDevice::subtract(const float k, const Tensor &x) {
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   const unsigned size = x.shape().size();
-  REPEAT_OP(i, size, dest[i], k - src[i]);
+  REPEAT_OP(i, size, dest[i] = k - src[i]);
   return ret;
 }
 
@@ -174,7 +174,7 @@ Tensor CPUDevice::subtract(const Tensor &a, const Tensor &b) {
       Tensor ret(sa, a.device());
       float *dest = DATA(ret);
       const unsigned size = sa.size();
-      REPEAT_OP(i, size, dest[i], src_a[i] - src_b[i]);
+      REPEAT_OP(i, size, dest[i] = src_a[i] - src_b[i]);
       return ret;
     } else if (sa.batch_size() == 1) {
       // ret = batch_broadcast(a) - b
@@ -183,7 +183,7 @@ Tensor CPUDevice::subtract(const Tensor &a, const Tensor &b) {
       const unsigned ms = sa.size();
       const unsigned bs = sb.batch_size();
       for (unsigned k = 0; k < bs; ++k, dest += ms, src_b += ms) {
-        REPEAT_OP(i, ms, dest[i], src_a[i] - src_b[i]);
+        REPEAT_OP(i, ms, dest[i] = src_a[i] - src_b[i]);
       }
       return ret;
     } else if (sb.batch_size() == 1) {
@@ -193,7 +193,7 @@ Tensor CPUDevice::subtract(const Tensor &a, const Tensor &b) {
       const unsigned ms = sb.size();
       const unsigned bs = sa.batch_size();
       for (unsigned k = 0; k < bs; ++k, dest += ms, src_a += ms) {
-        REPEAT_OP(i, ms, dest[i], src_a[i] - src_b[i]);
+        REPEAT_OP(i, ms, dest[i] = src_a[i] - src_b[i]);
       }
       return ret;
     }
@@ -213,7 +213,7 @@ Tensor CPUDevice::multiply(const Tensor &x, const float k) {
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   const unsigned size = x.shape().size();
-  REPEAT_OP(i, size, dest[i], src[i] * k);
+  REPEAT_OP(i, size, dest[i] = src[i] * k);
   return ret;
 }
 
@@ -231,7 +231,7 @@ Tensor CPUDevice::multiply(const Tensor &a, const Tensor &b) {
       Tensor ret(sa, a.device());
       float *dest = DATA(ret);
       const unsigned size = sa.size();
-      REPEAT_OP(i, size, dest[i], src_a[i] * src_b[i]);
+      REPEAT_OP(i, size, dest[i] = src_a[i] * src_b[i]);
       return ret;
     } else if (sa.batch_size() == 1) {
       // ret = batch_broadcast(a) * b
@@ -240,7 +240,7 @@ Tensor CPUDevice::multiply(const Tensor &a, const Tensor &b) {
       const unsigned ms = sa.size();
       const unsigned bs = sb.batch_size();
       for (unsigned k = 0; k < bs; ++k, dest += ms, src_b += ms) {
-        REPEAT_OP(i, ms, dest[i], src_a[i] * src_b[i]);
+        REPEAT_OP(i, ms, dest[i] = src_a[i] * src_b[i]);
       }
       return ret;
     } else if (sb.batch_size() == 1) {
@@ -250,7 +250,7 @@ Tensor CPUDevice::multiply(const Tensor &a, const Tensor &b) {
       const unsigned ms = sb.size();
       const unsigned bs = sa.batch_size();
       for (unsigned k = 0; k < bs; ++k, dest += ms, src_a += ms) {
-        REPEAT_OP(i, ms, dest[i], src_a[i] * src_b[i]);
+        REPEAT_OP(i, ms, dest[i] = src_a[i] * src_b[i]);
       }
       return ret;
     }
@@ -270,7 +270,7 @@ Tensor CPUDevice::divide(const Tensor &x, const float k) {
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   const unsigned size = x.shape().size();
-  REPEAT_OP(i, size, dest[i], src[i] / k);
+  REPEAT_OP(i, size, dest[i] = src[i] / k);
   return ret;
 }
 
@@ -281,7 +281,7 @@ Tensor CPUDevice::divide(const float k, const Tensor &x) {
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   const unsigned size = x.shape().size();
-  REPEAT_OP(i, size, dest[i], k / src[i]);
+  REPEAT_OP(i, size, dest[i] = k / src[i]);
   return ret;
 }
 
@@ -299,7 +299,7 @@ Tensor CPUDevice::divide(const Tensor &a, const Tensor &b) {
       Tensor ret(sa, a.device());
       float *dest = DATA(ret);
       const unsigned size = sa.size();
-      REPEAT_OP(i, size, dest[i], src_a[i] / src_b[i]);
+      REPEAT_OP(i, size, dest[i] = src_a[i] / src_b[i]);
       return ret;
     } else if (sa.batch_size() == 1) {
       // ret = batch_broadcast(a) / b
@@ -308,7 +308,7 @@ Tensor CPUDevice::divide(const Tensor &a, const Tensor &b) {
       const unsigned ms = sa.size();
       const unsigned bs = sb.batch_size();
       for (unsigned k = 0; k < bs; ++k, dest += ms, src_b += ms) {
-        REPEAT_OP(i, ms, dest[i], src_a[i] / src_b[i]);
+        REPEAT_OP(i, ms, dest[i] = src_a[i] / src_b[i]);
       }
       return ret;
     } else if (sb.batch_size() == 1) {
@@ -318,7 +318,7 @@ Tensor CPUDevice::divide(const Tensor &a, const Tensor &b) {
       const unsigned ms = sb.size();
       const unsigned bs = sa.batch_size();
       for (unsigned k = 0; k < bs; ++k, dest += ms, src_a += ms) {
-        REPEAT_OP(i, ms, dest[i], src_a[i] / src_b[i]);
+        REPEAT_OP(i, ms, dest[i] = src_a[i] / src_b[i]);
       }
       return ret;
     }
