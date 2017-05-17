@@ -67,4 +67,9 @@ std::vector<float> Tensor::to_vector() const {
   return ret;
 }
 
+Tensor &Tensor::operator+=(const Tensor &x) {
+  device_->augment(*this, x);
+  return *this;
+}
+
 }  // namepsace primitiv

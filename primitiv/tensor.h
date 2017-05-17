@@ -79,6 +79,15 @@ public:
    */
   bool valid() const { return !!data_; }
 
+  /**
+   * Directly adds the tensor without allocation.
+   * @param x A tensor to add.
+   * @return Reference of this object.
+   * @remarks Shapes of this object and `x` should be completely same (including
+   *          batch sizes).
+   */
+  Tensor &operator+=(const Tensor &x);
+
 private:
   Shape shape_;
   Device *device_;
