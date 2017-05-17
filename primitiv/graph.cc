@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <utility>
+#include <primitiv/device.h>
 #include <primitiv/graph.h>
 
 using std::move;
@@ -59,8 +60,8 @@ Node Graph::add_function(
   for (const unsigned arg_id : arg_ids) {
     nodes_[arg_id]->sinks.emplace_back(ret_id);
   }
-  nodes_.emplace_back(
-      new NodeInfo {move(ret_shape), func, Tensor(), move(arg_ids), {}});
+  nodes_.emplace_back(new NodeInfo {
+      move(ret_shape), func, Tensor(), Tensor(), move(arg_ids), {}});
 
   return Node(this, ret_id);
 }
@@ -90,6 +91,56 @@ const Tensor &Graph::forward(const Node &node) {
 }
 
 void Graph::backward(const Node &node) {
+  CHECK_NODE(node);
+
+  NodeInfo &last_node = *nodes_[node.id_];
+  if (!last_node.value.valid()) {
+    std::stringstream ss;
+    ss << "Node " << node.id_ << " is not calculated in the forward path.";
+    throw std::runtime_error(ss.str());
+  }
+  if (last_node.grad.valid()) {
+    std::stringstream ss;
+    ss << "Node " << node.id_ << " already has the gradient vector.";
+    throw std::runtime_error(ss.str());
+  }
+
+  // Make identity gradient at the last node.
+  last_node.grad = last_node.value.device()->constant(last_node.shape, 1);
+
+  // The node ID represents the topological order.
+  for (int id = node.id_; id >= 0; --id) {
+    const NodeInfo &cur_node = *nodes_[id];
+    if (!cur_node.value.valid()) {
+      // Not calculated in the forward path.
+      continue;
+    }
+    vector<const Tensor *> arg_values;
+    vector<Tensor *> arg_grads;
+    for (unsigned arg : cur_node.args) {
+      // Gather argument value/gradient tensors.
+      NodeInfo &arg_node = *nodes_[arg];
+      if (!arg_node.grad.valid()) {
+        arg_node.grad = arg_node.value.device()->constant(arg_node.shape, 0);
+      }
+      arg_values.emplace_back(&arg_node.value);
+      arg_grads.emplace_back(&arg_node.grad);
+
+      // Calculate the gradient from this node.
+      cur_node.func->backward(
+          cur_node.value, cur_node.grad, arg_values, arg_grads);
+    }
+  }
+}
+
+const Tensor &Graph::get_value(const Node &node) const {
+  CHECK_NODE(node);
+  return nodes_[node.id_]->value;
+}
+
+const Tensor &Graph::get_gradient(const Node &node) const {
+  CHECK_NODE(node);
+  return nodes_[node.id_]->grad;
 }
 
 void Graph::dump() const {

@@ -24,11 +24,25 @@ public:
       const std::vector<const Shape *> &args) const = 0;
 
   /**
-   * Calculates forwarding path.
+   * Calculates the forward path.
    * @param args argument tensors.
    * @return Resulting tensors.
    */
   virtual Tensor forward(const std::vector<const Tensor *> &args) const = 0;
+
+  /**
+   * Calculates the backward path.
+   * @param cur_value The value of the current node.
+   * @param cur_grad The gradient of the current node.
+   * @param arg_values Values of the argument nodes.
+   * @param arg_grads Gradients of the argument nodes. These values are updated
+   *                  by this method.
+   */
+  virtual void backward(
+      const Tensor &cur_value,
+      const Tensor &cur_grad,
+      const std::vector<const Tensor *> &arg_values,
+      const std::vector<Tensor *> &arg_grads) const = 0;
 
   /**
    * Returns the name of the function.

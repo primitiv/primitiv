@@ -17,48 +17,79 @@ protected:
   CPUDevice dev;
 };
 
-TEST_F(GraphTest, CheckConstruction) {
+TEST_F(GraphTest, CheckForwardBackward) {
   Graph g;
   const vector<float> data1 {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4};
   const vector<float> data2 {1, 1, 1, 1};
   const vector<float> data3 {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
-  const Node n0 = g.add_function(
-      new functions::Input(Shape({2, 2}, 3), &dev, data1), {});
-  const Node n1 = g.add_function(
-      new functions::Input(Shape({2, 2}, 1), &dev, data2), {});
-  const Node n2 = g.add_function(
-      new functions::Input(Shape({2, 2}, 3), &dev, data3), {});
-  const Node n3 = g.add_function(new functions::Add(), {n0, n1});
-  const Node n4 = g.add_function(new functions::Subtract(), {n1, n2});
-  const Node n5 = g.add_function(new functions::Multiply(), {n3, n4});
-  const Node n6 = g.add_function(new functions::AddConst(1), {n5});
+  vector<Node> nodes;
+  nodes.emplace_back(g.add_function(
+      new functions::Input(Shape({2, 2}, 3), &dev, data1), {}));
+  nodes.emplace_back(g.add_function(
+      new functions::Input(Shape({2, 2}, 1), &dev, data2), {}));
+  nodes.emplace_back(g.add_function(
+      new functions::Input(Shape({2, 2}, 3), &dev, data3), {}));
+  nodes.emplace_back(g.add_function(
+        new functions::Add(), {nodes[0], nodes[1]}));
+  nodes.emplace_back(g.add_function(
+        new functions::Subtract(), {nodes[1], nodes[2]}));
+  nodes.emplace_back(g.add_function(
+        new functions::Multiply(), {nodes[3], nodes[4]}));
+  nodes.emplace_back(g.add_function(new functions::AddConst(1), {nodes[5]}));
 
   EXPECT_EQ(7u, g.num_nodes());
 
   // Dump the graph to the output log.
   g.dump();
 
-  // Checking each results.
-  {
-    // This call calculates all nodes.
-    const vector<float> expected {3, 4, 5, 6, 1, 1, 1, 1, -1, -2, -3, -4};
-    const vector<float> result = g.forward(n6).to_vector();
-    EXPECT_TRUE(test_utils::vector_match(expected, result));
+  // Check all node values are still invalid.
+  for (const Node &node : nodes) {
+    EXPECT_FALSE(g.get_value(node).valid());
   }
-  {
-    const vector<float> expected {2, 3, 4, 5, 0, 0, 0, 0, -2, -3, -4, -5};
-    const vector<float> result = g.forward(n5).to_vector();
-    EXPECT_TRUE(test_utils::vector_match(expected, result));
+
+  g.forward(nodes[6]);
+
+  // Check all node values.
+  const vector<vector<float>> expected_values {
+    {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4},
+    {1, 1, 1, 1},
+    {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2},
+    {2, 3, 4, 5, 2, 3, 4, 5, 2, 3, 4, 5},
+    {1, 1, 1, 1, 0, 0, 0, 0, -1, -1, -1, -1},
+    {2, 3, 4, 5, 0, 0, 0, 0, -2, -3, -4, -5},
+    {3, 4, 5, 6, 1, 1, 1, 1, -1, -2, -3, -4},
+  };
+  for (unsigned i = 0; i < nodes.size(); ++i) {
+    // This forward method has no effect and only returns the reference to the
+    // inner value.
+    const Tensor &val1 = g.forward(nodes[i]);
+    const Tensor &val2 = g.get_value(nodes[i]);
+    EXPECT_EQ(&val1, &val2);
+    EXPECT_TRUE(val1.valid());
+    EXPECT_TRUE(test_utils::vector_match(expected_values[i], val1.to_vector()));
   }
-  {
-    const vector<float> expected {1, 1, 1, 1, 0, 0, 0, 0, -1, -1, -1, -1};
-    const vector<float> result = g.forward(n4).to_vector();
-    EXPECT_TRUE(test_utils::vector_match(expected, result));
+
+  // Check all node gradients are still invalid.
+  for (const Node &node : nodes) {
+    EXPECT_FALSE(g.get_gradient(node).valid());
   }
-  {
-    const vector<float> expected {2, 3, 4, 5, 2, 3, 4, 5, 2, 3, 4, 5};
-    const vector<float> result = g.forward(n3).to_vector();
-    EXPECT_TRUE(test_utils::vector_match(expected, result));
+
+  g.backward(nodes[6]);
+
+  // Check all node gradients.
+  const vector<vector<float>> expected_grads {
+    {1, 1, 1, 1, 0, 0, 0, 0, -1, -1, -1, -1}, // n[1] - n[2]
+    {3, 4, 5, 6, 2, 3, 4, 5, 1, 2, 3, 4}, // n[0] + 2*n[1] - n[2]
+    {-2, -3, -4, -5, -2, -3, -4, -5, -2, -3, -4, -5}, // -n[0] - n[1]
+    {1, 1, 1, 1, 0, 0, 0, 0, -1, -1, -1, -1}, // n[4]
+    {2, 3, 4, 5, 2, 3, 4, 5, 2, 3, 4, 5}, // n[3]
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, // 1
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, // 1
+  };
+  for (unsigned i = 0; i < nodes.size(); ++i) {
+    const Tensor &val = g.get_gradient(nodes[i]);
+    EXPECT_TRUE(val.valid());
+    EXPECT_TRUE(test_utils::vector_match(expected_grads[i], val.to_vector()));
   }
 }
 

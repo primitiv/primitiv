@@ -6,6 +6,8 @@
 #include <primitiv/function_impl.h>
 #include <primitiv/tensor_ops.h>
 
+using std::vector;
+
 namespace primitiv {
 namespace functions {
 
@@ -33,7 +35,7 @@ namespace functions {
   return Shape((a).dims(), std::max(a_bs, b_bs)); \
 }
 
-Input::Input(const Shape &shape, Device *device, const std::vector<float> &data)
+Input::Input(const Shape &shape, Device *device, const vector<float> &data)
 : shape_(shape)
 , device_(device)
 , data_(data) {
@@ -48,18 +50,18 @@ Input::Input(const Shape &shape, Device *device, const std::vector<float> &data)
   }
 }
 
-Shape Input::forward_shape(const std::vector<const Shape *> &args) const {
+Shape Input::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 0);
   return shape_;
 }
 
-Tensor Input::forward(const std::vector<const Tensor *> &args) const {
+Tensor Input::forward(const vector<const Tensor *> &args) const {
   CHECK_ARGNUM(args, 0);
   return Tensor(shape_, device_, data_);
 }
 
 #define FWD_SHAPE_ARITHMETIC_TT(name) \
-  Shape name::forward_shape(const std::vector<const Shape *> &args) const { \
+  Shape name::forward_shape(const vector<const Shape *> &args) const { \
     CHECK_ARGNUM(args, 2); \
     RETURN_ADD_SHAPE(*args[0], *args[1]); \
   }
@@ -70,7 +72,7 @@ FWD_SHAPE_ARITHMETIC_TT(Divide);
 #undef FWD_SHAPE_ARITHMETIC_TT
 
 #define FWD_SHAPE_ARITHMETIC_TC(name) \
-  Shape name::forward_shape(const std::vector<const Shape *> &args) const { \
+  Shape name::forward_shape(const vector<const Shape *> &args) const { \
     CHECK_ARGNUM(args, 1); \
     return *args[0]; \
   }
@@ -82,55 +84,40 @@ FWD_SHAPE_ARITHMETIC_TC(DivideConstL)
 FWD_SHAPE_ARITHMETIC_TC(DivideConstR)
 #undef FWD_SHAPE_ARITHMETIC_TC
 
-Tensor Add::forward(const std::vector<const Tensor *> &args) const {
-  CHECK_ARGNUM(args, 2);
-  return *args[0] + *args[1];
-}
+#define FORWARD(name) \
+    Tensor name::forward(const vector<const Tensor *> &args) const
+FORWARD(Add) { return *args[0] + *args[1]; }
+FORWARD(Subtract) { return *args[0] - *args[1]; }
+FORWARD(Multiply) { return *args[0] * *args[1]; }
+FORWARD(Divide) { return *args[0] / *args[1]; }
+FORWARD(AddConst) { return *args[0] + k_; }
+FORWARD(SubtractConstL) { return k_ - *args[0]; }
+FORWARD(SubtractConstR) { return *args[0] - k_; }
+FORWARD(MultiplyConst) { return *args[0] * k_; }
+FORWARD(DivideConstL) { return k_ / *args[0]; }
+FORWARD(DivideConstR) { return *args[0] / k_; }
+#undef FORWARD
 
-Tensor Subtract::forward(const std::vector<const Tensor *> &args) const {
-  CHECK_ARGNUM(args, 2);
-  return *args[0] - *args[1];
+#define BACKWARD(name) \
+    void name::backward( \
+        const Tensor &cur_value, \
+        const Tensor &cur_grad, \
+        const vector<const Tensor *> &arg_values, \
+        const vector<Tensor *> &arg_grads) const
+BACKWARD(Add) {
+  *arg_grads[0] += cur_grad;
+  *arg_grads[1] += cur_grad;
 }
-
-Tensor Multiply::forward(const std::vector<const Tensor *> &args) const {
-  CHECK_ARGNUM(args, 2);
-  return *args[0] * *args[1];
-}
-
-Tensor Divide::forward(const std::vector<const Tensor *> &args) const {
-  CHECK_ARGNUM(args, 2);
-  return *args[0] / *args[1];
-}
-
-Tensor AddConst::forward(const std::vector<const Tensor *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return *args[0] + k_;
-}
-
-Tensor SubtractConstL::forward(const std::vector<const Tensor *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return k_ - *args[0];
-}
-
-Tensor SubtractConstR::forward(const std::vector<const Tensor *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return *args[0] - k_;
-}
-
-Tensor MultiplyConst::forward(const std::vector<const Tensor *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return *args[0] * k_;
-}
-
-Tensor DivideConstL::forward(const std::vector<const Tensor *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return k_ / *args[0];
-}
-
-Tensor DivideConstR::forward(const std::vector<const Tensor *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return *args[0] / k_;
-}
+BACKWARD(Subtract) { throw std::runtime_error("not implemented"); }
+BACKWARD(Multiply) { throw std::runtime_error("not implemented"); }
+BACKWARD(Divide) { throw std::runtime_error("not implemented"); }
+BACKWARD(AddConst) { throw std::runtime_error("not implemented"); }
+BACKWARD(SubtractConstL) { throw std::runtime_error("not implemented"); }
+BACKWARD(SubtractConstR) { throw std::runtime_error("not implemented"); }
+BACKWARD(MultiplyConst) { throw std::runtime_error("not implemented"); }
+BACKWARD(DivideConstL) { throw std::runtime_error("not implemented"); }
+BACKWARD(DivideConstR) { throw std::runtime_error("not implemented"); }
+#undef BACKWARD
 
 }  // namespace functions
 }  // namespace primitive

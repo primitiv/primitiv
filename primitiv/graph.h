@@ -55,6 +55,24 @@ public:
   void backward(const Node &node);
 
   /**
+   * Retrieves the value of the node.
+   * @param node Node object specifying the target node.
+   * @return Calculated value if it is already calculated, or an invalid tensor
+   *         otherwise.
+   * @remarks This method does not affect the internal information of the graph.
+   */
+  const Tensor &get_value(const Node &node) const;
+
+  /**
+   * Retrieves the gradient of the node.
+   * @param node Node object specifying the target node.
+   * @return Calculated value if it is already calculated, or an invalid tensor
+   *         otherwise.
+   * @remarks This method does not affect the internal information of the graph.
+   */
+  const Tensor &get_gradient(const Node &node) const;
+
+  /**
    * Dump internal graphs.
    */
   void dump() const;
@@ -75,6 +93,7 @@ private:
     Shape shape;
     Function *func;
     Tensor value;
+    Tensor grad;
     std::vector<unsigned> args;
     std::vector<unsigned> sinks;
   };

@@ -19,6 +19,11 @@ public:
   Input(const Shape &shape, Device *device, const std::vector<float> &data);
   Shape forward_shape(const std::vector<const Shape *> &args) const override;
   Tensor forward(const std::vector<const Tensor *> &args) const override;
+  inline void backward(
+      const Tensor &cur_value,
+      const Tensor &cur_grad,
+      const std::vector<const Tensor *> &arg_values,
+      const std::vector<Tensor *> &arg_grads) const override {}
   inline std::string name() const override { return "Input"; }
 private:
   Shape shape_;
@@ -33,6 +38,11 @@ private:
     Shape forward_shape( \
         const std::vector<const Shape *> &args) const override; \
     Tensor forward(const std::vector<const Tensor *> &args) const override; \
+    void backward( \
+      const Tensor &cur_value, \
+      const Tensor &cur_grad, \
+      const std::vector<const Tensor *> &arg_values, \
+      const std::vector<Tensor *> &arg_grads) const override; \
     inline std::string name() const override { return #name_; } \
   }
 DECL_ARITHMETIC_TT(Add);
@@ -50,6 +60,11 @@ DECL_ARITHMETIC_TT(Divide);
     Shape forward_shape( \
         const std::vector<const Shape *> &args) const override; \
     Tensor forward(const std::vector<const Tensor *> &args) const override; \
+    void backward( \
+      const Tensor &cur_value, \
+      const Tensor &cur_grad, \
+      const std::vector<const Tensor *> &arg_values, \
+      const std::vector<Tensor *> &arg_grads) const override; \
     inline std::string name() const override { return #name_; } \
   private: \
     float k_; \
