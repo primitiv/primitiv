@@ -89,6 +89,10 @@ const Tensor &Graph::forward(const Node &node) {
   return nodes_[node.id_]->value;
 }
 
+void Graph::backward(const Node &node) {
+#error
+}
+
 void Graph::dump() const {
   cout << "Computation graph:" << endl;
   for (unsigned i = 0; i < nodes_.size(); ++i) {
