@@ -90,7 +90,6 @@ const Tensor &Graph::forward(const Node &node) {
 }
 
 void Graph::backward(const Node &node) {
-#error
 }
 
 void Graph::dump() const {

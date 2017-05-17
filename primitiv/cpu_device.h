@@ -27,6 +27,8 @@ public:
       void *dest, const void *src, const unsigned size) override;
   unsigned num_blocks() const override { return blocks_.size(); }
 
+  Tensor constant(const Shape &shape, const float k) override;
+
   Tensor add(const Tensor &x, const float k) override;
   Tensor add(const Tensor &a, const Tensor &b) override;
   Tensor subtract(const Tensor &x, const float k) override;

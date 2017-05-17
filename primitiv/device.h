@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_DEVICE_H_
 #define PRIMITIV_DEVICE_H_
 
+#include <primitiv/shape.h>
 #include <primitiv/tensor.h>
 
 namespace primitiv {
@@ -57,6 +58,13 @@ public:
    * @return Number of memory blocks.
    */
   virtual unsigned num_blocks() const = 0;
+
+  /**
+   * Returns a tensor in which all elements have the same value.
+   * @param shape Shape of the tensor.
+   * @param k The constant.
+   */
+  virtual Tensor constant(const Shape &shape, const float k) = 0;
 
   /**
    * Adds a constant to each element in the tensor.

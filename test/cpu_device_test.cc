@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <gtest/gtest.h>
 #include <primitiv/cpu_device.h>
+#include <test_utils.h>
 
 namespace primitiv {
 
@@ -65,6 +66,13 @@ TEST_F(CPUDeviceTest, CheckMemCopy) {
     EXPECT_EQ(src[i], dest[i]);
   }
   dev.free(ptr);
+}
+
+TEST_F(CPUDeviceTest, CheckConstant) {
+  const std::vector<float> expected {42, 42, 42, 42, 42, 42, 42, 42};
+  CPUDevice dev;
+  Tensor x = dev.constant(Shape({2, 2}, 2), 42);
+  EXPECT_TRUE(test_utils::vector_match(expected, x.to_vector()));
 }
 
 }  // namespace primitiv

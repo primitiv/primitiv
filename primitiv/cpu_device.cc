@@ -81,10 +81,18 @@ void CPUDevice::copy_to_host(
     (op); \
   }
 
+Tensor CPUDevice::constant(const Shape &shape, const float k) {
+  Tensor ret(shape, this);
+  float *dest = DATA(ret);
+  const unsigned size = shape.size();
+  REPEAT_OP(i, size, dest[i] = k);
+  return ret;
+}
+
 Tensor CPUDevice::add(const Tensor &x, const float k) {
   CHECK_DEVICE(x);
 
-  Tensor ret(x.shape(), x.device());
+  Tensor ret(x.shape(), this);
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   const unsigned size = x.shape().size();
@@ -103,14 +111,14 @@ Tensor CPUDevice::add(const Tensor &a, const Tensor &b) {
   if (sa.dims() == sb.dims()) {
     if (sa.batch_size() == sb.batch_size()) {
       // ret = a + b
-      Tensor ret(sa, a.device());
+      Tensor ret(sa, this);
       float *dest = DATA(ret);
       const unsigned size = sa.size();
       REPEAT_OP(i, size, dest[i] = src_a[i] + src_b[i]);
       return ret;
     } else if (sa.batch_size() == 1) {
       // ret = batch_broadcast(a) + b
-      Tensor ret(sb, a.device());
+      Tensor ret(sb, this);
       float *dest = DATA(ret);
       const unsigned ms = sa.size();
       const unsigned bs = sb.batch_size();
@@ -120,7 +128,7 @@ Tensor CPUDevice::add(const Tensor &a, const Tensor &b) {
       return ret;
     } else if (sb.batch_size() == 1) {
       // ret = a + batch_broadcast(b)
-      Tensor ret(sa, a.device());
+      Tensor ret(sa, this);
       float *dest = DATA(ret);
       const unsigned ms = sb.size();
       const unsigned bs = sa.batch_size();
@@ -141,7 +149,7 @@ Tensor CPUDevice::add(const Tensor &a, const Tensor &b) {
 Tensor CPUDevice::subtract(const Tensor &x, const float k) {
   CHECK_DEVICE(x);
 
-  Tensor ret(x.shape(), x.device());
+  Tensor ret(x.shape(), this);
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   const unsigned size = x.shape().size();
@@ -152,7 +160,7 @@ Tensor CPUDevice::subtract(const Tensor &x, const float k) {
 Tensor CPUDevice::subtract(const float k, const Tensor &x) {
   CHECK_DEVICE(x);
 
-  Tensor ret(x.shape(), x.device());
+  Tensor ret(x.shape(), this);
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   const unsigned size = x.shape().size();
@@ -171,14 +179,14 @@ Tensor CPUDevice::subtract(const Tensor &a, const Tensor &b) {
   if (sa.dims() == sb.dims()) {
     if (sa.batch_size() == sb.batch_size()) {
       // ret = a - b
-      Tensor ret(sa, a.device());
+      Tensor ret(sa, this);
       float *dest = DATA(ret);
       const unsigned size = sa.size();
       REPEAT_OP(i, size, dest[i] = src_a[i] - src_b[i]);
       return ret;
     } else if (sa.batch_size() == 1) {
       // ret = batch_broadcast(a) - b
-      Tensor ret(sb, a.device());
+      Tensor ret(sb, this);
       float *dest = DATA(ret);
       const unsigned ms = sa.size();
       const unsigned bs = sb.batch_size();
@@ -188,7 +196,7 @@ Tensor CPUDevice::subtract(const Tensor &a, const Tensor &b) {
       return ret;
     } else if (sb.batch_size() == 1) {
       // ret = a - batch_broadcast(b)
-      Tensor ret(sa, a.device());
+      Tensor ret(sa, this);
       float *dest = DATA(ret);
       const unsigned ms = sb.size();
       const unsigned bs = sa.batch_size();
@@ -209,7 +217,7 @@ Tensor CPUDevice::subtract(const Tensor &a, const Tensor &b) {
 Tensor CPUDevice::multiply(const Tensor &x, const float k) {
   CHECK_DEVICE(x);
 
-  Tensor ret(x.shape(), x.device());
+  Tensor ret(x.shape(), this);
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   const unsigned size = x.shape().size();
@@ -228,14 +236,14 @@ Tensor CPUDevice::multiply(const Tensor &a, const Tensor &b) {
   if (sa.dims() == sb.dims()) {
     if (sa.batch_size() == sb.batch_size()) {
       // ret = a * b
-      Tensor ret(sa, a.device());
+      Tensor ret(sa, this);
       float *dest = DATA(ret);
       const unsigned size = sa.size();
       REPEAT_OP(i, size, dest[i] = src_a[i] * src_b[i]);
       return ret;
     } else if (sa.batch_size() == 1) {
       // ret = batch_broadcast(a) * b
-      Tensor ret(sb, a.device());
+      Tensor ret(sb, this);
       float *dest = DATA(ret);
       const unsigned ms = sa.size();
       const unsigned bs = sb.batch_size();
@@ -245,7 +253,7 @@ Tensor CPUDevice::multiply(const Tensor &a, const Tensor &b) {
       return ret;
     } else if (sb.batch_size() == 1) {
       // ret = a * batch_broadcast(b)
-      Tensor ret(sa, a.device());
+      Tensor ret(sa, this);
       float *dest = DATA(ret);
       const unsigned ms = sb.size();
       const unsigned bs = sa.batch_size();
@@ -266,7 +274,7 @@ Tensor CPUDevice::multiply(const Tensor &a, const Tensor &b) {
 Tensor CPUDevice::divide(const Tensor &x, const float k) {
   CHECK_DEVICE(x);
 
-  Tensor ret(x.shape(), x.device());
+  Tensor ret(x.shape(), this);
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   const unsigned size = x.shape().size();
@@ -277,7 +285,7 @@ Tensor CPUDevice::divide(const Tensor &x, const float k) {
 Tensor CPUDevice::divide(const float k, const Tensor &x) {
   CHECK_DEVICE(x);
 
-  Tensor ret(x.shape(), x.device());
+  Tensor ret(x.shape(), this);
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   const unsigned size = x.shape().size();
@@ -296,14 +304,14 @@ Tensor CPUDevice::divide(const Tensor &a, const Tensor &b) {
   if (sa.dims() == sb.dims()) {
     if (sa.batch_size() == sb.batch_size()) {
       // ret = a / b
-      Tensor ret(sa, a.device());
+      Tensor ret(sa, this);
       float *dest = DATA(ret);
       const unsigned size = sa.size();
       REPEAT_OP(i, size, dest[i] = src_a[i] / src_b[i]);
       return ret;
     } else if (sa.batch_size() == 1) {
       // ret = batch_broadcast(a) / b
-      Tensor ret(sb, a.device());
+      Tensor ret(sb, this);
       float *dest = DATA(ret);
       const unsigned ms = sa.size();
       const unsigned bs = sb.batch_size();
@@ -313,7 +321,7 @@ Tensor CPUDevice::divide(const Tensor &a, const Tensor &b) {
       return ret;
     } else if (sb.batch_size() == 1) {
       // ret = a / batch_broadcast(b)
-      Tensor ret(sa, a.device());
+      Tensor ret(sa, this);
       float *dest = DATA(ret);
       const unsigned ms = sb.size();
       const unsigned bs = sa.batch_size();
