@@ -1,6 +1,7 @@
 #include <config.h>
 
 #include <sstream>
+#include <stdexcept>
 #include <utility>
 #include <primitiv/device.h>
 #include <primitiv/tensor.h>
