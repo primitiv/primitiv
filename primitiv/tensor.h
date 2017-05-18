@@ -94,11 +94,20 @@ public:
   /**
    * Directly adds the tensor without allocation.
    * @param x A tensor to add.
-   * @return Reference of this object.
+   * @return Reference to this object.
    * @remarks Shapes of this object and `x` should be completely same (including
    *          batch sizes).
    */
   Tensor &operator+=(const Tensor &x);
+
+  /**
+   * Directly subtracts the tensor without allocation.
+   * @param x A tensor to subtract.
+   * @return Reference to this object.
+   * @remarks Shapes of this object and `x` should be completely same (including
+   *          batch sizes).
+   */
+  Tensor &operator-=(const Tensor &x);
 
 private:
   Shape shape_;

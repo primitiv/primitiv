@@ -358,7 +358,7 @@ Tensor CPUDevice::divide(const Tensor &a, const Tensor &b) {
   throw std::runtime_error(ss.str());
 }
 
-void CPUDevice::augment(Tensor &a, const Tensor &b) {
+void CPUDevice::aug_add(Tensor &a, const Tensor &b) {
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);
   if (a.shape() != b.shape()) {
@@ -373,6 +373,23 @@ void CPUDevice::augment(Tensor &a, const Tensor &b) {
   const float *src = CDATA(b);
   const unsigned size = a.shape().size();
   REPEAT_OP(i, size, dest[i] += src[i]);
+}
+
+void CPUDevice::aug_subtract(Tensor &a, const Tensor &b) {
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
+  if (a.shape() != b.shape()) {
+    std::stringstream ss;
+    ss << "Shape mismatched."
+       << " a.shape(): " << a.shape().to_string()
+       << " != b.shape(): " << b.shape().to_string();
+    throw std::runtime_error(ss.str());
+  }
+
+  float *dest = DATA(a);
+  const float *src = CDATA(b);
+  const unsigned size = a.shape().size();
+  REPEAT_OP(i, size, dest[i] -= src[i]);
 }
 
 }  // namespace primitiv

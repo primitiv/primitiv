@@ -178,7 +178,16 @@ public:
    * @remarks Shapes of `a` and `b` should be completely same (including batch
    *          sizes).
    */
-  virtual void augment(Tensor &a, const Tensor &b) = 0;
+  virtual void aug_add(Tensor &a, const Tensor &b) = 0;
+
+  /**
+   * Directly subtracts the second tensor from the first tensor.
+   * @param a A tensor to be udpated.
+   * @param b A source tensor.
+   * @remarks Shapes of `a` and `b` should be completely same (including batch
+   *          sizes).
+   */
+  virtual void aug_subtract(Tensor &a, const Tensor &b) = 0;
 };
 
 }  // namespace primitiv

@@ -76,7 +76,12 @@ Tensor Tensor::operator-() const {
 }
 
 Tensor &Tensor::operator+=(const Tensor &x) {
-  device_->augment(*this, x);
+  device_->aug_add(*this, x);
+  return *this;
+}
+
+Tensor &Tensor::operator-=(const Tensor &x) {
+  device_->aug_subtract(*this, x);
   return *this;
 }
 

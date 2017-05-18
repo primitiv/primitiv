@@ -43,7 +43,8 @@ public:
   Tensor divide(const float k, const Tensor &x) override;
   Tensor divide(const Tensor &a, const Tensor &b) override;
 
-  void augment(Tensor &a, const Tensor &b) override;
+  void aug_add(Tensor &a, const Tensor &b) override;
+  void aug_subtract(Tensor &a, const Tensor &b) override;
 
 private:
   std::map<void *, unsigned> blocks_;
