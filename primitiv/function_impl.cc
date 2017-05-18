@@ -105,18 +105,26 @@ FORWARD(DivideConstR) { return *args[0] / k_; }
         const vector<const Tensor *> &arg_values, \
         const vector<Tensor *> &arg_grads) const
 BACKWARD(Add) {
-  *arg_grads[0] += cur_grad;
-  *arg_grads[1] += cur_grad;
+  arg_grads[0]->add_gradient(cur_grad);
+  arg_grads[1]->add_gradient(cur_grad);
 }
-BACKWARD(Subtract) { throw std::runtime_error("not implemented"); }
-BACKWARD(Multiply) { throw std::runtime_error("not implemented"); }
-BACKWARD(Divide) { throw std::runtime_error("not implemented"); }
-BACKWARD(AddConst) { throw std::runtime_error("not implemented"); }
-BACKWARD(SubtractConstL) { throw std::runtime_error("not implemented"); }
-BACKWARD(SubtractConstR) { throw std::runtime_error("not implemented"); }
-BACKWARD(MultiplyConst) { throw std::runtime_error("not implemented"); }
-BACKWARD(DivideConstL) { throw std::runtime_error("not implemented"); }
-BACKWARD(DivideConstR) { throw std::runtime_error("not implemented"); }
+BACKWARD(Subtract) {
+  arg_grads[0]->add_gradient(cur_grad);
+  arg_grads[1]->add_gradient(-cur_grad);
+}
+BACKWARD(Multiply) {
+  arg_grads[0]->add_gradient(*arg_values[1] * cur_grad);
+  arg_grads[1]->add_gradient(*arg_values[0] * cur_grad);
+}
+BACKWARD(Divide) { throw std::runtime_error("Divide: not implemented"); }
+BACKWARD(AddConst) {
+  arg_grads[0]->add_gradient(cur_grad);
+}
+BACKWARD(SubtractConstL) { throw std::runtime_error("SubtractConstL: not implemented"); }
+BACKWARD(SubtractConstR) { throw std::runtime_error("SubtractConstR: not implemented"); }
+BACKWARD(MultiplyConst) { throw std::runtime_error("MultiplyConst: not implemented"); }
+BACKWARD(DivideConstL) { throw std::runtime_error("DivideConstL: not implemented"); }
+BACKWARD(DivideConstR) { throw std::runtime_error("DivideConstR: not implemented"); }
 #undef BACKWARD
 
 }  // namespace functions

@@ -75,14 +75,8 @@ Tensor Tensor::operator-() const {
   return device_->negate(*this);
 }
 
-Tensor &Tensor::operator+=(const Tensor &x) {
-  device_->aug_add(*this, x);
-  return *this;
-}
-
-Tensor &Tensor::operator-=(const Tensor &x) {
-  device_->aug_subtract(*this, x);
-  return *this;
+void Tensor::add_gradient(const Tensor &x) {
+  device_->add_gradient(*this, x);
 }
 
 }  // namepsace primitiv

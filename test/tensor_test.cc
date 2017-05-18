@@ -140,28 +140,47 @@ TEST_F(TensorTest, CheckNegate) {
   EXPECT_TRUE(test_utils::vector_match(y_data, (-x).to_vector()));
 }
 
-TEST_F(TensorTest, CheckAugment) {
-  const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-  const vector<float> b_data {0, -1, -2, -3, -3, -4, -5, -6, -6, -7, -8, -9};
-  const vector<float> y_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
-  Tensor a(Shape({2, 2}, 3), &dev, a_data);
-  const Tensor b(Shape({2, 2}, 3), &dev, b_data);
-  a += b;
-  EXPECT_TRUE(test_utils::vector_match(y_data, a.to_vector()));
+TEST_F(TensorTest, CheckAddGradient) {
+  {
+    const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    const vector<float> b_data {0, -1, -2, -3, -3, -4, -5, -6, -6, -7, -8, -9};
+    const vector<float> y_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
+    Tensor a(Shape({2, 2}, 3), &dev, a_data);
+    const Tensor b(Shape({2, 2}, 3), &dev, b_data);
+    a.add_gradient(b);
+    EXPECT_TRUE(test_utils::vector_match(y_data, a.to_vector()));
+  }
+  {
+    const vector<float> a_data {1, 2, 3, 4};
+    const vector<float> b_data {0, -1, -2, -3, -3, -4, -5, -6, -6, -7, -8, -9};
+    const vector<float> y_data {-8, -10, -12, -14};
+    Tensor a(Shape({2, 2}), &dev, a_data);
+    const Tensor b(Shape({2, 2}, 3), &dev, b_data);
+    a.add_gradient(b);
+    EXPECT_TRUE(test_utils::vector_match(y_data, a.to_vector()));
+  }
+  {
+    const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    const vector<float> b_data {0, -1, -2, -3};
+    const vector<float> y_data {1, 1, 1, 1, 5, 5, 5, 5, 9, 9, 9, 9};
+    Tensor a(Shape({2, 2}, 3), &dev, a_data);
+    const Tensor b(Shape({2, 2}), &dev, b_data);
+    a.add_gradient(b);
+    EXPECT_TRUE(test_utils::vector_match(y_data, a.to_vector()));
+  }
 }
 
-TEST_F(TensorTest, CheckInvalidAugment) {
+TEST_F(TensorTest, CheckInvalidAddGradient) {
   vector<Shape> shapes {
     Shape(),
     Shape({}, 3),
-    Shape({2, 2}),
-    Shape({2, 2}, 3),
+    Shape({2, 2}, 2),
   };
-  Tensor a(Shape({2, 2, 3}), &dev);
+  Tensor a(Shape({2, 2}, 3), &dev);
 
   for (const Shape &shape : shapes) {
     Tensor b(shape, &dev);
-    EXPECT_THROW(a += b, std::runtime_error);
+    EXPECT_THROW(a.add_gradient(b), std::runtime_error);
   }
 }
 

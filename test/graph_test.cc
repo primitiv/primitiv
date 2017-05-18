@@ -79,7 +79,7 @@ TEST_F(GraphTest, CheckForwardBackward) {
   // Check all node gradients.
   const vector<vector<float>> expected_grads {
     {1, 1, 1, 1, 0, 0, 0, 0, -1, -1, -1, -1}, // n[1] - n[2]
-    {3, 4, 5, 6, 2, 3, 4, 5, 1, 2, 3, 4}, // n[0] + 2*n[1] - n[2]
+    {6, 9, 12, 15}, // batch_sum(n[0] + 2*n[1] - n[2])
     {-2, -3, -4, -5, -2, -3, -4, -5, -2, -3, -4, -5}, // -n[0] - n[1]
     {1, 1, 1, 1, 0, 0, 0, 0, -1, -1, -1, -1}, // n[4]
     {2, 3, 4, 5, 2, 3, 4, 5, 2, 3, 4, 5}, // n[3]

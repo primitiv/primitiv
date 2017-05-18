@@ -115,21 +115,22 @@ void Graph::backward(const Node &node) {
       // Not calculated in the forward path.
       continue;
     }
+
+    // Gather argument value/gradient tensors.
     vector<const Tensor *> arg_values;
     vector<Tensor *> arg_grads;
     for (unsigned arg : cur_node.args) {
-      // Gather argument value/gradient tensors.
       NodeInfo &arg_node = *nodes_[arg];
       if (!arg_node.grad.valid()) {
         arg_node.grad = arg_node.value.device()->constant(arg_node.shape, 0);
       }
       arg_values.emplace_back(&arg_node.value);
       arg_grads.emplace_back(&arg_node.grad);
-
-      // Calculate the gradient from this node.
-      cur_node.func->backward(
-          cur_node.value, cur_node.grad, arg_values, arg_grads);
     }
+
+    // Propagetes the gradient from this node.
+    cur_node.func->backward(
+        cur_node.value, cur_node.grad, arg_values, arg_grads);
   }
 }
 

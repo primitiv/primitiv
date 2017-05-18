@@ -358,38 +358,44 @@ Tensor CPUDevice::divide(const Tensor &a, const Tensor &b) {
   throw std::runtime_error(ss.str());
 }
 
-void CPUDevice::aug_add(Tensor &a, const Tensor &b) {
+void CPUDevice::add_gradient(Tensor &a, const Tensor &b) {
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);
-  if (a.shape() != b.shape()) {
-    std::stringstream ss;
-    ss << "Shape mismatched."
-       << " a.shape(): " << a.shape().to_string()
-       << " != b.shape(): " << b.shape().to_string();
-    throw std::runtime_error(ss.str());
-  }
-
+  const Shape &sa = a.shape();
+  const Shape &sb = b.shape();
   float *dest = DATA(a);
   const float *src = CDATA(b);
-  const unsigned size = a.shape().size();
-  REPEAT_OP(i, size, dest[i] += src[i]);
-}
 
-void CPUDevice::aug_subtract(Tensor &a, const Tensor &b) {
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
-  if (a.shape() != b.shape()) {
-    std::stringstream ss;
-    ss << "Shape mismatched."
-       << " a.shape(): " << a.shape().to_string()
-       << " != b.shape(): " << b.shape().to_string();
-    throw std::runtime_error(ss.str());
+  if (sa.dims() == sb.dims()) {
+    if (sa.batch_size() == sb.batch_size()) {
+      // a += b
+      const unsigned size = sa.size();
+      REPEAT_OP(i, size, dest[i] += src[i]);
+      return;
+    } else if (sa.batch_size() == 1) {
+      // a += batch_sum(b)
+      const unsigned ms = sa.size();
+      const unsigned bs = sb.batch_size();
+      for (unsigned k = 0; k < bs; ++k, src += ms) {
+        REPEAT_OP(i, ms, dest[i] += src[i]);
+      }
+      return;
+    } else if (sb.batch_size() == 1) {
+      // a += batch_broadcast(b)
+      const unsigned ms = sb.size();
+      const unsigned bs = sa.batch_size();
+      for (unsigned k = 0; k < bs; ++k, dest += ms) {
+        REPEAT_OP(i, ms, dest[i] += src[i]);
+      }
+      return;
+    }
   }
 
-  float *dest = DATA(a);
-  const float *src = CDATA(b);
-  const unsigned size = a.shape().size();
-  REPEAT_OP(i, size, dest[i] -= src[i]);
+  // error
+  std::stringstream ss;
+  ss << "Attempted to add gradient tensors with shapes "
+     << a.shape().to_string() << " and " << b.shape().to_string() << '.';
+  throw std::runtime_error(ss.str());
 }
 
 }  // namespace primitiv

@@ -175,19 +175,14 @@ public:
    * Directly adds the second tensor to the first tensor.
    * @param a A tensor to be udpated.
    * @param b A source tensor.
-   * @remarks Shapes of `a` and `b` should be completely same (including batch
-   *          sizes).
+   * @remarks This method keeps the shape of `a`, and the behavior is
+   *          conditioned according to the batch size of `a` and `b`:
+   *              a == b: a += b
+   *              a == 1: a += batch_sum(b)
+   *              b == 1: a += batch_broadcast(b)
+   *              otherwise: error.
    */
-  virtual void aug_add(Tensor &a, const Tensor &b) = 0;
-
-  /**
-   * Directly subtracts the second tensor from the first tensor.
-   * @param a A tensor to be udpated.
-   * @param b A source tensor.
-   * @remarks Shapes of `a` and `b` should be completely same (including batch
-   *          sizes).
-   */
-  virtual void aug_subtract(Tensor &a, const Tensor &b) = 0;
+  virtual void add_gradient(Tensor &a, const Tensor &b) = 0;
 };
 
 }  // namespace primitiv
