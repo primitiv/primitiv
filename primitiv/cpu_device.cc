@@ -89,6 +89,25 @@ Tensor CPUDevice::constant(const Shape &shape, const float k) {
   return ret;
 }
 
+Tensor CPUDevice::duplicate(const Tensor &x) {
+  CHECK_DEVICE(x);
+
+  Tensor ret(x.shape(), this);
+  std::memcpy(ret.data(), x.data(), sizeof(float) * x.shape().size());
+  return ret;
+}
+
+Tensor CPUDevice::negate(const Tensor &x) {
+  CHECK_DEVICE(x);
+
+  Tensor ret(x.shape(), this);
+  float *dest = DATA(ret);
+  const float *src = CDATA(x);
+  const unsigned size = x.shape().size();
+  REPEAT_OP(i, size, dest[i] = -src[i]);
+  return ret;
+}
+
 Tensor CPUDevice::add(const Tensor &x, const float k) {
   CHECK_DEVICE(x);
 

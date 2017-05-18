@@ -80,6 +80,18 @@ public:
   bool valid() const { return !!data_; }
 
   /**
+   * Duplicates the tensor.
+   * @return Duplicated tensor.
+   */
+  Tensor operator+() const;
+
+  /**
+   * Negates each element.
+   * @return Negated tensor.
+   */
+  Tensor operator-() const;
+
+  /**
    * Directly adds the tensor without allocation.
    * @param x A tensor to add.
    * @return Reference of this object.

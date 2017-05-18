@@ -67,6 +67,20 @@ public:
   virtual Tensor constant(const Shape &shape, const float k) = 0;
 
   /**
+   * Duplicates the tensor.
+   * @param x A tensor.
+   * @return Duplicated tensor.
+   */
+  virtual Tensor duplicate(const Tensor &x) = 0;
+
+  /**
+   * Inverts the sign of each elements.
+   * @param x A tensor.
+   * @return `-x`
+   */
+  virtual Tensor negate(const Tensor &x) = 0;
+
+  /**
    * Adds a constant to each element in the tensor.
    * @param x A tensor.
    * @param k Constant to add.

@@ -29,6 +29,9 @@ public:
 
   Tensor constant(const Shape &shape, const float k) override;
 
+  Tensor duplicate(const Tensor &x) override;
+  Tensor negate(const Tensor &x) override;
+
   Tensor add(const Tensor &x, const float k) override;
   Tensor add(const Tensor &a, const Tensor &b) override;
   Tensor subtract(const Tensor &x, const float k) override;

@@ -127,6 +127,19 @@ TEST_F(TensorTest, CheckMove) {
   }
 }
 
+TEST_F(TensorTest, CheckDuplicate) {
+  const vector<float> data {1, 4, 9, 16, 25, 36, 49, 64, 81, 100};
+  Tensor x(Shape({5, 1}, 2), &dev, data);
+  EXPECT_TRUE(test_utils::vector_match(data, (+x).to_vector()));
+}
+
+TEST_F(TensorTest, CheckNegate) {
+  const vector<float> x_data {1, 4, 9, 16, 25, 36, 49, 64, 81, 100};
+  const vector<float> y_data {-1, -4, -9, -16, -25, -36, -49, -64, -81, -100};
+  Tensor x(Shape({5, 1}, 2), &dev, x_data);
+  EXPECT_TRUE(test_utils::vector_match(y_data, (-x).to_vector()));
+}
+
 TEST_F(TensorTest, CheckAugment) {
   const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
   const vector<float> b_data {0, -1, -2, -3, -3, -4, -5, -6, -6, -7, -8, -9};
