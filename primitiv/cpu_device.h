@@ -44,6 +44,7 @@ public:
   Tensor divide(const Tensor &a, const Tensor &b) override;
 
   Tensor transpose(const Tensor &x) override;
+  Tensor dot(const Tensor &a, const Tensor &b) override;
 
   void add_gradient(Tensor &a, const Tensor &b) override;
 

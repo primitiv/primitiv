@@ -395,6 +395,89 @@ Tensor CPUDevice::transpose(const Tensor &x) {
   return ret;
 }
 
+Tensor CPUDevice::dot(const Tensor &a, const Tensor &b) {
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
+  const Shape &sa = a.shape();
+  const Shape &sb = b.shape();
+  const float *src_a = CDATA(a);
+  const float *src_b = CDATA(b);
+  const unsigned d1 = sa.dim(0);
+  const unsigned d2 = sa.dim(1);
+  const unsigned d3 = sb.dim(1);
+  const unsigned dest_shift = d1 * d3;
+  const unsigned src_a_shift = d1 * d2;
+  const unsigned src_b_shift = d2 * d3;
+
+  if (sa.dims().size() <= 2 && sb.dims().size() <= 2 && d2 == sb.dim(0)) {
+    if (sa.batch_size() == sb.batch_size()) {
+      // ret = a . b
+      const unsigned bs = sa.batch_size();
+      Tensor ret(Shape({d1, d3}, bs), this);
+      float *dest = DATA(ret);
+      for (unsigned b = 0; b < bs; ++b) {
+        for (unsigned i = 0; i < d1; ++i) {
+          for (unsigned k = 0; k < d3; ++k) {
+            float tmp = 0;
+            for (unsigned j = 0; j < d2; ++j) {
+              tmp += src_a[i + j * d1] * src_b[j + k * d2];
+            }
+            dest[i + k * d1] = tmp;
+          }
+        }
+        dest += dest_shift;
+        src_a += src_a_shift;
+        src_b += src_b_shift;
+      }
+      return ret;
+    } else if (sa.batch_size() == 1) {
+      // ret = batch_broadcast(a) . b
+      const unsigned bs = sb.batch_size();
+      Tensor ret(Shape({d1, d3}, bs), this);
+      float *dest = DATA(ret);
+      for (unsigned b = 0; b < bs; ++b) {
+        for (unsigned i = 0; i < d1; ++i) {
+          for (unsigned k = 0; k < d3; ++k) {
+            float tmp = 0;
+            for (unsigned j = 0; j < d2; ++j) {
+              tmp += src_a[i + j * d1] * src_b[j + k * d2];
+            }
+            dest[i + k * d1] = tmp;
+          }
+        }
+        dest += dest_shift;
+        src_b += src_b_shift;
+      }
+      return ret;
+    } else if (sb.batch_size() == 1) {
+      // ret = a . batch_broadcast(b)
+      const unsigned bs = sa.batch_size();
+      Tensor ret(Shape({d1, d3}, bs), this);
+      float *dest = DATA(ret);
+      for (unsigned b = 0; b < bs; ++b) {
+        for (unsigned i = 0; i < d1; ++i) {
+          for (unsigned k = 0; k < d3; ++k) {
+            float tmp = 0;
+            for (unsigned j = 0; j < d2; ++j) {
+              tmp += src_a[i + j * d1] * src_b[j + k * d2];
+            }
+            dest[i + k * d1] = tmp;
+          }
+        }
+        dest += dest_shift;
+        src_a += src_a_shift;
+      }
+      return ret;
+    }
+  }
+
+  // error
+  std::stringstream ss;
+  ss << "Attempted to calculate the dot product of tensors with shapes "
+     << a.shape().to_string() << " and " << b.shape().to_string() << '.';
+  throw std::runtime_error(ss.str());
+}
+
 void CPUDevice::add_gradient(Tensor &a, const Tensor &b) {
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);

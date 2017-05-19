@@ -175,9 +175,20 @@ public:
    * Calculates the transposed matrix.
    * @param x A tensor.
    * @return `x^T`
-   * @remarks Number of dimensions of `x` should be 1 or 2.
+   * @remarks Number of dimensions of `x` should be 0, 1 or 2.
    */
   virtual Tensor transpose(const Tensor &x) = 0;
+
+  /**
+   * Calculates the matrix product (dot product) of two matrices.
+   * @param a A tensor.
+   * @param b Other tensor.
+   * @return `a . b`
+   * @remarks Number of dimensions of `a` and `b` should be 0, 1 or 2, and the
+   *          second dimension of `a` and the first dimension of `b` should be
+   *          same.
+   */
+  virtual Tensor dot(const Tensor &a, const Tensor &b) = 0;
 
   /**
    * Directly adds the second tensor to the first tensor.
