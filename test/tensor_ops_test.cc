@@ -353,14 +353,17 @@ TEST_F(TensorOpsTest, CheckInvalidDot) {
 }
 
 TEST_F(TensorOpsTest, CheckTanh) {
-  const vector<float> x_data {0, 1, 2, 4, 0, -1, -2, -4};
-  const vector<float> y_data {
-    0, .76159416, .96402758, .99932930,
-    0, -.76159416, -.96402758, -.99932930,
+  const vector<float> x_data {
+    0, .5, 1, 2, 4, 8,
+    0, -.5, -1, -2, -4, -8
   };
-  const Tensor x(Shape({2, 2}, 2), &dev, x_data);
+  const vector<float> y_data {
+    0, .46211716, .76159416, .96402758, .99932930, .99999977,
+    0, -.46211716, -.76159416, -.96402758, -.99932930, -.99999977,
+  };
+  const Tensor x(Shape({2, 3}, 2), &dev, x_data);
   const Tensor y1 = tanh(x);
-  EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
+  EXPECT_EQ(Shape({2, 3}, 2), y1.shape());
   EXPECT_TRUE(test_utils::vector_match(y_data, y1.to_vector()));
 }
 

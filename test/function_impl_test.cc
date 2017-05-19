@@ -297,5 +297,25 @@ TEST_F(FunctionImplTest_2Args, CheckDot) {
   TEST_2ARGS(Dot);
 }
 
+TEST_F(FunctionImplTest_1Arg, CheckTanh) {
+  // y = tanh(x)
+  // dy/dx = 1 - y^2
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    .76159416, .96402758, .99505475, .99932930,
+    0, 0, 0, 0,
+    -.76159416, -.96402758, -.99505475, -.99932930,
+  };
+  // NOTE(odashi): The test may fail for now due to the precision of the single
+  //               floating number.
+  const vector<float> bw_grad {
+    .41997434, .070650825, .0098660372, .0013409507,
+    1, 1, 1, 1,
+    .41997434, .070650825, .0098660372, .0013409507,
+  };
+  const Tanh node;
+  TEST_1ARG(Tanh);
+}
+
 }  // namespace functions
 }  // namespace primitiv

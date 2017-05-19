@@ -70,14 +70,15 @@ Tensor Input::forward(const vector<const Tensor *> &args) const {
     return Shape(a.dims(), std::max(a_bs, b_bs)); \
   }
 
-FWD_SHAPE_UNARY(Positive)
-FWD_SHAPE_UNARY(Negative)
-FWD_SHAPE_UNARY(AddConst)
-FWD_SHAPE_UNARY(SubtractConstL)
-FWD_SHAPE_UNARY(SubtractConstR)
-FWD_SHAPE_UNARY(MultiplyConst)
-FWD_SHAPE_UNARY(DivideConstL)
-FWD_SHAPE_UNARY(DivideConstR)
+FWD_SHAPE_UNARY(Positive);
+FWD_SHAPE_UNARY(Negative);
+FWD_SHAPE_UNARY(AddConst);
+FWD_SHAPE_UNARY(SubtractConstL);
+FWD_SHAPE_UNARY(SubtractConstR);
+FWD_SHAPE_UNARY(MultiplyConst);
+FWD_SHAPE_UNARY(DivideConstL);
+FWD_SHAPE_UNARY(DivideConstR);
+FWD_SHAPE_UNARY(Tanh);
 FWD_SHAPE_ARITHMETIC(Add);
 FWD_SHAPE_ARITHMETIC(Subtract);
 FWD_SHAPE_ARITHMETIC(Multiply);
@@ -136,6 +137,7 @@ FORWARD(Subtract) { return *args[0] - *args[1]; }
 FORWARD(Multiply) { return *args[0] * *args[1]; }
 FORWARD(Divide) { return *args[0] / *args[1]; }
 FORWARD(Dot) { return tensor_ops::dot(*args[0], *args[1]); }
+FORWARD(Tanh) { return tensor_ops::tanh(*args[0]); }
 
 #undef FORWARD
 
@@ -164,6 +166,7 @@ BACKWARD(Dot) {
   ADD(0, tensor_ops::dot(yg, tensor_ops::transpose(*x[1])));
   ADD(1, tensor_ops::dot(tensor_ops::transpose(*x[0]), yg));
 }
+BACKWARD(Tanh) { ADD(0, (1 - y * y) * yg); }
 
 #undef BACKWARD
 #undef ADD
