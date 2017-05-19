@@ -46,6 +46,8 @@ public:
   Tensor transpose(const Tensor &x) override;
   Tensor dot(const Tensor &a, const Tensor &b) override;
 
+  Tensor tanh(const Tensor &x) override;
+
   void add_gradient(Tensor &a, const Tensor &b) override;
 
 private:

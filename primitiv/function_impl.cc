@@ -96,6 +96,26 @@ Shape Transpose::forward_shape(const vector<const Shape *> &args) const {
   return Shape({a.dim(1), a.dim(0)}, a.batch_size());
 }
 
+Shape Dot::forward_shape(const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 2);
+  const Shape &a = *args[0];
+  const Shape &b = *args[0];
+  const unsigned a_bs = a.batch_size();
+  const unsigned b_bs = b.batch_size();
+  if (a.dims().size() > 2 ||
+      b.dims().size() > 2 ||
+      a.dim(1) != b.dim(0) ||
+      (a_bs != b_bs && a_bs > 1 && b_bs > 1)) {
+    std::stringstream ss;
+    ss << "Shape mismatched."
+       << " function: " << name()
+       << ", arg1: " << a.to_string()
+       << " != arg2: " << b.to_string();
+    throw std::runtime_error(ss.str());
+  }
+  return Shape({a.dim(0), b.dim(1)}, std::max(a_bs, b_bs));
+}
+
 #undef FWD_SHAPE_UNARY
 #undef FWD_SHAPE_ARITHMETIC
 
@@ -115,6 +135,7 @@ FORWARD(Add) { return *args[0] + *args[1]; }
 FORWARD(Subtract) { return *args[0] - *args[1]; }
 FORWARD(Multiply) { return *args[0] * *args[1]; }
 FORWARD(Divide) { return *args[0] / *args[1]; }
+FORWARD(Dot) { return tensor_ops::dot(*args[0], *args[1]); }
 
 #undef FORWARD
 
@@ -139,6 +160,10 @@ BACKWARD(Add) { ADD(0, yg); ADD(1, yg); }
 BACKWARD(Subtract) { ADD(0, yg); ADD(1, -yg); }
 BACKWARD(Multiply) { ADD(0, *x[1] * yg); ADD(1, *x[0] * yg); }
 BACKWARD(Divide) { Tensor a = yg / *x[1]; ADD(0, a); ADD(1, -a * y); }
+BACKWARD(Dot) {
+  ADD(0, tensor_ops::dot(yg, tensor_ops::transpose(*x[1])));
+  ADD(1, tensor_ops::dot(tensor_ops::transpose(*x[0]), yg));
+}
 
 #undef BACKWARD
 #undef ADD

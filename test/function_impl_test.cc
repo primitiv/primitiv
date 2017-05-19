@@ -283,5 +283,19 @@ TEST_F(FunctionImplTest_2Args, CheckDivide) {
   TEST_2ARGS(Divide);
 }
 
+TEST_F(FunctionImplTest_2Args, CheckDot) {
+  // y = a . b
+  // dy/da = b^T
+  // dy/db = a^T
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {4, 6, 4, 6, 0, 0, 0, 0, -12, -18, -12, -18};
+  const vector<vector<float>> bw_grads {
+    vector<float> {2, 2, 2, 2, 4, 4, 4, 4, 6, 6, 6, 6},
+    vector<float> {3, 7, 3, 7, 0, 0, 0, 0, -3, -7, -3, -7},
+  };
+  const Dot node;
+  TEST_2ARGS(Dot);
+}
+
 }  // namespace functions
 }  // namespace primitiv

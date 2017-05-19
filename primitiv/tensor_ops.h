@@ -161,6 +161,15 @@ inline Tensor dot(const Tensor &a, const Tensor &b) {
   return a.device()->dot(a, b);
 }
 
+/**
+ * Calculates the tanh function.
+ * @param x A tensor.
+ * @return `tanh(x)`
+ */
+inline Tensor tanh(const Tensor &x) {
+  return x.device()->tanh(x);
+}
+
 }  // namespace tensor_ops
 }  // namespace primitiv
 

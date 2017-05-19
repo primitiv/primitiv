@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <cmath>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -476,6 +477,17 @@ Tensor CPUDevice::dot(const Tensor &a, const Tensor &b) {
   ss << "Attempted to calculate the dot product of tensors with shapes "
      << a.shape().to_string() << " and " << b.shape().to_string() << '.';
   throw std::runtime_error(ss.str());
+}
+
+Tensor CPUDevice::tanh(const Tensor &x) {
+  CHECK_DEVICE(x);
+
+  Tensor ret(x.shape(), this);
+  float *dest = DATA(ret);
+  const float *src = CDATA(x);
+  const unsigned size = x.shape().size();
+  REPEAT_OP(i, size, dest[i] = std::tanh(src[i]));
+  return ret;
 }
 
 void CPUDevice::add_gradient(Tensor &a, const Tensor &b) {

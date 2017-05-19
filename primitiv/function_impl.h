@@ -72,6 +72,7 @@ DECL_FUNC(Subtract);
 DECL_FUNC(Multiply);
 DECL_FUNC(Divide);
 DECL_FUNC(Transpose);
+DECL_FUNC(Dot);
 
 DECL_FUNC_K(AddConst);
 DECL_FUNC_K(SubtractConstL);
