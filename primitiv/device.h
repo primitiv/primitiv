@@ -172,6 +172,14 @@ public:
   virtual Tensor divide(const Tensor &a, const Tensor &b) = 0;
 
   /**
+   * Calculates the transposed matrix.
+   * @param x A tensor.
+   * @return `x^T`
+   * @remarks Number of dimensions of `x` should be 1 or 2.
+   */
+  virtual Tensor transpose(const Tensor &x) = 0;
+
+  /**
    * Directly adds the second tensor to the first tensor.
    * @param a A tensor to be udpated.
    * @param b A source tensor.

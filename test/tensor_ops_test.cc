@@ -11,6 +11,7 @@
 using std::vector;
 
 namespace primitiv {
+namespace tensor_ops {
 
 class TensorOpsTest : public testing::Test {
 protected:
@@ -208,4 +209,40 @@ TEST_F(TensorOpsTest, CheckInvalidArithmeticOps) {
   }
 }
 
+TEST_F(TensorOpsTest, CheckTranspose) {
+  {
+    const vector<float> x_data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    const vector<float> y_data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    const Tensor x(Shape({12}), &dev, x_data);
+    const Tensor y = transpose(x);
+    EXPECT_EQ(Shape({1, 12}), y.shape());
+    EXPECT_TRUE(test_utils::vector_match(y_data, y.to_vector()));
+  }
+  {
+    const vector<float> x_data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    const vector<float> y_data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    const Tensor x(Shape({1, 3}, 4), &dev, x_data);
+    const Tensor y = transpose(x);
+    EXPECT_EQ(Shape({3}, 4), y.shape());
+    EXPECT_TRUE(test_utils::vector_match(y_data, y.to_vector()));
+  }
+  {
+    const vector<float> x_data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    const vector<float> y_data = {1, 3, 2, 4, 5, 7, 6, 8, 9, 11, 10, 12};
+    const Tensor x(Shape({2, 2}, 3), &dev, x_data);
+    const Tensor y = transpose(x);
+    EXPECT_EQ(Shape({2, 2}, 3), y.shape());
+    EXPECT_TRUE(test_utils::vector_match(y_data, y.to_vector()));
+  }
+  {
+    const vector<float> x_data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    const vector<float> y_data = {1, 3, 5, 2, 4, 6, 7, 9, 11, 8, 10, 12};
+    const Tensor x(Shape({2, 3}, 2), &dev, x_data);
+    const Tensor y = transpose(x);
+    EXPECT_EQ(Shape({3, 2}, 2), y.shape());
+    EXPECT_TRUE(test_utils::vector_match(y_data, y.to_vector()));
+  }
+}
+
+}  // namespace tensor_ops
 }  // namespace primitiv

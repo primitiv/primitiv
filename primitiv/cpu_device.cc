@@ -358,6 +358,43 @@ Tensor CPUDevice::divide(const Tensor &a, const Tensor &b) {
   throw std::runtime_error(ss.str());
 }
 
+Tensor CPUDevice::transpose(const Tensor &x) {
+  CHECK_DEVICE(x);
+  const Shape &s = x.shape();
+  if (s.dims().size() > 2) {
+    std::stringstream ss;
+    ss << "Attempted to transpose a tensor with shape "
+       << x.shape().to_string() << '.';
+    throw std::runtime_error(ss.str());
+  }
+
+  const unsigned d1 = s.dim(0);
+  const unsigned d2 = s.dim(1);
+  const unsigned ms = d1 * d2;
+  const unsigned bs = s.batch_size();
+  Tensor ret(Shape({d2, d1}, bs), this);
+  float *dest = DATA(ret);
+  const float *src = CDATA(x);
+
+  for (unsigned k = 0; k < bs; ++k) {
+    float *pd = dest;
+    const float *ps = src;
+    for (unsigned j = 0; j < d2; ++j) {
+      float *ppd = pd;
+      for (unsigned i = 0; i < d1; ++i) {
+        *ppd = ps[i];
+        ppd += d2;
+      }
+      ++pd;
+      ps += d1;
+    }
+    dest += ms;
+    src += ms;
+  }
+
+  return ret;
+}
+
 void CPUDevice::add_gradient(Tensor &a, const Tensor &b) {
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);

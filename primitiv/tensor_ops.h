@@ -136,6 +136,19 @@ inline Tensor operator/(const Tensor &a, const Tensor &b) {
   return a.device()->divide(a, b);
 }
 
+namespace tensor_ops {
+
+/**
+ * Calculates the transposed matrix.
+ * @param x A tensor.
+ * @return `x^T`
+ * @remarks Number of dimensions of `x` should be 1 or 2.
+ */
+inline Tensor transpose(const Tensor &x) {
+  return x.device()->transpose(x);
+}
+
+}  // namespace tensor_ops
 }  // namespace primitiv
 
 #endif  // PRIMITIV_TENSOR_OPS_H_

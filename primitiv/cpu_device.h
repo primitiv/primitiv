@@ -43,6 +43,8 @@ public:
   Tensor divide(const float k, const Tensor &x) override;
   Tensor divide(const Tensor &a, const Tensor &b) override;
 
+  Tensor transpose(const Tensor &x) override;
+
   void add_gradient(Tensor &a, const Tensor &b) override;
 
 private:
