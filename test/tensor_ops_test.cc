@@ -244,5 +244,10 @@ TEST_F(TensorOpsTest, CheckTranspose) {
   }
 }
 
+TEST_F(TensorOpsTest, CheckInvalidTranspose) {
+  const Tensor x(Shape({2, 3, 4}), &dev);
+  EXPECT_THROW(transpose(x), std::runtime_error);
+}
+
 }  // namespace tensor_ops
 }  // namespace primitiv

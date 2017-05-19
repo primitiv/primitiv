@@ -19,20 +19,6 @@ protected:
   vector<Tensor *> arg_grads;
 };
 
-TEST_F(FunctionImplTest_0Arg, CheckInput) {
-  const Shape ret_shape({2, 2}, 3);
-  const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4};
-  const Input node(ret_shape, &dev, ret_data);
-  const Shape cur_shape = node.forward_shape(arg_shapes);
-  const Tensor cur_value = node.forward(arg_values);
-  const Tensor cur_grad = dev.constant(ret_shape, 1);
-  // backward() has no effect.
-  EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
-  EXPECT_EQ("Input", node.name());
-  EXPECT_EQ(ret_shape, cur_shape);
-  EXPECT_TRUE(test_utils::vector_match(ret_data, cur_value.to_vector()));
-}
-
 class FunctionImplTest_1Arg : public testing::Test {
 protected:
   virtual void SetUp() override {
@@ -79,82 +65,6 @@ protected:
   vector<Tensor *> arg_grads;
 };
 
-#define TEST_ALL(name_) { \
-  const Shape cur_shape = node.forward_shape(arg_shapes); \
-  const Tensor cur_value = node.forward(arg_values); \
-  const Tensor cur_grad = dev.constant(ret_shape, 1); \
-  node.backward(cur_value, cur_grad, arg_values, arg_grads); \
-  EXPECT_EQ(#name_, node.name()); \
-  EXPECT_EQ(ret_shape, cur_shape); \
-  EXPECT_TRUE(test_utils::vector_match(ret_data, cur_value.to_vector())); \
-  EXPECT_TRUE(test_utils::vector_match(bw_grad, arg_grads[0]->to_vector())); \
-}
-
-TEST_F(FunctionImplTest_1Arg, CheckAddConst) {
-  // y = x + k
-  // dy/dx = 1
-  const Shape ret_shape({2, 2}, 3);
-  const vector<float> ret_data {4, 5, 6, 7, 3, 3, 3, 3, 2, 1, 0, -1};
-  const vector<float> bw_grad(arg_shapes[0]->size(), 1);
-  const AddConst node(3);
-  TEST_ALL(AddConst);
-}
-
-TEST_F(FunctionImplTest_1Arg, CheckSubtractConstL) {
-  // y = k - x
-  // dy/dx = -1
-  const Shape ret_shape({2, 2}, 3);
-  const vector<float> ret_data {2, 1, 0, -1, 3, 3, 3, 3, 4, 5, 6, 7};
-  const vector<float> bw_grad(arg_shapes[0]->size(), -1);
-  const SubtractConstL node(3);
-  TEST_ALL(SubtractConstL);
-}
-
-TEST_F(FunctionImplTest_1Arg, CheckSubtractConstR) {
-  // y = x - k
-  // dy/dx = 1
-  const Shape ret_shape({2, 2}, 3);
-  const vector<float> ret_data {-2, -1, 0, 1, -3, -3, -3, -3, -4, -5, -6, -7};
-  const vector<float> bw_grad(arg_shapes[0]->size(), 1);
-  const SubtractConstR node(3);
-  TEST_ALL(SubtractConstR);
-}
-
-TEST_F(FunctionImplTest_1Arg, CheckMultiplyConst) {
-  // y = kx
-  // dy/dx = k
-  const Shape ret_shape({2, 2}, 3);
-  const vector<float> ret_data {3, 6, 9, 12, 0, 0, 0, 0, -3, -6, -9, -12};
-  const vector<float> bw_grad(arg_shapes[0]->size(), 3);
-  const MultiplyConst node(3);
-  TEST_ALL(MultiplyConst);
-}
-
-TEST_F(FunctionImplTest_1Arg_NonZero, CheckDivideConstL) {
-  // y = k/x
-  // dy/dx = -k/(x^2)
-  const Shape ret_shape({2, 2}, 3);
-  const vector<float> ret_data {
-    3, 1.5, 1, .75, 3, -3, 3, -3, -3, -1.5, -1, -.75};
-  const vector<float> bw_grad {
-    -3, -.75, -1./3, -.1875, -3, -3, -3, -3, -3, -.75, -1./3, -.1875};
-  const DivideConstL node(3);
-  TEST_ALL(DivideConstL);
-}
-
-TEST_F(FunctionImplTest_1Arg, CheckDivideConstR) {
-  // y = x/k
-  // dy/dx = 1/k
-  const Shape ret_shape({2, 2}, 3);
-  const vector<float> ret_data {
-    1./3, 2./3, 1, 4./3, 0, 0, 0, 0, -1./3, -2./3, -1, -4./3};
-  const vector<float> bw_grad(arg_shapes[0]->size(), 1./3);
-  const DivideConstR node(3);
-  TEST_ALL(DivideConstR);
-}
-
-#undef TEST_ALL
-
 class FunctionImplTest_2Args : public testing::Test {
 protected:
   virtual void SetUp() override {
@@ -184,7 +94,18 @@ protected:
   vector<Tensor *> arg_grads;
 };
 
-#define TEST_ALL(name_) { \
+#define TEST_1ARG(name_) { \
+  const Shape cur_shape = node.forward_shape(arg_shapes); \
+  const Tensor cur_value = node.forward(arg_values); \
+  const Tensor cur_grad = dev.constant(ret_shape, 1); \
+  node.backward(cur_value, cur_grad, arg_values, arg_grads); \
+  EXPECT_EQ(#name_, node.name()); \
+  EXPECT_EQ(ret_shape, cur_shape); \
+  EXPECT_TRUE(test_utils::vector_match(ret_data, cur_value.to_vector())); \
+  EXPECT_TRUE(test_utils::vector_match(bw_grad, arg_grads[0]->to_vector())); \
+}
+
+#define TEST_2ARGS(name_) { \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
   const Tensor cur_grad = dev.constant(ret_shape, 1); \
@@ -198,6 +119,113 @@ protected:
       test_utils::vector_match(bw_grads[1], arg_grads[1]->to_vector())); \
 }
 
+TEST_F(FunctionImplTest_0Arg, CheckInput) {
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4};
+  const Input node(ret_shape, &dev, ret_data);
+  const Shape cur_shape = node.forward_shape(arg_shapes);
+  const Tensor cur_value = node.forward(arg_values);
+  const Tensor cur_grad = dev.constant(ret_shape, 1);
+  // backward() has no effect.
+  EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
+  EXPECT_EQ("Input", node.name());
+  EXPECT_EQ(ret_shape, cur_shape);
+  EXPECT_TRUE(test_utils::vector_match(ret_data, cur_value.to_vector()));
+}
+
+TEST_F(FunctionImplTest_1Arg, CheckPositive) {
+  // y = x
+  // dy/dx = 1
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4};
+  const vector<float> bw_grad(arg_shapes[0]->size(), 1);
+  const Positive node;
+  TEST_1ARG(Positive);
+}
+
+TEST_F(FunctionImplTest_1Arg, CheckNegative) {
+  // y = -x
+  // dy/dx = -1
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {-1, -2, -3, -4, 0, 0, 0, 0, 1, 2, 3, 4};
+  const vector<float> bw_grad(arg_shapes[0]->size(), -1);
+  const Negative node;
+  TEST_1ARG(Negative);
+}
+
+TEST_F(FunctionImplTest_1Arg, CheckAddConst) {
+  // y = x + k
+  // dy/dx = 1
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {4, 5, 6, 7, 3, 3, 3, 3, 2, 1, 0, -1};
+  const vector<float> bw_grad(arg_shapes[0]->size(), 1);
+  const AddConst node(3);
+  TEST_1ARG(AddConst);
+}
+
+TEST_F(FunctionImplTest_1Arg, CheckSubtractConstL) {
+  // y = k - x
+  // dy/dx = -1
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {2, 1, 0, -1, 3, 3, 3, 3, 4, 5, 6, 7};
+  const vector<float> bw_grad(arg_shapes[0]->size(), -1);
+  const SubtractConstL node(3);
+  TEST_1ARG(SubtractConstL);
+}
+
+TEST_F(FunctionImplTest_1Arg, CheckSubtractConstR) {
+  // y = x - k
+  // dy/dx = 1
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {-2, -1, 0, 1, -3, -3, -3, -3, -4, -5, -6, -7};
+  const vector<float> bw_grad(arg_shapes[0]->size(), 1);
+  const SubtractConstR node(3);
+  TEST_1ARG(SubtractConstR);
+}
+
+TEST_F(FunctionImplTest_1Arg, CheckMultiplyConst) {
+  // y = kx
+  // dy/dx = k
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {3, 6, 9, 12, 0, 0, 0, 0, -3, -6, -9, -12};
+  const vector<float> bw_grad(arg_shapes[0]->size(), 3);
+  const MultiplyConst node(3);
+  TEST_1ARG(MultiplyConst);
+}
+
+TEST_F(FunctionImplTest_1Arg_NonZero, CheckDivideConstL) {
+  // y = k/x
+  // dy/dx = -k/(x^2)
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    3, 1.5, 1, .75, 3, -3, 3, -3, -3, -1.5, -1, -.75};
+  const vector<float> bw_grad {
+    -3, -.75, -1./3, -.1875, -3, -3, -3, -3, -3, -.75, -1./3, -.1875};
+  const DivideConstL node(3);
+  TEST_1ARG(DivideConstL);
+}
+
+TEST_F(FunctionImplTest_1Arg, CheckDivideConstR) {
+  // y = x/k
+  // dy/dx = 1/k
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    1./3, 2./3, 1, 4./3, 0, 0, 0, 0, -1./3, -2./3, -1, -4./3};
+  const vector<float> bw_grad(arg_shapes[0]->size(), 1./3);
+  const DivideConstR node(3);
+  TEST_1ARG(DivideConstR);
+}
+
+TEST_F(FunctionImplTest_1Arg, CheckTranspose) {
+  // y = x^T
+  // dy/dx = 1^T
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {1, 3, 2, 4, 0, 0, 0, 0, -1, -3, -2, -4};
+  const vector<float> bw_grad(arg_shapes[0]->size(), 1);
+  const Transpose node;
+  TEST_1ARG(Transpose);
+}
+
 TEST_F(FunctionImplTest_2Args, CheckAdd) {
   // y = a + b
   // dy/da = 1
@@ -209,7 +237,7 @@ TEST_F(FunctionImplTest_2Args, CheckAdd) {
     vector<float>(arg_shapes[1]->size(), 1),
   };
   const Add node;
-  TEST_ALL(Add);
+  TEST_2ARGS(Add);
 }
 
 TEST_F(FunctionImplTest_2Args, CheckSubtract) {
@@ -223,7 +251,7 @@ TEST_F(FunctionImplTest_2Args, CheckSubtract) {
     vector<float>(arg_shapes[1]->size(), -1),
   };
   const Subtract node;
-  TEST_ALL(Subtract);
+  TEST_2ARGS(Subtract);
 }
 
 TEST_F(FunctionImplTest_2Args, CheckMultiply) {
@@ -237,7 +265,7 @@ TEST_F(FunctionImplTest_2Args, CheckMultiply) {
     vector<float> {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4},
   };
   const Multiply node;
-  TEST_ALL(Multiply);
+  TEST_2ARGS(Multiply);
 }
 
 TEST_F(FunctionImplTest_2Args, CheckDivide) {
@@ -252,10 +280,8 @@ TEST_F(FunctionImplTest_2Args, CheckDivide) {
     vector<float> {-1, -2, -3, -4, 0, 0, 0, 0, 1./9, 2./9, 1./3, 4./9},
   };
   const Divide node;
-  TEST_ALL(Divide);
+  TEST_2ARGS(Divide);
 }
-
-#undef TEST_ALL
 
 }  // namespace functions
 }  // namespace primitiv

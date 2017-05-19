@@ -31,8 +31,8 @@ private:
   std::vector<float> data_;
 };
 
-// Arithmetic functions between two tensors.
-#define DECL_ARITHMETIC_TT(name_) \
+// Function with no parameter.
+#define DECL_FUNC(name_) \
   class name_ : public Function { \
   public: \
     Shape forward_shape( \
@@ -45,14 +45,9 @@ private:
       const std::vector<Tensor *> &arg_grads) const override; \
     inline std::string name() const override { return #name_; } \
   }
-DECL_ARITHMETIC_TT(Add);
-DECL_ARITHMETIC_TT(Subtract);
-DECL_ARITHMETIC_TT(Multiply);
-DECL_ARITHMETIC_TT(Divide);
-#undef DECL_ARITHMETIC_TT
 
-// Arithmetic functions between a tensor and a constant.
-#define DECL_ARITHMETIC_TC(name_) \
+// Function with a constant.
+#define DECL_FUNC_K(name_) \
   class name_ : public Function { \
     name_() = delete; \
   public: \
@@ -69,13 +64,24 @@ DECL_ARITHMETIC_TT(Divide);
   private: \
     float k_; \
   }
-DECL_ARITHMETIC_TC(AddConst);
-DECL_ARITHMETIC_TC(SubtractConstL);
-DECL_ARITHMETIC_TC(SubtractConstR);
-DECL_ARITHMETIC_TC(MultiplyConst);
-DECL_ARITHMETIC_TC(DivideConstL);
-DECL_ARITHMETIC_TC(DivideConstR);
-#undef DECL_ARITHMETIC_TC
+
+DECL_FUNC(Positive);
+DECL_FUNC(Negative);
+DECL_FUNC(Add);
+DECL_FUNC(Subtract);
+DECL_FUNC(Multiply);
+DECL_FUNC(Divide);
+DECL_FUNC(Transpose);
+
+DECL_FUNC_K(AddConst);
+DECL_FUNC_K(SubtractConstL);
+DECL_FUNC_K(SubtractConstR);
+DECL_FUNC_K(MultiplyConst);
+DECL_FUNC_K(DivideConstL);
+DECL_FUNC_K(DivideConstR);
+
+#undef DECL_FUNC
+#undef DECL_FUNC_K
 
 }  // namespace functions
 }  // namespace primitiv
