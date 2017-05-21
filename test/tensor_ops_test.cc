@@ -352,6 +352,21 @@ TEST_F(TensorOpsTest, CheckInvalidDot) {
   }
 }
 
+TEST_F(TensorOpsTest, CheckExp) {
+  const vector<float> x_data {
+    0, .5, 1, 2, 4, 8,
+    0, -.5, -1, -2, -4, -8
+  };
+  const vector<float> y_data {
+    1, 1.6487213, 2.7182818, 7.3890561, 54.598150, 2980.9580,
+    1, .60653066, .36787944, .13533528, .018315639, .00033546263,
+  };
+  const Tensor x(Shape({2, 3}, 2), &dev, x_data);
+  const Tensor y1 = exp(x);
+  EXPECT_EQ(Shape({2, 3}, 2), y1.shape());
+  EXPECT_TRUE(test_utils::vector_match(y_data, y1.to_vector()));
+}
+
 TEST_F(TensorOpsTest, CheckTanh) {
   const vector<float> x_data {
     0, .5, 1, 2, 4, 8,

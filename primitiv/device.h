@@ -191,6 +191,13 @@ public:
   virtual Tensor dot(const Tensor &a, const Tensor &b) = 0;
 
   /**
+   * Calculates the exp function.
+   * @param x A tensor.
+   * @return `exp(x)`
+   */
+  virtual Tensor exp(const Tensor &x) = 0;
+
+  /**
    * Calculates the tanh function.
    * @param x A tensor.
    * @return `tanh(x)`

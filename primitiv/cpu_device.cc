@@ -479,6 +479,17 @@ Tensor CPUDevice::dot(const Tensor &a, const Tensor &b) {
   throw std::runtime_error(ss.str());
 }
 
+Tensor CPUDevice::exp(const Tensor &x) {
+  CHECK_DEVICE(x);
+
+  Tensor ret(x.shape(), this);
+  float *dest = DATA(ret);
+  const float *src = CDATA(x);
+  const unsigned size = x.shape().size();
+  REPEAT_OP(i, size, dest[i] = std::exp(src[i]));
+  return ret;
+}
+
 Tensor CPUDevice::tanh(const Tensor &x) {
   CHECK_DEVICE(x);
 

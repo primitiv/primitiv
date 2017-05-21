@@ -308,6 +308,20 @@ TEST_F(FunctionImplTest_2Args, CheckDot) {
   TEST_2ARGS(Dot);
 }
 
+TEST_F(FunctionImplTest_1Arg, CheckExp) {
+  // y = exp(x)
+  // dy/dx = y
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    2.7182818, 7.3890561, 20.085537, 54.598150,
+    1, 1, 1, 1,
+    .36787944, .13533528, .049787068, .018315639,
+  };
+  const vector<float> bw_grad = ret_data;
+  const Exp node;
+  TEST_1ARG(Exp);
+}
+
 TEST_F(FunctionImplTest_1Arg, CheckTanh) {
   // y = tanh(x)
   // dy/dx = 1 - y^2

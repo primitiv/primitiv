@@ -162,6 +162,15 @@ inline Tensor dot(const Tensor &a, const Tensor &b) {
 }
 
 /**
+ * Calculates the exp function.
+ * @param x A tensor.
+ * @return `exp(x)`
+ */
+inline Tensor exp(const Tensor &x) {
+  return x.device()->exp(x);
+}
+
+/**
  * Calculates the tanh function.
  * @param x A tensor.
  * @return `tanh(x)`
