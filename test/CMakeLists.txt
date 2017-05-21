@@ -15,6 +15,7 @@ function(primitiv_test name)
   )
 endfunction()
 
+primitiv_test(constant_initializer)
 primitiv_test(cpu_device)
 primitiv_test(function_impl)
 primitiv_test(graph)

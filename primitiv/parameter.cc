@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <primitiv/device.h>
+#include <primitiv/initializer.h>
 #include <primitiv/parameter.h>
 
 namespace primitiv {
@@ -19,7 +20,7 @@ Parameter::Parameter(const Shape &shape, Device *device)
 }
 
 void Parameter::reset_value(const Initializer &init) {
-  throw std::runtime_error("not implemented");
+  value_ = init.generate(shape_, device_);
 }
 
 void Parameter::reset_gradient() {

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <gtest/gtest.h>
+#include <primitiv/constant_initializer.h>
 #include <primitiv/cpu_device.h>
 #include <primitiv/parameter.h>
 #include <test_utils.h>
@@ -30,9 +31,11 @@ TEST_F(ParameterTest, CheckInvalidNew) {
 
 TEST_F(ParameterTest, CheckResetValue) {
   const Shape shape {2, 2};
+  const ConstantInitializer init(0);
+  const vector<float> expected {0, 0, 0, 0};
   Parameter p(shape, &dev);
-  // not implemented
-  FAIL();
+  p.reset_value(init);
+  EXPECT_TRUE(test_utils::vector_match(expected, p.value().to_vector()));
 }
 
 TEST_F(ParameterTest, CheckResetGradient) {
@@ -45,9 +48,16 @@ TEST_F(ParameterTest, CheckResetGradient) {
 
 TEST_F(ParameterTest, CheckAddValue) {
   const Shape shape {2, 2};
+  const ConstantInitializer init(0);
+  const vector<float> diff_values1 {1, 2, 3, 4};
+  const vector<float> diff_values2 {2, 4, 6, 8};
+  const Tensor diff(shape, &dev, diff_values1);
   Parameter p(shape, &dev);
-  // not implemented
-  FAIL();
+  p.reset_value(init);
+  p.add_value(diff);
+  EXPECT_TRUE(test_utils::vector_match(diff_values1, p.value().to_vector()));
+  p.add_value(diff);
+  EXPECT_TRUE(test_utils::vector_match(diff_values2, p.value().to_vector()));
 }
 
 TEST_F(ParameterTest, CheckAddGradient) {

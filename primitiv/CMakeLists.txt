@@ -1,9 +1,11 @@
 set(nmtkit_LIBRARY_HDRS
+  constant_initializer.h
   cpu_device.h
   device.h
   function.h
   function_impl.h
   graph.h
+  initializer.h
   node.h
   parameter.h
   shape.h
@@ -12,6 +14,7 @@ set(nmtkit_LIBRARY_HDRS
 )
 
 set(nmtkit_LIBRARY_SRCS
+  constant_initializer.cc
   cpu_device.cc
   function_impl.cc
   graph.cc
