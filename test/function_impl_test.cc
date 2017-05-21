@@ -105,6 +105,17 @@ protected:
   EXPECT_TRUE(test_utils::vector_match(bw_grad, arg_grads[0]->to_vector())); \
 }
 
+#define TEST_1ARG_NEAR(name_, err) { \
+  const Shape cur_shape = node.forward_shape(arg_shapes); \
+  const Tensor cur_value = node.forward(arg_values); \
+  const Tensor cur_grad = dev.constant(ret_shape, 1); \
+  node.backward(cur_value, cur_grad, arg_values, arg_grads); \
+  EXPECT_EQ(#name_, node.name()); \
+  EXPECT_EQ(ret_shape, cur_shape); \
+  EXPECT_TRUE(test_utils::vector_near(ret_data, cur_value.to_vector(), err)); \
+  EXPECT_TRUE(test_utils::vector_near(bw_grad, arg_grads[0]->to_vector(), err)); \
+}
+
 #define TEST_2ARGS(name_) { \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
@@ -306,15 +317,13 @@ TEST_F(FunctionImplTest_1Arg, CheckTanh) {
     0, 0, 0, 0,
     -.76159416, -.96402758, -.99505475, -.99932930,
   };
-  // NOTE(odashi): The test may fail for now due to the precision of the single
-  //               floating number.
   const vector<float> bw_grad {
     .41997434, .070650825, .0098660372, .0013409507,
     1, 1, 1, 1,
     .41997434, .070650825, .0098660372, .0013409507,
   };
   const Tanh node;
-  TEST_1ARG(Tanh);
+  TEST_1ARG_NEAR(Tanh, 1e-6)
 }
 
 }  // namespace functions
