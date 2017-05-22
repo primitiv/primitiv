@@ -23,6 +23,7 @@ TEST_F(CPUDeviceTest, CheckNewDelete) {
     Tensor x3 = dev.new_tensor(Shape({16, 16, 16}, 16)); // 65536 values
     // According to the C++ standard, local values are destroyed in the order:
     // x3 -> x2 -> x1 -> dev.
+    // Then `dev` has no remaining memories.
   }
   SUCCEED();
 }
@@ -32,9 +33,8 @@ TEST_F(CPUDeviceTest, CheckInvalidNewDelete) {
     Tensor x0;
     CPUDevice dev;
     x0 = dev.new_tensor(Shape());
-    // According to the C++ standard, local values are destroyed in the order:
-    // dev -> x0.
-    // `x0` still have a pointer when destroying `dev` and the process will
+    // Local values are destroyed in the order: dev -> x0.
+    // `x0` still have a memory when destroying `dev` and the process will
     // abort.
   }, "");
 }

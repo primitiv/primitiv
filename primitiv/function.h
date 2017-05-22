@@ -12,7 +12,13 @@ namespace primitiv {
  * Interface of the function on the computation graph.
  */
 class Function {
+  Function(const Function &) = delete;
+  Function(Function &&) = delete;
+  Function &operator=(const Function &) = delete;
+  Function &operator=(Function &&) = delete;
+
 public:
+  Function() = default;
   virtual ~Function() = default;
 
   /**

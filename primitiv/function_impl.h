@@ -15,6 +15,11 @@ namespace functions {
  */
 class Input : public primitiv::Function {
   Input() = delete;
+  Input(const Input &) = delete;
+  Input(Input &&) = delete;
+  Input &operator=(const Input &) = delete;
+  Input &operator=(Input &&) = delete;
+
 public:
   Input(const Shape &shape, Device *device, const std::vector<float> &data);
   Shape forward_shape(const std::vector<const Shape *> &args) const override;
@@ -34,7 +39,12 @@ private:
 // Function with no parameter.
 #define DECL_FUNC(name_) \
   class name_ : public Function { \
+    name_(const name_ &) = delete; \
+    name_(name_ &&) = delete; \
+    name_ &operator=(const name_ &) = delete; \
+    name_ &operator=(name_ &&) = delete; \
   public: \
+    name_() = default; \
     Shape forward_shape( \
         const std::vector<const Shape *> &args) const override; \
     Tensor forward(const std::vector<const Tensor *> &args) const override; \
@@ -50,6 +60,10 @@ private:
 #define DECL_FUNC_K(name_) \
   class name_ : public Function { \
     name_() = delete; \
+    name_(const name_ &) = delete; \
+    name_(name_ &&) = delete; \
+    name_ &operator=(const name_ &) = delete; \
+    name_ &operator=(name_ &&) = delete; \
   public: \
     inline name_(const float k) : k_(k) {} \
     Shape forward_shape( \
