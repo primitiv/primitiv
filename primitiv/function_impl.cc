@@ -4,6 +4,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <primitiv/function_impl.h>
+#include <primitiv/parameter.h>
 #include <primitiv/tensor_ops.h>
 
 using std::vector;
@@ -46,6 +47,22 @@ Tensor Input::forward(const vector<const Tensor *> &args) const {
   Tensor ret = device_->new_tensor(shape_);
   ret.set_values(data_);
   return ret;
+}
+
+Shape ParameterInput::forward_shape(const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 0);
+  return param_.shape();
+}
+
+Tensor ParameterInput::forward(const vector<const Tensor *> &args) const {
+  CHECK_ARGNUM(args, 0);
+  return +param_.value();
+}
+
+void ParameterInput::backward(
+    const Tensor &, const Tensor &cur_grad,
+    const vector<const Tensor *> &, const vector<Tensor *> &) const {
+  param_.add_gradient(cur_grad);
 }
 
 #define FWD_SHAPE_UNARY(clsname) \

@@ -7,6 +7,7 @@
 namespace primitiv {
 
 class Device;
+class Parameter;
 
 namespace functions {
 
@@ -22,6 +23,7 @@ class Input : public primitiv::Function {
 
 public:
   Input(const Shape &shape, Device *device, const std::vector<float> &data);
+  ~Input() override = default;
   Shape forward_shape(const std::vector<const Shape *> &args) const override;
   Tensor forward(const std::vector<const Tensor *> &args) const override;
   inline void backward(
@@ -30,10 +32,37 @@ public:
       const std::vector<const Tensor *> &arg_values,
       const std::vector<Tensor *> &arg_grads) const override {}
   inline std::string name() const override { return "Input"; }
+
 private:
   Shape shape_;
   Device *device_;
   std::vector<float> data_;
+};
+
+/**
+ * Function object to manage parameters.
+ */
+class ParameterInput : public primitiv::Function {
+  ParameterInput() = delete;
+  ParameterInput(const ParameterInput &) = delete;
+  ParameterInput(ParameterInput &) = delete;
+  ParameterInput &operator=(const ParameterInput &) = delete;
+  ParameterInput &operator=(ParameterInput &) = delete;
+
+public:
+  ParameterInput(Parameter &param) :param_(param) {}
+  ~ParameterInput() override = default;
+  Shape forward_shape(const std::vector<const Shape *> &args) const override;
+  Tensor forward(const std::vector<const Tensor *> &args) const override;
+  void backward(
+      const Tensor &cur_value,
+      const Tensor &cur_grad,
+      const std::vector<const Tensor *> &arg_values,
+      const std::vector<Tensor *> &arg_grads) const override;
+  inline std::string name() const override { return "ParameterInput"; }
+
+private:
+  primitiv::Parameter &param_;
 };
 
 // Function with no parameter.
@@ -45,6 +74,7 @@ private:
     name_ &operator=(name_ &&) = delete; \
   public: \
     name_() = default; \
+    ~name_() override = default; \
     Shape forward_shape( \
         const std::vector<const Shape *> &args) const override; \
     Tensor forward(const std::vector<const Tensor *> &args) const override; \
@@ -66,6 +96,7 @@ private:
     name_ &operator=(name_ &&) = delete; \
   public: \
     inline name_(const float k) : k_(k) {} \
+    ~name_() override = default; \
     Shape forward_shape( \
         const std::vector<const Shape *> &args) const override; \
     Tensor forward(const std::vector<const Tensor *> &args) const override; \

@@ -2,8 +2,10 @@
 
 #include <vector>
 #include <gtest/gtest.h>
+#include <primitiv/constant_initializer.h>
 #include <primitiv/cpu_device.h>
 #include <primitiv/function_impl.h>
+#include <primitiv/parameter.h>
 #include <test_utils.h>
 
 using std::vector;
@@ -140,6 +142,28 @@ TEST_F(FunctionImplTest_0Arg, CheckInput) {
   EXPECT_EQ("Input", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
   EXPECT_TRUE(vector_match(ret_data, cur_value.get_values()));
+}
+
+TEST_F(FunctionImplTest_0Arg, CheckParameterInput) {
+  const Shape ret_shape {2, 2};
+  const ConstantInitializer init(42);
+  Parameter param(ret_shape, &dev);
+  param.reset_value(init);
+  param.reset_gradient();
+  ASSERT_TRUE(vector_match(vector<float>(4, 42), param.value().get_values()));
+  ASSERT_TRUE(vector_match(vector<float>(4, 0), param.gradient().get_values()));
+
+  const ParameterInput node(param);
+  const Shape cur_shape = node.forward_shape(arg_shapes);
+  const Tensor cur_value = node.forward(arg_values);
+  const Tensor cur_grad = dev.new_tensor(ret_shape, 1);
+  // backward() updates the gradient of `param`.
+  EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
+  EXPECT_EQ("ParameterInput", node.name());
+  EXPECT_EQ(ret_shape, cur_shape);
+  EXPECT_TRUE(vector_match(vector<float>(4, 42), cur_value.get_values()));
+  EXPECT_TRUE(vector_match(vector<float>(4, 42), param.value().get_values()));
+  EXPECT_TRUE(vector_match(vector<float>(4, 1), param.gradient().get_values()));
 }
 
 TEST_F(FunctionImplTest_1Arg, CheckPositive) {
