@@ -7,6 +7,24 @@
 namespace primitiv {
 
 /**
+ * Duplicates the tensor.
+ * @param x A tensor.
+ * @return A Duplicated tensor.
+ */
+inline Tensor operator+(const Tensor &x) {
+  return x.device()->duplicate(x);
+}
+
+/**
+ * Inverts the sign of all elements in the tensor.
+ * @param x A tensor.
+ * @return `-x`
+ */
+inline Tensor operator-(const Tensor &x) {
+  return x.device()->negate(x);
+}
+
+/**
  * Adds a constant to each element in the tensor.
  * @param x Tensor.
  * @param k Constant to add.

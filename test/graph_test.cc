@@ -9,6 +9,7 @@
 #include <test_utils.h>
 
 using std::vector;
+using test_utils::vector_match;
 
 namespace primitiv {
 
@@ -66,7 +67,7 @@ TEST_F(GraphTest, CheckForwardBackward) {
     const Tensor &val2 = g.get_value(nodes[i]);
     EXPECT_EQ(&val1, &val2);
     EXPECT_TRUE(val1.valid());
-    EXPECT_TRUE(test_utils::vector_match(expected_values[i], val1.to_vector()));
+    EXPECT_TRUE(vector_match(expected_values[i], val1.get_values()));
   }
 
   // Check all node gradients are still invalid.
@@ -89,7 +90,7 @@ TEST_F(GraphTest, CheckForwardBackward) {
   for (unsigned i = 0; i < nodes.size(); ++i) {
     const Tensor &val = g.get_gradient(nodes[i]);
     EXPECT_TRUE(val.valid());
-    EXPECT_TRUE(test_utils::vector_match(expected_grads[i], val.to_vector()));
+    EXPECT_TRUE(vector_match(expected_grads[i], val.get_values()));
   }
 }
 

@@ -23,7 +23,7 @@ public:
   ConstantInitializer(const float k) : k_(k) {}
   ~ConstantInitializer() override = default;
 
-  Tensor generate(const Shape &shape, Device *device) const override;
+  void apply(Tensor &x) const override;
 
 private:
   float k_;

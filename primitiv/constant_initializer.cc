@@ -1,13 +1,12 @@
 #include <config.h>
 
 #include <primitiv/constant_initializer.h>
-#include <primitiv/device.h>
-#include <primitiv/shape.h>
+#include <primitiv/tensor.h>
 
 namespace primitiv {
 
-Tensor ConstantInitializer::generate(const Shape &shape, Device *device) const {
-  return device->constant(shape, k_);
+void ConstantInitializer::apply(Tensor &x) const {
+  x.set_values(k_);
 }
 
 }  // namespace primitiv

@@ -7,7 +7,7 @@
 namespace primitiv {
 
 /**
- * Interface of the allocator/calculator on a specific device.
+ * Interface of the Tensor provider.
  */
 class Device {
   Device(const Device &) = delete;
@@ -20,51 +20,61 @@ public:
   virtual ~Device() = default;
 
   /**
-   * Allocates a new memory block on the device.
-   * @param size size of the memory.
-   * @return Pointer-like handle of the new memory.
-   */
-  virtual void *allocate(const unsigned size) = 0;
-
-  /**
-   * Unallocate an existing memory block.
-   * @param ptr Handle of an existing memory.
-   * @remarks Users should dispose all handles before exitting the program.
-   *          And users should use the same Device object used for `allocate()`.
-   *          Otherwise the Device object will abort the program.
-   */
-  virtual void free(void *ptr) = 0;
-
-  /**
-   * Copies memories from host to device.
-   * @param dest Handle of the device memory.
-   * @param src Pointer of the host memory.
-   * @param size Size to copy.
-   */
-  virtual void copy_to_device(
-      void *dest, const void *src, const unsigned size) = 0;
-
-  /**
-   * Copies memories from device to host.
-   * @param dest Pointer of the host memory.
-   * @param src Handle of the device memory.
-   * @param size Size to copy.
-   */
-  virtual void copy_to_host(
-      void *src, const void *dest, const unsigned size) = 0;
-
-  /**
-   * Returns the number of allocated memory blocks.
-   * @return Number of memory blocks.
-   */
-  virtual unsigned num_blocks() const = 0;
-
-  /**
-   * Returns a tensor in which all elements have the same value.
+   * Provides a new Tensor object on the device.
    * @param shape Shape of the tensor.
-   * @param k The constant.
+   * @return A new Tensor object.
    */
-  virtual Tensor constant(const Shape &shape, const float k) = 0;
+  virtual Tensor new_tensor(const Shape &shape) = 0;
+
+  /**
+   * Provides a new Tensor object with same-value elements.
+   * @param shape Shape of the tensor.
+   * @param k Constant to initialize elements.
+   * @return A new Tensor object.
+   */
+  virtual Tensor new_tensor(const Shape &shape, const float k) = 0;
+
+  /**
+   * Provides a new Tensor object with specific values.
+   * @param shape Shape of the tensor.
+   * @param values List of internal values.
+   * @return A new Tensor object.
+   */
+  virtual Tensor new_tensor(
+      const Shape &shape, const std::vector<float> &values) = 0;
+
+  /**
+   * Deallocates the memory of the tensor.
+   * @param x Tensor object to be deallocated.
+   * @remarks This method should not be used directly by users.
+   */
+  virtual void delete_tensor(Tensor &x) = 0;
+
+  /**
+   * Retrieves internal values of the tensor as a vector.
+   * @param x A tensor.
+   * @return A list of the internal values.
+   * @remarks Each resulting values are ordered by the column-major order, and
+   *          the batch size is assumed as the last dimension of the tensor.
+   */
+  virtual std::vector<float> get_values(const Tensor &x) = 0;
+
+  /**
+   * Reset internal values of the tensor using a constant.
+   * @param x A tensor to be updated.
+   * @param k A value used to initialize each element.
+   */
+  virtual void set_values(Tensor &x, const float k) = 0;
+
+  /**
+   * Reset internal values of the tensor using specific values.
+   * @param x A tensor to be updated.
+   * @param values List of each element.
+   * @remarks `values.size()` should be same as `x.shape().size()`. Each element
+   *          is ordered by the column-major order, and the batch size is
+   *          assumed as the last dimension of the tensor.
+   */
+  virtual void set_values(Tensor &x, const std::vector<float> &values) = 0;
 
   /**
    * Duplicates the tensor.

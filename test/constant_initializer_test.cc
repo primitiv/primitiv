@@ -21,7 +21,9 @@ TEST_F(ConstantInitializerTest, CheckGenerate) {
   for (const float k : {1, 10, 100, 1000, 10000}) {
     const vector<float> expected(shape.size(), k);
     const ConstantInitializer init(k);
-    EXPECT_EQ(expected, init.generate(shape, &dev).to_vector());
+    Tensor x = dev.new_tensor(shape);
+    init.apply(x);
+    EXPECT_EQ(expected, x.get_values());
   }
 }
 

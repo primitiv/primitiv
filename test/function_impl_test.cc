@@ -7,6 +7,8 @@
 #include <test_utils.h>
 
 using std::vector;
+using test_utils::vector_match;
+using test_utils::vector_near;
 
 namespace primitiv {
 namespace functions {
@@ -23,11 +25,10 @@ class FunctionImplTest_1Arg : public testing::Test {
 protected:
   virtual void SetUp() override {
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
-    arg_values.emplace_back(new Tensor(
-        *arg_shapes[0], &dev,
-        vector<float> {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4}));
-    arg_grads.emplace_back(new Tensor(
-        *arg_shapes[0], &dev, vector<float>(arg_shapes[0]->size())));
+    arg_values.emplace_back(new Tensor(dev.new_tensor(
+        *arg_shapes[0], {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4})));
+    arg_grads.emplace_back(new Tensor(dev.new_tensor(
+        *arg_shapes[0], vector<float>(arg_shapes[0]->size()))));
   }
 
   virtual void TearDown() override {
@@ -46,11 +47,10 @@ class FunctionImplTest_1Arg_NonZero : public testing::Test {
 protected:
   virtual void SetUp() override {
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
-    arg_values.emplace_back(new Tensor(
-        *arg_shapes[0], &dev,
-        vector<float> {1, 2, 3, 4, 1, -1, 1, -1, -1, -2, -3, -4}));
-    arg_grads.emplace_back(new Tensor(
-        *arg_shapes[0], &dev, vector<float>(arg_shapes[0]->size())));
+    arg_values.emplace_back(new Tensor(dev.new_tensor(
+        *arg_shapes[0], {1, 2, 3, 4, 1, -1, 1, -1, -1, -2, -3, -4})));
+    arg_grads.emplace_back(new Tensor(dev.new_tensor(
+        *arg_shapes[0], vector<float>(arg_shapes[0]->size()))));
   }
 
   virtual void TearDown() override {
@@ -70,16 +70,14 @@ protected:
   virtual void SetUp() override {
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
-    arg_values.emplace_back(new Tensor(
-        *arg_shapes[0], &dev,
-        vector<float> {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4}));
-    arg_values.emplace_back(new Tensor(
-        *arg_shapes[1], &dev,
-        vector<float> {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}));
-    arg_grads.emplace_back(new Tensor(
-        *arg_shapes[0], &dev, vector<float>(arg_shapes[0]->size())));
-    arg_grads.emplace_back(new Tensor(
-        *arg_shapes[1], &dev, vector<float>(arg_shapes[1]->size())));
+    arg_values.emplace_back(new Tensor(dev.new_tensor(
+        *arg_shapes[0], {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4})));
+    arg_values.emplace_back(new Tensor(dev.new_tensor(
+        *arg_shapes[1], {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3})));
+    arg_grads.emplace_back(new Tensor(dev.new_tensor(
+        *arg_shapes[0], vector<float>(arg_shapes[0]->size()))));
+    arg_grads.emplace_back(new Tensor(dev.new_tensor(
+        *arg_shapes[1], vector<float>(arg_shapes[1]->size()))));
   }
 
   virtual void TearDown() override {
@@ -97,37 +95,37 @@ protected:
 #define TEST_1ARG(name_) { \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
-  const Tensor cur_grad = dev.constant(ret_shape, 1); \
+  const Tensor cur_grad = dev.new_tensor(ret_shape, 1); \
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ(#name_, node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
-  EXPECT_TRUE(test_utils::vector_match(ret_data, cur_value.to_vector())); \
-  EXPECT_TRUE(test_utils::vector_match(bw_grad, arg_grads[0]->to_vector())); \
+  EXPECT_TRUE(vector_match(ret_data, cur_value.get_values())); \
+  EXPECT_TRUE(vector_match(bw_grad, arg_grads[0]->get_values())); \
 }
 
 #define TEST_1ARG_NEAR(name_, err) { \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
-  const Tensor cur_grad = dev.constant(ret_shape, 1); \
+  const Tensor cur_grad = dev.new_tensor(ret_shape, 1); \
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ(#name_, node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
-  EXPECT_TRUE(test_utils::vector_near(ret_data, cur_value.to_vector(), err)); \
-  EXPECT_TRUE(test_utils::vector_near(bw_grad, arg_grads[0]->to_vector(), err)); \
+  EXPECT_TRUE(vector_near(ret_data, cur_value.get_values(), err)); \
+  EXPECT_TRUE(vector_near(bw_grad, arg_grads[0]->get_values(), err)); \
 }
 
 #define TEST_2ARGS(name_) { \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
-  const Tensor cur_grad = dev.constant(ret_shape, 1); \
+  const Tensor cur_grad = dev.new_tensor(ret_shape, 1); \
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ(#name_, node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
-  EXPECT_TRUE(test_utils::vector_match(ret_data, cur_value.to_vector())); \
+  EXPECT_TRUE(vector_match(ret_data, cur_value.get_values())); \
   EXPECT_TRUE( \
-      test_utils::vector_match(bw_grads[0], arg_grads[0]->to_vector())); \
+      vector_match(bw_grads[0], arg_grads[0]->get_values())); \
   EXPECT_TRUE( \
-      test_utils::vector_match(bw_grads[1], arg_grads[1]->to_vector())); \
+      vector_match(bw_grads[1], arg_grads[1]->get_values())); \
 }
 
 TEST_F(FunctionImplTest_0Arg, CheckInput) {
@@ -136,12 +134,12 @@ TEST_F(FunctionImplTest_0Arg, CheckInput) {
   const Input node(ret_shape, &dev, ret_data);
   const Shape cur_shape = node.forward_shape(arg_shapes);
   const Tensor cur_value = node.forward(arg_values);
-  const Tensor cur_grad = dev.constant(ret_shape, 1);
+  const Tensor cur_grad = dev.new_tensor(ret_shape, 1);
   // backward() has no effect.
   EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
   EXPECT_EQ("Input", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
-  EXPECT_TRUE(test_utils::vector_match(ret_data, cur_value.to_vector()));
+  EXPECT_TRUE(vector_match(ret_data, cur_value.get_values()));
 }
 
 TEST_F(FunctionImplTest_1Arg, CheckPositive) {

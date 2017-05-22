@@ -12,10 +12,11 @@ class Device;
  * Value with any dimensions.
  */
 class Tensor {
-public:
   Tensor(const Tensor &) = delete;
-  Tensor(Tensor &&);
   Tensor &operator=(const Tensor &) = delete;
+
+public:
+  Tensor(Tensor &&);
   Tensor &operator=(Tensor &&);
   ~Tensor();
 
@@ -28,48 +29,58 @@ public:
    * Creates a new uninitialized Tensor.
    * @param shape Shape of the new Tensor.
    * @param device Device object to manage the internal memory.
+   * @param data Pointer of the device-specific object.
+   * @remarks This constructor should not be used directly by users.
    */
-  Tensor(const Shape &shape, Device *device);
-
-  /**
-   * Creates a new Tensor with specific values.
-   * @param shape Shape of the new Tensor.
-   * @param device Device object to manage the internal memory.
-   * @param data List of values to be set to each element.
-   *             Each values should be arranged by the column-major order, and
-   *             the batch size is assumed as the last dimension.
-   */
-  Tensor(const Shape &shape, Device *device, const std::vector<float> &data);
+  inline Tensor(const Shape &shape, Device *device, void *data)
+    : shape_(shape), device_(device), data_(data) {}
 
   /**
    * Returns the shape of the Tensor.
    * @return Shape of the Tensor.
    */
-  const Shape &shape() const { return shape_; }
+  inline const Shape &shape() const { return shape_; }
 
   /**
    * Returns the Device object related to the internal memory.
    * @return Device object.
    */
-  Device *device() const { return device_; }
+  inline Device *device() const { return device_; }
 
   /**
    * Returns the raw pointer of the internal memory.
    * @return Pointer of the internal memory.
    */
-  void *data() { return data_; }
+  inline void *data() { return data_; }
 
   /**
    * Returns the raw const-pointer of the internal memory.
    * @return Const-pointer of the internal memory.
    */
-  const void *data() const { return data_; }
+  inline const void *data() const { return data_; }
 
   /**
-   * Returns a copied list of internal values.
-   * @return List of copied values.
+   * Retrieves internal values of the tensor as a vector.
+   * @return A list of the internal values.
+   * @remarks Each resulting values a re ordered by the column-major order, and
+   *          the batch size is assumed as the last dimension of the tensor.
    */
-  std::vector<float> to_vector() const;
+  std::vector<float> get_values() const;
+
+  /**
+   * Reset internal values using a constant.
+   * @param k A value to be used to initialize each element.
+   */
+  void set_values(const float k);
+
+  /**
+   * Reset internal values using a vector.
+   * @param values List of values to be used to initialize each element.
+   * @remarks `values.size()` should be equal to `shape().size()`. Each element
+   *          should be ordered by the column-major order, and the batch size is
+   *          assumed as the last dimension.
+   */
+  void set_values(const std::vector<float> &values);
 
   /**
    * Check whether the object is valid or not.
@@ -77,19 +88,7 @@ public:
    * @remarks This returns false when the object is created through the default
    *          constructor or the object had been moved.
    */
-  bool valid() const { return !!data_; }
-
-  /**
-   * Duplicates the tensor.
-   * @return Duplicated tensor.
-   */
-  Tensor operator+() const;
-
-  /**
-   * Negates each element.
-   * @return Negated tensor.
-   */
-  Tensor operator-() const;
+  inline bool valid() const { return !!data_; }
 
   /**
    * Adds a tensor for gradient calculation.

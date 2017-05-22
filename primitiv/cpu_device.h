@@ -19,15 +19,15 @@ public:
   CPUDevice() = default;
   ~CPUDevice() override;
 
-  void *allocate(const unsigned size) override;
-  void free(void *ptr) override;
-  void copy_to_device(
-      void *dest, const void *src, const unsigned size) override;
-  void copy_to_host(
-      void *dest, const void *src, const unsigned size) override;
-  unsigned num_blocks() const override { return blocks_.size(); }
-
-  Tensor constant(const Shape &shape, const float k) override;
+  using Device::new_tensor;
+  Tensor new_tensor(const Shape &shape) override;
+  Tensor new_tensor(const Shape &shape, const float k) override;
+  Tensor new_tensor(
+      const Shape &shape, const std::vector<float> &values) override;
+  void delete_tensor(Tensor &x) override;
+  std::vector<float> get_values(const Tensor &x) override;
+  void set_values(Tensor &x, const float k) override;
+  void set_values(Tensor &x, const std::vector<float> &values) override;
 
   Tensor duplicate(const Tensor &x) override;
   Tensor negate(const Tensor &x) override;

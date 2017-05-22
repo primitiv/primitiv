@@ -106,7 +106,8 @@ void Graph::backward(const Node &node) {
   }
 
   // Make identity gradient at the last node.
-  last_node.grad = last_node.value.device()->constant(last_node.shape, 1);
+  last_node.grad = last_node.value.device()->new_tensor(last_node.shape);
+  last_node.grad.set_values(1);
 
   // The node ID represents the topological order.
   for (int id = node.id_; id >= 0; --id) {
@@ -122,7 +123,8 @@ void Graph::backward(const Node &node) {
     for (unsigned arg : cur_node.args) {
       NodeInfo &arg_node = *nodes_[arg];
       if (!arg_node.grad.valid()) {
-        arg_node.grad = arg_node.value.device()->constant(arg_node.shape, 0);
+        arg_node.grad = arg_node.value.device()->new_tensor(arg_node.shape);
+        arg_node.grad.set_values(0);
       }
       arg_values.emplace_back(&arg_node.value);
       arg_grads.emplace_back(&arg_node.grad);

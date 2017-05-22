@@ -1,78 +1,70 @@
 #include <config.h>
 
 #include <stdexcept>
+#include <vector>
 #include <gtest/gtest.h>
 #include <primitiv/cpu_device.h>
+#include <primitiv/shape.h>
+#include <primitiv/tensor.h>
 #include <test_utils.h>
+
+using std::vector;
+using test_utils::vector_match;
 
 namespace primitiv {
 
 class CPUDeviceTest : public testing::Test {};
 
-TEST_F(CPUDeviceTest, CheckAllocFree) {
+TEST_F(CPUDeviceTest, CheckNewDelete) {
   {
     CPUDevice dev;
-    EXPECT_EQ(0u, dev.num_blocks());
-
-    // free(nullptr) is always OK.
-    EXPECT_NO_THROW(dev.free(nullptr));
+    Tensor x1 = dev.new_tensor(Shape()); // 1 value
+    Tensor x2 = dev.new_tensor(Shape {16, 16}); // 256 values
+    Tensor x3 = dev.new_tensor(Shape({16, 16, 16}, 16)); // 65536 values
+    // According to the C++ standard, local values are destroyed in the order:
+    // x3 -> x2 -> x1 -> dev.
   }
-  {
-    CPUDevice dev;
-    void *ptr1 = dev.allocate(1); // 1B
-    EXPECT_EQ(1u, dev.num_blocks());
-    void *ptr2 = dev.allocate(2 << 10); // 1kB
-    EXPECT_EQ(2u, dev.num_blocks());
-    void *ptr3 = dev.allocate(2 << 20); // 1MB
-    EXPECT_EQ(3u, dev.num_blocks());
-    dev.free(ptr1);
-    EXPECT_EQ(2u, dev.num_blocks());
-    dev.free(ptr2);
-    EXPECT_EQ(1u, dev.num_blocks());
-    dev.free(ptr3);
-    EXPECT_EQ(0u, dev.num_blocks());
-  }
+  SUCCEED();
 }
 
-TEST_F(CPUDeviceTest, CheckInvalidAlloc) {
-  CPUDevice dev;
-  EXPECT_THROW(dev.allocate(0), std::runtime_error);
-}
-
-TEST_F(CPUDeviceTest, CheckInvalidFree) {
-  CPUDevice dev;
-  void *ptr = dev.allocate(1);
-  EXPECT_THROW(dev.free(reinterpret_cast<void *>(1)), std::runtime_error);
-  EXPECT_THROW(dev.free(static_cast<char *>(ptr) + 1), std::runtime_error);
-  dev.free(ptr);
-  EXPECT_THROW(dev.free(ptr), std::runtime_error);
-}
-
-TEST_F(CPUDeviceTest, CheckMemoryLeak) {
+TEST_F(CPUDeviceTest, CheckInvalidNewDelete) {
   EXPECT_DEATH({
-      CPUDevice dev;
-      dev.allocate(1);
+    Tensor x0;
+    CPUDevice dev;
+    x0 = dev.new_tensor(Shape());
+    // According to the C++ standard, local values are destroyed in the order:
+    // dev -> x0.
+    // `x0` still have a pointer when destroying `dev` and the process will
+    // abort.
   }, "");
 }
 
-TEST_F(CPUDeviceTest, CheckMemCopy) {
+TEST_F(CPUDeviceTest, CheckSetValuesByConstant) {
   CPUDevice dev;
-  void *ptr = dev.allocate(4 * sizeof(int));
-  const int src[4] = {1, 4, 9, 16};
-  int dest[4] = {42, 42, 42, 42};
-  dev.copy_to_device(ptr, src, 4 * sizeof(int));
-  dev.copy_to_host(dest, ptr, 4 * sizeof(int));
-  for (unsigned i = 0; i < 4; ++i) {
-    EXPECT_EQ(src[i], dest[i]);
+  {
+    Tensor x = dev.new_tensor(Shape({2, 2}, 2), 42);
+    EXPECT_TRUE(vector_match(vector<float>(8, 42), x.get_values()));
   }
-  dev.free(ptr);
+  {
+    Tensor x = dev.new_tensor(Shape({2, 2}, 2));
+    x.set_values(42);
+    EXPECT_TRUE(vector_match(vector<float>(8, 42), x.get_values()));
+  }
 }
 
-TEST_F(CPUDeviceTest, CheckConstant) {
-  const std::vector<float> expected {42, 42, 42, 42, 42, 42, 42, 42};
+TEST_F(CPUDeviceTest, CheckSetValuesByVector) {
   CPUDevice dev;
-  Tensor x = dev.constant(Shape({2, 2}, 2), 42);
-  EXPECT_TRUE(test_utils::vector_match(expected, x.to_vector()));
+  {
+    const vector<float> data {1, 2, 3, 4, 5, 6, 7, 8};
+    Tensor x = dev.new_tensor(Shape({2, 2}, 2), data);
+    EXPECT_TRUE(vector_match(data, x.get_values()));
+  }
+  {
+    const vector<float> data {1, 2, 3, 4, 5, 6, 7, 8};
+    Tensor x = dev.new_tensor(Shape({2, 2}, 2));
+    x.set_values(data);
+    EXPECT_TRUE(vector_match(data, x.get_values()));
+  }
 }
 
 }  // namespace primitiv

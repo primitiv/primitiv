@@ -41,7 +41,7 @@ void Shape::adjust() {
   }
 
   // check size of the shape.
-  // if more than 1 dimensions or the batch size is 0, then size() returns 0.
+  // if 1 or more dimensions or the batch size is 0, then size() returns 0.
   if (size() == 0) {
     throw std::runtime_error("invalid shape: " + to_string());
   }

@@ -1,12 +1,9 @@
 #ifndef PRIMITIV_INITIALIZER_H_
 #define PRIMITIV_INITIALIZER_H_
 
-#include <primitiv/tensor.h>
-
 namespace primitiv {
 
-class Device;
-class Shape;
+class Tensor;
 
 /**
  * Abstract class to provide parameter initialization algorithms.
@@ -23,11 +20,9 @@ public:
 
   /**
    * Provides an initialized tensor.
-   * @param shape Shape of the tensor.
-   * @param device Device object to manage the tensor.
-   * @return Generated Tensor object.
+   * @param x Tensor object to be initialized.
    */
-  virtual Tensor generate(const Shape &shape, Device *device) const = 0;
+  virtual void apply(Tensor &x) const = 0;
 };
 
 }  // namespace primitiv

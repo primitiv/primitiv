@@ -43,7 +43,9 @@ Shape Input::forward_shape(const vector<const Shape *> &args) const {
 
 Tensor Input::forward(const vector<const Tensor *> &args) const {
   CHECK_ARGNUM(args, 0);
-  return Tensor(shape_, device_, data_);
+  Tensor ret = device_->new_tensor(shape_);
+  ret.set_values(data_);
+  return ret;
 }
 
 #define FWD_SHAPE_UNARY(clsname) \
