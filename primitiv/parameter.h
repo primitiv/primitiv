@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_PARAMETER_H_
 #define PRIMITIV_PARAMETER_H_
 
+#include <vector>
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
 
@@ -27,7 +28,14 @@ public:
   Parameter(const Shape &shape, Device *device);
 
   /**
-   * Set all values using a specific criteria.
+   * Set all values.
+   * @param value List of new parameter values. Order of the values should be
+   *              of `Tensor::set_values()`.
+   */
+  void reset_value(const std::vector<float> &value);
+
+  /**
+   * Set all values using a specific initialization criteria.
    * @param init An Initializer object.
    */
   void reset_value(const Initializer &init);

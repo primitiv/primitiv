@@ -19,6 +19,10 @@ Parameter::Parameter(const Shape &shape, Device *device)
   }
 }
 
+void Parameter::reset_value(const std::vector<float> &value) {
+  value_.set_values(value);
+}
+
 void Parameter::reset_value(const Initializer &init) {
   init.apply(value_);
 }

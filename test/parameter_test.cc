@@ -30,7 +30,15 @@ TEST_F(ParameterTest, CheckInvalidNew) {
   EXPECT_THROW(Parameter(Shape({}, 3), &dev), std::runtime_error);
 }
 
-TEST_F(ParameterTest, CheckResetValue) {
+TEST_F(ParameterTest, CheckResetValueByVector) {
+  const Shape shape {2, 2};
+  const vector<float> expected {1, 2, 3, 4};
+  Parameter p(shape, &dev);
+  p.reset_value(expected);
+  EXPECT_TRUE(vector_match(expected, p.value().get_values()));
+}
+
+TEST_F(ParameterTest, CheckResetValueByInitializer) {
   const Shape shape {2, 2};
   const ConstantInitializer init(0);
   const vector<float> expected {0, 0, 0, 0};
