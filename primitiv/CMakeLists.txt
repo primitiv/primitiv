@@ -11,6 +11,7 @@ set(nmtkit_LIBRARY_HDRS
   shape.h
   tensor.h
   tensor_ops.h
+  trainer.h
 )
 
 set(nmtkit_LIBRARY_SRCS
