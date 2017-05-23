@@ -7,6 +7,7 @@ set(nmtkit_LIBRARY_HDRS
   graph.h
   initializer.h
   node.h
+  node_ops.h
   parameter.h
   shape.h
   tensor.h

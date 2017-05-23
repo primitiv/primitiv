@@ -4,8 +4,9 @@
 #include <vector>
 #include <gtest/gtest.h>
 #include <primitiv/cpu_device.h>
-#include <primitiv/graph.h>
 #include <primitiv/function_impl.h>
+#include <primitiv/graph.h>
+#include <primitiv/node_ops.h>
 #include <primitiv/parameter.h>
 #include <test_utils.h>
 
@@ -26,21 +27,15 @@ TEST_F(GraphTest, CheckForwardBackward) {
   const vector<float> data2 {1, 1, 1, 1};
   const vector<float> data3 {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
   vector<Node> nodes;
-  nodes.emplace_back(g.add_function(
-      new functions::Input(Shape({2, 2}, 3), &dev, data1), {}));
-  nodes.emplace_back(g.add_function(
-      new functions::Input(Shape({2, 2}, 1), &dev, data2), {}));
-  nodes.emplace_back(g.add_function(
-      new functions::Input(Shape({2, 2}, 3), &dev, data3), {}));
-  nodes.emplace_back(g.add_function(
-        new functions::Add(), {nodes[0], nodes[1]}));
-  nodes.emplace_back(g.add_function(
-        new functions::Subtract(), {nodes[1], nodes[2]}));
-  nodes.emplace_back(g.add_function(
-        new functions::Multiply(), {nodes[3], nodes[4]}));
-  nodes.emplace_back(g.add_function(new functions::AddConst(1), {nodes[5]}));
+  nodes.emplace_back(node_ops::input(g, dev, Shape({2, 2}, 3), data1));
+  nodes.emplace_back(node_ops::input(g, dev, {2, 2}, data2));
+  nodes.emplace_back(node_ops::input(g, dev, Shape({2, 2}, 3), data3));
+  nodes.emplace_back(nodes[0] + nodes[1]);
+  nodes.emplace_back(nodes[1] - nodes[2]);
+  nodes.emplace_back(nodes[3] * nodes[4]);
+  nodes.emplace_back(nodes[5] + 1);
 
-  EXPECT_EQ(7u, g.num_nodes());
+  EXPECT_EQ(nodes.size(), g.num_nodes());
 
   // Dump the graph to the output log.
   g.dump();
@@ -116,36 +111,23 @@ TEST_F(GraphTest, TestXor) {
   Graph g;
   vector<Node> nodes;
   // sources
-  nodes.emplace_back(g.add_function(
-        new functions::Input(Shape({2}, 4), &dev, inputs), {}));
-  nodes.emplace_back(g.add_function(
-        new functions::ParameterInput(w1), {}));
-  nodes.emplace_back(g.add_function(
-        new functions::ParameterInput(b1), {}));
-  nodes.emplace_back(g.add_function(
-        new functions::ParameterInput(w2), {}));
-  nodes.emplace_back(g.add_function(
-        new functions::ParameterInput(b2), {}));
+  nodes.emplace_back(node_ops::input(g, dev, Shape({2}, 4), inputs));
+  nodes.emplace_back(node_ops::parameter(g, w1));
+  nodes.emplace_back(node_ops::parameter(g, b1));
+  nodes.emplace_back(node_ops::parameter(g, w2));
+  nodes.emplace_back(node_ops::parameter(g, b2));
   // calculation
-  nodes.emplace_back(g.add_function(
-        new functions::Dot(), {nodes[1], nodes[0]}));
-  nodes.emplace_back(g.add_function(
-        new functions::Add(), {nodes[5], nodes[2]}));
-  nodes.emplace_back(g.add_function(
-        new functions::Tanh(), {nodes[6]}));
-  nodes.emplace_back(g.add_function(
-        new functions::Dot(), {nodes[3], nodes[7]}));
-  nodes.emplace_back(g.add_function(
-        new functions::Add(), {nodes[8], nodes[4]}));
+  nodes.emplace_back(node_ops::dot(nodes[1], nodes[0]));
+  nodes.emplace_back(nodes[5] + nodes[2]);
+  nodes.emplace_back(node_ops::tanh(nodes[6]));
+  nodes.emplace_back(node_ops::dot(nodes[3], nodes[7]));
+  nodes.emplace_back(nodes[8] + nodes[4]);
   // losses
-  nodes.emplace_back(g.add_function(
-        new functions::Input(Shape({}, 4), &dev, outputs), {}));
-  nodes.emplace_back(g.add_function(
-        new functions::Subtract(), {nodes[9], nodes[10]}));
-  nodes.emplace_back(g.add_function(
-        new functions::Multiply(), {nodes[11], nodes[11]}));
+  nodes.emplace_back(node_ops::input(g, dev, Shape({}, 4), outputs));
+  nodes.emplace_back(nodes[9] - nodes[10]);
+  nodes.emplace_back(nodes[11] * nodes[11]);
 
-  EXPECT_EQ(13u, g.num_nodes());
+  EXPECT_EQ(nodes.size(), g.num_nodes());
   g.dump();
 
   g.forward(nodes.back());
