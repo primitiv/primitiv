@@ -9,6 +9,7 @@ set(nmtkit_LIBRARY_HDRS
   node.h
   node_ops.h
   parameter.h
+  sgd_trainer.h
   shape.h
   tensor.h
   tensor_ops.h
@@ -21,6 +22,7 @@ set(nmtkit_LIBRARY_SRCS
   function_impl.cc
   graph.cc
   parameter.cc
+  sgd_trainer.cc
   shape.cc
   tensor.cc
 )
