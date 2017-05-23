@@ -120,7 +120,7 @@ Shape Transpose::forward_shape(const vector<const Shape *> &args) const {
 Shape Dot::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 2);
   const Shape &a = *args[0];
-  const Shape &b = *args[0];
+  const Shape &b = *args[1];
   const unsigned a_bs = a.batch_size();
   const unsigned b_bs = b.batch_size();
   if (a.dims().size() > 2 ||
