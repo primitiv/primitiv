@@ -1,5 +1,6 @@
 #include <config.h>
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
@@ -525,6 +526,28 @@ Tensor CPUDevice::sigmoid(const Tensor &x) {
   const float *src = CDATA(x);
   const unsigned size = x.shape().size();
   REPEAT_OP(i, size, dest[i] = .5 + .5 * std::tanh(.5 * src[i]));
+  return ret;
+}
+
+Tensor CPUDevice::step(const Tensor &x) {
+  CHECK_DEVICE(x);
+
+  Tensor ret = new_tensor(x.shape());
+  float *dest = DATA(ret);
+  const float *src = CDATA(x);
+  const unsigned size = x.shape().size();
+  REPEAT_OP(i, size, dest[i] = static_cast<float>(src[i] >= 0));
+  return ret;
+}
+
+Tensor CPUDevice::relu(const Tensor &x) {
+  CHECK_DEVICE(x);
+
+  Tensor ret = new_tensor(x.shape());
+  float *dest = DATA(ret);
+  const float *src = CDATA(x);
+  const unsigned size = x.shape().size();
+  REPEAT_OP(i, size, dest[i] = std::max(src[i], .0f));
   return ret;
 }
 

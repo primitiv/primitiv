@@ -46,6 +46,8 @@ inline Node transpose(const Node &x) { return APP(x)(new F::Transpose(), {x}); }
 inline Node dot(const Node &a, const Node &b) { return APP(a)(new F::Dot(), {a, b}); }
 inline Node exp(const Node &x) { return APP(x)(new F::Exp(), {x}); }
 inline Node tanh(const Node &x) { return APP(x)(new F::Tanh(), {x}); }
+inline Node sigmoid(const Node &x) { return APP(x)(new F::Sigmoid(), {x}); }
+inline Node relu(const Node &x) { return APP(x)(new F::ReLU(), {x}); }
 
 }  // namespace node_ops
 }  // namespace primitiv

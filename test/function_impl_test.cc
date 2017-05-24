@@ -369,7 +369,7 @@ TEST_F(FunctionImplTest_1Arg, CheckSigmoid) {
   const vector<float> ret_data {
     .73105858, .88079708, .95257413, .98201379,
     .5, .5, .5, .5,
-    .26894142, .11920292, .047425873, .017986210
+    .26894142, .11920292, .047425873, .017986210,
   };
   const vector<float> bw_grad {
     .19661193, .10499359, .045176660, .017662706,
@@ -378,6 +378,24 @@ TEST_F(FunctionImplTest_1Arg, CheckSigmoid) {
   };
   const Sigmoid node;
   TEST_1ARG_NEAR(Sigmoid, 1e-6);
+}
+
+TEST_F(FunctionImplTest_1Arg, CheckReLU) {
+  // y = max(x, 0)
+  // dy/dx = x >= 0 ? 1 : 0
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    1, 2, 3, 4,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+  };
+  const vector<float> bw_grad {
+    1, 1, 1, 1,
+    1, 1, 1, 1,
+    0, 0, 0, 0,
+  };
+  const ReLU node;
+  TEST_1ARG(ReLU);
 }
 
 }  // namespace functions

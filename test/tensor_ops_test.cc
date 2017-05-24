@@ -375,7 +375,7 @@ TEST_F(TensorOpsTest, CheckInvalidDot) {
 TEST_F(TensorOpsTest, CheckExp) {
   const vector<float> x_data {
     0, .5, 1, 2, 4, 8,
-    0, -.5, -1, -2, -4, -8
+    0, -.5, -1, -2, -4, -8,
   };
   const vector<float> y_data {
     1, 1.6487213, 2.7182818, 7.3890561, 54.598150, 2980.9580,
@@ -390,7 +390,7 @@ TEST_F(TensorOpsTest, CheckExp) {
 TEST_F(TensorOpsTest, CheckTanh) {
   const vector<float> x_data {
     0, .5, 1, 2, 4, 8,
-    0, -.5, -1, -2, -4, -8
+    0, -.5, -1, -2, -4, -8,
   };
   const vector<float> y_data {
     0, .46211716, .76159416, .96402758, .99932930, .99999977,
@@ -405,7 +405,7 @@ TEST_F(TensorOpsTest, CheckTanh) {
 TEST_F(TensorOpsTest, CheckSigmoid) {
   const vector<float> x_data {
     0, .5, 1, 2, 4, 8,
-    0, -.5, -1, -2, -4, -8
+    0, -.5, -1, -2, -4, -8,
   };
   const vector<float> y_data {
     .5, .62245933, .73105858, .88079708, .98201379, .99966465,
@@ -413,6 +413,36 @@ TEST_F(TensorOpsTest, CheckSigmoid) {
   };
   const Tensor x = dev.new_tensor(Shape({2, 3}, 2), x_data);
   const Tensor y1 = sigmoid(x);
+  EXPECT_EQ(Shape({2, 3}, 2), y1.shape());
+  EXPECT_TRUE(vector_match(y_data, y1.get_values()));
+}
+
+TEST_F(TensorOpsTest, CheckStep) {
+  const vector<float> x_data {
+    0, .5, 1, 2, 4, 8,
+    0, -.5, -1, -2, -4, -8,
+  };
+  const vector<float> y_data {
+    1, 1, 1, 1, 1, 1,
+    1, 0, 0, 0, 0, 0,
+  };
+  const Tensor x = dev.new_tensor(Shape({2, 3}, 2), x_data);
+  const Tensor y1 = step(x);
+  EXPECT_EQ(Shape({2, 3}, 2), y1.shape());
+  EXPECT_TRUE(vector_match(y_data, y1.get_values()));
+}
+
+TEST_F(TensorOpsTest, CheckRelu) {
+  const vector<float> x_data {
+    0, .5, 1, 2, 4, 8,
+    0, -.5, -1, -2, -4, -8,
+  };
+  const vector<float> y_data {
+    0, .5, 1, 2, 4, 8,
+    0, 0, 0, 0, 0, 0,
+  };
+  const Tensor x = dev.new_tensor(Shape({2, 3}, 2), x_data);
+  const Tensor y1 = relu(x);
   EXPECT_EQ(Shape({2, 3}, 2), y1.shape());
   EXPECT_TRUE(vector_match(y_data, y1.get_values()));
 }

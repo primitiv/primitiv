@@ -28,6 +28,8 @@ inline Tensor dot(const Tensor &a, const Tensor &b) { return a.device()->dot(a, 
 inline Tensor exp(const Tensor &x) { return x.device()->exp(x); }
 inline Tensor tanh(const Tensor &x) { return x.device()->tanh(x); }
 inline Tensor sigmoid(const Tensor &x) { return x.device()->sigmoid(x); }
+inline Tensor step(const Tensor &x) { return x.device()->step(x); }
+inline Tensor relu(const Tensor &x) { return x.device()->relu(x); }
 
 }  // namespace tensor_ops
 }  // namespace primitiv

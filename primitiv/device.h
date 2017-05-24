@@ -222,6 +222,20 @@ public:
   virtual Tensor sigmoid(const Tensor &x) = 0;
 
   /**
+   * Calculates the step function.
+   * @param x A tensor.
+   * @return `x >= 0 ? 1 : 0`
+   */
+  virtual Tensor step(const Tensor &x) = 0;
+
+  /**
+   * Calculates the rectifier function.
+   * @param x A tensor.
+   * @return `max(x, 0)`
+   */
+  virtual Tensor relu(const Tensor &x) = 0;
+
+  /**
    * Directly adds the second tensor to the first tensor.
    * @param a A tensor to be udpated.
    * @param b A source tensor.
