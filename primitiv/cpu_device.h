@@ -48,6 +48,7 @@ public:
 
   Tensor exp(const Tensor &x) override;
   Tensor tanh(const Tensor &x) override;
+  Tensor sigmoid(const Tensor &x) override;
 
   void add_gradient(Tensor &a, const Tensor &b) override;
 

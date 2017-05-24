@@ -359,7 +359,25 @@ TEST_F(FunctionImplTest_1Arg, CheckTanh) {
     .41997434, .070650825, .0098660372, .0013409507,
   };
   const Tanh node;
-  TEST_1ARG_NEAR(Tanh, 1e-6)
+  TEST_1ARG_NEAR(Tanh, 1e-6);
+}
+
+TEST_F(FunctionImplTest_1Arg, CheckSigmoid) {
+  // y = sigmoid(x)
+  // dy/dx = y * (1 - y)
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    .73105858, .88079708, .95257413, .98201379,
+    .5, .5, .5, .5,
+    .26894142, .11920292, .047425873, .017986210
+  };
+  const vector<float> bw_grad {
+    .19661193, .10499359, .045176660, .017662706,
+    .25, .25, .25, .25,
+    .19661193, .10499359, .045176660, .017662706,
+  };
+  const Sigmoid node;
+  TEST_1ARG_NEAR(Sigmoid, 1e-6);
 }
 
 }  // namespace functions

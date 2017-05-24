@@ -99,6 +99,7 @@ FWD_SHAPE_UNARY(DivideConstL);
 FWD_SHAPE_UNARY(DivideConstR);
 FWD_SHAPE_UNARY(Exp);
 FWD_SHAPE_UNARY(Tanh);
+FWD_SHAPE_UNARY(Sigmoid);
 FWD_SHAPE_ARITHMETIC(Add);
 FWD_SHAPE_ARITHMETIC(Subtract);
 FWD_SHAPE_ARITHMETIC(Multiply);
@@ -159,6 +160,7 @@ FORWARD(Divide) { return *args[0] / *args[1]; }
 FORWARD(Dot) { return tensor_ops::dot(*args[0], *args[1]); }
 FORWARD(Exp) { return tensor_ops::exp(*args[0]); }
 FORWARD(Tanh) { return tensor_ops::tanh(*args[0]); }
+FORWARD(Sigmoid) { return tensor_ops::sigmoid(*args[0]); }
 
 #undef FORWARD
 
@@ -189,6 +191,7 @@ BACKWARD(Dot) {
 }
 BACKWARD(Exp) { ADD(0, y * yg); }
 BACKWARD(Tanh) { ADD(0, (1 - y * y) * yg); }
+BACKWARD(Sigmoid) { ADD(0, y * (1 - y) * yg); }
 
 #undef BACKWARD
 #undef ADD

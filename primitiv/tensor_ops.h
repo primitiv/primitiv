@@ -27,6 +27,7 @@ inline Tensor transpose(const Tensor &x) { return x.device()->transpose(x); }
 inline Tensor dot(const Tensor &a, const Tensor &b) { return a.device()->dot(a, b); }
 inline Tensor exp(const Tensor &x) { return x.device()->exp(x); }
 inline Tensor tanh(const Tensor &x) { return x.device()->tanh(x); }
+inline Tensor sigmoid(const Tensor &x) { return x.device()->sigmoid(x); }
 
 }  // namespace tensor_ops
 }  // namespace primitiv

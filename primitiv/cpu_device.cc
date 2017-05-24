@@ -517,6 +517,17 @@ Tensor CPUDevice::tanh(const Tensor &x) {
   return ret;
 }
 
+Tensor CPUDevice::sigmoid(const Tensor &x) {
+  CHECK_DEVICE(x);
+
+  Tensor ret = new_tensor(x.shape());
+  float *dest = DATA(ret);
+  const float *src = CDATA(x);
+  const unsigned size = x.shape().size();
+  REPEAT_OP(i, size, dest[i] = .5 + .5 * std::tanh(.5 * src[i]));
+  return ret;
+}
+
 void CPUDevice::add_gradient(Tensor &a, const Tensor &b) {
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);

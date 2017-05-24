@@ -402,5 +402,20 @@ TEST_F(TensorOpsTest, CheckTanh) {
   EXPECT_TRUE(vector_match(y_data, y1.get_values()));
 }
 
+TEST_F(TensorOpsTest, CheckSigmoid) {
+  const vector<float> x_data {
+    0, .5, 1, 2, 4, 8,
+    0, -.5, -1, -2, -4, -8
+  };
+  const vector<float> y_data {
+    .5, .62245933, .73105858, .88079708, .98201379, .99966465,
+    .5, .37754067, .26894142, .11920292, .017986210, .00033535013,
+  };
+  const Tensor x = dev.new_tensor(Shape({2, 3}, 2), x_data);
+  const Tensor y1 = sigmoid(x);
+  EXPECT_EQ(Shape({2, 3}, 2), y1.shape());
+  EXPECT_TRUE(vector_match(y_data, y1.get_values()));
+}
+
 }  // namespace tensor_ops
 }  // namespace primitiv
