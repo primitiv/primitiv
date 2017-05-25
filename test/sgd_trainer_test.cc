@@ -31,24 +31,24 @@ TEST_F(SGDTrainerTest, CheckUpdate) {
   trainer.reset_gradients();
 
   EXPECT_TRUE(vector_match(
-        vector<float> {1, 2, 3, 4}, param.value().get_values()));
+        vector<float> {1, 2, 3, 4}, param.value().to_vector()));
   EXPECT_TRUE(vector_match(
-        vector<float>(4, 0), param.gradient().get_values()));
+        vector<float>(4, 0), param.gradient().to_vector()));
 
   param.add_gradient(dev.new_tensor({2, 2}, {1, 1, 1, 1}));
   trainer.update();
 
   EXPECT_TRUE(vector_match(
-        vector<float> {.9, 1.9, 2.9, 3.9}, param.value().get_values()));
+        vector<float> {.9, 1.9, 2.9, 3.9}, param.value().to_vector()));
   EXPECT_TRUE(vector_match(
-        vector<float>(4, 1), param.gradient().get_values()));
+        vector<float>(4, 1), param.gradient().to_vector()));
 
   param.reset_gradient();
 
   EXPECT_TRUE(vector_match(
-        vector<float> {.9, 1.9, 2.9, 3.9}, param.value().get_values()));
+        vector<float> {.9, 1.9, 2.9, 3.9}, param.value().to_vector()));
   EXPECT_TRUE(vector_match(
-        vector<float>(4, 0), param.gradient().get_values()));
+        vector<float>(4, 0), param.gradient().to_vector()));
 }
 
 }  // namespace primitiv

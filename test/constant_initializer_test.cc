@@ -23,7 +23,7 @@ TEST_F(ConstantInitializerTest, CheckGenerate) {
     const ConstantInitializer init(k);
     Tensor x = dev.new_tensor(shape);
     init.apply(x);
-    EXPECT_EQ(expected, x.get_values());
+    EXPECT_EQ(expected, x.to_vector());
   }
 }
 

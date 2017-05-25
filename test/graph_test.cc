@@ -64,7 +64,7 @@ TEST_F(GraphTest, CheckForwardBackward) {
     const Tensor &val2 = g.get_value(nodes[i]);
     EXPECT_EQ(&val1, &val2);
     ASSERT_TRUE(val1.valid());
-    EXPECT_TRUE(vector_match(expected_values[i], val1.get_values()));
+    EXPECT_TRUE(vector_match(expected_values[i], val1.to_vector()));
   }
 
   // Check all node gradients are still invalid.
@@ -87,7 +87,7 @@ TEST_F(GraphTest, CheckForwardBackward) {
   for (unsigned i = 0; i < nodes.size(); ++i) {
     const Tensor &val = g.get_gradient(nodes[i]);
     ASSERT_TRUE(val.valid());
-    EXPECT_TRUE(vector_match(expected_grads[i], val.get_values()));
+    EXPECT_TRUE(vector_match(expected_grads[i], val.to_vector()));
   }
 }
 
@@ -153,7 +153,7 @@ TEST_F(GraphTest, TestXor) {
   for (unsigned i = 0; i < nodes.size(); ++i) {
     const Tensor &val = g.get_value(nodes[i]);
     ASSERT_TRUE(val.valid());
-    EXPECT_TRUE(vector_match(expected_values[i], val.get_values()));
+    EXPECT_TRUE(vector_match(expected_values[i], val.to_vector()));
   }
 
   // TODO(odashi): add gradient checking.

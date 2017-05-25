@@ -38,16 +38,16 @@ Tensor &Tensor::operator=(Tensor &&src) {
   return *this;
 }
 
-std::vector<float> Tensor::get_values() const {
-  return device_->get_values(*this);
+std::vector<float> Tensor::to_vector() const {
+  return device_->tensor_to_vector(*this);
 }
 
-void Tensor::set_values(const float k) {
-  device_->set_values(*this, k);
+void Tensor::reset(const float k) {
+  device_->reset_tensor(*this, k);
 }
 
-void Tensor::set_values(const std::vector<float> &values) {
-  device_->set_values(*this, values);
+void Tensor::reset(const std::vector<float> &values) {
+  device_->reset_tensor(*this, values);
 }
 
 void Tensor::add_gradient(const Tensor &x) {

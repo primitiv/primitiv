@@ -47,7 +47,7 @@ TEST(ExampleTest, Xor) {
     Node loss = diff * diff;
 
     // Get result.
-    std::vector<float> y_val = g.forward(y).get_values();
+    std::vector<float> y_val = g.forward(y).to_vector();
     std::cout << "epoch " << i << ":" << std::endl;
     for (unsigned j = 0; j < 4; ++j) {
       std::cout << "  [" << j << "]: " << y_val[j] << std::endl;
@@ -55,7 +55,7 @@ TEST(ExampleTest, Xor) {
 
     // Backpropagation
     trainer.reset_gradients();
-    float loss_val = g.forward(loss).get_values()[0];
+    float loss_val = g.forward(loss).to_vector()[0];
     std::cout << "  loss: " << loss_val << std::endl;
     EXPECT_LT(loss_val, prev_loss);
     prev_loss = loss_val;

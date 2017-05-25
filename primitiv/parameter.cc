@@ -44,7 +44,7 @@ Parameter::Parameter(
 }
 
 void Parameter::reset_value(const std::vector<float> &value) {
-  value_.set_values(value);
+  value_.reset(value);
 }
 
 void Parameter::reset_value(const Initializer &init) {
@@ -52,7 +52,7 @@ void Parameter::reset_value(const Initializer &init) {
 }
 
 void Parameter::reset_gradient() {
-  grad_.set_values(0);
+  grad_.reset(0);
 }
 
 void Parameter::add_value(const Tensor &diff) {

@@ -43,12 +43,12 @@ TEST_F(CPUDeviceTest, CheckSetValuesByConstant) {
   CPUDevice dev;
   {
     Tensor x = dev.new_tensor(Shape({2, 2}, 2), 42);
-    EXPECT_TRUE(vector_match(vector<float>(8, 42), x.get_values()));
+    EXPECT_TRUE(vector_match(vector<float>(8, 42), x.to_vector()));
   }
   {
     Tensor x = dev.new_tensor(Shape({2, 2}, 2));
-    x.set_values(42);
-    EXPECT_TRUE(vector_match(vector<float>(8, 42), x.get_values()));
+    x.reset(42);
+    EXPECT_TRUE(vector_match(vector<float>(8, 42), x.to_vector()));
   }
 }
 
@@ -57,13 +57,13 @@ TEST_F(CPUDeviceTest, CheckSetValuesByVector) {
   {
     const vector<float> data {1, 2, 3, 4, 5, 6, 7, 8};
     Tensor x = dev.new_tensor(Shape({2, 2}, 2), data);
-    EXPECT_TRUE(vector_match(data, x.get_values()));
+    EXPECT_TRUE(vector_match(data, x.to_vector()));
   }
   {
     const vector<float> data {1, 2, 3, 4, 5, 6, 7, 8};
     Tensor x = dev.new_tensor(Shape({2, 2}, 2));
-    x.set_values(data);
-    EXPECT_TRUE(vector_match(data, x.get_values()));
+    x.reset(data);
+    EXPECT_TRUE(vector_match(data, x.to_vector()));
   }
 }
 

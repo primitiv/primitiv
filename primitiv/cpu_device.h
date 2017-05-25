@@ -25,9 +25,9 @@ public:
   Tensor new_tensor(
       const Shape &shape, const std::vector<float> &values) override;
   void delete_tensor(Tensor &x) override;
-  std::vector<float> get_values(const Tensor &x) override;
-  void set_values(Tensor &x, const float k) override;
-  void set_values(Tensor &x, const std::vector<float> &values) override;
+  std::vector<float> tensor_to_vector(const Tensor &x) override;
+  void reset_tensor(Tensor &x, const float k) override;
+  void reset_tensor(Tensor &x, const std::vector<float> &values) override;
 
   Tensor duplicate(const Tensor &x) override;
   Tensor negate(const Tensor &x) override;

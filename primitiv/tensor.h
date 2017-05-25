@@ -65,13 +65,13 @@ public:
    * @remarks Each resulting values a re ordered by the column-major order, and
    *          the batch size is assumed as the last dimension of the tensor.
    */
-  std::vector<float> get_values() const;
+  std::vector<float> to_vector() const;
 
   /**
    * Reset internal values using a constant.
    * @param k A value to be used to initialize each element.
    */
-  void set_values(const float k);
+  void reset(const float k);
 
   /**
    * Reset internal values using a vector.
@@ -80,7 +80,7 @@ public:
    *          should be ordered by the column-major order, and the batch size is
    *          assumed as the last dimension.
    */
-  void set_values(const std::vector<float> &values);
+  void reset(const std::vector<float> &values);
 
   /**
    * Check whether the object is valid or not.

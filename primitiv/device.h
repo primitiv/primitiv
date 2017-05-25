@@ -57,14 +57,14 @@ public:
    * @remarks Each resulting values are ordered by the column-major order, and
    *          the batch size is assumed as the last dimension of the tensor.
    */
-  virtual std::vector<float> get_values(const Tensor &x) = 0;
+  virtual std::vector<float> tensor_to_vector(const Tensor &x) = 0;
 
   /**
    * Reset internal values of the tensor using a constant.
    * @param x A tensor to be updated.
    * @param k A value used to initialize each element.
    */
-  virtual void set_values(Tensor &x, const float k) = 0;
+  virtual void reset_tensor(Tensor &x, const float k) = 0;
 
   /**
    * Reset internal values of the tensor using specific values.
@@ -74,7 +74,7 @@ public:
    *          is ordered by the column-major order, and the batch size is
    *          assumed as the last dimension of the tensor.
    */
-  virtual void set_values(Tensor &x, const std::vector<float> &values) = 0;
+  virtual void reset_tensor(Tensor &x, const std::vector<float> &values) = 0;
 
   /**
    * Duplicates the tensor.

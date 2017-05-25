@@ -6,7 +6,7 @@
 namespace primitiv {
 
 void ConstantInitializer::apply(Tensor &x) const {
-  x.set_values(k_);
+  x.reset(k_);
 }
 
 }  // namespace primitiv

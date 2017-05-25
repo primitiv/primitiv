@@ -31,7 +31,7 @@ TEST_F(TensorTest, CheckNew) {
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape(), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
-    const vector<float> d = x.get_values();
+    const vector<float> d = x.to_vector();
     EXPECT_EQ(1u, d.size());
     EXPECT_EQ(&dev, x.device());
   }
@@ -40,7 +40,7 @@ TEST_F(TensorTest, CheckNew) {
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({2, 3}), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
-    const vector<float> d = x.get_values();
+    const vector<float> d = x.to_vector();
     EXPECT_EQ(6u, d.size());
     EXPECT_EQ(&dev, x.device());
   }
@@ -49,7 +49,7 @@ TEST_F(TensorTest, CheckNew) {
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({2, 3}, 4), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
-    const vector<float> d = x.get_values();
+    const vector<float> d = x.to_vector();
     EXPECT_EQ(24u, d.size());
     EXPECT_EQ(&dev, x.device());
   }
@@ -61,7 +61,7 @@ TEST_F(TensorTest, CheckNewWithData) {
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape(), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
-    EXPECT_TRUE(vector_match(vector<float> {1}, x.get_values()));
+    EXPECT_TRUE(vector_match(vector<float> {1}, x.to_vector()));
   }
   {
     const vector<float> data {1, 2, 3, 4, 5, 6};
@@ -69,7 +69,7 @@ TEST_F(TensorTest, CheckNewWithData) {
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({2, 3}), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
-    EXPECT_TRUE(vector_match(data, x.get_values()));
+    EXPECT_TRUE(vector_match(data, x.to_vector()));
   }
   {
     const vector<float> data {
@@ -80,7 +80,7 @@ TEST_F(TensorTest, CheckNewWithData) {
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({2, 3}, 4), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
-    EXPECT_TRUE(vector_match(data, x.get_values()));
+    EXPECT_TRUE(vector_match(data, x.to_vector()));
   }
 }
 
@@ -96,7 +96,7 @@ TEST_F(TensorTest, CheckMove) {
     EXPECT_FALSE(tmp.valid());
     EXPECT_EQ(Shape({2}, 3), x.shape());
     EXPECT_EQ(ptr, x.data());
-    EXPECT_TRUE(vector_match({1, 2, 3, 4, 5, 6}, x.get_values()));
+    EXPECT_TRUE(vector_match({1, 2, 3, 4, 5, 6}, x.to_vector()));
   }
 
   // operator= (move to valid tensor)
@@ -111,7 +111,7 @@ TEST_F(TensorTest, CheckMove) {
     EXPECT_FALSE(tmp.valid());
     EXPECT_EQ(Shape({6}), x.shape());
     EXPECT_EQ(ptr, x.data());
-    EXPECT_TRUE(vector_match({2, 4, 6, 8, 10 ,12}, x.get_values()));
+    EXPECT_TRUE(vector_match({2, 4, 6, 8, 10 ,12}, x.to_vector()));
   }
 
   // operator= (move to invalid tensor)
@@ -126,7 +126,7 @@ TEST_F(TensorTest, CheckMove) {
     EXPECT_FALSE(tmp.valid());
     EXPECT_EQ(Shape({1}, 6), x.shape());
     EXPECT_EQ(ptr, x.data());
-    EXPECT_TRUE(vector_match({3, 6, 9, 12, 15, 18}, x.get_values()));
+    EXPECT_TRUE(vector_match({3, 6, 9, 12, 15, 18}, x.to_vector()));
   }
 }
 
@@ -138,7 +138,7 @@ TEST_F(TensorTest, CheckAddGradient) {
     Tensor a = dev.new_tensor(Shape({2, 2}, 3), a_data);
     const Tensor b = dev.new_tensor(Shape({2, 2}, 3), b_data);
     a.add_gradient(b);
-    EXPECT_TRUE(vector_match(y_data, a.get_values()));
+    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
   }
   {
     const vector<float> a_data {1, 2, 3, 4};
@@ -147,7 +147,7 @@ TEST_F(TensorTest, CheckAddGradient) {
     Tensor a = dev.new_tensor({2, 2}, a_data);
     const Tensor b = dev.new_tensor(Shape({2, 2}, 3), b_data);
     a.add_gradient(b);
-    EXPECT_TRUE(vector_match(y_data, a.get_values()));
+    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
   }
   {
     const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
@@ -156,7 +156,7 @@ TEST_F(TensorTest, CheckAddGradient) {
     Tensor a = dev.new_tensor(Shape({2, 2}, 3), a_data);
     const Tensor b = dev.new_tensor({2, 2}, b_data);
     a.add_gradient(b);
-    EXPECT_TRUE(vector_match(y_data, a.get_values()));
+    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
   }
 }
 

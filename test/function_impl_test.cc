@@ -101,8 +101,8 @@ protected:
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ(#name_, node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
-  EXPECT_TRUE(vector_match(ret_data, cur_value.get_values())); \
-  EXPECT_TRUE(vector_match(bw_grad, arg_grads[0]->get_values())); \
+  EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector())); \
+  EXPECT_TRUE(vector_match(bw_grad, arg_grads[0]->to_vector())); \
 }
 
 #define TEST_1ARG_NEAR(name_, err) { \
@@ -112,8 +112,8 @@ protected:
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ(#name_, node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
-  EXPECT_TRUE(vector_near(ret_data, cur_value.get_values(), err)); \
-  EXPECT_TRUE(vector_near(bw_grad, arg_grads[0]->get_values(), err)); \
+  EXPECT_TRUE(vector_near(ret_data, cur_value.to_vector(), err)); \
+  EXPECT_TRUE(vector_near(bw_grad, arg_grads[0]->to_vector(), err)); \
 }
 
 #define TEST_2ARGS(name_) { \
@@ -123,11 +123,11 @@ protected:
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ(#name_, node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
-  EXPECT_TRUE(vector_match(ret_data, cur_value.get_values())); \
+  EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector())); \
   EXPECT_TRUE( \
-      vector_match(bw_grads[0], arg_grads[0]->get_values())); \
+      vector_match(bw_grads[0], arg_grads[0]->to_vector())); \
   EXPECT_TRUE( \
-      vector_match(bw_grads[1], arg_grads[1]->get_values())); \
+      vector_match(bw_grads[1], arg_grads[1]->to_vector())); \
 }
 
 TEST_F(FunctionImplTest_0Arg, CheckInput) {
@@ -141,7 +141,7 @@ TEST_F(FunctionImplTest_0Arg, CheckInput) {
   EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
   EXPECT_EQ("Input", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
-  EXPECT_TRUE(vector_match(ret_data, cur_value.get_values()));
+  EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector()));
 }
 
 TEST_F(FunctionImplTest_0Arg, CheckParameterInput) {
@@ -150,8 +150,8 @@ TEST_F(FunctionImplTest_0Arg, CheckParameterInput) {
   Parameter param(ret_shape, &dev);
   param.reset_value(init);
   param.reset_gradient();
-  ASSERT_TRUE(vector_match(vector<float>(4, 42), param.value().get_values()));
-  ASSERT_TRUE(vector_match(vector<float>(4, 0), param.gradient().get_values()));
+  ASSERT_TRUE(vector_match(vector<float>(4, 42), param.value().to_vector()));
+  ASSERT_TRUE(vector_match(vector<float>(4, 0), param.gradient().to_vector()));
 
   const ParameterInput node(param);
   const Shape cur_shape = node.forward_shape(arg_shapes);
@@ -161,9 +161,9 @@ TEST_F(FunctionImplTest_0Arg, CheckParameterInput) {
   EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
   EXPECT_EQ("ParameterInput", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
-  EXPECT_TRUE(vector_match(vector<float>(4, 42), cur_value.get_values()));
-  EXPECT_TRUE(vector_match(vector<float>(4, 42), param.value().get_values()));
-  EXPECT_TRUE(vector_match(vector<float>(4, 1), param.gradient().get_values()));
+  EXPECT_TRUE(vector_match(vector<float>(4, 42), cur_value.to_vector()));
+  EXPECT_TRUE(vector_match(vector<float>(4, 42), param.value().to_vector()));
+  EXPECT_TRUE(vector_match(vector<float>(4, 1), param.gradient().to_vector()));
 }
 
 TEST_F(FunctionImplTest_1Arg, CheckPositive) {

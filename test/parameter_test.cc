@@ -33,7 +33,7 @@ TEST_F(ParameterTest, CheckNewWithValues) {
   EXPECT_EQ(&dev, p.device());
   EXPECT_EQ(shape, p.value().shape());
   EXPECT_EQ(shape, p.gradient().shape());
-  EXPECT_TRUE(vector_match({1, 2, 3, 4}, p.value().get_values()));
+  EXPECT_TRUE(vector_match({1, 2, 3, 4}, p.value().to_vector()));
 }
 
 TEST_F(ParameterTest, CheckNewWithInitializer) {
@@ -44,7 +44,7 @@ TEST_F(ParameterTest, CheckNewWithInitializer) {
   EXPECT_EQ(&dev, p.device());
   EXPECT_EQ(shape, p.value().shape());
   EXPECT_EQ(shape, p.gradient().shape());
-  EXPECT_TRUE(vector_match({42, 42, 42, 42}, p.value().get_values()));
+  EXPECT_TRUE(vector_match({42, 42, 42, 42}, p.value().to_vector()));
 }
 
 TEST_F(ParameterTest, CheckInvalidNew) {
@@ -56,7 +56,7 @@ TEST_F(ParameterTest, CheckResetValueByVector) {
   const vector<float> expected {1, 2, 3, 4};
   Parameter p(shape, &dev);
   p.reset_value(expected);
-  EXPECT_TRUE(vector_match(expected, p.value().get_values()));
+  EXPECT_TRUE(vector_match(expected, p.value().to_vector()));
 }
 
 TEST_F(ParameterTest, CheckResetValueByInitializer) {
@@ -65,7 +65,7 @@ TEST_F(ParameterTest, CheckResetValueByInitializer) {
   const vector<float> expected {0, 0, 0, 0};
   Parameter p(shape, &dev);
   p.reset_value(init);
-  EXPECT_TRUE(vector_match(expected, p.value().get_values()));
+  EXPECT_TRUE(vector_match(expected, p.value().to_vector()));
 }
 
 TEST_F(ParameterTest, CheckResetGradient) {
@@ -73,7 +73,7 @@ TEST_F(ParameterTest, CheckResetGradient) {
   const vector<float> expected {0, 0, 0, 0};
   Parameter p(shape, &dev);
   p.reset_gradient();
-  EXPECT_TRUE(vector_match(expected, p.gradient().get_values()));
+  EXPECT_TRUE(vector_match(expected, p.gradient().to_vector()));
 }
 
 TEST_F(ParameterTest, CheckAddValue) {
@@ -85,9 +85,9 @@ TEST_F(ParameterTest, CheckAddValue) {
   Parameter p(shape, &dev);
   p.reset_value(init);
   p.add_value(diff);
-  EXPECT_TRUE(vector_match(diff_values1, p.value().get_values()));
+  EXPECT_TRUE(vector_match(diff_values1, p.value().to_vector()));
   p.add_value(diff);
-  EXPECT_TRUE(vector_match(diff_values2, p.value().get_values()));
+  EXPECT_TRUE(vector_match(diff_values2, p.value().to_vector()));
 }
 
 TEST_F(ParameterTest, CheckAddGradient) {
@@ -98,9 +98,9 @@ TEST_F(ParameterTest, CheckAddGradient) {
   Parameter p(shape, &dev);
   p.reset_gradient();
   p.add_gradient(diff);
-  EXPECT_TRUE(vector_match(diff_values1, p.gradient().get_values()));
+  EXPECT_TRUE(vector_match(diff_values1, p.gradient().to_vector()));
   p.add_gradient(diff);
-  EXPECT_TRUE(vector_match(diff_values2, p.gradient().get_values()));
+  EXPECT_TRUE(vector_match(diff_values2, p.gradient().to_vector()));
 }
 
 }  // namespace primitiv

@@ -24,7 +24,7 @@ TEST_F(TensorOpsTest, CheckDuplicate) {
   const Tensor x = dev.new_tensor(Shape({2, 2}, 2), x_data);
   const Tensor y = +x;
   EXPECT_EQ(Shape({2, 2}, 2), y.shape());
-  EXPECT_TRUE(vector_match(x_data, y.get_values()));
+  EXPECT_TRUE(vector_match(x_data, y.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckNegate) {
@@ -35,7 +35,7 @@ TEST_F(TensorOpsTest, CheckNegate) {
   const Tensor x = dev.new_tensor(Shape({2, 2}, 2), x_data);
   const Tensor y = -x;
   EXPECT_EQ(Shape({2, 2}, 2), y.shape());
-  EXPECT_TRUE(vector_match(y_data, y.get_values()));
+  EXPECT_TRUE(vector_match(y_data, y.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckAddConst) {
@@ -45,10 +45,10 @@ TEST_F(TensorOpsTest, CheckAddConst) {
   const Tensor x = dev.new_tensor(Shape({2, 2}, 2), x_data);
   const Tensor y1 = k + x;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(vector_match(y_data, y1.get_values()));
+  EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
   const Tensor y2 = x + k;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(vector_match(y_data, y2.get_values()));
+  EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckAdd) {
@@ -59,10 +59,10 @@ TEST_F(TensorOpsTest, CheckAdd) {
   const Tensor b = dev.new_tensor(Shape({2, 2}, 2), b_data);
   const Tensor y1 = a + b;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(vector_match(y_data, y1.get_values()));
+  EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
   const Tensor y2 = b + a;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(vector_match(y_data, y2.get_values()));
+  EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckAddBatchBroadcast) {
@@ -73,10 +73,10 @@ TEST_F(TensorOpsTest, CheckAddBatchBroadcast) {
   const Tensor b = dev.new_tensor(Shape({2, 2}, 2), b_data);
   const Tensor y1 = a + b;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(vector_match(y_data, y1.get_values()));
+  EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
   const Tensor y2 = b + a;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(vector_match(y_data, y2.get_values()));
+  EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckSubtractConst) {
@@ -87,10 +87,10 @@ TEST_F(TensorOpsTest, CheckSubtractConst) {
   const Tensor x = dev.new_tensor(Shape({2, 2}, 2), x_data);
   const Tensor y1 = k - x;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(vector_match(y1_data, y1.get_values()));
+  EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
   const Tensor y2 = x - k;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(vector_match(y2_data, y2.get_values()));
+  EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckSubtract) {
@@ -102,10 +102,10 @@ TEST_F(TensorOpsTest, CheckSubtract) {
   const Tensor b = dev.new_tensor(Shape({2, 2}, 2), b_data);
   const Tensor y1 = a - b;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(vector_match(y1_data, y1.get_values()));
+  EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
   const Tensor y2 = b - a;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(vector_match(y2_data, y2.get_values()));
+  EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckSubtractBatchBroadcast) {
@@ -117,10 +117,10 @@ TEST_F(TensorOpsTest, CheckSubtractBatchBroadcast) {
   const Tensor b = dev.new_tensor(Shape({2, 2}, 2), b_data);
   const Tensor y1 = a - b;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(vector_match(y1_data, y1.get_values()));
+  EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
   const Tensor y2 = b - a;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(vector_match(y2_data, y2.get_values()));
+  EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckMultiplyConst) {
@@ -130,10 +130,10 @@ TEST_F(TensorOpsTest, CheckMultiplyConst) {
   const Tensor x = dev.new_tensor(Shape({2, 2}, 2), x_data);
   const Tensor y1 = k * x;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(vector_match(y_data, y1.get_values()));
+  EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
   const Tensor y2 = x * k;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(vector_match(y_data, y2.get_values()));
+  EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckMultiply) {
@@ -144,10 +144,10 @@ TEST_F(TensorOpsTest, CheckMultiply) {
   const Tensor b = dev.new_tensor(Shape({2, 2}, 2), b_data);
   const Tensor y1 = a * b;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(vector_match(y_data, y1.get_values()));
+  EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
   const Tensor y2 = b * a;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(vector_match(y_data, y2.get_values()));
+  EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckMultiplyBatchBroadcast) {
@@ -158,10 +158,10 @@ TEST_F(TensorOpsTest, CheckMultiplyBatchBroadcast) {
   const Tensor b = dev.new_tensor(Shape({2, 2}, 2), b_data);
   const Tensor y1 = a * b;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(vector_match(y_data, y1.get_values()));
+  EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
   const Tensor y2 = b * a;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(vector_match(y_data, y2.get_values()));
+  EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckDivideConst) {
@@ -174,10 +174,10 @@ TEST_F(TensorOpsTest, CheckDivideConst) {
   const Tensor x = dev.new_tensor(Shape({2, 2}, 2), x_data);
   const Tensor y1 = k / x;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(vector_match(y1_data, y1.get_values()));
+  EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
   const Tensor y2 = x / k;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(vector_match(y2_data, y2.get_values()));
+  EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckDivide) {
@@ -191,10 +191,10 @@ TEST_F(TensorOpsTest, CheckDivide) {
   const Tensor b = dev.new_tensor(Shape({2, 2}, 2), b_data);
   const Tensor y1 = a / b;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(vector_match(y1_data, y1.get_values()));
+  EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
   const Tensor y2 = b / a;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(vector_match(y2_data, y2.get_values()));
+  EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckDivideBatchBroadcast) {
@@ -206,10 +206,10 @@ TEST_F(TensorOpsTest, CheckDivideBatchBroadcast) {
   const Tensor b = dev.new_tensor(Shape({2, 2}, 2), b_data);
   const Tensor y1 = a / b;
   EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-  EXPECT_TRUE(vector_match(y1_data, y1.get_values()));
+  EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
   const Tensor y2 = b / a;
   EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-  EXPECT_TRUE(vector_match(y2_data, y2.get_values()));
+  EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckInvalidArithmeticOps) {
@@ -236,7 +236,7 @@ TEST_F(TensorOpsTest, CheckTranspose) {
     const Tensor x = dev.new_tensor({}, x_data);
     const Tensor y = transpose(x);
     EXPECT_EQ(Shape(), y.shape());
-    EXPECT_TRUE(vector_match(y_data, y.get_values()));
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
   {
     const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
@@ -244,7 +244,7 @@ TEST_F(TensorOpsTest, CheckTranspose) {
     const Tensor x = dev.new_tensor({12}, x_data);
     const Tensor y = transpose(x);
     EXPECT_EQ(Shape({1, 12}), y.shape());
-    EXPECT_TRUE(vector_match(y_data, y.get_values()));
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
   {
     const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
@@ -252,7 +252,7 @@ TEST_F(TensorOpsTest, CheckTranspose) {
     const Tensor x = dev.new_tensor(Shape({1, 3}, 4), x_data);
     const Tensor y = transpose(x);
     EXPECT_EQ(Shape({3}, 4), y.shape());
-    EXPECT_TRUE(vector_match(y_data, y.get_values()));
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
   {
     const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
@@ -260,7 +260,7 @@ TEST_F(TensorOpsTest, CheckTranspose) {
     const Tensor x = dev.new_tensor(Shape({2, 2}, 3), x_data);
     const Tensor y = transpose(x);
     EXPECT_EQ(Shape({2, 2}, 3), y.shape());
-    EXPECT_TRUE(vector_match(y_data, y.get_values()));
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
   {
     const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
@@ -268,7 +268,7 @@ TEST_F(TensorOpsTest, CheckTranspose) {
     const Tensor x = dev.new_tensor(Shape({2, 3}, 2), x_data);
     const Tensor y = transpose(x);
     EXPECT_EQ(Shape({3, 2}, 2), y.shape());
-    EXPECT_TRUE(vector_match(y_data, y.get_values()));
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
 }
 
@@ -285,7 +285,7 @@ TEST_F(TensorOpsTest, CheckDot) {
     const Tensor x = dev.new_tensor(Shape({2, 2}, 3), x_data);
     const Tensor y = dot(x, x);
     EXPECT_EQ(Shape({2, 2}, 3), y.shape());
-    EXPECT_TRUE(vector_match(y_data, y.get_values()));
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
   {
     // A . B
@@ -315,7 +315,7 @@ TEST_F(TensorOpsTest, CheckDot) {
     const Tensor b = dev.new_tensor({4, 6}, b_data);
     const Tensor y = dot(a, b);
     EXPECT_EQ(Shape({3, 6}), y.shape());
-    EXPECT_TRUE(vector_match(y_data, y.get_values()));
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
 }
 
@@ -328,7 +328,7 @@ TEST_F(TensorOpsTest, CheckDotBatchBroadcast) {
     const Tensor b = dev.new_tensor(Shape({2, 2}, 2), b_data);
     const Tensor y = dot(a, b);
     EXPECT_EQ(Shape({2, 2}, 2), y.shape());
-    EXPECT_TRUE(vector_match(y_data, y.get_values()));
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
   {
     const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8};
@@ -338,7 +338,7 @@ TEST_F(TensorOpsTest, CheckDotBatchBroadcast) {
     const Tensor b = dev.new_tensor({2, 2}, b_data);
     const Tensor y = dot(a, b);
     EXPECT_EQ(Shape({2, 2}, 2), y.shape());
-    EXPECT_TRUE(vector_match(y_data, y.get_values()));
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
 }
 
@@ -384,7 +384,7 @@ TEST_F(TensorOpsTest, CheckExp) {
   const Tensor x = dev.new_tensor(Shape({2, 3}, 2), x_data);
   const Tensor y1 = exp(x);
   EXPECT_EQ(Shape({2, 3}, 2), y1.shape());
-  EXPECT_TRUE(vector_match(y_data, y1.get_values()));
+  EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckTanh) {
@@ -399,7 +399,7 @@ TEST_F(TensorOpsTest, CheckTanh) {
   const Tensor x = dev.new_tensor(Shape({2, 3}, 2), x_data);
   const Tensor y1 = tanh(x);
   EXPECT_EQ(Shape({2, 3}, 2), y1.shape());
-  EXPECT_TRUE(vector_match(y_data, y1.get_values()));
+  EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckSigmoid) {
@@ -414,7 +414,7 @@ TEST_F(TensorOpsTest, CheckSigmoid) {
   const Tensor x = dev.new_tensor(Shape({2, 3}, 2), x_data);
   const Tensor y1 = sigmoid(x);
   EXPECT_EQ(Shape({2, 3}, 2), y1.shape());
-  EXPECT_TRUE(vector_match(y_data, y1.get_values()));
+  EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckStep) {
@@ -429,7 +429,7 @@ TEST_F(TensorOpsTest, CheckStep) {
   const Tensor x = dev.new_tensor(Shape({2, 3}, 2), x_data);
   const Tensor y1 = step(x);
   EXPECT_EQ(Shape({2, 3}, 2), y1.shape());
-  EXPECT_TRUE(vector_match(y_data, y1.get_values()));
+  EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
 }
 
 TEST_F(TensorOpsTest, CheckRelu) {
@@ -444,7 +444,7 @@ TEST_F(TensorOpsTest, CheckRelu) {
   const Tensor x = dev.new_tensor(Shape({2, 3}, 2), x_data);
   const Tensor y1 = relu(x);
   EXPECT_EQ(Shape({2, 3}, 2), y1.shape());
-  EXPECT_TRUE(vector_match(y_data, y1.get_values()));
+  EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
 }
 
 }  // namespace tensor_ops

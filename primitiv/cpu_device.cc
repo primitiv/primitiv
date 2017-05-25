@@ -40,14 +40,14 @@ Tensor CPUDevice::new_tensor(const Shape &shape) {
 
 Tensor CPUDevice::new_tensor(const Shape &shape, const float k) {
   Tensor ret = new_tensor(shape);
-  set_values(ret, k);
+  reset_tensor(ret, k);
   return ret;
 }
 
 Tensor CPUDevice::new_tensor(
     const Shape &shape, const std::vector<float> &values) {
   Tensor ret = new_tensor(shape);
-  set_values(ret, values);
+  reset_tensor(ret, values);
   return ret;
 }
 
@@ -79,7 +79,7 @@ void CPUDevice::delete_tensor(Tensor &x) {
     (op); \
   }
 
-std::vector<float> CPUDevice::get_values(const Tensor &x) {
+std::vector<float> CPUDevice::tensor_to_vector(const Tensor &x) {
   CHECK_DEVICE(x);
   const unsigned num_elements = x.shape().size();
   std::vector<float> ret(num_elements);
@@ -87,14 +87,14 @@ std::vector<float> CPUDevice::get_values(const Tensor &x) {
   return ret;
 }
 
-void CPUDevice::set_values(Tensor &x, const float k) {
+void CPUDevice::reset_tensor(Tensor &x, const float k) {
   CHECK_DEVICE(x);
   float *dest = DATA(x);
   const unsigned size = x.shape().size();
   REPEAT_OP(i, size, dest[i] = k);
 }
 
-void CPUDevice::set_values(Tensor &x, const std::vector<float> &values) {
+void CPUDevice::reset_tensor(Tensor &x, const std::vector<float> &values) {
   CHECK_DEVICE(x);
   const unsigned num_elements = x.shape().size();
   if (values.size() != x.shape().size()) {
