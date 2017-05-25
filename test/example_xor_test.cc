@@ -17,14 +17,10 @@ TEST(ExampleTest, Xor) {
   CPUDevice dev;
 
   // Parameters
-  Parameter pw1({4, 2}, &dev);
-  Parameter pb1({4}, &dev);
-  Parameter pw2({1, 4}, &dev);
-  Parameter pb2({}, &dev);
-  pw1.reset_value({1, 1, -1, -1, 1, -1, 1, -1});
-  pb1.reset_value({0, 0, 0, 0});
-  pw2.reset_value({1, -1, -1, 1});
-  pb2.reset_value({0});
+  Parameter pw1({4, 2}, &dev, {1, 1, -1, -1, 1, -1, 1, -1});
+  Parameter pb1({4}, &dev, {0, 0, 0, 0});
+  Parameter pw2({1, 4}, &dev, {1, -1, -1, 1});
+  Parameter pb2({}, &dev, {0});
 
   // Trainer
   SGDTrainer trainer(.1);

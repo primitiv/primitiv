@@ -23,9 +23,27 @@ public:
   /**
    * Creates a new Parameter object.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @device The device object to manage internal memory.
+   * @param device The device object to manage internal memory.
    */
   Parameter(const Shape &shape, Device *device);
+
+  /**
+   * Creates a new Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param device The device object to manage internal memory.
+   * @param value List of initial values. Order of elements should be of
+   *              `Tensor::set_values()`.
+   */
+  Parameter(
+      const Shape &shape, Device *device, const std::vector<float> &value);
+
+  /**
+   * Creates a new Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param device The device object to manage internal memory.
+   * @param init An Initializer object.
+   */
+  Parameter(const Shape &shape, Device *device, const Initializer &init);
 
   /**
    * Set all values.
@@ -84,6 +102,11 @@ public:
   inline const Tensor &gradient() const { return grad_; }
 
 private:
+  /**
+   * Check shape of the parameter.
+   */
+  void check_shape();
+
   Shape shape_;
   Device *device_;
   Tensor value_;

@@ -95,15 +95,10 @@ TEST_F(GraphTest, TestXor) {
   // Solves a 2-dimension XOR problem with 3-layer perceptron.
   // h = tanh(W1.x + b1)
   // y = W2.h + b2
-  Parameter w1({2, 2}, &dev);
-  Parameter b1({2}, &dev);
-  Parameter w2({1, 2}, &dev);
-  Parameter b2({}, &dev);
-
-  w1.reset_value({1, -1, 1, -1});
-  b1.reset_value({-1, -1});
-  w2.reset_value({1, 1});
-  b2.reset_value({1});
+  Parameter w1({2, 2}, &dev, {1, -1, 1, -1});
+  Parameter b1({2}, &dev, {-1, -1});
+  Parameter w2({1, 2}, &dev, {1, 1});
+  Parameter b2({}, &dev, {1});
 
   const vector<float> inputs {1, 1, 1, -1, -1, 1, -1, -1};
   const vector<float> outputs {1, -1, -1, 1};

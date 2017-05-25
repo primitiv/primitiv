@@ -26,8 +26,7 @@ TEST_F(SGDTrainerTest, CheckAddParameter) {
 
 TEST_F(SGDTrainerTest, CheckUpdate) {
   SGDTrainer trainer(.1);
-  Parameter param({2, 2}, &dev);
-  param.reset_value({1, 2, 3, 4});
+  Parameter param({2, 2}, &dev, {1, 2, 3, 4});
   trainer.add_parameter(&param);
   trainer.reset_gradients();
 

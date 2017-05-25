@@ -26,6 +26,27 @@ TEST_F(ParameterTest, CheckNew) {
   EXPECT_EQ(shape, p.gradient().shape());
 }
 
+TEST_F(ParameterTest, CheckNewWithValues) {
+  const Shape shape {2, 2};
+  Parameter p(shape, &dev, {1, 2, 3, 4});
+  EXPECT_EQ(shape, p.shape());
+  EXPECT_EQ(&dev, p.device());
+  EXPECT_EQ(shape, p.value().shape());
+  EXPECT_EQ(shape, p.gradient().shape());
+  EXPECT_TRUE(vector_match({1, 2, 3, 4}, p.value().get_values()));
+}
+
+TEST_F(ParameterTest, CheckNewWithInitializer) {
+  const Shape shape {2, 2};
+  const ConstantInitializer init(42);
+  Parameter p(shape, &dev, init);
+  EXPECT_EQ(shape, p.shape());
+  EXPECT_EQ(&dev, p.device());
+  EXPECT_EQ(shape, p.value().shape());
+  EXPECT_EQ(shape, p.gradient().shape());
+  EXPECT_TRUE(vector_match({42, 42, 42, 42}, p.value().get_values()));
+}
+
 TEST_F(ParameterTest, CheckInvalidNew) {
   EXPECT_THROW(Parameter(Shape({}, 3), &dev), std::runtime_error);
 }

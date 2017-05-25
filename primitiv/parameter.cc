@@ -7,16 +7,40 @@
 
 namespace primitiv {
 
+void Parameter::check_shape() {
+  if (shape_.batch_size() > 1) {
+    throw std::runtime_error(
+        "The batch size of the parameter shape should be 1. "
+        "Given shape: " + shape_.to_string());
+  }
+}
+
 Parameter::Parameter(const Shape &shape, Device *device)
 : shape_(shape)
 , device_(device)
 , value_(device->new_tensor(shape))
 , grad_(device->new_tensor(shape)) {
-  if (shape_.batch_size() > 1) {
-    throw std::runtime_error(
-        "The batch size of the parameter shape should be 1. "
-        "Given shape: " + shape.to_string());
-  }
+  check_shape();
+}
+
+Parameter::Parameter(
+    const Shape &shape, Device *device, const std::vector<float> & value)
+: shape_(shape)
+, device_(device)
+, value_(device->new_tensor(shape))
+, grad_(device->new_tensor(shape)) {
+  check_shape();
+  reset_value(value);
+}
+
+Parameter::Parameter(
+    const Shape &shape, Device *device, const Initializer &init)
+: shape_(shape)
+, device_(device)
+, value_(device->new_tensor(shape))
+, grad_(device->new_tensor(shape)) {
+  check_shape();
+  reset_value(init);
 }
 
 void Parameter::reset_value(const std::vector<float> &value) {
