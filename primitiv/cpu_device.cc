@@ -97,7 +97,7 @@ void CPUDevice::reset_tensor(Tensor &x, const float k) {
 void CPUDevice::reset_tensor(Tensor &x, const std::vector<float> &values) {
   CHECK_DEVICE(x);
   const unsigned num_elements = x.shape().size();
-  if (values.size() != x.shape().size()) {
+  if (values.size() != num_elements) {
     std::stringstream ss;
     ss << "Data sizes mismatched. required: " << num_elements
        << " (shape: " << x.shape().to_string() << ") != actual: "
@@ -381,8 +381,7 @@ Tensor CPUDevice::transpose(const Tensor &x) {
   const Shape &s = x.shape();
   if (s.dims().size() > 2) {
     std::stringstream ss;
-    ss << "Attempted to transpose a tensor with shape "
-       << x.shape().to_string() << '.';
+    ss << "Attempted to transpose a tensor with shape " << s.to_string() << '.';
     throw std::runtime_error(ss.str());
   }
 
