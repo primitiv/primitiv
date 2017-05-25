@@ -15,7 +15,7 @@ namespace primitiv {
 
 class CUDADeviceTest : public testing::Test {};
 
-TEST_F(CUDADeviceTest, CheckInvalidNew) {
+TEST_F(CUDADeviceTest, CheckInvalidInit) {
   EXPECT_THROW(CUDADevice dev(12345678), std::runtime_error);
 }
 
@@ -32,6 +32,9 @@ TEST_F(CUDADeviceTest, CheckNewDelete) {
   SUCCEED();
 }
 
+/*
+ * TODO(odashi): the death test requires a single-thread program,
+ *               but CUDA behaves on multi-threads.
 TEST_F(CUDADeviceTest, CheckInvalidNewDelete) {
   EXPECT_DEATH({
     Tensor x0;
@@ -42,6 +45,7 @@ TEST_F(CUDADeviceTest, CheckInvalidNewDelete) {
     // abort.
   }, "");
 }
+*/
 
 TEST_F(CUDADeviceTest, CheckSetValuesByConstant) {
   CUDADevice dev(0);

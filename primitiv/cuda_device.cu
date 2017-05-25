@@ -23,6 +23,25 @@ using std::endl;
   } \
 }
 
+namespace {
+
+/*
+ * CUDA kernels
+ */
+
+/**
+ * Reset arrays with a constant.
+ * @param ptr Target array.
+ * @param k Constant.
+ * @param size Number of elements in the array.
+ */
+__global__ void cuda_set_const(float *ptr, const float k, const unsigned size) {
+  const unsigned pos = threadIdx.x + blockIdx.x * blockDim.x;
+  if (pos < size) ptr[pos] = k;
+}
+
+}  // namespace
+
 namespace primitiv {
 
 CUDADevice::CUDADevice(unsigned device_id)
@@ -34,6 +53,19 @@ CUDADevice::CUDADevice(unsigned device_id)
     ss << "Invalid CUDA device ID. given: " << dev_id_ << " >= " << max_devs;
     throw std::runtime_error(ss.str());
   }
+  CUDA_CALL(::cudaGetDeviceProperties(&prop_, dev_id_));
+  // Dump device properties.
+  cerr << "Selected CUDA Device " << dev_id_ << ':' << endl;
+  cerr << "  Name ............ " << prop_.name << endl;
+  cerr << "  Global Memory ... " << prop_.totalGlobalMem << endl;
+  cerr << "  Shared Memory ... " << prop_.sharedMemPerBlock << endl;
+  cerr << "  Threads/block ... " << prop_.maxThreadsPerBlock << endl;
+  cerr << "  Threads dim ..... " << prop_.maxThreadsDim[0] << ','
+                                 << prop_.maxThreadsDim[1] << ','
+                                 << prop_.maxThreadsDim[2] << endl;
+  cerr << "  Grid size ....... " << prop_.maxGridSize[0] << ','
+                                 << prop_.maxGridSize[1] << ','
+                                 << prop_.maxGridSize[2] << endl;
 }
 
 CUDADevice::~CUDADevice() {
@@ -95,12 +127,20 @@ void CUDADevice::delete_tensor(Tensor &x) {
 
 std::vector<float> CUDADevice::tensor_to_vector(const Tensor &x) {
   CHECK_DEVICE(x);
-  throw std::runtime_error("not implemented.");
+  const unsigned num_elements = x.shape().size();
+  std::vector<float> ret(num_elements);
+  CUDA_CALL(::cudaMemcpy(
+        &ret[0], x.data(), sizeof(float) * num_elements,
+        cudaMemcpyDeviceToHost));
+  return ret;
 }
 
 void CUDADevice::reset_tensor(Tensor &x, const float k) {
   CHECK_DEVICE(x);
-  throw std::runtime_error("not implemented.");
+  const unsigned num_elements = x.shape().size();
+  const unsigned num_blocks = (num_elements + 1023) >> 10;
+  ::cuda_set_const<<<num_blocks, 1024>>>(
+      static_cast<float *>(x.data()), k, num_elements);
 }
 
 void CUDADevice::reset_tensor(Tensor &x, const std::vector<float> &values) {
@@ -113,7 +153,9 @@ void CUDADevice::reset_tensor(Tensor &x, const std::vector<float> &values) {
        << values.size();
     throw std::runtime_error(ss.str());
   }
-  throw std::runtime_error("not implemented.");
+  CUDA_CALL(::cudaMemcpy(
+        x.data(), &values[0], sizeof(float) * num_elements,
+        cudaMemcpyHostToDevice));
 }
 
 Tensor CUDADevice::duplicate(const Tensor &x) {

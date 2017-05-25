@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_CUDA_DEVICE_H_
 #define PRIMITIV_CUDA_DEVICE_H_
 
+#include <cuda_runtime_api.h>
 #include <map>
 #include <primitiv/device.h>
 
@@ -62,6 +63,7 @@ public:
 
 private:
   unsigned dev_id_;
+  ::cudaDeviceProp prop_;
   std::map<void *, unsigned> blocks_;
 };
 
