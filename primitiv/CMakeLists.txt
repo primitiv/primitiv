@@ -1,4 +1,4 @@
-set(nmtkit_LIBRARY_HDRS
+set(primitiv_LIBRARY_HDRS
   constant_initializer.h
   cpu_device.h
   device.h
@@ -16,7 +16,7 @@ set(nmtkit_LIBRARY_HDRS
   trainer.h
 )
 
-set(nmtkit_LIBRARY_SRCS
+set(primitiv_LIBRARY_SRCS
   constant_initializer.cc
   cpu_device.cc
   function_impl.cc
@@ -27,5 +27,5 @@ set(nmtkit_LIBRARY_SRCS
   tensor.cc
 )
 
-add_library(primitiv ${nmtkit_LIBRARY_HDRS} ${nmtkit_LIBRARY_SRCS})
+add_library(primitiv ${primitiv_LIBRARY_HDRS} ${primitiv_LIBRARY_SRCS})
 target_link_libraries(primitiv)
