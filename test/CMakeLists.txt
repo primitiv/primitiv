@@ -25,3 +25,8 @@ primitiv_test(sgd_trainer)
 primitiv_test(shape)
 primitiv_test(tensor)
 primitiv_test(tensor_ops)
+
+if(WITH_CUDA)
+  primitiv_test(cuda_device)
+  target_link_libraries(cuda_device_test primitiv_cuda)
+endif()

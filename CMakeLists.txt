@@ -13,21 +13,14 @@ configure_file(
   ${CMAKE_CURRENT_BINARY_DIR}/config.h
 )
 
-include_directories(
-  ${PROJECT_SOURCE_DIR}
-  ${PROJECT_BINARY_DIR}
-)
-
-link_directories(
-)
+include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
+link_directories()
 
 if(WITH_CUDA)
   find_package(CUDA REQUIRED)
   include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
   link_directories(${CUDA_LIBRARIES})
 endif()
-
-set(BUILD_SHARED_LIBS ON)
 
 enable_testing()
 
