@@ -1,18 +1,6 @@
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 project(primitiv VERSION 0.1.0 LANGUAGES CXX)
 
-# utility to check if required option is set.
-function(my_check_option name)
-  if(DEFINED ENV{${name}} AND NOT DEFINED ${name})
-    set(${name} "$ENV{${name}}")
-  endif()
-  if(${name})
-    MESSAGE("-- ${name}: ${${name}}")
-  else()
-    MESSAGE(FATAL_ERROR "Please give the variable `${name}`.")
-  endif()
-endfunction()
-
 # compiler requirements and settings
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -32,6 +20,12 @@ include_directories(
 
 link_directories(
 )
+
+if(WITH_CUDA)
+  find_package(CUDA REQUIRED)
+  include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
+  link_directories(${CUDA_LIBRARIES})
+endif()
 
 set(BUILD_SHARED_LIBS ON)
 
