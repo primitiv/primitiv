@@ -391,7 +391,7 @@ TEST_F(FunctionImplTest_1Arg, CheckReLU) {
   };
   const vector<float> bw_grad {
     1, 1, 1, 1,
-    1, 1, 1, 1,
+    0, 0, 0, 0,
     0, 0, 0, 0,
   };
   const ReLU node;

@@ -90,7 +90,7 @@ __global__ void dev_sigmoid(float *py, const float *px, const unsigned size) {
 
 __global__ void dev_step(float *py, const float *px, const unsigned size) {
   const unsigned i = IDX;
-  if (i < size) py[i] = (float)(px[i] >= .0f);
+  if (i < size) py[i] = (float)(px[i] > .0f);
 }
 
 __global__ void dev_relu(float *py, const float *px, const unsigned size) {

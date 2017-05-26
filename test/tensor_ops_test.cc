@@ -496,8 +496,8 @@ TEST_F(TensorOpsTest, CheckStep) {
     0, -.5, -1, -2, -4, -8,
   };
   const vector<float> y_data {
-    1, 1, 1, 1, 1, 1,
-    1, 0, 0, 0, 0, 0,
+    0, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0,
   };
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor(Shape({2, 3}, 2), x_data);

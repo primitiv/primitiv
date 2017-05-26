@@ -535,7 +535,7 @@ Tensor CPUDevice::step(const Tensor &x) {
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   const unsigned size = x.shape().size();
-  REPEAT_OP(i, size, dest[i] = static_cast<float>(src[i] >= 0));
+  REPEAT_OP(i, size, dest[i] = static_cast<float>(src[i] > 0));
   return ret;
 }
 
