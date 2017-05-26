@@ -16,7 +16,7 @@ configure_file(
 include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
 link_directories()
 
-if(WITH_CUDA)
+if(USE_CUDA)
   find_package(CUDA REQUIRED)
   include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
   link_directories(${CUDA_LIBRARIES})

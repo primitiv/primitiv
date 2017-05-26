@@ -7,6 +7,10 @@
 #include <primitiv/tensor.h>
 #include <test_utils.h>
 
+#ifdef USE_CUDA
+#include <primitiv/cuda_device.h>
+#endif  // USE_CUDA
+
 using std::vector;
 using test_utils::vector_match;
 
@@ -14,7 +18,20 @@ namespace primitiv {
 
 class TensorTest : public testing::Test {
 protected:
-  CPUDevice dev;
+  vector<Device *> devices;
+
+  void SetUp() override {
+    devices.emplace_back(new CPUDevice());
+#ifdef USE_CUDA
+    devices.emplace_back(new CUDADevice(0));
+#endif  // USE_CUDA
+  }
+
+  void TearDown() override {
+    for (Device *dev : devices) {
+      delete dev;
+    }
+  }
 };
 
 TEST_F(TensorTest, CheckNewDefault) {
@@ -25,58 +42,70 @@ TEST_F(TensorTest, CheckNewDefault) {
   EXPECT_EQ(nullptr, x.data());
 }
 
-TEST_F(TensorTest, CheckNew) {
-  {
-    const Tensor x = dev.new_tensor(Shape());
+TEST_F(TensorTest, CheckNewScalar) {
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor({});
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape(), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     const vector<float> d = x.to_vector();
     EXPECT_EQ(1u, d.size());
-    EXPECT_EQ(&dev, x.device());
+    EXPECT_EQ(dev, x.device());
   }
-  {
-    const Tensor x = dev.new_tensor(Shape {2, 3});
+}
+
+TEST_F(TensorTest, CheckNewMatrix) {
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor(Shape {2, 3});
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({2, 3}), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     const vector<float> d = x.to_vector();
     EXPECT_EQ(6u, d.size());
-    EXPECT_EQ(&dev, x.device());
+    EXPECT_EQ(dev, x.device());
   }
-  {
-    const Tensor x = dev.new_tensor(Shape({2, 3}, 4));
+}
+
+TEST_F(TensorTest, CheckNewMatrixMinibatch) {
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor(Shape({2, 3}, 4));
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({2, 3}, 4), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     const vector<float> d = x.to_vector();
     EXPECT_EQ(24u, d.size());
-    EXPECT_EQ(&dev, x.device());
+    EXPECT_EQ(dev, x.device());
   }
 }
 
-TEST_F(TensorTest, CheckNewWithData) {
-  {
-    const Tensor x = dev.new_tensor({}, 1);
+TEST_F(TensorTest, CheckNewScalarWithData) {
+  for (Device *dev : devices ) {
+    const Tensor x = dev->new_tensor({}, 1);
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape(), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     EXPECT_TRUE(vector_match(vector<float> {1}, x.to_vector()));
   }
-  {
+}
+
+TEST_F(TensorTest, CheckNewMatrixWithData) {
+  for (Device *dev : devices ) {
     const vector<float> data {1, 2, 3, 4, 5, 6};
-    const Tensor x = dev.new_tensor({2, 3}, data);
+    const Tensor x = dev->new_tensor({2, 3}, data);
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({2, 3}), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     EXPECT_TRUE(vector_match(data, x.to_vector()));
   }
-  {
+}
+
+TEST_F(TensorTest, CheckNewMatrixMinibatchWithData) {
+  for (Device *dev : devices ) {
     const vector<float> data {
       3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8,
       9, 7, 9, 3, 2, 3, 8, 4, 6, 2, 6, 4,
     };
-    const Tensor x = dev.new_tensor(Shape({2, 3}, 4), data);
+    const Tensor x = dev->new_tensor(Shape({2, 3}, 4), data);
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({2, 3}, 4), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
@@ -84,10 +113,9 @@ TEST_F(TensorTest, CheckNewWithData) {
   }
 }
 
-TEST_F(TensorTest, CheckMove) {
-  // c-tor
-  {
-    Tensor tmp = dev.new_tensor(Shape({2}, 3), {1, 2, 3, 4, 5, 6});
+TEST_F(TensorTest, CheckMoveCtor) {
+  for (Device *dev : devices) {
+    Tensor tmp = dev->new_tensor(Shape({2}, 3), {1, 2, 3, 4, 5, 6});
     void *ptr = tmp.data();
 
     Tensor x = std::move(tmp);
@@ -98,13 +126,14 @@ TEST_F(TensorTest, CheckMove) {
     EXPECT_EQ(ptr, x.data());
     EXPECT_TRUE(vector_match({1, 2, 3, 4, 5, 6}, x.to_vector()));
   }
+}
 
-  // operator= (move to valid tensor)
-  {
-    Tensor tmp = dev.new_tensor({6}, {2, 4, 6, 8, 10 ,12});
+TEST_F(TensorTest, CheckMoveOpToValidObj) {
+  for (Device *dev : devices) {
+    Tensor tmp = dev->new_tensor({6}, {2, 4, 6, 8, 10 ,12});
     void *ptr = tmp.data();
 
-    Tensor x = dev.new_tensor({}, 1);
+    Tensor x = dev->new_tensor({}, 1);
     x = std::move(tmp);
 
     EXPECT_TRUE(x.valid());
@@ -113,10 +142,11 @@ TEST_F(TensorTest, CheckMove) {
     EXPECT_EQ(ptr, x.data());
     EXPECT_TRUE(vector_match({2, 4, 6, 8, 10 ,12}, x.to_vector()));
   }
+}
 
-  // operator= (move to invalid tensor)
-  {
-    Tensor tmp = dev.new_tensor(Shape({1}, 6), {3, 6, 9, 12, 15, 18});
+TEST_F(TensorTest, CheckMoveOpToInvalidObj) {
+  for (Device *dev : devices) {
+    Tensor tmp = dev->new_tensor(Shape({1}, 6), {3, 6, 9, 12, 15, 18});
     void *ptr = tmp.data();
 
     Tensor x;
@@ -130,47 +160,55 @@ TEST_F(TensorTest, CheckMove) {
   }
 }
 
-TEST_F(TensorTest, CheckAddGradient) {
-  {
+TEST_F(TensorTest, CheckAddGradientNN) {
+  for (Device *dev : devices) {
     const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     const vector<float> b_data {0, -1, -2, -3, -3, -4, -5, -6, -6, -7, -8, -9};
     const vector<float> y_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
-    Tensor a = dev.new_tensor(Shape({2, 2}, 3), a_data);
-    const Tensor b = dev.new_tensor(Shape({2, 2}, 3), b_data);
+    Tensor a = dev->new_tensor(Shape({2, 2}, 3), a_data);
+    const Tensor b = dev->new_tensor(Shape({2, 2}, 3), b_data);
     a.add_gradient(b);
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
   }
-  {
+}
+
+TEST_F(TensorTest, CheckAddGradient1N) {
+  for (Device *dev : devices) {
     const vector<float> a_data {1, 2, 3, 4};
     const vector<float> b_data {0, -1, -2, -3, -3, -4, -5, -6, -6, -7, -8, -9};
     const vector<float> y_data {-8, -10, -12, -14};
-    Tensor a = dev.new_tensor({2, 2}, a_data);
-    const Tensor b = dev.new_tensor(Shape({2, 2}, 3), b_data);
+    Tensor a = dev->new_tensor({2, 2}, a_data);
+    const Tensor b = dev->new_tensor(Shape({2, 2}, 3), b_data);
     a.add_gradient(b);
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
   }
-  {
+}
+
+TEST_F(TensorTest, CheckAddGradientN1) {
+  for (Device *dev : devices) {
     const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     const vector<float> b_data {0, -1, -2, -3};
     const vector<float> y_data {1, 1, 1, 1, 5, 5, 5, 5, 9, 9, 9, 9};
-    Tensor a = dev.new_tensor(Shape({2, 2}, 3), a_data);
-    const Tensor b = dev.new_tensor({2, 2}, b_data);
+    Tensor a = dev->new_tensor(Shape({2, 2}, 3), a_data);
+    const Tensor b = dev->new_tensor({2, 2}, b_data);
     a.add_gradient(b);
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
   }
 }
 
 TEST_F(TensorTest, CheckInvalidAddGradient) {
-  vector<Shape> shapes {
-    Shape(),
-    Shape({}, 3),
-    Shape({2, 2}, 2),
-  };
-  Tensor a = dev.new_tensor(Shape({2, 2}, 3));
+  for (Device *dev : devices) {
+    vector<Shape> shapes {
+      Shape(),
+      Shape({}, 3),
+      Shape({2, 2}, 2),
+    };
+    Tensor a = dev->new_tensor(Shape({2, 2}, 3));
 
-  for (const Shape &shape : shapes) {
-    Tensor b = dev.new_tensor(shape);
-    EXPECT_THROW(a.add_gradient(b), std::runtime_error);
+    for (const Shape &shape : shapes) {
+      Tensor b = dev->new_tensor(shape);
+      EXPECT_THROW(a.add_gradient(b), std::runtime_error);
+    }
   }
 }
 

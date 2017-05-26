@@ -30,7 +30,7 @@ set(primitiv_LIBRARY_SRCS
 add_library(primitiv SHARED ${primitiv_LIBRARY_HDRS} ${primitiv_LIBRARY_SRCS})
 target_link_libraries(primitiv)
 
-if(WITH_CUDA)
+if(USE_CUDA)
   set(primitiv_cuda_LIBRARY_HDRS ${primitiv_LIBRARY_HDRS} cuda_device.h)
   set(primitiv_cuda_LIBRARY_SRCS cuda_device.cu)
   cuda_add_library(primitiv_cuda SHARED

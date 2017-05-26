@@ -138,7 +138,8 @@ std::vector<float> CUDADevice::tensor_to_vector(const Tensor &x) {
 void CUDADevice::reset_tensor(Tensor &x, const float k) {
   CHECK_DEVICE(x);
   const unsigned num_elements = x.shape().size();
-  const unsigned num_blocks = (num_elements + 1023) >> 10;
+  const unsigned num_blocks =
+    (num_elements + prop_.maxThreadsPerBlock - 1) / prop_.maxThreadsPerBlock;
   ::cuda_set_const<<<num_blocks, 1024>>>(
       static_cast<float *>(x.data()), k, num_elements);
 }
