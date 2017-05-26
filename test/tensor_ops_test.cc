@@ -475,12 +475,12 @@ TEST_F(TensorOpsTest, CheckTanh) {
 
 TEST_F(TensorOpsTest, CheckSigmoid) {
   const vector<float> x_data {
-    0, .5, 1, 2, 4, 8,
-    0, -.5, -1, -2, -4, -8,
+    0, .5, 1, 2, 3, 4,
+    0, -.5, -1, -2, -3, -4,
   };
   const vector<float> y_data {
-    .5, .62245933, .73105858, .88079708, .98201379, .99966465,
-    .5, .37754067, .26894142, .11920292, .017986210, .00033535013,
+    .5, .62245933, .73105858, .88079708, .95257413, .98201379,
+    .5, .37754067, .26894142, .11920292, .047425873, .017986210,
   };
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor(Shape({2, 3}, 2), x_data);

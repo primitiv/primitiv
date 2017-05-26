@@ -46,6 +46,12 @@ __global__ void cuda_math_tanh(
   if (i < size) dest[i] = ::tanh(src[i]);
 }
 
+__global__ void cuda_math_sigmoid(
+    float *dest, const float *src, const unsigned size) {
+  const unsigned i = threadIdx.x + blockIdx.x * blockDim.x;
+  if (i < size) dest[i] = .5f + .5f * ::tanh(.5f * src[i]);
+}
+
 }  // namespace
 
 namespace primitiv {
@@ -269,7 +275,13 @@ Tensor CUDADevice::tanh(const Tensor &x) {
 
 Tensor CUDADevice::sigmoid(const Tensor &x) {
   CHECK_DEVICE(x);
-  throw std::runtime_error("not implemented.");
+
+  Tensor ret = new_tensor(x.shape());
+  const unsigned num_elements = x.shape().size();
+  const unsigned num_blocks = (num_elements + max_threads_ - 1) / max_threads_;
+  ::cuda_math_sigmoid<<<num_blocks, max_threads_>>>(
+      DATA(ret), CDATA(x), num_elements);
+  return ret;
 }
 
 Tensor CUDADevice::step(const Tensor &x) {

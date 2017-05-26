@@ -23,7 +23,7 @@ public:
    * @param device_id ID of the physical GPU.
    */
   explicit CUDADevice(const unsigned device_id);
-  
+
   ~CUDADevice() override;
 
   using Device::new_tensor;
