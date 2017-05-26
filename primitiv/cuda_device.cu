@@ -73,6 +73,16 @@ __global__ void dev_divide_const_r(
   if (i < size) py[i] = px[i] / k;
 }
 
+__global__ void dev_transpose(
+    float *py, const float *px, const unsigned rows, const unsigned cols) {
+  const unsigned i = threadIdx.x + blockIdx.x * blockDim.x;
+  const unsigned j = threadIdx.y + blockIdx.y * blockDim.y;
+  const unsigned ofs = blockIdx.z * rows * cols;
+  if (i < rows && j < cols) {
+    py[ofs + j + i * cols] = px[ofs + i + j * rows];
+  }
+}
+
 __global__ void dev_exp(float *py, const float *px, const unsigned size) {
   const unsigned i = IDX;
   if (i < size) py[i] = ::expf(px[i]);
@@ -126,7 +136,16 @@ CUDADevice::CUDADevice(unsigned device_id)
   cerr << "  Grid size ....... " << prop_.maxGridSize[0] << ','
                                  << prop_.maxGridSize[1] << ','
                                  << prop_.maxGridSize[2] << endl;
-  max_threads_ = prop_.maxThreadsPerBlock;  // shortcut
+  // Calculates size of dims to be used in CUDA kernels.
+  dim1_x_ = dim2_y_ = prop_.maxThreadsPerBlock;
+  dim2_x_ = 1;
+  while (dim2_x_ < dim2_y_) {
+    dim2_x_ <<= 1;
+    dim2_y_ >>= 1;
+  }
+  cerr << "Block configuration:" << endl;
+  cerr << "  1 dim .... " << dim1_x_ << " threads" << endl;
+  cerr << "  2 dims ... " << dim2_x_ << "x" << dim2_y_ << " threads" << endl;
 }
 
 CUDADevice::~CUDADevice() {
@@ -188,34 +207,32 @@ void CUDADevice::delete_tensor(Tensor &x) {
 
 std::vector<float> CUDADevice::tensor_to_vector(const Tensor &x) {
   CHECK_DEVICE(x);
-  const unsigned num_elements = x.shape().size();
-  std::vector<float> ret(num_elements);
+  const unsigned size = x.shape().size();
+  std::vector<float> ret(size);
   CUDA_CALL(::cudaMemcpy(
-        &ret[0], x.data(), sizeof(float) * num_elements,
-        cudaMemcpyDeviceToHost));
+        &ret[0], x.data(), sizeof(float) * size, cudaMemcpyDeviceToHost));
   return ret;
 }
 
 void CUDADevice::reset_tensor(Tensor &x, const float k) {
   CHECK_DEVICE(x);
-  const unsigned num_elements = x.shape().size();
-  const unsigned num_blocks = (num_elements + max_threads_ - 1) / max_threads_;
-  ::dev_set_const<<<num_blocks, max_threads_>>>(DATA(x), k, num_elements);
+  const unsigned size = x.shape().size();
+  const unsigned num_blocks = (size + dim1_x_ - 1) / dim1_x_;
+  ::dev_set_const<<<num_blocks, dim1_x_>>>(DATA(x), k, size);
 }
 
 void CUDADevice::reset_tensor(Tensor &x, const std::vector<float> &values) {
   CHECK_DEVICE(x);
-  const unsigned num_elements = x.shape().size();
-  if (values.size() != num_elements) {
+  const unsigned size = x.shape().size();
+  if (values.size() != size) {
     std::stringstream ss;
-    ss << "Data sizes mismatched. required: " << num_elements
+    ss << "Data sizes mismatched. required: " << size
        << " (shape: " << x.shape().to_string() << ") != actual: "
        << values.size();
     throw std::runtime_error(ss.str());
   }
   CUDA_CALL(::cudaMemcpy(
-        x.data(), &values[0], sizeof(float) * num_elements,
-        cudaMemcpyHostToDevice));
+        x.data(), &values[0], sizeof(float) * size, cudaMemcpyHostToDevice));
 }
 
 Tensor CUDADevice::duplicate(const Tensor &x) {
@@ -232,8 +249,8 @@ Tensor CUDADevice::name(const Tensor &x) { \
   CHECK_DEVICE(x); \
   Tensor ret = new_tensor(x.shape()); \
   const unsigned size = x.shape().size(); \
-  const unsigned num_blocks = (size + max_threads_ - 1) / max_threads_; \
-  ::kernel<<<num_blocks, max_threads_>>>(DATA(ret), CDATA(x), size); \
+  const unsigned num_blocks = (size + dim1_x_ - 1) / dim1_x_; \
+  ::kernel<<<num_blocks, dim1_x_>>>(DATA(ret), CDATA(x), size); \
   return ret; \
 }
 
@@ -242,8 +259,8 @@ Tensor CUDADevice::name(const float k, const Tensor &x) { \
   CHECK_DEVICE(x); \
   Tensor ret = new_tensor(x.shape()); \
   const unsigned size = x.shape().size(); \
-  const unsigned num_blocks = (size + max_threads_ - 1) / max_threads_; \
-  ::kernel<<<num_blocks, max_threads_>>>(DATA(ret), CDATA(x), k, size); \
+  const unsigned num_blocks = (size + dim1_x_ - 1) / dim1_x_; \
+  ::kernel<<<num_blocks, dim1_x_>>>(DATA(ret), CDATA(x), k, size); \
   return ret; \
 }
 
@@ -252,8 +269,8 @@ Tensor CUDADevice::name(const Tensor &x, const float k) { \
   CHECK_DEVICE(x); \
   Tensor ret = new_tensor(x.shape()); \
   const unsigned size = x.shape().size(); \
-  const unsigned num_blocks = (size + max_threads_ - 1) / max_threads_; \
-  ::kernel<<<num_blocks, max_threads_>>>(DATA(ret), CDATA(x), k, size); \
+  const unsigned num_blocks = (size + dim1_x_ - 1) / dim1_x_; \
+  ::kernel<<<num_blocks, dim1_x_>>>(DATA(ret), CDATA(x), k, size); \
   return ret; \
 }
 
@@ -307,7 +324,15 @@ Tensor CUDADevice::transpose(const Tensor &x) {
     ss << "Attempted to transpose a tensor with shape " << s.to_string() << '.';
     throw std::runtime_error(ss.str());
   }
-  throw std::runtime_error("not implemented.");
+  const unsigned d1 = s.dim(0);
+  const unsigned d2 = s.dim(1);
+  const unsigned bs = s.batch_size();
+  const unsigned g1 = (d1 + dim2_x_ - 1) / dim2_x_;
+  const unsigned g2 = (d2 + dim2_y_ - 1) / dim2_y_;
+  Tensor ret = new_tensor(Shape({d2, d1}, bs));
+  ::dev_transpose<<<dim3(g1, g2, bs), dim3(dim2_x_, dim2_y_, 1)>>>(
+      DATA(ret), CDATA(x), d1, d2);
+  return ret;
 }
 
 Tensor CUDADevice::dot(const Tensor &a, const Tensor &b) {
