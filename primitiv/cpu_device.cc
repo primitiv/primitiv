@@ -71,8 +71,8 @@ void CPUDevice::delete_tensor(Tensor &x) {
     throw std::runtime_error(ss.str()); \
   }
 
-#define DATA(x) static_cast<float *>((x).data());
-#define CDATA(x) static_cast<const float *>((x).data());
+#define DATA(x) static_cast<float *>((x).data())
+#define CDATA(x) static_cast<const float *>((x).data())
 
 #define REPEAT_OP(i, n, op) \
   for (unsigned (i) = 0; (i) < (n); ++(i)) { \

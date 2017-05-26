@@ -29,15 +29,21 @@ namespace {
  * CUDA kernels
  */
 
-/**
- * Reset arrays with a constant.
- * @param ptr Target array.
- * @param k Constant.
- * @param size Number of elements in the array.
- */
 __global__ void cuda_set_const(float *ptr, const float k, const unsigned size) {
-  const unsigned pos = threadIdx.x + blockIdx.x * blockDim.x;
-  if (pos < size) ptr[pos] = k;
+  const unsigned i = threadIdx.x + blockIdx.x * blockDim.x;
+  if (i < size) ptr[i] = k;
+}
+
+__global__ void cuda_math_exp(
+    float *dest, const float *src, const unsigned size) {
+  const unsigned i = threadIdx.x + blockIdx.x * blockDim.x;
+  if (i < size) dest[i] = ::exp(src[i]);
+}
+
+__global__ void cuda_math_tanh(
+    float *dest, const float *src, const unsigned size) {
+  const unsigned i = threadIdx.x + blockIdx.x * blockDim.x;
+  if (i < size) dest[i] = ::tanh(src[i]);
 }
 
 }  // namespace
@@ -66,6 +72,7 @@ CUDADevice::CUDADevice(unsigned device_id)
   cerr << "  Grid size ....... " << prop_.maxGridSize[0] << ','
                                  << prop_.maxGridSize[1] << ','
                                  << prop_.maxGridSize[2] << endl;
+  max_threads_ = prop_.maxThreadsPerBlock;  // shortcut
 }
 
 CUDADevice::~CUDADevice() {
@@ -122,8 +129,8 @@ void CUDADevice::delete_tensor(Tensor &x) {
     throw std::runtime_error(ss.str()); \
   }
 
-#define DATA(x) static_cast<float *>((x).data());
-#define CDATA(x) static_cast<const float *>((x).data());
+#define DATA(x) static_cast<float *>((x).data())
+#define CDATA(x) static_cast<const float *>((x).data())
 
 std::vector<float> CUDADevice::tensor_to_vector(const Tensor &x) {
   CHECK_DEVICE(x);
@@ -138,10 +145,8 @@ std::vector<float> CUDADevice::tensor_to_vector(const Tensor &x) {
 void CUDADevice::reset_tensor(Tensor &x, const float k) {
   CHECK_DEVICE(x);
   const unsigned num_elements = x.shape().size();
-  const unsigned num_blocks =
-    (num_elements + prop_.maxThreadsPerBlock - 1) / prop_.maxThreadsPerBlock;
-  ::cuda_set_const<<<num_blocks, 1024>>>(
-      static_cast<float *>(x.data()), k, num_elements);
+  const unsigned num_blocks = (num_elements + max_threads_ - 1) / max_threads_;
+  ::cuda_set_const<<<num_blocks, max_threads_>>>(DATA(x), k, num_elements);
 }
 
 void CUDADevice::reset_tensor(Tensor &x, const std::vector<float> &values) {
@@ -242,12 +247,24 @@ Tensor CUDADevice::dot(const Tensor &a, const Tensor &b) {
 
 Tensor CUDADevice::exp(const Tensor &x) {
   CHECK_DEVICE(x);
-  throw std::runtime_error("not implemented.");
+
+  Tensor ret = new_tensor(x.shape());
+  const unsigned num_elements = x.shape().size();
+  const unsigned num_blocks = (num_elements + max_threads_ - 1) / max_threads_;
+  ::cuda_math_exp<<<num_blocks, max_threads_>>>(
+      DATA(ret), CDATA(x), num_elements);
+  return ret;
 }
 
 Tensor CUDADevice::tanh(const Tensor &x) {
   CHECK_DEVICE(x);
-  throw std::runtime_error("not implemented.");
+
+  Tensor ret = new_tensor(x.shape());
+  const unsigned num_elements = x.shape().size();
+  const unsigned num_blocks = (num_elements + max_threads_ - 1) / max_threads_;
+  ::cuda_math_tanh<<<num_blocks, max_threads_>>>(
+      DATA(ret), CDATA(x), num_elements);
+  return ret;
 }
 
 Tensor CUDADevice::sigmoid(const Tensor &x) {

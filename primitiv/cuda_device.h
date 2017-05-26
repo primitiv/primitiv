@@ -64,6 +64,7 @@ public:
 private:
   unsigned dev_id_;
   ::cudaDeviceProp prop_;
+  unsigned max_threads_;
   std::map<void *, unsigned> blocks_;
 };
 
