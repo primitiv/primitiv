@@ -25,7 +25,7 @@ namespace {
  * CUDA kernels
  */
 
-#define IDX threadIdx.x + blockIdx.x * blockDim.x
+#define IDX (threadIdx.x + blockIdx.x * blockDim.x)
 
 __global__ void dev_set_const(float *py, const float k, const unsigned size) {
   const unsigned i = IDX;
@@ -73,6 +73,38 @@ __global__ void dev_divide_const_r(
   if (i < size) py[i] = px[i] / k;
 }
 
+__global__ void dev_add(
+    float *py, const float *pa, const float *pb,
+    const unsigned size, const unsigned mba, const unsigned mbb) {
+  const unsigned i = IDX;
+  const unsigned shift = blockIdx.y * size;
+  if (i < size) py[i + shift] = pa[i + mba * shift] + pb[i + mbb * shift];
+}
+
+__global__ void dev_subtract(
+    float *py, const float *pa, const float *pb,
+    const unsigned size, const unsigned mba, const unsigned mbb) {
+  const unsigned i = IDX;
+  const unsigned shift = blockIdx.y * size;
+  if (i < size) py[i + shift] = pa[i + mba * shift] - pb[i + mbb * shift];
+}
+
+__global__ void dev_multiply(
+    float *py, const float *pa, const float *pb,
+    const unsigned size, const unsigned mba, const unsigned mbb) {
+  const unsigned i = IDX;
+  const unsigned shift = blockIdx.y * size;
+  if (i < size) py[i + shift] = pa[i + mba * shift] * pb[i + mbb * shift];
+}
+
+__global__ void dev_divide(
+    float *py, const float *pa, const float *pb,
+    const unsigned size, const unsigned mba, const unsigned mbb) {
+  const unsigned i = IDX;
+  const unsigned shift = blockIdx.y * size;
+  if (i < size) py[i + shift] = pa[i + mba * shift] / pb[i + mbb * shift];
+}
+
 __global__ void dev_transpose(
     float *py, const float *px, const unsigned rows, const unsigned cols) {
   const unsigned i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -80,6 +112,22 @@ __global__ void dev_transpose(
   const unsigned ofs = blockIdx.z * rows * cols;
   if (i < rows && j < cols) {
     py[ofs + j + i * cols] = px[ofs + i + j * rows];
+  }
+}
+
+__global__ void dev_dot(
+    float *py, const float *pa, const float *pb,
+    const unsigned di, const unsigned dj, const unsigned dk,
+    const unsigned mba, const unsigned mbb) {
+  // TODO(odashi): This implementation might be slow.
+  const unsigned i = threadIdx.x + blockIdx.x * blockDim.x;
+  const unsigned k = threadIdx.y + blockIdx.y * blockDim.y;
+  if (i < di && k < dk) {
+    pa += i + mba * blockIdx.z * di * dj;
+    pb += (k + mbb * blockIdx.z * dk) * dj;
+    float sum = .0f;
+    for (unsigned j = 0; j < dj; ++j, pa += di, ++pb) sum += *pa * *pb;
+    py[i + (k + blockIdx.z * dk) * di] = sum;
   }
 }
 
@@ -106,6 +154,21 @@ __global__ void dev_step(float *py, const float *px, const unsigned size) {
 __global__ void dev_relu(float *py, const float *px, const unsigned size) {
   const unsigned i = IDX;
   if (i < size) py[i] = ::fmaxf(px[i], .0f);
+}
+
+__global__ void dev_add_grad(
+    float *pgx, const float *pgy, const unsigned size,
+    const unsigned bs, const unsigned mbx, const unsigned mby) {
+  // TODO(odashi): This implementation might be slow.
+  const unsigned i = IDX;
+  const unsigned shx = mbx * size;
+  const unsigned shy = mby * size;
+  if (i < size) {
+    pgx += i, pgy += i;
+    for (unsigned n = 0; n < bs; ++n, pgx += shx, pgy += shy) {
+      *pgx += *pgy;
+    }
+  }
 }
 
 #undef IDX
@@ -202,6 +265,7 @@ void CUDADevice::delete_tensor(Tensor &x) {
     throw std::runtime_error(ss.str()); \
   }
 
+#define GRID_SIZE(x, thread_size) ((x + thread_size - 1) / thread_size)
 #define DATA(x) static_cast<float *>((x).data())
 #define CDATA(x) static_cast<const float *>((x).data())
 
@@ -217,7 +281,7 @@ std::vector<float> CUDADevice::tensor_to_vector(const Tensor &x) {
 void CUDADevice::reset_tensor(Tensor &x, const float k) {
   CHECK_DEVICE(x);
   const unsigned size = x.shape().size();
-  const unsigned num_blocks = (size + dim1_x_ - 1) / dim1_x_;
+  const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
   ::dev_set_const<<<num_blocks, dim1_x_>>>(DATA(x), k, size);
 }
 
@@ -249,7 +313,7 @@ Tensor CUDADevice::name(const Tensor &x) { \
   CHECK_DEVICE(x); \
   Tensor ret = new_tensor(x.shape()); \
   const unsigned size = x.shape().size(); \
-  const unsigned num_blocks = (size + dim1_x_ - 1) / dim1_x_; \
+  const unsigned num_blocks = GRID_SIZE(size, dim1_x_); \
   ::kernel<<<num_blocks, dim1_x_>>>(DATA(ret), CDATA(x), size); \
   return ret; \
 }
@@ -259,7 +323,7 @@ Tensor CUDADevice::name(const float k, const Tensor &x) { \
   CHECK_DEVICE(x); \
   Tensor ret = new_tensor(x.shape()); \
   const unsigned size = x.shape().size(); \
-  const unsigned num_blocks = (size + dim1_x_ - 1) / dim1_x_; \
+  const unsigned num_blocks = GRID_SIZE(size, dim1_x_); \
   ::kernel<<<num_blocks, dim1_x_>>>(DATA(ret), CDATA(x), k, size); \
   return ret; \
 }
@@ -269,8 +333,31 @@ Tensor CUDADevice::name(const Tensor &x, const float k) { \
   CHECK_DEVICE(x); \
   Tensor ret = new_tensor(x.shape()); \
   const unsigned size = x.shape().size(); \
-  const unsigned num_blocks = (size + dim1_x_ - 1) / dim1_x_; \
+  const unsigned num_blocks = GRID_SIZE(size,dim1_x_); \
   ::kernel<<<num_blocks, dim1_x_>>>(DATA(ret), CDATA(x), k, size); \
+  return ret; \
+}
+
+#define CUDA_DEV_BINARY_AB(name, kernel) \
+Tensor CUDADevice::name(const Tensor &a, const Tensor &b) { \
+  CHECK_DEVICE(a); \
+  CHECK_DEVICE(b); \
+  const Shape &sa = a.shape(); \
+  const Shape &sb = b.shape(); \
+  const unsigned ba = sa.batch_size(); \
+  const unsigned bb = sb.batch_size(); \
+  const unsigned size = sa.size() / ba; \
+  const unsigned x = GRID_SIZE(size, dim1_x_); \
+  const unsigned y = std::max(ba, bb); \
+  if (sa.dims() != sb.dims() || (ba != bb && ba > 1 && bb > 1)) { \
+    std::stringstream ss; \
+    ss << "Attempted to " #name " tensors with shapes " \
+       << sa.to_string() << " and " << sb.to_string() << '.'; \
+    throw std::runtime_error(ss.str()); \
+  } \
+  Tensor ret = new_tensor(Shape(sa.dims(), y)); \
+  ::kernel<<<dim3(x, y, 1), dim1_x_>>>( \
+      DATA(ret), CDATA(a), CDATA(b), size, ba > 1, bb > 1); \
   return ret; \
 }
 
@@ -288,47 +375,29 @@ CUDA_DEV_BINARY_XK(multiply, dev_multiply_const);
 CUDA_DEV_BINARY_KX(divide, dev_divide_const_l);
 CUDA_DEV_BINARY_XK(divide, dev_divide_const_r);
 
+CUDA_DEV_BINARY_AB(add, dev_add);
+CUDA_DEV_BINARY_AB(subtract, dev_subtract);
+CUDA_DEV_BINARY_AB(multiply, dev_multiply);
+CUDA_DEV_BINARY_AB(divide, dev_divide);
+
 #undef CUDA_DEV_UNARY
 #undef CUDA_DEV_BINARY_KX
 #undef CUDA_DEV_BINARY_XK
-
-Tensor CUDADevice::add(const Tensor &a, const Tensor &b) {
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
-  throw std::runtime_error("not implemented.");
-}
-
-Tensor CUDADevice::subtract(const Tensor &a, const Tensor &b) {
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
-  throw std::runtime_error("not implemented.");
-}
-
-Tensor CUDADevice::multiply(const Tensor &a, const Tensor &b) {
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
-  throw std::runtime_error("not implemented.");
-}
-
-Tensor CUDADevice::divide(const Tensor &a, const Tensor &b) {
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
-  throw std::runtime_error("not implemented.");
-}
+#undef CUDA_DEV_BINARY_AB
 
 Tensor CUDADevice::transpose(const Tensor &x) {
   CHECK_DEVICE(x);
   const Shape &s = x.shape();
+  const unsigned d1 = s.dim(0);
+  const unsigned d2 = s.dim(1);
+  const unsigned bs = s.batch_size();
+  const unsigned g1 = GRID_SIZE(d1, dim2_x_);
+  const unsigned g2 = GRID_SIZE(d2, dim2_y_);
   if (s.dims().size() > 2) {
     std::stringstream ss;
     ss << "Attempted to transpose a tensor with shape " << s.to_string() << '.';
     throw std::runtime_error(ss.str());
   }
-  const unsigned d1 = s.dim(0);
-  const unsigned d2 = s.dim(1);
-  const unsigned bs = s.batch_size();
-  const unsigned g1 = (d1 + dim2_x_ - 1) / dim2_x_;
-  const unsigned g2 = (d2 + dim2_y_ - 1) / dim2_y_;
   Tensor ret = new_tensor(Shape({d2, d1}, bs));
   ::dev_transpose<<<dim3(g1, g2, bs), dim3(dim2_x_, dim2_y_, 1)>>>(
       DATA(ret), CDATA(x), d1, d2);
@@ -338,13 +407,47 @@ Tensor CUDADevice::transpose(const Tensor &x) {
 Tensor CUDADevice::dot(const Tensor &a, const Tensor &b) {
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);
-  throw std::runtime_error("not implemented.");
+  const Shape &sa = a.shape();
+  const Shape &sb = b.shape();
+  const unsigned di = sa.dim(0);
+  const unsigned dj = sa.dim(1);
+  const unsigned dk = sb.dim(1);
+  const unsigned ba = sa.batch_size();
+  const unsigned bb = sb.batch_size();
+  const unsigned g1 = GRID_SIZE(di, dim2_x_);
+  const unsigned g2 = GRID_SIZE(dk, dim2_y_);
+  const unsigned bs = std::max(ba, bb);
+  if (sa.dims().size() > 2 || sb.dims().size() > 2 ||
+      sb.dim(0) != dj ||
+      (ba != bb && ba > 1 && bb > 1)) {
+    std::stringstream ss;
+    ss << "Attempted to calculate the dot product of tensors with shapes "
+      << sa.to_string() << " and " << sb.to_string() << '.';
+    throw std::runtime_error(ss.str());
+  }
+  Tensor ret = new_tensor(Shape({di, dk}, bs));
+  ::dev_dot<<<dim3(g1, g2, bs), dim3(dim2_x_, dim2_y_, 1)>>>(
+      DATA(ret), CDATA(a), CDATA(b), di, dj, dk, ba > 1, bb > 1);
+  return ret;
 }
 
 void CUDADevice::add_gradient(Tensor &a, const Tensor &b) {
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);
-  throw std::runtime_error("not implemented.");
+  const Shape &sa = a.shape();
+  const Shape &sb = b.shape();
+  const unsigned ba = sa.batch_size();
+  const unsigned bb = sb.batch_size();
+  const unsigned size = sa.size() / ba;
+  const unsigned g1 = GRID_SIZE(size, dim1_x_);
+  if (sa.dims() != sb.dims() || (ba != bb && ba > 1 && bb > 1)) {
+    std::stringstream ss;
+    ss << "Attempted to add gradients with shape " << sb.to_string()
+       << " to shape " << sa.to_string() << '.';
+    throw std::runtime_error(ss.str());
+  }
+  ::dev_add_grad<<<g1, dim1_x_>>>(
+      DATA(a), CDATA(b), size, std::max(ba, bb), ba > 1, bb > 1);
 }
 
 }  // namespace primitiv

@@ -585,8 +585,8 @@ void CPUDevice::add_gradient(Tensor &a, const Tensor &b) {
 
   // error
   std::stringstream ss;
-  ss << "Attempted to add gradient tensors with shapes "
-     << a.shape().to_string() << " and " << b.shape().to_string() << '.';
+  ss << "Attempted to add gradients with shape " << sb.to_string()
+     << " to shape " << sa.to_string() << '.';
   throw std::runtime_error(ss.str());
 }
 
