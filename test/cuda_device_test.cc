@@ -75,4 +75,14 @@ TEST_F(CUDADeviceTest, CheckSetValuesByVector) {
   }
 }
 
+TEST_F(CUDADeviceTest, CheckRandomUniform) {
+  // TODO(odashi): add test.
+  FAIL() << "not implemented.";
+}
+
+TEST_F(CUDADeviceTest, CheckRandomNormal) {
+  // TODO(odashi): add test.
+  FAIL() << "not implemented.";
+}
+
 }  // namespace primitiv

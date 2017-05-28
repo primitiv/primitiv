@@ -29,6 +29,11 @@ public:
   void reset_tensor(Tensor &x, const float k) override;
   void reset_tensor(Tensor &x, const std::vector<float> &values) override;
 
+  Tensor random_uniform(
+      const Shape &shape, const float lower, const float upper) override;
+  Tensor random_normal(
+      const Shape &shape, const float mean, const float sd) override;
+
   Tensor duplicate(const Tensor &x) override;
   Tensor negate(const Tensor &x) override;
 

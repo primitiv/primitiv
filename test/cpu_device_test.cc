@@ -67,4 +67,14 @@ TEST_F(CPUDeviceTest, CheckSetValuesByVector) {
   }
 }
 
+TEST_F(CPUDeviceTest, CheckRandomUniform) {
+  // TODO(odashi): add test.
+  FAIL() << "not implemented.";
+}
+
+TEST_F(CPUDeviceTest, CheckRandomNormal) {
+  // TODO(odashi): add test.
+  FAIL() << "not implemented.";
+}
+
 }  // namespace primitiv

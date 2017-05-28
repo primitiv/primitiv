@@ -299,6 +299,16 @@ void CUDADevice::reset_tensor(Tensor &x, const std::vector<float> &values) {
         x.data(), &values[0], sizeof(float) * size, cudaMemcpyHostToDevice));
 }
 
+Tensor CUDADevice::random_uniform(
+    const Shape &shape, const float lower, const float upper) {
+  throw std::runtime_error("not implemented.");
+}
+
+Tensor CUDADevice::random_normal(
+    const Shape &shape, const float mean, const float sd) {
+  throw std::runtime_error("not implemented.");
+}
+
 Tensor CUDADevice::duplicate(const Tensor &x) {
   CHECK_DEVICE(x);
   Tensor ret = new_tensor(x.shape());

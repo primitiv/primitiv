@@ -107,6 +107,16 @@ void CPUDevice::reset_tensor(Tensor &x, const std::vector<float> &values) {
   std::memcpy(x.data(), &values[0], sizeof(float) * num_elements);
 }
 
+Tensor CPUDevice::random_uniform(
+    const Shape &shape, const float lower, const float upper) {
+  throw std::runtime_error("not implemented.");
+}
+
+Tensor CPUDevice::random_normal(
+    const Shape &shape, const float mean, const float sd) {
+  throw std::runtime_error("not implemented.");
+}
+
 Tensor CPUDevice::duplicate(const Tensor &x) {
   CHECK_DEVICE(x);
 

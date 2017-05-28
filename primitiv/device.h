@@ -77,6 +77,28 @@ public:
   virtual void reset_tensor(Tensor &x, const std::vector<float> &values) = 0;
 
   /**
+   * Provides a new Tensor object in which all elements are initialized by
+   * the uniform distribution with range (lower, upper].
+   * @param shape Shape of the tensor.
+   * @param lower Lower bound of values.
+   * @param upper Upper bound of values.
+   * @return A new Tensor object.
+   */
+  virtual Tensor random_uniform(
+      const Shape &shape, const float lower, const float upper) = 0;
+
+  /**
+   * Provides a new Tensor object in which all elements are initialized by
+   * the normal distribution with specific mean and standard deviation.
+   * @param shape Shape of the tensor.
+   * @param mean Mean of the normal distribution.
+   * @param sd Standard deviation of the normal distribution.
+   * @return A new Tensor object.
+   */
+  virtual Tensor random_normal(
+      const Shape &shape, const float mean, const float sd) = 0;
+
+  /**
    * Duplicates the tensor.
    * @param x A tensor.
    * @return Duplicated tensor.
