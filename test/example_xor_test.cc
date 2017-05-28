@@ -6,15 +6,24 @@
 #include <primitiv/node_ops.h>
 #include <primitiv/sgd_trainer.h>
 
+#ifdef USE_CUDA
+#include <primitiv/cuda_device.h>
+#endif  // USE_CUDA
+
 namespace primitiv {
 
 namespace F = node_ops;
 
 TEST(ExampleTest, Xor) {
-  // Solving the XOR problem with 3-layer perceptron.
-  
-  // Computation backend
+  // Solving the XOR problem with a 3-layer perceptron.
+
+#ifdef USE_CUDA
+  // Computation backend (CUDA: device ID = 0)
+  CUDADevice dev(0);
+#else
+  // Computation backend (CPU)
   CPUDevice dev;
+#endif  // USE_CUDA
 
   // Parameters
   Parameter pw1({4, 2}, &dev, {1, 1, -1, -1, 1, -1, 1, -1});
@@ -29,11 +38,9 @@ TEST(ExampleTest, Xor) {
   trainer.add_parameter(&pw2);
   trainer.add_parameter(&pb2);
 
-  float prev_loss = 1e10;
-
-  // Training loop.
+  // Training loop
   for (unsigned i = 0; i < 10; ++i) {
-    // Build computation graph.
+    // Builds a computation graph.
     Graph g;
     Node x = F::input(g, dev, Shape({2}, 4), {1, 1, 1, -1, -1, 1, -1, -1});
     Node w1 = F::parameter(g, pw1);
@@ -46,20 +53,22 @@ TEST(ExampleTest, Xor) {
     Node diff = t - y;
     Node loss = diff * diff;
 
-    // Get result.
+    // Gets results (outputs).
     std::vector<float> y_val = g.forward(y).to_vector();
     std::cout << "epoch " << i << ":" << std::endl;
     for (unsigned j = 0; j < 4; ++j) {
       std::cout << "  [" << j << "]: " << y_val[j] << std::endl;
     }
 
-    // Backpropagation
+    // Gets results (losses).
     trainer.reset_gradients();
     float loss_val = g.forward(loss).to_vector()[0];
-    std::cout << "  loss: " << loss_val << std::endl;
-    EXPECT_LT(loss_val, prev_loss);
-    prev_loss = loss_val;
+    std::cout << "  loss[0]: " << loss_val << std::endl;
+
+    // Backpropagation
     g.backward(loss);
+
+    // Updates parameters.
     trainer.update();
   }
 }
