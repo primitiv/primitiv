@@ -30,6 +30,22 @@ private:
   float k_;
 };
 
+/**
+ * The Xavier matrix initialization with the uniform distribution.
+ */
+class XavierUniform : public Initializer {
+  XavierUniform(const XavierUniform &) = delete;
+  XavierUniform(XavierUniform &&) = delete;
+  XavierUniform &operator=(const XavierUniform &) = delete;
+  XavierUniform &operator=(XavierUniform &&) = delete;
+
+public:
+  XavierUniform() = default;
+  ~XavierUniform() = default;
+
+  void apply(Tensor &x) const override;
+};
+
 }  // namespace initializers
 }  // namespace primitiv
 
