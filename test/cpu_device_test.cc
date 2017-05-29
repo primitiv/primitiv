@@ -68,13 +68,63 @@ TEST_F(CPUDeviceTest, CheckSetValuesByVector) {
 }
 
 TEST_F(CPUDeviceTest, CheckRandomUniform) {
-  // TODO(odashi): add test.
-  FAIL() << "not implemented.";
+  vector<vector<float>> history;
+  for (unsigned i = 0; i < 10; ++i) {
+    CPUDevice dev;
+    const Tensor x = dev.random_uniform(Shape({2, 2}, 2), -9, 9);
+    const vector<float> x_val = x.to_vector();
+
+    std::cout << "Epoch " << i << ':';
+    for (float x_i : x_val) {
+      std::cout << ' ' << x_i;
+    }
+    std::cout << std::endl;
+
+    for (const vector<float> &h_val : history) {
+      EXPECT_FALSE(vector_match(x_val, h_val));
+    }
+    history.emplace_back(x_val);
+  }
+}
+
+TEST_F(CPUDeviceTest, CheckRandomUniformWithSeed) {
+  const vector<float> expected {
+    7.7330894e+00, 7.0227852e+00, -3.3052402e+00, -6.6472688e+00,
+    -5.6894612e+00, -8.2843294e+00, -5.3179150e+00, 5.8758497e+00,
+  };
+  CPUDevice dev(12345);
+  const Tensor x = dev.random_uniform(Shape({2, 2}, 2), -9, 9);
+  EXPECT_TRUE(vector_match(expected, x.to_vector()));
 }
 
 TEST_F(CPUDeviceTest, CheckRandomNormal) {
-  // TODO(odashi): add test.
-  FAIL() << "not implemented.";
+  vector<vector<float>> history;
+  for (unsigned i = 0; i < 10; ++i) {
+    CPUDevice dev;
+    const Tensor x = dev.random_normal(Shape({2, 2}, 2), 1, 3);
+    const vector<float> x_val = x.to_vector();
+
+    std::cout << "Epoch " << i << ':';
+    for (float x_i : x_val) {
+      std::cout << ' ' << x_i;
+    }
+    std::cout << std::endl;
+
+    for (const vector<float> &h_val : history) {
+      EXPECT_FALSE(vector_match(x_val, h_val));
+    }
+    history.emplace_back(x_val);
+  }
+}
+
+TEST_F(CPUDeviceTest, CheckRandomNormalWithSeed) {
+  const vector<float> expected {
+    -1.3574908e+00, -1.7222166e-01, 2.5865970e+00, -4.3594337e-01,
+    4.5383353e+00, 8.4703674e+00, 2.5535507e+00, 1.3252910e+00,
+  };
+  CPUDevice dev(12345);
+  const Tensor x = dev.random_normal(Shape({2, 2}, 2), 1, 3);
+  EXPECT_TRUE(vector_match(expected, x.to_vector()));
 }
 
 }  // namespace primitiv

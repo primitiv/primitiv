@@ -2,6 +2,7 @@
 #define PRIMITIV_CPU_DEVICE_H_
 
 #include <map>
+#include <random>
 #include <primitiv/device.h>
 
 namespace primitiv {
@@ -16,7 +17,19 @@ class CPUDevice : public Device {
   CPUDevice &operator=(CPUDevice &&) = delete;
 
 public:
-  CPUDevice() = default;
+  /**
+   * Creates a CPUDevice object.
+   * @remarks The internal random number generator is initialized by
+   *          `std::random_device`.
+   */
+  CPUDevice();
+
+  /**
+   * Creates a CPUDevice object.
+   * @param rng_seed The seed value of internal random number generator.
+   */
+  explicit CPUDevice(const unsigned rng_seed);
+
   ~CPUDevice() override;
 
   using Device::new_tensor;
@@ -61,6 +74,7 @@ public:
 
 private:
   std::map<void *, unsigned> blocks_;
+  std::mt19937 rng_;
 };
 
 }  // namespace primitiv

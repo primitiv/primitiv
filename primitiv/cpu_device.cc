@@ -14,6 +14,9 @@ using std::endl;
 
 namespace primitiv {
 
+CPUDevice::CPUDevice() : blocks_(), rng_(std::random_device()()) {}
+CPUDevice::CPUDevice(const unsigned rng_seed) : blocks_(), rng_(rng_seed) {}
+
 CPUDevice::~CPUDevice() {
   // check memory leak
   if (!blocks_.empty()) {
@@ -109,12 +112,27 @@ void CPUDevice::reset_tensor(Tensor &x, const std::vector<float> &values) {
 
 Tensor CPUDevice::random_uniform(
     const Shape &shape, const float lower, const float upper) {
-  throw std::runtime_error("not implemented.");
+  const unsigned size = shape.size();
+  std::uniform_real_distribution<float> dist(lower, upper);
+  Tensor ret = new_tensor(shape);
+  float *dest = DATA(ret);
+  for (unsigned i = 0; i < size; ++i) {
+    const float x = dist(rng_);
+    dest[i] = x == lower ? upper : x;
+  }
+  return ret;
 }
 
 Tensor CPUDevice::random_normal(
     const Shape &shape, const float mean, const float sd) {
-  throw std::runtime_error("not implemented.");
+  const unsigned size = shape.size();
+  std::normal_distribution<float> dist(mean, sd);
+  Tensor ret = new_tensor(shape);
+  float *dest = DATA(ret);
+  for (unsigned i = 0; i < size; ++i) {
+    dest[i] = dist(rng_);
+  }
+  return ret;
 }
 
 Tensor CPUDevice::duplicate(const Tensor &x) {
