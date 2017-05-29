@@ -43,6 +43,11 @@ __global__ void dev_set_const(float *py, const float k, const unsigned size) {
   if (i < size) py[i] = k;
 }
 
+__global__ void dev_rand_bernoulli(float *px, const float p, const float size) {
+  const unsigned i = IDX;
+  if (i < size) px[i] = (float)(px[i] <= p);
+}
+
 __global__ void dev_rand_affine(
     float *px, const float shift, const float scale, const unsigned size) {
   const unsigned i = IDX;
@@ -335,6 +340,20 @@ void CUDADevice::reset_tensor(Tensor &x, const std::vector<float> &values) {
   }
   CUDA_CALL(::cudaMemcpy(
         x.data(), &values[0], sizeof(float) * size, cudaMemcpyHostToDevice));
+}
+
+Tensor CUDADevice::random_bernoulli(const Shape &shape, const float p) {
+  const unsigned size = shape.size();
+  const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
+  if (p < 0 || p > 1) {
+    std::stringstream ss;
+    ss << "Invalid Bernoulli probability: " << p;
+    throw std::runtime_error(ss.str());
+  }
+  Tensor ret = new_tensor(shape);
+  CURAND_CALL(::curandGenerateUniform(rng_, DATA(ret), size));
+  ::dev_rand_bernoulli<<<num_blocks, dim1_x_>>>(DATA(ret), p, size);
+  return ret;
 }
 
 Tensor CUDADevice::random_uniform(

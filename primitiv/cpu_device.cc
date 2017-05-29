@@ -110,12 +110,23 @@ void CPUDevice::reset_tensor(Tensor &x, const std::vector<float> &values) {
   std::memcpy(x.data(), &values[0], sizeof(float) * num_elements);
 }
 
+Tensor CPUDevice::random_bernoulli(const Shape &shape, const float p) {
+  std::bernoulli_distribution dist(p);
+  Tensor ret = new_tensor(shape);
+  float *dest = DATA(ret);
+  const unsigned size = shape.size();
+  for (unsigned i = 0; i < size; ++i) {
+    dest[i] = dist(rng_);
+  }
+  return ret;
+}
+
 Tensor CPUDevice::random_uniform(
     const Shape &shape, const float lower, const float upper) {
-  const unsigned size = shape.size();
   std::uniform_real_distribution<float> dist(lower, upper);
   Tensor ret = new_tensor(shape);
   float *dest = DATA(ret);
+  const unsigned size = shape.size();
   for (unsigned i = 0; i < size; ++i) {
     const float x = dist(rng_);
     dest[i] = x == lower ? upper : x;
@@ -125,10 +136,10 @@ Tensor CPUDevice::random_uniform(
 
 Tensor CPUDevice::random_normal(
     const Shape &shape, const float mean, const float sd) {
-  const unsigned size = shape.size();
   std::normal_distribution<float> dist(mean, sd);
   Tensor ret = new_tensor(shape);
   float *dest = DATA(ret);
+  const unsigned size = shape.size();
   for (unsigned i = 0; i < size; ++i) {
     dest[i] = dist(rng_);
   }

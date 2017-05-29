@@ -77,6 +77,41 @@ TEST_F(CUDADeviceTest, CheckSetValuesByVector) {
   }
 }
 
+TEST_F(CUDADeviceTest, CheckRandomBernoulli) {
+  vector<vector<float>> history;
+  for (unsigned i = 0; i < 10; ++i) {
+    CUDADevice dev(0);
+    const Tensor x = dev.random_bernoulli(Shape({3, 3}, 3), 0.3);
+    const vector<float> x_val = x.to_vector();
+
+    std::cout << "Epoch " << i << ':';
+    for (float x_i : x_val) {
+      std::cout << ' ' << x_i;
+    }
+    std::cout << std::endl;
+
+    for (const vector<float> &h_val : history) {
+      EXPECT_FALSE(vector_match(x_val, h_val));
+    }
+    history.emplace_back(x_val);
+
+    // Wait for updating the device randomizer.
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  }
+}
+
+TEST_F(CUDADeviceTest, CheckRandomBernoulliWithSeed) {
+  const vector<float> expected {
+    1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0,
+    1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,
+    0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1,
+  };
+  CUDADevice dev(0, 12345);
+  const Tensor x = dev.random_bernoulli(Shape({4, 4}, 4), 0.3);
+  EXPECT_TRUE(vector_match(expected, x.to_vector()));
+}
+
 TEST_F(CUDADeviceTest, CheckRandomUniform) {
   vector<vector<float>> history;
   for (unsigned i = 0; i < 10; ++i) {
@@ -96,7 +131,7 @@ TEST_F(CUDADeviceTest, CheckRandomUniform) {
     history.emplace_back(x_val);
 
     // Wait for updating the device randomizer.
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
   }
 }
 
@@ -108,7 +143,6 @@ TEST_F(CUDADeviceTest, CheckRandomUniformWithSeed) {
   CUDADevice dev(0, 12345);
   const Tensor x = dev.random_uniform(Shape({2, 2}, 2), -9, 9);
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
-  for (float a : x.to_vector()) std::printf("%.7e\n", a);
 }
 
 TEST_F(CUDADeviceTest, CheckRandomNormal) {
@@ -130,7 +164,7 @@ TEST_F(CUDADeviceTest, CheckRandomNormal) {
     history.emplace_back(x_val);
 
     // Wait for updating the device randomizer.
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
   }
 }
 
@@ -142,7 +176,6 @@ TEST_F(CUDADeviceTest, CheckRandomNormalWithSeed) {
   CUDADevice dev(0, 12345);
   const Tensor x = dev.random_normal(Shape({2, 2}, 2), 1, 3);
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
-  for (float a : x.to_vector()) std::printf("%.7e\n", a);
 }
 
 }  // namespace primitiv

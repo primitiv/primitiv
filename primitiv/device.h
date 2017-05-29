@@ -78,6 +78,15 @@ public:
 
   /**
    * Provides a new Tensor object in which all elements are initialized by
+   * the Bernoulli distribution.
+   * @param shape Shape of the tensor.
+   * @param p Probability to generate 1.
+   * @return A new Tensor object.
+   */
+  virtual Tensor random_bernoulli(const Shape &shape, const float p) = 0;
+
+  /**
+   * Provides a new Tensor object in which all elements are initialized by
    * the uniform distribution with range (lower, upper].
    * @param shape Shape of the tensor.
    * @param lower Lower bound of values.
