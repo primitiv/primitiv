@@ -2,8 +2,8 @@
 
 #include <vector>
 #include <gtest/gtest.h>
-#include <primitiv/constant_initializer.h>
 #include <primitiv/cpu_device.h>
+#include <primitiv/initializer_impl.h>
 #include <primitiv/parameter.h>
 #include <test_utils.h>
 
@@ -38,7 +38,7 @@ TEST_F(ParameterTest, CheckNewWithValues) {
 
 TEST_F(ParameterTest, CheckNewWithInitializer) {
   const Shape shape {2, 2};
-  const ConstantInitializer init(42);
+  const initializers::Constant init(42);
   Parameter p(shape, &dev, init);
   EXPECT_EQ(shape, p.shape());
   EXPECT_EQ(&dev, p.device());
@@ -61,7 +61,7 @@ TEST_F(ParameterTest, CheckResetValueByVector) {
 
 TEST_F(ParameterTest, CheckResetValueByInitializer) {
   const Shape shape {2, 2};
-  const ConstantInitializer init(0);
+  const initializers::Constant init(0);
   const vector<float> expected {0, 0, 0, 0};
   Parameter p(shape, &dev);
   p.reset_value(init);
@@ -78,7 +78,7 @@ TEST_F(ParameterTest, CheckResetGradient) {
 
 TEST_F(ParameterTest, CheckAddValue) {
   const Shape shape {2, 2};
-  const ConstantInitializer init(0);
+  const initializers::Constant init(0);
   const vector<float> diff_values1 {1, 2, 3, 4};
   const vector<float> diff_values2 {2, 4, 6, 8};
   const Tensor diff = dev.new_tensor(shape, diff_values1);

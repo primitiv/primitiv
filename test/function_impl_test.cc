@@ -2,9 +2,9 @@
 
 #include <vector>
 #include <gtest/gtest.h>
-#include <primitiv/constant_initializer.h>
 #include <primitiv/cpu_device.h>
 #include <primitiv/function_impl.h>
+#include <primitiv/initializer_impl.h>
 #include <primitiv/parameter.h>
 #include <test_utils.h>
 
@@ -146,7 +146,7 @@ TEST_F(FunctionImplTest_0Arg, CheckInput) {
 
 TEST_F(FunctionImplTest_0Arg, CheckParameterInput) {
   const Shape ret_shape {2, 2};
-  const ConstantInitializer init(42);
+  const initializers::Constant init(42);
   Parameter param(ret_shape, &dev);
   param.reset_value(init);
   param.reset_gradient();

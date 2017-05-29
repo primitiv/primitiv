@@ -1,11 +1,11 @@
 set(primitiv_LIBRARY_HDRS
-  constant_initializer.h
   cpu_device.h
   device.h
   function.h
   function_impl.h
   graph.h
   initializer.h
+  initializer_impl.h
   node.h
   node_ops.h
   parameter.h
@@ -17,10 +17,10 @@ set(primitiv_LIBRARY_HDRS
 )
 
 set(primitiv_LIBRARY_SRCS
-  constant_initializer.cc
   cpu_device.cc
   function_impl.cc
   graph.cc
+  initializer_impl.cc
   parameter.cc
   sgd_trainer.cc
   shape.cc
