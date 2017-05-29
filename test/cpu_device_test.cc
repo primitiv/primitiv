@@ -1,6 +1,8 @@
 #include <config.h>
 
+#include <chrono>
 #include <stdexcept>
+#include <thread>
 #include <vector>
 #include <gtest/gtest.h>
 #include <primitiv/cpu_device.h>
@@ -84,6 +86,9 @@ TEST_F(CPUDeviceTest, CheckRandomUniform) {
       EXPECT_FALSE(vector_match(x_val, h_val));
     }
     history.emplace_back(x_val);
+
+    // Wait for updating the device randomizer.
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 }
 
@@ -114,6 +119,9 @@ TEST_F(CPUDeviceTest, CheckRandomNormal) {
       EXPECT_FALSE(vector_match(x_val, h_val));
     }
     history.emplace_back(x_val);
+
+    // Wait for updating the device randomizer.
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 }
 

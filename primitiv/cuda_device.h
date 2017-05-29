@@ -2,6 +2,7 @@
 #define PRIMITIV_CUDA_DEVICE_H_
 
 #include <cuda_runtime_api.h>
+#include <curand.h>
 #include <map>
 #include <primitiv/device.h>
 
@@ -21,8 +22,17 @@ public:
   /**
    * Creates a new CUDA device.
    * @param device_id ID of the physical GPU.
+   * @remarks The random number generator is initialized using
+   *          `std::random_device`.
    */
   explicit CUDADevice(const unsigned device_id);
+
+  /**
+   * Creates a new CUDA device.
+   * @param device_id ID of the physical GPU.
+   * @param rng_seed The seed value of the random number generator.
+   */
+  CUDADevice(const unsigned device_id, const unsigned rng_seed);
 
   ~CUDADevice() override;
 
@@ -68,11 +78,18 @@ public:
 
 private:
   unsigned dev_id_;
-  ::cudaDeviceProp prop_;
+  unsigned rng_seed_;
   unsigned dim1_x_;
   unsigned dim2_x_;
   unsigned dim2_y_;
   std::map<void *, unsigned> blocks_;
+  ::cudaDeviceProp prop_;
+  ::curandGenerator_t rng_;
+
+  /**
+   * Internal method to initialize the object.
+   */
+  void initialize();
 };
 
 }  // namespace primitiv

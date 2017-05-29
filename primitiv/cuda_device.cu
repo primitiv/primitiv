@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <random>
 #include <primitiv/cuda_device.h>
 
 using std::cerr;
@@ -19,6 +20,16 @@ using std::endl;
   } \
 }
 
+#define CURAND_CALL(f) { \
+  curandStatus_t err = (f); \
+  if (err != CURAND_STATUS_SUCCESS) { \
+    std::stringstream ss; \
+    ss << "CURAND function failed. statement: " << #f \
+       << ", error: [" << err; \
+    throw std::runtime_error(ss.str()); \
+  } \
+}
+
 namespace {
 
 /*
@@ -30,6 +41,12 @@ namespace {
 __global__ void dev_set_const(float *py, const float k, const unsigned size) {
   const unsigned i = IDX;
   if (i < size) py[i] = k;
+}
+
+__global__ void dev_rand_affine(
+    float *px, const float shift, const float scale, const unsigned size) {
+  const unsigned i = IDX;
+  if (i < size) px[i] = px[i] * scale + shift;
 }
 
 __global__ void dev_negate(float *py, const float *px, const unsigned size) {
@@ -177,8 +194,8 @@ __global__ void dev_add_grad(
 
 namespace primitiv {
 
-CUDADevice::CUDADevice(unsigned device_id)
-: dev_id_(device_id) {
+void CUDADevice::initialize() {
+  // Retrieves device properties.
   int max_devs;
   CUDA_CALL(::cudaGetDeviceCount(&max_devs));
   if (dev_id_ >= static_cast<unsigned>(max_devs)) {
@@ -187,6 +204,7 @@ CUDADevice::CUDADevice(unsigned device_id)
     throw std::runtime_error(ss.str());
   }
   CUDA_CALL(::cudaGetDeviceProperties(&prop_, dev_id_));
+
   // Dump device properties.
   cerr << "Selected CUDA Device " << dev_id_ << ':' << endl;
   cerr << "  Name ............ " << prop_.name << endl;
@@ -199,6 +217,7 @@ CUDADevice::CUDADevice(unsigned device_id)
   cerr << "  Grid size ....... " << prop_.maxGridSize[0] << ','
                                  << prop_.maxGridSize[1] << ','
                                  << prop_.maxGridSize[2] << endl;
+
   // Calculates size of dims to be used in CUDA kernels.
   dim1_x_ = dim2_y_ = prop_.maxThreadsPerBlock;
   dim2_x_ = 1;
@@ -209,6 +228,22 @@ CUDADevice::CUDADevice(unsigned device_id)
   cerr << "Block configuration:" << endl;
   cerr << "  1 dim .... " << dim1_x_ << " threads" << endl;
   cerr << "  2 dims ... " << dim2_x_ << "x" << dim2_y_ << " threads" << endl;
+
+  // Initializes the cuRAND generator.
+  CURAND_CALL(::curandCreateGenerator(&rng_, CURAND_RNG_PSEUDO_DEFAULT));
+  CURAND_CALL(::curandSetPseudoRandomGeneratorSeed(rng_, rng_seed_));
+}
+
+CUDADevice::CUDADevice(const unsigned device_id)
+: dev_id_(device_id)
+, rng_seed_(std::random_device()()) {
+  initialize();
+}
+
+CUDADevice::CUDADevice(const unsigned device_id, const unsigned rng_seed)
+: dev_id_(device_id)
+, rng_seed_(rng_seed) {
+  initialize();
 }
 
 CUDADevice::~CUDADevice() {
@@ -221,6 +256,9 @@ CUDADevice::~CUDADevice() {
     }
     std::abort();
   }
+
+  // Cleanup the cuRAND generator.
+  CURAND_CALL(::curandDestroyGenerator(rng_));
 }
 
 Tensor CUDADevice::new_tensor(const Shape &shape) {
@@ -301,12 +339,33 @@ void CUDADevice::reset_tensor(Tensor &x, const std::vector<float> &values) {
 
 Tensor CUDADevice::random_uniform(
     const Shape &shape, const float lower, const float upper) {
-  throw std::runtime_error("not implemented.");
+  const unsigned size = shape.size();
+  const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
+  const float scale = upper - lower;
+  if (upper < lower) {
+    std::stringstream ss;
+    ss << "Invalid parameter of the uniform distribution. lower: " << lower
+       << ", upper: " << upper;
+    throw std::runtime_error(ss.str());
+  }
+  Tensor ret = new_tensor(shape);
+  CURAND_CALL(::curandGenerateUniform(rng_, DATA(ret), size));
+  ::dev_rand_affine<<<num_blocks, dim1_x_>>>(DATA(ret), lower, scale, size);
+  return ret;
 }
 
 Tensor CUDADevice::random_normal(
     const Shape &shape, const float mean, const float sd) {
-  throw std::runtime_error("not implemented.");
+  const unsigned size = shape.size();
+  if (sd <= 0) {
+    std::stringstream ss;
+    ss << "Invalid parameter of the normal distribution. mean: " << mean
+       << ", SD: " << sd;
+    throw std::runtime_error(ss.str());
+  }
+  Tensor ret = new_tensor(shape);
+  CURAND_CALL(::curandGenerateNormal(rng_, DATA(ret), size, mean, sd));
+  return ret;
 }
 
 Tensor CUDADevice::duplicate(const Tensor &x) {
