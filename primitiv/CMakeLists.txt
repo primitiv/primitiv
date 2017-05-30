@@ -9,6 +9,7 @@ set(primitiv_LIBRARY_HDRS
   node.h
   node_ops.h
   parameter.h
+  primitiv.h
   sgd_trainer.h
   shape.h
   tensor.h
