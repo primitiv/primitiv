@@ -2,6 +2,7 @@
 #define PRIMITIV_CUDA_DEVICE_H_
 
 #include <cuda_runtime_api.h>
+#include <cublas_v2.h>
 #include <curand.h>
 #include <map>
 #include <primitiv/device.h>
@@ -87,7 +88,8 @@ private:
   unsigned dim2_y_;
   std::map<void *, unsigned> blocks_;
   ::cudaDeviceProp prop_;
-  ::curandGenerator_t rng_;
+  ::cublasHandle_t cublas_;
+  ::curandGenerator_t curand_;
 
   /**
    * Internal method to initialize the object.

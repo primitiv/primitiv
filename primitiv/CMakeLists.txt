@@ -40,5 +40,8 @@ if(USE_CUDA)
     ${primitiv_cuda_LIBRARY_SRCS}
     OPTIONS -std=c++11
   )
-  target_link_libraries(primitiv_cuda ${CUDA_curand_LIBRARY})
+  target_link_libraries(primitiv_cuda
+    ${CUDA_cublas_LIBRARY}
+    ${CUDA_curand_LIBRARY}
+  )
 endif()

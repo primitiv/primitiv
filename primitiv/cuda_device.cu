@@ -6,6 +6,10 @@
 #include <random>
 #include <primitiv/cuda_device.h>
 
+// If this switch is defined, dot() uses cublasSgemm() as the internal kernel.
+// Otherwise, the function uses an original kernel.
+#define USE_CUBLAS_S_GEMM
+
 using std::cerr;
 using std::endl;
 
@@ -14,8 +18,18 @@ using std::endl;
   if (err != cudaSuccess) { \
     std::stringstream ss; \
     ss << "CUDA function failed. statement: " << #f \
-       << ", error: [" << err \
-       << "] " << ::cudaGetErrorString(err); \
+       << ", error: " << err \
+       << ": " << ::cudaGetErrorString(err); \
+    throw std::runtime_error(ss.str()); \
+  } \
+}
+
+#define CUBLAS_CALL(f) { \
+  cublasStatus_t err = (f); \
+  if (err != CUBLAS_STATUS_SUCCESS) { \
+    std::stringstream ss; \
+    ss << "CUBLAS function failed. statement: " << #f \
+       << ", error: " << err; \
     throw std::runtime_error(ss.str()); \
   } \
 }
@@ -25,7 +39,7 @@ using std::endl;
   if (err != CURAND_STATUS_SUCCESS) { \
     std::stringstream ss; \
     ss << "CURAND function failed. statement: " << #f \
-       << ", error: [" << err; \
+       << ", error: " << err; \
     throw std::runtime_error(ss.str()); \
   } \
 }
@@ -137,6 +151,7 @@ __global__ void dev_transpose(
   }
 }
 
+#ifndef USE_CUBLAS_S_GEMM
 __global__ void dev_dot(
     float *py, const float *pa, const float *pb,
     const unsigned di, const unsigned dj, const unsigned dk,
@@ -152,6 +167,7 @@ __global__ void dev_dot(
     py[i + (k + blockIdx.z * dk) * di] = sum;
   }
 }
+#endif
 
 __global__ void dev_exp(float *py, const float *px, const unsigned size) {
   const unsigned i = IDX;
@@ -247,9 +263,12 @@ void CUDADevice::initialize() {
   cerr << "  1 dim .... " << dim1_x_ << " threads" << endl;
   cerr << "  2 dims ... " << dim2_x_ << "x" << dim2_y_ << " threads" << endl;
 
+  // Initializes cuBLAS.
+  CUBLAS_CALL(::cublasCreate(&cublas_));
+
   // Initializes the cuRAND generator.
-  CURAND_CALL(::curandCreateGenerator(&rng_, CURAND_RNG_PSEUDO_DEFAULT));
-  CURAND_CALL(::curandSetPseudoRandomGeneratorSeed(rng_, rng_seed_));
+  CURAND_CALL(::curandCreateGenerator(&curand_, CURAND_RNG_PSEUDO_DEFAULT));
+  CURAND_CALL(::curandSetPseudoRandomGeneratorSeed(curand_, rng_seed_));
 }
 
 CUDADevice::CUDADevice(const unsigned device_id)
@@ -275,8 +294,11 @@ CUDADevice::~CUDADevice() {
     std::abort();
   }
 
+  // Cleanup cuBLAS.
+  CUBLAS_CALL(::cublasDestroy(cublas_));
+
   // Cleanup the cuRAND generator.
-  CURAND_CALL(::curandDestroyGenerator(rng_));
+  CURAND_CALL(::curandDestroyGenerator(curand_));
 }
 
 Tensor CUDADevice::new_tensor(const Shape &shape) {
@@ -364,7 +386,7 @@ Tensor CUDADevice::random_bernoulli(const Shape &shape, const float p) {
     throw std::runtime_error(ss.str());
   }
   Tensor ret = new_tensor(shape);
-  CURAND_CALL(::curandGenerateUniform(rng_, DATA(ret), size));
+  CURAND_CALL(::curandGenerateUniform(curand_, DATA(ret), size));
   ::dev_rand_bernoulli<<<num_blocks, dim1_x_>>>(DATA(ret), p, size);
   return ret;
 }
@@ -381,7 +403,7 @@ Tensor CUDADevice::random_uniform(
     throw std::runtime_error(ss.str());
   }
   Tensor ret = new_tensor(shape);
-  CURAND_CALL(::curandGenerateUniform(rng_, DATA(ret), size));
+  CURAND_CALL(::curandGenerateUniform(curand_, DATA(ret), size));
   ::dev_rand_affine<<<num_blocks, dim1_x_>>>(DATA(ret), lower, scale, size);
   return ret;
 }
@@ -396,7 +418,7 @@ Tensor CUDADevice::random_normal(
     throw std::runtime_error(ss.str());
   }
   Tensor ret = new_tensor(shape);
-  CURAND_CALL(::curandGenerateNormal(rng_, DATA(ret), size, mean, sd));
+  CURAND_CALL(::curandGenerateNormal(curand_, DATA(ret), size, mean, sd));
   return ret;
 }
 
@@ -515,8 +537,6 @@ Tensor CUDADevice::dot(const Tensor &a, const Tensor &b) {
   const unsigned dk = sb.dim(1);
   const unsigned ba = sa.batch_size();
   const unsigned bb = sb.batch_size();
-  const unsigned g1 = GRID_SIZE(di, dim2_x_);
-  const unsigned g2 = GRID_SIZE(dk, dim2_y_);
   const unsigned bs = std::max(ba, bb);
   if (sa.dims().size() > 2 || sb.dims().size() > 2 ||
       sb.dim(0) != dj ||
@@ -527,10 +547,41 @@ Tensor CUDADevice::dot(const Tensor &a, const Tensor &b) {
     throw std::runtime_error(ss.str());
   }
   Tensor ret = new_tensor(Shape({di, dk}, bs));
+
+#ifdef USE_CUBLAS_S_GEMM
+  reset_tensor(ret, 0);
+  float alpha = 1.;
+  float beta = 0.;
+  if (ba == 1) {
+    // Do gemm only once to calculate dot with combined matrices.
+    CUBLAS_CALL(::cublasSgemm(
+          cublas_, ::CUBLAS_OP_N, ::CUBLAS_OP_N,
+          di, bb * dk, dj,
+          &alpha, CDATA(a), di, CDATA(b), dj,
+          &beta, DATA(ret), di));
+  } else {
+    // Do gemm multiple times.
+    const unsigned a_skip = di * dj;
+    const unsigned b_skip = static_cast<unsigned>(bb > 1) * dj * dk;
+    const unsigned y_skip = di * dk;
+    for (unsigned n = 0; n < ba; ++n) {
+      CUBLAS_CALL(::cublasSgemm(
+            cublas_, ::CUBLAS_OP_N, ::CUBLAS_OP_N,
+            di, dk, dj,
+            &alpha, CDATA(a) + n * a_skip, di, CDATA(b) + n * b_skip, dj,
+            &beta, DATA(ret) + n * y_skip, di));
+    }
+  }
+#else
+  const unsigned g1 = GRID_SIZE(di, dim2_x_);
+  const unsigned g2 = GRID_SIZE(dk, dim2_y_);
   ::dev_dot<<<dim3(g1, g2, bs), dim3(dim2_x_, dim2_y_, 1)>>>(
       DATA(ret), CDATA(a), CDATA(b), di, dj, dk, ba > 1, bb > 1);
+#endif
+
   return ret;
 }
+
 
 Tensor CUDADevice::batch_sum(const Tensor &x) {
   CHECK_DEVICE(x);
