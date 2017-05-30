@@ -121,6 +121,7 @@ TEST_F(GraphTest, TestXor) {
   nodes.emplace_back(node_ops::input(g, dev, Shape({}, 4), outputs));
   nodes.emplace_back(nodes[9] - nodes[10]);
   nodes.emplace_back(nodes[11] * nodes[11]);
+  nodes.emplace_back(node_ops::batch_sum(nodes[12]));
 
   EXPECT_EQ(nodes.size(), g.num_nodes());
   g.dump();
@@ -149,6 +150,7 @@ TEST_F(GraphTest, TestXor) {
     {1, -1, -1, 1},
     {h3, h7, h7, h3},
     {h3 * h3, h7 * h7, h7 * h7, h3 * h3},
+    {2 * (h3 * h3 + h7 * h7)},
   };
   for (unsigned i = 0; i < nodes.size(); ++i) {
     const Tensor &val = g.get_value(nodes[i]);

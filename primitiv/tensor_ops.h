@@ -31,6 +31,8 @@ inline Tensor sigmoid(const Tensor &x) { return x.device()->sigmoid(x); }
 inline Tensor step(const Tensor &x) { return x.device()->step(x); }
 inline Tensor relu(const Tensor &x) { return x.device()->relu(x); }
 
+inline Tensor batch_sum(const Tensor &x) { return x.device()->batch_sum(x); }
+
 }  // namespace tensor_ops
 }  // namespace primitiv
 

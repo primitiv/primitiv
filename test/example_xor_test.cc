@@ -38,6 +38,8 @@ TEST(ExampleTest, Xor) {
   trainer.add_parameter(&pw2);
   trainer.add_parameter(&pb2);
 
+  float prev_loss = 1e10;
+
   // Training loop
   for (unsigned i = 0; i < 10; ++i) {
     // Builds a computation graph.
@@ -51,7 +53,7 @@ TEST(ExampleTest, Xor) {
     Node y = F::dot(w2, h) + b2;
     Node t = F::input(g, dev, Shape({}, 4), {1, -1, -1, 1});
     Node diff = t - y;
-    Node loss = diff * diff;
+    Node loss = F::batch_sum(diff * diff);
 
     // Gets results (outputs).
     std::vector<float> y_val = g.forward(y).to_vector();
@@ -62,8 +64,12 @@ TEST(ExampleTest, Xor) {
 
     // Gets results (losses).
     trainer.reset_gradients();
-    float loss_val = g.forward(loss).to_vector()[0];
-    std::cout << "  loss[0]: " << loss_val << std::endl;
+    const Tensor &loss_tensor = g.forward(loss);
+    const float loss_val = loss_tensor.to_vector()[0];
+    EXPECT_EQ(Shape(), loss_tensor.shape());  // Loss is a scalar.
+    EXPECT_LT(loss_val, prev_loss);  // Loss always decreases.
+    std::cout << "  loss: " << loss_val << std::endl;
+    prev_loss = loss_val;
 
     // Backpropagation
     g.backward(loss);

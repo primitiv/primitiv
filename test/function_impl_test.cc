@@ -398,5 +398,19 @@ TEST_F(FunctionImplTest_1Arg, CheckReLU) {
   TEST_1ARG(ReLU);
 }
 
+TEST_F(FunctionImplTest_1Arg, CheckBatchSum) {
+  // y = sum_i x[i]
+  // dy/dx = 1 for every minibatch.
+  const Shape ret_shape({2, 2});
+  const vector<float> ret_data {0, 0, 0, 0};
+  const vector<float> bw_grad {
+    1, 1, 1, 1,
+    1, 1, 1, 1,
+    1, 1, 1, 1,
+  };
+  const BatchSum node;
+  TEST_1ARG(BatchSum);
+}
+
 }  // namespace functions
 }  // namespace primitiv

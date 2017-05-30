@@ -139,6 +139,11 @@ Shape Dot::forward_shape(const vector<const Shape *> &args) const {
   return Shape({a.dim(0), b.dim(1)}, std::max(a_bs, b_bs));
 }
 
+Shape BatchSum::forward_shape(const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 1);
+  return Shape(args[0]->dims());
+}
+
 #undef FWD_SHAPE_UNARY
 #undef FWD_SHAPE_ARITHMETIC
 
@@ -163,6 +168,7 @@ FORWARD(Exp) { return tensor_ops::exp(*args[0]); }
 FORWARD(Tanh) { return tensor_ops::tanh(*args[0]); }
 FORWARD(Sigmoid) { return tensor_ops::sigmoid(*args[0]); }
 FORWARD(ReLU) { return tensor_ops::relu(*args[0]); }
+FORWARD(BatchSum) { return tensor_ops::batch_sum(*args[0]); }
 
 #undef FORWARD
 
@@ -195,6 +201,7 @@ BACKWARD(Exp) { ADD(0, y * yg); }
 BACKWARD(Tanh) { ADD(0, (1 - y * y) * yg); }
 BACKWARD(Sigmoid) { ADD(0, y * (1 - y) * yg); }
 BACKWARD(ReLU) { ADD(0, tensor_ops::step(*x[0]) * yg); }
+BACKWARD(BatchSum) { ADD(0, yg); }
 
 #undef BACKWARD
 #undef ADD

@@ -589,6 +589,24 @@ Tensor CPUDevice::relu(const Tensor &x) {
   return ret;
 }
 
+Tensor CPUDevice::batch_sum(const Tensor &x) {
+  CHECK_DEVICE(x);
+
+  Tensor ret = new_tensor(Shape(x.shape().dims()));
+  float *dest = DATA(ret);
+  const float *src = CDATA(x);
+  const unsigned bs = x.shape().batch_size();
+  const unsigned size = ret.shape().size();
+  for (unsigned i = 0; i < size; ++i) {
+    float temp = 0;
+    for (unsigned b = 0, pos = i; b < bs; ++b, pos += size) {
+      temp += src[pos];
+    }
+    dest[i] = temp;
+  }
+  return ret;
+}
+
 void CPUDevice::add_gradient(Tensor &a, const Tensor &b) {
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);

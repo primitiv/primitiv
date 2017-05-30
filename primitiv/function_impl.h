@@ -122,6 +122,7 @@ DECL_FUNC(Exp);
 DECL_FUNC(Tanh);
 DECL_FUNC(Sigmoid);
 DECL_FUNC(ReLU);
+DECL_FUNC(BatchSum);
 
 DECL_FUNC_K(AddConst);
 DECL_FUNC_K(SubtractConstL);

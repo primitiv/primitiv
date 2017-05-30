@@ -178,6 +178,19 @@ __global__ void dev_relu(float *py, const float *px, const unsigned size) {
   if (i < size) py[i] = ::fmaxf(px[i], .0f);
 }
 
+__global__ void dev_batch_sum(
+    float *py, const float *px, const unsigned size, const unsigned batch) {
+  const unsigned i = IDX;
+  if (i < size) {
+    float temp = .0f;
+    px += i;
+    for (unsigned j = 0; j < batch; ++j, px += size) {
+      temp += *px;
+    }
+    py[i] = temp;
+  }
+}
+
 __global__ void dev_add_grad(
     float *pgx, const float *pgy, const unsigned size,
     const unsigned bs, const unsigned mbx, const unsigned mby) {
@@ -516,6 +529,16 @@ Tensor CUDADevice::dot(const Tensor &a, const Tensor &b) {
   Tensor ret = new_tensor(Shape({di, dk}, bs));
   ::dev_dot<<<dim3(g1, g2, bs), dim3(dim2_x_, dim2_y_, 1)>>>(
       DATA(ret), CDATA(a), CDATA(b), di, dj, dk, ba > 1, bb > 1);
+  return ret;
+}
+
+Tensor CUDADevice::batch_sum(const Tensor &x) {
+  CHECK_DEVICE(x);
+  Tensor ret = new_tensor(Shape(x.shape().dims()));
+  const unsigned size = ret.shape().size();
+  const unsigned g1 = GRID_SIZE(size, dim1_x_);
+  ::dev_batch_sum<<<g1, dim1_x_>>>(
+      DATA(ret), CDATA(x), size, x.shape().batch_size());
   return ret;
 }
 

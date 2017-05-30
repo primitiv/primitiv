@@ -49,6 +49,8 @@ inline Node tanh(const Node &x) { return APP(x)(new F::Tanh(), {x}); }
 inline Node sigmoid(const Node &x) { return APP(x)(new F::Sigmoid(), {x}); }
 inline Node relu(const Node &x) { return APP(x)(new F::ReLU(), {x}); }
 
+inline Node batch_sum(const Node &x) { return APP(x)(new F::BatchSum(), {x}); }
+
 }  // namespace node_ops
 }  // namespace primitiv
 

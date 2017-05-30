@@ -267,6 +267,13 @@ public:
   virtual Tensor relu(const Tensor &x) = 0;
 
   /**
+   * Calculates the sum over minibatches.
+   * @param x A tensor.
+   * @return `sum(x[0], x[1], ..., x[x.batch_size])`
+   */
+  virtual Tensor batch_sum(const Tensor &x) = 0;
+
+  /**
    * Directly adds the second tensor to the first tensor.
    * @param a A tensor to be udpated.
    * @param b A source tensor.
