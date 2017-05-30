@@ -90,6 +90,10 @@ private:
     NodeInfo &operator=(const NodeInfo &) = delete;
 
   public:
+    NodeInfo() = default;
+    NodeInfo(NodeInfo &&) = default;
+    NodeInfo &operator=(NodeInfo &&) = default;
+
     Shape shape;
     Function *func;
     Tensor value;

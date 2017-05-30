@@ -60,8 +60,11 @@ Node Graph::add_function(
   for (const unsigned arg_id : arg_ids) {
     nodes_[arg_id]->sinks.emplace_back(ret_id);
   }
-  nodes_.emplace_back(new NodeInfo {
-      move(ret_shape), func, Tensor(), Tensor(), move(arg_ids), {}});
+  NodeInfo *node = new NodeInfo;
+  node->shape = move(ret_shape);
+  node->func = func;
+  node->args = move(arg_ids);
+  nodes_.emplace_back(node);
 
   return Node(this, ret_id);
 }
