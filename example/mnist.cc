@@ -20,20 +20,10 @@ using primitiv::Node;
 using primitiv::Parameter;
 using primitiv::SGDTrainer;
 using primitiv::Shape;
-using primitiv::initializers::XavierUniform;
 using primitiv::initializers::Constant;
-using std::endl;
-using std::copy;
-using std::cout;
-using std::ifstream;
-using std::ios;
-using std::iota;
-using std::mt19937;
-using std::printf;
-using std::shuffle;
-using std::string;
-using std::vector;
+using primitiv::initializers::XavierUniform;
 namespace F = primitiv::node_ops;
+using namespace std;
 
 namespace {
 
@@ -45,7 +35,7 @@ const unsigned NUM_OUTPUT_UNITS = 10;
 const unsigned BATCH_SIZE = 200;
 const unsigned NUM_TRAIN_BATCHES = NUM_TRAIN_SAMPLES / BATCH_SIZE;
 const unsigned NUM_TEST_BATCHES = NUM_TEST_SAMPLES / BATCH_SIZE;
-const unsigned MAX_EPOCH = 40;
+const unsigned MAX_EPOCH = 50;
 
 // Helper function to load input images.
 vector<float> load_images(const string &filename, const unsigned n) {
@@ -164,8 +154,8 @@ int main() {
       // Gets outputs, argmax, and compares them with the label.
       vector<float> y_val = g.forward(y).to_vector();
       for (unsigned i = 0; i < BATCH_SIZE; ++i) {
-        float maxval = -10000;
-        float argmax = -1;
+        float maxval = -1e10;
+        unsigned argmax = -1;
         for (unsigned j = 0; j < NUM_OUTPUT_UNITS; ++j) {
           float v = y_val[j + i * NUM_OUTPUT_UNITS];
           if (v > maxval) maxval = v, argmax = j;
