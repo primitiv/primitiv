@@ -10,6 +10,7 @@ set(primitiv_LIBRARY_HDRS
   node_ops.h
   parameter.h
   primitiv.h
+  primitiv_cuda.h
   sgd_trainer.h
   shape.h
   tensor.h

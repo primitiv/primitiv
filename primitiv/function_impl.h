@@ -50,7 +50,7 @@ class ParameterInput : public primitiv::Function {
   ParameterInput &operator=(ParameterInput &) = delete;
 
 public:
-  ParameterInput(Parameter &param) :param_(param) {}
+  ParameterInput(Parameter *param) :param_(param) {}
   ~ParameterInput() override = default;
   Shape forward_shape(const std::vector<const Shape *> &args) const override;
   Tensor forward(const std::vector<const Tensor *> &args) const override;
@@ -62,7 +62,7 @@ public:
   inline std::string name() const override { return "ParameterInput"; }
 
 private:
-  primitiv::Parameter &param_;
+  primitiv::Parameter *param_;
 };
 
 // Function with no parameter.

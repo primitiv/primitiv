@@ -25,10 +25,7 @@ public:
    * Returns corresponding Graph object.
    * @return Graph object.
    */
-  inline Graph &graph() const {
-    if (!g_) throw std::runtime_error("Invalid node.");
-    return *g_;
-  }
+  inline Graph *graph() const { return g_; }
 
   /**
    * Returns the node ID.

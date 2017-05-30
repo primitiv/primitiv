@@ -27,9 +27,9 @@ TEST_F(GraphTest, CheckForwardBackward) {
   const vector<float> data2 {1, 1, 1, 1};
   const vector<float> data3 {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
   vector<Node> nodes;
-  nodes.emplace_back(node_ops::input(g, dev, Shape({2, 2}, 3), data1));
-  nodes.emplace_back(node_ops::input(g, dev, {2, 2}, data2));
-  nodes.emplace_back(node_ops::input(g, dev, Shape({2, 2}, 3), data3));
+  nodes.emplace_back(node_ops::input(&g, &dev, Shape({2, 2}, 3), data1));
+  nodes.emplace_back(node_ops::input(&g, &dev, {2, 2}, data2));
+  nodes.emplace_back(node_ops::input(&g, &dev, Shape({2, 2}, 3), data3));
   nodes.emplace_back(nodes[0] + nodes[1]);
   nodes.emplace_back(nodes[1] - nodes[2]);
   nodes.emplace_back(nodes[3] * nodes[4]);
@@ -106,11 +106,11 @@ TEST_F(GraphTest, TestXor) {
   Graph g;
   vector<Node> nodes;
   // sources
-  nodes.emplace_back(node_ops::input(g, dev, Shape({2}, 4), inputs));
-  nodes.emplace_back(node_ops::parameter(g, w1));
-  nodes.emplace_back(node_ops::parameter(g, b1));
-  nodes.emplace_back(node_ops::parameter(g, w2));
-  nodes.emplace_back(node_ops::parameter(g, b2));
+  nodes.emplace_back(node_ops::input(&g, &dev, Shape({2}, 4), inputs));
+  nodes.emplace_back(node_ops::parameter(&g, &w1));
+  nodes.emplace_back(node_ops::parameter(&g, &b1));
+  nodes.emplace_back(node_ops::parameter(&g, &w2));
+  nodes.emplace_back(node_ops::parameter(&g, &b2));
   // calculation
   nodes.emplace_back(node_ops::dot(nodes[1], nodes[0]));
   nodes.emplace_back(nodes[5] + nodes[2]);
@@ -118,7 +118,7 @@ TEST_F(GraphTest, TestXor) {
   nodes.emplace_back(node_ops::dot(nodes[3], nodes[7]));
   nodes.emplace_back(nodes[8] + nodes[4]);
   // losses
-  nodes.emplace_back(node_ops::input(g, dev, Shape({}, 4), outputs));
+  nodes.emplace_back(node_ops::input(&g, &dev, Shape({}, 4), outputs));
   nodes.emplace_back(nodes[9] - nodes[10]);
   nodes.emplace_back(nodes[11] * nodes[11]);
   nodes.emplace_back(node_ops::batch_sum(nodes[12]));

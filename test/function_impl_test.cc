@@ -153,7 +153,7 @@ TEST_F(FunctionImplTest_0Arg, CheckParameterInput) {
   ASSERT_TRUE(vector_match(vector<float>(4, 42), param.value().to_vector()));
   ASSERT_TRUE(vector_match(vector<float>(4, 0), param.gradient().to_vector()));
 
-  const ParameterInput node(param);
+  const ParameterInput node(&param);
   const Shape cur_shape = node.forward_shape(arg_shapes);
   const Tensor cur_value = node.forward(arg_values);
   const Tensor cur_grad = dev.new_tensor(ret_shape, 1);

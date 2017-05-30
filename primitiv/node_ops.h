@@ -8,7 +8,7 @@
 #include <primitiv/shape.h>
 #include <primitiv/parameter.h>
 
-#define APP(x) (x).graph().add_function
+#define APP(x) (x).graph()->add_function
 #define F functions
 
 namespace primitiv {
@@ -31,15 +31,15 @@ inline Node operator/(const Node &a, const Node &b) { return APP(a)(new F::Divid
 namespace node_ops {
 
 inline Node input(
-    Graph &g,
-    Device &dev,
+    Graph *g,
+    Device *dev,
     const Shape &shape,
     const std::vector<float> &data) {
-  return g.add_function(new F::Input(shape, &dev, data), {});
+  return g->add_function(new F::Input(shape, dev, data), {});
 }
 
-inline Node parameter(Graph &g, Parameter &param) {
-  return g.add_function(new F::ParameterInput(param), {});
+inline Node parameter(Graph *g, Parameter *param) {
+  return g->add_function(new F::ParameterInput(param), {});
 }
 
 inline Node transpose(const Node &x) { return APP(x)(new F::Transpose(), {x}); }
