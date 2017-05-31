@@ -24,7 +24,7 @@ public:
    * @param shape Shape of the tensor.
    * @return A new Tensor object.
    */
-  virtual Tensor new_tensor(const Shape &shape) = 0;
+  Tensor new_tensor(const Shape &shape);
 
   /**
    * Provides a new Tensor object with same-value elements.
@@ -32,7 +32,7 @@ public:
    * @param k Constant to initialize elements.
    * @return A new Tensor object.
    */
-  virtual Tensor new_tensor(const Shape &shape, const float k) = 0;
+  Tensor new_tensor(const Shape &shape, float k);
 
   /**
    * Provides a new Tensor object with specific values.
@@ -40,15 +40,14 @@ public:
    * @param values List of internal values.
    * @return A new Tensor object.
    */
-  virtual Tensor new_tensor(
-      const Shape &shape, const std::vector<float> &values) = 0;
+  Tensor new_tensor(const Shape &shape, const std::vector<float> &values);
 
   /**
    * Deallocates the memory of the tensor.
    * @param x Tensor object to be deallocated.
    * @remarks This method should not be used directly by users.
    */
-  virtual void delete_tensor(Tensor &x) = 0;
+  void delete_tensor(Tensor &x);
 
   /**
    * Retrieves internal values of the tensor as a vector.
@@ -57,14 +56,14 @@ public:
    * @remarks Each resulting values are ordered by the column-major order, and
    *          the batch size is assumed as the last dimension of the tensor.
    */
-  virtual std::vector<float> tensor_to_vector(const Tensor &x) = 0;
+  std::vector<float> tensor_to_vector(const Tensor &x);
 
   /**
    * Reset internal values of the tensor using a constant.
    * @param x A tensor to be updated.
    * @param k A value used to initialize each element.
    */
-  virtual void reset_tensor(Tensor &x, const float k) = 0;
+  void reset_tensor(Tensor &x, float k);
 
   /**
    * Reset internal values of the tensor using specific values.
@@ -74,7 +73,7 @@ public:
    *          is ordered by the column-major order, and the batch size is
    *          assumed as the last dimension of the tensor.
    */
-  virtual void reset_tensor(Tensor &x, const std::vector<float> &values) = 0;
+  void reset_tensor(Tensor &x, const std::vector<float> &values);
 
   /**
    * Provides a new Tensor object in which all elements are initialized by
@@ -83,7 +82,7 @@ public:
    * @param p Probability to generate 1.
    * @return A new Tensor object.
    */
-  virtual Tensor random_bernoulli(const Shape &shape, const float p) = 0;
+  Tensor random_bernoulli(const Shape &shape, float p);
 
   /**
    * Provides a new Tensor object in which all elements are initialized by
@@ -93,8 +92,8 @@ public:
    * @param upper Upper bound of values.
    * @return A new Tensor object.
    */
-  virtual Tensor random_uniform(
-      const Shape &shape, const float lower, const float upper) = 0;
+  Tensor random_uniform(
+      const Shape &shape, float lower, float upper);
 
   /**
    * Provides a new Tensor object in which all elements are initialized by
@@ -104,8 +103,7 @@ public:
    * @param sd Standard deviation of the normal distribution.
    * @return A new Tensor object.
    */
-  virtual Tensor random_normal(
-      const Shape &shape, const float mean, const float sd) = 0;
+  Tensor random_normal(const Shape &shape, float mean, float sd);
 
   /**
    * Provides partial tensor.
@@ -115,9 +113,7 @@ public:
    * @param upper The upper bound.
    * @return `x([lower,upper) in dim)`
    */
-  virtual Tensor slice(
-      const Tensor &x, const unsigned dim,
-      const unsigned lower, const unsigned upper) = 0;
+  Tensor slice(const Tensor &x, unsigned dim, unsigned lower, unsigned upper);
 
   /**
    * Provides concatenated tensor.
@@ -125,22 +121,21 @@ public:
    * @param dim Dimension to join.
    * @return `[xs[0], xs[1], ..., xs[n] in dim]`
    */
-  virtual Tensor concat(
-      const std::vector<const Tensor *> &xs, const unsigned dim) = 0;
+  Tensor concat(const std::vector<const Tensor *> &xs, unsigned dim);
 
   /**
    * Duplicates the tensor.
    * @param x A tensor.
    * @return Duplicated tensor.
    */
-  virtual Tensor duplicate(const Tensor &x) = 0;
+  Tensor duplicate(const Tensor &x);
 
   /**
    * Inverts the sign of each elements.
    * @param x A tensor.
    * @return `-x`
    */
-  virtual Tensor negate(const Tensor &x) = 0;
+  Tensor negate(const Tensor &x);
 
   /**
    * Adds a constant to each element in the tensor.
@@ -148,7 +143,7 @@ public:
    * @param k Constant to add.
    * @return `x + k * ones(x.shape())`
    */
-  virtual Tensor add(const Tensor &x, const float k) = 0;
+  Tensor add(const Tensor &x, float k);
 
   /**
    * Adds two tensors.
@@ -158,7 +153,7 @@ public:
    * @remarks If the batch size of `a` or `b` is 1, the single-batch side is
    *          broadcasted to all minibatches in the opposite side.
    */
-  virtual Tensor add(const Tensor &a, const Tensor &b) = 0;
+  Tensor add(const Tensor &a, const Tensor &b);
 
   /**
    * Subtracts a constant from each element in a tensor.
@@ -166,7 +161,7 @@ public:
    * @param k Constant to subtract.
    * @return `x - k * ones(x.shape())`
    */
-  virtual Tensor subtract(const Tensor &x, const float k) = 0;
+  Tensor subtract(const Tensor &x, float k);
 
   /**
    * Subtracts a tensor from a constant.
@@ -174,7 +169,7 @@ public:
    * @param x A tensor.
    * @return `k * ones(x.shape()) - x`
    */
-  virtual Tensor subtract(const float k, const Tensor &x) = 0;
+  Tensor subtract(float k, const Tensor &x);
 
   /**
    * Subtracts the second tensor from the first tensor.
@@ -184,7 +179,7 @@ public:
    * @remarks If the batch size of `a` or `b` is 1, the single-batch side is
    *          broadcasted to all minibatches in the opposite side.
    */
-  virtual Tensor subtract(const Tensor &a, const Tensor &b) = 0;
+  Tensor subtract(const Tensor &a, const Tensor &b);
 
   /**
    * Multiples each element in a tensor by a constant.
@@ -192,7 +187,7 @@ public:
    * @param k Multiplier.
    * @return `k * x`
    */
-  virtual Tensor multiply(const Tensor &x, const float k) = 0;
+  Tensor multiply(const Tensor &x, float k);
 
   /**
    * Element-wise multiplication of two tensors.
@@ -202,7 +197,7 @@ public:
    * @remarks If the batch size of `a` or `b` is 1, the single-batch side is
    *          broadcasted to all minibatches in the opposite side.
    */
-  virtual Tensor multiply(const Tensor &a, const Tensor &b) = 0;
+  Tensor multiply(const Tensor &a, const Tensor &b);
 
   /**
    * Divides each element in a tensor by a constant.
@@ -211,7 +206,7 @@ public:
    * @return `x / k`
    * @remarks This function won't check the zero-division.
    */
-  virtual Tensor divide(const Tensor &x, const float k) = 0;
+  Tensor divide(const Tensor &x, float k);
 
   /**
    * Divides a constant by each element in a tensor.
@@ -220,7 +215,7 @@ public:
    * @return `k * ones(x.shape()) ./ x`
    * @remarks This function won't check the zero-division.
    */
-  virtual Tensor divide(const float k, const Tensor &x) = 0;
+  Tensor divide(float k, const Tensor &x);
 
   /**
    * Divides the first tensor by the second tensor.
@@ -231,7 +226,7 @@ public:
    *          broadcasted to all minibatches in the opposite side.
    *          This function won't check the zero-division.
    */
-  virtual Tensor divide(const Tensor &a, const Tensor &b) = 0;
+  Tensor divide(const Tensor &a, const Tensor &b);
 
   /**
    * Calculates the transposed matrix.
@@ -239,7 +234,7 @@ public:
    * @return `x^T`
    * @remarks Number of dimensions of `x` should be 0, 1 or 2.
    */
-  virtual Tensor transpose(const Tensor &x) = 0;
+  Tensor transpose(const Tensor &x);
 
   /**
    * Calculates the matrix product (dot product) of two matrices.
@@ -250,49 +245,49 @@ public:
    *          second dimension of `a` and the first dimension of `b` should be
    *          same.
    */
-  virtual Tensor dot(const Tensor &a, const Tensor &b) = 0;
+  Tensor dot(const Tensor &a, const Tensor &b);
 
   /**
    * Calculates the exp function.
    * @param x A tensor.
    * @return `exp(x)`
    */
-  virtual Tensor exp(const Tensor &x) = 0;
+  Tensor exp(const Tensor &x);
 
   /**
    * Calculates the tanh function.
    * @param x A tensor.
    * @return `tanh(x)`
    */
-  virtual Tensor tanh(const Tensor &x) = 0;
+  Tensor tanh(const Tensor &x);
 
   /**
    * Calculates the logistic sigmoid function.
    * @param x A tensor.
    * @return `sigmoid(x)`
    */
-  virtual Tensor sigmoid(const Tensor &x) = 0;
+  Tensor sigmoid(const Tensor &x);
 
   /**
    * Calculates the step function.
    * @param x A tensor.
    * @return `x >= 0 ? 1 : 0`
    */
-  virtual Tensor step(const Tensor &x) = 0;
+  Tensor step(const Tensor &x);
 
   /**
    * Calculates the rectifier function.
    * @param x A tensor.
    * @return `max(x, 0)`
    */
-  virtual Tensor relu(const Tensor &x) = 0;
+  Tensor relu(const Tensor &x);
 
   /**
    * Calculates the sum over minibatches.
    * @param x A tensor.
    * @return `sum(x[0], x[1], ..., x[x.batch_size])`
    */
-  virtual Tensor batch_sum(const Tensor &x) = 0;
+  Tensor batch_sum(const Tensor &x);
 
   /**
    * Directly adds the second tensor to the first tensor.
@@ -305,7 +300,57 @@ public:
    *              b == 1: a += batch_broadcast(b)
    *              otherwise: error.
    */
-  virtual void add_gradient(Tensor &a, const Tensor &b) = 0;
+  void add_gradient(Tensor &a, const Tensor &b);
+  
+private:
+  // device-specific implementations.
+
+  virtual Tensor new_tensor_impl(const Shape &shape) = 0;
+  virtual void delete_tensor_impl(Tensor &x) = 0;
+  
+  virtual std::vector<float> tensor_to_vector_impl(const Tensor &x) = 0;
+
+  virtual void reset_tensor_impl(Tensor &x, float k) = 0;
+  virtual void reset_tensor_impl(
+      Tensor &x, const std::vector<float> &values) = 0;
+
+  virtual Tensor random_bernoulli_impl(const Shape &shape, float p) = 0;
+  virtual Tensor random_uniform_impl(
+      const Shape &shape, float lower, float upper) = 0;
+  virtual Tensor random_normal_impl(
+      const Shape &shape, float mean, float sd) = 0;
+
+  virtual Tensor slice_impl(
+      const Tensor &x, unsigned dim, unsigned lower, unsigned upper) = 0;
+  virtual Tensor concat_impl(
+      const std::vector<const Tensor *> &xs, unsigned dim) = 0;
+
+  virtual Tensor duplicate_impl(const Tensor &x) = 0;
+  virtual Tensor negate_impl(const Tensor &x) = 0;
+
+  virtual Tensor add_impl(const Tensor &x, float k) = 0;
+  virtual Tensor add_impl(const Tensor &a, const Tensor &b) = 0;
+  virtual Tensor subtract_impl(const Tensor &x, float k) = 0;
+  virtual Tensor subtract_impl(float k, const Tensor &x)  = 0;
+  virtual Tensor subtract_impl(const Tensor &a, const Tensor &b) = 0;
+  virtual Tensor multiply_impl(const Tensor &x, float k) = 0;
+  virtual Tensor multiply_impl(const Tensor &a, const Tensor &b) = 0;
+  virtual Tensor divide_impl(const Tensor &x, float k) = 0;
+  virtual Tensor divide_impl(float k, const Tensor &x)  = 0;
+  virtual Tensor divide_impl(const Tensor &a, const Tensor &b) = 0;
+
+  virtual Tensor transpose_impl(const Tensor &x) = 0;
+  virtual Tensor dot_impl(const Tensor &a, const Tensor &b) = 0;
+
+  virtual Tensor exp_impl(const Tensor &x) = 0;
+  virtual Tensor tanh_impl(const Tensor &x) = 0;
+  virtual Tensor sigmoid_impl(const Tensor &x) = 0;
+  virtual Tensor step_impl(const Tensor &x) = 0;
+  virtual Tensor relu_impl(const Tensor &x) = 0;
+  
+  virtual Tensor batch_sum_impl(const Tensor &x) = 0;
+
+  virtual void add_gradient_impl(Tensor &a, const Tensor &b) = 0;
 };
 
 }  // namespace primitiv

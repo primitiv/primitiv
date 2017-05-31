@@ -20,6 +20,7 @@ set(primitiv_LIBRARY_HDRS
 
 set(primitiv_LIBRARY_SRCS
   cpu_device.cc
+  device.cc
   function_impl.cc
   graph.cc
   initializer_impl.cc
