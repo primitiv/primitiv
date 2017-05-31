@@ -23,6 +23,11 @@ inline Tensor operator/(const Tensor &a, const Tensor &b) { return a.device()->d
 
 namespace tensor_ops {
 
+inline Tensor slice(
+    const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
+  return x.device()->slice(x, dim, lower, upper);
+}
+
 inline Tensor transpose(const Tensor &x) { return x.device()->transpose(x); }
 inline Tensor dot(const Tensor &a, const Tensor &b) { return a.device()->dot(a, b); }
 inline Tensor exp(const Tensor &x) { return x.device()->exp(x); }

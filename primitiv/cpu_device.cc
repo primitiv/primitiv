@@ -146,6 +146,46 @@ Tensor CPUDevice::random_normal(
   return ret;
 }
 
+Tensor CPUDevice::slice(
+    const Tensor &x, const unsigned dim,
+    const unsigned lower, const unsigned upper) {
+  CHECK_DEVICE(x);
+  const Shape &s = x.shape();
+  if (lower >= upper || upper > s.dim(dim)) {
+    std::stringstream ss;
+    ss << "Attempted to invalid slicing. x.shape: " << s.to_string()
+       << ", dim: " << dim << ", lower: " << lower << ", upper: " << upper;
+    throw std::runtime_error(ss.str());
+  }
+
+  if (dim >= s.dims().size()) {
+    // Resulting tensor is completely same as the argument.
+    return duplicate(x);
+  }
+
+  std::vector<unsigned> dims = s.dims();
+  const unsigned bs = s.batch_size();
+  const unsigned diff = upper - lower;
+  unsigned base = 1;
+  for (unsigned i = 0; i < dim; ++i) base *= dims[i];
+  const unsigned offset = base * lower;
+  const unsigned span = base * diff;
+  const unsigned skip = base * (dims[dim] - diff);
+  unsigned repeat = bs;
+  for (unsigned i = dim + 1; i < dims.size(); ++i) repeat *= dims[i];
+  dims[dim] = diff;
+  Tensor ret = new_tensor(Shape(dims, bs));
+  float *dest = DATA(ret);
+  const float *src = CDATA(x) + offset;
+  for (unsigned i = 0; i < repeat; ++i) {
+    for (unsigned j = 0; j < span; ++j) {
+      *dest++ = *src++;
+    }
+    src += skip;
+  }
+  return ret;
+}
+
 Tensor CPUDevice::duplicate(const Tensor &x) {
   CHECK_DEVICE(x);
 

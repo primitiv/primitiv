@@ -1,5 +1,6 @@
 #include <config.h>
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 #include <gtest/gtest.h>
@@ -35,6 +36,62 @@ protected:
     }
   }
 };
+
+TEST_F(TensorOpsTest, CheckSlice) {
+  vector<float> x_data(3 * 3 * 2 * 2);
+  std::iota(x_data.begin(), x_data.end(), 0);
+  struct TestCase {
+    unsigned dim, lower, upper;
+    Shape shape;
+    vector<float> values;
+  };
+  const vector<TestCase> test_cases {
+    // leftmost
+    {0, 0, 1, Shape({1, 3, 2}, 2),
+      {0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33}},
+    {1, 0, 1, Shape({3, 1, 2}, 2),
+      {0, 1, 2, 9, 10, 11, 18, 19, 20, 27, 28, 29}},
+    {2, 0, 1, Shape({3, 3, 1}, 2),
+      {0, 1, 2, 3, 4, 5, 6, 7, 8, 18, 19, 20, 21, 22, 23, 24, 25, 26}},
+    // middle
+    {0, 1, 2, Shape({1, 3, 2}, 2),
+      {1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34}},
+    {1, 1, 2, Shape({3, 1, 2}, 2),
+      {3, 4, 5, 12, 13, 14, 21, 22, 23, 30, 31, 32}},
+    {2, 1, 2, Shape({3, 3, 1}, 2),
+      {9, 10, 11, 12, 13, 14, 15, 16, 17, 27, 28, 29, 30, 31, 32, 33, 34, 35}},
+    // rightmost
+    {0, 2, 3, Shape({1, 3, 2}, 2),
+      {2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35}},
+    {1, 2, 3, Shape({3, 1, 2}, 2),
+      {6, 7, 8, 15, 16, 17, 24, 25, 26, 33, 34, 35}},
+    // higher dim
+    {3, 0, 1, Shape({3, 3, 2}, 2), x_data},
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor(Shape({3, 3, 2}, 2), x_data);
+    for (const TestCase &tc : test_cases) {
+      const Tensor y = slice(x, tc.dim, tc.lower, tc.upper);
+      EXPECT_EQ(tc.shape, y.shape());
+      EXPECT_TRUE(vector_match(tc.values, y.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorOpsTest, CheckInvalidSlice) {
+  struct TestCase { unsigned dim, lower, upper; };
+  vector<TestCase> test_cases {
+    {0, 0, 0}, {0, 1, 0}, {0, 0, 4}, {0, 3, 4},
+    {1, 0, 0}, {1, 1, 0}, {1, 0, 4}, {1, 3, 4},
+    {2, 0, 0}, {2, 1, 0}, {2, 0, 2}, {2, 1, 2},
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor({3, 3}, 3);
+    for (const TestCase &tc : test_cases) {
+      EXPECT_THROW(slice(x, tc.dim, tc.lower, tc.upper), std::runtime_error);
+    }
+  }
+}
 
 TEST_F(TensorOpsTest, CheckDuplicate) {
   const vector<float> x_data {1000, 100, 10, 1, 0.1, 0.01, 0.001, 0.0001};

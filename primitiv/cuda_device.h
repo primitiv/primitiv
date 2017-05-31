@@ -53,6 +53,10 @@ public:
   Tensor random_normal(
       const Shape &shape, const float mean, const float sd) override;
 
+  Tensor slice(
+      const Tensor &x, const unsigned dim,
+      const unsigned lower, const unsigned upper) override;
+
   Tensor duplicate(const Tensor &x) override;
   Tensor negate(const Tensor &x) override;
 

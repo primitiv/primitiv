@@ -68,6 +68,14 @@ __global__ void dev_rand_affine(
   if (i < size) px[i] = px[i] * scale + shift;
 }
 
+__global__ void dev_slice(
+    float *py, const float *px,
+    const unsigned offset, const unsigned span, const unsigned skip,
+    const unsigned size) {
+  const unsigned i = IDX;
+  if (i < size) py[i] = px[offset + (i / span) * skip + (i % span)];
+}
+
 __global__ void dev_negate(float *py, const float *px, const unsigned size) {
   const unsigned i = IDX;
   if (i < size) py[i] = -px[i];
@@ -419,6 +427,40 @@ Tensor CUDADevice::random_normal(
   }
   Tensor ret = new_tensor(shape);
   CURAND_CALL(::curandGenerateNormal(curand_, DATA(ret), size, mean, sd));
+  return ret;
+}
+
+Tensor CUDADevice::slice(
+    const Tensor &x, const unsigned dim,
+    const unsigned lower, const unsigned upper) {
+  CHECK_DEVICE(x);
+  const Shape &s = x.shape();
+  if (lower >= upper || upper > s.dim(dim)) {
+    std::stringstream ss;
+    ss << "Attempted to invalid slicing. x.shape: " << s.to_string()
+       << ", dim: " << dim << ", lower: " << lower << ", upper: " << upper;
+    throw std::runtime_error(ss.str());
+  }
+
+  if (dim >= s.dims().size()) {
+    // Resulting tensor is completely same as the argument.
+    return duplicate(x);
+  }
+
+  std::vector<unsigned> dims = s.dims();
+  const unsigned bs = s.batch_size();
+  const unsigned diff = upper - lower;
+  unsigned base = 1;
+  for (unsigned i = 0; i < dim; ++i) base *= dims[i];
+  const unsigned offset = base * lower;
+  const unsigned span = base * diff;
+  const unsigned skip = base * dims[dim];
+  dims[dim] = diff;
+  Tensor ret = new_tensor(Shape(dims, bs));
+  const unsigned size = ret.shape().size();
+  const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
+  ::dev_slice<<<num_blocks, dim1_x_>>>(
+      DATA(ret), CDATA(x), offset, span, skip, size);
   return ret;
 }
 

@@ -108,6 +108,18 @@ public:
       const Shape &shape, const float mean, const float sd) = 0;
 
   /**
+   * Provides partial tensor.
+   * @param x A tensor.
+   * @param dim Target dimension.
+   * @param lower The lower bound.
+   * @param upper The upper bound.
+   * @return `x([lower,upper) in dim)`
+   */
+  virtual Tensor slice(
+      const Tensor &x, const unsigned dim,
+      const unsigned lower, const unsigned upper) = 0;
+
+  /**
    * Duplicates the tensor.
    * @param x A tensor.
    * @return Duplicated tensor.
