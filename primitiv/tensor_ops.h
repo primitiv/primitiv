@@ -8,17 +8,17 @@ namespace primitiv {
 
 inline Tensor operator+(const Tensor &x) { return x.device()->duplicate(x); }
 inline Tensor operator-(const Tensor &x) { return x.device()->negate(x); }
-inline Tensor operator+(const Tensor &x, const float k) { return x.device()->add(x, k); }
-inline Tensor operator+(const float k, const Tensor &x) { return x.device()->add(x, k); }
+inline Tensor operator+(const Tensor &x, float k) { return x.device()->add(x, k); }
+inline Tensor operator+(float k, const Tensor &x) { return x.device()->add(x, k); }
 inline Tensor operator+(const Tensor &a, const Tensor &b) { return a.device()->add(a, b); }
-inline Tensor operator-(const Tensor &x, const float k) { return x.device()->subtract(x, k); }
-inline Tensor operator-(const float k, const Tensor &x) { return x.device()->subtract(k, x); }
+inline Tensor operator-(const Tensor &x, float k) { return x.device()->subtract(x, k); }
+inline Tensor operator-(float k, const Tensor &x) { return x.device()->subtract(k, x); }
 inline Tensor operator-(const Tensor &a, const Tensor &b) { return a.device()->subtract(a, b); }
-inline Tensor operator*(const Tensor &x, const float k) { return x.device()->multiply(x, k); }
-inline Tensor operator*(const float k, const Tensor &x) { return x.device()->multiply(x, k); }
+inline Tensor operator*(const Tensor &x, float k) { return x.device()->multiply(x, k); }
+inline Tensor operator*(float k, const Tensor &x) { return x.device()->multiply(x, k); }
 inline Tensor operator*(const Tensor &a, const Tensor &b) { return a.device()->multiply(a, b); }
-inline Tensor operator/(const Tensor &x, const float k) { return x.device()->divide(x, k); }
-inline Tensor operator/(const float k, const Tensor &x) { return x.device()->divide(k, x); }
+inline Tensor operator/(const Tensor &x, float k) { return x.device()->divide(x, k); }
+inline Tensor operator/(float k, const Tensor &x) { return x.device()->divide(k, x); }
 inline Tensor operator/(const Tensor &a, const Tensor &b) { return a.device()->divide(a, b); }
 
 namespace tensor_ops {
@@ -26,6 +26,9 @@ namespace tensor_ops {
 inline Tensor slice(
     const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
   return x.device()->slice(x, dim, lower, upper);
+}
+inline Tensor concat(const std::vector<const Tensor *> &xs, unsigned dim) {
+  return xs[0]->device()->concat(xs, dim);
 }
 
 inline Tensor transpose(const Tensor &x) { return x.device()->transpose(x); }

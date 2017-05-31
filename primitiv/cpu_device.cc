@@ -186,6 +186,14 @@ Tensor CPUDevice::slice(
   return ret;
 }
 
+Tensor CPUDevice::concat(
+    const std::vector<const Tensor *> &xs, const unsigned dim) {
+  for (const Tensor *x : xs) {
+    CHECK_DEVICE(*x);
+  }
+  throw std::runtime_error("not implemented");
+}
+
 Tensor CPUDevice::duplicate(const Tensor &x) {
   CHECK_DEVICE(x);
 

@@ -464,6 +464,14 @@ Tensor CUDADevice::slice(
   return ret;
 }
 
+Tensor CUDADevice::concat(
+    const std::vector<const Tensor *> &xs, const unsigned dim) {
+  for (const Tensor *x : xs) {
+    CHECK_DEVICE(*x);
+  }
+  throw std::runtime_error("not implemented");
+}
+
 Tensor CUDADevice::duplicate(const Tensor &x) {
   CHECK_DEVICE(x);
   Tensor ret = new_tensor(x.shape());

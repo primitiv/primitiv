@@ -120,6 +120,15 @@ public:
       const unsigned lower, const unsigned upper) = 0;
 
   /**
+   * Provides concatenated tensor.
+   * @param xs A list of tensor.
+   * @param dim Dimension to join.
+   * @return `[xs[0], xs[1], ..., xs[n] in dim]`
+   */
+  virtual Tensor concat(
+      const std::vector<const Tensor *> &xs, const unsigned dim) = 0;
+
+  /**
    * Duplicates the tensor.
    * @param x A tensor.
    * @return Duplicated tensor.

@@ -80,7 +80,7 @@ TEST_F(TensorOpsTest, CheckSlice) {
 
 TEST_F(TensorOpsTest, CheckInvalidSlice) {
   struct TestCase { unsigned dim, lower, upper; };
-  vector<TestCase> test_cases {
+  const vector<TestCase> test_cases {
     {0, 0, 0}, {0, 1, 0}, {0, 0, 4}, {0, 3, 4},
     {1, 0, 0}, {1, 1, 0}, {1, 0, 4}, {1, 3, 4},
     {2, 0, 0}, {2, 1, 0}, {2, 0, 2}, {2, 1, 2},
@@ -90,6 +90,29 @@ TEST_F(TensorOpsTest, CheckInvalidSlice) {
     for (const TestCase &tc : test_cases) {
       EXPECT_THROW(slice(x, tc.dim, tc.lower, tc.upper), std::runtime_error);
     }
+  }
+}
+
+TEST_F(TensorOpsTest, CheckConcat) {
+  const vector<float> x1_data {
+    1, 2, 3, 4, 5, 6, 7, 8,
+    11, 12, 13, 14, 15, 16, 17, 18,
+  };
+  const vector<float> x2_data {
+    -1, -2, -3, -4, -5, -6, -7, -8,
+    -11, -12, -13, -14, -15, -16, -17, -18,
+  };
+  for (Device *dev : devices) {
+    Tensor x1 = dev->new_tensor(Shape({2, 2, 2}, 2), x1_data);
+    Tensor x2 = dev->new_tensor(Shape({2, 2, 2}, 2), x2_data);
+    FAIL() << "not implemented";
+  }
+}
+
+TEST_F(TensorOpsTest, CheckInvalidConcat) {
+  for (Device *dev : devices) {
+    dev = dev;
+    FAIL() << "not implemented";
   }
 }
 

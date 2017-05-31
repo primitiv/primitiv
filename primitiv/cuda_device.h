@@ -56,6 +56,8 @@ public:
   Tensor slice(
       const Tensor &x, const unsigned dim,
       const unsigned lower, const unsigned upper) override;
+  Tensor concat(
+      const std::vector<const Tensor *> &xs, const unsigned dim) override;
 
   Tensor duplicate(const Tensor &x) override;
   Tensor negate(const Tensor &x) override;
