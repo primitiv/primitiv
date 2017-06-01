@@ -9,8 +9,57 @@
 using std::cerr;
 using std::endl;
 
+namespace {
+
+/**
+ * Retrieves cuBLAS error string.
+ * @param err cuBLAS error cude.
+ * @return Error string.
+ */
+std::string cublasGetErrorString(::cublasStatus_t err) {
+#define MESSAGE(status) if (err == status) return #status
+  MESSAGE(CUBLAS_STATUS_SUCCESS);
+  MESSAGE(CUBLAS_STATUS_NOT_INITIALIZED);
+  MESSAGE(CUBLAS_STATUS_ALLOC_FAILED);
+  MESSAGE(CUBLAS_STATUS_INVALID_VALUE);
+  MESSAGE(CUBLAS_STATUS_ARCH_MISMATCH);
+  MESSAGE(CUBLAS_STATUS_MAPPING_ERROR);
+  MESSAGE(CUBLAS_STATUS_EXECUTION_FAILED);
+  MESSAGE(CUBLAS_STATUS_INTERNAL_ERROR);
+  MESSAGE(CUBLAS_STATUS_NOT_SUPPORTED);
+  MESSAGE(CUBLAS_STATUS_LICENSE_ERROR);
+#undef MESSAGE
+  return "Unknown cublasStatus_t value.";
+}
+
+/**
+ * Retrieves cuRAND error string.
+ * @param err cuRAND error cude.
+ * @return Error string.
+ */
+std::string curandGetErrorString(::curandStatus_t err) {
+#define MESSAGE(status) if (err == status) return #status
+  MESSAGE(CURAND_STATUS_SUCCESS);
+  MESSAGE(CURAND_STATUS_VERSION_MISMATCH);
+  MESSAGE(CURAND_STATUS_NOT_INITIALIZED);
+  MESSAGE(CURAND_STATUS_ALLOCATION_FAILED);
+  MESSAGE(CURAND_STATUS_TYPE_ERROR);
+  MESSAGE(CURAND_STATUS_OUT_OF_RANGE);
+  MESSAGE(CURAND_STATUS_LENGTH_NOT_MULTIPLE);
+  MESSAGE(CURAND_STATUS_DOUBLE_PRECISION_REQUIRED);
+  MESSAGE(CURAND_STATUS_LAUNCH_FAILURE);
+  MESSAGE(CURAND_STATUS_PREEXISTING_FAILURE);
+  MESSAGE(CURAND_STATUS_INITIALIZATION_FAILED);
+  MESSAGE(CURAND_STATUS_ARCH_MISMATCH);
+  MESSAGE(CURAND_STATUS_INTERNAL_ERROR);
+#undef MESSAGE
+  return "Unknown curandStatus_t value.";
+}
+
+}
+
 #define CUDA_CALL(f) { \
-  cudaError_t err = (f); \
+  ::cudaError_t err = (f); \
   if (err != cudaSuccess) { \
     std::stringstream ss; \
     ss << "CUDA function failed. statement: " << #f \
@@ -21,21 +70,23 @@ using std::endl;
 }
 
 #define CUBLAS_CALL(f) { \
-  cublasStatus_t err = (f); \
+  ::cublasStatus_t err = (f); \
   if (err != CUBLAS_STATUS_SUCCESS) { \
     std::stringstream ss; \
     ss << "CUBLAS function failed. statement: " << #f \
-       << ", error: " << err; \
+       << ", error: " << err \
+       << ": " << ::cublasGetErrorString(err); \
     throw std::runtime_error(ss.str()); \
   } \
 }
 
 #define CURAND_CALL(f) { \
-  curandStatus_t err = (f); \
+  ::curandStatus_t err = (f); \
   if (err != CURAND_STATUS_SUCCESS) { \
     std::stringstream ss; \
     ss << "CURAND function failed. statement: " << #f \
-       << ", error: " << err; \
+       << ", error: " << err \
+       << ": " << ::curandGetErrorString(err); \
     throw std::runtime_error(ss.str()); \
   } \
 }
