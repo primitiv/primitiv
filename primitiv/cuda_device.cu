@@ -296,6 +296,7 @@ void CUDADevice::initialize() {
   cerr << "  2 dims ... " << dim2_x_ << "x" << dim2_y_ << " threads" << endl;
 
   // Additional libraries
+  CUDA_CALL(::cudaSetDevice(dev_id_));
   CUBLAS_CALL(::cublasCreate(&cublas_));
   CURAND_CALL(::curandCreateGenerator(&curand_, CURAND_RNG_PSEUDO_DEFAULT));
   CURAND_CALL(::curandSetPseudoRandomGeneratorSeed(curand_, rng_seed_));

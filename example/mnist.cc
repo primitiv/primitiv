@@ -40,6 +40,11 @@ const unsigned MAX_EPOCH = 50;
 // Helper function to load input images.
 vector<float> load_images(const string &filename, const unsigned n) {
   ifstream ifs(filename, ios::binary);
+  if (!ifs.is_open()) {
+    cerr << "File could not be opened: " << filename << endl;
+    abort();
+  }
+
   ifs.ignore(16);  // header
   const unsigned size = n * NUM_INPUT_UNITS;
   vector<unsigned char> buf(size);
@@ -52,6 +57,11 @@ vector<float> load_images(const string &filename, const unsigned n) {
 // Helper function to load labels.
 vector<char> load_labels(const string &filename, const unsigned n) {
   ifstream ifs(filename, ios::binary);
+  if (!ifs.is_open()) {
+    cerr << "File could not be opened: " << filename << endl;
+    abort();
+  }
+
   ifs.ignore(8);  // header
   vector<char> ret(n);
   ifs.read(&ret[0], n);
