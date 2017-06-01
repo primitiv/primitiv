@@ -1,9 +1,9 @@
 #include <config.h>
 
-#include <stdexcept>
 #include <utility>
 #include <vector>
 #include <gtest/gtest.h>
+#include <primitiv/error.h>
 #include <primitiv/shape.h>
 
 using std::pair;
@@ -73,13 +73,13 @@ TEST_F(ShapeTest, CheckNewByVector) {
 }
 
 TEST_F(ShapeTest, CheckInvalidNew) {
-  EXPECT_THROW(Shape({0}), std::runtime_error);
-  EXPECT_THROW(Shape({2, 0}), std::runtime_error);
-  EXPECT_THROW(Shape({2, 3, 0}), std::runtime_error);
-  EXPECT_THROW(Shape({0}, 0), std::runtime_error);
-  EXPECT_THROW(Shape({2, 0}, 0), std::runtime_error);
-  EXPECT_THROW(Shape({2, 3, 0}, 0), std::runtime_error);
-  EXPECT_THROW(Shape({}, 0), std::runtime_error);
+  EXPECT_THROW(Shape({0}), Error);
+  EXPECT_THROW(Shape({2, 0}), Error);
+  EXPECT_THROW(Shape({2, 3, 0}), Error);
+  EXPECT_THROW(Shape({0}, 0), Error);
+  EXPECT_THROW(Shape({2, 0}, 0), Error);
+  EXPECT_THROW(Shape({2, 3, 0}, 0), Error);
+  EXPECT_THROW(Shape({}, 0), Error);
 }
 
 TEST_F(ShapeTest, CheckString) {

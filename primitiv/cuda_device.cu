@@ -1,10 +1,9 @@
 #include <config.h>
 
 #include <iostream>
-#include <sstream>
-#include <stdexcept>
 #include <random>
 #include <primitiv/cuda_device.h>
+#include <primitiv/error.h>
 
 using std::cerr;
 using std::endl;
@@ -61,33 +60,30 @@ std::string curandGetErrorString(::curandStatus_t err) {
 #define CUDA_CALL(f) { \
   ::cudaError_t err = (f); \
   if (err != cudaSuccess) { \
-    std::stringstream ss; \
-    ss << "CUDA function failed. statement: " << #f \
-       << ", error: " << err \
-       << ": " << ::cudaGetErrorString(err); \
-    throw std::runtime_error(ss.str()); \
+    THROW_ERROR( \
+        "CUDA function failed. statement: " << #f \
+        << ", error: " << err \
+        << ": " << ::cudaGetErrorString(err)); \
   } \
 }
 
 #define CUBLAS_CALL(f) { \
   ::cublasStatus_t err = (f); \
   if (err != CUBLAS_STATUS_SUCCESS) { \
-    std::stringstream ss; \
-    ss << "CUBLAS function failed. statement: " << #f \
-       << ", error: " << err \
-       << ": " << ::cublasGetErrorString(err); \
-    throw std::runtime_error(ss.str()); \
+    THROW_ERROR( \
+        "CUBLAS function failed. statement: " << #f \
+        << ", error: " << err \
+        << ": " << ::cublasGetErrorString(err)); \
   } \
 }
 
 #define CURAND_CALL(f) { \
   ::curandStatus_t err = (f); \
   if (err != CURAND_STATUS_SUCCESS) { \
-    std::stringstream ss; \
-    ss << "CURAND function failed. statement: " << #f \
-       << ", error: " << err \
-       << ": " << ::curandGetErrorString(err); \
-    throw std::runtime_error(ss.str()); \
+    THROW_ERROR( \
+        "CURAND function failed. statement: " << #f \
+        << ", error: " << err \
+        << ": " << ::curandGetErrorString(err)); \
   } \
 }
 
@@ -270,9 +266,8 @@ void CUDADevice::initialize() {
   int max_devs;
   CUDA_CALL(::cudaGetDeviceCount(&max_devs));
   if (dev_id_ >= static_cast<unsigned>(max_devs)) {
-    std::stringstream ss;
-    ss << "Invalid CUDA device ID. given: " << dev_id_ << " >= " << max_devs;
-    throw std::runtime_error(ss.str());
+    THROW_ERROR(
+        "Invalid CUDA device ID. given: " << dev_id_ << " >= " << max_devs);
   }
   CUDA_CALL(::cudaGetDeviceProperties(&prop_, dev_id_));
 
@@ -347,9 +342,7 @@ void CUDADevice::delete_tensor_impl(Tensor &x) {
   void *data = x.data();
   auto it = blocks_.find(data);
   if (it == blocks_.end()) {
-    std::stringstream ss;
-    ss << "Attempted to dispose unknown memory block: " << data;
-    throw std::runtime_error(ss.str());
+    THROW_ERROR("Attempted to dispose unknown memory block: " << data);
   }
   blocks_.erase(it);
   CUDA_CALL(::cudaFree(data));
@@ -430,14 +423,14 @@ Tensor CUDADevice::slice_impl(
 
 Tensor CUDADevice::concat_impl(
     const std::vector<const Tensor *> &xs, unsigned dim) {
-  throw std::runtime_error("not implemented");
+  THROW_ERROR("not implemented");
 }
 
 Tensor CUDADevice::duplicate_impl(const Tensor &x) {
   Tensor ret = new_tensor(x.shape());
-  ::cudaMemcpy(
+  CUDA_CALL(::cudaMemcpy(
       ret.data(), x.data(), sizeof(float) * x.shape().size(),
-      cudaMemcpyDeviceToDevice);
+      cudaMemcpyDeviceToDevice));
   return ret;
 }
 

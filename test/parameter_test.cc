@@ -3,6 +3,7 @@
 #include <vector>
 #include <gtest/gtest.h>
 #include <primitiv/cpu_device.h>
+#include <primitiv/error.h>
 #include <primitiv/initializer_impl.h>
 #include <primitiv/parameter.h>
 #include <test_utils.h>
@@ -48,7 +49,7 @@ TEST_F(ParameterTest, CheckNewWithInitializer) {
 }
 
 TEST_F(ParameterTest, CheckInvalidNew) {
-  EXPECT_THROW(Parameter(Shape({}, 3), &dev), std::runtime_error);
+  EXPECT_THROW(Parameter(Shape({}, 3), &dev), Error);
 }
 
 TEST_F(ParameterTest, CheckResetValueByVector) {

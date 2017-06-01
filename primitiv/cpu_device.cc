@@ -5,9 +5,8 @@
 #include <cstring>
 #include <cmath>
 #include <iostream>
-#include <sstream>
-#include <stdexcept>
 #include <primitiv/cpu_device.h>
+#include <primitiv/error.h>
 
 using std::cerr;
 using std::endl;
@@ -33,9 +32,7 @@ Tensor CPUDevice::new_tensor_impl(const Shape &shape) {
   const unsigned mem_size = sizeof(float) * shape.size();
   void *data = std::malloc(mem_size);
   if (!data) {
-    std::stringstream ss;
-    ss << "Memory allocation failed. Requested size: " << mem_size;
-    throw std::runtime_error(ss.str());
+    THROW_ERROR("Memory allocation failed. Requested size: " << mem_size);
   }
   blocks_.insert(std::make_pair(data, mem_size));
   return Tensor(shape, this, data);
@@ -45,9 +42,7 @@ void CPUDevice::delete_tensor_impl(Tensor &x) {
   void *data = x.data();
   auto it = blocks_.find(data);
   if (it == blocks_.end()) {
-    std::stringstream ss;
-    ss << "Attempted to dispose unknown memory block: " << data;
-    throw std::runtime_error(ss.str());
+    THROW_ERROR("Attempted to dispose unknown memory block: " << data);
   }
   blocks_.erase(it);
   std::free(data);
@@ -139,7 +134,7 @@ Tensor CPUDevice::slice_impl(
 
 Tensor CPUDevice::concat_impl(
     const std::vector<const Tensor *> &xs, unsigned dim) {
-  throw std::runtime_error("not implemented");
+  THROW_ERROR("not implemented");
 }
 
 Tensor CPUDevice::duplicate_impl(const Tensor &x) {

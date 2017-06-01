@@ -1,11 +1,11 @@
 #include <config.h>
 
 #include <chrono>
-#include <stdexcept>
 #include <thread>
 #include <vector>
 #include <gtest/gtest.h>
 #include <primitiv/cuda_device.h>
+#include <primitiv/error.h>
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
 #include <test_utils.h>
@@ -18,7 +18,7 @@ namespace primitiv {
 class CUDADeviceTest : public testing::Test {};
 
 TEST_F(CUDADeviceTest, CheckInvalidInit) {
-  EXPECT_THROW(CUDADevice dev(12345678), std::runtime_error);
+  EXPECT_THROW(CUDADevice dev(12345678), Error);
 }
 
 TEST_F(CUDADeviceTest, CheckNewDelete) {

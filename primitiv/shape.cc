@@ -1,9 +1,7 @@
 #include <config.h>
 
+#include <primitiv/error.h>
 #include <primitiv/shape.h>
-
-#include <stdexcept>
-#include <sstream>
 
 using std::initializer_list;
 using std::string;
@@ -43,7 +41,7 @@ void Shape::adjust() {
   // check size of the shape.
   // if 1 or more dimensions or the batch size is 0, then size() returns 0.
   if (size() == 0) {
-    throw std::runtime_error("invalid shape: " + to_string());
+    THROW_ERROR("invalid shape: " << to_string());
   }
 }
 

@@ -1,7 +1,7 @@
 #include <config.h>
 
-#include <stdexcept>
 #include <primitiv/device.h>
+#include <primitiv/error.h>
 #include <primitiv/initializer.h>
 #include <primitiv/parameter.h>
 
@@ -9,9 +9,9 @@ namespace primitiv {
 
 void Parameter::check_shape() {
   if (shape_.batch_size() > 1) {
-    throw std::runtime_error(
-        "The batch size of the parameter shape should be 1. "
-        "Given shape: " + shape_.to_string());
+    THROW_ERROR(
+        "The batch size of the parameter shape should be 1. Given shape: "
+        << shape_.to_string());
   }
 }
 

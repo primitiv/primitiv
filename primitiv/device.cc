@@ -1,17 +1,15 @@
 #include <config.h>
 
-#include <sstream>
-#include <stdexcept>
 #include <primitiv/device.h>
+#include <primitiv/error.h>
 
 // NOTE(odashi): This source only checks shape prerequisites of each operation.
 
 #define CHECK_DEVICE(x) \
   if ((x).device() != this) { \
-    std::stringstream ss; \
-    ss << "Device mismatched. (" #x ").device(): " << (x).device() \
-       << "!= this: " << this; \
-    throw std::runtime_error(ss.str()); \
+    THROW_ERROR( \
+        "Device mismatched. (" #x ").device(): " << (x).device() \
+        << "!= this: " << this); \
   }
 
 namespace primitiv {
@@ -51,20 +49,17 @@ void Device::reset_tensor(Tensor &x, const std::vector<float> &values) {
   CHECK_DEVICE(x);
   const unsigned num_elements = x.shape().size();
   if (values.size() != num_elements) {
-    std::stringstream ss;
-    ss << "Data sizes mismatched. required: " << num_elements
-       << " (shape: " << x.shape().to_string() << ") != actual: "
-       << values.size();
-    throw std::runtime_error(ss.str());
+    THROW_ERROR(
+        "Data sizes mismatched. required: " << num_elements
+        << " (shape: " << x.shape().to_string() << ") != actual: "
+        << values.size());
   }
   reset_tensor_impl(x, values);
 }
 
 Tensor Device::random_bernoulli(const Shape &shape, float p) {
   if (p < 0 || p > 1) {
-    std::stringstream ss;
-    ss << "Invalid Bernoulli probability: " << p;
-    throw std::runtime_error(ss.str());
+    THROW_ERROR("Invalid Bernoulli probability: " << p);
   }
   return random_bernoulli_impl(shape, p);
 }
@@ -72,37 +67,34 @@ Tensor Device::random_bernoulli(const Shape &shape, float p) {
 Tensor Device::random_uniform(
     const Shape &shape, float lower, float upper) {
   if (upper < lower) {
-    std::stringstream ss;
-    ss << "Invalid parameter of the uniform distribution. lower: " << lower
-      << ", upper: " << upper;
-    throw std::runtime_error(ss.str());
+    THROW_ERROR(
+        "Invalid parameter of the uniform distribution. lower: " << lower
+        << ", upper: " << upper);
   }
   return random_uniform_impl(shape, lower, upper);
 }
 
 Tensor Device::random_normal(const Shape &shape, float mean, float sd) {
   if (sd <= 0) {
-    std::stringstream ss;
-    ss << "Invalid parameter of the normal distribution. mean: " << mean
-      << ", SD: " << sd;
-    throw std::runtime_error(ss.str());
+    THROW_ERROR(
+        "Invalid parameter of the normal distribution. mean: " << mean
+        << ", SD: " << sd);
   }
   return random_normal_impl(shape, mean, sd);
 }
 
 Tensor Device::slice(
     const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
-  CHECK_DEVICE(x);                                                              
-  const Shape &s = x.shape();                                                   
-  if (lower >= upper || upper > s.dim(dim)) {                                   
-    std::stringstream ss;                                                       
-    ss << "Attempted to invalid slicing. x.shape: " << s.to_string()            
-       << ", dim: " << dim << ", lower: " << lower << ", upper: " << upper;     
-    throw std::runtime_error(ss.str());                                         
+  CHECK_DEVICE(x);
+  const Shape &s = x.shape();
+  if (lower >= upper || upper > s.dim(dim)) {
+    THROW_ERROR(
+        "Attempted to invalid slicing. x.shape: " << s.to_string()
+        << ", dim: " << dim << ", lower: " << lower << ", upper: " << upper);
   }
 
-  if (dim >= s.dims().size()) {                                                 
-    // Resulting tensor is completely same as the argument.                     
+  if (dim >= s.dims().size()) {
+    // Resulting tensor is completely same as the argument.
     return duplicate(x);
   }
 
@@ -139,10 +131,9 @@ Tensor Device::add(const Tensor &a, const Tensor &b) {
   const unsigned ba = sa.batch_size();
   const unsigned bb = sb.batch_size();
   if (sa.dims() != sb.dims() || (ba != bb && ba > 1 && bb > 1)) {
-    std::stringstream ss;
-    ss << "Attempted to add tensors with shapes "
-       << sa.to_string() << " and " << sb.to_string() << '.';
-    throw std::runtime_error(ss.str());
+    THROW_ERROR(
+        "Attempted to add tensors with shapes "
+        << sa.to_string() << " and " << sb.to_string() << '.');
   }
   return add_impl(a, b);
 }
@@ -165,10 +156,9 @@ Tensor Device::subtract(const Tensor &a, const Tensor &b) {
   const unsigned ba = sa.batch_size();
   const unsigned bb = sb.batch_size();
   if (sa.dims() != sb.dims() || (ba != bb && ba > 1 && bb > 1)) {
-    std::stringstream ss;
-    ss << "Attempted to subtract tensors with shapes "
-       << sa.to_string() << " and " << sb.to_string() << '.';
-    throw std::runtime_error(ss.str());
+    THROW_ERROR(
+        "Attempted to subtract tensors with shapes "
+        << sa.to_string() << " and " << sb.to_string() << '.');
   }
   return subtract_impl(a, b);
 }
@@ -186,10 +176,9 @@ Tensor Device::multiply(const Tensor &a, const Tensor &b) {
   const unsigned ba = sa.batch_size();
   const unsigned bb = sb.batch_size();
   if (sa.dims() != sb.dims() || (ba != bb && ba > 1 && bb > 1)) {
-    std::stringstream ss;
-    ss << "Attempted to multiply tensors with shapes "
-       << sa.to_string() << " and " << sb.to_string() << '.';
-    throw std::runtime_error(ss.str());
+    THROW_ERROR(
+        "Attempted to multiply tensors with shapes "
+        << sa.to_string() << " and " << sb.to_string() << '.');
   }
   return multiply_impl(a, b);
 }
@@ -212,10 +201,9 @@ Tensor Device::divide(const Tensor &a, const Tensor &b) {
   const unsigned ba = sa.batch_size();
   const unsigned bb = sb.batch_size();
   if (sa.dims() != sb.dims() || (ba != bb && ba > 1 && bb > 1)) {
-    std::stringstream ss;
-    ss << "Attempted to divide tensors with shapes "
-       << sa.to_string() << " and " << sb.to_string() << '.';
-    throw std::runtime_error(ss.str());
+    THROW_ERROR(
+        "Attempted to divide tensors with shapes "
+        << sa.to_string() << " and " << sb.to_string() << '.');
   }
   return divide_impl(a, b);
 }
@@ -224,9 +212,8 @@ Tensor Device::transpose(const Tensor &x) {
   CHECK_DEVICE(x);
   const Shape &s = x.shape();
   if (s.dims().size() > 2) {
-    std::stringstream ss;
-    ss << "Attempted to transpose a tensor with shape " << s.to_string() << '.';
-    throw std::runtime_error(ss.str());
+    THROW_ERROR(
+        "Attempted to transpose a tensor with shape " << s.to_string() << '.');
   }
   return transpose_impl(x);
 }
@@ -241,10 +228,9 @@ Tensor Device::dot(const Tensor &a, const Tensor &b) {
   if (sa.dims().size() > 2 || sb.dims().size() > 2 ||
       sa.dim(1) != sb.dim(0) ||
       (ba != bb && ba > 1 && bb > 1)) {
-    std::stringstream ss;
-    ss << "Attempted to calculate the dot product of tensors with shapes "
-       << sa.to_string() << " and " << sb.to_string() << '.';
-    throw std::runtime_error(ss.str());
+    THROW_ERROR(
+        "Attempted to calculate the dot product of tensors with shapes "
+        << sa.to_string() << " and " << sb.to_string() << '.');
   }
   return dot_impl(a, b);
 }
@@ -287,10 +273,9 @@ void Device::add_gradient(Tensor &a, const Tensor &b) {
   const unsigned ba = sa.batch_size();
   const unsigned bb = sb.batch_size();
   if (sa.dims() != sb.dims() || (ba != bb && ba > 1 && bb > 1)) {
-    std::stringstream ss;
-    ss << "Attempted to add gradients with shape "
-       << sb.to_string() << " to " << sa.to_string() << '.';
-    throw std::runtime_error(ss.str());
+    THROW_ERROR(
+        "Attempted to add gradients with shape "
+        << sb.to_string() << " to " << sa.to_string() << '.');
   }
   add_gradient_impl(a, b);
 }

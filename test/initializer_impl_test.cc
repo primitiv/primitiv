@@ -4,6 +4,7 @@
 #include <vector>
 #include <gtest/gtest.h>
 #include <primitiv/cpu_device.h>
+#include <primitiv/error.h>
 #include <primitiv/initializer_impl.h>
 #include <primitiv/shape.h>
 #include <test_utils.h>
@@ -42,7 +43,7 @@ TEST_F(InitializerImplTest, CheckXavierUniform) {
 TEST_F(InitializerImplTest, CheckInvalidXavierUniform) {
   const XavierUniform init;
   Tensor x = dev.new_tensor({2, 2, 2});
-  EXPECT_THROW(init.apply(x), std::runtime_error);
+  EXPECT_THROW(init.apply(x), Error);
 }
 
 }  // namespace initializers

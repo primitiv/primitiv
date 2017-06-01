@@ -3,10 +3,9 @@
 #include <cstdlib>
 #include <functional>
 #include <iostream>
-#include <stdexcept>
-#include <sstream>
 #include <utility>
 #include <primitiv/device.h>
+#include <primitiv/error.h>
 #include <primitiv/graph.h>
 
 using std::move;
@@ -25,17 +24,15 @@ Graph::~Graph() {
 
 #define CHECK_NODE(node) { \
   if ((node).g_ != this) { \
-    std::stringstream ss; \
-    ss << "Graph mismatched. node.g_: " << (node).g_ << " != this: " << this; \
-    throw std::runtime_error(ss.str()); \
+    THROW_ERROR( \
+        "Graph mismatched. node.g_: " << (node).g_ << " != this: " << this); \
   } \
   if ((node).id_ >= nodes_.size()) { \
-    std::stringstream ss; \
-    ss << "Invalid node ID. " \
-       << "This may be a bug and the program will abort. " \
-       << "node.id_: " << (node).id_ \
-       << " >= nodes_.size(): " << nodes_.size(); \
-    std::abort(); \
+    THROW_ERROR( \
+        "Invalid node ID. " \
+        << "This may be a bug and the program will abort. " \
+        << "node.id_: " << (node).id_ \
+        << " >= nodes_.size(): " << nodes_.size()); \
   } \
 }
 
@@ -98,14 +95,11 @@ void Graph::backward(const Node &node) {
 
   NodeInfo &last_node = *nodes_[node.id_];
   if (!last_node.value.valid()) {
-    std::stringstream ss;
-    ss << "Node " << node.id_ << " is not calculated in the forward path.";
-    throw std::runtime_error(ss.str());
+    THROW_ERROR(
+        "Node " << node.id_ << " is not calculated in the forward path.");
   }
   if (last_node.grad.valid()) {
-    std::stringstream ss;
-    ss << "Node " << node.id_ << " already has the gradient vector.";
-    throw std::runtime_error(ss.str());
+    THROW_ERROR("Node " << node.id_ << " already has the gradient vector.");
   }
 
   // Make identity gradient at the last node.

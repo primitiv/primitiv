@@ -4,6 +4,7 @@
 #include <vector>
 #include <gtest/gtest.h>
 #include <primitiv/cpu_device.h>
+#include <primitiv/error.h>
 #include <primitiv/tensor.h>
 #include <test_utils.h>
 
@@ -207,7 +208,7 @@ TEST_F(TensorTest, CheckInvalidAddGradient) {
 
     for (const Shape &shape : shapes) {
       Tensor b = dev->new_tensor(shape);
-      EXPECT_THROW(a.add_gradient(b), std::runtime_error);
+      EXPECT_THROW(a.add_gradient(b), Error);
     }
   }
 }

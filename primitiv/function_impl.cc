@@ -1,11 +1,10 @@
 #include <config.h>
 
 #include <algorithm>
-#include <sstream>
-#include <stdexcept>
 #include <primitiv/function_impl.h>
 #include <primitiv/parameter.h>
 #include <primitiv/tensor_ops.h>
+#include <primitiv/error.h>
 
 using std::vector;
 
@@ -14,12 +13,11 @@ namespace functions {
 
 #define CHECK_ARGNUM(args, n) \
   if (args.size() != n) { \
-    std::stringstream ss; \
-    ss << "Number of arguments mismatched." \
-       << " function: " << name() \
-       << ", required: " << n \
-       << " != actual: " << args.size(); \
-    throw std::runtime_error(ss.str()); \
+    THROW_ERROR( \
+        "Number of arguments mismatched." \
+        << " function: " << name() \
+        << ", required: " << n \
+        << " != actual: " << args.size()); \
   }
 
 Input::Input(const Shape &shape, Device *device, const vector<float> &data)
@@ -28,12 +26,11 @@ Input::Input(const Shape &shape, Device *device, const vector<float> &data)
 , data_(data) {
   const unsigned shape_size = shape_.size();
   if (data_.size() != shape_size) {
-    std::stringstream ss;
-    ss << "Data sizes mismatched."
-       << " function: Input"
-       << ", required: " << shape_size << " (" << shape_.to_string() << ")"
-       << ", actual: " << data_.size();
-    throw std::runtime_error(ss.str());
+    THROW_ERROR(
+        "Data sizes mismatched."
+        << " function: Input"
+        << ", required: " << shape_size << " (" << shape_.to_string() << ")"
+        << ", actual: " << data_.size());
   }
 }
 
@@ -79,12 +76,11 @@ void ParameterInput::backward(
     const unsigned a_bs = a.batch_size(); \
     const unsigned b_bs = b.batch_size(); \
     if (a.dims() != b.dims() || (a_bs != b_bs && a_bs > 1 && b_bs > 1)) { \
-      std::stringstream ss; \
-      ss << "Shape mismatched." \
-         << " function: " << name() \
-         << ", arg1: " << a.to_string() \
-         << " != arg2: " << b.to_string(); \
-      throw std::runtime_error(ss.str()); \
+      THROW_ERROR( \
+          "Shape mismatched." \
+          << " function: " << name() \
+          << ", arg1: " << a.to_string() \
+          << " != arg2: " << b.to_string()); \
     } \
     return Shape(a.dims(), std::max(a_bs, b_bs)); \
   }
@@ -110,11 +106,10 @@ Shape Transpose::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 1);
   const Shape &a = *args[0];
   if (a.dims().size() > 2) {
-    std::stringstream ss;
-    ss << "Shape mismatched."
-       << " function: " << name()
-       << ", arg1: " << a.to_string();
-    throw std::runtime_error(ss.str());
+    THROW_ERROR(
+        "Shape mismatched."
+        << " function: " << name()
+        << ", arg1: " << a.to_string());
   }
   return Shape({a.dim(1), a.dim(0)}, a.batch_size());
 }
@@ -129,12 +124,11 @@ Shape Dot::forward_shape(const vector<const Shape *> &args) const {
       b.dims().size() > 2 ||
       a.dim(1) != b.dim(0) ||
       (a_bs != b_bs && a_bs > 1 && b_bs > 1)) {
-    std::stringstream ss;
-    ss << "Shape mismatched."
-       << " function: " << name()
-       << ", arg1: " << a.to_string()
-       << " != arg2: " << b.to_string();
-    throw std::runtime_error(ss.str());
+    THROW_ERROR(
+        "Shape mismatched."
+        << " function: " << name()
+        << ", arg1: " << a.to_string()
+        << " != arg2: " << b.to_string());
   }
   return Shape({a.dim(0), b.dim(1)}, std::max(a_bs, b_bs));
 }

@@ -1,8 +1,8 @@
 #include <config.h>
 
-#include <stdexcept>
 #include <gtest/gtest.h>
 #include <primitiv/cpu_device.h>
+#include <primitiv/error.h>
 #include <primitiv/parameter.h>
 #include <primitiv/sgd_trainer.h>
 #include <test_utils.h>
@@ -21,7 +21,7 @@ TEST_F(SGDTrainerTest, CheckAddParameter) {
   SGDTrainer trainer(.1);
   Parameter param({2, 2}, &dev);
   EXPECT_NO_THROW(trainer.add_parameter(&param));
-  EXPECT_THROW(trainer.add_parameter(&param), std::runtime_error);
+  EXPECT_THROW(trainer.add_parameter(&param), Error);
 }
 
 TEST_F(SGDTrainerTest, CheckUpdate) {

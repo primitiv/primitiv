@@ -5,6 +5,7 @@
 #include <vector>
 #include <gtest/gtest.h>
 #include <primitiv/cpu_device.h>
+#include <primitiv/error.h>
 #include <primitiv/tensor.h>
 #include <primitiv/tensor_ops.h>
 #include <test_utils.h>
@@ -88,7 +89,7 @@ TEST_F(TensorOpsTest, CheckInvalidSlice) {
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor({3, 3}, 3);
     for (const TestCase &tc : test_cases) {
-      EXPECT_THROW(slice(x, tc.dim, tc.lower, tc.upper), std::runtime_error);
+      EXPECT_THROW(slice(x, tc.dim, tc.lower, tc.upper), Error);
     }
   }
 }
@@ -398,10 +399,10 @@ TEST_F(TensorOpsTest, CheckInvalidArithmeticOps) {
     for (unsigned i = 0; i < sa.size(); ++i) {
       const Tensor a = dev->new_tensor(sa[i], vector<float>(sa[i].size()));
       const Tensor b = dev->new_tensor(sb[i], vector<float>(sb[i].size()));
-      EXPECT_THROW(a + b, std::runtime_error);
-      EXPECT_THROW(a - b, std::runtime_error);
-      EXPECT_THROW(a * b, std::runtime_error);
-      EXPECT_THROW(a / b, std::runtime_error);
+      EXPECT_THROW(a + b, Error);
+      EXPECT_THROW(a - b, Error);
+      EXPECT_THROW(a * b, Error);
+      EXPECT_THROW(a / b, Error);
     }
   }
 }
@@ -464,7 +465,7 @@ TEST_F(TensorOpsTest, CheckTransposeMN) {
 TEST_F(TensorOpsTest, CheckInvalidTranspose) {
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor({2, 3, 4});
-    EXPECT_THROW(transpose(x), std::runtime_error);
+    EXPECT_THROW(transpose(x), Error);
   }
 }
 
@@ -543,28 +544,28 @@ TEST_F(TensorOpsTest, CheckInvalidDot) {
       // Not a scalar multiplication.
       const Tensor a = dev->new_tensor({2, 3});
       const Tensor b = dev->new_tensor({});
-      EXPECT_THROW(dot(a, b), std::runtime_error);
+      EXPECT_THROW(dot(a, b), Error);
     }
     {
       // Not a scalar multiplication.
       const Tensor a = dev->new_tensor({});
       const Tensor b = dev->new_tensor({2, 3});
-      EXPECT_THROW(dot(a, b), std::runtime_error);
+      EXPECT_THROW(dot(a, b), Error);
     }
     {
       const Tensor a = dev->new_tensor({2, 3, 4});
       const Tensor b = dev->new_tensor({4});
-      EXPECT_THROW(dot(a, b), std::runtime_error);
+      EXPECT_THROW(dot(a, b), Error);
     }
     {
       const Tensor a = dev->new_tensor({1, 2});
       const Tensor b = dev->new_tensor({2, 3, 4});
-      EXPECT_THROW(dot(a, b), std::runtime_error);
+      EXPECT_THROW(dot(a, b), Error);
     }
     {
       const Tensor a = dev->new_tensor({2, 3});
       const Tensor b = dev->new_tensor({2, 3});
-      EXPECT_THROW(dot(a, b), std::runtime_error);
+      EXPECT_THROW(dot(a, b), Error);
     }
   }
 }

@@ -1,6 +1,7 @@
 set(primitiv_LIBRARY_HDRS
   cpu_device.h
   device.h
+  error.h
   function.h
   function_impl.h
   graph.h

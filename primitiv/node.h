@@ -1,7 +1,7 @@
 #ifndef PRIMITIV_NODE_H_
 #define PRIMITIV_NODE_H_
 
-#include <stdexcept>
+#include <primitiv/error.h>
 
 namespace primitiv {
 
@@ -32,7 +32,7 @@ public:
    * @return Node ID.
    */
   inline unsigned id() const {
-    if (!g_) throw std::runtime_error("Invalid node.");
+    if (!g_) THROW_ERROR("Invalid node.");
     return id_;
   }
 
