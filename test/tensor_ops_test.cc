@@ -94,13 +94,21 @@ TEST_F(TensorOpsTest, CheckInvalidSlice) {
   }
 }
 
-TEST_F(TensorOpsTest, CheckConcat5x1) {
-  const vector<vector<float>> x_data {
-    {1, 1, 1, 1, 1},
-    {2, 2, 2, 2, 2},
-    {3, 3, 3, 3, 3},
-    {4, 4, 4, 4, 4},
+TEST_F(TensorOpsTest, CheckConcatN_3x3) {
+  const vector<float> y_data {
+    1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
   };
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor({1, 3}, {1, 1, 1});
+    const Tensor b = dev->new_tensor({2, 3}, {2, 3, 2, 3, 2, 3});
+    const Tensor c = dev->new_tensor({3, 3}, {4, 5, 6, 4, 5, 6, 4, 5, 6});
+    const Tensor y = concat({&a, &b, &c}, 0);
+    EXPECT_EQ(Shape({6, 3}), y.shape());
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+  }
+}
+
+TEST_F(TensorOpsTest, CheckConcat5x4) {
   const vector<Shape> shapes {
     Shape {20},
     Shape {5, 4},
@@ -110,17 +118,14 @@ TEST_F(TensorOpsTest, CheckConcat5x1) {
     1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4,
   };
   for (Device *dev : devices) {
-    vector<const Tensor *> xs;
-    for (const unsigned i : {0, 1, 2, 3}) {
-      xs.emplace_back(new Tensor(dev->new_tensor({5}, x_data[i])));
-    }
+    const Tensor a = dev->new_tensor({5}, {1, 1, 1, 1, 1});
+    const Tensor b = dev->new_tensor({5}, {2, 2, 2, 2, 2});
+    const Tensor c = dev->new_tensor({5}, {3, 3, 3, 3, 3});
+    const Tensor d = dev->new_tensor({5}, {4, 4, 4, 4, 4});
     for (const unsigned i : {0, 1, 2}) {
-      const Tensor y = concat(xs, i);
+      const Tensor y = concat({&a, &b, &c, &d}, i);
       EXPECT_EQ(shapes[i], y.shape());
       EXPECT_TRUE(vector_match(y_data, y.to_vector()));
-    }
-    for (const Tensor *x : xs) {
-      delete x;
     }
   }
 }
@@ -138,32 +143,77 @@ TEST_F(TensorOpsTest, CheckConcat2_2_2x2) {
     Shape({4, 2, 2}, 2),
     Shape({2, 4, 2}, 2),
     Shape({2, 2, 4}, 2),
+    Shape({2, 2, 2, 2}, 2),
+    Shape({2, 2, 2, 1, 2}, 2),
   };
   const vector<vector<float>> y_data {
     {1, 2, -1, -2, 3, 4, -3, -4, 5, 6, -5, -6, 7, 8, -7, -8,
       11, 22, -11, -22, 33, 44, -33, -44, 55, 66, -55, -66, 77, 88, -77, -88},
     {1, 2, 3, 4, -1, -2, -3, -4, 5, 6, 7, 8, -5, -6, -7, -8,
       11, 22, 33, 44, -11, -22, -33, -44, 55, 66, 77, 88, -55, -66, -77, -88},
-    {1, 2, 3, 4, 5, 6, 7, 8, 11, 22, 33, 44, 55, 66, 77, 88,
-      -1, -2, -3, -4, -5, -6, -7, -8, -11, -22, -33, -44, -55, -66, -77, -88},
+    {1, 2, 3, 4, 5, 6, 7, 8, -1, -2, -3, -4, -5, -6, -7, -8,
+      11, 22, 33, 44, 55, 66, 77, 88, -11, -22, -33, -44, -55, -66, -77, -88},
   };
   for (Device *dev : devices) {
     const Tensor a = dev->new_tensor(Shape({2, 2, 2}, 2), a_data);
     const Tensor b = dev->new_tensor(Shape({2, 2, 2}, 2), b_data);
-    for (const unsigned i : {0, 1, 2}) {
+    for (const unsigned i : {0, 1, 2, 3, 4}) {
       const Tensor y = concat({&a, &b}, i);
       EXPECT_EQ(shapes[i], y.shape());
-      EXPECT_TRUE(vector_match(y_data[i], y.to_vector()));
+      EXPECT_TRUE(vector_match(y_data[i < 2 ? i : 2], y.to_vector()));
     }
+  }
+}
 
-    FAIL() << "not implemented";
+TEST_F(TensorOpsTest, CheckConcatBatchBroadcast) {
+  for (Device *dev : devices) {
+    {
+      const vector<float> y_data {
+        1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3,
+        11, 11, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3,
+      };
+      const Tensor a = dev->new_tensor(Shape({2, 1}, 2), {1, 1, 11, 11});
+      const Tensor b = dev->new_tensor({2, 2}, {2, 2, 2, 2});
+      const Tensor c = dev->new_tensor({2, 3}, {3, 3, 3, 3, 3, 3});
+      const Tensor y = concat({&a, &b, &c}, 1);
+      EXPECT_EQ(Shape({2, 6}, 2), y.shape());
+      EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+    }
+    {
+      const vector<float> y_data {
+        1, 1, 1, 2, 2, 3, 1, 1, 1, 2, 2, 3,
+        1, 1, 1, 22, 22, 33, 1, 1, 1, 22, 22, 33,
+      };
+      const Tensor a = dev->new_tensor({3, 2}, {1, 1, 1, 1, 1, 1});
+      const Tensor b = dev->new_tensor(
+          Shape({2, 2}, 2), {2, 2, 2, 2, 22, 22, 22, 22});
+      const Tensor c = dev->new_tensor(Shape({1, 2}, 2), {3, 3, 33, 33});
+      const Tensor y = concat({&a, &b, &c}, 0);
+      EXPECT_EQ(Shape({6, 2}, 2), y.shape());
+      EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+    }
   }
 }
 
 TEST_F(TensorOpsTest, CheckInvalidConcat) {
   for (Device *dev : devices) {
-    dev = dev;
-    FAIL() << "not implemented";
+    const Tensor a = dev->new_tensor(Shape({1, 42}, 2), 0);
+    const Tensor b = dev->new_tensor(Shape({2, 42}, 2), 0);
+    const Tensor c = dev->new_tensor(Shape({1, 42}, 3), 0);
+    const Tensor d = dev->new_tensor({2, 42}, 0);
+    EXPECT_THROW(concat({}, 0), Error);
+    EXPECT_NO_THROW(concat({&a, &b}, 0));
+    EXPECT_THROW(concat({&a, &b}, 1), Error);
+    EXPECT_THROW(concat({&a, &b}, 2), Error);
+    EXPECT_THROW(concat({&a, &c}, 0), Error);
+    EXPECT_THROW(concat({&a, &c}, 1), Error);
+    EXPECT_THROW(concat({&a, &c}, 2), Error);
+    EXPECT_THROW(concat({&b, &c}, 0), Error);
+    EXPECT_THROW(concat({&b, &c}, 1), Error);
+    EXPECT_THROW(concat({&b, &c}, 2), Error);
+    EXPECT_NO_THROW(concat({&a, &d}, 0));
+    EXPECT_THROW(concat({&a, &d}, 1), Error);
+    EXPECT_THROW(concat({&a, &d}, 2), Error);
   }
 }
 

@@ -323,7 +323,8 @@ private:
   virtual Tensor slice_impl(
       const Tensor &x, unsigned dim, unsigned lower, unsigned upper) = 0;
   virtual Tensor concat_impl(
-      const std::vector<const Tensor *> &xs, unsigned dim) = 0;
+      const std::vector<const Tensor *> &xs,
+      unsigned dim, const Shape &new_shape) = 0;
 
   virtual Tensor duplicate_impl(const Tensor &x) = 0;
   virtual Tensor negate_impl(const Tensor &x) = 0;

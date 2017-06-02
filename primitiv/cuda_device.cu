@@ -423,7 +423,8 @@ Tensor CUDADevice::slice_impl(
 }
 
 Tensor CUDADevice::concat_impl(
-    const std::vector<const Tensor *> &xs, unsigned dim) {
+    const std::vector<const Tensor *> &xs,
+    unsigned dim, const Shape &new_shape) {
   THROW_ERROR("not implemented");
 }
 

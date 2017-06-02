@@ -102,10 +102,44 @@ Tensor Device::slice(
 }
 
 Tensor Device::concat(const std::vector<const Tensor *> &xs, unsigned dim) {
-  for (const Tensor *x : xs) {
-    CHECK_DEVICE(*x);
+  if (xs.empty()) {
+    THROW_ERROR("No tensors to be concatenated.");
   }
-  return concat_impl(xs, dim);
+
+  CHECK_DEVICE(*xs[0]);
+  std::vector<unsigned> ref_dims = xs[0]->shape().dims();
+  unsigned sum_dim = 1;
+  if (dim < ref_dims.size()) { sum_dim = ref_dims[dim]; ref_dims[dim] = 1; }
+  while (!ref_dims.empty() && ref_dims.back() == 1) ref_dims.pop_back();
+  unsigned ref_bs = xs[0]->shape().batch_size();
+
+  bool ok = true;
+  for (unsigned i = 1; i < xs.size(); ++i) {
+    CHECK_DEVICE(*xs[i]);
+    std::vector<unsigned> dims = xs[i]->shape().dims();
+    if (dim < dims.size()) { sum_dim += dims[dim]; dims[dim] = 1; }
+    else ++sum_dim;
+    while (!dims.empty() && dims.back() == 1) dims.pop_back();
+    if (dims != ref_dims) { ok = false; break; }
+    unsigned bs = xs[1]->shape().batch_size();
+    if (bs != ref_bs && bs > 1 && ref_bs > 1) { ok = false; break; }
+    if (ref_bs == 1) ref_bs = bs;
+  }
+
+  if (!ok) {
+    std::string dims_str = xs[0]->shape().to_string();
+    for (unsigned i = 1; i < xs.size(); ++i) {
+      dims_str += ", " + xs[i]->shape().to_string();
+    }
+    THROW_ERROR("Attempted to concatenate tensors with shapes: " << dims_str);
+  }
+
+  if (dim >= ref_dims.size()) {
+    ref_dims.insert(ref_dims.end(), dim - ref_dims.size() + 1, 1);
+  }
+  ref_dims[dim] = sum_dim;
+
+  return concat_impl(xs, dim, Shape(ref_dims, ref_bs));
 }
 
 Tensor Device::duplicate(const Tensor &x) {

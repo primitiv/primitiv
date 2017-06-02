@@ -54,7 +54,8 @@ private:
   Tensor slice_impl(
       const Tensor &x, unsigned dim, unsigned lower, unsigned upper) override;
   Tensor concat_impl(
-      const std::vector<const Tensor *> &xs, unsigned dim) override;
+      const std::vector<const Tensor *> &xs,
+      unsigned dim, const Shape &new_shape) override;
 
   Tensor duplicate_impl(const Tensor &x) override;
   Tensor negate_impl(const Tensor &x) override;

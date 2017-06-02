@@ -120,6 +120,7 @@ Tensor CPUDevice::slice_impl(
   unsigned repeat = bs;
   for (unsigned i = dim + 1; i < dims.size(); ++i) repeat *= dims[i];
   dims[dim] = diff;
+
   Tensor ret = new_tensor(Shape(dims, bs));
   float *dest = DATA(ret);
   const float *src = CDATA(x) + offset;
@@ -133,8 +134,40 @@ Tensor CPUDevice::slice_impl(
 }
 
 Tensor CPUDevice::concat_impl(
-    const std::vector<const Tensor *> &xs, unsigned dim) {
-  THROW_ERROR("not implemented");
+    const std::vector<const Tensor *> &xs,
+    unsigned dim, const Shape &new_shape) {
+  for (const Tensor *x : xs) {
+    std::cerr << "arg: " << x->shape().to_string() << std::endl;
+  }
+  std::cerr << "ret: " << new_shape.to_string() << std::endl;
+
+  const std::vector<unsigned> new_dims = new_shape.dims();
+  const unsigned new_bs = new_shape.batch_size();
+  unsigned base = 1;
+  for (unsigned i = 0; i < dim; ++i) base *= new_dims[i];
+  unsigned repeat = 1;
+  for (unsigned i = dim + 1; i < new_dims.size(); ++i) repeat *= new_dims[i];
+
+  Tensor ret = new_tensor(new_shape);
+  unsigned offset = 0;
+  for (const Tensor *x : xs) {
+    const unsigned src_dim = x->shape().dim(dim);
+    const unsigned span = base * src_dim;
+    const unsigned skip = base * (new_dims[dim] - src_dim);
+    const unsigned b_skip = (x->shape().batch_size() > 1) * span * repeat;
+    float *dest = DATA(ret) + offset;
+    for (unsigned b = 0; b < new_bs; ++b) {
+      const float *src = CDATA(*x) + b * b_skip;
+      for (unsigned i = 0; i < repeat; ++i) {
+        for (unsigned j = 0; j < span; ++j) {
+          *dest++ = *src++;
+        }
+        dest += skip;
+      }
+    }
+    offset += span;
+  }
+  return ret;
 }
 
 Tensor CPUDevice::duplicate_impl(const Tensor &x) {

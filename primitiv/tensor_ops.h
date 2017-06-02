@@ -2,6 +2,7 @@
 #define PRIMITIV_TENSOR_OPS_H_
 
 #include <primitiv/device.h>
+#include <primitiv/error.h>
 #include <primitiv/tensor.h>
 
 namespace primitiv {
@@ -28,6 +29,7 @@ inline Tensor slice(
   return x.device()->slice(x, dim, lower, upper);
 }
 inline Tensor concat(const std::vector<const Tensor *> &xs, unsigned dim) {
+  if (xs.empty()) THROW_ERROR("No tensors to be concatenated.");
   return xs[0]->device()->concat(xs, dim);
 }
 
