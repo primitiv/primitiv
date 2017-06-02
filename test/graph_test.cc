@@ -35,14 +35,15 @@ TEST_F(GraphTest, CheckForwardBackward) {
   nodes.emplace_back(nodes[3] * nodes[4]);
   nodes.emplace_back(nodes[5] + 1);
 
-  EXPECT_EQ(nodes.size(), g.num_nodes());
+  EXPECT_EQ(nodes.size(), g.num_functions());
 
   // Dump the graph to the output log.
   g.dump();
 
   // Check all node values are still invalid.
   for (const Node &node : nodes) {
-    EXPECT_FALSE(g.get_value(node).valid());
+    EXPECT_THROW(g.get_value(node), Error);
+    EXPECT_THROW(g.get_gradient(node), Error);
   }
 
   g.forward(nodes.back());
@@ -65,11 +66,9 @@ TEST_F(GraphTest, CheckForwardBackward) {
     EXPECT_EQ(&val1, &val2);
     ASSERT_TRUE(val1.valid());
     EXPECT_TRUE(vector_match(expected_values[i], val1.to_vector()));
-  }
 
-  // Check all node gradients are still invalid.
-  for (const Node &node : nodes) {
-    EXPECT_FALSE(g.get_gradient(node).valid());
+    // Gradients are also initialized.
+    EXPECT_NO_THROW(g.get_gradient(nodes[i]));
   }
 
   g.backward(nodes.back());
@@ -123,7 +122,7 @@ TEST_F(GraphTest, TestXor) {
   nodes.emplace_back(nodes[11] * nodes[11]);
   nodes.emplace_back(node_ops::batch_sum(nodes[12]));
 
-  EXPECT_EQ(nodes.size(), g.num_nodes());
+  EXPECT_EQ(nodes.size(), g.num_functions());
   g.dump();
 
   g.forward(nodes.back());

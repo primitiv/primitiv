@@ -1,7 +1,6 @@
 #ifndef PRIMITIV_GRAPH_H_
 #define PRIMITIV_GRAPH_H_
 
-#include <initializer_list>
 #include <vector>
 #include <primitiv/function.h>
 #include <primitiv/node.h>
@@ -29,9 +28,7 @@ public:
    *        computation graph.
    * @return A new Node object of the resulting value.
    */
-  Node add_function(
-      Function *func,
-      const std::initializer_list<const Node> &args);
+  Node add_function(Function *func, const std::vector<Node> &args);
 
   /**
    * Calculates the value of given node.
@@ -85,7 +82,7 @@ public:
 
 private:
   /**
-   * Tuple of values to determine the location of the value.
+   * Tuple of values to determine the location of the node.
    */
   struct Address {
     unsigned fid;
@@ -93,17 +90,23 @@ private:
   };
 
   /**
+   * Informations of each node.
+   */
+  struct NodeInfo {
+    Shape shape;
+    Tensor *value;
+    Tensor *grad;
+    std::vector<unsigned> sinks;
+  };
+
+  /**
    * Set of informations that represents the function: an implementation of the
-   * function, its arguments and return values, and pointers of neighbor
-   * functions.
+   * function, its arguments, and its return values.
    */
   struct FunctionInfo {
-    Shape shape;
-    Function *impl;
-    std::vector<Tensor *> values;
-    std::vector<Tensor *> grads;
+    Function *func;
     std::vector<Address> args;
-    std::vector<std::vector<Address>> sinks;
+    std::vector<NodeInfo> rets;
   };
 
   std::vector<FunctionInfo> funcs_;

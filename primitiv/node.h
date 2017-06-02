@@ -14,7 +14,7 @@ class Node {
   friend Graph;
 
 public:
-  inline Node() : g_(), func_id_(), val_id_() {}
+  inline Node() : g_(), fid_(), vid_() {}
   Node(const Node &) = default;
   Node(Node &&) = default;
   Node &operator=(const Node &) = default;
@@ -33,7 +33,7 @@ public:
    */
   inline unsigned function_id() const {
     if (!g_) THROW_ERROR("Invalid node.");
-    return func_id_;
+    return fid_;
   }
 
   /**
@@ -42,22 +42,22 @@ public:
    */
   inline unsigned value_id() const {
     if(!g_) THROW_ERROR("Invalid node.");
-    return val_id_;
+    return vid_;
   }
 
 private:
   /**
    * Creates a new node pointer.
    * @param g Pointer of the computation graph.
-   * @param function_id Function ID.
-   * @param value_id Value ID.
+   * @param fid Function ID.
+   * @param vid Value ID.
    */
-  inline Node(Graph *g, unsigned function_id, unsigned value_id)
-  : g_(g), func_id_(function_id), val_id_(value_id) {}
+  inline Node(Graph *g, unsigned fid, unsigned vid)
+    : g_(g), fid_(fid), vid_(vid) {}
 
   Graph *g_;
-  unsigned func_id_;
-  unsigned val_id_;
+  unsigned fid_;
+  unsigned vid_;
 };
 
 }  // namespace primitiv
