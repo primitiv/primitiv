@@ -112,11 +112,16 @@ __global__ void dev_rand_affine(
 }
 
 __global__ void dev_slice(
-    float *py, const float *px,
-    unsigned offset, unsigned span, unsigned skip,
-    unsigned size) {
+    float *py, const float *px, unsigned span, unsigned skip, unsigned size) {
   const unsigned i = IDX;
-  if (i < size) py[i] = px[offset + (i / span) * skip + (i % span)];
+  if (i < size) py[i] = px[(i / span) * skip + (i % span)];
+}
+
+__global__ void dev_concat(
+    float *py, const float *px,
+    unsigned span, unsigned skip, unsigned x_size, unsigned y_size) {
+  const unsigned i = IDX;
+  if (i < y_size) py[(i / span) * skip + (i % span)] = px[i % x_size];
 }
 
 __global__ void dev_negate(float *py, const float *px, unsigned size) {
@@ -413,19 +418,39 @@ Tensor CUDADevice::slice_impl(
   const unsigned offset = base * lower;
   const unsigned span = base * diff;
   const unsigned skip = base * dims[dim];
+  unsigned size = skip;
+  for (unsigned i = dim + 1; i < dims.size(); ++i) size *= dims[i];
+  const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
   dims[dim] = diff;
   Tensor ret = new_tensor(Shape(dims, bs));
-  const unsigned size = ret.shape().size();
-  const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
   ::dev_slice<<<num_blocks, dim1_x_>>>(
-      DATA(ret), CDATA(x), offset, span, skip, size);
+      DATA(ret), CDATA(x) + offset, span, skip, size);
   return ret;
 }
 
 Tensor CUDADevice::concat_impl(
     const std::vector<const Tensor *> &xs,
     unsigned dim, const Shape &new_shape) {
-  THROW_ERROR("not implemented");
+  const std::vector<unsigned> new_dims = new_shape.dims();
+  const unsigned new_bs = new_shape.batch_size();
+  unsigned base = 1;
+  for (unsigned i = 0; i < dim; ++i) base *= new_dims[i];
+  unsigned repeat = 1;
+  for (unsigned i = dim + 1; i < new_dims.size(); ++i) repeat *= new_dims[i];
+
+  Tensor ret = new_tensor(new_shape);
+  unsigned offset = 0;
+  for (const Tensor *x : xs) {
+    const unsigned span = base * x->shape().dim(dim);
+    const unsigned skip = base * new_dims[dim];
+    const unsigned x_size = span * repeat * x->shape().batch_size();
+    const unsigned y_size = span * repeat * new_bs;
+    const unsigned num_blocks = GRID_SIZE(y_size, dim1_x_);
+    ::dev_concat<<<num_blocks, dim1_x_>>>(
+        DATA(ret) + offset, CDATA(*x), span, skip, x_size, y_size);
+    offset += span;
+  }
+  return ret;
 }
 
 Tensor CUDADevice::duplicate_impl(const Tensor &x) {

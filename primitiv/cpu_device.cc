@@ -136,11 +136,6 @@ Tensor CPUDevice::slice_impl(
 Tensor CPUDevice::concat_impl(
     const std::vector<const Tensor *> &xs,
     unsigned dim, const Shape &new_shape) {
-  for (const Tensor *x : xs) {
-    std::cerr << "arg: " << x->shape().to_string() << std::endl;
-  }
-  std::cerr << "ret: " << new_shape.to_string() << std::endl;
-
   const std::vector<unsigned> new_dims = new_shape.dims();
   const unsigned new_bs = new_shape.batch_size();
   unsigned base = 1;
