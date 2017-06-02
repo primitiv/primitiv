@@ -27,11 +27,11 @@ Graph::~Graph() {
     THROW_ERROR( \
         "Graph mismatched. node.g_: " << (node).g_ << " != this: " << this); \
   } \
-  if ((node).id_ >= nodes_.size()) { \
+  if ((node).func_id_ >= nodes_.size()) { \
     THROW_ERROR( \
         "Invalid node ID. " \
         << "This may be a bug and the program will abort. " \
-        << "node.id_: " << (node).id_ \
+        << "node.func_id_: " << (node).func_id_ \
         << " >= nodes_.size(): " << nodes_.size()); \
   } \
 }
@@ -44,8 +44,8 @@ Node Graph::add_function(
   vector<const Shape *> arg_shapes;
   for (const Node &arg : args) {
     CHECK_NODE(arg);
-    arg_ids.emplace_back(arg.id_);
-    arg_shapes.emplace_back(&nodes_[arg.id_]->shape);
+    arg_ids.emplace_back(arg.func_id_);
+    arg_shapes.emplace_back(&nodes_[arg.func_id_]->shape);
   }
 
   // Calculates the shape of the resulting value.
@@ -63,7 +63,7 @@ Node Graph::add_function(
   node->args = move(arg_ids);
   nodes_.emplace_back(node);
 
-  return Node(this, ret_id);
+  return Node(this, ret_id, 0);
 }
 
 const Tensor &Graph::forward(const Node &node) {
@@ -86,20 +86,20 @@ const Tensor &Graph::forward(const Node &node) {
     n.value = n.func->forward(args);
   };
 
-  forward_recursive(node.id_);
-  return nodes_[node.id_]->value;
+  forward_recursive(node.func_id_);
+  return nodes_[node.func_id_]->value;
 }
 
 void Graph::backward(const Node &node) {
   CHECK_NODE(node);
 
-  NodeInfo &last_node = *nodes_[node.id_];
+  NodeInfo &last_node = *nodes_[node.func_id_];
   if (!last_node.value.valid()) {
     THROW_ERROR(
-        "Node " << node.id_ << " is not calculated in the forward path.");
+        "Node " << node.func_id_ << " is not calculated in the forward path.");
   }
   if (last_node.grad.valid()) {
-    THROW_ERROR("Node " << node.id_ << " already has the gradient vector.");
+    THROW_ERROR("Node " << node.func_id_ << " already has the gradient vector.");
   }
 
   // Make identity gradient at the last node.
@@ -107,7 +107,7 @@ void Graph::backward(const Node &node) {
   last_node.grad.reset(1);
 
   // The node ID represents the topological order.
-  for (int id = node.id_; id >= 0; --id) {
+  for (int id = node.func_id_; id >= 0; --id) {
     const NodeInfo &cur_node = *nodes_[id];
     if (!cur_node.value.valid()) {
       // Not calculated in the forward path.
@@ -135,12 +135,12 @@ void Graph::backward(const Node &node) {
 
 const Tensor &Graph::get_value(const Node &node) const {
   CHECK_NODE(node);
-  return nodes_[node.id_]->value;
+  return nodes_[node.func_id_]->value;
 }
 
 const Tensor &Graph::get_gradient(const Node &node) const {
   CHECK_NODE(node);
-  return nodes_[node.id_]->grad;
+  return nodes_[node.func_id_]->grad;
 }
 
 void Graph::dump() const {

@@ -78,31 +78,35 @@ public:
   void dump() const;
 
   /**
-   * Returns the number of nodes in the computation graph.
+   * Returns the number of functions in the computation graph.
    * @return Number of nodes.
    */
-  inline unsigned num_nodes() const { return nodes_.size(); }
+  inline unsigned num_functions() const { return funcs_.size(); }
 
 private:
-  struct NodeInfo {
-  private:
-    NodeInfo(const NodeInfo &) = delete;
-    NodeInfo &operator=(const NodeInfo &) = delete;
-
-  public:
-    NodeInfo() = default;
-    NodeInfo(NodeInfo &&) = default;
-    NodeInfo &operator=(NodeInfo &&) = default;
-
-    Shape shape;
-    Function *func;
-    Tensor value;
-    Tensor grad;
-    std::vector<unsigned> args;
-    std::vector<unsigned> sinks;
+  /**
+   * Tuple of values to determine the location of the value.
+   */
+  struct Address {
+    unsigned fid;
+    unsigned vid;
   };
 
-  std::vector<NodeInfo *> nodes_;
+  /**
+   * Set of informations that represents the function: an implementation of the
+   * function, its arguments and return values, and pointers of neighbor
+   * functions.
+   */
+  struct FunctionInfo {
+    Shape shape;
+    Function *impl;
+    std::vector<Tensor *> values;
+    std::vector<Tensor *> grads;
+    std::vector<Address> args;
+    std::vector<std::vector<Address>> sinks;
+  };
+
+  std::vector<FunctionInfo> funcs_;
 };
 
 }  // namespace primitiv
