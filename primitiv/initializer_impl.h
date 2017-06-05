@@ -40,7 +40,7 @@ class XavierUniform : public Initializer {
   XavierUniform &operator=(XavierUniform &&) = delete;
 
 public:
-  XavierUniform() = default;
+  inline XavierUniform() {}
   ~XavierUniform() = default;
 
   void apply(Tensor &x) const override;
