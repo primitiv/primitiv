@@ -73,7 +73,7 @@ private:
     name_ &operator=(const name_ &) = delete; \
     name_ &operator=(name_ &&) = delete; \
   public: \
-    name_() = default; \
+    inline name_() {} \
     ~name_() override = default; \
     Shape forward_shape( \
         const std::vector<const Shape *> &args) const override; \
