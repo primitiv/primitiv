@@ -246,18 +246,9 @@ __global__ void dev_batch_sum(
 }
 
 __global__ void dev_add_grad(
-    float *pgx, const float *pgy, unsigned size,
-    unsigned bs, unsigned mbx, unsigned mby) {
-  // TODO(odashi): This implementation might be slow.
+    float *pgx, const float *pgy, unsigned nx, unsigned ny) {
   const unsigned i = IDX;
-  const unsigned shx = mbx * size;
-  const unsigned shy = mby * size;
-  if (i < size) {
-    pgx += i, pgy += i;
-    for (unsigned n = 0; n < bs; ++n, pgx += shx, pgy += shy) {
-      *pgx += *pgy;
-    }
-  }
+  if (i < ::max(nx, ny)) ::atomicAdd(pgx + i % nx, pgy[i % ny]);
 }
 
 __global__ void dev_add_grad_ofs(
@@ -598,14 +589,10 @@ Tensor CUDADevice::batch_sum_impl(const Tensor &x) {
 }
 
 void CUDADevice::add_gradient_impl(Tensor &a, const Tensor &b) {
-  const Shape &sa = a.shape();
-  const Shape &sb = b.shape();
-  const unsigned ba = sa.batch_size();
-  const unsigned bb = sb.batch_size();
-  const unsigned size = sa.size() / ba;
-  const unsigned g1 = GRID_SIZE(size, dim1_x_);
-  ::dev_add_grad<<<g1, dim1_x_>>>(
-      DATA(a), CDATA(b), size, std::max(ba, bb), ba > 1, bb > 1);
+  const unsigned nx = a.shape().size();
+  const unsigned ny = b.shape().size();
+  const unsigned g1 = GRID_SIZE(std::max(nx, ny), dim1_x_);
+  ::dev_add_grad<<<g1, dim1_x_>>>(DATA(a), CDATA(b), nx, ny);
 }
 
 void CUDADevice::add_gradient_offset_impl(
@@ -621,7 +608,7 @@ void CUDADevice::add_gradient_offset_impl(
   const unsigned wy = base * sb.dim(dim);
   const unsigned nx = repeat * sa.batch_size();
   const unsigned ny = repeat * sb.batch_size();
-  const unsigned g1 = GRID_SIZE(wy * ny, dim1_x_);
+  const unsigned g1 = GRID_SIZE(wy * std::max(nx, ny), dim1_x_);
   ::dev_add_grad_ofs<<<g1, dim1_x_>>>(DATA(a) + ox, CDATA(b), wx, wy, nx, ny);
 }
 
