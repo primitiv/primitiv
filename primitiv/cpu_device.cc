@@ -568,4 +568,54 @@ void CPUDevice::add_gradient_impl(Tensor &a, const Tensor &b) {
   }
 }
 
+void CPUDevice::add_gradient_offset_impl(
+    Tensor &a, const Tensor &b, const unsigned dim, const unsigned offset) {
+  const Shape &sa = a.shape();
+  const Shape &sb = b.shape();
+  unsigned base = 1;
+  for (unsigned i = 0; i < dim; ++i) base *= sa.dim(i);
+  const unsigned data_offset = base * offset;
+  const unsigned span = base * sb.dim(dim);
+  const unsigned skip = base * sa.dim(dim) - span;
+  unsigned repeat = 1;
+  for (unsigned i = dim + 1; i < sa.dims().size(); ++i) repeat *= sa.dim(i);
+
+  if (sa.batch_size() == sb.batch_size()) {
+    // a += shift(b, dim, offset)
+    float *dest = DATA(a) + data_offset;
+    const float *src = CDATA(b);
+    repeat *= sa.batch_size();
+    for (unsigned i = 0; i < repeat; ++i) {
+      for (unsigned j = 0; j < span; ++j) {
+        *dest++ += *src++;
+      }
+      dest += skip;
+    }
+  } else if (sa.batch_size() == 1) {
+    // a += shift(batch_sum(b), dim, offset)
+    const float *src = CDATA(b);
+    for (unsigned k = 0; k < sb.batch_size(); ++k) {
+      float *dest = DATA(a) + data_offset;
+      for (unsigned i = 0; i < repeat; ++i) {
+        for (unsigned j = 0; j < span; ++j) {
+          *dest++ += *src++;
+        }
+        dest += skip;
+      }
+    }
+  } else if (sb.batch_size() == 1) {
+    // a += shift(batch_broadcast(b), dim, offset)
+    float *dest = DATA(a) + data_offset;
+    for (unsigned k = 0; k < sa.batch_size(); ++k) {
+      const float *src = CDATA(b);
+      for (unsigned i = 0; i < repeat; ++i) {
+        for (unsigned j = 0; j < span; ++j) {
+          *dest++ += *src++;
+        }
+        dest += skip;
+      }
+    }
+  }
+}
+
 }  // namespace primitiv

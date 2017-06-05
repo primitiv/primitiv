@@ -32,14 +32,14 @@ testing::AssertionResult vector_match(
     const std::vector<T> &actual) {
   if (expected.size() != actual.size()) {
     return testing::AssertionFailure()
-      << "expected.size() (" << expected.size()
-      << ") != actual.size() (" << actual.size() << ")";
+      << "expected.size(): " << expected.size()
+      << " != actual.size(): " << actual.size();
   }
   for (unsigned i = 0; i < expected.size(); ++i) {
     if (expected[i] != actual[i]) {
       return testing::AssertionFailure()
-        << "expected[" << i << "] (" << expected[i]
-        << ") != actual[" << i << "] (" << actual[i] << ")";
+        << "expected[" << i << "]: " << expected[i]
+        << " != actual[" << i << "]: " << actual[i];
     }
   }
   return testing::AssertionSuccess();
@@ -52,14 +52,14 @@ testing::AssertionResult vector_match(
     const std::vector<float> &actual) {
   if (expected.size() != actual.size()) {
     return testing::AssertionFailure()
-      << "expected.size() (" << expected.size()
-      << ") != actual.size() (" << actual.size() << ")";
+      << "expected.size(): " << expected.size()
+      << " != actual.size(): " << actual.size();
   }
   for (unsigned i = 0; i < expected.size(); ++i) {
     if (!test_utils::float_eq(expected[i], actual[i])) {
       return testing::AssertionFailure()
-        << "expected[" << i << "] (" << expected[i]
-        << ") != actual[" << i << "] (" << actual[i] << ")";
+        << "expected[" << i << "]: " << expected[i]
+        << " != actual[" << i << "]: " << actual[i];
     }
   }
   return testing::AssertionSuccess();
@@ -72,14 +72,14 @@ testing::AssertionResult vector_near(
     const float err) {
   if (expected.size() != actual.size()) {
     return testing::AssertionFailure()
-      << "expected.size() (" << expected.size()
-      << ") != actual.size() (" << actual.size() << ")";
+      << "expected.size(): " << expected.size()
+      << " != actual.size(): " << actual.size();
   }
   for (unsigned i = 0; i < expected.size(); ++i) {
     if (!test_utils::float_near(expected[i], actual[i], err)) {
       return testing::AssertionFailure()
-        << "expected[" << i << "] (" << expected[i]
-        << ") != actual[" << i << "] (" << actual[i] << ")";
+        << "expected[" << i << "]: " << expected[i]
+        << " != actual[" << i << "]: " << actual[i];
     }
   }
   return testing::AssertionSuccess();

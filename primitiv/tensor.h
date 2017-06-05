@@ -96,6 +96,15 @@ public:
    */
   void add_gradient(const Tensor &x);
 
+  /**
+   * Same as `add_gradient`, but updates only specific range of elements
+   * specified by `dim` and `offset`.
+   * @param x A tensor to add.
+   * @param dim Dimension to specify the range.
+   * @param offset Offset on the dimension `dim`.
+   */
+  void add_gradient_offset(const Tensor &x, unsigned dim, unsigned offset);
+
 private:
   Shape shape_;
   Device *device_;

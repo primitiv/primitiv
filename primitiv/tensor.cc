@@ -52,4 +52,9 @@ void Tensor::add_gradient(const Tensor &x) {
   device_->add_gradient(*this, x);
 }
 
+void Tensor::add_gradient_offset(
+    const Tensor &x, unsigned dim, unsigned offset) {
+  device_->add_gradient_offset(*this, x, dim, offset);
+}
+
 }  // namepsace primitiv

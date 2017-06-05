@@ -3,6 +3,8 @@
 #include <primitiv/device.h>
 #include <primitiv/error.h>
 
+using std::vector;
+
 // NOTE(odashi): This source only checks shape prerequisites of each operation.
 
 #define CHECK_DEVICE(x) \
@@ -20,14 +22,14 @@ Tensor Device::new_tensor(const Shape &shape) {
 
 Tensor Device::new_tensor(const Shape &shape, float k) {
   Tensor ret = new_tensor_impl(shape);
-  reset_tensor_impl(ret, k);
+  reset_tensor(ret, k);
   return ret;
 }
 
 Tensor Device::new_tensor(
-    const Shape &shape, const std::vector<float> &values) {
+    const Shape &shape, const vector<float> &values) {
   Tensor ret = new_tensor_impl(shape);
-  reset_tensor_impl(ret, values);
+  reset_tensor(ret, values);
   return ret;
 }
 
@@ -35,7 +37,7 @@ void Device::delete_tensor(Tensor &x) {
   delete_tensor_impl(x);
 }
 
-std::vector<float> Device::tensor_to_vector(const Tensor &x) {
+vector<float> Device::tensor_to_vector(const Tensor &x) {
   CHECK_DEVICE(x);
   return tensor_to_vector_impl(x);
 }
@@ -45,7 +47,7 @@ void Device::reset_tensor(Tensor &x, float k) {
   reset_tensor_impl(x, k);
 }
 
-void Device::reset_tensor(Tensor &x, const std::vector<float> &values) {
+void Device::reset_tensor(Tensor &x, const vector<float> &values) {
   CHECK_DEVICE(x);
   const unsigned num_elements = x.shape().size();
   if (values.size() != num_elements) {
@@ -101,13 +103,13 @@ Tensor Device::slice(
   return slice_impl(x, dim, lower, upper);
 }
 
-Tensor Device::concat(const std::vector<const Tensor *> &xs, unsigned dim) {
+Tensor Device::concat(const vector<const Tensor *> &xs, unsigned dim) {
   if (xs.empty()) {
     THROW_ERROR("No tensors to be concatenated.");
   }
 
   CHECK_DEVICE(*xs[0]);
-  std::vector<unsigned> ref_dims = xs[0]->shape().dims();
+  vector<unsigned> ref_dims = xs[0]->shape().dims();
   unsigned sum_dim = 1;
   if (dim < ref_dims.size()) { sum_dim = ref_dims[dim]; ref_dims[dim] = 1; }
   while (!ref_dims.empty() && ref_dims.back() == 1) ref_dims.pop_back();
@@ -116,7 +118,7 @@ Tensor Device::concat(const std::vector<const Tensor *> &xs, unsigned dim) {
   bool ok = true;
   for (unsigned i = 1; i < xs.size(); ++i) {
     CHECK_DEVICE(*xs[i]);
-    std::vector<unsigned> dims = xs[i]->shape().dims();
+    vector<unsigned> dims = xs[i]->shape().dims();
     if (dim < dims.size()) { sum_dim += dims[dim]; dims[dim] = 1; }
     else ++sum_dim;
     while (!dims.empty() && dims.back() == 1) dims.pop_back();
@@ -312,6 +314,43 @@ void Device::add_gradient(Tensor &a, const Tensor &b) {
         << sb.to_string() << " to " << sa.to_string() << '.');
   }
   add_gradient_impl(a, b);
+}
+
+void Device::add_gradient_offset(
+    Tensor &a, const Tensor &b, unsigned dim, unsigned offset) {
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
+  const Shape &sa = a.shape();
+  const Shape &sb = b.shape();
+  const unsigned ba = sa.batch_size();
+  const unsigned bb = sb.batch_size();
+  bool ok = true;
+
+  if (ba != bb && ba > 1 && bb > 1) ok = false;
+  else {
+    vector<unsigned> da = sa.dims();
+    vector<unsigned> db = sb.dims();
+    if (da.size() < db.size()) ok = false;
+    else {
+      if (dim < da.size()) {
+        db.insert(db.end(), da.size() - db.size(), 1);
+        if (offset + db[dim] > da[dim]) ok = false;
+        da[dim] = db[dim] = 1;
+      } else {
+        if (offset > 0) ok = false;
+      }
+      if (da != db) ok = false;
+    }
+  }
+
+  if (!ok) {
+    THROW_ERROR(
+        "Attempted to add gradients with shape "
+        << sb.to_string() << ", dim " << dim << ", offset " << offset
+        << " to shape" << sa.to_string() << '.');
+  }
+
+  add_gradient_offset_impl(a, b, dim, offset);
 }
 
 }  // namespace primitiv

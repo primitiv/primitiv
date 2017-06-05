@@ -213,4 +213,153 @@ TEST_F(TensorTest, CheckInvalidAddGradient) {
   }
 }
 
+TEST_F(TensorTest, CheckAddGradientOffsetNN_1) {
+  const vector<float> a_data {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+  const vector<float> b_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
+  const vector<float> y_data {1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6};
+  for (Device *dev : devices) {
+    for (unsigned i : {0, 1, 2, 5, 10}) {
+      Tensor a = dev->new_tensor(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor(Shape({2, 2}, 3), b_data);
+      a.add_gradient_offset(b, i, 0);
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorTest, CheckAddGradientOffsetNN_2) {
+  const vector<float> a_data {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+  const vector<float> b_data {1, 1, 2, 2, 3, 3};
+  struct TestCase {
+    Shape shape;
+    unsigned dim, offset;
+    vector<float> y_data;
+  };
+  vector<TestCase> test_cases {
+    {Shape({1, 2}, 3), 0, 0, {1, 1, 3, 3, 2, 1, 4, 3, 3, 1, 5, 3}},
+    {Shape({1, 2}, 3), 0, 1, {0, 2, 2, 4, 0, 3, 2, 5, 0, 4, 2, 6}},
+    {Shape({2}, 3), 1, 0, {1, 2, 2, 3, 2, 3, 2, 3, 3, 4, 2, 3}},
+    {Shape({2}, 3), 1, 1, {0, 1, 3, 4, 0, 1, 4, 5, 0, 1, 5, 6}},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      Tensor a = dev->new_tensor(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor(tc.shape, b_data);
+      a.add_gradient_offset(b, tc.dim, tc.offset);
+      EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorTest, CheckAddGradientOffset1N_1) {
+  const vector<float> a_data {0, 1, 2, 3};
+  const vector<float> b_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
+  const vector<float> y_data {6, 7, 8, 9};
+  for (Device *dev : devices) {
+    for (unsigned i : {0, 1, 2, 5, 10}) {
+      Tensor a = dev->new_tensor({2, 2}, a_data);
+      const Tensor b = dev->new_tensor(Shape({2, 2}, 3), b_data);
+      a.add_gradient_offset(b, i, 0);
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorTest, CheckAddGradientOffset1N_2) {
+  const vector<float> a_data {0, 1, 2, 3};
+  const vector<float> b_data {1, 1, 2, 2, 3, 3};
+  struct TestCase {
+    Shape shape;
+    unsigned dim, offset;
+    vector<float> y_data;
+  };
+  vector<TestCase> test_cases {
+    {Shape({1, 2}, 3), 0, 0, {6, 1, 8, 3}},
+    {Shape({1, 2}, 3), 0, 1, {0, 7, 2, 9}},
+    {Shape({2}, 3), 1, 0, {6, 7, 2, 3}},
+    {Shape({2}, 3), 1, 1, {0, 1, 8, 9}},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      Tensor a = dev->new_tensor({2, 2}, a_data);
+      const Tensor b = dev->new_tensor(tc.shape, b_data);
+      a.add_gradient_offset(b, tc.dim, tc.offset);
+      EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorTest, CheckAddGradientOffsetN1_1) {
+  const vector<float> a_data {1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6};
+  const vector<float> b_data {-1, -2, -3, -4};
+  const vector<float> y_data {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
+  for (Device *dev : devices) {
+    for (unsigned i : {0, 1, 2, 5, 10}) {
+      Tensor a = dev->new_tensor(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor({2, 2}, b_data);
+      a.add_gradient_offset(b, i, 0);
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorTest, CheckAddGradientOffsetN1_2) {
+  const vector<float> a_data {1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6};
+  const vector<float> b_data {-1, -2};
+  struct TestCase {
+    Shape shape;
+    unsigned dim, offset;
+    vector<float> y_data;
+  };
+  vector<TestCase> test_cases {
+    {{1, 2}, 0, 0, {0, 2, 1, 4, 1, 3, 2, 5, 2, 4, 3, 6}},
+    {{1, 2}, 0, 1, {1, 1, 3, 2, 2, 2, 4, 3, 3, 3, 5, 4}},
+    {{2}, 1, 0, {0, 0, 3, 4, 1, 1, 4, 5, 2, 2, 5, 6}},
+    {{2}, 1, 1, {1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4}},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      Tensor a = dev->new_tensor(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor(tc.shape, b_data);
+      a.add_gradient_offset(b, tc.dim, tc.offset);
+      EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorTest, CheckInvalidAddGradientOffset) {
+  struct TestCase {
+    Shape a_shape, b_shape;
+    unsigned dim, offset;
+    bool ok;
+  };
+  vector<TestCase> test_cases {
+    {Shape({}, 2), Shape({}, 3), 0, 0},
+    {{}, {}, 0, 0, true},
+    {{}, {}, 0, 1, false},
+    {{42}, {}, 0, 41, true},
+    {{42}, {}, 0, 42, false},
+    {{42}, {42}, 0, 0, true},
+    {{42}, {42}, 0, 1, false},
+    {{42}, {43}, 0, 0, false},
+    {{42}, {4, 42}, 0, 0, false},
+    {{42}, {4, 2, 42}, 0, 0, false},
+    {{4, 4}, {2, 2}, 0, 0, false},
+    {{4, 4}, {2, 4}, 0, 2, true},
+    {{4, 4}, {2, 4}, 0, 3, false},
+    {{4, 4}, {4, 2}, 1, 2, true},
+    {{4, 4}, {4, 2}, 1, 3, false},
+    {{4, 4}, {4, 4}, 2, 0, true},
+    {{4, 4}, {4, 4}, 2, 1, false},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      Tensor a = dev->new_tensor(tc.a_shape, 0);
+      const Tensor b = dev->new_tensor(tc.b_shape, 0);
+      if (tc.ok) EXPECT_NO_THROW(a.add_gradient_offset(b, tc.dim, tc.offset));
+      else EXPECT_THROW(a.add_gradient_offset(b, tc.dim, tc.offset), Error);
+    }
+  }
+}
+
 }  // namespace primitiv

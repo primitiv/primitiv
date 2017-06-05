@@ -260,6 +260,17 @@ __global__ void dev_add_grad(
   }
 }
 
+__global__ void dev_add_grad_ofs(
+    float *pgx, const float *pgy,
+    unsigned wx, unsigned wy, unsigned nx, unsigned ny) {
+  const unsigned i = IDX;
+  if (i < wy * ::max(nx, ny)) {
+    ::atomicAdd(
+        pgx + ((i / wy) * wx + (i % wy)) % (wx * nx),
+        pgy[i % (wy * ny)]);
+  }
+}
+
 #undef IDX
 
 }  // namespace
@@ -354,7 +365,7 @@ void CUDADevice::delete_tensor_impl(Tensor &x) {
   CUDA_CALL(::cudaFree(data));
 }
 
-#define GRID_SIZE(x, thread_size) ((x + thread_size - 1) / thread_size)
+#define GRID_SIZE(x, threads) (((x) + (threads) - 1) / (threads))
 #define DATA(x) static_cast<float *>((x).data())
 #define CDATA(x) static_cast<const float *>((x).data())
 
@@ -595,6 +606,23 @@ void CUDADevice::add_gradient_impl(Tensor &a, const Tensor &b) {
   const unsigned g1 = GRID_SIZE(size, dim1_x_);
   ::dev_add_grad<<<g1, dim1_x_>>>(
       DATA(a), CDATA(b), size, std::max(ba, bb), ba > 1, bb > 1);
+}
+
+void CUDADevice::add_gradient_offset_impl(
+    Tensor &a, const Tensor &b, unsigned dim, unsigned offset) {
+  const Shape &sa = a.shape();
+  const Shape &sb = b.shape();
+  unsigned base = 1;
+  for (unsigned i = 0; i < dim; ++i) base *= sa.dim(i);
+  unsigned repeat = 1;
+  for (unsigned i = dim + 1; i < sa.dims().size(); ++i) repeat *= sa.dim(i);
+  const unsigned ox = base * offset;
+  const unsigned wx = base * sa.dim(dim);
+  const unsigned wy = base * sb.dim(dim);
+  const unsigned nx = repeat * sa.batch_size();
+  const unsigned ny = repeat * sb.batch_size();
+  const unsigned g1 = GRID_SIZE(wy * ny, dim1_x_);
+  ::dev_add_grad_ofs<<<g1, dim1_x_>>>(DATA(a) + ox, CDATA(b), wx, wy, nx, ny);
 }
 
 }  // namespace primitiv

@@ -78,6 +78,8 @@ private:
   Tensor batch_sum_impl(const Tensor &x) override;
 
   void add_gradient_impl(Tensor &a, const Tensor &b) override;
+  void add_gradient_offset_impl(
+      Tensor &a, const Tensor &b, unsigned dim, unsigned offset) override;
 
 private:
   std::map<void *, unsigned> blocks_;

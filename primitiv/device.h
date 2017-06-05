@@ -301,6 +301,17 @@ public:
    *              otherwise: error.
    */
   void add_gradient(Tensor &a, const Tensor &b);
+
+  /**
+   * Same as `add_gradient`, but updates only part of elements in the specified
+   * range defined by `dim` and `offset`.
+   * @param a A tensor to be updated.
+   * @param b A source tensor.
+   * @param dim Dimension to determine the range of `a`.
+   * @param offset Offset of the dimension `dim`.
+   */
+  void add_gradient_offset(
+      Tensor &a, const Tensor &b, unsigned dim, unsigned offset);
   
 private:
   // device-specific implementations.
@@ -352,6 +363,8 @@ private:
   virtual Tensor batch_sum_impl(const Tensor &x) = 0;
 
   virtual void add_gradient_impl(Tensor &a, const Tensor &b) = 0;
+  virtual void add_gradient_offset_impl(
+      Tensor &a, const Tensor &b, unsigned dim, unsigned offset) = 0;
 };
 
 }  // namespace primitiv
