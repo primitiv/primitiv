@@ -29,6 +29,7 @@ set(primitiv_LIBRARY_SRCS
   sgd_trainer.cc
   shape.cc
   tensor.cc
+  tensor_ops.cc
 )
 
 add_library(primitiv SHARED ${primitiv_LIBRARY_HDRS} ${primitiv_LIBRARY_SRCS})
