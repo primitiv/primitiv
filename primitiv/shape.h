@@ -28,7 +28,7 @@ public:
   /**
    * Creates a new scalar Shape object.
    */
-  inline Shape() : dims_(), k_(1) {}
+  inline Shape() : dims_(), k_(1), size_per_sample_(1) {}
 
   /**
    * Creates a new Shape object.
@@ -66,15 +66,18 @@ public:
   inline unsigned batch_size() const { return k_; }
 
   /**
-   * Returns the number of actual data in the node.
-   * This value is equal to batch_size() * dim(0) * dim(1) * ...
-   * @return Number of actual data in the node.
+   * Returns the number of elements in each sample.
+   * This value is equal to the product of all dimensions.
+   * @return Number of elements.
    */
-  inline unsigned size() const {
-    unsigned s = k_;
-    for (const unsigned d : dims_) s *= d;
-    return s;
-  }
+  inline unsigned size_per_sample() const { return size_per_sample_; }
+
+  /**
+   * Returns the number of elements in all samples of the mini-batch.
+   * This value is equal to `batch_size() * size_per_sample()`.
+   * @return Number of elements.
+   */
+  inline unsigned size() const { return k_ * size_per_sample_; }
 
   /**
    * Returns a string representation of the shape.
@@ -102,6 +105,7 @@ public:
 private:
   std::vector<unsigned> dims_;
   unsigned k_;
+  unsigned size_per_sample_;
 
   /**
    * Check internal values and adjust them.

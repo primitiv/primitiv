@@ -10,12 +10,12 @@ using std::vector;
 namespace primitiv {
 
 Shape::Shape(const initializer_list<unsigned> &dims, const unsigned k)
-: dims_(dims), k_(k) {
+: dims_(dims), k_(k), size_per_sample_(1) {
   adjust();
 }
 
 Shape::Shape(const vector<unsigned> &dims, const unsigned k)
-: dims_(dims), k_(k) {
+: dims_(dims), k_(k), size_per_sample_(1) {
   adjust();
 }
 
@@ -37,6 +37,9 @@ void Shape::adjust() {
   while (!dims_.empty() && dims_.back() == 1) {
     dims_.pop_back();
   }
+
+  // calculates the number of elements.
+  for (const unsigned n : dims_) size_per_sample_ *= n;
 
   // check size of the shape.
   // if 1 or more dimensions or the batch size is 0, then size() returns 0.
