@@ -22,7 +22,6 @@ public:
    * @param eta Learning rate.
    */
   explicit SGDTrainer(const float eta) : eta_(eta) {}
-  ~SGDTrainer() = default;
 
   void add_parameter(Parameter *param) override;
   void reset_gradients() override;

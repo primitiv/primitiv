@@ -19,16 +19,10 @@ namespace primitiv {
  */
 class Shape {
 public:
-  Shape(const Shape &) = default;
-  Shape(Shape &&) = default;
-  Shape &operator=(const Shape &) = default;
-  Shape &operator=(Shape && ) = default;
-  ~Shape() = default;
-
   /**
    * Creates a new scalar Shape object.
    */
-  inline Shape() : dims_(), k_(1), size_per_sample_(1) {}
+  Shape() : dims_(), k_(1), size_per_sample_(1) {}
 
   /**
    * Creates a new Shape object.
@@ -49,7 +43,7 @@ public:
    * @param i Dimension number to check.
    * @return Size of the i-th dimension.
    */
-  inline unsigned dim(const unsigned i) const {
+  unsigned dim(const unsigned i) const {
     return i < dims_.size() ? dims_[i] : 1;
   }
 
@@ -57,27 +51,27 @@ public:
    * Returns the list of dimension sizes.
    * @return List of the dimension sizes.
    */
-  inline const std::vector<unsigned> dims() const { return dims_; }
+  const std::vector<unsigned> dims() const { return dims_; }
 
   /**
    * Returns the batch size.
    * @return Batch size.
    */
-  inline unsigned batch_size() const { return k_; }
+  unsigned batch_size() const { return k_; }
 
   /**
    * Returns the number of elements in each sample.
    * This value is equal to the product of all dimensions.
    * @return Number of elements.
    */
-  inline unsigned size_per_sample() const { return size_per_sample_; }
+  unsigned size_per_sample() const { return size_per_sample_; }
 
   /**
    * Returns the number of elements in all samples of the mini-batch.
    * This value is equal to `batch_size() * size_per_sample()`.
    * @return Number of elements.
    */
-  inline unsigned size() const { return k_ * size_per_sample_; }
+  unsigned size() const { return k_ * size_per_sample_; }
 
   /**
    * Returns a string representation of the shape.
@@ -91,7 +85,7 @@ public:
    * @param rhs target Shape object to compare.
    * @return true if this and rhs are same, false otherwise.
    */
-  inline bool operator==(const Shape &rhs) const {
+  bool operator==(const Shape &rhs) const {
     return dims_ == rhs.dims_ && k_ == rhs.k_;
   }
 
@@ -100,7 +94,7 @@ public:
    * @param rhs target Shape object to compare.
    * @return true if this and rhs are not same, false otherwise.
    */
-  inline bool operator!=(const Shape &rhs) const { return !operator==(rhs); }
+  bool operator!=(const Shape &rhs) const { return !operator==(rhs); }
 
 private:
   std::vector<unsigned> dims_;

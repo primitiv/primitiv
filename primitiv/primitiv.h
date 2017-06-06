@@ -15,8 +15,4 @@
 #include <primitiv/tensor.h>
 #include <primitiv/tensor_ops.h>
 
-#ifdef PRIMITIV_USE_CUDA
-#include <primitiv/cuda_device.h>
-#endif  // PRIMITIV_USE_CUDA
-
 #endif  // PRIMITIV_PRIMITIV_H_

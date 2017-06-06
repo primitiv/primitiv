@@ -14,24 +14,19 @@ class Node {
   friend Graph;
 
 public:
-  inline Node() : g_(), fid_(), vid_() {}
-  Node(const Node &) = default;
-  Node(Node &&) = default;
-  Node &operator=(const Node &) = default;
-  Node &operator=(Node &&) = default;
-  ~Node() = default;
+  Node() : g_(), fid_(), vid_() {}
 
   /**
    * Returns corresponding Graph object.
    * @return Graph object.
    */
-  inline Graph *graph() const { return g_; }
+  Graph *graph() const { return g_; }
 
   /**
    * Returns the function ID.
    * @return Function ID.
    */
-  inline unsigned function_id() const {
+  unsigned function_id() const {
     if (!g_) THROW_ERROR("Invalid node.");
     return fid_;
   }
@@ -40,7 +35,7 @@ public:
    * Returns the value ID of the function.
    * @return Value ID.
    */
-  inline unsigned value_id() const {
+  unsigned value_id() const {
     if(!g_) THROW_ERROR("Invalid node.");
     return vid_;
   }
@@ -52,8 +47,7 @@ private:
    * @param fid Function ID.
    * @param vid Value ID.
    */
-  inline Node(Graph *g, unsigned fid, unsigned vid)
-    : g_(g), fid_(fid), vid_(vid) {}
+  Node(Graph *g, unsigned fid, unsigned vid) : g_(g), fid_(fid), vid_(vid) {}
 
   Graph *g_;
   unsigned fid_;

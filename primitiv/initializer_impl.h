@@ -21,8 +21,7 @@ public:
    * Crates a new initializer object.
    * @param k Constant to provide.
    */
-  Constant(const float k) : k_(k) {}
-  ~Constant() override = default;
+  explicit Constant(const float k) : k_(k) {}
 
   void apply(Tensor &x) const override;
 
@@ -40,8 +39,7 @@ class XavierUniform : public Initializer {
   XavierUniform &operator=(XavierUniform &&) = delete;
 
 public:
-  inline XavierUniform() {}
-  ~XavierUniform() = default;
+  XavierUniform() {}
 
   void apply(Tensor &x) const override;
 };

@@ -81,25 +81,25 @@ public:
    * Returns the shape of the parameter.
    * @return Shape object.
    */
-  inline const Shape &shape() const { return shape_; }
+  const Shape &shape() const { return shape_; }
 
   /**
    * Returns the Device object to manage the internal memory.
    * @return Pointer of the Device object.
    */
-  inline Device *device() const { return device_; }
+  Device *device() const { return device_; }
 
   /**
    * Returns the values of the parameter.
    * @return A tensor representing the parameter tensor.
    */
-  inline const Tensor &value() const { return value_; }
+  const Tensor &value() const { return value_; }
 
   /**
    * Returns the current gradient of the parameter.
    * @return A tensor representing the gradient of the value.
    */
-  inline const Tensor &gradient() const { return grad_; }
+  const Tensor &gradient() const { return grad_; }
 
 private:
   /**

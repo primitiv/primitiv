@@ -23,7 +23,7 @@ public:
   /**
    * Creates an invalid Tensor.
    */
-  inline Tensor() : shape_(), device_(nullptr), data_(nullptr) {}
+  Tensor() : shape_(), device_(nullptr), data_(nullptr) {}
 
   /**
    * Creates a new uninitialized Tensor.
@@ -32,32 +32,32 @@ public:
    * @param data Pointer of the device-specific object.
    * @remarks This constructor should not be used directly by users.
    */
-  inline Tensor(const Shape &shape, Device *device, void *data)
+  Tensor(const Shape &shape, Device *device, void *data)
     : shape_(shape), device_(device), data_(data) {}
 
   /**
    * Returns the shape of the Tensor.
    * @return Shape of the Tensor.
    */
-  inline const Shape &shape() const { return shape_; }
+  const Shape &shape() const { return shape_; }
 
   /**
    * Returns the Device object related to the internal memory.
    * @return Device object.
    */
-  inline Device *device() const { return device_; }
+  Device *device() const { return device_; }
 
   /**
    * Returns the raw pointer of the internal memory.
    * @return Pointer of the internal memory.
    */
-  inline void *data() { return data_; }
+  void *data() { return data_; }
 
   /**
    * Returns the raw const-pointer of the internal memory.
    * @return Const-pointer of the internal memory.
    */
-  inline const void *data() const { return data_; }
+  const void *data() const { return data_; }
 
   /**
    * Retrieves internal values of the tensor as a vector.
@@ -88,7 +88,7 @@ public:
    * @remarks This returns false when the object is created through the default
    *          constructor or the object had been moved.
    */
-  inline bool valid() const { return !!data_; }
+  bool valid() const { return !!data_; }
 
   /**
    * Adds a tensor for gradient calculation.

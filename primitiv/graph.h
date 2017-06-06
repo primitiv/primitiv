@@ -78,7 +78,7 @@ public:
    * Returns the number of functions in the computation graph.
    * @return Number of nodes.
    */
-  inline unsigned num_functions() const { return funcs_.size(); }
+  unsigned num_functions() const { return funcs_.size(); }
 
 private:
   /**
