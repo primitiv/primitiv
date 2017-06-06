@@ -45,12 +45,12 @@ private:
 class ParameterInput : public primitiv::Function {
   ParameterInput() = delete;
   ParameterInput(const ParameterInput &) = delete;
-  ParameterInput(ParameterInput &) = delete;
+  ParameterInput(ParameterInput &&) = delete;
   ParameterInput &operator=(const ParameterInput &) = delete;
-  ParameterInput &operator=(ParameterInput &) = delete;
+  ParameterInput &operator=(ParameterInput &&) = delete;
 
 public:
-  ParameterInput(Parameter *param) :param_(param) {}
+  ParameterInput(Parameter *param) : param_(param) {}
   ~ParameterInput() override = default;
   Shape forward_shape(const std::vector<const Shape *> &args) const override;
   Tensor forward(const std::vector<const Tensor *> &args) const override;
@@ -105,7 +105,9 @@ private:
       const Tensor &cur_grad, \
       const std::vector<const Tensor *> &arg_values, \
       const std::vector<Tensor *> &arg_grads) const override; \
-    inline std::string name() const override { return #name_; } \
+    inline std::string name() const override { \
+      return std::string(#name_) + '(' + std::to_string(k_) + ')'; \
+    } \
   private: \
     float k_; \
   }

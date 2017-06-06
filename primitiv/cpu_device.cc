@@ -390,18 +390,15 @@ Tensor CPUDevice::transpose_impl(const Tensor &x) {
 
   for (unsigned k = 0; k < bs; ++k) {
     float *pd = dest;
-    const float *ps = src;
     for (unsigned j = 0; j < d2; ++j) {
       float *ppd = pd;
       for (unsigned i = 0; i < d1; ++i) {
-        *ppd = ps[i];
+        *ppd = *src++;
         ppd += d2;
       }
       ++pd;
-      ps += d1;
     }
     dest += ms;
-    src += ms;
   }
 
   return ret;

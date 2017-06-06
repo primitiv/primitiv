@@ -95,6 +95,7 @@ protected:
 };
 
 #define TEST_1ARG(name_) { \
+  const name_ node; \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
   const Tensor cur_grad = dev.new_tensor(ret_shape, 1); \
@@ -105,7 +106,22 @@ protected:
   EXPECT_TRUE(vector_match(bw_grad, arg_grads[0]->to_vector())); \
 }
 
+#define TEST_1ARG_K(name_, k_) { \
+  const name_ node(k_); \
+  const Shape cur_shape = node.forward_shape(arg_shapes); \
+  const Tensor cur_value = node.forward(arg_values); \
+  const Tensor cur_grad = dev.new_tensor(ret_shape, 1); \
+  node.backward(cur_value, cur_grad, arg_values, arg_grads); \
+  EXPECT_EQ( \
+      std::string(#name_) + '(' + \
+      std::to_string(static_cast<float>(k_)) + ')', node.name()); \
+  EXPECT_EQ(ret_shape, cur_shape); \
+  EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector())); \
+  EXPECT_TRUE(vector_match(bw_grad, arg_grads[0]->to_vector())); \
+}
+
 #define TEST_1ARG_NEAR(name_, err) { \
+  const name_ node; \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
   const Tensor cur_grad = dev.new_tensor(ret_shape, 1); \
@@ -117,6 +133,7 @@ protected:
 }
 
 #define TEST_2ARGS(name_) { \
+  const name_ node; \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
   const Tensor cur_grad = dev.new_tensor(ret_shape, 1); \
@@ -124,10 +141,8 @@ protected:
   EXPECT_EQ(#name_, node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
   EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector())); \
-  EXPECT_TRUE( \
-      vector_match(bw_grads[0], arg_grads[0]->to_vector())); \
-  EXPECT_TRUE( \
-      vector_match(bw_grads[1], arg_grads[1]->to_vector())); \
+  EXPECT_TRUE(vector_match(bw_grads[0], arg_grads[0]->to_vector())); \
+  EXPECT_TRUE(vector_match(bw_grads[1], arg_grads[1]->to_vector())); \
 }
 
 TEST_F(FunctionImplTest_0Arg, CheckInput) {
@@ -172,7 +187,6 @@ TEST_F(FunctionImplTest_1Arg, CheckPositive) {
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4};
   const vector<float> bw_grad(arg_shapes[0]->size(), 1);
-  const Positive node;
   TEST_1ARG(Positive);
 }
 
@@ -182,7 +196,6 @@ TEST_F(FunctionImplTest_1Arg, CheckNegative) {
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {-1, -2, -3, -4, 0, 0, 0, 0, 1, 2, 3, 4};
   const vector<float> bw_grad(arg_shapes[0]->size(), -1);
-  const Negative node;
   TEST_1ARG(Negative);
 }
 
@@ -192,8 +205,7 @@ TEST_F(FunctionImplTest_1Arg, CheckAddConst) {
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {4, 5, 6, 7, 3, 3, 3, 3, 2, 1, 0, -1};
   const vector<float> bw_grad(arg_shapes[0]->size(), 1);
-  const AddConst node(3);
-  TEST_1ARG(AddConst);
+  TEST_1ARG_K(AddConst, 3);
 }
 
 TEST_F(FunctionImplTest_1Arg, CheckSubtractConstL) {
@@ -202,8 +214,7 @@ TEST_F(FunctionImplTest_1Arg, CheckSubtractConstL) {
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {2, 1, 0, -1, 3, 3, 3, 3, 4, 5, 6, 7};
   const vector<float> bw_grad(arg_shapes[0]->size(), -1);
-  const SubtractConstL node(3);
-  TEST_1ARG(SubtractConstL);
+  TEST_1ARG_K(SubtractConstL, 3);
 }
 
 TEST_F(FunctionImplTest_1Arg, CheckSubtractConstR) {
@@ -212,8 +223,7 @@ TEST_F(FunctionImplTest_1Arg, CheckSubtractConstR) {
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {-2, -1, 0, 1, -3, -3, -3, -3, -4, -5, -6, -7};
   const vector<float> bw_grad(arg_shapes[0]->size(), 1);
-  const SubtractConstR node(3);
-  TEST_1ARG(SubtractConstR);
+  TEST_1ARG_K(SubtractConstR, 3);
 }
 
 TEST_F(FunctionImplTest_1Arg, CheckMultiplyConst) {
@@ -222,8 +232,7 @@ TEST_F(FunctionImplTest_1Arg, CheckMultiplyConst) {
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {3, 6, 9, 12, 0, 0, 0, 0, -3, -6, -9, -12};
   const vector<float> bw_grad(arg_shapes[0]->size(), 3);
-  const MultiplyConst node(3);
-  TEST_1ARG(MultiplyConst);
+  TEST_1ARG_K(MultiplyConst, 3);
 }
 
 TEST_F(FunctionImplTest_1Arg_NonZero, CheckDivideConstL) {
@@ -234,8 +243,7 @@ TEST_F(FunctionImplTest_1Arg_NonZero, CheckDivideConstL) {
     3, 1.5, 1, .75, 3, -3, 3, -3, -3, -1.5, -1, -.75};
   const vector<float> bw_grad {
     -3, -.75, -1./3, -.1875, -3, -3, -3, -3, -3, -.75, -1./3, -.1875};
-  const DivideConstL node(3);
-  TEST_1ARG(DivideConstL);
+  TEST_1ARG_K(DivideConstL, 3);
 }
 
 TEST_F(FunctionImplTest_1Arg, CheckDivideConstR) {
@@ -245,8 +253,7 @@ TEST_F(FunctionImplTest_1Arg, CheckDivideConstR) {
   const vector<float> ret_data {
     1./3, 2./3, 1, 4./3, 0, 0, 0, 0, -1./3, -2./3, -1, -4./3};
   const vector<float> bw_grad(arg_shapes[0]->size(), 1./3);
-  const DivideConstR node(3);
-  TEST_1ARG(DivideConstR);
+  TEST_1ARG_K(DivideConstR, 3);
 }
 
 TEST_F(FunctionImplTest_1Arg, CheckTranspose) {
@@ -255,7 +262,6 @@ TEST_F(FunctionImplTest_1Arg, CheckTranspose) {
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {1, 3, 2, 4, 0, 0, 0, 0, -1, -3, -2, -4};
   const vector<float> bw_grad(arg_shapes[0]->size(), 1);
-  const Transpose node;
   TEST_1ARG(Transpose);
 }
 
@@ -269,7 +275,6 @@ TEST_F(FunctionImplTest_2Args, CheckAdd) {
     vector<float>(arg_shapes[0]->size(), 1),
     vector<float>(arg_shapes[1]->size(), 1),
   };
-  const Add node;
   TEST_2ARGS(Add);
 }
 
@@ -283,7 +288,6 @@ TEST_F(FunctionImplTest_2Args, CheckSubtract) {
     vector<float>(arg_shapes[0]->size(), 1),
     vector<float>(arg_shapes[1]->size(), -1),
   };
-  const Subtract node;
   TEST_2ARGS(Subtract);
 }
 
@@ -297,7 +301,6 @@ TEST_F(FunctionImplTest_2Args, CheckMultiply) {
     vector<float> {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3},
     vector<float> {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4},
   };
-  const Multiply node;
   TEST_2ARGS(Multiply);
 }
 
@@ -312,7 +315,6 @@ TEST_F(FunctionImplTest_2Args, CheckDivide) {
     vector<float> {1, 1, 1, 1, .5f, .5f, .5f, .5f, 1./3, 1./3, 1./3, 1./3},
     vector<float> {-1, -2, -3, -4, 0, 0, 0, 0, 1./9, 2./9, 1./3, 4./9},
   };
-  const Divide node;
   TEST_2ARGS(Divide);
 }
 
@@ -326,7 +328,6 @@ TEST_F(FunctionImplTest_2Args, CheckDot) {
     vector<float> {2, 2, 2, 2, 4, 4, 4, 4, 6, 6, 6, 6},
     vector<float> {3, 7, 3, 7, 0, 0, 0, 0, -3, -7, -3, -7},
   };
-  const Dot node;
   TEST_2ARGS(Dot);
 }
 
@@ -340,7 +341,6 @@ TEST_F(FunctionImplTest_1Arg, CheckExp) {
     .36787944, .13533528, .049787068, .018315639,
   };
   const vector<float> bw_grad = ret_data;
-  const Exp node;
   TEST_1ARG(Exp);
 }
 
@@ -358,7 +358,6 @@ TEST_F(FunctionImplTest_1Arg, CheckTanh) {
     1, 1, 1, 1,
     .41997434, .070650825, .0098660372, .0013409507,
   };
-  const Tanh node;
   TEST_1ARG_NEAR(Tanh, 1e-6);
 }
 
@@ -376,7 +375,6 @@ TEST_F(FunctionImplTest_1Arg, CheckSigmoid) {
     .25, .25, .25, .25,
     .19661193, .10499359, .045176660, .017662706,
   };
-  const Sigmoid node;
   TEST_1ARG_NEAR(Sigmoid, 1e-6);
 }
 
@@ -394,7 +392,6 @@ TEST_F(FunctionImplTest_1Arg, CheckReLU) {
     0, 0, 0, 0,
     0, 0, 0, 0,
   };
-  const ReLU node;
   TEST_1ARG(ReLU);
 }
 
@@ -408,7 +405,6 @@ TEST_F(FunctionImplTest_1Arg, CheckBatchSum) {
     1, 1, 1, 1,
     1, 1, 1, 1,
   };
-  const BatchSum node;
   TEST_1ARG(BatchSum);
 }
 
