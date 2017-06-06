@@ -48,7 +48,6 @@ void Device::reset_tensor(Tensor &x, float k) {
 }
 
 void Device::reset_tensor(Tensor &x, const vector<float> &values) {
-  CHECK_DEVICE(x);
   const unsigned num_elements = x.shape().size();
   if (values.size() != num_elements) {
     THROW_ERROR(
@@ -56,6 +55,8 @@ void Device::reset_tensor(Tensor &x, const vector<float> &values) {
         << " (shape: " << x.shape().to_string() << ") != actual: "
         << values.size());
   }
+
+  CHECK_DEVICE(x);
   reset_tensor_impl(x, values);
 }
 
@@ -87,7 +88,6 @@ Tensor Device::random_normal(const Shape &shape, float mean, float sd) {
 
 Tensor Device::slice(
     const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
-  CHECK_DEVICE(x);
   const Shape &s = x.shape();
   if (lower >= upper || upper > s.dim(dim)) {
     THROW_ERROR(
@@ -100,6 +100,7 @@ Tensor Device::slice(
     return duplicate(x);
   }
 
+  CHECK_DEVICE(x);
   return slice_impl(x, dim, lower, upper);
 }
 
@@ -108,7 +109,11 @@ Tensor Device::concat(const vector<const Tensor *> &xs, unsigned dim) {
     THROW_ERROR("No tensors to be concatenated.");
   }
 
-  CHECK_DEVICE(*xs[0]);
+  if (xs.size() == 1) {
+    // Resulting tensor is completely same as the argument.
+    return duplicate(*xs[0]);
+  }
+
   vector<unsigned> ref_dims = xs[0]->shape().dims();
   unsigned sum_dim = 1;
   if (dim < ref_dims.size()) { sum_dim = ref_dims[dim]; ref_dims[dim] = 1; }
@@ -117,7 +122,6 @@ Tensor Device::concat(const vector<const Tensor *> &xs, unsigned dim) {
 
   bool ok = true;
   for (unsigned i = 1; i < xs.size(); ++i) {
-    CHECK_DEVICE(*xs[i]);
     vector<unsigned> dims = xs[i]->shape().dims();
     if (dim < dims.size()) { sum_dim += dims[dim]; dims[dim] = 1; }
     else ++sum_dim;
@@ -141,6 +145,9 @@ Tensor Device::concat(const vector<const Tensor *> &xs, unsigned dim) {
   }
   ref_dims[dim] = sum_dim;
 
+  for (const Tensor *x : xs) {
+    CHECK_DEVICE(*x);
+  }
   return concat_impl(xs, dim, Shape(ref_dims, ref_bs));
 }
 
@@ -160,8 +167,6 @@ Tensor Device::add(const Tensor &x, float k) {
 }
 
 Tensor Device::add(const Tensor &a, const Tensor &b) {
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
   const unsigned ba = sa.batch_size();
@@ -171,6 +176,9 @@ Tensor Device::add(const Tensor &a, const Tensor &b) {
         "Attempted to add tensors with shapes "
         << sa.to_string() << " and " << sb.to_string() << '.');
   }
+
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
   return add_impl(a, b);
 }
 
@@ -185,8 +193,6 @@ Tensor Device::subtract(float k, const Tensor &x) {
 }
 
 Tensor Device::subtract(const Tensor &a, const Tensor &b) {
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
   const unsigned ba = sa.batch_size();
@@ -196,6 +202,9 @@ Tensor Device::subtract(const Tensor &a, const Tensor &b) {
         "Attempted to subtract tensors with shapes "
         << sa.to_string() << " and " << sb.to_string() << '.');
   }
+
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
   return subtract_impl(a, b);
 }
 
@@ -205,8 +214,6 @@ Tensor Device::multiply(const Tensor &x, float k) {
 }
 
 Tensor Device::multiply(const Tensor &a, const Tensor &b) {
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
   const unsigned ba = sa.batch_size();
@@ -216,6 +223,9 @@ Tensor Device::multiply(const Tensor &a, const Tensor &b) {
         "Attempted to multiply tensors with shapes "
         << sa.to_string() << " and " << sb.to_string() << '.');
   }
+
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
   return multiply_impl(a, b);
 }
 
@@ -230,8 +240,6 @@ Tensor Device::divide(float k, const Tensor &x) {
 }
 
 Tensor Device::divide(const Tensor &a, const Tensor &b) {
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
   const unsigned ba = sa.batch_size();
@@ -241,22 +249,24 @@ Tensor Device::divide(const Tensor &a, const Tensor &b) {
         "Attempted to divide tensors with shapes "
         << sa.to_string() << " and " << sb.to_string() << '.');
   }
+
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
   return divide_impl(a, b);
 }
 
 Tensor Device::transpose(const Tensor &x) {
-  CHECK_DEVICE(x);
   const Shape &s = x.shape();
   if (s.dims().size() > 2) {
     THROW_ERROR(
         "Attempted to transpose a tensor with shape " << s.to_string() << '.');
   }
+
+  CHECK_DEVICE(x);
   return transpose_impl(x);
 }
 
 Tensor Device::dot(const Tensor &a, const Tensor &b) {
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
   const unsigned ba = sa.batch_size();
@@ -268,6 +278,9 @@ Tensor Device::dot(const Tensor &a, const Tensor &b) {
         "Attempted to calculate the dot product of tensors with shapes "
         << sa.to_string() << " and " << sb.to_string() << '.');
   }
+
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
   return dot_impl(a, b);
 }
 
@@ -302,8 +315,6 @@ Tensor Device::batch_sum(const Tensor &x) {
 }
 
 void Device::add_gradient(Tensor &a, const Tensor &b) {
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
   const unsigned ba = sa.batch_size();
@@ -313,32 +324,34 @@ void Device::add_gradient(Tensor &a, const Tensor &b) {
         "Attempted to add gradients with shape "
         << sb.to_string() << " to " << sa.to_string() << '.');
   }
+
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
   add_gradient_impl(a, b);
 }
 
 void Device::add_gradient_offset(
     Tensor &a, const Tensor &b, unsigned dim, unsigned offset) {
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
   const unsigned ba = sa.batch_size();
   const unsigned bb = sb.batch_size();
   bool ok = true;
 
-  if (ba != bb && ba > 1 && bb > 1) ok = false;
+  if (dim >= sa.dims().size()) {
+    if (offset == 0) {
+      add_gradient(a, b);
+      return;
+    } else ok = false;
+  } else if (ba != bb && ba > 1 && bb > 1) ok = false;
   else {
     vector<unsigned> da = sa.dims();
     vector<unsigned> db = sb.dims();
     if (da.size() < db.size()) ok = false;
     else {
-      if (dim < da.size()) {
-        db.insert(db.end(), da.size() - db.size(), 1);
-        if (offset + db[dim] > da[dim]) ok = false;
-        da[dim] = db[dim] = 1;
-      } else {
-        if (offset > 0) ok = false;
-      }
+      db.insert(db.end(), da.size() - db.size(), 1);
+      if (offset + db[dim] > da[dim]) ok = false;
+      da[dim] = db[dim] = 1;
       if (da != db) ok = false;
     }
   }
@@ -350,6 +363,8 @@ void Device::add_gradient_offset(
         << " to shape" << sa.to_string() << '.');
   }
 
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
   add_gradient_offset_impl(a, b, dim, offset);
 }
 

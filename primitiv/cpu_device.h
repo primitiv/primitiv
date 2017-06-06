@@ -35,9 +35,9 @@ public:
 private:
   Tensor new_tensor_impl(const Shape &shape) override;
   void delete_tensor_impl(Tensor &x) override;
-  
+
   std::vector<float> tensor_to_vector_impl(const Tensor &x) override;
-  
+
   void reset_tensor_impl(Tensor &x, float k) override;
   void reset_tensor_impl(Tensor &x, const std::vector<float> &values) override;
 

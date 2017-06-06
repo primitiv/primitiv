@@ -312,13 +312,13 @@ public:
    */
   void add_gradient_offset(
       Tensor &a, const Tensor &b, unsigned dim, unsigned offset);
-  
+
 private:
   // device-specific implementations.
 
   virtual Tensor new_tensor_impl(const Shape &shape) = 0;
   virtual void delete_tensor_impl(Tensor &x) = 0;
-  
+
   virtual std::vector<float> tensor_to_vector_impl(const Tensor &x) = 0;
 
   virtual void reset_tensor_impl(Tensor &x, float k) = 0;
@@ -359,7 +359,7 @@ private:
   virtual Tensor sigmoid_impl(const Tensor &x) = 0;
   virtual Tensor step_impl(const Tensor &x) = 0;
   virtual Tensor relu_impl(const Tensor &x) = 0;
-  
+
   virtual Tensor batch_sum_impl(const Tensor &x) = 0;
 
   virtual void add_gradient_impl(Tensor &a, const Tensor &b) = 0;
