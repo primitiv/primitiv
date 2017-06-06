@@ -11,19 +11,26 @@ class Parameter;
 
 namespace functions {
 
+#define DEFAULT_METHODS(name_) \
+private: \
+  name_(const name_ &) = delete; \
+  name_(name_ &&) = delete; \
+  name_ &operator=(const name_ &) = delete; \
+  name_ &operator=(name_ &&) = delete; \
+public: \
+  ~name_() override = default; \
+
 /**
  * Function object that behaves data source of the computation graph.
  */
 class Input : public primitiv::Function {
+  DEFAULT_METHODS(Input);
+
+private:
   Input() = delete;
-  Input(const Input &) = delete;
-  Input(Input &&) = delete;
-  Input &operator=(const Input &) = delete;
-  Input &operator=(Input &&) = delete;
 
 public:
   Input(const Shape &shape, Device *device, const std::vector<float> &data);
-  ~Input() override = default;
   Shape forward_shape(const std::vector<const Shape *> &args) const override;
   Tensor forward(const std::vector<const Tensor *> &args) const override;
   inline void backward(
@@ -43,15 +50,13 @@ private:
  * Function object to manage parameters.
  */
 class ParameterInput : public primitiv::Function {
+  DEFAULT_METHODS(ParameterInput);
+
+private:
   ParameterInput() = delete;
-  ParameterInput(const ParameterInput &) = delete;
-  ParameterInput(ParameterInput &&) = delete;
-  ParameterInput &operator=(const ParameterInput &) = delete;
-  ParameterInput &operator=(ParameterInput &&) = delete;
 
 public:
   ParameterInput(Parameter *param) : param_(param) {}
-  ~ParameterInput() override = default;
   Shape forward_shape(const std::vector<const Shape *> &args) const override;
   Tensor forward(const std::vector<const Tensor *> &args) const override;
   void backward(
@@ -68,13 +73,9 @@ private:
 // Function with no parameter.
 #define DECL_FUNC(name_) \
   class name_ : public Function { \
-    name_(const name_ &) = delete; \
-    name_(name_ &&) = delete; \
-    name_ &operator=(const name_ &) = delete; \
-    name_ &operator=(name_ &&) = delete; \
+    DEFAULT_METHODS(name_); \
   public: \
     inline name_() {} \
-    ~name_() override = default; \
     Shape forward_shape( \
         const std::vector<const Shape *> &args) const override; \
     Tensor forward(const std::vector<const Tensor *> &args) const override; \
@@ -135,6 +136,7 @@ DECL_FUNC_K(DivideConstR);
 
 #undef DECL_FUNC
 #undef DECL_FUNC_K
+#undef DEFAULT_METHODS
 
 }  // namespace functions
 }  // namespace primitiv
