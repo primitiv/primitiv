@@ -38,10 +38,23 @@ target_link_libraries(primitiv)
 if(USE_CUDA)
   set(primitiv_cuda_LIBRARY_HDRS ${primitiv_LIBRARY_HDRS} cuda_device.h)
   set(primitiv_cuda_LIBRARY_SRCS cuda_device.cu)
+  list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
+
+  # Workaround for some systems.
+  #list(APPEND CUDA_NVCC_FLAGS "-D_FORCE_INLINES")
+  #list(APPEND CUDA_NVCC_FLAGS "-D_MWAITXINTRIN_H_INCLUDED")
+
+  # Supported architectures.
+  list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30")
+  list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_35,code=sm_35")
+  list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_37,code=sm_37")
+  list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_50,code=sm_50")
+  list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=sm_52")
+  list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=compute_52")
+
   cuda_add_library(primitiv_cuda SHARED
     ${primitiv_cuda_LIBRARY_HDRS}
     ${primitiv_cuda_LIBRARY_SRCS}
-    OPTIONS -std=c++11
   )
   target_link_libraries(primitiv_cuda
     ${CUDA_cublas_LIBRARY}
