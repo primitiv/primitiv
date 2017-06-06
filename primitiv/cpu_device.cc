@@ -28,14 +28,14 @@ CPUDevice::~CPUDevice() {
   }
 }
 
-Tensor CPUDevice::new_tensor_impl(const Shape &shape) {
+void *CPUDevice::new_handle(const Shape &shape) {
   const unsigned mem_size = sizeof(float) * shape.size();
   void *data = std::malloc(mem_size);
   if (!data) {
     THROW_ERROR("Memory allocation failed. Requested size: " << mem_size);
   }
   blocks_.insert(std::make_pair(data, mem_size));
-  return Tensor(shape, this, data);
+  return data;
 }
 
 void CPUDevice::delete_tensor_impl(Tensor &x) {

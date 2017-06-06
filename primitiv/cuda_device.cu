@@ -337,13 +337,13 @@ CUDADevice::~CUDADevice() {
   CURAND_CALL(::curandDestroyGenerator(curand_));
 }
 
-Tensor CUDADevice::new_tensor_impl(const Shape &shape) {
+void *CUDADevice::new_handle(const Shape &shape) {
   const unsigned mem_size = sizeof(float) * shape.size();
   void *data;
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CUDA_CALL(::cudaMalloc(&data, mem_size));
   blocks_.insert(std::make_pair(data, mem_size));
-  return Tensor(shape, this, data);
+  return data;
 }
 
 void CUDADevice::delete_tensor_impl(Tensor &x) {

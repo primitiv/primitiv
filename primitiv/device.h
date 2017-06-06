@@ -316,7 +316,7 @@ public:
 private:
   // device-specific implementations.
 
-  virtual Tensor new_tensor_impl(const Shape &shape) = 0;
+  virtual void *new_handle(const Shape &shape) = 0;
   virtual void delete_tensor_impl(Tensor &x) = 0;
 
   virtual std::vector<float> tensor_to_vector_impl(const Tensor &x) = 0;

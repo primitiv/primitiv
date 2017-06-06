@@ -17,18 +17,18 @@ using std::vector;
 namespace primitiv {
 
 Tensor Device::new_tensor(const Shape &shape) {
-  return new_tensor_impl(shape);
+  return Tensor(shape, this, new_handle(shape));
 }
 
 Tensor Device::new_tensor(const Shape &shape, float k) {
-  Tensor ret = new_tensor_impl(shape);
+  Tensor ret(shape, this, new_handle(shape));
   reset_tensor(ret, k);
   return ret;
 }
 
 Tensor Device::new_tensor(
     const Shape &shape, const vector<float> &values) {
-  Tensor ret = new_tensor_impl(shape);
+  Tensor ret(shape, this, new_handle(shape));
   reset_tensor(ret, values);
   return ret;
 }

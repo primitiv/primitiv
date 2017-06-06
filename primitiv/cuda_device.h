@@ -38,7 +38,7 @@ public:
   ~CUDADevice() override;
 
 private:
-  Tensor new_tensor_impl(const Shape &shape) override;
+  void *new_handle(const Shape &shape) override;
   void delete_tensor_impl(Tensor &x) override;
 
   std::vector<float> tensor_to_vector_impl(const Tensor &x) override;

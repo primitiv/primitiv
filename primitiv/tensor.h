@@ -12,6 +12,8 @@ class Device;
  * Value with any dimensions.
  */
 class Tensor {
+  friend Device;
+
   Tensor(const Tensor &) = delete;
   Tensor &operator=(const Tensor &) = delete;
 
@@ -24,16 +26,6 @@ public:
    * Creates an invalid Tensor.
    */
   Tensor() : shape_(), device_(nullptr), data_(nullptr) {}
-
-  /**
-   * Creates a new uninitialized Tensor.
-   * @param shape Shape of the new Tensor.
-   * @param device Device object to manage the internal memory.
-   * @param data Pointer of the device-specific object.
-   * @remarks This constructor should not be used directly by users.
-   */
-  Tensor(const Shape &shape, Device *device, void *data)
-    : shape_(shape), device_(device), data_(data) {}
 
   /**
    * Returns the shape of the Tensor.
@@ -106,6 +98,15 @@ public:
   void add_gradient_offset(const Tensor &x, unsigned dim, unsigned offset);
 
 private:
+  /**
+   * Creates a new uninitialized Tensor.
+   * @param shape Shape of the new Tensor.
+   * @param device Device object to manage the internal memory.
+   * @param data Pointer of the device-specific object.
+   */
+  Tensor(const Shape &shape, Device *device, void *data)
+    : shape_(shape), device_(device), data_(data) {}
+
   Shape shape_;
   Device *device_;
   void *data_;
