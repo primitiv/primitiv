@@ -332,7 +332,8 @@ private:
       const Shape &shape, float mean, float sd) = 0;
 
   virtual Tensor slice_impl(
-      const Tensor &x, unsigned dim, unsigned lower, unsigned upper) = 0;
+      const Tensor &x,
+      unsigned dim, unsigned offset, const Shape &new_shape) = 0;
   virtual Tensor concat_impl(
       const std::vector<const Tensor *> &xs,
       unsigned dim, const Shape &new_shape) = 0;

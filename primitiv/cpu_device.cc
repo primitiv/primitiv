@@ -103,21 +103,16 @@ Tensor CPUDevice::random_normal_impl(const Shape &shape, float mean, float sd) {
 }
 
 Tensor CPUDevice::slice_impl(
-    const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
-  const Shape &s = x.shape();
-  std::vector<unsigned> dims = s.dims();
-  const unsigned diff = upper - lower;
+    const Tensor &x, unsigned dim, unsigned offset, const Shape &new_shape) {
   unsigned base = 1;
-  for (unsigned i = 0; i < dim; ++i) base *= dims[i];
-  const unsigned offset = base * lower;
-  const unsigned span = base * diff;
-  const unsigned skip = base * dims[dim];
-  const unsigned repeat = s.size() / skip;
-  dims[dim] = diff;
+  for (unsigned i = 0; i < dim; ++i) base *= new_shape.dim(i);
+  const unsigned span = base * new_shape.dim(dim);
+  const unsigned skip = base * x.shape().dim(dim);
+  const unsigned repeat = new_shape.size() / span;
 
-  Tensor ret = new_tensor(Shape(dims, s.batch_size()));
+  Tensor ret = new_tensor(new_shape);
   float *dest = DATA(ret);
-  const float *src = CDATA(x) + offset;
+  const float *src = CDATA(x) + base * offset;
   for (unsigned i = 0; i < repeat; ++i) {
     const float *sp = src;
     REPEAT_OP(j, span, *dest++ = *sp++);

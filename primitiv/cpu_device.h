@@ -47,7 +47,8 @@ private:
   Tensor random_normal_impl(const Shape &shape, float mean, float sd) override;
 
   Tensor slice_impl(
-      const Tensor &x, unsigned dim, unsigned lower, unsigned upper) override;
+      const Tensor &x,
+      unsigned dim, unsigned offset, const Shape &new_shape) override;
   Tensor concat_impl(
       const std::vector<const Tensor *> &xs,
       unsigned dim, const Shape &new_shape) override;

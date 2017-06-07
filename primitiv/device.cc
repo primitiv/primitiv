@@ -100,8 +100,11 @@ Tensor Device::slice(
     return duplicate(x);
   }
 
+  vector<unsigned> dims = s.dims();
+  dims[dim] = upper - lower;
+
   CHECK_DEVICE(x);
-  return slice_impl(x, dim, lower, upper);
+  return slice_impl(x, dim, lower, Shape(dims, s.batch_size()));
 }
 
 Tensor Device::concat(const vector<const Tensor *> &xs, unsigned dim) {

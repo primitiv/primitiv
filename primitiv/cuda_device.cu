@@ -410,23 +410,16 @@ Tensor CUDADevice::random_normal_impl(
 }
 
 Tensor CUDADevice::slice_impl(
-    const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
-  const Shape& s = x.shape();
-  std::vector<unsigned> dims = s.dims();
-  const unsigned bs = s.batch_size();
-  const unsigned diff = upper - lower;
+    const Tensor &x, unsigned dim, unsigned offset, const Shape &new_shape) {
   unsigned base = 1;
-  for (unsigned i = 0; i < dim; ++i) base *= dims[i];
-  const unsigned offset = base * lower;
-  const unsigned span = base * diff;
-  const unsigned skip = base * dims[dim];
-  unsigned size = skip;
-  for (unsigned i = dim + 1; i < dims.size(); ++i) size *= dims[i];
+  for (unsigned i = 0; i < dim; ++i) base *= new_shape.dim(i);
+  const unsigned span = base * new_shape.dim(dim);
+  const unsigned skip = base * x.shape().dim(dim);
+  const unsigned size = new_shape.size();
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
-  dims[dim] = diff;
-  Tensor ret = new_tensor(Shape(dims, bs));
+  Tensor ret = new_tensor(new_shape);
   ::dev_slice<<<num_blocks, dim1_x_>>>(
-      DATA(ret), CDATA(x) + offset, span, skip, size);
+      DATA(ret), CDATA(x) + base * offset, span, skip, size);
   return ret;
 }
 
