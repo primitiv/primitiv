@@ -29,8 +29,7 @@ protected:
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
     arg_values.emplace_back(new Tensor(dev.new_tensor(
         *arg_shapes[0], {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4})));
-    arg_grads.emplace_back(new Tensor(dev.new_tensor(
-        *arg_shapes[0], vector<float>(arg_shapes[0]->size()))));
+    arg_grads.emplace_back(new Tensor(dev.new_tensor(*arg_shapes[0], 0)));
   }
 
   virtual void TearDown() override {
@@ -51,8 +50,7 @@ protected:
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
     arg_values.emplace_back(new Tensor(dev.new_tensor(
         *arg_shapes[0], {1, 2, 3, 4, 1, -1, 1, -1, -1, -2, -3, -4})));
-    arg_grads.emplace_back(new Tensor(dev.new_tensor(
-        *arg_shapes[0], vector<float>(arg_shapes[0]->size()))));
+    arg_grads.emplace_back(new Tensor(dev.new_tensor(*arg_shapes[0], 0)));
   }
 
   virtual void TearDown() override {
@@ -76,10 +74,8 @@ protected:
         *arg_shapes[0], {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4})));
     arg_values.emplace_back(new Tensor(dev.new_tensor(
         *arg_shapes[1], {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3})));
-    arg_grads.emplace_back(new Tensor(dev.new_tensor(
-        *arg_shapes[0], vector<float>(arg_shapes[0]->size()))));
-    arg_grads.emplace_back(new Tensor(dev.new_tensor(
-        *arg_shapes[1], vector<float>(arg_shapes[1]->size()))));
+    arg_grads.emplace_back(new Tensor(dev.new_tensor(*arg_shapes[0], 0)));
+    arg_grads.emplace_back(new Tensor(dev.new_tensor(*arg_shapes[1], 0)));
   }
 
   virtual void TearDown() override {
@@ -179,6 +175,56 @@ TEST_F(FunctionImplTest_0Arg, CheckParameterInput) {
   EXPECT_TRUE(vector_match(vector<float>(4, 42), cur_value.to_vector()));
   EXPECT_TRUE(vector_match(vector<float>(4, 42), param.value().to_vector()));
   EXPECT_TRUE(vector_match(vector<float>(4, 1), param.gradient().to_vector()));
+}
+
+TEST_F(FunctionImplTest_1Arg, CheckSlice) {
+  struct TestCase {
+    unsigned dim, lower, upper;
+    Shape ret_shape;
+    vector<float> ret_data;
+    vector<float> bw_grad;
+  };
+  const vector<TestCase> test_cases {
+    {0, 0, 1, Shape({1, 2}, 3),
+      {1, 3, 0, 0, -1, -3},
+      {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0}},
+    {0, 1, 2, Shape({1, 2}, 3),
+      {2, 4, 0, 0, -2, -4},
+      {0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1}},
+    {0, 0, 2, Shape({2, 2}, 3),
+      {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4},
+      {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
+    {1, 0, 1, Shape({2, 1}, 3),
+      {1, 2, 0, 0, -1, -2},
+      {1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0}},
+    {1, 1, 2, Shape({2, 1}, 3),
+      {3, 4, 0, 0, -3, -4},
+      {0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1}},
+    {1, 0, 2, Shape({2, 2}, 3),
+      {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4},
+      {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
+    {2, 0, 1, Shape({2, 2}, 3),
+      {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4},
+      {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
+    {3, 0, 1, Shape({2, 2}, 3),
+      {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4},
+      {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
+  };
+  for (const TestCase &tc : test_cases) {
+    const Slice node(tc.dim, tc.lower, tc.upper);
+    const Shape cur_shape = node.forward_shape(arg_shapes);
+    const Tensor cur_value = node.forward(arg_values);
+    const Tensor cur_grad = dev.new_tensor(tc.ret_shape, 1);
+    arg_grads[0]->reset(0);
+    node.backward(cur_value, cur_grad, arg_values, arg_grads);
+    EXPECT_EQ(
+        "Slice(" + std::to_string(tc.dim) + ',' +
+        std::to_string(tc.lower) + ':' + std::to_string(tc.upper) + ')',
+        node.name());
+    EXPECT_EQ(tc.ret_shape, cur_shape);
+    EXPECT_TRUE(vector_match(tc.ret_data, cur_value.to_vector()));
+    EXPECT_TRUE(vector_match(tc.bw_grad, arg_grads[0]->to_vector()));
+  }
 }
 
 TEST_F(FunctionImplTest_1Arg, CheckPositive) {

@@ -17,11 +17,11 @@ Node operator-(const Node &x) {
   return x.graph()->add_function(new functions::Negative(), {x});
 }
 
-Node operator+(const Node &x, const float k) {
+Node operator+(const Node &x, float k) {
   return x.graph()->add_function(new functions::AddConst(k), {x});
 }
 
-Node operator+(const float k, const Node &x) {
+Node operator+(float k, const Node &x) {
   return x.graph()->add_function(new functions::AddConst(k), {x});
 }
 
@@ -29,11 +29,11 @@ Node operator+(const Node &a, const Node &b) {
   return a.graph()->add_function(new functions::Add(), {a, b});
 }
 
-Node operator-(const Node &x, const float k) {
+Node operator-(const Node &x, float k) {
   return x.graph()->add_function(new functions::SubtractConstR(k), {x});
 }
 
-Node operator-(const float k, const Node &x) {
+Node operator-(float k, const Node &x) {
   return x.graph()->add_function(new functions::SubtractConstL(k), {x});
 }
 
@@ -41,11 +41,11 @@ Node operator-(const Node &a, const Node &b) {
   return a.graph()->add_function(new functions::Subtract(), {a, b});
 }
 
-Node operator*(const Node &x, const float k) {
+Node operator*(const Node &x, float k) {
   return x.graph()->add_function(new functions::MultiplyConst(k), {x});
 }
 
-Node operator*(const float k, const Node &x) {
+Node operator*(float k, const Node &x) {
   return x.graph()->add_function(new functions::MultiplyConst(k), {x});
 }
 
@@ -53,11 +53,11 @@ Node operator*(const Node &a, const Node &b) {
   return a.graph()->add_function(new functions::Multiply(), {a, b});
 }
 
-Node operator/(const Node &x, const float k) {
+Node operator/(const Node &x, float k) {
   return x.graph()->add_function(new functions::DivideConstR(k), {x});
 }
 
-Node operator/(const float k, const Node &x) {
+Node operator/(float k, const Node &x) {
   return x.graph()->add_function(new functions::DivideConstL(k), {x});
 }
 
@@ -74,6 +74,10 @@ Node input(
 
 Node parameter(Graph *g, Parameter *param) {
   return g->add_function(new functions::ParameterInput(param), {});
+}
+
+Node slice(const Node &x, unsigned dim, unsigned lower, unsigned upper) {
+  return x.graph()->add_function(new functions::Slice(dim, lower, upper), {x});
 }
 
 Node transpose(const Node &x) {

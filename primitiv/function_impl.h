@@ -71,6 +71,34 @@ private:
   primitiv::Parameter *param_;
 };
 
+// Function to slice a tensor.
+class Slice : public primitiv::Function {
+  DEFAULT_METHODS(Slice);
+
+private:
+  Slice() = delete;
+
+public:
+  Slice(unsigned dim, unsigned lower, unsigned upper)
+  : dim_(dim), lower_(lower), upper_(upper) {}
+  Shape forward_shape(const std::vector<const Shape *> &args) const override;
+  Tensor forward(const std::vector<const Tensor *> &args) const override;
+  void backward(
+      const Tensor &cur_value,
+      const Tensor &cur_grad,
+      const std::vector<const Tensor *> &arg_values,
+      const std::vector<Tensor *> &arg_grads) const override;
+  std::string name() const override {
+    return "Slice(" + std::to_string(dim_) +
+      ',' + std::to_string(lower_) + ':' + std::to_string(upper_) + ')';
+  }
+
+private:
+  unsigned dim_;
+  unsigned lower_;
+  unsigned upper_;
+};
+
 // Function with no parameter.
 #define DECL_FUNC(name_) \
   class name_ : public Function { \

@@ -29,8 +29,9 @@ namespace node_ops {
 
 Node input(
     Graph *g, Device *dev, const Shape &shape, const std::vector<float> &data);
-
 Node parameter(Graph *g, Parameter *param);
+
+Node slice(const Node &x, unsigned dim, unsigned lower, unsigned upper);
 
 Node transpose(const Node &x);
 Node dot(const Node &a, const Node &b);

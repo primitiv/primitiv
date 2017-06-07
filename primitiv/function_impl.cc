@@ -62,6 +62,33 @@ void ParameterInput::backward(
   param_->add_gradient(cur_grad);
 }
 
+Shape Slice::forward_shape(const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 1);
+  if (lower_ >= upper_ || upper_ > args[0]->dim(dim_)) {
+    THROW_ERROR(
+        "Invalid range of slice."
+        << " input shape: " << args[0]->to_string()
+        << ", dim: " << dim_
+        << ", lower: " << lower_
+        << ", upper: " << upper_);
+  }
+  if (dim_ >= args[0]->dims().size()) return *args[0];
+  vector<unsigned> dims = args[0]->dims();
+  dims[dim_] = upper_ - lower_;
+  return Shape(dims, args[0]->batch_size());
+}
+
+Tensor Slice::forward(const std::vector<const Tensor *> &args) const {
+  CHECK_ARGNUM(args, 1);
+  return tensor_ops::slice(*args[0], dim_, lower_, upper_);
+}
+
+void Slice::backward(
+    const Tensor &y, const Tensor &yg,
+    const vector<const Tensor *> &x, const vector<Tensor *> &xg) const {
+  xg[0]->add_gradient_offset(yg, dim_, lower_);
+}
+
 #define FWD_SHAPE_UNARY(clsname) \
   Shape clsname::forward_shape(const vector<const Shape *> &args) const { \
     CHECK_ARGNUM(args, 1); \
