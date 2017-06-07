@@ -224,6 +224,24 @@ TEST_F(ShapeTest, CheckIsCompatibleBatch) {
   EXPECT_TRUE(src2.is_compatible_batch(Shape({2, 3, 4}, 7)));
 }
 
+TEST_F(ShapeTest, CheckIsCompatible) {
+  Shape src1({2, 3, 5});
+  EXPECT_TRUE(src1.is_compatible(Shape({2, 3, 5})));
+  EXPECT_TRUE(src1.is_compatible(Shape({2, 3, 5}, 2)));
+  EXPECT_TRUE(src1.is_compatible(Shape({2, 3, 5}, 7)));
+  EXPECT_FALSE(src1.is_compatible(Shape({2, 3, 4})));
+  EXPECT_FALSE(src1.is_compatible(Shape({2, 3, 4}, 2)));
+  EXPECT_FALSE(src1.is_compatible(Shape({2, 3, 4}, 7)));
+
+  Shape src2({2, 3, 5}, 7);
+  EXPECT_TRUE(src2.is_compatible(Shape({2, 3, 5})));
+  EXPECT_FALSE(src2.is_compatible(Shape({2, 3, 5}, 2)));
+  EXPECT_TRUE(src2.is_compatible(Shape({2, 3, 5}, 7)));
+  EXPECT_FALSE(src2.is_compatible(Shape({2, 3, 4})));
+  EXPECT_FALSE(src2.is_compatible(Shape({2, 3, 4}, 2)));
+  EXPECT_FALSE(src2.is_compatible(Shape({2, 3, 4}, 7)));
+}
+
 TEST_F(ShapeTest, CheckResizeDim) {
   Shape src({2, 3, 5}, 7);
 

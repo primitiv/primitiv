@@ -95,7 +95,7 @@ public:
 
   /**
    * Compares this and other shape.
-   * @param rhs target Shape object to compare.
+   * @param rhs Shape object to compare.
    * @return true if this and rhs are same, false otherwise.
    */
   bool operator==(const Shape &rhs) const {
@@ -104,18 +104,27 @@ public:
 
   /**
    * Compares this and other shape.
-   * @param rhs target Shape object to compare.
+   * @param rhs Shape object to compare.
    * @return true if this and rhs are not same, false otherwise.
    */
   bool operator!=(const Shape &rhs) const { return !operator==(rhs); }
 
   /**
    * Checks whether two batch size is compatible (broadcastable) or not.
-   * @param rhs target Shape object to compare.
-   * @return true if the batch size is compatible to `rhs`, false otherwise.
+   * @param rhs Shape object to compare.
+   * @return true if both batch size is compatible, false otherwise.
    */
   bool is_compatible_batch(const Shape &rhs) const {
     return k_ == rhs.k_ || k_ == 1 || rhs.k_ == 1;
+  }
+
+  /**
+   * Checks whether two shape is compatible (broadcastable) or not.
+   * @param rhs Shape object to compate.
+   * @return true if both shape is compatible, false otherwise.
+   */
+  bool is_compatible(const Shape &rhs) const {
+    return dims_ == rhs.dims_ && is_compatible_batch(rhs);
   }
 
   /**

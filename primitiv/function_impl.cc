@@ -90,16 +90,14 @@ void Slice::backward(
     CHECK_ARGNUM(args, 2); \
     const Shape &a = *args[0]; \
     const Shape &b = *args[1]; \
-    const unsigned a_bs = a.batch_size(); \
-    const unsigned b_bs = b.batch_size(); \
-    if (a.dims() != b.dims() || (a_bs != b_bs && a_bs > 1 && b_bs > 1)) { \
+    if (!a.is_compatible(b)) { \
       THROW_ERROR( \
           "Shape mismatched." \
           << " function: " << name() \
           << ", arg1: " << a.to_string() \
           << " != arg2: " << b.to_string()); \
     } \
-    return a.resize_batch(std::max(a_bs, b_bs)); \
+    return a.resize_batch(std::max(a.batch_size(), b.batch_size())); \
   }
 
 FWD_SHAPE_UNARY(Positive);
