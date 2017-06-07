@@ -218,6 +218,15 @@ TEST_F(TensorOpsTest, CheckConcatBatchBroadcast) {
       EXPECT_EQ(Shape({6, 2}, 2), y.shape());
       EXPECT_TRUE(vector_match(y_data, y.to_vector()));
     }
+    {
+      const vector<float> y_data {1, 2, 3, 1, 2, 33, 1, 2, 333};
+      const Tensor a = dev->new_tensor({}, {1});
+      const Tensor b = dev->new_tensor({}, {2});
+      const Tensor c = dev->new_tensor(Shape({}, 3), {3, 33, 333});
+      const Tensor y = concat({&a, &b, &c}, 0);
+      EXPECT_EQ(Shape({3}, 3), y.shape());
+      EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+    }
   }
 }
 

@@ -119,7 +119,7 @@ Tensor Device::concat(const vector<const Tensor *> &xs, unsigned dim) {
     else ++sum_dim;
     while (!dims.empty() && dims.back() == 1) dims.pop_back();
     if (dims != ref_dims) { ok = false; break; }
-    unsigned bs = xs[1]->shape().batch_size();
+    unsigned bs = xs[i]->shape().batch_size();
     if (bs != ref_bs && bs > 1 && ref_bs > 1) { ok = false; break; }
     if (ref_bs == 1) ref_bs = bs;
   }
