@@ -25,7 +25,7 @@ Input::Input(const Shape &shape, Device *device, const vector<float> &data)
 : shape_(shape)
 , device_(device)
 , data_(data) {
-  const unsigned shape_size = shape_.size();
+  const unsigned shape_size = shape_.num_total_elements();
   if (data_.size() != shape_size) {
     THROW_ERROR(
         "Data sizes mismatched."

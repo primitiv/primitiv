@@ -22,8 +22,8 @@ TEST_F(ShapeTest, CheckNewDefault) {
     EXPECT_EQ(1u, shape[100]);
     EXPECT_EQ(0u, shape.depth());
     EXPECT_EQ(1u, shape.batch_size());
-    EXPECT_EQ(1u, shape.size_per_sample());
-    EXPECT_EQ(1u, shape.size());
+    EXPECT_EQ(1u, shape.num_elements_per_sample());
+    EXPECT_EQ(1u, shape.num_total_elements());
   }
 }
 
@@ -35,8 +35,8 @@ TEST_F(ShapeTest, CheckNewByInitializerList) {
     EXPECT_EQ(1u, shape[100]);
     EXPECT_EQ(0u, shape.depth());
     EXPECT_EQ(1u, shape.batch_size());
-    EXPECT_EQ(1u, shape.size_per_sample());
-    EXPECT_EQ(1u, shape.size());
+    EXPECT_EQ(1u, shape.num_elements_per_sample());
+    EXPECT_EQ(1u, shape.num_total_elements());
   }
   {
     const Shape shape({1, 2, 3}, 4);
@@ -47,8 +47,8 @@ TEST_F(ShapeTest, CheckNewByInitializerList) {
     EXPECT_EQ(1u, shape[100]);
     EXPECT_EQ(3u, shape.depth());
     EXPECT_EQ(4u, shape.batch_size());
-    EXPECT_EQ(6u, shape.size_per_sample());
-    EXPECT_EQ(24u, shape.size());
+    EXPECT_EQ(6u, shape.num_elements_per_sample());
+    EXPECT_EQ(24u, shape.num_total_elements());
   }
 }
 
@@ -60,8 +60,8 @@ TEST_F(ShapeTest, CheckNewByVector) {
     EXPECT_EQ(1u, shape[100]);
     EXPECT_EQ(0u, shape.depth());
     EXPECT_EQ(1u, shape.batch_size());
-    EXPECT_EQ(1u, shape.size_per_sample());
-    EXPECT_EQ(1u, shape.size());
+    EXPECT_EQ(1u, shape.num_elements_per_sample());
+    EXPECT_EQ(1u, shape.num_total_elements());
   }
   {
     const Shape shape(vector<unsigned> {1, 2, 3}, 4);
@@ -72,8 +72,8 @@ TEST_F(ShapeTest, CheckNewByVector) {
     EXPECT_EQ(1u, shape[100]);
     EXPECT_EQ(3u, shape.depth());
     EXPECT_EQ(4u, shape.batch_size());
-    EXPECT_EQ(6u, shape.size_per_sample());
-    EXPECT_EQ(24u, shape.size());
+    EXPECT_EQ(6u, shape.num_elements_per_sample());
+    EXPECT_EQ(24u, shape.num_total_elements());
   }
 }
 
@@ -85,6 +85,17 @@ TEST_F(ShapeTest, CheckInvalidNew) {
   EXPECT_THROW(Shape({2, 0}, 0), Error);
   EXPECT_THROW(Shape({2, 3, 0}, 0), Error);
   EXPECT_THROW(Shape({}, 0), Error);
+}
+
+TEST_F(ShapeTest, CheckNumElementsUnderRank) {
+  Shape src({2, 3, 5, 7, 11, 13}, 17);
+  EXPECT_EQ(1u, src.num_elements_under_rank(0));
+  EXPECT_EQ(2u, src.num_elements_under_rank(1));
+  EXPECT_EQ(2u * 3u, src.num_elements_under_rank(2));
+  EXPECT_EQ(2u * 3u * 5u, src.num_elements_under_rank(3));
+  EXPECT_EQ(2u * 3u * 5u * 7u, src.num_elements_under_rank(4));
+  EXPECT_EQ(2u * 3u * 5u * 7u * 11u, src.num_elements_under_rank(5));
+  EXPECT_EQ(2u * 3u * 5u * 7u * 11u * 13u, src.num_elements_under_rank(6));
 }
 
 TEST_F(ShapeTest, CheckString) {
@@ -199,38 +210,38 @@ TEST_F(ShapeTest, CheckResizeDim) {
   Shape src({2, 3, 5}, 7);
 
   EXPECT_EQ(Shape({1, 3, 5}, 7), src.resize_dim(0, 1));
-  EXPECT_EQ(105u, src.resize_dim(0, 1).size());
+  EXPECT_EQ(105u, src.resize_dim(0, 1).num_total_elements());
   EXPECT_EQ(Shape({10, 3, 5}, 7), src.resize_dim(0, 10));
-  EXPECT_EQ(1050u, src.resize_dim(0, 10).size());
+  EXPECT_EQ(1050u, src.resize_dim(0, 10).num_total_elements());
 
   EXPECT_EQ(Shape({2, 1, 5}, 7), src.resize_dim(1, 1));
-  EXPECT_EQ(70u, src.resize_dim(1, 1).size());
+  EXPECT_EQ(70u, src.resize_dim(1, 1).num_total_elements());
   EXPECT_EQ(Shape({2, 10, 5}, 7), src.resize_dim(1, 10));
-  EXPECT_EQ(700u, src.resize_dim(1, 10).size());
+  EXPECT_EQ(700u, src.resize_dim(1, 10).num_total_elements());
 
   EXPECT_EQ(Shape({2, 3, 1}, 7), src.resize_dim(2, 1));
-  EXPECT_EQ(42u, src.resize_dim(2, 1).size());
+  EXPECT_EQ(42u, src.resize_dim(2, 1).num_total_elements());
   EXPECT_EQ(Shape({2, 3, 10}, 7), src.resize_dim(2, 10));
-  EXPECT_EQ(420u, src.resize_dim(2, 10).size());
+  EXPECT_EQ(420u, src.resize_dim(2, 10).num_total_elements());
 
   EXPECT_EQ(Shape({2, 3, 5, 10}, 7), src.resize_dim(3, 10));
-  EXPECT_EQ(2100u, src.resize_dim(3, 10).size());
+  EXPECT_EQ(2100u, src.resize_dim(3, 10).num_total_elements());
 
   EXPECT_EQ(Shape({2, 3, 5, 1, 10}, 7), src.resize_dim(4, 10));
-  EXPECT_EQ(2100u, src.resize_dim(4, 10).size());
+  EXPECT_EQ(2100u, src.resize_dim(4, 10).num_total_elements());
 }
 
 TEST_F(ShapeTest, CheckResizeBatch) {
   Shape src({2, 3, 5}, 7);
 
   EXPECT_EQ(Shape({2, 3, 5}), src.resize_batch(1));
-  EXPECT_EQ(30u, src.resize_batch(1).size());
+  EXPECT_EQ(30u, src.resize_batch(1).num_total_elements());
 
   EXPECT_EQ(Shape({2, 3, 5}, 2), src.resize_batch(2));
-  EXPECT_EQ(60u, src.resize_batch(2).size());
+  EXPECT_EQ(60u, src.resize_batch(2).num_total_elements());
 
   EXPECT_EQ(Shape({2, 3, 5}, 4), src.resize_batch(4));
-  EXPECT_EQ(120u, src.resize_batch(4).size());
+  EXPECT_EQ(120u, src.resize_batch(4).num_total_elements());
 
   EXPECT_THROW(src.resize_batch(0), Error);
 }

@@ -19,6 +19,12 @@ Shape::Shape(const vector<unsigned> &dims, const unsigned k)
   adjust();
 }
 
+unsigned Shape::num_elements_under_rank(unsigned rank) const {
+  unsigned ret = 1;
+  for (unsigned i = 0; i < rank && i < depth(); ++i) ret *= dims_[i];
+  return ret;
+}
+
 string Shape::to_string() const {
   std::stringstream s;
   s << '[';
@@ -35,7 +41,7 @@ string Shape::to_string() const {
 Shape Shape::resize_dim(unsigned dim, unsigned m) const {
   if (m == 0) THROW_ERROR("Could not set the dimension size 0.");
   Shape ret = *this;
-  if (ret.dims_.size() <= dim) ret.dims_.resize(dim + 1, 1);
+  if (dim >= depth()) ret.dims_.resize(dim + 1, 1);
   ret.dims_[dim] = m;
   ret.adjust();
   return ret;
@@ -55,12 +61,13 @@ void Shape::adjust() {
   }
 
   // calculates the number of elements.
-  size_per_sample_ = 1;
-  for (const unsigned n : dims_) size_per_sample_ *= n;
+  num_elms_per_sample_ = 1;
+  for (const unsigned n : dims_) num_elms_per_sample_ *= n;
 
   // check size of the shape.
-  // if 1 or more dimensions or the batch size is 0, then size() returns 0.
-  if (size() == 0) {
+  // if 1 or more dimensions or the batch size is 0,
+  // then num_total_elements() returns 0.
+  if (num_total_elements() == 0) {
     THROW_ERROR("invalid shape: " << to_string());
   }
 }

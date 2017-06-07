@@ -22,7 +22,7 @@ protected:
 TEST_F(InitializerImplTest, CheckConstant) {
   const Shape shape {3, 3, 3};
   for (const float k : {1, 10, 100, 1000, 10000}) {
-    const vector<float> expected(shape.size(), k);
+    const vector<float> expected(shape.num_total_elements(), k);
     const Constant init(k);
     Tensor x = dev.new_tensor(shape);
     init.apply(x);

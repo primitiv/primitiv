@@ -482,8 +482,10 @@ TEST_F(TensorOpsTest, CheckInvalidArithmeticOps) {
   };
   for (Device *dev : devices) {
     for (unsigned i = 0; i < sa.size(); ++i) {
-      const Tensor a = dev->new_tensor(sa[i], vector<float>(sa[i].size()));
-      const Tensor b = dev->new_tensor(sb[i], vector<float>(sb[i].size()));
+      const Tensor a = dev->new_tensor(
+          sa[i], vector<float>(sa[i].num_total_elements()));
+      const Tensor b = dev->new_tensor(
+          sb[i], vector<float>(sb[i].num_total_elements()));
       EXPECT_THROW(a + b, Error);
       EXPECT_THROW(a - b, Error);
       EXPECT_THROW(a * b, Error);

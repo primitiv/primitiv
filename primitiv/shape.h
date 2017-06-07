@@ -22,7 +22,7 @@ public:
   /**
    * Creates a new scalar Shape object.
    */
-  Shape() : dims_(), k_(1), size_per_sample_(1) {}
+  Shape() : dims_(), k_(1), num_elms_per_sample_(1) {}
 
   /**
    * Creates a new Shape object.
@@ -70,14 +70,21 @@ public:
    * This value is equal to the product of all dimensions.
    * @return Number of elements.
    */
-  unsigned size_per_sample() const { return size_per_sample_; }
+  unsigned num_elements_per_sample() const { return num_elms_per_sample_; }
+
+  /**
+   * Returns the number of elements in 1 to specified rank.
+   * @param rank Upper bound of the dimension.
+   * @return `dim[0] * dim[1] * ... * dim[rank-1]`
+   */
+  unsigned num_elements_under_rank(unsigned rank) const;
 
   /**
    * Returns the number of elements in all samples of the mini-batch.
-   * This value is equal to `batch_size() * size_per_sample()`.
+   * This value is equal to `batch_size() * num_elements_per_sample()`.
    * @return Number of elements.
    */
-  unsigned size() const { return k_ * size_per_sample_; }
+  unsigned num_total_elements() const { return k_ * num_elms_per_sample_; }
 
   /**
    * Returns a string representation of the shape.
@@ -120,7 +127,7 @@ public:
 private:
   std::vector<unsigned> dims_;
   unsigned k_;
-  unsigned size_per_sample_;
+  unsigned num_elms_per_sample_;
 
   /**
    * Check internal values and adjust them.

@@ -338,7 +338,7 @@ CUDADevice::~CUDADevice() {
 }
 
 void *CUDADevice::new_handle(const Shape &shape) {
-  const unsigned mem_size = sizeof(float) * shape.size();
+  const unsigned mem_size = sizeof(float) * shape.num_total_elements();
   void *data;
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CUDA_CALL(::cudaMalloc(&data, mem_size));
@@ -361,7 +361,7 @@ void CUDADevice::delete_tensor_impl(Tensor &x) {
 #define CDATA(x) static_cast<const float *>((x).data())
 
 std::vector<float> CUDADevice::tensor_to_vector_impl(const Tensor &x) {
-  const unsigned size = x.shape().size();
+  const unsigned size = x.shape().num_total_elements();
   std::vector<float> ret(size);
   CUDA_CALL(::cudaMemcpy(
         &ret[0], x.data(), sizeof(float) * size, cudaMemcpyDeviceToHost));
@@ -369,20 +369,20 @@ std::vector<float> CUDADevice::tensor_to_vector_impl(const Tensor &x) {
 }
 
 void CUDADevice::reset_tensor_impl(Tensor &x, float k) {
-  const unsigned size = x.shape().size();
+  const unsigned size = x.shape().num_total_elements();
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
   ::dev_set_const<<<num_blocks, dim1_x_>>>(DATA(x), k, size);
 }
 
 void CUDADevice::reset_tensor_impl(
     Tensor &x, const std::vector<float> &values) {
-  const unsigned size = x.shape().size();
+  const unsigned size = x.shape().num_total_elements();
   CUDA_CALL(::cudaMemcpy(
         x.data(), &values[0], sizeof(float) * size, cudaMemcpyHostToDevice));
 }
 
 Tensor CUDADevice::random_bernoulli_impl(const Shape &shape, float p) {
-  const unsigned size = shape.size();
+  const unsigned size = shape.num_total_elements();
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
   Tensor ret = new_tensor(shape);
   CURAND_CALL(::curandGenerateUniform(curand_, DATA(ret), size));
@@ -392,7 +392,7 @@ Tensor CUDADevice::random_bernoulli_impl(const Shape &shape, float p) {
 
 Tensor CUDADevice::random_uniform_impl(
     const Shape &shape, float lower, float upper) {
-  const unsigned size = shape.size();
+  const unsigned size = shape.num_total_elements();
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
   const float scale = upper - lower;
   Tensor ret = new_tensor(shape);
@@ -403,7 +403,7 @@ Tensor CUDADevice::random_uniform_impl(
 
 Tensor CUDADevice::random_normal_impl(
     const Shape &shape, float mean, float sd) {
-  const unsigned size = shape.size();
+  const unsigned size = shape.num_total_elements();
   Tensor ret = new_tensor(shape);
   CURAND_CALL(::curandGenerateNormal(curand_, DATA(ret), size, mean, sd));
   return ret;
@@ -411,11 +411,10 @@ Tensor CUDADevice::random_normal_impl(
 
 Tensor CUDADevice::slice_impl(
     const Tensor &x, unsigned dim, unsigned offset, const Shape &new_shape) {
-  unsigned base = 1;
-  for (unsigned i = 0; i < dim; ++i) base *= new_shape[i];
+  const unsigned base = new_shape.num_elements_under_rank(dim);
   const unsigned span = base * new_shape[dim];
   const unsigned skip = base * x.shape()[dim];
-  const unsigned size = new_shape.size();
+  const unsigned size = new_shape.num_total_elements();
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
   Tensor ret = new_tensor(new_shape);
   ::dev_slice<<<num_blocks, dim1_x_>>>(
@@ -427,8 +426,7 @@ Tensor CUDADevice::concat_impl(
     const std::vector<const Tensor *> &xs,
     unsigned dim, const Shape &new_shape) {
   const unsigned new_bs = new_shape.batch_size();
-  unsigned base = 1;
-  for (unsigned i = 0; i < dim; ++i) base *= new_shape[i];
+  const unsigned base = new_shape.num_elements_under_rank(dim);
   unsigned repeat = 1;
   for (unsigned i = dim + 1; i < new_shape.depth(); ++i) {
     repeat *= new_shape[i];
@@ -452,7 +450,7 @@ Tensor CUDADevice::concat_impl(
 Tensor CUDADevice::duplicate_impl(const Tensor &x) {
   Tensor ret = new_tensor(x.shape());
   CUDA_CALL(::cudaMemcpy(
-      ret.data(), x.data(), sizeof(float) * x.shape().size(),
+      ret.data(), x.data(), sizeof(float) * x.shape().num_total_elements(),
       cudaMemcpyDeviceToDevice));
   return ret;
 }
@@ -460,7 +458,7 @@ Tensor CUDADevice::duplicate_impl(const Tensor &x) {
 #define CUDA_DEV_UNARY(name, kernel) \
 Tensor CUDADevice::name(const Tensor &x) { \
   Tensor ret = new_tensor(x.shape()); \
-  const unsigned size = x.shape().size(); \
+  const unsigned size = x.shape().num_total_elements(); \
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_); \
   ::kernel<<<num_blocks, dim1_x_>>>(DATA(ret), CDATA(x), size); \
   return ret; \
@@ -469,7 +467,7 @@ Tensor CUDADevice::name(const Tensor &x) { \
 #define CUDA_DEV_BINARY_KX(name, kernel) \
 Tensor CUDADevice::name(float k, const Tensor &x) { \
   Tensor ret = new_tensor(x.shape()); \
-  const unsigned size = x.shape().size(); \
+  const unsigned size = x.shape().num_total_elements(); \
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_); \
   ::kernel<<<num_blocks, dim1_x_>>>(DATA(ret), CDATA(x), k, size); \
   return ret; \
@@ -478,7 +476,7 @@ Tensor CUDADevice::name(float k, const Tensor &x) { \
 #define CUDA_DEV_BINARY_XK(name, kernel) \
 Tensor CUDADevice::name(const Tensor &x, float k) { \
   Tensor ret = new_tensor(x.shape()); \
-  const unsigned size = x.shape().size(); \
+  const unsigned size = x.shape().num_total_elements(); \
   const unsigned num_blocks = GRID_SIZE(size,dim1_x_); \
   ::kernel<<<num_blocks, dim1_x_>>>(DATA(ret), CDATA(x), k, size); \
   return ret; \
@@ -490,7 +488,7 @@ Tensor CUDADevice::name(const Tensor &a, const Tensor &b) { \
   const Shape &sb = b.shape(); \
   const unsigned ba = sa.batch_size(); \
   const unsigned bb = sb.batch_size(); \
-  const unsigned size = sa.size() / ba; \
+  const unsigned size = sa.num_elements_per_sample(); \
   const unsigned x = GRID_SIZE(size, dim1_x_); \
   const unsigned y = std::max(ba, bb); \
   Tensor ret = new_tensor(sa.resize_batch(y)); \
@@ -575,7 +573,7 @@ Tensor CUDADevice::dot_impl(const Tensor &a, const Tensor &b) {
 
 Tensor CUDADevice::batch_sum_impl(const Tensor &x) {
   Tensor ret = new_tensor(x.shape().resize_batch(1));
-  const unsigned size = ret.shape().size();
+  const unsigned size = ret.shape().num_total_elements();
   const unsigned g1 = GRID_SIZE(size, dim1_x_);
   ::dev_batch_sum<<<g1, dim1_x_>>>(
       DATA(ret), CDATA(x), size, x.shape().batch_size());
@@ -583,8 +581,8 @@ Tensor CUDADevice::batch_sum_impl(const Tensor &x) {
 }
 
 void CUDADevice::add_gradient_impl(Tensor &a, const Tensor &b) {
-  const unsigned nx = a.shape().size();
-  const unsigned ny = b.shape().size();
+  const unsigned nx = a.shape().num_total_elements();
+  const unsigned ny = b.shape().num_total_elements();
   const unsigned g1 = GRID_SIZE(std::max(nx, ny), dim1_x_);
   ::dev_add_grad<<<g1, dim1_x_>>>(DATA(a), CDATA(b), nx, ny);
 }
@@ -593,8 +591,7 @@ void CUDADevice::add_gradient_offset_impl(
     Tensor &a, const Tensor &b, unsigned dim, unsigned offset) {
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
-  unsigned base = 1;
-  for (unsigned i = 0; i < dim; ++i) base *= sa[i];
+  const unsigned base = sa.num_elements_under_rank(dim);
   unsigned repeat = 1;
   for (unsigned i = dim + 1; i < sa.depth(); ++i) repeat *= sa[i];
   const unsigned ox = base * offset;
