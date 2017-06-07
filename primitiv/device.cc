@@ -261,10 +261,8 @@ Tensor Device::transpose(const Tensor &x) {
 Tensor Device::dot(const Tensor &a, const Tensor &b) {
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
-  const unsigned ba = sa.batch_size();
-  const unsigned bb = sb.batch_size();
   if (sa.depth() > 2 || sb.depth() > 2 || sa[1] != sb[0] ||
-      (ba != bb && ba > 1 && bb > 1)) {
+      !sa.is_compatible_batch(sb)) {
     THROW_ERROR(
         "Attempted to calculate the dot product of tensors with shapes "
         << sa.to_string() << " and " << sb.to_string() << '.');

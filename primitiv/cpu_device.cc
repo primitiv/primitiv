@@ -123,10 +123,9 @@ Tensor CPUDevice::slice_impl(
 Tensor CPUDevice::concat_impl(
     const std::vector<const Tensor *> &xs,
     unsigned dim, const Shape &new_shape) {
-  const std::vector<unsigned> new_dims = new_shape.dims();
   const unsigned new_bs = new_shape.batch_size();
   const unsigned base = new_shape.num_elements_under_rank(dim);
-  const unsigned skip = base * new_dims[dim];
+  const unsigned skip = base * new_shape[dim];
   const unsigned repeat = new_shape.num_elements_per_sample() / skip;
 
   Tensor ret = new_tensor(new_shape);
@@ -441,7 +440,7 @@ void CPUDevice::add_gradient_offset_impl(
   const Shape &sb = b.shape();
   const unsigned base = sa.num_elements_under_rank(dim);
   const unsigned span = base * sb[dim];
-  const unsigned skip = base * sa.dims()[dim];
+  const unsigned skip = base * sa[dim];
   const unsigned repeat = sa.num_elements_per_sample() / skip;
   const unsigned bs = std::max(sa.batch_size(), sb.batch_size());
   const unsigned b_skip_d = (sa.batch_size() > 1) * sa.num_elements_per_sample();

@@ -137,10 +137,8 @@ Shape Dot::forward_shape(const vector<const Shape *> &args) const {
   const Shape &b = *args[1];
   const unsigned a_bs = a.batch_size();
   const unsigned b_bs = b.batch_size();
-  if (a.depth() > 2 ||
-      b.depth() > 2 ||
-      a[1] != b[0] ||
-      (a_bs != b_bs && a_bs > 1 && b_bs > 1)) {
+  if (a.depth() > 2 || b.depth() > 2 || a[1] != b[0] ||
+      !a.is_compatible_batch(b)) {
     THROW_ERROR(
         "Shape mismatched."
         << " function: " << name()

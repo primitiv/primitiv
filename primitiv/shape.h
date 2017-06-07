@@ -110,6 +110,15 @@ public:
   bool operator!=(const Shape &rhs) const { return !operator==(rhs); }
 
   /**
+   * Checks whether two batch size is compatible (broadcastable) or not.
+   * @param rhs target Shape object to compare.
+   * @return true if the batch size is compatible to `rhs`, false otherwise.
+   */
+  bool is_compatible_batch(const Shape &rhs) const {
+    return k_ == rhs.k_ || k_ == 1 || rhs.k_ == 1;
+  }
+
+  /**
    * Creates a new shape which have one different dimension.
    * @param dim Dimension to be changed.
    * @param m New size of the dimension `dim`.
