@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_SHAPE_OPS_H_
 #define PRIMITIV_SHAPE_OPS_H_
 
+#include <vector>
 #include <primitiv/shape.h>
 
 namespace primitiv {
@@ -15,6 +16,13 @@ namespace shape_ops {
  * @return A shape.
  */
 Shape slice(const Shape &x, unsigned dim, unsigned lower, unsigned upper);
+
+/**
+ * Calculates the concatenated shape.
+ * @param xs A list of shapes.
+ * @return A shape.
+ */
+Shape concat(const std::vector<const Shape *> &xs);
 
 }  // namespace shape_ops
 }  // namespace primitiv

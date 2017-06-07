@@ -50,5 +50,13 @@ TEST_F(ShapeOpsTest, CheckInvalidSlice) {
   }
 }
 
+TEST_F(ShapeOpsTest, CheckConcat) {
+  FAIL() << "not implemented";
+}
+
+TEST_F(ShapeOpsTest, CheckInvalidConcat) {
+  FAIL() << "not implemented";
+}
+
 }  // namespace shape_ops
 }  // namespace primitiv

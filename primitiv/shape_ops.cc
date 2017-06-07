@@ -1,6 +1,5 @@
 #include <config.h>
 
-#include <vector>
 #include <primitiv/error.h>
 #include <primitiv/shape_ops.h>
 
@@ -19,6 +18,10 @@ Shape slice(const Shape &x, unsigned dim, unsigned lower, unsigned upper) {
   std::vector<unsigned> dims = x.dims();
   dims[dim] = upper - lower;
   return Shape(dims, x.batch_size());
+}
+
+Shape concat(const std::vector<const Shape *> &xs) {
+  THROW_ERROR("not implemented");
 }
 
 }  // namespace shape_ops
