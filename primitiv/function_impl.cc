@@ -122,7 +122,7 @@ FWD_SHAPE_ARITHMETIC(Divide);
 Shape Transpose::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 1);
   const Shape &a = *args[0];
-  if (a.dims().size() > 2) {
+  if (a.depth() > 2) {
     THROW_ERROR(
         "Shape mismatched."
         << " function: " << name()
@@ -137,8 +137,8 @@ Shape Dot::forward_shape(const vector<const Shape *> &args) const {
   const Shape &b = *args[1];
   const unsigned a_bs = a.batch_size();
   const unsigned b_bs = b.batch_size();
-  if (a.dims().size() > 2 ||
-      b.dims().size() > 2 ||
+  if (a.depth() > 2 ||
+      b.depth() > 2 ||
       a[1] != b[0] ||
       (a_bs != b_bs && a_bs > 1 && b_bs > 1)) {
     THROW_ERROR(

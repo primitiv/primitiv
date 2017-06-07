@@ -20,7 +20,7 @@ TEST_F(ShapeTest, CheckNewDefault) {
     EXPECT_EQ(1u, shape[0]);
     EXPECT_EQ(1u, shape[1]);
     EXPECT_EQ(1u, shape[100]);
-    EXPECT_EQ(0u, shape.dims().size());
+    EXPECT_EQ(0u, shape.depth());
     EXPECT_EQ(1u, shape.batch_size());
     EXPECT_EQ(1u, shape.size_per_sample());
     EXPECT_EQ(1u, shape.size());
@@ -33,7 +33,7 @@ TEST_F(ShapeTest, CheckNewByInitializerList) {
     EXPECT_EQ(1u, shape[0]);
     EXPECT_EQ(1u, shape[1]);
     EXPECT_EQ(1u, shape[100]);
-    EXPECT_EQ(0u, shape.dims().size());
+    EXPECT_EQ(0u, shape.depth());
     EXPECT_EQ(1u, shape.batch_size());
     EXPECT_EQ(1u, shape.size_per_sample());
     EXPECT_EQ(1u, shape.size());
@@ -45,7 +45,7 @@ TEST_F(ShapeTest, CheckNewByInitializerList) {
     EXPECT_EQ(3u, shape[2]);
     EXPECT_EQ(1u, shape[3]);
     EXPECT_EQ(1u, shape[100]);
-    EXPECT_EQ(3u, shape.dims().size());
+    EXPECT_EQ(3u, shape.depth());
     EXPECT_EQ(4u, shape.batch_size());
     EXPECT_EQ(6u, shape.size_per_sample());
     EXPECT_EQ(24u, shape.size());
@@ -58,7 +58,7 @@ TEST_F(ShapeTest, CheckNewByVector) {
     EXPECT_EQ(1u, shape[0]);
     EXPECT_EQ(1u, shape[1]);
     EXPECT_EQ(1u, shape[100]);
-    EXPECT_EQ(0u, shape.dims().size());
+    EXPECT_EQ(0u, shape.depth());
     EXPECT_EQ(1u, shape.batch_size());
     EXPECT_EQ(1u, shape.size_per_sample());
     EXPECT_EQ(1u, shape.size());
@@ -70,7 +70,7 @@ TEST_F(ShapeTest, CheckNewByVector) {
     EXPECT_EQ(3u, shape[2]);
     EXPECT_EQ(1u, shape[3]);
     EXPECT_EQ(1u, shape[100]);
-    EXPECT_EQ(3u, shape.dims().size());
+    EXPECT_EQ(3u, shape.depth());
     EXPECT_EQ(4u, shape.batch_size());
     EXPECT_EQ(6u, shape.size_per_sample());
     EXPECT_EQ(24u, shape.size());

@@ -426,18 +426,19 @@ Tensor CUDADevice::slice_impl(
 Tensor CUDADevice::concat_impl(
     const std::vector<const Tensor *> &xs,
     unsigned dim, const Shape &new_shape) {
-  const std::vector<unsigned> new_dims = new_shape.dims();
   const unsigned new_bs = new_shape.batch_size();
   unsigned base = 1;
-  for (unsigned i = 0; i < dim; ++i) base *= new_dims[i];
+  for (unsigned i = 0; i < dim; ++i) base *= new_shape[i];
   unsigned repeat = 1;
-  for (unsigned i = dim + 1; i < new_dims.size(); ++i) repeat *= new_dims[i];
+  for (unsigned i = dim + 1; i < new_shape.depth(); ++i) {
+    repeat *= new_shape[i];
+  }
 
   Tensor ret = new_tensor(new_shape);
   unsigned offset = 0;
   for (const Tensor *x : xs) {
     const unsigned span = base * x->shape()[dim];
-    const unsigned skip = base * new_dims[dim];
+    const unsigned skip = base * new_shape[dim];
     const unsigned x_size = span * repeat * x->shape().batch_size();
     const unsigned y_size = span * repeat * new_bs;
     const unsigned num_blocks = GRID_SIZE(y_size, dim1_x_);
@@ -595,7 +596,7 @@ void CUDADevice::add_gradient_offset_impl(
   unsigned base = 1;
   for (unsigned i = 0; i < dim; ++i) base *= sa[i];
   unsigned repeat = 1;
-  for (unsigned i = dim + 1; i < sa.dims().size(); ++i) repeat *= sa[i];
+  for (unsigned i = dim + 1; i < sa.depth(); ++i) repeat *= sa[i];
   const unsigned ox = base * offset;
   const unsigned wx = base * sa[dim];
   const unsigned wy = base * sb[dim];

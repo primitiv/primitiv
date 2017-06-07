@@ -22,7 +22,7 @@ Shape::Shape(const vector<unsigned> &dims, const unsigned k)
 string Shape::to_string() const {
   std::stringstream s;
   s << '[';
-  for (unsigned i = 0; i < dims_.size(); ++i) {
+  for (unsigned i = 0; i < depth(); ++i) {
     if (i > 0) {
       s << ',';
     }

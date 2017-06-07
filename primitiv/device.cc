@@ -249,7 +249,7 @@ Tensor Device::divide(const Tensor &a, const Tensor &b) {
 
 Tensor Device::transpose(const Tensor &x) {
   const Shape &s = x.shape();
-  if (s.dims().size() > 2) {
+  if (s.depth() > 2) {
     THROW_ERROR(
         "Attempted to transpose a tensor with shape " << s.to_string() << '.');
   }
@@ -263,7 +263,7 @@ Tensor Device::dot(const Tensor &a, const Tensor &b) {
   const Shape &sb = b.shape();
   const unsigned ba = sa.batch_size();
   const unsigned bb = sb.batch_size();
-  if (sa.dims().size() > 2 || sb.dims().size() > 2 || sa[1] != sb[0] ||
+  if (sa.depth() > 2 || sb.depth() > 2 || sa[1] != sb[0] ||
       (ba != bb && ba > 1 && bb > 1)) {
     THROW_ERROR(
         "Attempted to calculate the dot product of tensors with shapes "
@@ -329,7 +329,7 @@ void Device::add_gradient_offset(
   const unsigned bb = sb.batch_size();
   bool ok = true;
 
-  if (dim >= sa.dims().size()) {
+  if (dim >= sa.depth()) {
     if (offset == 0) {
       add_gradient(a, b);
       return;
@@ -338,9 +338,9 @@ void Device::add_gradient_offset(
   else {
     vector<unsigned> da = sa.dims();
     vector<unsigned> db = sb.dims();
-    if (da.size() < db.size()) ok = false;
+    if (sa.depth() < sb.depth()) ok = false;
     else {
-      db.insert(db.end(), da.size() - db.size(), 1);
+      db.insert(db.end(), sa.depth() - sb.depth(), 1);
       if (offset + db[dim] > da[dim]) ok = false;
       da[dim] = db[dim] = 1;
       if (da != db) ok = false;

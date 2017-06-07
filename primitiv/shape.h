@@ -44,8 +44,14 @@ public:
    * @return Size of the i-th dimension.
    */
   unsigned operator[](const unsigned i) const {
-    return i < dims_.size() ? dims_[i] : 1;
+    return i < depth() ? dims_[i] : 1;
   }
+
+  /**
+   * Returns the depth (length of non-1 dimensions) of the shape.
+   * @return The depth of the shape.
+   */
+  unsigned depth() const { return dims_.size(); }
 
   /**
    * Returns the list of dimension sizes.
