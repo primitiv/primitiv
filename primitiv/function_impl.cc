@@ -99,7 +99,7 @@ void Slice::backward(
           << ", arg1: " << a.to_string() \
           << " != arg2: " << b.to_string()); \
     } \
-    return Shape(a.dims(), std::max(a_bs, b_bs)); \
+    return a.resize_batch(std::max(a_bs, b_bs)); \
   }
 
 FWD_SHAPE_UNARY(Positive);
@@ -152,7 +152,7 @@ Shape Dot::forward_shape(const vector<const Shape *> &args) const {
 
 Shape BatchSum::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 1);
-  return Shape(args[0]->dims());
+  return args[0]->resize_batch(1);
 }
 
 #undef FWD_SHAPE_UNARY

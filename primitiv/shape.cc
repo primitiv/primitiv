@@ -10,12 +10,12 @@ using std::vector;
 namespace primitiv {
 
 Shape::Shape(const initializer_list<unsigned> &dims, const unsigned k)
-: dims_(dims), k_(k), size_per_sample_(1) {
+: dims_(dims), k_(k) {
   adjust();
 }
 
 Shape::Shape(const vector<unsigned> &dims, const unsigned k)
-: dims_(dims), k_(k), size_per_sample_(1) {
+: dims_(dims), k_(k) {
   adjust();
 }
 
@@ -32,6 +32,22 @@ string Shape::to_string() const {
   return s.str();
 }
 
+Shape Shape::resize_dim(unsigned dim, unsigned m) const {
+  if (m == 0) THROW_ERROR("Could not set the dimension size 0.");
+  Shape ret = *this;
+  if (ret.dims_.size() <= dim) ret.dims_.resize(dim + 1, 1);
+  ret.dims_[dim] = m;
+  ret.adjust();
+  return ret;
+}
+
+Shape Shape::resize_batch(unsigned k) const {
+  if (k == 0) THROW_ERROR("Could not set the batch size 0.");
+  Shape ret = *this;
+  ret.k_ = k;
+  return ret;
+}
+
 void Shape::adjust() {
   // erase redundant dimensions.
   while (!dims_.empty() && dims_.back() == 1) {
@@ -39,6 +55,7 @@ void Shape::adjust() {
   }
 
   // calculates the number of elements.
+  size_per_sample_ = 1;
   for (const unsigned n : dims_) size_per_sample_ *= n;
 
   // check size of the shape.

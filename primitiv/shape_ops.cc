@@ -13,11 +13,7 @@ Shape slice(const Shape &x, unsigned dim, unsigned lower, unsigned upper) {
         << ", dim: " << dim << ", lower: " << lower << ", upper: " << upper);
   }
 
-  if (dim >= x.dims().size()) return x;
-
-  std::vector<unsigned> dims = x.dims();
-  dims[dim] = upper - lower;
-  return Shape(dims, x.batch_size());
+  return dim >= x.dims().size() ? x : x.resize_dim(dim, upper - lower);
 }
 
 Shape concat(const std::vector<const Shape *> &xs) {

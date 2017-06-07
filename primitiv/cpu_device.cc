@@ -184,7 +184,7 @@ Tensor CPUDevice::add_impl(const Tensor &a, const Tensor &b) {
   const unsigned bs = std::max(sa.batch_size(), sb.batch_size());
   const unsigned skip_a = (sa.batch_size() > 1) * size;
   const unsigned skip_b = (sb.batch_size() > 1) * size;
-  Tensor ret = new_tensor(Shape(sa.dims(), bs));
+  Tensor ret = new_tensor(sa.resize_batch(bs));
   float *dest = DATA(ret);
   const float *src_a = CDATA(a);
   const float *src_b = CDATA(b);
@@ -222,7 +222,7 @@ Tensor CPUDevice::subtract_impl(const Tensor &a, const Tensor &b) {
   const unsigned bs = std::max(sa.batch_size(), sb.batch_size());
   const unsigned skip_a = (sa.batch_size() > 1) * size;
   const unsigned skip_b = (sb.batch_size() > 1) * size;
-  Tensor ret = new_tensor(Shape(sa.dims(), bs));
+  Tensor ret = new_tensor(sa.resize_batch(bs));
   float *dest = DATA(ret);
   const float *src_a = CDATA(a);
   const float *src_b = CDATA(b);
@@ -251,7 +251,7 @@ Tensor CPUDevice::multiply_impl(const Tensor &a, const Tensor &b) {
   const unsigned bs = std::max(sa.batch_size(), sb.batch_size());
   const unsigned skip_a = (sa.batch_size() > 1) * size;
   const unsigned skip_b = (sb.batch_size() > 1) * size;
-  Tensor ret = new_tensor(Shape(sa.dims(), bs));
+  Tensor ret = new_tensor(sa.resize_batch(bs));
   float *dest = DATA(ret);
   const float *src_a = CDATA(a);
   const float *src_b = CDATA(b);
@@ -289,7 +289,7 @@ Tensor CPUDevice::divide_impl(const Tensor &a, const Tensor &b) {
   const unsigned bs = std::max(sa.batch_size(), sb.batch_size());
   const unsigned skip_a = (sa.batch_size() > 1) * size;
   const unsigned skip_b = (sb.batch_size() > 1) * size;
-  Tensor ret = new_tensor(Shape(sa.dims(), bs));
+  Tensor ret = new_tensor(sa.resize_batch(bs));
   float *dest = DATA(ret);
   const float *src_a = CDATA(a);
   const float *src_b = CDATA(b);
@@ -406,7 +406,7 @@ Tensor CPUDevice::relu_impl(const Tensor &x) {
 }
 
 Tensor CPUDevice::batch_sum_impl(const Tensor &x) {
-  Tensor ret = new_tensor(Shape(x.shape().dims()));
+  Tensor ret = new_tensor(x.shape().resize_batch(1));
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   const unsigned bs = x.shape().batch_size();

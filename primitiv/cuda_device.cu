@@ -492,7 +492,7 @@ Tensor CUDADevice::name(const Tensor &a, const Tensor &b) { \
   const unsigned size = sa.size() / ba; \
   const unsigned x = GRID_SIZE(size, dim1_x_); \
   const unsigned y = std::max(ba, bb); \
-  Tensor ret = new_tensor(Shape(sa.dims(), y)); \
+  Tensor ret = new_tensor(sa.resize_batch(y)); \
   ::kernel<<<dim3(x, y, 1), dim1_x_>>>( \
       DATA(ret), CDATA(a), CDATA(b), size, ba > 1, bb > 1); \
   return ret; \
@@ -573,7 +573,7 @@ Tensor CUDADevice::dot_impl(const Tensor &a, const Tensor &b) {
 
 
 Tensor CUDADevice::batch_sum_impl(const Tensor &x) {
-  Tensor ret = new_tensor(Shape(x.shape().dims()));
+  Tensor ret = new_tensor(x.shape().resize_batch(1));
   const unsigned size = ret.shape().size();
   const unsigned g1 = GRID_SIZE(size, dim1_x_);
   ::dev_batch_sum<<<g1, dim1_x_>>>(

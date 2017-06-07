@@ -81,7 +81,7 @@ public:
   std::string to_string() const;
 
   /**
-   * Compare this and another Shape object are same.
+   * Compares this and other shape.
    * @param rhs target Shape object to compare.
    * @return true if this and rhs are same, false otherwise.
    */
@@ -90,11 +90,26 @@ public:
   }
 
   /**
-   * Compare this and another Shape object are not same.
+   * Compares this and other shape.
    * @param rhs target Shape object to compare.
    * @return true if this and rhs are not same, false otherwise.
    */
   bool operator!=(const Shape &rhs) const { return !operator==(rhs); }
+
+  /**
+   * Creates a new shape which have one different dimension.
+   * @param dim Dimension to be changed.
+   * @param m New size of the dimension `dim`.
+   * @return New shape.
+   */
+  Shape resize_dim(unsigned dim, unsigned m) const;
+
+  /**
+   * Creates a new shape which have specified batch size.
+   * @param k New batch size.
+   * @return New shape.
+   */
+  Shape resize_batch(unsigned k) const;
 
 private:
   std::vector<unsigned> dims_;

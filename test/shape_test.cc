@@ -195,4 +195,44 @@ TEST_F(ShapeTest, CheckMove) {
   EXPECT_EQ(trg2, moved);
 }
 
+TEST_F(ShapeTest, CheckResizeDim) {
+  Shape src({2, 3, 5}, 7);
+
+  EXPECT_EQ(Shape({1, 3, 5}, 7), src.resize_dim(0, 1));
+  EXPECT_EQ(105u, src.resize_dim(0, 1).size());
+  EXPECT_EQ(Shape({10, 3, 5}, 7), src.resize_dim(0, 10));
+  EXPECT_EQ(1050u, src.resize_dim(0, 10).size());
+
+  EXPECT_EQ(Shape({2, 1, 5}, 7), src.resize_dim(1, 1));
+  EXPECT_EQ(70u, src.resize_dim(1, 1).size());
+  EXPECT_EQ(Shape({2, 10, 5}, 7), src.resize_dim(1, 10));
+  EXPECT_EQ(700u, src.resize_dim(1, 10).size());
+
+  EXPECT_EQ(Shape({2, 3, 1}, 7), src.resize_dim(2, 1));
+  EXPECT_EQ(42u, src.resize_dim(2, 1).size());
+  EXPECT_EQ(Shape({2, 3, 10}, 7), src.resize_dim(2, 10));
+  EXPECT_EQ(420u, src.resize_dim(2, 10).size());
+
+  EXPECT_EQ(Shape({2, 3, 5, 10}, 7), src.resize_dim(3, 10));
+  EXPECT_EQ(2100u, src.resize_dim(3, 10).size());
+
+  EXPECT_EQ(Shape({2, 3, 5, 1, 10}, 7), src.resize_dim(4, 10));
+  EXPECT_EQ(2100u, src.resize_dim(4, 10).size());
+}
+
+TEST_F(ShapeTest, CheckResizeBatch) {
+  Shape src({2, 3, 5}, 7);
+
+  EXPECT_EQ(Shape({2, 3, 5}), src.resize_batch(1));
+  EXPECT_EQ(30u, src.resize_batch(1).size());
+
+  EXPECT_EQ(Shape({2, 3, 5}, 2), src.resize_batch(2));
+  EXPECT_EQ(60u, src.resize_batch(2).size());
+
+  EXPECT_EQ(Shape({2, 3, 5}, 4), src.resize_batch(4));
+  EXPECT_EQ(120u, src.resize_batch(4).size());
+
+  EXPECT_THROW(src.resize_batch(0), Error);
+}
+
 }  // namespace primitiv
