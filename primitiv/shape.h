@@ -43,7 +43,7 @@ public:
    * @param i Dimension number to check.
    * @return Size of the i-th dimension.
    */
-  unsigned dim(const unsigned i) const {
+  unsigned operator[](const unsigned i) const {
     return i < dims_.size() ? dims_[i] : 1;
   }
 

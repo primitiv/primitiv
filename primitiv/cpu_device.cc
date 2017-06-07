@@ -105,9 +105,9 @@ Tensor CPUDevice::random_normal_impl(const Shape &shape, float mean, float sd) {
 Tensor CPUDevice::slice_impl(
     const Tensor &x, unsigned dim, unsigned offset, const Shape &new_shape) {
   unsigned base = 1;
-  for (unsigned i = 0; i < dim; ++i) base *= new_shape.dim(i);
-  const unsigned span = base * new_shape.dim(dim);
-  const unsigned skip = base * x.shape().dim(dim);
+  for (unsigned i = 0; i < dim; ++i) base *= new_shape[i];
+  const unsigned span = base * new_shape[dim];
+  const unsigned skip = base * x.shape()[dim];
   const unsigned repeat = new_shape.size() / span;
 
   Tensor ret = new_tensor(new_shape);
@@ -134,7 +134,7 @@ Tensor CPUDevice::concat_impl(
   Tensor ret = new_tensor(new_shape);
   unsigned offset = 0;
   for (const Tensor *x : xs) {
-    const unsigned src_dim = x->shape().dim(dim);
+    const unsigned src_dim = x->shape()[dim];
     const unsigned span = base * src_dim;
     const unsigned b_skip = (x->shape().batch_size() > 1) * span * repeat;
     float *dest = DATA(ret) + offset;
@@ -304,8 +304,8 @@ Tensor CPUDevice::divide_impl(const Tensor &a, const Tensor &b) {
 
 Tensor CPUDevice::transpose_impl(const Tensor &x) {
   const Shape &s = x.shape();
-  const unsigned d1 = s.dim(0);
-  const unsigned d2 = s.dim(1);
+  const unsigned d1 = s[0];
+  const unsigned d2 = s[1];
   const unsigned ms = d1 * d2;
   const unsigned bs = s.batch_size();
   Tensor ret = new_tensor(Shape({d2, d1}, bs));
@@ -331,9 +331,9 @@ Tensor CPUDevice::transpose_impl(const Tensor &x) {
 Tensor CPUDevice::dot_impl(const Tensor &a, const Tensor &b) {
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
-  const unsigned d1 = sa.dim(0);
-  const unsigned d2 = sa.dim(1);
-  const unsigned d3 = sb.dim(1);
+  const unsigned d1 = sa[0];
+  const unsigned d2 = sa[1];
+  const unsigned d3 = sb[1];
   const unsigned bs = std::max(sa.batch_size(), sb.batch_size());
   const unsigned dest_shift = d1 * d3;
   const unsigned src_a_shift = (sa.batch_size() > 1) * d1 * d2;
@@ -443,7 +443,7 @@ void CPUDevice::add_gradient_offset_impl(
   const Shape &sb = b.shape();
   unsigned base = 1;
   for (unsigned i = 0; i < dim; ++i) base *= sa.dims()[i];
-  const unsigned span = base * sb.dim(dim);
+  const unsigned span = base * sb[dim];
   const unsigned skip = base * sa.dims()[dim];
   const unsigned repeat = sa.size_per_sample() / skip;
   const unsigned bs = std::max(sa.batch_size(), sb.batch_size());

@@ -412,9 +412,9 @@ Tensor CUDADevice::random_normal_impl(
 Tensor CUDADevice::slice_impl(
     const Tensor &x, unsigned dim, unsigned offset, const Shape &new_shape) {
   unsigned base = 1;
-  for (unsigned i = 0; i < dim; ++i) base *= new_shape.dim(i);
-  const unsigned span = base * new_shape.dim(dim);
-  const unsigned skip = base * x.shape().dim(dim);
+  for (unsigned i = 0; i < dim; ++i) base *= new_shape[i];
+  const unsigned span = base * new_shape[dim];
+  const unsigned skip = base * x.shape()[dim];
   const unsigned size = new_shape.size();
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
   Tensor ret = new_tensor(new_shape);
@@ -436,7 +436,7 @@ Tensor CUDADevice::concat_impl(
   Tensor ret = new_tensor(new_shape);
   unsigned offset = 0;
   for (const Tensor *x : xs) {
-    const unsigned span = base * x->shape().dim(dim);
+    const unsigned span = base * x->shape()[dim];
     const unsigned skip = base * new_dims[dim];
     const unsigned x_size = span * repeat * x->shape().batch_size();
     const unsigned y_size = span * repeat * new_bs;
@@ -524,8 +524,8 @@ CUDA_DEV_BINARY_AB(divide_impl, dev_divide);
 
 Tensor CUDADevice::transpose_impl(const Tensor &x) {
   const Shape &s = x.shape();
-  const unsigned d1 = s.dim(0);
-  const unsigned d2 = s.dim(1);
+  const unsigned d1 = s[0];
+  const unsigned d2 = s[1];
   const unsigned bs = s.batch_size();
   const unsigned g1 = GRID_SIZE(d1, dim2_x_);
   const unsigned g2 = GRID_SIZE(d2, dim2_y_);
@@ -538,9 +538,9 @@ Tensor CUDADevice::transpose_impl(const Tensor &x) {
 Tensor CUDADevice::dot_impl(const Tensor &a, const Tensor &b) {
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
-  const unsigned di = sa.dim(0);
-  const unsigned dj = sa.dim(1);
-  const unsigned dk = sb.dim(1);
+  const unsigned di = sa[0];
+  const unsigned dj = sa[1];
+  const unsigned dk = sb[1];
   const unsigned ba = sa.batch_size();
   const unsigned bb = sb.batch_size();
   const unsigned bs = std::max(ba, bb);
@@ -593,12 +593,12 @@ void CUDADevice::add_gradient_offset_impl(
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
   unsigned base = 1;
-  for (unsigned i = 0; i < dim; ++i) base *= sa.dim(i);
+  for (unsigned i = 0; i < dim; ++i) base *= sa[i];
   unsigned repeat = 1;
-  for (unsigned i = dim + 1; i < sa.dims().size(); ++i) repeat *= sa.dim(i);
+  for (unsigned i = dim + 1; i < sa.dims().size(); ++i) repeat *= sa[i];
   const unsigned ox = base * offset;
-  const unsigned wx = base * sa.dim(dim);
-  const unsigned wy = base * sb.dim(dim);
+  const unsigned wx = base * sa[dim];
+  const unsigned wy = base * sb[dim];
   const unsigned nx = repeat * sa.batch_size();
   const unsigned ny = repeat * sb.batch_size();
   const unsigned g1 = GRID_SIZE(wy * std::max(nx, ny), dim1_x_);

@@ -128,7 +128,7 @@ Shape Transpose::forward_shape(const vector<const Shape *> &args) const {
         << " function: " << name()
         << ", arg1: " << a.to_string());
   }
-  return Shape({a.dim(1), a.dim(0)}, a.batch_size());
+  return Shape({a[1], a[0]}, a.batch_size());
 }
 
 Shape Dot::forward_shape(const vector<const Shape *> &args) const {
@@ -139,7 +139,7 @@ Shape Dot::forward_shape(const vector<const Shape *> &args) const {
   const unsigned b_bs = b.batch_size();
   if (a.dims().size() > 2 ||
       b.dims().size() > 2 ||
-      a.dim(1) != b.dim(0) ||
+      a[1] != b[0] ||
       (a_bs != b_bs && a_bs > 1 && b_bs > 1)) {
     THROW_ERROR(
         "Shape mismatched."
@@ -147,7 +147,7 @@ Shape Dot::forward_shape(const vector<const Shape *> &args) const {
         << ", arg1: " << a.to_string()
         << " != arg2: " << b.to_string());
   }
-  return Shape({a.dim(0), b.dim(1)}, std::max(a_bs, b_bs));
+  return Shape({a[0], b[1]}, std::max(a_bs, b_bs));
 }
 
 Shape BatchSum::forward_shape(const vector<const Shape *> &args) const {

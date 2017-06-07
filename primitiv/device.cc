@@ -263,8 +263,7 @@ Tensor Device::dot(const Tensor &a, const Tensor &b) {
   const Shape &sb = b.shape();
   const unsigned ba = sa.batch_size();
   const unsigned bb = sb.batch_size();
-  if (sa.dims().size() > 2 || sb.dims().size() > 2 ||
-      sa.dim(1) != sb.dim(0) ||
+  if (sa.dims().size() > 2 || sb.dims().size() > 2 || sa[1] != sb[0] ||
       (ba != bb && ba > 1 && bb > 1)) {
     THROW_ERROR(
         "Attempted to calculate the dot product of tensors with shapes "

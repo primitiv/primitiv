@@ -7,7 +7,7 @@ namespace primitiv {
 namespace shape_ops {
 
 Shape slice(const Shape &x, unsigned dim, unsigned lower, unsigned upper) {
-  if (lower >= upper || upper > x.dim(dim)) {
+  if (lower >= upper || upper > x[dim]) {
     THROW_ERROR(
         "Invalid slice operation. shape: " << x.to_string()
         << ", dim: " << dim << ", lower: " << lower << ", upper: " << upper);
