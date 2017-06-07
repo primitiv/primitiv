@@ -22,6 +22,7 @@ primitiv_test(initializer_impl)
 primitiv_test(parameter)
 primitiv_test(sgd_trainer)
 primitiv_test(shape)
+primitiv_test(shape_ops)
 primitiv_test(tensor)
 primitiv_test(tensor_ops)
 

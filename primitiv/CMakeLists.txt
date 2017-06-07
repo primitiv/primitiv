@@ -14,6 +14,7 @@ set(primitiv_LIBRARY_HDRS
   primitiv_cuda.h
   sgd_trainer.h
   shape.h
+  shape_ops.h
   tensor.h
   tensor_ops.h
   trainer.h
@@ -29,6 +30,7 @@ set(primitiv_LIBRARY_SRCS
   parameter.cc
   sgd_trainer.cc
   shape.cc
+  shape_ops.cc
   tensor.cc
   tensor_ops.cc
 )

@@ -2,6 +2,7 @@
 
 #include <primitiv/device.h>
 #include <primitiv/error.h>
+#include <primitiv/shape_ops.h>
 
 using std::vector;
 
@@ -88,23 +89,11 @@ Tensor Device::random_normal(const Shape &shape, float mean, float sd) {
 
 Tensor Device::slice(
     const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
-  const Shape &s = x.shape();
-  if (lower >= upper || upper > s.dim(dim)) {
-    THROW_ERROR(
-        "Attempted to invalid slicing. x.shape: " << s.to_string()
-        << ", dim: " << dim << ", lower: " << lower << ", upper: " << upper);
-  }
-
-  if (dim >= s.dims().size()) {
-    // Resulting tensor is completely same as the argument.
-    return duplicate(x);
-  }
-
-  vector<unsigned> dims = s.dims();
-  dims[dim] = upper - lower;
+  const Shape new_shape = shape_ops::slice(x.shape(), dim, lower, upper);
+  if (new_shape == x.shape()) return duplicate(x);
 
   CHECK_DEVICE(x);
-  return slice_impl(x, dim, lower, Shape(dims, s.batch_size()));
+  return slice_impl(x, dim, lower, new_shape);
 }
 
 Tensor Device::concat(const vector<const Tensor *> &xs, unsigned dim) {

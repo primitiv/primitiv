@@ -1,10 +1,11 @@
 #include <config.h>
 
 #include <algorithm>
+#include <primitiv/error.h>
 #include <primitiv/function_impl.h>
 #include <primitiv/parameter.h>
 #include <primitiv/tensor_ops.h>
-#include <primitiv/error.h>
+#include <primitiv/shape_ops.h>
 
 using std::vector;
 
@@ -64,18 +65,7 @@ void ParameterInput::backward(
 
 Shape Slice::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 1);
-  if (lower_ >= upper_ || upper_ > args[0]->dim(dim_)) {
-    THROW_ERROR(
-        "Invalid range of slice."
-        << " input shape: " << args[0]->to_string()
-        << ", dim: " << dim_
-        << ", lower: " << lower_
-        << ", upper: " << upper_);
-  }
-  if (dim_ >= args[0]->dims().size()) return *args[0];
-  vector<unsigned> dims = args[0]->dims();
-  dims[dim_] = upper_ - lower_;
-  return Shape(dims, args[0]->batch_size());
+  return shape_ops::slice(*args[0], dim_, lower_, upper_);
 }
 
 Tensor Slice::forward(const std::vector<const Tensor *> &args) const {
