@@ -90,7 +90,7 @@ TEST_F(GraphTest, CheckForwardBackward) {
   }
 }
 
-TEST_F(GraphTest, TestXor) {
+TEST_F(GraphTest, CheckXor) {
   // Solves a 2-dimension XOR problem with 3-layer perceptron.
   // h = tanh(W1.x + b1)
   // y = W2.h + b2
@@ -158,6 +158,100 @@ TEST_F(GraphTest, TestXor) {
   }
 
   // TODO(odashi): add gradient checking.
+}
+
+TEST_F(GraphTest, CheckLSTM) {
+  // Software-based LSTM implementation with input/forget/output-gates.
+  // i = sigmoid(Wix . x + Wih . h + bi)
+  // f = sigmoid(Wfx . x + Wfh . h + bf)
+  // o = sigmoid(Wox . x + Woh . h + bo)
+  // j = tanh(Wjx . x + Wjh . h + bj)
+  // cc = f * c + i * j
+  // hh = o * tanh(cc)
+  Parameter pWix({2, 2}, &dev, {1, 0, 0, 1});
+  Parameter pWfx({2, 2}, &dev, {1, 0, 0, 1});
+  Parameter pWox({2, 2}, &dev, {1, 0, 0, 1});
+  Parameter pWjx({2, 2}, &dev, {1, 0, 0, 1});
+  Parameter pWih({2, 2}, &dev, {1, 0, 0, 1});
+  Parameter pWfh({2, 2}, &dev, {1, 0, 0, 1});
+  Parameter pWoh({2, 2}, &dev, {1, 0, 0, 1});
+  Parameter pWjh({2, 2}, &dev, {1, 0, 0, 1});
+  Parameter pbi({2}, &dev, {0, 0});
+  Parameter pbf({2}, &dev, {0, 0});
+  Parameter pbo({2}, &dev, {0, 0});
+  Parameter pbj({2}, &dev, {0, 0});
+
+  Graph g;
+  using node_ops::dot;
+  using node_ops::input;
+  using node_ops::parameter;
+  using node_ops::sigmoid;
+  using node_ops::tanh;
+
+  const Node x = input(&g, &dev, Shape({2}, 2), {2, -2, 0.5, -0.5});
+  const Node h = input(&g, &dev, Shape({2}, 2), {-1, 1, -0.5, 0.5});
+  const Node c = input(&g, &dev, {2}, {0, 0});
+  const Node Wix = parameter(&g, &pWix);
+  const Node Wfx = parameter(&g, &pWfx);
+  const Node Wox = parameter(&g, &pWox);
+  const Node Wjx = parameter(&g, &pWjx);
+  const Node Wih = parameter(&g, &pWih);
+  const Node Wfh = parameter(&g, &pWfh);
+  const Node Woh = parameter(&g, &pWoh);
+  const Node Wjh = parameter(&g, &pWjh);
+  const Node bi = parameter(&g, &pbi);
+  const Node bf = parameter(&g, &pbf);
+  const Node bo = parameter(&g, &pbo);
+  const Node bj = parameter(&g, &pbj);
+
+  const Node i = sigmoid(dot(Wix, x) + dot(Wih, h) + bi);
+  const Node f = sigmoid(dot(Wfx, x) + dot(Wfh, h) + bf);
+  const Node o = sigmoid(dot(Wox, x) + dot(Woh, h) + bo);
+  const Node j = tanh(dot(Wjx, x) + dot(Wjh, h) + bj);
+  const Node cc = f * c + i * j;
+  const Node hh = o * tanh(cc);
+
+  const Node t = input(&g, &dev, {2}, {0, 0});
+  const Node diff = hh - t;
+  const Node loss = diff * diff;
+
+  EXPECT_EQ(43u, g.num_functions());
+
+  g.forward(loss);
+  g.backward(loss);
+
+  auto print = [](const std::string &name, const Tensor &value) {
+    std::cout << name << ": shape=" << value.shape().to_string()
+      << ", values=[";
+    const vector<float> data = value.to_vector();
+    for (unsigned i = 0; i < data.size(); ++i) {
+      if (i > 0) std::cout << ',';
+      std::cout << data[i];
+    }
+    std::cout << ']' << std::endl;
+  };
+
+  std::cout << "VALUES:" << std::endl;
+#define PRINT_VALUE(node) print(#node, g.get_value(node))
+  PRINT_VALUE(x); PRINT_VALUE(h); PRINT_VALUE(c);
+  PRINT_VALUE(Wix); PRINT_VALUE(Wfx); PRINT_VALUE(Wox); PRINT_VALUE(Wjx);
+  PRINT_VALUE(Wih); PRINT_VALUE(Wfh); PRINT_VALUE(Woh); PRINT_VALUE(Wjh);
+  PRINT_VALUE(bi); PRINT_VALUE(bf); PRINT_VALUE(bo); PRINT_VALUE(bj);
+  PRINT_VALUE(i); PRINT_VALUE(f); PRINT_VALUE(o); PRINT_VALUE(j);
+  PRINT_VALUE(cc); PRINT_VALUE(hh);
+  PRINT_VALUE(t); PRINT_VALUE(diff); PRINT_VALUE(loss);
+#undef PRINT_VALUE
+
+  std::cout << "GRADIENTS:" << std::endl;
+#define PRINT_GRAD(node) print(#node, g.get_gradient(node))
+  PRINT_GRAD(x); PRINT_GRAD(h); PRINT_GRAD(c);
+  PRINT_GRAD(Wix); PRINT_GRAD(Wfx); PRINT_GRAD(Wox); PRINT_GRAD(Wjx);
+  PRINT_GRAD(Wih); PRINT_GRAD(Wfh); PRINT_GRAD(Woh); PRINT_GRAD(Wjh);
+  PRINT_GRAD(bi); PRINT_GRAD(bf); PRINT_GRAD(bo); PRINT_GRAD(bj);
+  PRINT_GRAD(i); PRINT_GRAD(f); PRINT_GRAD(o); PRINT_GRAD(j);
+  PRINT_GRAD(cc); PRINT_GRAD(hh);
+  PRINT_GRAD(t); PRINT_GRAD(diff); PRINT_GRAD(loss);
+#undef PRINT_GRAD
 }
 
 }  // namespace primitiv
