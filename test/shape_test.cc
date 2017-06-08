@@ -206,44 +206,64 @@ TEST_F(ShapeTest, CheckMove) {
   EXPECT_EQ(trg2, moved);
 }
 
-TEST_F(ShapeTest, CheckIsCompatibleBatch) {
-  Shape src1({2, 3, 5});
-  EXPECT_TRUE(src1.is_compatible_batch(Shape({2, 3, 5})));
-  EXPECT_TRUE(src1.is_compatible_batch(Shape({2, 3, 5}, 2)));
-  EXPECT_TRUE(src1.is_compatible_batch(Shape({2, 3, 5}, 7)));
-  EXPECT_TRUE(src1.is_compatible_batch(Shape({2, 3, 4})));
-  EXPECT_TRUE(src1.is_compatible_batch(Shape({2, 3, 4}, 2)));
-  EXPECT_TRUE(src1.is_compatible_batch(Shape({2, 3, 4}, 7)));
+TEST_F(ShapeTest, CheckHasCompatibleBatch) {
+  const Shape src1({2, 3, 5});
+  EXPECT_TRUE(src1.has_compatible_batch(Shape({2, 3, 5})));
+  EXPECT_TRUE(src1.has_compatible_batch(Shape({2, 3, 5}, 2)));
+  EXPECT_TRUE(src1.has_compatible_batch(Shape({2, 3, 5}, 7)));
+  EXPECT_TRUE(src1.has_compatible_batch(Shape({2, 3, 4})));
+  EXPECT_TRUE(src1.has_compatible_batch(Shape({2, 3, 4}, 2)));
+  EXPECT_TRUE(src1.has_compatible_batch(Shape({2, 3, 4}, 7)));
 
-  Shape src2({2, 3, 5}, 7);
-  EXPECT_TRUE(src2.is_compatible_batch(Shape({2, 3, 5})));
-  EXPECT_FALSE(src2.is_compatible_batch(Shape({2, 3, 5}, 2)));
-  EXPECT_TRUE(src2.is_compatible_batch(Shape({2, 3, 5}, 7)));
-  EXPECT_TRUE(src2.is_compatible_batch(Shape({2, 3, 4})));
-  EXPECT_FALSE(src2.is_compatible_batch(Shape({2, 3, 4}, 2)));
-  EXPECT_TRUE(src2.is_compatible_batch(Shape({2, 3, 4}, 7)));
+  const Shape src2({2, 3, 5}, 7);
+  EXPECT_TRUE(src2.has_compatible_batch(Shape({2, 3, 5})));
+  EXPECT_FALSE(src2.has_compatible_batch(Shape({2, 3, 5}, 2)));
+  EXPECT_TRUE(src2.has_compatible_batch(Shape({2, 3, 5}, 7)));
+  EXPECT_TRUE(src2.has_compatible_batch(Shape({2, 3, 4})));
+  EXPECT_FALSE(src2.has_compatible_batch(Shape({2, 3, 4}, 2)));
+  EXPECT_TRUE(src2.has_compatible_batch(Shape({2, 3, 4}, 7)));
 }
 
-TEST_F(ShapeTest, CheckIsCompatible) {
-  Shape src1({2, 3, 5});
-  EXPECT_TRUE(src1.is_compatible(Shape({2, 3, 5})));
-  EXPECT_TRUE(src1.is_compatible(Shape({2, 3, 5}, 2)));
-  EXPECT_TRUE(src1.is_compatible(Shape({2, 3, 5}, 7)));
-  EXPECT_FALSE(src1.is_compatible(Shape({2, 3, 4})));
-  EXPECT_FALSE(src1.is_compatible(Shape({2, 3, 4}, 2)));
-  EXPECT_FALSE(src1.is_compatible(Shape({2, 3, 4}, 7)));
+TEST_F(ShapeTest, CheckHasSameDims) {
+  const Shape src1({2, 3, 5});
+  EXPECT_TRUE(src1.has_same_dims(Shape({2, 3, 5})));
+  EXPECT_TRUE(src1.has_same_dims(Shape({2, 3, 5}, 2)));
+  EXPECT_TRUE(src1.has_same_dims(Shape({2, 3, 5}, 7)));
+  EXPECT_FALSE(src1.has_same_dims(Shape({2, 3, 4})));
+  EXPECT_FALSE(src1.has_same_dims(Shape({2, 3, 4}, 2)));
+  EXPECT_FALSE(src1.has_same_dims(Shape({2, 3, 4}, 7)));
 
-  Shape src2({2, 3, 5}, 7);
-  EXPECT_TRUE(src2.is_compatible(Shape({2, 3, 5})));
-  EXPECT_FALSE(src2.is_compatible(Shape({2, 3, 5}, 2)));
-  EXPECT_TRUE(src2.is_compatible(Shape({2, 3, 5}, 7)));
-  EXPECT_FALSE(src2.is_compatible(Shape({2, 3, 4})));
-  EXPECT_FALSE(src2.is_compatible(Shape({2, 3, 4}, 2)));
-  EXPECT_FALSE(src2.is_compatible(Shape({2, 3, 4}, 7)));
+  const Shape src2({2, 3, 5}, 7);
+  EXPECT_TRUE(src2.has_same_dims(Shape({2, 3, 5})));
+  EXPECT_TRUE(src2.has_same_dims(Shape({2, 3, 5}, 2)));
+  EXPECT_TRUE(src2.has_same_dims(Shape({2, 3, 5}, 7)));
+  EXPECT_FALSE(src2.has_same_dims(Shape({2, 3, 4})));
+  EXPECT_FALSE(src2.has_same_dims(Shape({2, 3, 4}, 2)));
+  EXPECT_FALSE(src2.has_same_dims(Shape({2, 3, 4}, 7)));
+}
+
+TEST_F(ShapeTest, CheckHasSameDimsLOO) {
+  const Shape src({2, 3, 5});
+  EXPECT_TRUE(src.has_same_loo_dims({2, 3, 5}, 0));
+  EXPECT_TRUE(src.has_same_loo_dims({2, 3, 5}, 1));
+  EXPECT_TRUE(src.has_same_loo_dims({2, 3, 5}, 2));
+  EXPECT_TRUE(src.has_same_loo_dims({2, 3, 5}, 3));
+  EXPECT_TRUE(src.has_same_loo_dims({10, 3, 5}, 0));
+  EXPECT_TRUE(src.has_same_loo_dims({2, 10, 5}, 1));
+  EXPECT_TRUE(src.has_same_loo_dims({2, 3, 10}, 2));
+  EXPECT_TRUE(src.has_same_loo_dims({2, 3, 5}, 3));
+  EXPECT_TRUE(src.has_same_loo_dims({2, 3, 5, 10}, 3));
+  EXPECT_TRUE(src.has_same_loo_dims({2, 3, 5, 1, 10}, 4));
+  EXPECT_FALSE(src.has_same_loo_dims({10, 3, 5}, 1));
+  EXPECT_FALSE(src.has_same_loo_dims({2, 10, 5}, 0));
+  EXPECT_FALSE(src.has_same_loo_dims({2, 3, 10}, 0));
+  EXPECT_FALSE(src.has_same_loo_dims({2, 3, 5, 10}, 0));
+  EXPECT_FALSE(src.has_same_loo_dims({2, 3, 5, 10, 10}, 3));
+  EXPECT_FALSE(src.has_same_loo_dims({20, 30, 50}, 0));
 }
 
 TEST_F(ShapeTest, CheckResizeDim) {
-  Shape src({2, 3, 5}, 7);
+  const Shape src({2, 3, 5}, 7);
 
   EXPECT_EQ(Shape({1, 3, 5}, 7), src.resize_dim(0, 1));
   EXPECT_EQ(105u, src.resize_dim(0, 1).num_total_elements());
@@ -265,10 +285,12 @@ TEST_F(ShapeTest, CheckResizeDim) {
 
   EXPECT_EQ(Shape({2, 3, 5, 1, 10}, 7), src.resize_dim(4, 10));
   EXPECT_EQ(2100u, src.resize_dim(4, 10).num_total_elements());
+
+  EXPECT_THROW(src.resize_dim(0, 0), Error);
 }
 
 TEST_F(ShapeTest, CheckResizeBatch) {
-  Shape src({2, 3, 5}, 7);
+  const Shape src({2, 3, 5}, 7);
 
   EXPECT_EQ(Shape({2, 3, 5}), src.resize_batch(1));
   EXPECT_EQ(30u, src.resize_batch(1).num_total_elements());
@@ -280,6 +302,75 @@ TEST_F(ShapeTest, CheckResizeBatch) {
   EXPECT_EQ(120u, src.resize_batch(4).num_total_elements());
 
   EXPECT_THROW(src.resize_batch(0), Error);
+}
+
+TEST_F(ShapeTest, CheckUpdateDim) {
+  {
+    Shape src({2, 3, 5}, 7);
+    src.update_dim(0, 1);
+    EXPECT_EQ(Shape({1, 3, 5}, 7), src);
+    EXPECT_EQ(105u, src.num_total_elements());
+  }
+  {
+    Shape src({2, 3, 5}, 7);
+    src.update_dim(0, 10);
+    EXPECT_EQ(Shape({10, 3, 5}, 7), src);
+    EXPECT_EQ(1050u, src.num_total_elements());
+  }
+  {
+    Shape src({2, 3, 5}, 7);
+    src.update_dim(1, 1);
+    EXPECT_EQ(Shape({2, 1, 5}, 7), src);
+    EXPECT_EQ(70u, src.num_total_elements());
+  }
+  {
+    Shape src({2, 3, 5}, 7);
+    src.update_dim(1, 10);
+    EXPECT_EQ(Shape({2, 10, 5}, 7), src);
+    EXPECT_EQ(700u, src.num_total_elements());
+  }
+  {
+    Shape src({2, 3, 5}, 7);
+    src.update_dim(2, 1);
+    EXPECT_EQ(Shape({2, 3, 1}, 7), src);
+    EXPECT_EQ(42u, src.num_total_elements());
+  }
+  {
+    Shape src({2, 3, 5}, 7);
+    src.update_dim(2, 10);
+    EXPECT_EQ(Shape({2, 3, 10}, 7), src);
+    EXPECT_EQ(420u, src.num_total_elements());
+  }
+  {
+    Shape src({2, 3, 5}, 7);
+    src.update_dim(3, 10);
+    EXPECT_EQ(Shape({2, 3, 5, 10}, 7), src);
+    EXPECT_EQ(2100u, src.num_total_elements());
+  }
+  {
+    Shape src({2, 3, 5}, 7);
+    src.update_dim(4, 10);
+    EXPECT_EQ(Shape({2, 3, 5, 1, 10}, 7), src);
+    EXPECT_EQ(2100u, src.num_total_elements());
+  }
+  {
+    Shape src({2, 3, 5},7);
+    EXPECT_THROW(src.update_dim(0, 0), Error);
+  }
+}
+
+TEST_F(ShapeTest, CheckUpdateBatch) {
+  Shape src({2, 3, 5}, 7);
+  src.update_batch(1);
+  EXPECT_EQ(Shape({2, 3, 5}), src);
+  EXPECT_EQ(30u, src.num_total_elements());
+  src.update_batch(2);
+  EXPECT_EQ(Shape({2, 3, 5}, 2), src);
+  EXPECT_EQ(60u, src.num_total_elements());
+  src.update_batch(4);
+  EXPECT_EQ(Shape({2, 3, 5}, 4), src);
+  EXPECT_EQ(120u, src.num_total_elements());
+  EXPECT_THROW(src.update_batch(0), Error);
 }
 
 }  // namespace primitiv

@@ -334,7 +334,8 @@ TEST_F(TensorTest, CheckInvalidAddGradientOffset) {
     bool ok;
   };
   vector<TestCase> test_cases {
-    {Shape({}, 2), Shape({}, 3), 0, 0},
+    {Shape({}, 2), Shape({}, 3), 0, 0, false},
+    {Shape({42}, 2), Shape({42}, 3), 0, 0, false},
     {{}, {}, 0, 0, true},
     {{}, {}, 0, 1, false},
     {{42}, {}, 0, 41, true},

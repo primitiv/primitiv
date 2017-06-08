@@ -99,7 +99,7 @@ public:
    * @return true if this and rhs are same, false otherwise.
    */
   bool operator==(const Shape &rhs) const {
-    return dims_ == rhs.dims_ && k_ == rhs.k_;
+    return has_same_dims(rhs) && k_ == rhs.k_;
   }
 
   /**
@@ -114,18 +114,28 @@ public:
    * @param rhs Shape object to compare.
    * @return true if both batch size is compatible, false otherwise.
    */
-  bool is_compatible_batch(const Shape &rhs) const {
+  bool has_compatible_batch(const Shape &rhs) const {
     return k_ == rhs.k_ || k_ == 1 || rhs.k_ == 1;
   }
 
   /**
-   * Checks whether two shape is compatible (broadcastable) or not.
-   * @param rhs Shape object to compate.
-   * @return true if both shape is compatible, false otherwise.
+   * Checks whether two shapes have completely same dimensions.
+   * @param rhs Shape object to compare.
+   * @return true if both shape have same dimensions, false otherwise.
    */
-  bool is_compatible(const Shape &rhs) const {
-    return dims_ == rhs.dims_ && is_compatible_batch(rhs);
+  bool has_same_dims(const Shape &rhs) const {
+    return dims_ == rhs.dims_;
   }
+
+  /**
+   * Checks whether two shapes have same dimensions without an axis.
+   * (LOO: leave one out)
+   * @param rhs Shape object to compare.
+   * @param dim Dimension to be ignored.
+   * @return true if both shape have same dimensions regardless the dimension
+   *         `dim`, false otherwise.
+   */
+  bool has_same_loo_dims(const Shape &rhs, unsigned dim) const;
 
   /**
    * Creates a new shape which have one different dimension.
@@ -141,6 +151,19 @@ public:
    * @return New shape.
    */
   Shape resize_batch(unsigned k) const;
+
+  /**
+   * Directly updates a specified dimension.
+   * @param dim Dimension to be updated.
+   * @param m New size of the dimension `dim`.
+   */
+  void update_dim(unsigned dim, unsigned m);
+
+  /**
+   * Directly updates the batch size.
+   * @param k New batch size.
+   */
+  void update_batch(unsigned k);
 
 private:
   std::vector<unsigned> dims_;

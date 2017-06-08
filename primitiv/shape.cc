@@ -38,20 +38,40 @@ string Shape::to_string() const {
   return s.str();
 }
 
+bool Shape::has_same_loo_dims(const Shape &rhs, unsigned dim) const {
+  unsigned nl = dims_.size() == dim + 1 ? dim : dims_.size();
+  while (nl > 0 && dims_[nl - 1] == 1) --nl;
+  unsigned nr = rhs.dims_.size() == dim + 1 ? dim : rhs.dims_.size();
+  while (nr > 0 && rhs.dims_[nr - 1] == 1) --nr;
+  bool p = nl == nr;
+  for (unsigned i = 0; i < nl; ++i) {
+    p = p && (dims_[i] == rhs.dims_[i] || i == dim);
+  }
+  return p;
+}
+
 Shape Shape::resize_dim(unsigned dim, unsigned m) const {
-  if (m == 0) THROW_ERROR("Could not set the dimension size 0.");
   Shape ret = *this;
-  if (dim >= depth()) ret.dims_.resize(dim + 1, 1);
-  ret.dims_[dim] = m;
-  ret.adjust();
+  ret.update_dim(dim, m);
   return ret;
 }
 
 Shape Shape::resize_batch(unsigned k) const {
-  if (k == 0) THROW_ERROR("Could not set the batch size 0.");
   Shape ret = *this;
-  ret.k_ = k;
+  ret.update_batch(k);
   return ret;
+}
+
+void Shape::update_dim(unsigned dim, unsigned m) {
+  if (m == 0) THROW_ERROR("Could not set the dimension size 0.");
+  if (dim >= depth()) dims_.resize(dim + 1, 1);
+  dims_[dim] = m;
+  adjust();
+}
+
+void Shape::update_batch(unsigned k) {
+  if (k == 0) THROW_ERROR("Could not set the batch size 0.");
+  k_ = k;
 }
 
 void Shape::adjust() {

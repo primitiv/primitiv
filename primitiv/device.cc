@@ -106,41 +106,28 @@ Tensor Device::concat(const vector<const Tensor *> &xs, unsigned dim) {
     return duplicate(*xs[0]);
   }
 
-  vector<unsigned> ref_dims = xs[0]->shape().dims();
-  unsigned sum_dim = 1;
-  if (dim < ref_dims.size()) { sum_dim = ref_dims[dim]; ref_dims[dim] = 1; }
-  while (!ref_dims.empty() && ref_dims.back() == 1) ref_dims.pop_back();
-  unsigned ref_bs = xs[0]->shape().batch_size();
+  Shape s0 = xs[0]->shape();
+  unsigned sum = s0[dim];
 
-  bool ok = true;
   for (unsigned i = 1; i < xs.size(); ++i) {
-    vector<unsigned> dims = xs[i]->shape().dims();
-    if (dim < dims.size()) { sum_dim += dims[dim]; dims[dim] = 1; }
-    else ++sum_dim;
-    while (!dims.empty() && dims.back() == 1) dims.pop_back();
-    if (dims != ref_dims) { ok = false; break; }
-    unsigned bs = xs[i]->shape().batch_size();
-    if (bs != ref_bs && bs > 1 && ref_bs > 1) { ok = false; break; }
-    if (ref_bs == 1) ref_bs = bs;
-  }
-
-  if (!ok) {
-    std::string dims_str = xs[0]->shape().to_string();
-    for (unsigned i = 1; i < xs.size(); ++i) {
-      dims_str += ", " + xs[i]->shape().to_string();
+    const Shape &s = xs[i]->shape();
+    if (!s0.has_same_loo_dims(s, dim) || !s0.has_compatible_batch(s)) {
+      std::string dims_str = xs[0]->shape().to_string();
+      for (unsigned i = 1; i < xs.size(); ++i) {
+        dims_str += ", " + xs[i]->shape().to_string();
+      }
+      THROW_ERROR("Attempted to concatenate tensors with shapes: " << dims_str);
     }
-    THROW_ERROR("Attempted to concatenate tensors with shapes: " << dims_str);
+    if (s0.batch_size() == 1) s0.update_batch(s.batch_size());
+    sum += s[dim];
   }
 
-  if (dim >= ref_dims.size()) {
-    ref_dims.insert(ref_dims.end(), dim - ref_dims.size() + 1, 1);
-  }
-  ref_dims[dim] = sum_dim;
+  s0.update_dim(dim, sum);
 
   for (const Tensor *x : xs) {
     CHECK_DEVICE(*x);
   }
-  return concat_impl(xs, dim, Shape(ref_dims, ref_bs));
+  return concat_impl(xs, dim, s0);
 }
 
 Tensor Device::duplicate(const Tensor &x) {
@@ -161,7 +148,7 @@ Tensor Device::add(const Tensor &x, float k) {
 Tensor Device::add(const Tensor &a, const Tensor &b) {
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
-  if (!sa.is_compatible(sb)) {
+  if (!sa.has_same_dims(sb) || !sa.has_compatible_batch(sb)) {
     THROW_ERROR(
         "Attempted to add tensors with shapes "
         << sa.to_string() << " and " << sb.to_string() << '.');
@@ -185,7 +172,7 @@ Tensor Device::subtract(float k, const Tensor &x) {
 Tensor Device::subtract(const Tensor &a, const Tensor &b) {
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
-  if (!sa.is_compatible(sb)) {
+  if (!sa.has_same_dims(sb) || !sa.has_compatible_batch(sb)) {
     THROW_ERROR(
         "Attempted to subtract tensors with shapes "
         << sa.to_string() << " and " << sb.to_string() << '.');
@@ -204,7 +191,7 @@ Tensor Device::multiply(const Tensor &x, float k) {
 Tensor Device::multiply(const Tensor &a, const Tensor &b) {
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
-  if (!sa.is_compatible(sb)) {
+  if (!sa.has_same_dims(sb) || !sa.has_compatible_batch(sb)) {
     THROW_ERROR(
         "Attempted to multiply tensors with shapes "
         << sa.to_string() << " and " << sb.to_string() << '.');
@@ -228,7 +215,7 @@ Tensor Device::divide(float k, const Tensor &x) {
 Tensor Device::divide(const Tensor &a, const Tensor &b) {
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
-  if (!sa.is_compatible(sb)) {
+  if (!sa.has_same_dims(sb) || !sa.has_compatible_batch(sb)) {
     THROW_ERROR(
         "Attempted to divide tensors with shapes "
         << sa.to_string() << " and " << sb.to_string() << '.');
@@ -254,7 +241,7 @@ Tensor Device::dot(const Tensor &a, const Tensor &b) {
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
   if (sa.depth() > 2 || sb.depth() > 2 || sa[1] != sb[0] ||
-      !sa.is_compatible_batch(sb)) {
+      !sa.has_compatible_batch(sb)) {
     THROW_ERROR(
         "Attempted to calculate the dot product of tensors with shapes "
         << sa.to_string() << " and " << sb.to_string() << '.');
@@ -298,7 +285,7 @@ Tensor Device::batch_sum(const Tensor &x) {
 void Device::add_gradient(Tensor &a, const Tensor &b) {
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
-  if (!sa.is_compatible(sb)) {
+  if (!sa.has_same_dims(sb) || !sa.has_compatible_batch(sb)) {
     THROW_ERROR(
         "Attempted to add gradients with shape "
         << sb.to_string() << " to " << sa.to_string() << '.');
@@ -313,31 +300,17 @@ void Device::add_gradient_offset(
     Tensor &a, const Tensor &b, unsigned dim, unsigned offset) {
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
-  bool ok = true;
-
-  if (dim >= sa.depth()) {
-    if (offset == 0) {
-      add_gradient(a, b);
-      return;
-    } else ok = false;
-  } else if (!sa.is_compatible_batch(sb)) ok = false;
-  else {
-    vector<unsigned> da = sa.dims();
-    vector<unsigned> db = sb.dims();
-    if (sa.depth() < sb.depth()) ok = false;
-    else {
-      db.insert(db.end(), sa.depth() - sb.depth(), 1);
-      if (offset + db[dim] > da[dim]) ok = false;
-      da[dim] = db[dim] = 1;
-      if (da != db) ok = false;
-    }
-  }
-
-  if (!ok) {
+  if (!sa.has_same_loo_dims(sb, dim) || !sa.has_compatible_batch(sb) ||
+      offset + sb[dim] > sa[dim]) {
     THROW_ERROR(
         "Attempted to add gradients with shape "
         << sb.to_string() << ", dim " << dim << ", offset " << offset
         << " to shape" << sa.to_string() << '.');
+  }
+
+  if (dim >= sa.depth()) {
+    add_gradient(a, b);
+    return;
   }
 
   CHECK_DEVICE(a);

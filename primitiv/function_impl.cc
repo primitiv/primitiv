@@ -90,7 +90,7 @@ void Slice::backward(
     CHECK_ARGNUM(args, 2); \
     const Shape &a = *args[0]; \
     const Shape &b = *args[1]; \
-    if (!a.is_compatible(b)) { \
+    if (!a.has_same_dims(b) || !a.has_compatible_batch(b)) { \
       THROW_ERROR( \
           "Shape mismatched." \
           << " function: " << name() \
@@ -136,7 +136,7 @@ Shape Dot::forward_shape(const vector<const Shape *> &args) const {
   const unsigned a_bs = a.batch_size();
   const unsigned b_bs = b.batch_size();
   if (a.depth() > 2 || b.depth() > 2 || a[1] != b[0] ||
-      !a.is_compatible_batch(b)) {
+      !a.has_compatible_batch(b)) {
     THROW_ERROR(
         "Shape mismatched."
         << " function: " << name()
