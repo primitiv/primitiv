@@ -6,6 +6,7 @@
 #include <primitiv/cpu_device.h>
 #include <primitiv/function_impl.h>
 #include <primitiv/graph.h>
+#include <primitiv/initializer_impl.h>
 #include <primitiv/node_ops.h>
 #include <primitiv/parameter.h>
 #include <test_utils.h>
@@ -168,18 +169,18 @@ TEST_F(GraphTest, CheckLSTM) {
   // j = tanh(Wjx . x + Wjh . h + bj)
   // cc = f * c + i * j
   // hh = o * tanh(cc)
-  Parameter pWix({2, 2}, &dev, {1, 0, 0, 1});
-  Parameter pWfx({2, 2}, &dev, {1, 0, 0, 1});
-  Parameter pWox({2, 2}, &dev, {1, 0, 0, 1});
-  Parameter pWjx({2, 2}, &dev, {1, 0, 0, 1});
-  Parameter pWih({2, 2}, &dev, {1, 0, 0, 1});
-  Parameter pWfh({2, 2}, &dev, {1, 0, 0, 1});
-  Parameter pWoh({2, 2}, &dev, {1, 0, 0, 1});
-  Parameter pWjh({2, 2}, &dev, {1, 0, 0, 1});
-  Parameter pbi({2}, &dev, {0, 0});
-  Parameter pbf({2}, &dev, {0, 0});
-  Parameter pbo({2}, &dev, {0, 0});
-  Parameter pbj({2}, &dev, {0, 0});
+  Parameter pWix({2, 2}, &dev, {.3, .1, .5, .3});
+  Parameter pWfx({2, 2}, &dev, {.4, .1, .5, .8});
+  Parameter pWox({2, 2}, &dev, {.5, .9, .9, .7});
+  Parameter pWjx({2, 2}, &dev, {.2, .6, .9, .3});
+  Parameter pWih({2, 2}, &dev, {.2, .3, .3, .3});
+  Parameter pWfh({2, 2}, &dev, {.8, .4, .8, .3});
+  Parameter pWoh({2, 2}, &dev, {.6, .2, .2, .7});
+  Parameter pWjh({2, 2}, &dev, {.6, .4, .9, .5});
+  Parameter pbi({2}, &dev, initializers::Constant(0));
+  Parameter pbf({2}, &dev, initializers::Constant(0));
+  Parameter pbo({2}, &dev, initializers::Constant(0));
+  Parameter pbj({2}, &dev, initializers::Constant(0));
 
   Graph g;
   using node_ops::dot;
@@ -248,6 +249,79 @@ TEST_F(GraphTest, CheckLSTM) {
   PRINT_GRAD(Wix); PRINT_GRAD(Wfx); PRINT_GRAD(Wox); PRINT_GRAD(Wjx);
   PRINT_GRAD(Wih); PRINT_GRAD(Wfh); PRINT_GRAD(Woh); PRINT_GRAD(Wjh);
   PRINT_GRAD(bi); PRINT_GRAD(bf); PRINT_GRAD(bo); PRINT_GRAD(bj);
+  PRINT_GRAD(i); PRINT_GRAD(f); PRINT_GRAD(o); PRINT_GRAD(j);
+  PRINT_GRAD(cc); PRINT_GRAD(hh);
+  PRINT_GRAD(t); PRINT_GRAD(diff); PRINT_GRAD(loss);
+#undef PRINT_GRAD
+}
+
+TEST_F(GraphTest, CheckConcatLSTM) {
+  // Another implementation of LSTM that concatenates all gates and inputs.
+  // All values and gradients should be same as that of "CheckLSTM".
+  Parameter pWx({8, 2}, &dev, {
+      .3, .1, .4, .1, .5, .9, .2, .6,
+      .5, .3, .5, .8, .9, .7, .9, .3});
+  Parameter pWh({8, 2}, &dev, {
+      .2, .3, .8, .4, .6, .2, .6, .4,
+      .3, .3, .8, .3, .2, .7, .9, .5});
+  Parameter pb({8}, &dev, initializers::Constant(0));
+
+  Graph g;
+  using node_ops::dot;
+  using node_ops::input;
+  using node_ops::parameter;
+  using node_ops::sigmoid;
+  using node_ops::slice;
+  using node_ops::tanh;
+
+  const Node x = input(&g, &dev, Shape({2}, 2), {2, -2, 0.5, -0.5});
+  const Node h = input(&g, &dev, Shape({2}, 2), {-1, 1, -0.5, 0.5});
+  const Node c = input(&g, &dev, {2}, {0, 0});
+  const Node Wx = parameter(&g, &pWx);
+  const Node Wh = parameter(&g, &pWh);
+  const Node b = parameter(&g, &pb);
+
+  const Node u = dot(Wx, x) + dot(Wh, h) + b;
+  const Node i = sigmoid(slice(u, 0, 0, 2));
+  const Node f = sigmoid(slice(u, 0, 2, 4));
+  const Node o = sigmoid(slice(u, 0, 4, 6));
+  const Node j = tanh(slice(u, 0, 6, 8));
+  const Node cc = f * c + i * j;
+  const Node hh = o * tanh(cc);
+
+  const Node t = input(&g, &dev, {2}, {0, 0});
+  const Node diff = hh - t;
+  const Node loss = diff * diff;
+
+  EXPECT_EQ(26u, g.num_functions());
+
+  g.forward(loss);
+  g.backward(loss);
+
+  auto print = [](const std::string &name, const Tensor &value) {
+    std::cout << name << ": shape=" << value.shape().to_string()
+      << ", values=[";
+    const vector<float> data = value.to_vector();
+    for (unsigned i = 0; i < data.size(); ++i) {
+      if (i > 0) std::cout << ',';
+      std::cout << data[i];
+    }
+    std::cout << ']' << std::endl;
+  };
+
+  std::cout << "VALUES:" << std::endl;
+#define PRINT_VALUE(node) print(#node, g.get_value(node))
+  PRINT_VALUE(x); PRINT_VALUE(h); PRINT_VALUE(c);
+  PRINT_VALUE(Wx); PRINT_VALUE(Wh); PRINT_VALUE(b);
+  PRINT_VALUE(i); PRINT_VALUE(f); PRINT_VALUE(o); PRINT_VALUE(j);
+  PRINT_VALUE(cc); PRINT_VALUE(hh);
+  PRINT_VALUE(t); PRINT_VALUE(diff); PRINT_VALUE(loss);
+#undef PRINT_VALUE
+
+  std::cout << "GRADIENTS:" << std::endl;
+#define PRINT_GRAD(node) print(#node, g.get_gradient(node))
+  PRINT_GRAD(x); PRINT_GRAD(h); PRINT_GRAD(c);
+  PRINT_GRAD(Wx); PRINT_GRAD(Wh); PRINT_GRAD(b);
   PRINT_GRAD(i); PRINT_GRAD(f); PRINT_GRAD(o); PRINT_GRAD(j);
   PRINT_GRAD(cc); PRINT_GRAD(hh);
   PRINT_GRAD(t); PRINT_GRAD(diff); PRINT_GRAD(loss);
