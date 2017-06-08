@@ -54,12 +54,6 @@ public:
   unsigned depth() const { return dims_.size(); }
 
   /**
-   * Returns the list of dimension sizes.
-   * @return List of the dimension sizes.
-   */
-  const std::vector<unsigned> dims() const { return dims_; }
-
-  /**
    * Returns the batch size.
    * @return Batch size.
    */
