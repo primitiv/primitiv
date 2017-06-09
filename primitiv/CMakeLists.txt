@@ -39,8 +39,15 @@ add_library(primitiv SHARED ${primitiv_LIBRARY_HDRS} ${primitiv_LIBRARY_SRCS})
 target_link_libraries(primitiv)
 
 if(USE_CUDA)
-  set(primitiv_cuda_LIBRARY_HDRS ${primitiv_LIBRARY_HDRS} cuda_device.h)
-  set(primitiv_cuda_LIBRARY_SRCS cuda_device.cu)
+  set(primitiv_cuda_LIBRARY_HDRS
+    ${primitiv_LIBRARY_HDRS}
+    cuda_device.h
+    cuda_memory_pool.h
+  )
+  set(primitiv_cuda_LIBRARY_SRCS
+    cuda_device.cu
+    cuda_memory_pool.cu
+  )
   list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
 
   # Workaround for some systems.
