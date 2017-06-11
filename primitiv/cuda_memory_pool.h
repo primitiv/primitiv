@@ -2,7 +2,6 @@
 #define PRIMITIV_CUDA_MEMORY_POOL_H_
 
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 namespace primitiv {
@@ -41,8 +40,8 @@ public:
 
 private:
   unsigned dev_id_;
-  std::vector<std::vector<std::pair<void *, unsigned>>> reserved_;
-  std::unordered_map<void *, unsigned> supplid_;
+  std::vector<std::vector<void *>> reserved_;
+  std::unordered_map<void *, unsigned> supplied_;
 };
 
 }  // namespace primitiv

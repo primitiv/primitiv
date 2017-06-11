@@ -1,91 +1,14 @@
 #include <config.h>
 
+#include <cuda_runtime_api.h>
 #include <iostream>
 #include <random>
 #include <primitiv/cuda_device.h>
+#include <primitiv/cuda_utils.h>
 #include <primitiv/error.h>
 
 using std::cerr;
 using std::endl;
-
-namespace {
-
-/**
- * Retrieves cuBLAS error string.
- * @param err cuBLAS error cude.
- * @return Error string.
- */
-std::string cublasGetErrorString(::cublasStatus_t err) {
-#define MESSAGE(status) if (err == status) return #status
-  MESSAGE(CUBLAS_STATUS_SUCCESS);
-  MESSAGE(CUBLAS_STATUS_NOT_INITIALIZED);
-  MESSAGE(CUBLAS_STATUS_ALLOC_FAILED);
-  MESSAGE(CUBLAS_STATUS_INVALID_VALUE);
-  MESSAGE(CUBLAS_STATUS_ARCH_MISMATCH);
-  MESSAGE(CUBLAS_STATUS_MAPPING_ERROR);
-  MESSAGE(CUBLAS_STATUS_EXECUTION_FAILED);
-  MESSAGE(CUBLAS_STATUS_INTERNAL_ERROR);
-  MESSAGE(CUBLAS_STATUS_NOT_SUPPORTED);
-  MESSAGE(CUBLAS_STATUS_LICENSE_ERROR);
-#undef MESSAGE
-  return "Unknown cublasStatus_t value.";
-}
-
-/**
- * Retrieves cuRAND error string.
- * @param err cuRAND error cude.
- * @return Error string.
- */
-std::string curandGetErrorString(::curandStatus_t err) {
-#define MESSAGE(status) if (err == status) return #status
-  MESSAGE(CURAND_STATUS_SUCCESS);
-  MESSAGE(CURAND_STATUS_VERSION_MISMATCH);
-  MESSAGE(CURAND_STATUS_NOT_INITIALIZED);
-  MESSAGE(CURAND_STATUS_ALLOCATION_FAILED);
-  MESSAGE(CURAND_STATUS_TYPE_ERROR);
-  MESSAGE(CURAND_STATUS_OUT_OF_RANGE);
-  MESSAGE(CURAND_STATUS_LENGTH_NOT_MULTIPLE);
-  MESSAGE(CURAND_STATUS_DOUBLE_PRECISION_REQUIRED);
-  MESSAGE(CURAND_STATUS_LAUNCH_FAILURE);
-  MESSAGE(CURAND_STATUS_PREEXISTING_FAILURE);
-  MESSAGE(CURAND_STATUS_INITIALIZATION_FAILED);
-  MESSAGE(CURAND_STATUS_ARCH_MISMATCH);
-  MESSAGE(CURAND_STATUS_INTERNAL_ERROR);
-#undef MESSAGE
-  return "Unknown curandStatus_t value.";
-}
-
-}
-
-#define CUDA_CALL(f) { \
-  ::cudaError_t err = (f); \
-  if (err != cudaSuccess) { \
-    THROW_ERROR( \
-        "CUDA function failed. statement: " << #f \
-        << ", error: " << err \
-        << ": " << ::cudaGetErrorString(err)); \
-  } \
-}
-
-#define CUBLAS_CALL(f) { \
-  ::cublasStatus_t err = (f); \
-  if (err != CUBLAS_STATUS_SUCCESS) { \
-    THROW_ERROR( \
-        "CUBLAS function failed. statement: " << #f \
-        << ", error: " << err \
-        << ": " << ::cublasGetErrorString(err)); \
-  } \
-}
-
-#define CURAND_CALL(f) { \
-  ::curandStatus_t err = (f); \
-  if (err != CURAND_STATUS_SUCCESS) { \
-    THROW_ERROR( \
-        "CURAND function failed. statement: " << #f \
-        << ", error: " << err \
-        << ": " << ::curandGetErrorString(err)); \
-  } \
-}
 
 namespace {
 
@@ -270,29 +193,24 @@ namespace primitiv {
 
 void CUDADevice::initialize() {
   // Retrieves device properties.
-  int max_devs;
-  CUDA_CALL(::cudaGetDeviceCount(&max_devs));
-  if (dev_id_ >= static_cast<unsigned>(max_devs)) {
-    THROW_ERROR(
-        "Invalid CUDA device ID. given: " << dev_id_ << " >= " << max_devs);
-  }
-  CUDA_CALL(::cudaGetDeviceProperties(&prop_, dev_id_));
+  ::cudaDeviceProp prop;
+  CUDA_CALL(::cudaGetDeviceProperties(&prop, dev_id_));
 
   // Dump device properties.
   cerr << "Selected CUDA Device " << dev_id_ << ':' << endl;
-  cerr << "  Name ............ " << prop_.name << endl;
-  cerr << "  Global Memory ... " << prop_.totalGlobalMem << endl;
-  cerr << "  Shared Memory ... " << prop_.sharedMemPerBlock << endl;
-  cerr << "  Threads/block ... " << prop_.maxThreadsPerBlock << endl;
-  cerr << "  Threads dim ..... " << prop_.maxThreadsDim[0] << ','
-                                 << prop_.maxThreadsDim[1] << ','
-                                 << prop_.maxThreadsDim[2] << endl;
-  cerr << "  Grid size ....... " << prop_.maxGridSize[0] << ','
-                                 << prop_.maxGridSize[1] << ','
-                                 << prop_.maxGridSize[2] << endl;
+  cerr << "  Name ............ " << prop.name << endl;
+  cerr << "  Global Memory ... " << prop.totalGlobalMem << endl;
+  cerr << "  Shared Memory ... " << prop.sharedMemPerBlock << endl;
+  cerr << "  Threads/block ... " << prop.maxThreadsPerBlock << endl;
+  cerr << "  Threads dim ..... " << prop.maxThreadsDim[0] << ','
+                                 << prop.maxThreadsDim[1] << ','
+                                 << prop.maxThreadsDim[2] << endl;
+  cerr << "  Grid size ....... " << prop.maxGridSize[0] << ','
+                                 << prop.maxGridSize[1] << ','
+                                 << prop.maxGridSize[2] << endl;
 
   // Calculates size of dims to be used in CUDA kernels.
-  dim1_x_ = dim2_y_ = prop_.maxThreadsPerBlock;
+  dim1_x_ = dim2_y_ = prop.maxThreadsPerBlock;
   dim2_x_ = 1;
   while (dim2_x_ < dim2_y_) {
     dim2_x_ <<= 1;
@@ -302,7 +220,7 @@ void CUDADevice::initialize() {
   cerr << "  1 dim .... " << dim1_x_ << " threads" << endl;
   cerr << "  2 dims ... " << dim2_x_ << "x" << dim2_y_ << " threads" << endl;
 
-  // Additional libraries
+  // Initializes additional libraries
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CUBLAS_CALL(::cublasCreate(&cublas_));
   CURAND_CALL(::curandCreateGenerator(&curand_, CURAND_RNG_PSEUDO_DEFAULT));
@@ -311,49 +229,31 @@ void CUDADevice::initialize() {
 
 CUDADevice::CUDADevice(unsigned device_id)
 : dev_id_(device_id)
-, rng_seed_(std::random_device()()) {
+, rng_seed_(std::random_device()())
+, pool_(device_id) {
   initialize();
 }
 
 CUDADevice::CUDADevice(unsigned device_id, unsigned rng_seed)
 : dev_id_(device_id)
-, rng_seed_(rng_seed) {
+, rng_seed_(rng_seed)
+, pool_(device_id) {
   initialize();
 }
 
 CUDADevice::~CUDADevice() {
-  // Check memory leak
-  if (!blocks_.empty()) {
-    cerr << "FATAL ERROR: Detected memory leak on CUDADevice!" << endl;
-    cerr << "Leaked blocks (handle: size):" << endl;
-    for (const auto &kv : blocks_) {
-      cerr << "  " << kv.first << ": " << kv.second << endl;
-    }
-    std::abort();
-  }
-
-  // Additional libraries
+  // Finalizes additional libraries
   CUBLAS_CALL(::cublasDestroy(cublas_));
   CURAND_CALL(::curandDestroyGenerator(curand_));
 }
 
 void *CUDADevice::new_handle(const Shape &shape) {
-  const unsigned mem_size = sizeof(float) * shape.num_total_elements();
-  void *data;
-  CUDA_CALL(::cudaSetDevice(dev_id_));
-  CUDA_CALL(::cudaMalloc(&data, mem_size));
-  blocks_.insert(std::make_pair(data, mem_size));
-  return data;
+  const unsigned size = sizeof(float) * shape.num_total_elements();
+  return pool_.allocate(size);
 }
 
 void CUDADevice::delete_tensor_impl(Tensor &x) {
-  void *data = x.data();
-  auto it = blocks_.find(data);
-  if (it == blocks_.end()) {
-    THROW_ERROR("Attempted to dispose unknown memory block: " << data);
-  }
-  blocks_.erase(it);
-  CUDA_CALL(::cudaFree(data));
+  pool_.free(x.data());
 }
 
 #define GRID_SIZE(x, threads) (((x) + (threads) - 1) / (threads))

@@ -43,10 +43,12 @@ if(USE_CUDA)
     ${primitiv_LIBRARY_HDRS}
     cuda_device.h
     cuda_memory_pool.h
+    cuda_utils.h
   )
   set(primitiv_cuda_LIBRARY_SRCS
     cuda_device.cu
     cuda_memory_pool.cu
+    cuda_utils.cu
   )
   list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
 

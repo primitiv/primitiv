@@ -1,10 +1,10 @@
 #ifndef PRIMITIV_CUDA_DEVICE_H_
 #define PRIMITIV_CUDA_DEVICE_H_
 
-#include <cuda_runtime_api.h>
 #include <cublas_v2.h>
 #include <curand.h>
 #include <map>
+#include <primitiv/cuda_memory_pool.h>
 #include <primitiv/device.h>
 
 namespace primitiv {
@@ -93,8 +93,7 @@ private:
   unsigned dim1_x_;
   unsigned dim2_x_;
   unsigned dim2_y_;
-  std::map<void *, unsigned> blocks_;
-  ::cudaDeviceProp prop_;
+  CUDAMemoryPool pool_;
   ::cublasHandle_t cublas_;
   ::curandGenerator_t curand_;
 
