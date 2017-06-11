@@ -99,6 +99,30 @@ private:
   unsigned upper_;
 };
 
+// Function to concat tensors.
+class Concat : public primitiv::Function {
+  DEFAULT_METHODS(Concat);
+
+private:
+  Concat() = delete;
+
+public:
+  Concat(unsigned dim) : dim_(dim) {}
+  Shape forward_shape(const std::vector<const Shape *> &args) const override;
+  Tensor forward(const std::vector<const Tensor *> &args) const override;
+  void backward(
+      const Tensor &cur_value,
+      const Tensor &cur_grad,
+      const std::vector<const Tensor *> &arg_values,
+      const std::vector<Tensor *> &arg_grads) const override;
+  std::string name() const override {
+    return "Concat(" + std::to_string(dim_) + ')';
+  }
+
+private:
+  unsigned dim_;
+};
+
 // Function with no parameter.
 #define DECL_FUNC(name_) \
   class name_ : public Function { \

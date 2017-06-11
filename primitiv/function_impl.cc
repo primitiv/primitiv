@@ -79,6 +79,25 @@ void Slice::backward(
   xg[0]->add_gradient_offset(yg, dim_, lower_);
 }
 
+Shape Concat::forward_shape(const vector<const Shape *> &args) const {
+  return shape_ops::concat(args, dim_);
+}
+
+Tensor Concat::forward(const std::vector<const Tensor *> &args) const {
+  return tensor_ops::concat(args, dim_);
+}
+
+void Concat::backward(
+    const Tensor &y, const Tensor &yg,
+    const vector<const Tensor *> &x, const vector<Tensor *> &xg) const {
+  unsigned offset = 0;
+  for (Tensor *xgi : xg) {
+    const unsigned span = xgi->shape()[dim_];
+    xgi->add_gradient(tensor_ops::slice(yg, dim_, offset, offset + span));
+    offset += span;
+  }
+}
+
 #define FWD_SHAPE_UNARY(clsname) \
   Shape clsname::forward_shape(const vector<const Shape *> &args) const { \
     CHECK_ARGNUM(args, 1); \

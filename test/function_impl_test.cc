@@ -227,6 +227,42 @@ TEST_F(FunctionImplTest_1Arg, CheckSlice) {
   }
 }
 
+TEST_F(FunctionImplTest_2Args, CheckConcat) {
+  struct TestCase {
+    unsigned dim;
+    Shape cur_shape;
+    vector<float> cur_value_data;
+    vector<float> cur_grad_data;
+  };
+  const vector<TestCase> test_cases {
+    {0, Shape({4, 2}, 3),
+      {1, 2, 1, 1, 3, 4, 1, 1, 0, 0, 2, 2, 0, 0, 2, 2, -1, -2, 3, 3, -3, -4, 3, 3},
+      {1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2}},
+    {1, Shape({2, 4}, 3),
+      {1, 2, 3, 4, 1, 1, 1, 1, 0, 0, 0, 0, 2, 2, 2, 2, -1, -2, -3, -4, 3, 3, 3, 3},
+      {1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2}},
+    {2, Shape({2, 2, 2}, 3),
+      {1, 2, 3, 4, 1, 1, 1, 1, 0, 0, 0, 0, 2, 2, 2, 2, -1, -2, -3, -4, 3, 3, 3, 3},
+      {1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2}},
+    {3, Shape({2, 2, 1, 2}, 3),
+      {1, 2, 3, 4, 1, 1, 1, 1, 0, 0, 0, 0, 2, 2, 2, 2, -1, -2, -3, -4, 3, 3, 3, 3},
+      {1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2}},
+  };
+  for (const TestCase &tc : test_cases) {
+    const Concat node(tc.dim);
+    const Shape cur_shape = node.forward_shape(arg_shapes);
+    const Tensor cur_value = node.forward(arg_values);
+    const Tensor cur_grad = dev.new_tensor(tc.cur_shape, tc.cur_grad_data);
+    arg_grads[0]->reset(0);
+    arg_grads[1]->reset(0);
+    node.backward(cur_value, cur_grad, arg_values, arg_grads);
+    EXPECT_EQ("Concat(" + std::to_string(tc.dim) + ')', node.name());
+    EXPECT_TRUE(vector_match(tc.cur_value_data, cur_value.to_vector()));
+    EXPECT_TRUE(vector_match(vector<float>(12, 1), arg_grads[0]->to_vector()));
+    EXPECT_TRUE(vector_match(vector<float>(12, 2), arg_grads[1]->to_vector()));
+  }
+}
+
 TEST_F(FunctionImplTest_1Arg, CheckPositive) {
   // y = x
   // dy/dx = 1
