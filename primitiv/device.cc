@@ -90,44 +90,18 @@ Tensor Device::random_normal(const Shape &shape, float mean, float sd) {
 Tensor Device::slice(
     const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
   const Shape new_shape = shape_ops::slice(x.shape(), dim, lower, upper);
-  if (new_shape == x.shape()) return duplicate(x);
 
   CHECK_DEVICE(x);
   return slice_impl(x, dim, lower, new_shape);
 }
 
 Tensor Device::concat(const vector<const Tensor *> &xs, unsigned dim) {
-  if (xs.empty()) {
-    THROW_ERROR("No tensors to be concatenated.");
-  }
+  vector<const Shape *> shapes(xs.size());
+  for (unsigned i = 0; i < xs.size(); ++i) shapes[i] = &xs[i]->shape();
+  const Shape new_shape = shape_ops::concat(shapes, dim);
 
-  if (xs.size() == 1) {
-    // Resulting tensor is completely same as the argument.
-    return duplicate(*xs[0]);
-  }
-
-  Shape s0 = xs[0]->shape();
-  unsigned sum = s0[dim];
-
-  for (unsigned i = 1; i < xs.size(); ++i) {
-    const Shape &s = xs[i]->shape();
-    if (!s0.has_same_loo_dims(s, dim) || !s0.has_compatible_batch(s)) {
-      std::string dims_str = xs[0]->shape().to_string();
-      for (unsigned i = 1; i < xs.size(); ++i) {
-        dims_str += ", " + xs[i]->shape().to_string();
-      }
-      THROW_ERROR("Attempted to concatenate tensors with shapes: " << dims_str);
-    }
-    if (s0.batch_size() == 1) s0.update_batch(s.batch_size());
-    sum += s[dim];
-  }
-
-  s0.update_dim(dim, sum);
-
-  for (const Tensor *x : xs) {
-    CHECK_DEVICE(*x);
-  }
-  return concat_impl(xs, dim, s0);
+  for (const Tensor *x : xs) CHECK_DEVICE(*x);
+  return concat_impl(xs, dim, new_shape);
 }
 
 Tensor Device::duplicate(const Tensor &x) {

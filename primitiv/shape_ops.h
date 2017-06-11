@@ -20,9 +20,10 @@ Shape slice(const Shape &x, unsigned dim, unsigned lower, unsigned upper);
 /**
  * Calculates the concatenated shape.
  * @param xs A list of shapes.
+ * @param dim Dimension to be concatenated.
  * @return A shape.
  */
-Shape concat(const std::vector<const Shape *> &xs);
+Shape concat(const std::vector<const Shape *> &xs, unsigned dim);
 
 }  // namespace shape_ops
 }  // namespace primitiv

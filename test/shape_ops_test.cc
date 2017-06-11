@@ -28,7 +28,7 @@ TEST_F(ShapeOpsTest, CheckSlice) {
     {2, 0, 1, {3, 4}, {3, 4}},
   };
   for (const TestCase &tc : test_cases) {
-    Shape observed = slice(tc.input, tc.dim, tc.lower, tc.upper);
+    const Shape observed = slice(tc.input, tc.dim, tc.lower, tc.upper);
     EXPECT_EQ(tc.expected, observed);
   }
 }
@@ -51,11 +51,49 @@ TEST_F(ShapeOpsTest, CheckInvalidSlice) {
 }
 
 TEST_F(ShapeOpsTest, CheckConcat) {
-  FAIL() << "not implemented";
+  struct TestCase {
+    vector<Shape> inputs;
+    unsigned dim;
+    Shape expected;
+  };
+  const vector<TestCase> test_cases {
+    {{{}}, 0, {}},
+    {{{}}, 1, {}},
+    {{{}, {2}, {3}}, 0, {6}},
+    {{{1, 2}, {3, 2}, {2, 2}}, 0, {6, 2}},
+    {{{1, 2}, {1, 2, 3}, {1, 2, 2}}, 2, {1, 2, 6}},
+    {{{1, 2}, {1, 2}, {1, 2}}, 3, {1, 2, 1, 3}},
+    {{Shape({}, 2), {}, {}}, 0, Shape({3}, 2)},
+    {{{}, Shape({2}, 2), {}}, 0, Shape({4}, 2)},
+    {{{}, {}, Shape({3}, 2)}, 0, Shape({5}, 2)},
+    {{Shape({}, 3), Shape({2}, 3), {3}}, 0, Shape({6}, 3)},
+  };
+  for (const TestCase &tc : test_cases) {
+    vector<const Shape *>xs;
+    for (const Shape &x : tc.inputs) xs.emplace_back(&x);
+    const Shape observed = concat(xs, tc.dim);
+    EXPECT_EQ(tc.expected, observed);
+  }
 }
 
 TEST_F(ShapeOpsTest, CheckInvalidConcat) {
-  FAIL() << "not implemented";
+  struct TestCase {
+    vector<Shape> inputs;
+    unsigned dim;
+  };
+  const vector<TestCase> test_cases {
+    {{}, 0},
+    {{{1}, {2}}, 1},
+    {{{1, 2}, {1, 3}}, 0},
+    {{{1, 2}, {1, 3}}, 2},
+    {{Shape({}, 2), Shape({}, 3)}, 0},
+    {{Shape({1, 2}, 2), Shape({1, 3}, 3)}, 0},
+  };
+  for (const TestCase &tc : test_cases) {
+    vector<const Shape *>xs;
+    for (const Shape &x : tc.inputs) xs.emplace_back(&x);
+    EXPECT_THROW(concat(xs, tc.dim), Error);
+  }
 }
 
 }  // namespace shape_ops
