@@ -515,19 +515,19 @@ Tensor CUDADevice::sum_impl(const Tensor &x, unsigned dim) {
   while (block_size >> 1 >= n) block_size >>= 1;
   Tensor ret = new_tensor(new_shape);
   switch (block_size) {
-#define SUM(k) case k: ::dev_sum<k><<<r, k>>>(DATA(ret), CDATA(x), s, n); break
-    SUM(1024);
-    SUM(512);
-    SUM(256);
-    SUM(128);
-    SUM(64);
-    SUM(32);
-    SUM(16);
-    SUM(8);
-    SUM(4);
-    SUM(2);
-    SUM(1);
-#undef SUM
+#define CASE(k) case k: ::dev_sum<k><<<r, k>>>(DATA(ret), CDATA(x), s, n); break
+    CASE(1024);
+    CASE(512);
+    CASE(256);
+    CASE(128);
+    CASE(64);
+    CASE(32);
+    CASE(16);
+    CASE(8);
+    CASE(4);
+    CASE(2);
+    CASE(1);
+#undef CASE
   }
   return ret;
 }
