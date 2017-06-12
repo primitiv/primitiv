@@ -403,12 +403,12 @@ Tensor CPUDevice::relu_impl(const Tensor &x) {
 }
 
 Tensor CPUDevice::sum_impl(const Tensor &x, unsigned dim) {
-  const Shape new_s = x.shape().resize_dim(dim, 1);
+  const Shape new_shape = x.shape().resize_dim(dim, 1);
   const unsigned n = x.shape()[dim];
-  const unsigned repeat = new_s.num_total_elements();
-  const unsigned skip1 = new_s.num_elements_under_rank(dim);
+  const unsigned repeat = new_shape.num_total_elements();
+  const unsigned skip1 = new_shape.num_elements_under_rank(dim);
   const unsigned skip2 = skip1 * n;
-  Tensor ret = new_tensor(new_s);
+  Tensor ret = new_tensor(new_shape);
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   for (unsigned i = 0; i < repeat; ++i) {

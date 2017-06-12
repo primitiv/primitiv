@@ -768,6 +768,17 @@ TEST_F(TensorOpsTest, CheckSum) {
   }
 }
 
+TEST_F(TensorOpsTest, CheckSum2) {
+  for (Device *dev : devices) {
+    for (unsigned n : {3, 5, 17, 42, 123, 257, 1234, 12345, 65537}) {
+      const Tensor x = dev->new_tensor({n}, 1);
+      const Tensor y = sum(x, 0);
+      EXPECT_EQ(Shape(), y.shape());
+      EXPECT_TRUE(vector_match(vector<float>(1, n), y.to_vector()));
+    }
+  }
+}
+
 TEST_F(TensorOpsTest, CheckBatchSum) {
   const vector<float> x_data {
     1, 2, 3, 4, 5, 6, 7, 8,
