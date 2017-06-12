@@ -283,6 +283,14 @@ public:
   Tensor relu(const Tensor &x);
 
   /**
+   * Integrates a specified dimension.
+   * @param x A tensor.
+   * @param dim Dimension to integrate.
+   * @return Integrated tensor.
+   */
+  Tensor sum(const Tensor &x, unsigned dim);
+
+  /**
    * Calculates the sum over minibatches.
    * @param x A tensor.
    * @return `sum(x[0], x[1], ..., x[x.batch_size])`
@@ -360,6 +368,8 @@ private:
   virtual Tensor sigmoid_impl(const Tensor &x) = 0;
   virtual Tensor step_impl(const Tensor &x) = 0;
   virtual Tensor relu_impl(const Tensor &x) = 0;
+
+  virtual Tensor sum_impl(const Tensor &x, unsigned dim) = 0;
 
   virtual Tensor batch_sum_impl(const Tensor &x) = 0;
 

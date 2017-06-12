@@ -742,6 +742,32 @@ TEST_F(TensorOpsTest, CheckRelu) {
   }
 }
 
+TEST_F(TensorOpsTest, CheckSum) {
+  const vector<float> x_data {
+    1, 2, 3, 4, 5, 6, 7, 8, -1, -2, -3, -4, -5, -6, -7, -8,
+  };
+  const vector<Shape> shape {
+    Shape({1, 2, 2}, 2),
+    Shape({2, 1, 2}, 2),
+    Shape({2, 2}, 2),
+    Shape({2, 2, 2}, 2),
+  };
+  const vector<vector<float>> y_data {
+    {3, 7, 11, 15, -3, -7, -11, -15},
+    {4, 6, 12, 14, -4, -6, -12, -14},
+    {6, 8, 10, 12, -6, -8, -10, -12},
+    {1, 2, 3, 4, 5, 6, 7, 8, -1, -2, -3, -4, -5, -6, -7, -8},
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor(Shape({2, 2, 2}, 2), x_data);
+    for (unsigned i = 0; i < 4; ++i) {
+      const Tensor y = sum(x, i);
+      EXPECT_EQ(shape[i], y.shape());
+      EXPECT_TRUE(vector_match(y_data[i], y.to_vector()));
+    }
+  }
+}
+
 TEST_F(TensorOpsTest, CheckBatchSum) {
   const vector<float> x_data {
     1, 2, 3, 4, 5, 6, 7, 8,

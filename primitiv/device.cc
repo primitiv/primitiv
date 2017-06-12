@@ -251,6 +251,11 @@ Tensor Device::relu(const Tensor &x) {
   return relu_impl(x);
 }
 
+Tensor Device::sum(const Tensor &x, unsigned dim) {
+  CHECK_DEVICE(x);
+  return sum_impl(x, dim);
+}
+
 Tensor Device::batch_sum(const Tensor &x) {
   CHECK_DEVICE(x);
   return batch_sum_impl(x);

@@ -35,6 +35,8 @@ Tensor sigmoid(const Tensor &x);
 Tensor step(const Tensor &x);
 Tensor relu(const Tensor &x);
 
+Tensor sum(const Tensor &x, unsigned dim);
+
 Tensor batch_sum(const Tensor &x);
 
 }  // namespace tensor_ops

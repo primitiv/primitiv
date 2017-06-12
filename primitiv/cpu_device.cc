@@ -402,6 +402,27 @@ Tensor CPUDevice::relu_impl(const Tensor &x) {
   return ret;
 }
 
+Tensor CPUDevice::sum_impl(const Tensor &x, unsigned dim) {
+  const Shape new_s = x.shape().resize_dim(dim, 1);
+  const unsigned n = x.shape()[dim];
+  const unsigned repeat = new_s.num_total_elements();
+  const unsigned skip1 = new_s.num_elements_under_rank(dim);
+  const unsigned skip2 = skip1 * n;
+  Tensor ret = new_tensor(new_s);
+  float *dest = DATA(ret);
+  const float *src = CDATA(x);
+  for (unsigned i = 0; i < repeat; ++i) {
+    unsigned offset = i % skip1 + (i / skip1) * skip2;
+    float tmp = 0;
+    for (unsigned j = 0; j < n; ++j) {
+      tmp += src[offset];
+      offset += skip1;
+    }
+    dest[i] = tmp;
+  }
+  return ret;
+}
+
 Tensor CPUDevice::batch_sum_impl(const Tensor &x) {
   Tensor ret = new_tensor(x.shape().resize_batch(1));
   float *dest = DATA(ret);

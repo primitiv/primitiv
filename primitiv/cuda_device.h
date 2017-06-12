@@ -81,6 +81,8 @@ private:
   Tensor step_impl(const Tensor &x) override;
   Tensor relu_impl(const Tensor &x) override;
 
+  Tensor sum_impl(const Tensor &x, unsigned dim) override;
+
   Tensor batch_sum_impl(const Tensor &x) override;
 
   void add_gradient_impl(Tensor &a, const Tensor &b) override;

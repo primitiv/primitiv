@@ -470,6 +470,10 @@ Tensor CUDADevice::dot_impl(const Tensor &a, const Tensor &b) {
   return ret;
 }
 
+Tensor CUDADevice::sum_impl(const Tensor &x, unsigned dim) {
+  Tensor ret = new_tensor(x.shape().resize_dim(dim, 1));
+  THROW_ERROR("not implemented");
+}
 
 Tensor CUDADevice::batch_sum_impl(const Tensor &x) {
   Tensor ret = new_tensor(x.shape().resize_batch(1));
