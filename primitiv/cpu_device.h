@@ -77,6 +77,7 @@ private:
   Tensor relu_impl(const Tensor &x) override;
 
   Tensor sum_impl(const Tensor &x, unsigned dim) override;
+  Tensor broadcast_impl(const Tensor &x, unsigned dim) override;
 
   Tensor batch_sum_impl(const Tensor &x) override;
 

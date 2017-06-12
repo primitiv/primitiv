@@ -423,6 +423,10 @@ Tensor CPUDevice::sum_impl(const Tensor &x, unsigned dim) {
   return ret;
 }
 
+Tensor CPUDevice::broadcast_impl(const Tensor &x, unsigned dim) {
+  THROW_ERROR("not implemented");
+}
+
 Tensor CPUDevice::batch_sum_impl(const Tensor &x) {
   Tensor ret = new_tensor(x.shape().resize_batch(1));
   float *dest = DATA(ret);

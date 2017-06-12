@@ -256,6 +256,17 @@ Tensor Device::sum(const Tensor &x, unsigned dim) {
   return sum_impl(x, dim);
 }
 
+Tensor Device::broadcast(const Tensor &x, unsigned dim) {
+  if (x.shape()[dim] != 1) {
+    THROW_ERROR(
+        "Cannot broadcast dimension whose value is not 1. x.shape: "
+        << x.shape().to_string() << ", dim: " << dim);
+  }
+
+  CHECK_DEVICE(x);
+  return broadcast_impl(x, dim);
+}
+
 Tensor Device::batch_sum(const Tensor &x) {
   CHECK_DEVICE(x);
   return batch_sum_impl(x);

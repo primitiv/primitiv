@@ -532,6 +532,10 @@ Tensor CUDADevice::sum_impl(const Tensor &x, unsigned dim) {
   return ret;
 }
 
+Tensor CUDADevice::broadcast_impl(const Tensor &x, unsigned dim) {
+  THROW_ERROR("not implemented");
+}
+
 Tensor CUDADevice::batch_sum_impl(const Tensor &x) {
   Tensor ret = new_tensor(x.shape().resize_batch(1));
   const unsigned size = ret.shape().num_total_elements();

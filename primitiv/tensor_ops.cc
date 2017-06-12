@@ -103,6 +103,10 @@ Tensor sum(const Tensor &x, unsigned dim) {
   return x.device()->sum(x, dim);
 }
 
+Tensor broadcast(const Tensor &x, unsigned dim) {
+  return x.device()->broadcast(x, dim);
+}
+
 Tensor batch_sum(const Tensor &x) {
   return x.device()->batch_sum(x);
 }
