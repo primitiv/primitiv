@@ -37,6 +37,8 @@ Tensor relu(const Tensor &x);
 
 Tensor sum(const Tensor &x, unsigned dim);
 Tensor logsumexp(const Tensor &x, unsigned dim);
+Tensor log_softmax(const Tensor &x, unsigned dim);
+Tensor softmax(const Tensor &x, unsigned dim);
 Tensor broadcast(const Tensor &x, unsigned dim, unsigned size);
 
 Tensor batch_sum(const Tensor &x);

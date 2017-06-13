@@ -107,6 +107,14 @@ Tensor logsumexp(const Tensor &x, unsigned dim) {
   return x.device()->logsumexp(x, dim);
 }
 
+Tensor log_softmax(const Tensor &x, unsigned dim) {
+  return x - broadcast(logsumexp(x, dim), dim, x.shape()[dim]);
+}
+
+Tensor softmax(const Tensor &x, unsigned dim) {
+  return exp(log_softmax(x, dim));
+}
+
 Tensor broadcast(const Tensor &x, unsigned dim, unsigned size) {
   return x.device()->broadcast(x, dim, size);
 }

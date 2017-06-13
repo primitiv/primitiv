@@ -829,6 +829,98 @@ TEST_F(TensorOpsTest, CheckLogsumexp2) {
   }
 }
 
+TEST_F(TensorOpsTest, CheckLogSoftmax) {
+  const vector<float> x_data {
+    1, 2, 3, 4, 5, 6, 7, 8, -1, -2, -3, -4, -5, -6, -7, -8,
+  };
+  const vector<vector<float>> y_data {
+    {-1.31326169, -0.31326169, -1.31326169, -0.31326169,
+      -1.31326169, -0.31326169, -1.31326169, -0.31326169,
+      -0.31326169, -1.31326169, -0.31326169, -1.31326169,
+      -0.31326169, -1.31326169, -0.31326169, -1.31326169},
+    {-2.12692801, -2.12692801, -0.12692801, -0.12692801,
+      -2.12692801, -2.12692801, -0.12692801, -0.12692801,
+      -0.12692801, -0.12692801, -2.12692801, -2.12692801,
+      -0.12692801, -0.12692801, -2.12692801, -2.12692801},
+    {-4.01814993, -4.01814993, -4.01814993, -4.01814993,
+      -0.01814993, -0.01814993, -0.01814993, -0.01814993,
+      -0.01814993, -0.01814993, -0.01814993, -0.01814993,
+      -4.01814993, -4.01814993, -4.01814993, -4.01814993},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor(Shape({2, 2, 2}, 2), x_data);
+    for (unsigned i = 0; i < 4; ++i) {
+      const Tensor y = log_softmax(x, i);
+      EXPECT_EQ(Shape({2, 2, 2}, 2), y.shape());
+      EXPECT_TRUE(vector_near(y_data[i], y.to_vector(), 1e-6));
+    }
+  }
+}
+
+TEST_F(TensorOpsTest, CheckLogSoftmax2) {
+  const vector<unsigned> ns {
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025, 65535, 65536, 65537,
+  };
+  for (Device *dev : devices) {
+    for (const unsigned n : ns) {
+      for (const float k : {-5, -1, 0, 1, 5}) {
+        const Tensor x = dev->new_tensor({n}, k);
+        const Tensor y = log_softmax(x, 0);
+        EXPECT_EQ(Shape({n}), y.shape());
+        EXPECT_TRUE(
+            vector_near(vector<float>(n, -std::log(n)), y.to_vector(), 1e-3));
+      }
+    }
+  }
+}
+
+TEST_F(TensorOpsTest, CheckSoftmax) {
+  const vector<float> x_data {
+    1, 2, 3, 4, 5, 6, 7, 8, -1, -2, -3, -4, -5, -6, -7, -8,
+  };
+  const vector<vector<float>> y_data {
+    {0.26894142, 0.73105858, 0.26894142, 0.73105858,
+      0.26894142, 0.73105858, 0.26894142, 0.73105858,
+      0.73105858, 0.26894142, 0.73105858, 0.26894142,
+      0.73105858, 0.26894142, 0.73105858, 0.26894142},
+    {0.11920292, 0.11920292, 0.88079708, 0.88079708,
+      0.11920292, 0.11920292, 0.88079708, 0.88079708,
+      0.88079708, 0.88079708, 0.11920292, 0.11920292,
+      0.88079708, 0.88079708, 0.11920292, 0.11920292},
+    {0.01798621, 0.01798621, 0.01798621, 0.01798621,
+      0.98201379, 0.98201379, 0.98201379, 0.98201379,
+      0.98201379, 0.98201379, 0.98201379, 0.98201379,
+      0.01798621, 0.01798621, 0.01798621, 0.01798621},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor(Shape({2, 2, 2}, 2), x_data);
+    for (unsigned i = 0; i < 4; ++i) {
+      const Tensor y = softmax(x, i);
+      EXPECT_EQ(Shape({2, 2, 2}, 2), y.shape());
+      EXPECT_TRUE(vector_near(y_data[i], y.to_vector(), 1e-6));
+    }
+  }
+}
+
+TEST_F(TensorOpsTest, CheckSoftmax2) {
+  const vector<unsigned> ns {
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025, 65535, 65536, 65537,
+  };
+  for (Device *dev : devices) {
+    for (const unsigned n : ns) {
+      for (const float k : {-5, -1, 0, 1, 5}) {
+        const Tensor x = dev->new_tensor({n}, k);
+        const Tensor y = softmax(x, 0);
+        EXPECT_EQ(Shape({n}), y.shape());
+        EXPECT_TRUE(
+            vector_near(vector<float>(n, 1./n), y.to_vector(), 1e-6));
+      }
+    }
+  }
+}
+
 TEST_F(TensorOpsTest, CheckBroadcast) {
   struct TestCase {
     unsigned dim, size;
