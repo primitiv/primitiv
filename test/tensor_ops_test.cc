@@ -824,6 +824,7 @@ TEST_F(TensorOpsTest, CheckLogsumexp2) {
         const Tensor x = dev->new_tensor({n}, k);
         const Tensor y = logsumexp(x, 0);
         EXPECT_EQ(Shape(), y.shape());
+        // TODO(odashi): 1e-3 might not be enough precision.
         EXPECT_TRUE(vector_near(
               vector<float>(1, k + std::log(n)), y.to_vector(), 1e-3));
     }
@@ -870,6 +871,7 @@ TEST_F(TensorOpsTest, CheckLogSoftmax2) {
         const Tensor x = dev->new_tensor({n}, k);
         const Tensor y = log_softmax(x, 0);
         EXPECT_EQ(Shape({n}), y.shape());
+        // TODO(odashi): 1e-3 might not be enough precision.
         EXPECT_TRUE(
             vector_near(vector<float>(n, -std::log(n)), y.to_vector(), 1e-3));
       }
@@ -1022,6 +1024,31 @@ TEST_F(TensorOpsTest, CheckBatchSum) {
     const Tensor y = batch_sum(x);
     EXPECT_EQ(Shape({2, 2, 2}), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+  }
+}
+
+TEST_F(TensorOpsTest, CheckSoftmaxCrossEntropy) {
+  const vector<vector<float>> x_data {
+    {-1, 0, 1, 1, 0, 0, 0, 0, 1},
+    {-1, 1, 0, 0, 0, 0, 1, 0, 1},
+  };
+  const vector<vector<float>> t_data {
+    {1./3, 1./3, 1./3, .5, .25, .25, 0, 0, 1},
+    {1./3, .5, 0, 1./3, .25, 0, 1./3, .25, 1},
+  };
+  const vector<vector<float>> y_data {
+    {1.40760596, 1.05144471, 0.55144471},
+    {1.40760596, 1.05144471, 0.55144471},
+  };
+  const vector<Shape> shape {{1, 3}, {3}};
+  for (Device *dev : devices) {
+    for (const unsigned dim : {0, 1}) {
+      const Tensor x = dev->new_tensor({3, 3}, x_data[dim]);
+      const Tensor t = dev->new_tensor({3, 3}, t_data[dim]);
+      const Tensor y = softmax_cross_entropy(x, t, dim);
+      EXPECT_EQ(shape[dim], y.shape());
+      EXPECT_TRUE(vector_match(y_data[dim], y.to_vector()));
+    }
   }
 }
 

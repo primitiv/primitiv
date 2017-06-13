@@ -123,5 +123,9 @@ Tensor batch_sum(const Tensor &x) {
   return x.device()->batch_sum(x);
 }
 
+Tensor softmax_cross_entropy(const Tensor &x, const Tensor &t, unsigned dim) {
+  return -sum(t * log_softmax(x, dim), dim);
+}
+
 }  // namespace tensor_ops
 }  // namespace primitiv
