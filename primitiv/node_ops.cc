@@ -104,6 +104,10 @@ Node relu(const Node &x) {
   return x.graph()->add_function(new functions::ReLU(), {x});
 }
 
+Node sum(const Node &x, unsigned dim) {
+  return x.graph()->add_function(new functions::Sum(dim), {x});
+}
+
 Node batch_sum(const Node &x) {
   return x.graph()->add_function(new functions::BatchSum(), {x});
 }

@@ -47,6 +47,12 @@ Tensor Input::forward(const vector<const Tensor *> &args) const {
   return ret;
 }
 
+void Input::backward(
+    const Tensor &, const Tensor &cur_grad,
+    const vector<const Tensor *> &, const vector<Tensor *> &) const {
+  // Nothing to do
+}
+
 Shape ParameterInput::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 0);
   return param_->shape();
@@ -165,6 +171,11 @@ Shape Dot::forward_shape(const vector<const Shape *> &args) const {
   return Shape({a[0], b[1]}, std::max(a_bs, b_bs));
 }
 
+Shape Sum::forward_shape(const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 1);
+  return args[0]->resize_dim(dim_, 1);
+}
+
 Shape BatchSum::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 1);
   return args[0]->resize_batch(1);
@@ -194,6 +205,7 @@ FORWARD(Exp) { return tensor_ops::exp(*args[0]); }
 FORWARD(Tanh) { return tensor_ops::tanh(*args[0]); }
 FORWARD(Sigmoid) { return tensor_ops::sigmoid(*args[0]); }
 FORWARD(ReLU) { return tensor_ops::relu(*args[0]); }
+FORWARD(Sum) { return tensor_ops::sum(*args[0], dim_); }
 FORWARD(BatchSum) { return tensor_ops::batch_sum(*args[0]); }
 
 #undef FORWARD
@@ -227,6 +239,7 @@ BACKWARD(Exp) { ADD(0, y * yg); }
 BACKWARD(Tanh) { ADD(0, (1 - y * y) * yg); }
 BACKWARD(Sigmoid) { ADD(0, y * (1 - y) * yg); }
 BACKWARD(ReLU) { ADD(0, tensor_ops::step(*x[0]) * yg); }
+BACKWARD(Sum) { ADD(0, tensor_ops::broadcast(yg, dim_, xg[0]->shape()[dim_])); }
 BACKWARD(BatchSum) { ADD(0, yg); }
 
 #undef BACKWARD

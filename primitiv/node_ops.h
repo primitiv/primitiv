@@ -40,6 +40,8 @@ Node tanh(const Node &x);
 Node sigmoid(const Node &x);
 Node relu(const Node &x);
 
+Node sum(const Node &x, unsigned dim);
+
 Node batch_sum(const Node &x);
 
 }  // namespace node_ops

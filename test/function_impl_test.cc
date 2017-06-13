@@ -477,16 +477,39 @@ TEST_F(FunctionImplTest_1Arg, CheckReLU) {
   TEST_1ARG(ReLU);
 }
 
+TEST_F(FunctionImplTest_1Arg, CheckSum) {
+  // y = sum(x, dim)
+  // dy/dx = broadcast(1)
+  struct TestCase {
+    unsigned dim;
+    Shape ret_shape;
+    vector<float> ret_data;
+  };
+  const vector<TestCase> test_cases {
+    {0, Shape({1, 2}, 3), {3, 7, 0, 0, -3, -7}},
+    {1, Shape({2}, 3), {4, 6, 0, 0, -4, -6}},
+    {2, Shape({2, 2}, 3), {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4}},
+  };
+  for (const TestCase &tc : test_cases) {
+    const Sum node(tc.dim);
+    const Shape cur_shape = node.forward_shape(arg_shapes);
+    const Tensor cur_value = node.forward(arg_values);
+    const Tensor cur_grad = dev.new_tensor(tc.ret_shape, 1);
+    arg_grads[0]->reset(0);
+    node.backward(cur_value, cur_grad, arg_values, arg_grads);
+    EXPECT_EQ("Sum(" + std::to_string(tc.dim) + ')', node.name());
+    EXPECT_EQ(tc.ret_shape, cur_shape);
+    EXPECT_TRUE(vector_match(tc.ret_data, cur_value.to_vector()));
+    EXPECT_TRUE(vector_match(vector<float>(12, 1), arg_grads[0]->to_vector()));
+  }
+}
+
 TEST_F(FunctionImplTest_1Arg, CheckBatchSum) {
   // y = sum_i x[i]
   // dy/dx = 1 for every minibatch.
-  const Shape ret_shape({2, 2});
+  const Shape ret_shape {2, 2};
   const vector<float> ret_data {0, 0, 0, 0};
-  const vector<float> bw_grad {
-    1, 1, 1, 1,
-    1, 1, 1, 1,
-    1, 1, 1, 1,
-  };
+  const vector<float> bw_grad(12, 1);
   TEST_1ARG(BatchSum);
 }
 

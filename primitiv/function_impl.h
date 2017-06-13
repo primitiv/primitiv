@@ -18,6 +18,13 @@ private: \
   name_ &operator=(const name_ &) = delete; \
   name_ &operator=(name_ &&) = delete; \
 public: \
+  Shape forward_shape(const std::vector<const Shape *> &args) const override; \
+  Tensor forward(const std::vector<const Tensor *> &args) const override; \
+  void backward( \
+      const Tensor &cur_value, \
+      const Tensor &cur_grad, \
+      const std::vector<const Tensor *> &arg_values, \
+      const std::vector<Tensor *> &arg_grads) const override;
 
 /**
  * Function object that behaves data source of the computation graph.
@@ -30,14 +37,6 @@ private:
 
 public:
   Input(const Shape &shape, Device *device, const std::vector<float> &data);
-
-  Shape forward_shape(const std::vector<const Shape *> &args) const override;
-  Tensor forward(const std::vector<const Tensor *> &args) const override;
-  void backward(
-      const Tensor &cur_value,
-      const Tensor &cur_grad,
-      const std::vector<const Tensor *> &arg_values,
-      const std::vector<Tensor *> &arg_grads) const override {}
   std::string name() const override { return "Input"; }
 
 private:
@@ -57,14 +56,6 @@ private:
 
 public:
   explicit ParameterInput(Parameter *param) : param_(param) {}
-
-  Shape forward_shape(const std::vector<const Shape *> &args) const override;
-  Tensor forward(const std::vector<const Tensor *> &args) const override;
-  void backward(
-      const Tensor &cur_value,
-      const Tensor &cur_grad,
-      const std::vector<const Tensor *> &arg_values,
-      const std::vector<Tensor *> &arg_grads) const override;
   std::string name() const override { return "ParameterInput"; }
 
 private:
@@ -81,13 +72,6 @@ private:
 public:
   Slice(unsigned dim, unsigned lower, unsigned upper)
   : dim_(dim), lower_(lower), upper_(upper) {}
-  Shape forward_shape(const std::vector<const Shape *> &args) const override;
-  Tensor forward(const std::vector<const Tensor *> &args) const override;
-  void backward(
-      const Tensor &cur_value,
-      const Tensor &cur_grad,
-      const std::vector<const Tensor *> &arg_values,
-      const std::vector<Tensor *> &arg_grads) const override;
   std::string name() const override {
     return "Slice(" + std::to_string(dim_) +
       ',' + std::to_string(lower_) + ':' + std::to_string(upper_) + ')';
@@ -108,15 +92,27 @@ private:
 
 public:
   Concat(unsigned dim) : dim_(dim) {}
-  Shape forward_shape(const std::vector<const Shape *> &args) const override;
-  Tensor forward(const std::vector<const Tensor *> &args) const override;
-  void backward(
-      const Tensor &cur_value,
-      const Tensor &cur_grad,
-      const std::vector<const Tensor *> &arg_values,
-      const std::vector<Tensor *> &arg_grads) const override;
   std::string name() const override {
     return "Concat(" + std::to_string(dim_) + ')';
+  }
+
+private:
+  unsigned dim_;
+};
+
+/**
+ * Function to sum a dimension.
+ */
+class Sum : public Function {
+  DEFAULT_METHODS(Sum);
+
+private:
+  Sum() = delete;
+
+public:
+  explicit Sum(unsigned dim) : dim_(dim) {}
+  std::string name() const override {
+    return "Sum(" + std::to_string(dim_) + ')';
   }
 
 private:
@@ -129,37 +125,19 @@ private:
     DEFAULT_METHODS(name_); \
   public: \
     name_() {} \
-    Shape forward_shape( \
-        const std::vector<const Shape *> &args) const override; \
-    Tensor forward(const std::vector<const Tensor *> &args) const override; \
-    void backward( \
-      const Tensor &cur_value, \
-      const Tensor &cur_grad, \
-      const std::vector<const Tensor *> &arg_values, \
-      const std::vector<Tensor *> &arg_grads) const override; \
     std::string name() const override { return #name_; } \
   }
 
 // Function with a constant.
 #define DECL_FUNC_K(name_) \
   class name_ : public Function { \
+    DEFAULT_METHODS(name_); \
+  private: \
     name_() = delete; \
-    name_(const name_ &) = delete; \
-    name_(name_ &&) = delete; \
-    name_ &operator=(const name_ &) = delete; \
-    name_ &operator=(name_ &&) = delete; \
   public: \
-    explicit name_(const float k) : k_(k) {} \
-    Shape forward_shape( \
-        const std::vector<const Shape *> &args) const override; \
-    Tensor forward(const std::vector<const Tensor *> &args) const override; \
-    void backward( \
-      const Tensor &cur_value, \
-      const Tensor &cur_grad, \
-      const std::vector<const Tensor *> &arg_values, \
-      const std::vector<Tensor *> &arg_grads) const override; \
+    explicit name_(float  k) : k_(k) {} \
     std::string name() const override { \
-      return std::string(#name_) + '(' + std::to_string(k_) + ')'; \
+      return #name_"(" + std::to_string(k_) + ')'; \
     } \
   private: \
     float k_; \
