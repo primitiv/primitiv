@@ -820,11 +820,13 @@ TEST_F(TensorOpsTest, CheckLogsumexp2) {
   };
   for (Device *dev : devices) {
     for (const unsigned n : ns) {
-      const Tensor x = dev->new_tensor({n}, 0);
-      const Tensor y = logsumexp(x, 0);
-      EXPECT_EQ(Shape(), y.shape());
-      EXPECT_TRUE(
-          vector_near(vector<float>(1, std::log(n)), y.to_vector(), 1e-3));
+      for (const float k : {-5, -1, 0, 1, 5}) {
+        const Tensor x = dev->new_tensor({n}, k);
+        const Tensor y = logsumexp(x, 0);
+        EXPECT_EQ(Shape(), y.shape());
+        EXPECT_TRUE(vector_near(
+              vector<float>(1, k + std::log(n)), y.to_vector(), 1e-3));
+    }
     }
   }
 }
