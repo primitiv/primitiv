@@ -41,6 +41,7 @@ Node sigmoid(const Node &x);
 Node relu(const Node &x);
 
 Node sum(const Node &x, unsigned dim);
+Node broadcast(const Node &x, unsigned dim, unsigned size);
 
 Node batch_sum(const Node &x);
 

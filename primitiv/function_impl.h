@@ -119,6 +119,27 @@ private:
   unsigned dim_;
 };
 
+/**
+ * Function to broadcast a dimension.
+ */
+class Broadcast : public Function {
+  DEFAULT_METHODS(Broadcast);
+
+private:
+  Broadcast() = delete;
+
+public:
+  Broadcast(unsigned dim, unsigned size) : dim_(dim), size_(size) {}
+  std::string name() const override {
+    return "Broadcast(" + std::to_string(dim_)
+      + ',' + std::to_string(size_) + ')';
+  }
+
+private:
+  unsigned dim_;
+  unsigned size_;
+};
+
 // Function with no parameter.
 #define DECL_FUNC(name_) \
   class name_ : public Function { \

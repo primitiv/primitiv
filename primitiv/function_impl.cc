@@ -176,6 +176,11 @@ Shape Sum::forward_shape(const vector<const Shape *> &args) const {
   return args[0]->resize_dim(dim_, 1);
 }
 
+Shape Broadcast::forward_shape(const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 1);
+  return shape_ops::broadcast(*args[0], dim_, size_);
+}
+
 Shape BatchSum::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 1);
   return args[0]->resize_batch(1);
@@ -206,6 +211,7 @@ FORWARD(Tanh) { return tensor_ops::tanh(*args[0]); }
 FORWARD(Sigmoid) { return tensor_ops::sigmoid(*args[0]); }
 FORWARD(ReLU) { return tensor_ops::relu(*args[0]); }
 FORWARD(Sum) { return tensor_ops::sum(*args[0], dim_); }
+FORWARD(Broadcast) { return tensor_ops::broadcast(*args[0], dim_, size_); }
 FORWARD(BatchSum) { return tensor_ops::batch_sum(*args[0]); }
 
 #undef FORWARD
@@ -240,6 +246,7 @@ BACKWARD(Tanh) { ADD(0, (1 - y * y) * yg); }
 BACKWARD(Sigmoid) { ADD(0, y * (1 - y) * yg); }
 BACKWARD(ReLU) { ADD(0, tensor_ops::step(*x[0]) * yg); }
 BACKWARD(Sum) { ADD(0, tensor_ops::broadcast(yg, dim_, xg[0]->shape()[dim_])); }
+BACKWARD(Broadcast) { ADD(0, tensor_ops::sum(yg, dim_)); }
 BACKWARD(BatchSum) { ADD(0, yg); }
 
 #undef BACKWARD

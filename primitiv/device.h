@@ -380,7 +380,7 @@ private:
 
   virtual Tensor sum_impl(const Tensor &x, unsigned dim) = 0;
   virtual Tensor broadcast_impl(
-      const Tensor &x, unsigned dim, unsigned size) = 0;
+      const Tensor &x, unsigned dim, unsigned size, const Shape &new_shape) = 0;
 
   virtual Tensor batch_sum_impl(const Tensor &x) = 0;
 

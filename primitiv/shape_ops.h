@@ -25,6 +25,15 @@ Shape slice(const Shape &x, unsigned dim, unsigned lower, unsigned upper);
  */
 Shape concat(const std::vector<const Shape *> &xs, unsigned dim);
 
+/**
+ * Calculated the broadcasted shape.
+ * @param x A shape.
+ * @param dim Dimension to broadcast.
+ * @param size New size of the dimension `dim`.
+ * @return A shape.
+ */
+Shape broadcast(const Shape &x, unsigned dim, unsigned size);
+
 }  // namespace shape_ops
 }  // namespace primitiv
 

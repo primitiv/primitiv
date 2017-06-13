@@ -108,6 +108,10 @@ Node sum(const Node &x, unsigned dim) {
   return x.graph()->add_function(new functions::Sum(dim), {x});
 }
 
+Node broadcast(const Node &x, unsigned dim, unsigned size) {
+  return x.graph()->add_function(new functions::Broadcast(dim, size), {x});
+}
+
 Node batch_sum(const Node &x) {
   return x.graph()->add_function(new functions::BatchSum(), {x});
 }

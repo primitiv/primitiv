@@ -41,5 +41,14 @@ Shape concat(const std::vector<const Shape *> &xs, unsigned dim) {
   return s0;
 }
 
+Shape broadcast(const Shape &x, unsigned dim, unsigned size) {
+  if (x[dim] != 1 || size == 0) {
+    THROW_ERROR(
+        "Invalid broadcasting. x: "
+        << x.to_string() << ", dim: " << dim << ", size: " << size);
+  }
+  return x.resize_dim(dim, size);
+}
+
 }  // namespace shape_ops
 }  // namespace primitiv

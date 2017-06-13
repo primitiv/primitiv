@@ -423,8 +423,8 @@ Tensor CPUDevice::sum_impl(const Tensor &x, unsigned dim) {
   return ret;
 }
 
-Tensor CPUDevice::broadcast_impl(const Tensor &x, unsigned dim, unsigned size) {
-  const Shape new_shape = x.shape().resize_dim(dim, size);
+Tensor CPUDevice::broadcast_impl(
+    const Tensor &x, unsigned dim, unsigned size, const Shape &new_shape) {
   const unsigned repeat = x.shape().num_total_elements();
   const unsigned skip1 = new_shape.num_elements_under_rank(dim);
   const unsigned skip2 = skip1 * size;

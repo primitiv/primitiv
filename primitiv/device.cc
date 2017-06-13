@@ -257,14 +257,9 @@ Tensor Device::sum(const Tensor &x, unsigned dim) {
 }
 
 Tensor Device::broadcast(const Tensor &x, unsigned dim, unsigned size) {
-  if (x.shape()[dim] != 1 || size == 0) {
-    THROW_ERROR(
-        "Invalid broadcasting. x.shape: "
-        << x.shape().to_string() << ", dim: " << dim << ", size: " << size);
-  }
-
   CHECK_DEVICE(x);
-  return broadcast_impl(x, dim, size);
+  return broadcast_impl(
+      x, dim, size, shape_ops::broadcast(x.shape(), dim, size));
 }
 
 Tensor Device::batch_sum(const Tensor &x) {

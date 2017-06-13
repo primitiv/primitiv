@@ -539,8 +539,7 @@ Tensor CUDADevice::sum_impl(const Tensor &x, unsigned dim) {
 }
 
 Tensor CUDADevice::broadcast_impl(
-    const Tensor &x, unsigned dim, unsigned size) {
-  const Shape new_shape = x.shape().resize_dim(dim, size);
+    const Tensor &x, unsigned dim, unsigned size, const Shape &new_shape) {
   const unsigned skip1 = new_shape.num_elements_under_rank(dim);
   const unsigned skip2 = skip1 * size;
   const unsigned total = new_shape.num_total_elements();

@@ -479,7 +479,7 @@ TEST_F(FunctionImplTest_1Arg, CheckReLU) {
 
 TEST_F(FunctionImplTest_1Arg, CheckSum) {
   // y = sum(x, dim)
-  // dy/dx = broadcast(1)
+  // dy/dx = broadcast(1, dim, x.shape[dim])
   struct TestCase {
     unsigned dim;
     Shape ret_shape;
@@ -501,6 +501,45 @@ TEST_F(FunctionImplTest_1Arg, CheckSum) {
     EXPECT_EQ(tc.ret_shape, cur_shape);
     EXPECT_TRUE(vector_match(tc.ret_data, cur_value.to_vector()));
     EXPECT_TRUE(vector_match(vector<float>(12, 1), arg_grads[0]->to_vector()));
+  }
+}
+
+TEST_F(FunctionImplTest_1Arg, CheckBroadcast) {
+  // y = broadcast(x, dim, size)
+  // dy/dx = sum(1, dim)
+  struct TestCase {
+    unsigned dim, size;
+    Shape ret_shape;
+    vector<float> ret_data;
+  };
+  const vector<TestCase> test_cases {
+    {2, 2, Shape({2, 2, 2}, 3),
+      {1, 2, 3, 4, 1, 2, 3, 4,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        -1, -2, -3, -4, -1, -2 ,-3, -4,}},
+    {3, 2, Shape({2, 2, 1, 2}, 3),
+      {1, 2, 3, 4, 1, 2, 3, 4,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        -1, -2, -3, -4, -1, -2 ,-3, -4,}},
+    {2, 3, Shape({2, 2, 3}, 3),
+      {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        -1, -2, -3, -4, -1, -2 ,-3, -4, -1, -2, -3, -4}},
+  };
+  for (const TestCase tc : test_cases) {
+    const Broadcast node(tc.dim, tc.size);
+    const Shape cur_shape = node.forward_shape(arg_shapes);
+    const Tensor cur_value = node.forward(arg_values);
+    const Tensor cur_grad = dev.new_tensor(tc.ret_shape, 1);
+    arg_grads[0]->reset(0);
+    node.backward(cur_value, cur_grad, arg_values, arg_grads);
+    EXPECT_EQ(
+        "Broadcast(" + std::to_string(tc.dim) + ','
+        + std::to_string(tc.size) + ')', node.name());
+    EXPECT_EQ(tc.ret_shape, cur_shape);
+    EXPECT_TRUE(vector_match(tc.ret_data, cur_value.to_vector()));
+    EXPECT_TRUE(
+        vector_match(vector<float>(12, tc.size), arg_grads[0]->to_vector()));
   }
 }
 

@@ -35,6 +35,9 @@ TEST_F(GraphTest, CheckForwardBackward) {
   nodes.emplace_back(nodes[1] - nodes[2]);
   nodes.emplace_back(nodes[3] * nodes[4]);
   nodes.emplace_back(nodes[5] + 1);
+  nodes.emplace_back(node_ops::sum(nodes[6], 0));
+  nodes.emplace_back(node_ops::sum(nodes[7], 1));
+  nodes.emplace_back(node_ops::batch_sum(nodes[8]));
 
   EXPECT_EQ(nodes.size(), g.num_functions());
 
@@ -58,6 +61,9 @@ TEST_F(GraphTest, CheckForwardBackward) {
     {1, 1, 1, 1, 0, 0, 0, 0, -1, -1, -1, -1},
     {2, 3, 4, 5, 0, 0, 0, 0, -2, -3, -4, -5},
     {3, 4, 5, 6, 1, 1, 1, 1, -1, -2, -3, -4},
+    {7, 11, 2, 2, -3, -7},
+    {18, 4, -10},
+    {12},
   };
   for (unsigned i = 0; i < nodes.size(); ++i) {
     // This forward method has no effect and only returns the reference to the
@@ -83,6 +89,9 @@ TEST_F(GraphTest, CheckForwardBackward) {
     {2, 3, 4, 5, 2, 3, 4, 5, 2, 3, 4, 5}, // n[3]
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, // 1
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, // 1
+    {1, 1, 1, 1, 1, 1}, // 1
+    {1, 1, 1}, // 1
+    {1}, // 1
   };
   for (unsigned i = 0; i < nodes.size(); ++i) {
     const Tensor &val = g.get_gradient(nodes[i]);
