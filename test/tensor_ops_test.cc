@@ -811,14 +811,14 @@ TEST_F(TensorOpsTest, CheckBroadcast2) {
     vector<float> values;
   };
   const vector<TestCase> test_cases {
-    {1, 1, Shape({2}, 2), {1, 2, 3, 4, 5, 6}},
-    {2, 1, Shape({2}, 2), {1, 2, 3, 4, 5, 6}},
-    {1, 3, Shape({2, 3}, 2), {1, 2, 1, 2, 3, 4, 3, 4, 5, 6, 5, 6}},
-    {2, 3, Shape({2, 1, 3}, 2), {1, 2, 1, 2, 3, 4, 3, 4, 5, 6, 5, 6}},
+    {1, 1, Shape({2}, 3), {1, 2, 3, 4, 5, 6}},
+    {2, 1, Shape({2}, 3), {1, 2, 3, 4, 5, 6}},
+    {1, 2, Shape({2, 2}, 3), {1, 2, 1, 2, 3, 4, 3, 4, 5, 6, 5, 6}},
+    {2, 2, Shape({2, 1, 2}, 3), {1, 2, 1, 2, 3, 4, 3, 4, 5, 6, 5, 6}},
   };
   for (Device *dev : devices) {
     for (const TestCase &tc : test_cases) {
-      const Tensor x = dev->new_tensor(Shape({2}, 2), {1, 2, 3, 4, 5, 6});
+      const Tensor x = dev->new_tensor(Shape({2}, 3), {1, 2, 3, 4, 5, 6});
       const Tensor y = broadcast(x, tc.dim, tc.size);
       EXPECT_EQ(tc.shape, y.shape());
       EXPECT_TRUE(vector_match(tc.values, y.to_vector()));

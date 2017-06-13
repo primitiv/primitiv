@@ -186,6 +186,12 @@ __global__ void dev_sum(float *py, const float *px, unsigned skip, unsigned n) {
   if (tid == 0) py[bid] = temp[0];
 }
 
+__global__ void dev_broadcast(
+    float *py, const float *px, unsigned skip1, unsigned skip2, unsigned size) {
+  const unsigned i = IDX;
+  if (i < size) py[i] = px[i % skip1 + (i / skip2) * skip1];
+}
+
 __global__ void dev_batch_sum(
     float *py, const float *px, unsigned size, unsigned batch) {
   const unsigned i = IDX;
@@ -534,7 +540,14 @@ Tensor CUDADevice::sum_impl(const Tensor &x, unsigned dim) {
 
 Tensor CUDADevice::broadcast_impl(
     const Tensor &x, unsigned dim, unsigned size) {
-  THROW_ERROR("not implemented");
+  const Shape new_shape = x.shape().resize_dim(dim, size);
+  const unsigned skip1 = new_shape.num_elements_under_rank(dim);
+  const unsigned skip2 = skip1 * size;
+  const unsigned total = new_shape.num_total_elements();
+  const unsigned g1 = GRID_SIZE(total, dim1_x_);
+  Tensor ret = new_tensor(new_shape);
+  ::dev_broadcast<<<g1, dim1_x_>>>(DATA(ret), CDATA(x), skip1, skip2, total);
+  return ret;
 }
 
 Tensor CUDADevice::batch_sum_impl(const Tensor &x) {
