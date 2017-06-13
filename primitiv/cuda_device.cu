@@ -162,10 +162,8 @@ __global__ void dev_sum(float *py, const float *px, unsigned skip, unsigned n) {
   const unsigned tid = threadIdx.x;
   px += bid % skip + (bid / skip) * skip * n;
   temp[tid] = 0;
-
   for (unsigned i = tid; i < n; i += BLOCK_SIZE) temp[tid] += px[i * skip];
   __syncthreads();
-
 #define REDUCE(k) \
   if (BLOCK_SIZE >= k << 1) { \
     if (tid < k) temp[tid] += temp[tid + k]; \
@@ -182,7 +180,43 @@ __global__ void dev_sum(float *py, const float *px, unsigned skip, unsigned n) {
   REDUCE(2)
   REDUCE(1)
 #undef REDUCE
+  if (tid == 0) py[bid] = temp[0];
+}
 
+__device__ float dev_logsumexp2(float a, float b) {
+  return a > b
+    ? a + ::log(1.f + ::exp(b - a))
+    : b + ::log(1.f + ::exp(a - b));
+}
+
+template<unsigned BLOCK_SIZE>
+__global__ void dev_logsumexp(
+    float *py, const float *px, unsigned skip, unsigned n) {
+  __shared__ float temp[BLOCK_SIZE];
+  const unsigned bid = blockIdx.x;
+  const unsigned tid = threadIdx.x;
+  px += bid % skip + (bid / skip) * skip * n;
+  temp[tid] = -1e38;  // NOTE(odashi): Near the minimum of the float.
+  for (unsigned i = tid; i < n; i += BLOCK_SIZE) {
+    temp[tid] = ::dev_logsumexp2(temp[tid], px[i * skip]);
+  }
+  __syncthreads();
+#define REDUCE(k) \
+  if (BLOCK_SIZE >= k << 1) { \
+    if (tid < k) temp[tid] = ::dev_logsumexp2(temp[tid], temp[tid + k]); \
+    __syncthreads(); \
+  }
+  REDUCE(512)
+  REDUCE(256)
+  REDUCE(128)
+  REDUCE(64)
+  REDUCE(32)
+  REDUCE(16)
+  REDUCE(8)
+  REDUCE(4)
+  REDUCE(2)
+  REDUCE(1)
+#undef REDUCE
   if (tid == 0) py[bid] = temp[0];
 }
 
@@ -521,7 +555,35 @@ Tensor CUDADevice::sum_impl(const Tensor &x, unsigned dim) {
   while (block_size >> 1 >= n) block_size >>= 1;
   Tensor ret = new_tensor(new_shape);
   switch (block_size) {
-#define CASE(k) case k: ::dev_sum<k><<<r, k>>>(DATA(ret), CDATA(x), s, n); break
+#define CASE(k) \
+    case k: ::dev_sum<k><<<r, k>>>(DATA(ret), CDATA(x), s, n); break
+    CASE(1024);
+    CASE(512);
+    CASE(256);
+    CASE(128);
+    CASE(64);
+    CASE(32);
+    CASE(16);
+    CASE(8);
+    CASE(4);
+    CASE(2);
+    CASE(1);
+#undef CASE
+  }
+  return ret;
+}
+
+Tensor CUDADevice::logsumexp_impl(const Tensor &x, unsigned dim) {
+  const Shape new_shape = x.shape().resize_dim(dim, 1);
+  const unsigned n = x.shape()[dim];
+  const unsigned r = new_shape.num_total_elements();
+  const unsigned s = new_shape.num_elements_under_rank(dim);
+  unsigned block_size = dim1_x_;
+  while (block_size >> 1 >= n) block_size >>= 1;
+  Tensor ret = new_tensor(new_shape);
+  switch (block_size) {
+#define CASE(k) \
+    case k: ::dev_logsumexp<k><<<r, k>>>(DATA(ret), CDATA(x), s, n); break
     CASE(1024);
     CASE(512);
     CASE(256);

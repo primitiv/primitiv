@@ -103,6 +103,10 @@ Tensor sum(const Tensor &x, unsigned dim) {
   return x.device()->sum(x, dim);
 }
 
+Tensor logsumexp(const Tensor &x, unsigned dim) {
+  return x.device()->logsumexp(x, dim);
+}
+
 Tensor broadcast(const Tensor &x, unsigned dim, unsigned size) {
   return x.device()->broadcast(x, dim, size);
 }

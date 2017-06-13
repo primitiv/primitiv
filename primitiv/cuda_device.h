@@ -82,6 +82,7 @@ private:
   Tensor relu_impl(const Tensor &x) override;
 
   Tensor sum_impl(const Tensor &x, unsigned dim) override;
+  Tensor logsumexp_impl(const Tensor &x, unsigned dim) override;
   Tensor broadcast_impl(
       const Tensor &x, unsigned dim, unsigned size,
       const Shape &new_shape) override;

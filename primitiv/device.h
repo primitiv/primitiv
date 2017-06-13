@@ -291,6 +291,14 @@ public:
   Tensor sum(const Tensor &x, unsigned dim);
 
   /**
+   * Calculates the logsumexp over specified dimension.
+   * @param x A tensor.
+   * @param dim Dimension to calculate logsumexp.
+   * @return `logsumexp(x)` over specified dimension.
+   */
+  Tensor logsumexp(const Tensor &x, unsigned dim);
+
+  /**
    * Broadcasts a specified dimension.
    * @param x A tensor.
    * @param dim Dimension to broadcast.
@@ -379,6 +387,7 @@ private:
   virtual Tensor relu_impl(const Tensor &x) = 0;
 
   virtual Tensor sum_impl(const Tensor &x, unsigned dim) = 0;
+  virtual Tensor logsumexp_impl(const Tensor &x, unsigned dim) = 0;
   virtual Tensor broadcast_impl(
       const Tensor &x, unsigned dim, unsigned size, const Shape &new_shape) = 0;
 

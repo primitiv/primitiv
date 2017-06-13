@@ -256,6 +256,11 @@ Tensor Device::sum(const Tensor &x, unsigned dim) {
   return sum_impl(x, dim);
 }
 
+Tensor Device::logsumexp(const Tensor &x, unsigned dim) {
+  CHECK_DEVICE(x);
+  return logsumexp_impl(x, dim);
+}
+
 Tensor Device::broadcast(const Tensor &x, unsigned dim, unsigned size) {
   CHECK_DEVICE(x);
   return broadcast_impl(

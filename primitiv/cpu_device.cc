@@ -423,7 +423,32 @@ Tensor CPUDevice::sum_impl(const Tensor &x, unsigned dim) {
   return ret;
 }
 
-Tensor CPUDevice::broadcast_impl(
+Tensor CPUDevice::logsumexp_impl(const Tensor &x, unsigned dim) {
+  const Shape new_shape = x.shape().resize_dim(dim, 1);
+  const unsigned n = x.shape()[dim];
+  const unsigned repeat = new_shape.num_total_elements();
+  const unsigned skip1 = new_shape.num_elements_under_rank(dim);
+  const unsigned skip2 = skip1 * n;
+  Tensor ret = new_tensor(new_shape);
+  float *dest = DATA(ret);
+  const float *src = CDATA(x);
+  for (unsigned i = 0; i < repeat; ++i) {
+    // TODO(odashi): This calculation might generate large errors.
+    unsigned offset = i % skip1 + (i / skip1) * skip2;
+    float tmp = src[offset];
+    for (unsigned j = 1; j < n; ++j) {
+      offset += skip1;
+      float arg = src[offset];
+      tmp = tmp > arg
+        ? tmp + std::log(1. + std::exp(arg - tmp))
+        : arg + std::log(1. + std::exp(tmp - arg));
+    }
+    dest[i] = tmp;
+  }
+  return ret;
+}
+
+  Tensor CPUDevice::broadcast_impl(
     const Tensor &x, unsigned dim, unsigned size, const Shape &new_shape) {
   const unsigned repeat = x.shape().num_total_elements();
   const unsigned skip1 = new_shape.num_elements_under_rank(dim);

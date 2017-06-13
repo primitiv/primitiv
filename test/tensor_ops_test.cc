@@ -1,6 +1,7 @@
 #include <config.h>
 
 #include <algorithm>
+#include <cmath>
 #include <utility>
 #include <vector>
 #include <gtest/gtest.h>
@@ -16,6 +17,7 @@
 
 using std::vector;
 using test_utils::vector_match;
+using test_utils::vector_near;
 
 namespace primitiv {
 namespace tensor_ops {
@@ -778,6 +780,51 @@ TEST_F(TensorOpsTest, CheckSum2) {
       const Tensor y = sum(x, 0);
       EXPECT_EQ(Shape(), y.shape());
       EXPECT_TRUE(vector_match(vector<float>(1, n), y.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorOpsTest, CheckLogsumexp) {
+  const vector<float> x_data {
+    1, 2, 3, 4, 5, 6, 7, 8, -1, -2, -3, -4, -5, -6, -7, -8,
+  };
+  const vector<Shape> shape {
+    Shape({1, 2, 2}, 2),
+    Shape({2, 1, 2}, 2),
+    Shape({2, 2}, 2),
+    Shape({2, 2, 2}, 2),
+  };
+  // NOTE(odashi): logsumexp(a, a+h) = a + log(1+h)
+  const vector<vector<float>> y_data {
+    {2.31326169, 4.31326169, 6.31326169, 8.31326169,
+      -0.68673831, 2.68673831, -4.68673831, -6.68673831},
+    {3.12692801, 4.12692801, 7.12692801, 8.12692801,
+      -0.87307199, -1.87307199, -4.87307199, -5.87307199},
+    {5.01814993, 6.01814993, 7.01814993, 8.01814993,
+      -0.98185007, -1.98185007, -2.98185007, -3.98185007},
+    {1, 2, 3, 4, 5, 6, 7, 8, -1, -2, -3, -4, -5, -6, -7, -8},
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor(Shape({2, 2, 2}, 2), x_data);
+    for (unsigned i = 0; i < 4; ++i) {
+      const Tensor y = logsumexp(x, i);
+      EXPECT_EQ(shape[i], y.shape());
+      EXPECT_TRUE(vector_match(y_data[i], y.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorOpsTest, CheckLogsumexp2) {
+  const vector<unsigned> ns {
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025, 65535, 65536, 65537,
+  };
+  for (Device *dev : devices) {
+    for (const unsigned n : ns) {
+      const Tensor x = dev->new_tensor({n}, 0);
+      const Tensor y = logsumexp(x, 0);
+      EXPECT_EQ(Shape(), y.shape());
+      EXPECT_TRUE(
+          vector_near(vector<float>(1, std::log(n)), y.to_vector(), 1e-3));
     }
   }
 }
