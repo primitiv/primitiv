@@ -794,7 +794,7 @@ TEST_F(TensorOpsTest, CheckLogsumexp) {
     Shape({2, 2}, 2),
     Shape({2, 2, 2}, 2),
   };
-  // NOTE(odashi): logsumexp(a, a+h) = a + log(1+h)
+  // NOTE(odashi): logsumexp(a, a + h) = a + log(1 + exp(h))
   const vector<vector<float>> y_data {
     {2.31326169, 4.31326169, 6.31326169, 8.31326169,
       -0.68673831, 2.68673831, -4.68673831, -6.68673831},
