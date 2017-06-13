@@ -256,15 +256,15 @@ Tensor Device::sum(const Tensor &x, unsigned dim) {
   return sum_impl(x, dim);
 }
 
-Tensor Device::broadcast(const Tensor &x, unsigned dim) {
-  if (x.shape()[dim] != 1) {
+Tensor Device::broadcast(const Tensor &x, unsigned dim, unsigned size) {
+  if (x.shape()[dim] != 1 || size == 0) {
     THROW_ERROR(
-        "Cannot broadcast dimension whose value is not 1. x.shape: "
-        << x.shape().to_string() << ", dim: " << dim);
+        "Invalid broadcasting. x.shape: "
+        << x.shape().to_string() << ", dim: " << dim << ", size: " << size);
   }
 
   CHECK_DEVICE(x);
-  return broadcast_impl(x, dim);
+  return broadcast_impl(x, dim, size);
 }
 
 Tensor Device::batch_sum(const Tensor &x) {

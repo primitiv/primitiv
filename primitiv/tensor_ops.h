@@ -36,7 +36,7 @@ Tensor step(const Tensor &x);
 Tensor relu(const Tensor &x);
 
 Tensor sum(const Tensor &x, unsigned dim);
-Tensor broadcast(const Tensor &x, unsigned dim);
+Tensor broadcast(const Tensor &x, unsigned dim, unsigned size);
 
 Tensor batch_sum(const Tensor &x);
 

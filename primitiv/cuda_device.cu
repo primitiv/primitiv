@@ -532,7 +532,8 @@ Tensor CUDADevice::sum_impl(const Tensor &x, unsigned dim) {
   return ret;
 }
 
-Tensor CUDADevice::broadcast_impl(const Tensor &x, unsigned dim) {
+Tensor CUDADevice::broadcast_impl(
+    const Tensor &x, unsigned dim, unsigned size) {
   THROW_ERROR("not implemented");
 }
 

@@ -783,7 +783,89 @@ TEST_F(TensorOpsTest, CheckSum2) {
 }
 
 TEST_F(TensorOpsTest, CheckBroadcast) {
-  FAIL() << "not implemented";
+  struct TestCase {
+    unsigned dim, size;
+    Shape shape;
+    vector<float> values;
+  };
+  const vector<TestCase> test_cases {
+    {0, 1, {}, vector<float>(1, 1)},
+    {0, 20, {20}, vector<float>(20, 1)},
+    {1, 50, {1, 50}, vector<float>(50, 1)},
+    {2, 100, {1, 1, 100}, vector<float>(100, 1)},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      const Tensor x = dev->new_tensor({}, 1);
+      const Tensor y = broadcast(x, tc.dim, tc.size);
+      EXPECT_EQ(tc.shape, y.shape());
+      EXPECT_TRUE(vector_match(tc.values, y.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorOpsTest, CheckBroadcast2) {
+  struct TestCase {
+    unsigned dim, size;
+    Shape shape;
+    vector<float> values;
+  };
+  const vector<TestCase> test_cases {
+    {1, 1, Shape({2}, 2), {1, 2, 3, 4, 5, 6}},
+    {2, 1, Shape({2}, 2), {1, 2, 3, 4, 5, 6}},
+    {1, 3, Shape({2, 3}, 2), {1, 2, 1, 2, 3, 4, 3, 4, 5, 6, 5, 6}},
+    {2, 3, Shape({2, 1, 3}, 2), {1, 2, 1, 2, 3, 4, 3, 4, 5, 6, 5, 6}},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      const Tensor x = dev->new_tensor(Shape({2}, 2), {1, 2, 3, 4, 5, 6});
+      const Tensor y = broadcast(x, tc.dim, tc.size);
+      EXPECT_EQ(tc.shape, y.shape());
+      EXPECT_TRUE(vector_match(tc.values, y.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorOpsTest, CheckBroadcast3) {
+  struct TestCase {
+    unsigned dim, size;
+    Shape shape;
+    vector<float> values;
+  };
+  const vector<TestCase> test_cases {
+    {0, 1, Shape({1, 2, 1, 2}, 2),
+      {1, 2, 3, 4, 5, 6, 7, 8}},
+    {2, 1, Shape({1, 2, 1, 2}, 2),
+      {1, 2, 3, 4, 5, 6, 7, 8}},
+    {4, 1, Shape({1, 2, 1, 2}, 2),
+      {1, 2, 3, 4, 5, 6, 7, 8}},
+    {0, 2, Shape({2, 2, 1, 2}, 2),
+      {1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8}},
+    {2, 2, Shape({1, 2, 2 ,2}, 2),
+      {1, 2, 1, 2, 3, 4, 3, 4, 5, 6, 5, 6, 7, 8, 7, 8}},
+    {4, 2, Shape({1, 2, 1, 2, 2}, 2),
+      {1, 2, 3, 4, 1, 2, 3, 4, 5, 6, 7, 8, 5, 6, 7, 8}},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      const Tensor x = dev->new_tensor(
+          Shape({1, 2, 1, 2}, 2), {1, 2, 3, 4, 5, 6, 7, 8});
+      const Tensor y = broadcast(x, tc.dim, tc.size);
+      EXPECT_EQ(tc.shape, y.shape());
+      EXPECT_TRUE(vector_match(tc.values, y.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorOpsTest, CheckInvalidBroadcast) {
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor({1, 2}, 0);
+    EXPECT_THROW(broadcast(x, 0, 0), Error);
+    EXPECT_THROW(broadcast(x, 1, 0), Error);
+    EXPECT_THROW(broadcast(x, 1, 1), Error);
+    EXPECT_THROW(broadcast(x, 1, 3), Error);
+    EXPECT_THROW(broadcast(x, 2, 0), Error);
+  }
 }
 
 TEST_F(TensorOpsTest, CheckBatchSum) {

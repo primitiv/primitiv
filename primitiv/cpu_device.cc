@@ -423,8 +423,23 @@ Tensor CPUDevice::sum_impl(const Tensor &x, unsigned dim) {
   return ret;
 }
 
-Tensor CPUDevice::broadcast_impl(const Tensor &x, unsigned dim) {
-  THROW_ERROR("not implemented");
+Tensor CPUDevice::broadcast_impl(const Tensor &x, unsigned dim, unsigned size) {
+  const Shape new_shape = x.shape().resize_dim(dim, size);
+  const unsigned repeat = x.shape().num_total_elements();
+  const unsigned skip1 = new_shape.num_elements_under_rank(dim);
+  const unsigned skip2 = skip1 * size;
+  Tensor ret = new_tensor(new_shape);
+  float *dest = DATA(ret);
+  const float *src = CDATA(x);
+  for (unsigned i = 0; i < repeat; ++i) {
+    unsigned offset = i % skip1 + (i / skip1) * skip2;
+    float tmp = src[i];
+    for (unsigned j = 0; j < size; ++j) {
+      dest[offset] = tmp;
+      offset += skip1;
+    }
+  }
+  return ret;
 }
 
 Tensor CPUDevice::batch_sum_impl(const Tensor &x) {

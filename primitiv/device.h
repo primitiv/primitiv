@@ -294,9 +294,10 @@ public:
    * Broadcasts a specified dimension.
    * @param x A tensor.
    * @param dim Dimension to broadcast.
+   * @param size Size of the dimension `dim`.
    * @return Broadcasted tensor.
    */
-  Tensor broadcast(const Tensor &x, unsigned dim);
+  Tensor broadcast(const Tensor &x, unsigned dim, unsigned size);
 
   /**
    * Calculates the sum over minibatches.
@@ -378,7 +379,8 @@ private:
   virtual Tensor relu_impl(const Tensor &x) = 0;
 
   virtual Tensor sum_impl(const Tensor &x, unsigned dim) = 0;
-  virtual Tensor broadcast_impl(const Tensor &x, unsigned dim) = 0;
+  virtual Tensor broadcast_impl(
+      const Tensor &x, unsigned dim, unsigned size) = 0;
 
   virtual Tensor batch_sum_impl(const Tensor &x) = 0;
 
