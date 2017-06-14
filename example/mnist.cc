@@ -105,7 +105,7 @@ int main() {
     Node b1 = F::parameter(&g, &pb1);
     Node w2 = F::parameter(&g, &pw2);
     Node b2 = F::parameter(&g, &pb2);
-    Node h = F::tanh(F::dot(w1, x) + b1);
+    Node h = F::relu(F::dot(w1, x) + b1);
     return F::dot(w2, h) + b2;
   };
 
@@ -113,10 +113,6 @@ int main() {
   mt19937 rng;
   vector<unsigned> ids(NUM_TRAIN_SAMPLES);
   iota(begin(ids), end(ids), 0);
-
-  // Scaling factor of the larning rate.
-  float scale = 1;
-  const float decay = std::pow(0.1, 1./MAX_EPOCH);
 
   for (unsigned epoch = 0; epoch < MAX_EPOCH; ++epoch) {
     // Shuffles sample IDs.
@@ -147,7 +143,7 @@ int main() {
       trainer.reset_gradients();
       g.forward(avg_loss);
       g.backward(avg_loss);
-      trainer.update(scale);
+      trainer.update(1);
     }
 
     unsigned match = 0;
@@ -179,8 +175,6 @@ int main() {
 
     const float accuracy = 100.0 * match / NUM_TEST_SAMPLES;
     printf("epoch %d: accuracy: %.2f%%\n", epoch, accuracy);
-
-    scale *= decay;
   }
 
   return 0;
