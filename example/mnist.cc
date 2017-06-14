@@ -2,7 +2,7 @@
 //   http://yann.lecun.com/exdb/mnist/
 //
 // The model consists of a full-connected 2-layer (input/hidden/output)
-// perceptron with 300 hidden units, and is trained using the squared loss.
+// perceptron with the softmax cross entropy loss.
 
 #include <algorithm>
 #include <cmath>
