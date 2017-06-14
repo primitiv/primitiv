@@ -357,25 +357,28 @@ private:
       const Shape &shape, float mean, float sd) = 0;
 
   virtual Tensor slice_impl(
-      const Tensor &x,
-      unsigned dim, unsigned offset, const Shape &new_shape) = 0;
+      const Tensor &x, unsigned dim, unsigned offset, Shape &&new_shape) = 0;
   virtual Tensor concat_impl(
       const std::vector<const Tensor *> &xs,
-      unsigned dim, const Shape &new_shape) = 0;
+      unsigned dim, Shape &&new_shape) = 0;
 
   virtual Tensor duplicate_impl(const Tensor &x) = 0;
   virtual Tensor negate_impl(const Tensor &x) = 0;
 
   virtual Tensor add_impl(const Tensor &x, float k) = 0;
-  virtual Tensor add_impl(const Tensor &a, const Tensor &b) = 0;
+  virtual Tensor add_impl(
+      const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
   virtual Tensor subtract_impl(const Tensor &x, float k) = 0;
   virtual Tensor subtract_impl(float k, const Tensor &x)  = 0;
-  virtual Tensor subtract_impl(const Tensor &a, const Tensor &b) = 0;
+  virtual Tensor subtract_impl(
+      const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
   virtual Tensor multiply_impl(const Tensor &x, float k) = 0;
-  virtual Tensor multiply_impl(const Tensor &a, const Tensor &b) = 0;
+  virtual Tensor multiply_impl(
+      const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
   virtual Tensor divide_impl(const Tensor &x, float k) = 0;
   virtual Tensor divide_impl(float k, const Tensor &x)  = 0;
-  virtual Tensor divide_impl(const Tensor &a, const Tensor &b) = 0;
+  virtual Tensor divide_impl(
+      const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
 
   virtual Tensor transpose_impl(const Tensor &x) = 0;
   virtual Tensor dot_impl(const Tensor &a, const Tensor &b) = 0;
@@ -389,7 +392,7 @@ private:
   virtual Tensor sum_impl(const Tensor &x, unsigned dim) = 0;
   virtual Tensor logsumexp_impl(const Tensor &x, unsigned dim) = 0;
   virtual Tensor broadcast_impl(
-      const Tensor &x, unsigned dim, unsigned size, const Shape &new_shape) = 0;
+      const Tensor &x, unsigned dim, unsigned size, Shape &&new_shape) = 0;
 
   virtual Tensor batch_sum_impl(const Tensor &x) = 0;
 

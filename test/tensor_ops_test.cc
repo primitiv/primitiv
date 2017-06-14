@@ -1052,5 +1052,31 @@ TEST_F(TensorOpsTest, CheckSoftmaxCrossEntropy) {
   }
 }
 
+TEST_F(TensorOpsTest, CheckSoftmaxCrossEntropyBatchBroadcast) {
+  struct TestCase {
+    vector<float> x_data, t_data, y_data;
+    Shape x_shape, t_shape, y_shape;
+  };
+  const vector<TestCase> test_cases {
+    {{-1, 0, 1},
+      {1, 0, 0, 0, 1, 0, 0, 0, 1},
+      {2.40760596, 1.40760596, 0.40760596},
+      {3}, Shape({3}, 3), Shape({}, 3)},
+    {{-1, 0, 1, 1, -1, 0, 0, 1, -1},
+      {1, 0, 0},
+      {2.40760596, 0.40760596, 1.40760596},
+      Shape({3}, 3), {3}, Shape({}, 3)},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      const Tensor x = dev->new_tensor(tc.x_shape, tc.x_data);
+      const Tensor t = dev->new_tensor(tc.t_shape, tc.t_data);
+      const Tensor y = softmax_cross_entropy(x, t, 0);
+      EXPECT_EQ(tc.y_shape, y.shape());
+      EXPECT_TRUE(vector_match(tc.y_data, y.to_vector()));
+    }
+  }
+}
+
 }  // namespace tensor_ops
 }  // namespace primitiv

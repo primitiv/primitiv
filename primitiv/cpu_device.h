@@ -48,24 +48,28 @@ private:
 
   Tensor slice_impl(
       const Tensor &x,
-      unsigned dim, unsigned offset, const Shape &new_shape) override;
+      unsigned dim, unsigned offset, Shape &&new_shape) override;
   Tensor concat_impl(
       const std::vector<const Tensor *> &xs,
-      unsigned dim, const Shape &new_shape) override;
+      unsigned dim, Shape &&new_shape) override;
 
   Tensor duplicate_impl(const Tensor &x) override;
   Tensor negate_impl(const Tensor &x) override;
 
   Tensor add_impl(const Tensor &x, float k) override;
-  Tensor add_impl(const Tensor &a, const Tensor &b) override;
+  Tensor add_impl(
+      const Tensor &a, const Tensor &b, Shape &&new_shape) override;
   Tensor subtract_impl(const Tensor &x, float k) override;
   Tensor subtract_impl(float k, const Tensor &x) override;
-  Tensor subtract_impl(const Tensor &a, const Tensor &b) override;
+  Tensor subtract_impl(
+      const Tensor &a, const Tensor &b, Shape &&new_shape) override;
   Tensor multiply_impl(const Tensor &x, float k) override;
-  Tensor multiply_impl(const Tensor &a, const Tensor &b) override;
+  Tensor multiply_impl(
+      const Tensor &a, const Tensor &b, Shape &&new_shape) override;
   Tensor divide_impl(const Tensor &x, float k) override;
   Tensor divide_impl(float k, const Tensor &x) override;
-  Tensor divide_impl(const Tensor &a, const Tensor &b) override;
+  Tensor divide_impl(
+      const Tensor &a, const Tensor &b, Shape &&new_shape) override;
 
   Tensor transpose_impl(const Tensor &x) override;
   Tensor dot_impl(const Tensor &a, const Tensor &b) override;
@@ -79,8 +83,7 @@ private:
   Tensor sum_impl(const Tensor &x, unsigned dim) override;
   Tensor logsumexp_impl(const Tensor &x, unsigned dim) override;
   Tensor broadcast_impl(
-      const Tensor &x, unsigned dim, unsigned size,
-      const Shape &new_shape) override;
+      const Tensor &x, unsigned dim, unsigned size, Shape &&new_shape) override;
 
   Tensor batch_sum_impl(const Tensor &x) override;
 

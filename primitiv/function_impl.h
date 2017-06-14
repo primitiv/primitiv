@@ -140,6 +140,25 @@ private:
   unsigned size_;
 };
 
+/**
+ * Function to calculate the softmax cross entropy.
+ */
+class SoftmaxCrossEntropy : public Function {
+  DEFAULT_METHODS(SoftmaxCrossEntropy);
+
+private:
+  SoftmaxCrossEntropy() = delete;
+
+public:
+  explicit SoftmaxCrossEntropy(unsigned dim) : dim_(dim) {}
+  std::string name() const override {
+    return "SoftmaxCrossEntropy(" + std::to_string(dim_) + ')';
+  }
+
+private:
+  unsigned dim_;
+};
+
 // Function with no parameter.
 #define DECL_FUNC(name_) \
   class name_ : public Function { \

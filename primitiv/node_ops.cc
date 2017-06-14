@@ -116,5 +116,10 @@ Node batch_sum(const Node &x) {
   return x.graph()->add_function(new functions::BatchSum(), {x});
 }
 
+Node softmax_cross_entropy(const Node &x, const Node &t, unsigned dim) {
+  return x.graph()->add_function(
+      new functions::SoftmaxCrossEntropy(dim), {x, t});
+}
+
 }  // namespace node_ops
 }  // namespace primitiv

@@ -89,19 +89,18 @@ Tensor Device::random_normal(const Shape &shape, float mean, float sd) {
 
 Tensor Device::slice(
     const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
-  const Shape new_shape = shape_ops::slice(x.shape(), dim, lower, upper);
-
   CHECK_DEVICE(x);
-  return slice_impl(x, dim, lower, new_shape);
+  return slice_impl(
+      x, dim, lower, shape_ops::slice(x.shape(), dim, lower, upper));
 }
 
 Tensor Device::concat(const vector<const Tensor *> &xs, unsigned dim) {
   vector<const Shape *> shapes(xs.size());
-  for (unsigned i = 0; i < xs.size(); ++i) shapes[i] = &xs[i]->shape();
-  const Shape new_shape = shape_ops::concat(shapes, dim);
-
-  for (const Tensor *x : xs) CHECK_DEVICE(*x);
-  return concat_impl(xs, dim, new_shape);
+  for (unsigned i = 0; i < xs.size(); ++i) {
+    CHECK_DEVICE(*xs[i]);
+    shapes[i] = &xs[i]->shape();
+  }
+  return concat_impl(xs, dim, shape_ops::concat(shapes, dim));
 }
 
 Tensor Device::duplicate(const Tensor &x) {
@@ -120,17 +119,9 @@ Tensor Device::add(const Tensor &x, float k) {
 }
 
 Tensor Device::add(const Tensor &a, const Tensor &b) {
-  const Shape &sa = a.shape();
-  const Shape &sb = b.shape();
-  if (!sa.has_same_dims(sb) || !sa.has_compatible_batch(sb)) {
-    THROW_ERROR(
-        "Attempted to add tensors with shapes "
-        << sa.to_string() << " and " << sb.to_string() << '.');
-  }
-
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);
-  return add_impl(a, b);
+  return add_impl(a, b, shape_ops::elementwise(a.shape(), b.shape()));
 }
 
 Tensor Device::subtract(const Tensor &x, float k) {
@@ -144,17 +135,9 @@ Tensor Device::subtract(float k, const Tensor &x) {
 }
 
 Tensor Device::subtract(const Tensor &a, const Tensor &b) {
-  const Shape &sa = a.shape();
-  const Shape &sb = b.shape();
-  if (!sa.has_same_dims(sb) || !sa.has_compatible_batch(sb)) {
-    THROW_ERROR(
-        "Attempted to subtract tensors with shapes "
-        << sa.to_string() << " and " << sb.to_string() << '.');
-  }
-
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);
-  return subtract_impl(a, b);
+  return subtract_impl(a, b, shape_ops::elementwise(a.shape(), b.shape()));
 }
 
 Tensor Device::multiply(const Tensor &x, float k) {
@@ -163,17 +146,9 @@ Tensor Device::multiply(const Tensor &x, float k) {
 }
 
 Tensor Device::multiply(const Tensor &a, const Tensor &b) {
-  const Shape &sa = a.shape();
-  const Shape &sb = b.shape();
-  if (!sa.has_same_dims(sb) || !sa.has_compatible_batch(sb)) {
-    THROW_ERROR(
-        "Attempted to multiply tensors with shapes "
-        << sa.to_string() << " and " << sb.to_string() << '.');
-  }
-
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);
-  return multiply_impl(a, b);
+  return multiply_impl(a, b, shape_ops::elementwise(a.shape(), b.shape()));
 }
 
 Tensor Device::divide(const Tensor &x, float k) {
@@ -187,17 +162,9 @@ Tensor Device::divide(float k, const Tensor &x) {
 }
 
 Tensor Device::divide(const Tensor &a, const Tensor &b) {
-  const Shape &sa = a.shape();
-  const Shape &sb = b.shape();
-  if (!sa.has_same_dims(sb) || !sa.has_compatible_batch(sb)) {
-    THROW_ERROR(
-        "Attempted to divide tensors with shapes "
-        << sa.to_string() << " and " << sb.to_string() << '.');
-  }
-
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);
-  return divide_impl(a, b);
+  return divide_impl(a, b, shape_ops::elementwise(a.shape(), b.shape()));
 }
 
 Tensor Device::transpose(const Tensor &x) {

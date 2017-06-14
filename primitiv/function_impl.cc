@@ -113,16 +113,7 @@ void Concat::backward(
 #define FWD_SHAPE_ARITHMETIC(clsname) \
   Shape clsname::forward_shape(const vector<const Shape *> &args) const { \
     CHECK_ARGNUM(args, 2); \
-    const Shape &a = *args[0]; \
-    const Shape &b = *args[1]; \
-    if (!a.has_same_dims(b) || !a.has_compatible_batch(b)) { \
-      THROW_ERROR( \
-          "Shape mismatched." \
-          << " function: " << name() \
-          << ", arg1: " << a.to_string() \
-          << " != arg2: " << b.to_string()); \
-    } \
-    return a.resize_batch(std::max(a.batch_size(), b.batch_size())); \
+    return shape_ops::elementwise(*args[0], *args[1]); \
   }
 
 FWD_SHAPE_UNARY(Positive);
@@ -186,6 +177,14 @@ Shape BatchSum::forward_shape(const vector<const Shape *> &args) const {
   return args[0]->resize_batch(1);
 }
 
+Shape SoftmaxCrossEntropy::forward_shape(
+    const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 2);
+  Shape y = shape_ops::elementwise(*args[0], *args[1]);
+  y.update_dim(dim_, 1);
+  return y;
+}
+
 #undef FWD_SHAPE_UNARY
 #undef FWD_SHAPE_ARITHMETIC
 
@@ -213,6 +212,9 @@ FORWARD(ReLU) { return tensor_ops::relu(*args[0]); }
 FORWARD(Sum) { return tensor_ops::sum(*args[0], dim_); }
 FORWARD(Broadcast) { return tensor_ops::broadcast(*args[0], dim_, size_); }
 FORWARD(BatchSum) { return tensor_ops::batch_sum(*args[0]); }
+FORWARD(SoftmaxCrossEntropy) {
+  return tensor_ops::softmax_cross_entropy(*args[0], *args[1], dim_);
+}
 
 #undef FORWARD
 
@@ -245,9 +247,15 @@ BACKWARD(Exp) { ADD(0, y * yg); }
 BACKWARD(Tanh) { ADD(0, (1 - y * y) * yg); }
 BACKWARD(Sigmoid) { ADD(0, y * (1 - y) * yg); }
 BACKWARD(ReLU) { ADD(0, tensor_ops::step(*x[0]) * yg); }
-BACKWARD(Sum) { ADD(0, tensor_ops::broadcast(yg, dim_, xg[0]->shape()[dim_])); }
+BACKWARD(Sum) { ADD(0, tensor_ops::broadcast(yg, dim_, x[0]->shape()[dim_])); }
 BACKWARD(Broadcast) { ADD(0, tensor_ops::sum(yg, dim_)); }
 BACKWARD(BatchSum) { ADD(0, yg); }
+BACKWARD(SoftmaxCrossEntropy) {
+  const Tensor log_softmax_x = tensor_ops::log_softmax(*x[0], dim_);
+  const Tensor bcast_yg = tensor_ops::broadcast(yg, dim_, x[0]->shape()[dim_]);
+  ADD(0, (tensor_ops::exp(log_softmax_x) - *x[1]) * bcast_yg);
+  ADD(1, -log_softmax_x * bcast_yg);
+}
 
 #undef BACKWARD
 #undef ADD

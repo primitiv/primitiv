@@ -8,6 +8,14 @@ namespace primitiv {
 namespace shape_ops {
 
 /**
+ * Calculates the shape after the elementwise operation.
+ * @param a A shape.
+ * @param b Other shape.
+ * @return A shape, that is equivalent to `(a + b).shape()`.
+ */
+Shape elementwise(const Shape &a, const Shape &b);
+
+/**
  * Calculates the shape of the slice.
  * @param x A shape.
  * @param dim Dimension to slice.

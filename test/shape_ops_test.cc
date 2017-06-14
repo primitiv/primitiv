@@ -13,6 +13,38 @@ namespace shape_ops {
 
 class ShapeOpsTest : public testing::Test {};
 
+TEST_F(ShapeOpsTest, CheckElementwise) {
+  struct TestCase { Shape a, b, expected; };
+  const vector<TestCase> test_cases {
+    {{}, {}, {}},
+    {{1, 2, 3}, {1, 2, 3}, {1, 2, 3}},
+    {Shape({}, 4), Shape({}, 4), Shape({}, 4)},
+    {Shape({1, 2, 3}, 4), Shape({1, 2, 3}, 4), Shape({1, 2, 3}, 4)},
+    {{}, Shape({}, 4), Shape({}, 4)},
+    {{1, 2, 3}, Shape({1, 2, 3}, 4), Shape({1, 2, 3}, 4)},
+    {Shape({}, 4), {}, Shape({}, 4)},
+    {Shape({1, 2, 3}, 4), {1, 2, 3}, Shape({1, 2, 3}, 4)},
+  };
+  for (const TestCase &tc : test_cases) {
+    EXPECT_EQ(tc.expected, elementwise(tc.a, tc.b));
+  }
+}
+
+TEST_F(ShapeOpsTest, CheckInvalidElementwise) {
+  struct TestCase { Shape a, b; };
+  const vector<TestCase> test_cases {
+    {{}, {1, 2, 3}},
+    {Shape({}, 4), {1, 2, 3}},
+    {{}, Shape({1, 2, 3}, 4)},
+    {Shape({}, 4), Shape({1, 2, 3}, 4)},
+    {Shape({}, 4), Shape({}, 5)},
+    {Shape({1, 2, 3}, 4), Shape({1, 2, 3}, 5)},
+  };
+  for (const TestCase &tc : test_cases) {
+    EXPECT_THROW(elementwise(tc.a, tc.b), Error);
+  }
+}
+
 TEST_F(ShapeOpsTest, CheckSlice) {
   struct TestCase {
     unsigned dim, lower, upper;

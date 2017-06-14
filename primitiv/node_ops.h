@@ -45,6 +45,8 @@ Node broadcast(const Node &x, unsigned dim, unsigned size);
 
 Node batch_sum(const Node &x);
 
+Node softmax_cross_entropy(const Node &x, const Node &t, unsigned dim);
+
 }  // namespace node_ops
 }  // namespace primitiv
 

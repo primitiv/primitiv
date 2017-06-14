@@ -1,10 +1,19 @@
 #include <config.h>
 
+#include <algorithm>
 #include <primitiv/error.h>
 #include <primitiv/shape_ops.h>
 
 namespace primitiv {
 namespace shape_ops {
+
+Shape elementwise(const Shape &a, const Shape &b) {
+  if (!a.has_same_dims(b) || !a.has_compatible_batch(b)) {
+    THROW_ERROR(
+        "Shape mismatched. a: " << a.to_string() << " != b: " << b.to_string());
+  }
+  return a.resize_batch(std::max(a.batch_size(), b.batch_size()));
+}
 
 Shape slice(const Shape &x, unsigned dim, unsigned lower, unsigned upper) {
   if (lower >= upper || upper > x[dim]) {

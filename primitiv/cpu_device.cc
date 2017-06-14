@@ -103,7 +103,7 @@ Tensor CPUDevice::random_normal_impl(const Shape &shape, float mean, float sd) {
 }
 
 Tensor CPUDevice::slice_impl(
-    const Tensor &x, unsigned dim, unsigned offset, const Shape &new_shape) {
+    const Tensor &x, unsigned dim, unsigned offset, Shape &&new_shape) {
   const unsigned base = new_shape.num_elements_under_rank(dim);
   const unsigned span = base * new_shape[dim];
   const unsigned skip = base * x.shape()[dim];
@@ -121,8 +121,7 @@ Tensor CPUDevice::slice_impl(
 }
 
 Tensor CPUDevice::concat_impl(
-    const std::vector<const Tensor *> &xs,
-    unsigned dim, const Shape &new_shape) {
+    const std::vector<const Tensor *> &xs, unsigned dim, Shape &&new_shape) {
   const unsigned new_bs = new_shape.batch_size();
   const unsigned base = new_shape.num_elements_under_rank(dim);
   const unsigned skip = base * new_shape[dim];
@@ -174,14 +173,13 @@ Tensor CPUDevice::add_impl(const Tensor &x, float k) {
   return ret;
 }
 
-Tensor CPUDevice::add_impl(const Tensor &a, const Tensor &b) {
-  const Shape &sa = a.shape();
-  const Shape &sb = b.shape();
-  const unsigned size = sa.num_elements_per_sample();
-  const unsigned bs = std::max(sa.batch_size(), sb.batch_size());
-  const unsigned skip_a = (sa.batch_size() > 1) * size;
-  const unsigned skip_b = (sb.batch_size() > 1) * size;
-  Tensor ret = new_tensor(sa.resize_batch(bs));
+Tensor CPUDevice::add_impl(
+    const Tensor &a, const Tensor &b, Shape &&new_shape) {
+  const unsigned size = new_shape.num_elements_per_sample();
+  const unsigned bs = new_shape.batch_size();
+  const unsigned skip_a = (a.shape().batch_size() > 1) * size;
+  const unsigned skip_b = (b.shape().batch_size() > 1) * size;
+  Tensor ret = new_tensor(new_shape);
   float *dest = DATA(ret);
   const float *src_a = CDATA(a);
   const float *src_b = CDATA(b);
@@ -212,14 +210,13 @@ Tensor CPUDevice::subtract_impl(float k, const Tensor &x) {
   return ret;
 }
 
-Tensor CPUDevice::subtract_impl(const Tensor &a, const Tensor &b) {
-  const Shape &sa = a.shape();
-  const Shape &sb = b.shape();
-  const unsigned size = sa.num_elements_per_sample();
-  const unsigned bs = std::max(sa.batch_size(), sb.batch_size());
-  const unsigned skip_a = (sa.batch_size() > 1) * size;
-  const unsigned skip_b = (sb.batch_size() > 1) * size;
-  Tensor ret = new_tensor(sa.resize_batch(bs));
+Tensor CPUDevice::subtract_impl(
+    const Tensor &a, const Tensor &b, Shape &&new_shape) {
+  const unsigned size = new_shape.num_elements_per_sample();
+  const unsigned bs = new_shape.batch_size();
+  const unsigned skip_a = (a.shape().batch_size() > 1) * size;
+  const unsigned skip_b = (b.shape().batch_size() > 1) * size;
+  Tensor ret = new_tensor(new_shape);
   float *dest = DATA(ret);
   const float *src_a = CDATA(a);
   const float *src_b = CDATA(b);
@@ -241,14 +238,13 @@ Tensor CPUDevice::multiply_impl(const Tensor &x, float k) {
   return ret;
 }
 
-Tensor CPUDevice::multiply_impl(const Tensor &a, const Tensor &b) {
-  const Shape &sa = a.shape();
-  const Shape &sb = b.shape();
-  const unsigned size = sa.num_elements_per_sample();
-  const unsigned bs = std::max(sa.batch_size(), sb.batch_size());
-  const unsigned skip_a = (sa.batch_size() > 1) * size;
-  const unsigned skip_b = (sb.batch_size() > 1) * size;
-  Tensor ret = new_tensor(sa.resize_batch(bs));
+Tensor CPUDevice::multiply_impl(
+    const Tensor &a, const Tensor &b, Shape &&new_shape) {
+  const unsigned size = new_shape.num_elements_per_sample();
+  const unsigned bs = new_shape.batch_size();
+  const unsigned skip_a = (a.shape().batch_size() > 1) * size;
+  const unsigned skip_b = (b.shape().batch_size() > 1) * size;
+  Tensor ret = new_tensor(new_shape);
   float *dest = DATA(ret);
   const float *src_a = CDATA(a);
   const float *src_b = CDATA(b);
@@ -279,14 +275,13 @@ Tensor CPUDevice::divide_impl(float k, const Tensor &x) {
   return ret;
 }
 
-Tensor CPUDevice::divide_impl(const Tensor &a, const Tensor &b) {
-  const Shape &sa = a.shape();
-  const Shape &sb = b.shape();
-  const unsigned size = sa.num_elements_per_sample();
-  const unsigned bs = std::max(sa.batch_size(), sb.batch_size());
-  const unsigned skip_a = (sa.batch_size() > 1) * size;
-  const unsigned skip_b = (sb.batch_size() > 1) * size;
-  Tensor ret = new_tensor(sa.resize_batch(bs));
+Tensor CPUDevice::divide_impl(
+    const Tensor &a, const Tensor &b, Shape &&new_shape) {
+  const unsigned size = new_shape.num_elements_per_sample();
+  const unsigned bs = new_shape.batch_size();
+  const unsigned skip_a = (a.shape().batch_size() > 1) * size;
+  const unsigned skip_b = (b.shape().batch_size() > 1) * size;
+  Tensor ret = new_tensor(new_shape);
   float *dest = DATA(ret);
   const float *src_a = CDATA(a);
   const float *src_b = CDATA(b);
@@ -449,7 +444,7 @@ Tensor CPUDevice::logsumexp_impl(const Tensor &x, unsigned dim) {
 }
 
   Tensor CPUDevice::broadcast_impl(
-    const Tensor &x, unsigned dim, unsigned size, const Shape &new_shape) {
+    const Tensor &x, unsigned dim, unsigned size, Shape &&new_shape) {
   const unsigned repeat = x.shape().num_total_elements();
   const unsigned skip1 = new_shape.num_elements_under_rank(dim);
   const unsigned skip2 = skip1 * size;
