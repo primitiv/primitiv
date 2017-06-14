@@ -2,9 +2,9 @@
 
 #include <algorithm>
 #include <primitiv/error.h>
-#include <primitiv/sgd_trainer.h>
 #include <primitiv/parameter.h>
 #include <primitiv/tensor_ops.h>
+#include <primitiv/trainer_impl.h>
 
 namespace primitiv {
 
@@ -21,9 +21,10 @@ void SGDTrainer::reset_gradients() {
   }
 }
 
-void SGDTrainer::update() {
+void SGDTrainer::update(const float scale) {
+  const float factor = -eta_ * scale;
   for (Parameter *param : params_) {
-    param->add_value(-eta_ * param->gradient());
+    param->add_value(factor * param->gradient());
   }
 }
 

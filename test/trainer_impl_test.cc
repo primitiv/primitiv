@@ -4,7 +4,7 @@
 #include <primitiv/cpu_device.h>
 #include <primitiv/error.h>
 #include <primitiv/parameter.h>
-#include <primitiv/sgd_trainer.h>
+#include <primitiv/trainer_impl.h>
 #include <test_utils.h>
 
 using std::vector;
@@ -12,19 +12,19 @@ using test_utils::vector_match;
 
 namespace primitiv {
 
-class SGDTrainerTest : public testing::Test {
+class TraingerImplTest : public testing::Test {
 protected:
   CPUDevice dev;
 };
 
-TEST_F(SGDTrainerTest, CheckAddParameter) {
+TEST_F(TraingerImplTest, CheckSGDAddParameter) {
   SGDTrainer trainer(.1);
   Parameter param({2, 2}, &dev);
   EXPECT_NO_THROW(trainer.add_parameter(&param));
   EXPECT_THROW(trainer.add_parameter(&param), Error);
 }
 
-TEST_F(SGDTrainerTest, CheckUpdate) {
+TEST_F(TraingerImplTest, CheckSGDUpdate) {
   SGDTrainer trainer(.1);
   Parameter param({2, 2}, &dev, {1, 2, 3, 4});
   trainer.add_parameter(&param);
@@ -36,7 +36,7 @@ TEST_F(SGDTrainerTest, CheckUpdate) {
         vector<float>(4, 0), param.gradient().to_vector()));
 
   param.add_gradient(dev.new_tensor({2, 2}, {1, 1, 1, 1}));
-  trainer.update();
+  trainer.update(1);
 
   EXPECT_TRUE(vector_match(
         vector<float> {.9, 1.9, 2.9, 3.9}, param.value().to_vector()));

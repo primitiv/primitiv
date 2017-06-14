@@ -1,5 +1,5 @@
-#ifndef PRIMITIV_SGD_TRAINER_H_
-#define PRIMITIV_SGD_TRAINER_H_
+#ifndef PRIMITIV_TRAINER_IMPL_H_
+#define PRIMITIV_TRAINER_IMPL_H_
 
 #include <vector>
 #include <primitiv/trainer.h>
@@ -25,7 +25,7 @@ public:
 
   void add_parameter(Parameter *param) override;
   void reset_gradients() override;
-  void update() override;
+  void update(float scale) override;
 
 private:
   float eta_;
@@ -34,4 +34,4 @@ private:
 
 }  // namespace primitiv
 
-#endif  // PRIMITIV_SGD_TRAINER_H_
+#endif  // PRIMITIV_TRAINER_IMPL_H_

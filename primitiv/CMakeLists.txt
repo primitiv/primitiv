@@ -12,12 +12,12 @@ set(primitiv_LIBRARY_HDRS
   parameter.h
   primitiv.h
   primitiv_cuda.h
-  sgd_trainer.h
   shape.h
   shape_ops.h
   tensor.h
   tensor_ops.h
   trainer.h
+  trainer_impl.h
 )
 
 set(primitiv_LIBRARY_SRCS
@@ -28,11 +28,11 @@ set(primitiv_LIBRARY_SRCS
   initializer_impl.cc
   node_ops.cc
   parameter.cc
-  sgd_trainer.cc
   shape.cc
   shape_ops.cc
   tensor.cc
   tensor_ops.cc
+  trainer_impl.cc
 )
 
 add_library(primitiv SHARED ${primitiv_LIBRARY_HDRS} ${primitiv_LIBRARY_SRCS})

@@ -31,8 +31,9 @@ public:
 
   /**
    * Updates parameter values.
+   * @param scale Additional learning rate scaling factor.
    */
-  virtual void update() = 0;
+  virtual void update(float scale) = 0;
 };
 
 }  // namespace primitiv
