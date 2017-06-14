@@ -5,6 +5,7 @@
 // perceptron with 300 hidden units, and is trained using the squared loss.
 
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <random>
@@ -30,12 +31,12 @@ namespace {
 const unsigned NUM_TRAIN_SAMPLES = 60000;
 const unsigned NUM_TEST_SAMPLES = 10000;
 const unsigned NUM_INPUT_UNITS = 28 * 28;
-const unsigned NUM_HIDDEN_UNITS = 300;
+const unsigned NUM_HIDDEN_UNITS = 800;
 const unsigned NUM_OUTPUT_UNITS = 10;
-const unsigned BATCH_SIZE = 200;
+const unsigned BATCH_SIZE = 50;
 const unsigned NUM_TRAIN_BATCHES = NUM_TRAIN_SAMPLES / BATCH_SIZE;
 const unsigned NUM_TEST_BATCHES = NUM_TEST_SAMPLES / BATCH_SIZE;
-const unsigned MAX_EPOCH = 50;
+const unsigned MAX_EPOCH = 100;
 
 // Helper function to load input images.
 vector<float> load_images(const string &filename, const unsigned n) {
@@ -105,14 +106,17 @@ int main() {
     Node w2 = F::parameter(&g, &pw2);
     Node b2 = F::parameter(&g, &pb2);
     Node h = F::tanh(F::dot(w1, x) + b1);
-    Node y = F::sigmoid(F::dot(w2, h) + b2);
-    return y;
+    return F::dot(w2, h) + b2;
   };
 
   // Batch randomizer
   mt19937 rng;
   vector<unsigned> ids(NUM_TRAIN_SAMPLES);
   iota(begin(ids), end(ids), 0);
+
+  // Scaling factor of the larning rate.
+  float scale = 1;
+  const float decay = std::pow(0.1, 1./MAX_EPOCH);
 
   for (unsigned epoch = 0; epoch < MAX_EPOCH; ++epoch) {
     // Shuffles sample IDs.
@@ -136,15 +140,14 @@ int main() {
       Node y = make_graph(g, inputs);
       Node t = F::input(
           &g, &dev, Shape({NUM_OUTPUT_UNITS}, BATCH_SIZE), labels);
-      Node diff = t - y;
-      Node loss = diff * diff;
-      Node sum_loss = F::batch_sum(loss) / BATCH_SIZE;
+      Node loss = F::softmax_cross_entropy(y, t, 0);
+      Node avg_loss = F::batch_sum(loss) / BATCH_SIZE;
 
       // Forward, backward, and updates parameters.
       trainer.reset_gradients();
-      g.forward(sum_loss);
-      g.backward(sum_loss);
-      trainer.update();
+      g.forward(avg_loss);
+      g.backward(avg_loss);
+      trainer.update(scale);
     }
 
     unsigned match = 0;
@@ -176,6 +179,8 @@ int main() {
 
     const float accuracy = 100.0 * match / NUM_TEST_SAMPLES;
     printf("epoch %d: accuracy: %.2f%%\n", epoch, accuracy);
+
+    scale *= decay;
   }
 
   return 0;

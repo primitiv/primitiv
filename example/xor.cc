@@ -99,7 +99,7 @@ int main() {
     g.backward(loss);
 
     // Updates parameters.
-    trainer.update();
+    trainer.update(1);
   }
 
   return 0;
