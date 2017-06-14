@@ -4,6 +4,7 @@
 #include <primitiv/function_impl.h>
 #include <primitiv/graph.h>
 #include <primitiv/node.h>
+#include <primitiv/node_ops.h>
 #include <primitiv/shape.h>
 #include <primitiv/parameter.h>
 
@@ -106,6 +107,18 @@ Node relu(const Node &x) {
 
 Node sum(const Node &x, unsigned dim) {
   return x.graph()->add_function(new functions::Sum(dim), {x});
+}
+
+Node logsumexp(const Node &x, unsigned dim) {
+  return x.graph()->add_function(new functions::LogSumExp(dim), {x});
+}
+
+Node log_softmax(const Node &x, unsigned dim) {
+  return x - broadcast(logsumexp(x, dim), dim, x.shape()[dim]);
+}
+
+Node softmax(const Node &x, unsigned dim) {
+  return exp(log_softmax(x, dim));
 }
 
 Node broadcast(const Node &x, unsigned dim, unsigned size) {

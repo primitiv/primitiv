@@ -26,6 +26,7 @@ set(primitiv_LIBRARY_SRCS
   function_impl.cc
   graph.cc
   initializer_impl.cc
+  node.cc
   node_ops.cc
   parameter.cc
   shape.cc

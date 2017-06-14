@@ -52,6 +52,13 @@ public:
   void backward(const Node &node);
 
   /**
+   * Retrieves the shape of the node.
+   * @param node Node object specifying the target node.
+   * @return The shape of the node.
+   */
+  const Shape &get_shape(const Node &node) const;
+
+  /**
    * Retrieves the value of the node.
    * @param node Node object specifying the target node.
    * @return Calculated value if it is already calculated, or an invalid tensor

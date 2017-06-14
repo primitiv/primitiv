@@ -8,6 +8,7 @@
 #include <primitiv/shape_ops.h>
 
 using std::vector;
+namespace T = primitiv::tensor_ops;
 
 namespace primitiv {
 namespace functions {
@@ -76,7 +77,7 @@ Shape Slice::forward_shape(const vector<const Shape *> &args) const {
 
 Tensor Slice::forward(const std::vector<const Tensor *> &args) const {
   CHECK_ARGNUM(args, 1);
-  return tensor_ops::slice(*args[0], dim_, lower_, upper_);
+  return T::slice(*args[0], dim_, lower_, upper_);
 }
 
 void Slice::backward(
@@ -90,7 +91,7 @@ Shape Concat::forward_shape(const vector<const Shape *> &args) const {
 }
 
 Tensor Concat::forward(const std::vector<const Tensor *> &args) const {
-  return tensor_ops::concat(args, dim_);
+  return T::concat(args, dim_);
 }
 
 void Concat::backward(
@@ -99,7 +100,7 @@ void Concat::backward(
   unsigned offset = 0;
   for (Tensor *xgi : xg) {
     const unsigned span = xgi->shape()[dim_];
-    xgi->add_gradient(tensor_ops::slice(yg, dim_, offset, offset + span));
+    xgi->add_gradient(T::slice(yg, dim_, offset, offset + span));
     offset += span;
   }
 }
@@ -167,6 +168,11 @@ Shape Sum::forward_shape(const vector<const Shape *> &args) const {
   return args[0]->resize_dim(dim_, 1);
 }
 
+Shape LogSumExp::forward_shape(const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 1);
+  return args[0]->resize_dim(dim_, 1);
+}
+
 Shape Broadcast::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 1);
   return shape_ops::broadcast(*args[0], dim_, size_);
@@ -189,31 +195,32 @@ Shape SoftmaxCrossEntropy::forward_shape(
 #undef FWD_SHAPE_ARITHMETIC
 
 #define FORWARD(name) \
-    Tensor name::forward(const vector<const Tensor *> &args) const
+    Tensor name::forward(const vector<const Tensor *> &x) const
 
-FORWARD(Positive) { return +(*args[0]); }
-FORWARD(Negative) { return -(*args[0]); }
-FORWARD(AddConst) { return *args[0] + k_; }
-FORWARD(SubtractConstL) { return k_ - *args[0]; }
-FORWARD(SubtractConstR) { return *args[0] - k_; }
-FORWARD(MultiplyConst) { return *args[0] * k_; }
-FORWARD(DivideConstL) { return k_ / *args[0]; }
-FORWARD(DivideConstR) { return *args[0] / k_; }
-FORWARD(Transpose) { return tensor_ops::transpose(*args[0]); }
-FORWARD(Add) { return *args[0] + *args[1]; }
-FORWARD(Subtract) { return *args[0] - *args[1]; }
-FORWARD(Multiply) { return *args[0] * *args[1]; }
-FORWARD(Divide) { return *args[0] / *args[1]; }
-FORWARD(Dot) { return tensor_ops::dot(*args[0], *args[1]); }
-FORWARD(Exp) { return tensor_ops::exp(*args[0]); }
-FORWARD(Tanh) { return tensor_ops::tanh(*args[0]); }
-FORWARD(Sigmoid) { return tensor_ops::sigmoid(*args[0]); }
-FORWARD(ReLU) { return tensor_ops::relu(*args[0]); }
-FORWARD(Sum) { return tensor_ops::sum(*args[0], dim_); }
-FORWARD(Broadcast) { return tensor_ops::broadcast(*args[0], dim_, size_); }
-FORWARD(BatchSum) { return tensor_ops::batch_sum(*args[0]); }
+FORWARD(Positive) { return +(*x[0]); }
+FORWARD(Negative) { return -(*x[0]); }
+FORWARD(AddConst) { return *x[0] + k_; }
+FORWARD(SubtractConstL) { return k_ - *x[0]; }
+FORWARD(SubtractConstR) { return *x[0] - k_; }
+FORWARD(MultiplyConst) { return *x[0] * k_; }
+FORWARD(DivideConstL) { return k_ / *x[0]; }
+FORWARD(DivideConstR) { return *x[0] / k_; }
+FORWARD(Transpose) { return T::transpose(*x[0]); }
+FORWARD(Add) { return *x[0] + *x[1]; }
+FORWARD(Subtract) { return *x[0] - *x[1]; }
+FORWARD(Multiply) { return *x[0] * *x[1]; }
+FORWARD(Divide) { return *x[0] / *x[1]; }
+FORWARD(Dot) { return T::dot(*x[0], *x[1]); }
+FORWARD(Exp) { return T::exp(*x[0]); }
+FORWARD(Tanh) { return T::tanh(*x[0]); }
+FORWARD(Sigmoid) { return T::sigmoid(*x[0]); }
+FORWARD(ReLU) { return T::relu(*x[0]); }
+FORWARD(Sum) { return T::sum(*x[0], dim_); }
+FORWARD(LogSumExp) { return T::logsumexp(*x[0], dim_); }
+FORWARD(Broadcast) { return T::broadcast(*x[0], dim_, size_); }
+FORWARD(BatchSum) { return T::batch_sum(*x[0]); }
 FORWARD(SoftmaxCrossEntropy) {
-  return tensor_ops::softmax_cross_entropy(*args[0], *args[1], dim_);
+  return T::softmax_cross_entropy(*x[0], *x[1], dim_);
 }
 
 #undef FORWARD
@@ -234,26 +241,31 @@ BACKWARD(SubtractConstR) { ADD(0, yg); }
 BACKWARD(MultiplyConst) { ADD(0, k_ * yg); }
 BACKWARD(DivideConstL) { ADD(0, -y * yg / *x[0]); }
 BACKWARD(DivideConstR) { ADD(0, yg / k_); }
-BACKWARD(Transpose) { ADD(0, tensor_ops::transpose(yg)); }
+BACKWARD(Transpose) { ADD(0, T::transpose(yg)); }
 BACKWARD(Add) { ADD(0, yg); ADD(1, yg); }
 BACKWARD(Subtract) { ADD(0, yg); ADD(1, -yg); }
 BACKWARD(Multiply) { ADD(0, *x[1] * yg); ADD(1, *x[0] * yg); }
 BACKWARD(Divide) { Tensor a = yg / *x[1]; ADD(0, a); ADD(1, -a * y); }
 BACKWARD(Dot) {
-  ADD(0, tensor_ops::dot(yg, tensor_ops::transpose(*x[1])));
-  ADD(1, tensor_ops::dot(tensor_ops::transpose(*x[0]), yg));
+  ADD(0, T::dot(yg, T::transpose(*x[1])));
+  ADD(1, T::dot(T::transpose(*x[0]), yg));
 }
 BACKWARD(Exp) { ADD(0, y * yg); }
 BACKWARD(Tanh) { ADD(0, (1 - y * y) * yg); }
 BACKWARD(Sigmoid) { ADD(0, y * (1 - y) * yg); }
-BACKWARD(ReLU) { ADD(0, tensor_ops::step(*x[0]) * yg); }
-BACKWARD(Sum) { ADD(0, tensor_ops::broadcast(yg, dim_, x[0]->shape()[dim_])); }
-BACKWARD(Broadcast) { ADD(0, tensor_ops::sum(yg, dim_)); }
+BACKWARD(ReLU) { ADD(0, T::step(*x[0]) * yg); }
+BACKWARD(Sum) { ADD(0, T::broadcast(yg, dim_, x[0]->shape()[dim_])); }
+BACKWARD(LogSumExp) {
+  // NOTE(odashi): dy/dx = softmax(x) = exp(x - y)
+  const unsigned n = x[0]->shape()[dim_];
+  ADD(0, T::exp(*x[0] - T::broadcast(y, dim_, n)) * T::broadcast(yg, dim_, n));
+}
+BACKWARD(Broadcast) { ADD(0, T::sum(yg, dim_)); }
 BACKWARD(BatchSum) { ADD(0, yg); }
 BACKWARD(SoftmaxCrossEntropy) {
-  const Tensor log_softmax_x = tensor_ops::log_softmax(*x[0], dim_);
-  const Tensor bcast_yg = tensor_ops::broadcast(yg, dim_, x[0]->shape()[dim_]);
-  ADD(0, (tensor_ops::exp(log_softmax_x) - *x[1]) * bcast_yg);
+  const Tensor log_softmax_x = T::log_softmax(*x[0], dim_);
+  const Tensor bcast_yg = T::broadcast(yg, dim_, x[0]->shape()[dim_]);
+  ADD(0, (T::exp(log_softmax_x) - *x[1]) * bcast_yg);
   ADD(1, -log_softmax_x * bcast_yg);
 }
 

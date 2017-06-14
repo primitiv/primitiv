@@ -504,6 +504,49 @@ TEST_F(FunctionImplTest, CheckSum) {
   }
 }
 
+TEST_F(FunctionImplTest, CheckLogSumExp) {
+  // y = logsumexp(x, dim)
+  // dy/dx = softmax(x, dim)
+  setup_1arg();
+  struct TestCase {
+    unsigned dim;
+    Shape ret_shape;
+    vector<float> ret_data;
+    vector<float> bw_grad;
+  };
+  const vector<TestCase> test_cases {
+    {0, Shape({1, 2}, 3),
+      {2.31326169, 4.31326169,
+        0.69314718, 0.69314718,
+        -0.68673831, -2.68673831},
+      {0.26894142, 0.73105858, 0.26894142, 0.73105858,
+        .5, .5, .5, .5,
+        0.73105858, 0.26894142, 0.73105858, 0.26894142}},
+    {1, Shape({2, 1}, 3),
+      {3.12692801, 4.12692801,
+        0.69314718, 0.69314718,
+        -0.87307199, -1.87307199},
+      {0.11920292, 0.11920292, 0.88079708, 0.88079708,
+        .5, .5, .5, .5,
+        0.88079708, 0.88079708, 0.11920292, 0.11920292}},
+    {2, Shape({2, 2, 1}, 3),
+      {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4},
+      {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
+  };
+  for (const TestCase &tc : test_cases) {
+    const LogSumExp node(tc.dim);
+    const Shape cur_shape = node.forward_shape(arg_shapes);
+    const Tensor cur_value = node.forward(arg_values);
+    const Tensor cur_grad = dev.new_tensor(tc.ret_shape, 1);
+    reset_gradients();
+    node.backward(cur_value, cur_grad, arg_values, arg_grads);
+    EXPECT_EQ("LogSumExp(" + std::to_string(tc.dim) + ')', node.name());
+    EXPECT_EQ(tc.ret_shape, cur_shape);
+    EXPECT_TRUE(vector_match(tc.ret_data, cur_value.to_vector()));
+    EXPECT_TRUE(vector_match(tc.bw_grad, arg_grads[0]->to_vector()));
+  }
+}
+
 TEST_F(FunctionImplTest, CheckBroadcast) {
   // y = broadcast(x, dim, size)
   // dy/dx = sum(1, dim)

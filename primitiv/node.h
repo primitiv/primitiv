@@ -40,6 +40,24 @@ public:
     return vid_;
   }
 
+  /**
+   * Returns shape of the node.
+   * @return A Shape object.
+   */
+  const Shape &shape() const;
+
+  /**
+   * Returns the value of the node.
+   * @return A Tensor object if the node has been forwarded.
+   */
+  const Tensor &value() const;
+
+  /**
+   * Returns the gradient of the node.
+   * @return A Tensor object if the node has been backwarded.
+   */
+  const Tensor &gradient() const;
+
 private:
   /**
    * Creates a new node pointer.

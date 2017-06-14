@@ -151,6 +151,11 @@ void Graph::backward(const Node &node) {
   }
 }
 
+const Shape &Graph::get_shape(const Node &node) const {
+  CHECK_NODE(node);
+  return funcs_[node.fid_].rets[node.vid_].shape;
+}
+
 const Tensor &Graph::get_value(const Node &node) const {
   CHECK_NODE(node);
   const Tensor *ret = funcs_[node.fid_].rets[node.vid_].value;

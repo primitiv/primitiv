@@ -784,7 +784,7 @@ TEST_F(TensorOpsTest, CheckSum2) {
   }
 }
 
-TEST_F(TensorOpsTest, CheckLogsumexp) {
+TEST_F(TensorOpsTest, CheckLogSumExp) {
   const vector<float> x_data {
     1, 2, 3, 4, 5, 6, 7, 8, -1, -2, -3, -4, -5, -6, -7, -8,
   };
@@ -814,7 +814,7 @@ TEST_F(TensorOpsTest, CheckLogsumexp) {
   }
 }
 
-TEST_F(TensorOpsTest, CheckLogsumexp2) {
+TEST_F(TensorOpsTest, CheckLogSumExp2) {
   const vector<unsigned> ns {
     1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025, 65535, 65536, 65537,
   };

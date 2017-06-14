@@ -120,6 +120,25 @@ private:
 };
 
 /**
+ * Function to calculate logsumexp.
+ */
+class LogSumExp : public Function {
+  DEFAULT_METHODS(LogSumExp);
+
+private:
+  LogSumExp() = delete;
+
+public:
+  explicit LogSumExp(unsigned dim) : dim_(dim) {}
+  std::string name() const override {
+    return "LogSumExp(" + std::to_string(dim_) + ')';
+  }
+
+private:
+  unsigned dim_;
+};
+
+/**
  * Function to broadcast a dimension.
  */
 class Broadcast : public Function {
