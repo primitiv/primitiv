@@ -15,6 +15,10 @@ Features
 Build
 -----
 
+    git clone <this repository>
+    cd primitiv
+    git submodule init
+    git submodule update
     mkdir build
     cd build
     cmake .. [-DUSE_CUDA=ON]
