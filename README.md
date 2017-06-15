@@ -11,3 +11,12 @@ Features
 - Automatic minibatch broadcasting
 - Mostly device-independent
 - Simple usage
+
+Build
+-----
+
+    mkdir build
+    cd build
+    cmake .. [-DUSE_CUDA=ON]
+    make [-j <threads>]
+    make test
