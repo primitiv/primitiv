@@ -102,6 +102,12 @@ Tensor CPUDevice::random_normal_impl(const Shape &shape, float mean, float sd) {
   return ret;
 }
 
+Tensor CPUDevice::pick_impl(
+    const Tensor &x, unsigned dim,
+    const std::vector<unsigned> &ids, Shape &&new_shape) {
+  THROW_ERROR("not implemented.");
+}
+
 Tensor CPUDevice::slice_impl(
     const Tensor &x, unsigned dim, unsigned offset, Shape &&new_shape) {
   const unsigned base = new_shape.num_elements_under_rank(dim);

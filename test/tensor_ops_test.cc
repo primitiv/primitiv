@@ -40,6 +40,14 @@ protected:
   }
 };
 
+TEST_F(TensorOpsTest, CheckPick) {
+  FAIL() << "not implemented";
+}
+
+TEST_F(TensorOpsTest, CheckInvalidPick) {
+  FAIL() << "not implemented";
+}
+
 TEST_F(TensorOpsTest, CheckSlice) {
   vector<float> x_data(3 * 3 * 2 * 4);
   std::iota(x_data.begin(), x_data.end(), 0);

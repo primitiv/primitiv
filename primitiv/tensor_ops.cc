@@ -63,6 +63,10 @@ Tensor operator/(const Tensor &a, const Tensor &b) {
 
 namespace tensor_ops {
 
+Tensor pick(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids) {
+  return x.device()->pick(x, dim, ids);
+}
+
 Tensor slice(const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
   return x.device()->slice(x, dim, lower, upper);
 }

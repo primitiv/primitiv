@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_TENSOR_OPS_H_
 #define PRIMITIV_TENSOR_OPS_H_
 
+#include <vector>
 #include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/tensor.h>
@@ -24,6 +25,7 @@ Tensor operator/(const Tensor &a, const Tensor &b);
 
 namespace tensor_ops {
 
+Tensor pick(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids);
 Tensor slice(const Tensor &x, unsigned dim, unsigned lower, unsigned upper);
 Tensor concat(const std::vector<const Tensor *> &xs, unsigned dim);
 

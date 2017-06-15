@@ -385,6 +385,12 @@ Tensor CUDADevice::random_normal_impl(
   return ret;
 }
 
+Tensor CUDADevice::pick_impl(
+    const Tensor &x, unsigned dim,
+    const std::vector<unsigned> &ids, Shape &&new_shape) {
+  THROW_ERROR("not implemented.");
+}
+
 Tensor CUDADevice::slice_impl(
     const Tensor &x, unsigned dim, unsigned offset, Shape &&new_shape) {
   const unsigned base = new_shape.num_elements_under_rank(dim);

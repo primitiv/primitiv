@@ -106,6 +106,15 @@ public:
   Tensor random_normal(const Shape &shape, float mean, float sd);
 
   /**
+   * Pick-up subplane specified by the dimension and the ID.
+   * @param x A tensor.
+   * @param dim Target dimension.
+   * @param ids List of positions in the dimension `dim`.
+   * @return `x[:, :, ..., ids, ..., :, :]`
+   */
+  Tensor pick(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids);
+
+  /**
    * Provides partial tensor.
    * @param x A tensor.
    * @param dim Target dimension.
@@ -356,6 +365,9 @@ private:
   virtual Tensor random_normal_impl(
       const Shape &shape, float mean, float sd) = 0;
 
+  virtual Tensor pick_impl(
+      const Tensor &x, unsigned dim,
+      const std::vector<unsigned> &ids, Shape &&new_shape) = 0;
   virtual Tensor slice_impl(
       const Tensor &x, unsigned dim, unsigned offset, Shape &&new_shape) = 0;
   virtual Tensor concat_impl(

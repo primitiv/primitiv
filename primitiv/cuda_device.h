@@ -51,6 +51,9 @@ private:
       const Shape &shape, float lower, float upper) override;
   Tensor random_normal_impl(const Shape &shape, float mean, float sd) override;
 
+  Tensor pick_impl(
+      const Tensor &x, unsigned dim,
+      const std::vector<unsigned> &ids, Shape &&new_shape) override;
   Tensor slice_impl(
       const Tensor &x,
       unsigned dim, unsigned offset, Shape &&new_shape) override;

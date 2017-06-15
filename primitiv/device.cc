@@ -87,6 +87,29 @@ Tensor Device::random_normal(const Shape &shape, float mean, float sd) {
   return random_normal_impl(shape, mean, sd);
 }
 
+Tensor Device::pick(
+    const Tensor &x, unsigned dim, const vector<unsigned> &ids) {
+  CHECK_DEVICE(x);
+  Shape s = x.shape();
+  const unsigned n = s[dim];
+  if (s.batch_size() != ids.size() && s.batch_size() > 1 && ids.size() > 1) {
+    THROW_ERROR(
+        "Invalid ID to pick the tensor. x.shape(): " << s.to_string()
+        << ", ids.size(): " << ids.size());
+  }
+  for (const unsigned id : ids) {
+    if (id >= n) {
+      THROW_ERROR(
+          "Invalid ID to pick the tensor. x.shape(): " << s.to_string()
+          << ", id: " << id);
+    }
+  }
+
+  s.update_dim(dim, 1);
+  s.update_batch(std::max(s.batch_size(), static_cast<unsigned>(ids.size())));
+  return pick_impl(x, dim, ids, std::move(s));
+}
+
 Tensor Device::slice(
     const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
   CHECK_DEVICE(x);
