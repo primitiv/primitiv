@@ -92,9 +92,11 @@ Tensor Device::pick(
   CHECK_DEVICE(x);
   Shape s = x.shape();
   const unsigned n = s[dim];
-  if (s.batch_size() != ids.size() && s.batch_size() > 1 && ids.size() > 1) {
+
+  if (ids.size() == 0 ||
+      (s.batch_size() != ids.size() && s.batch_size() > 1 && ids.size() > 1)) {
     THROW_ERROR(
-        "Invalid ID to pick the tensor. x.shape(): " << s.to_string()
+        "Invalid number of IDs to pick. x.shape(): " << s.to_string()
         << ", ids.size(): " << ids.size());
   }
   for (const unsigned id : ids) {

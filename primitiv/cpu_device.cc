@@ -105,7 +105,25 @@ Tensor CPUDevice::random_normal_impl(const Shape &shape, float mean, float sd) {
 Tensor CPUDevice::pick_impl(
     const Tensor &x, unsigned dim,
     const std::vector<unsigned> &ids, Shape &&new_shape) {
-  THROW_ERROR("not implemented.");
+  const unsigned bs = new_shape.batch_size();
+  const unsigned skip_x =
+    (x.shape().batch_size() > 1) * x.shape().num_elements_per_sample();
+  const unsigned skip_i = ids.size() > 1;
+  const unsigned base = new_shape.num_elements_under_rank(dim);
+  const unsigned skip = base * x.shape()[dim];
+  const unsigned repeat = new_shape.num_elements_per_sample() / base;
+
+  Tensor ret = new_tensor(new_shape);
+  float *dest = DATA(ret);
+  for (unsigned b = 0; b < bs; ++b) {
+    const float *src = CDATA(x) + b * skip_x + base * ids[b * skip_i];
+    for (unsigned i = 0; i < repeat; ++i) {
+      const float *sp = src;
+      REPEAT_OP(j, base, *dest++ = *sp++);
+      src += skip;
+    }
+  }
+  return ret;
 }
 
 Tensor CPUDevice::slice_impl(

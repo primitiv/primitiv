@@ -40,12 +40,66 @@ protected:
   }
 };
 
-TEST_F(TensorOpsTest, CheckPick) {
-  FAIL() << "not implemented";
+TEST_F(TensorOpsTest, CheckPickNN) {
+  struct TestCase {
+    Shape x_shape, y_shape;
+    unsigned dim;
+    vector<unsigned> ids;
+    vector<float> values;
+  };
+  const vector<TestCase> test_cases {
+    {Shape({2, 2, 2}, 3), Shape({1, 2, 2}, 3),
+      0, {0, 0, 0}, {0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22}},
+    {Shape({2, 2, 2}, 3), Shape({1, 2, 2}, 3),
+      0, {1, 0, 1}, {1, 3, 5, 7, 8, 10, 12, 14, 17, 19, 21, 23}},
+    {Shape({2, 2, 2}, 3), Shape({1, 2, 2}, 3),
+      0, {0}, {0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22}},
+    {Shape({2, 2, 2}), Shape({1, 2, 2}, 3),
+      0, {0, 1, 0}, {0, 2, 4, 6, 1, 3, 5, 7, 0, 2, 4, 6}},
+    {Shape({2, 2, 2}, 3), Shape({2, 1, 2}, 3),
+      1, {0, 0, 0}, {0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21}},
+    {Shape({2, 2, 2}, 3), Shape({2, 2, 1}, 3),
+      2, {0, 0, 0}, {0, 1, 2, 3, 8, 9, 10, 11, 16, 17, 18, 19}},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      std::cerr << "x_shape=" << tc.x_shape.to_string()
+        << ", dim=" << tc.dim << ", ids=[";
+      for (unsigned i = 0; i < tc.ids.size(); ++i) {
+        if (i > 0) std::cerr << ',';
+        std::cerr << tc.ids[i];
+      }
+      std::cerr << ']' << std::endl;
+      vector<float> x_data(tc.x_shape.num_total_elements());
+      iota(x_data.begin(), x_data.end(), 0);
+      const Tensor x = dev->new_tensor(tc.x_shape, x_data);
+      const Tensor y = pick(x, tc.dim, tc.ids);
+      EXPECT_EQ(tc.y_shape, y.shape());
+      EXPECT_TRUE(vector_match(tc.values, y.to_vector()));
+    }
+  }
 }
 
 TEST_F(TensorOpsTest, CheckInvalidPick) {
-  FAIL() << "not implemented";
+  struct TestCase {
+    unsigned dim;
+    vector<unsigned> ids;
+  };
+  const vector<TestCase> test_cases {
+     {0, {}},
+     {0, {2}},
+     {0, {0, 1}},
+     {0, {0, 1, 2}},
+     {1, {2}},
+     {2, {2}},
+     {3, {1}},
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor(Shape({2, 2, 2}, 3), 0);
+    for (const TestCase &tc : test_cases) {
+      EXPECT_THROW(pick(x, tc.dim, tc.ids), Error);
+    }
+  }
 }
 
 TEST_F(TensorOpsTest, CheckSlice) {
@@ -106,7 +160,7 @@ TEST_F(TensorOpsTest, CheckSlice) {
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor(Shape({3, 3, 2}, 4), x_data);
     for (const TestCase &tc : test_cases) {
-      std::cerr << "case: dim=" << tc.dim << ", lower=" << tc.lower
+      std::cerr << "dim=" << tc.dim << ", lower=" << tc.lower
         << ", upper=" << tc.upper << std::endl;
       const Tensor y = slice(x, tc.dim, tc.lower, tc.upper);
       EXPECT_EQ(tc.shape, y.shape());
