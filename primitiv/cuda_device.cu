@@ -388,7 +388,20 @@ Tensor CUDADevice::random_normal_impl(
 Tensor CUDADevice::pick_impl(
     const Tensor &x, unsigned dim,
     const std::vector<unsigned> &ids, Shape &&new_shape) {
-  THROW_ERROR("not implemented.");
+  const unsigned base = new_shape.num_elements_under_rank(dim);
+  const unsigned skip = base * x.shape()[dim];
+  const unsigned size = new_shape.num_elements_per_sample();
+  const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
+  const unsigned skip_x =
+    (x.shape().batch_size() > 1) * x.shape().num_elements_per_sample();
+  const unsigned skip_i = ids.size() > 1;
+  Tensor ret = new_tensor(new_shape);
+  for (unsigned b = 0; b < new_shape.batch_size(); ++b) {
+    ::dev_slice<<<num_blocks, dim1_x_>>>(
+        DATA(ret) + b * size, CDATA(x) + b * skip_x + base * ids[b * skip_i],
+        base, skip, size);
+  }
+  return ret;
 }
 
 Tensor CUDADevice::slice_impl(
