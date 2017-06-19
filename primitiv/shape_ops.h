@@ -34,13 +34,22 @@ Shape slice(const Shape &x, unsigned dim, unsigned lower, unsigned upper);
 Shape concat(const std::vector<const Shape *> &xs, unsigned dim);
 
 /**
- * Calculated the broadcasted shape.
+ * Calculates the broadcasted shape.
  * @param x A shape.
  * @param dim Dimension to broadcast.
  * @param size New size of the dimension `dim`.
  * @return A shape.
  */
 Shape broadcast(const Shape &x, unsigned dim, unsigned size);
+
+/**
+ * Calculates the picked shape.
+ * @param x A shape.
+ * @param dim Dimension to pick.
+ * @param ids Label IDs to be picked from the dimension `dim`.
+ * @return A shape.
+ */
+Shape pick(const Shape &x, unsigned dim, const std::vector<unsigned> &ids);
 
 }  // namespace shape_ops
 }  // namespace primitiv

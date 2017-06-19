@@ -90,26 +90,7 @@ Tensor Device::random_normal(const Shape &shape, float mean, float sd) {
 Tensor Device::pick(
     const Tensor &x, unsigned dim, const vector<unsigned> &ids) {
   CHECK_DEVICE(x);
-  Shape s = x.shape();
-  const unsigned n = s[dim];
-
-  if (ids.size() == 0 ||
-      (s.batch_size() != ids.size() && s.batch_size() > 1 && ids.size() > 1)) {
-    THROW_ERROR(
-        "Invalid number of IDs to pick. x.shape(): " << s.to_string()
-        << ", ids.size(): " << ids.size());
-  }
-  for (const unsigned id : ids) {
-    if (id >= n) {
-      THROW_ERROR(
-          "Invalid ID to pick the tensor. x.shape(): " << s.to_string()
-          << ", id: " << id);
-    }
-  }
-
-  s.update_dim(dim, 1);
-  s.update_batch(std::max(s.batch_size(), static_cast<unsigned>(ids.size())));
-  return pick_impl(x, dim, ids, std::move(s));
+  return pick_impl(x, dim, ids, shape_ops::pick(x.shape(), dim, ids));
 }
 
 Tensor Device::slice(
@@ -298,6 +279,21 @@ void Device::add_gradient_offset(
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);
   add_gradient_offset_impl(a, b, dim, offset);
+}
+
+void Device::add_gradient_sparse(
+    Tensor &a, const Tensor &b,
+    unsigned dim, const std::vector<unsigned> &ids) {
+  const Shape sb = shape_ops::pick(a.shape(), dim, ids);
+  if (sb != b.shape()) {
+    THROW_ERROR(
+        "Shape mismatched. b.shape(): " << b.shape().to_string()
+        << " != expected shape: " << sb.to_string());
+  }
+
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
+  add_gradient_sparse_impl(a, b, dim, ids);
 }
 
 }  // namespace primitiv

@@ -93,6 +93,9 @@ private:
   void add_gradient_impl(Tensor &a, const Tensor &b) override;
   void add_gradient_offset_impl(
       Tensor &a, const Tensor &b, unsigned dim, unsigned offset) override;
+  void add_gradient_sparse_impl(
+      Tensor &a, const Tensor &b,
+      unsigned dim, const std::vector<unsigned> &ids) override;
 
 private:
   std::map<void *, unsigned> blocks_;

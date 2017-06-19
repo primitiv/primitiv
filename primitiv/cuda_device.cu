@@ -654,4 +654,10 @@ void CUDADevice::add_gradient_offset_impl(
   ::dev_add_grad_ofs<<<g1, dim1_x_>>>(DATA(a) + ox, CDATA(b), wx, wy, nx, ny);
 }
 
+void CUDADevice::add_gradient_sparse_impl(
+    Tensor &a, const Tensor &b,
+    unsigned dim, const std::vector<unsigned>& ids) {
+  THROW_ERROR("not implemented");
+}
+
 }  // namespace primitiv

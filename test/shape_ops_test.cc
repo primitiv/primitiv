@@ -128,5 +128,46 @@ TEST_F(ShapeOpsTest, CheckInvalidConcat) {
   }
 }
 
+TEST_F(ShapeOpsTest, CheckPick) {
+  struct TestCase {
+    Shape input;
+    unsigned dim;
+    vector<unsigned> ids;
+    Shape expected;
+  };
+  const vector<TestCase> test_cases {
+    {Shape({2, 2, 2}, 3), 0, {0, 0, 0}, Shape({1, 2, 2}, 3)},
+    {Shape({2, 2, 2}, 3), 0, {1, 0, 1}, Shape({1, 2, 2}, 3)},
+    {Shape({2, 2, 2}, 3), 0, {0}, Shape({1, 2, 2}, 3)},
+    {{2, 2, 2}, 0, {0, 1, 0}, Shape({1, 2, 2}, 3)},
+    {Shape({2, 2, 2}, 3), 1, {0, 0, 0}, Shape({2, 1, 2}, 3)},
+    {Shape({2, 2, 2}, 3), 2, {0, 0, 0}, Shape({2, 2, 1}, 3)},
+  };
+  for (const TestCase &tc : test_cases) {
+    const Shape observed = pick(tc.input, tc.dim, tc.ids);
+    EXPECT_EQ(tc.expected, observed);
+  }
+}
+
+TEST_F(ShapeOpsTest, CheckInvalidPick) {
+  struct TestCase {
+    Shape input;
+    unsigned dim;
+    vector<unsigned> ids;
+  };
+  const vector<TestCase> test_cases {
+     {Shape({2, 2, 2}, 3), 0, {}},
+     {Shape({2, 2, 2}, 3), 0, {2}},
+     {Shape({2, 2, 2}, 3), 0, {0, 1}},
+     {Shape({2, 2, 2}, 3), 0, {0, 1, 2}},
+     {Shape({2, 2, 2}, 3), 1, {2}},
+     {Shape({2, 2, 2}, 3), 2, {2}},
+     {Shape({2, 2, 2}, 3), 3, {1}},
+  };
+  for (const TestCase &tc : test_cases) {
+    EXPECT_THROW(pick(tc.input, tc.dim, tc.ids), Error);
+  }
+}
+
 }  // namespace shape_ops
 }  // namespace primitiv

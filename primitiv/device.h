@@ -337,8 +337,8 @@ public:
   void add_gradient(Tensor &a, const Tensor &b);
 
   /**
-   * Same as `add_gradient`, but updates only part of elements in the specified
-   * range defined by `dim` and `offset`.
+   * Same as `add_gradient`, but updates only elements in the specified range
+   * defined by `dim` and `offset`.
    * @param a A tensor to be updated.
    * @param b A source tensor.
    * @param dim Dimension to determine the range of `a`.
@@ -346,6 +346,18 @@ public:
    */
   void add_gradient_offset(
       Tensor &a, const Tensor &b, unsigned dim, unsigned offset);
+
+  /**
+   * Same as `add_gradient`, but updates only elements in the specified range
+   * defined by `dim` and `ids`.
+   * @param a A tensor to be updated.
+   * @param b A source tensor.
+   * @param dim Dimension.
+   * @param ids List of IDs to update values.
+   */
+  void add_gradient_sparse(
+      Tensor &a, const Tensor &b,
+      unsigned dim, const std::vector<unsigned> &ids);
 
 private:
   // device-specific implementations.
@@ -411,6 +423,9 @@ private:
   virtual void add_gradient_impl(Tensor &a, const Tensor &b) = 0;
   virtual void add_gradient_offset_impl(
       Tensor &a, const Tensor &b, unsigned dim, unsigned offset) = 0;
+  virtual void add_gradient_sparse_impl(
+      Tensor &a, const Tensor &b,
+      unsigned dim, const std::vector<unsigned> &ids) = 0;
 };
 
 }  // namespace primitiv

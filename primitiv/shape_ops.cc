@@ -59,5 +59,27 @@ Shape broadcast(const Shape &x, unsigned dim, unsigned size) {
   return x.resize_dim(dim, size);
 }
 
+Shape pick(const Shape &x, unsigned dim, const std::vector<unsigned> &ids) {
+  const unsigned n = x[dim];
+  const unsigned bx = x.batch_size();
+  const unsigned bi = ids.size();
+  if (bi == 0 || (bx != bi && bx > 1 && bi > 1)) {
+    THROW_ERROR(
+        "Invalid IDs to pick. shape: " << x.to_string()
+        << ", ids.size(): " << ids.size());
+  }
+  for (unsigned i = 0; i < bi; ++i) {
+    if (ids[i] >= n) {
+      THROW_ERROR(
+          "Invalid IDs to pick. shape: " << x.to_string()
+          << ", ids[" << i << "]: " << ids[i]);
+    }
+  }
+
+  Shape ret = x.resize_dim(dim, 1);
+  ret.update_batch(std::max(bx, bi));
+  return ret;
+}
+
 }  // namespace shape_ops
 }  // namespace primitiv

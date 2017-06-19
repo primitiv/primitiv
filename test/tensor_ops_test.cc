@@ -42,24 +42,31 @@ protected:
 
 TEST_F(TensorOpsTest, CheckPickNN) {
   struct TestCase {
-    Shape x_shape, y_shape;
+    Shape x_shape;
     unsigned dim;
     vector<unsigned> ids;
+    Shape y_shape;
     vector<float> values;
   };
   const vector<TestCase> test_cases {
-    {Shape({2, 2, 2}, 3), Shape({1, 2, 2}, 3),
-      0, {0, 0, 0}, {0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22}},
-    {Shape({2, 2, 2}, 3), Shape({1, 2, 2}, 3),
-      0, {1, 0, 1}, {1, 3, 5, 7, 8, 10, 12, 14, 17, 19, 21, 23}},
-    {Shape({2, 2, 2}, 3), Shape({1, 2, 2}, 3),
-      0, {0}, {0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22}},
-    {Shape({2, 2, 2}), Shape({1, 2, 2}, 3),
-      0, {0, 1, 0}, {0, 2, 4, 6, 1, 3, 5, 7, 0, 2, 4, 6}},
-    {Shape({2, 2, 2}, 3), Shape({2, 1, 2}, 3),
-      1, {0, 0, 0}, {0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21}},
-    {Shape({2, 2, 2}, 3), Shape({2, 2, 1}, 3),
-      2, {0, 0, 0}, {0, 1, 2, 3, 8, 9, 10, 11, 16, 17, 18, 19}},
+    {Shape({2, 2, 2}, 3), 0, {0, 0, 0},
+      Shape({1, 2, 2}, 3),
+      {0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22}},
+    {Shape({2, 2, 2}, 3), 0, {1, 0, 1},
+      Shape({1, 2, 2}, 3),
+      {1, 3, 5, 7, 8, 10, 12, 14, 17, 19, 21, 23}},
+    {Shape({2, 2, 2}, 3), 0, {0},
+      Shape({1, 2, 2}, 3),
+      {0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22}},
+    {{2, 2, 2}, 0, {0, 1, 0},
+      Shape({1, 2, 2}, 3),
+      {0, 2, 4, 6, 1, 3, 5, 7, 0, 2, 4, 6}},
+    {Shape({2, 2, 2}, 3), 1, {0, 0, 0},
+      Shape({2, 1, 2}, 3),
+      {0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21}},
+    {Shape({2, 2, 2}, 3), 2, {0, 0, 0},
+      Shape({2, 2, 1}, 3),
+      {0, 1, 2, 3, 8, 9, 10, 11, 16, 17, 18, 19}},
   };
   for (Device *dev : devices) {
     for (const TestCase &tc : test_cases) {
@@ -95,8 +102,10 @@ TEST_F(TensorOpsTest, CheckInvalidPick) {
      {3, {1}},
   };
   for (Device *dev : devices) {
+    std::cout << dev << std::endl;
     const Tensor x = dev->new_tensor(Shape({2, 2, 2}, 3), 0);
     for (const TestCase &tc : test_cases) {
+      std::cout << tc.dim << std::endl;
       EXPECT_THROW(pick(x, tc.dim, tc.ids), Error);
     }
   }

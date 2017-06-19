@@ -544,4 +544,10 @@ void CPUDevice::add_gradient_offset_impl(
   }
 }
 
+void CPUDevice::add_gradient_sparse_impl(
+    Tensor &a, const Tensor &b,
+    unsigned dim, const std::vector<unsigned>& ids) {
+  THROW_ERROR("not implemented");
+}
+
 }  // namespace primitiv
