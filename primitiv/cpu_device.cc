@@ -115,8 +115,8 @@ Tensor CPUDevice::pick_impl(
 
   Tensor ret = new_tensor(new_shape);
   float *dest = DATA(ret);
-  for (unsigned b = 0; b < bs; ++b) {
-    const float *src = CDATA(x) + b * skip_x + base * ids[b * skip_i];
+  for (unsigned batch = 0; batch < bs; ++batch) {
+    const float *src = CDATA(x) + batch * skip_x + base * ids[batch * skip_i];
     for (unsigned i = 0; i < repeat; ++i) {
       const float *sp = src;
       REPEAT_OP(j, base, *dest++ = *sp++);
@@ -159,7 +159,7 @@ Tensor CPUDevice::concat_impl(
     const unsigned b_skip = (x->shape().batch_size() > 1) * span * repeat;
     float *dest = DATA(ret) + offset;
     const float *src = CDATA(*x);
-    for (unsigned b = 0; b < new_bs; ++b) {
+    for (unsigned batch = 0; batch < new_bs; ++batch) {
       const float *sp = src;
       for (unsigned i = 0; i < repeat; ++i) {
         float *dp = dest;
@@ -207,7 +207,7 @@ Tensor CPUDevice::add_impl(
   float *dest = DATA(ret);
   const float *src_a = CDATA(a);
   const float *src_b = CDATA(b);
-  for (unsigned b = 0; b < bs; ++b) {
+  for (unsigned batch = 0; batch < bs; ++batch) {
     REPEAT_OP(i, size, dest[i] = src_a[i] + src_b[i]);
     dest += size;
     src_a += skip_a;
@@ -244,7 +244,7 @@ Tensor CPUDevice::subtract_impl(
   float *dest = DATA(ret);
   const float *src_a = CDATA(a);
   const float *src_b = CDATA(b);
-  for (unsigned b = 0; b < bs; ++b) {
+  for (unsigned batch = 0; batch < bs; ++batch) {
     REPEAT_OP(i, size, dest[i] = src_a[i] - src_b[i]);
     dest += size;
     src_a += skip_a;
@@ -272,7 +272,7 @@ Tensor CPUDevice::multiply_impl(
   float *dest = DATA(ret);
   const float *src_a = CDATA(a);
   const float *src_b = CDATA(b);
-  for (unsigned b = 0; b < bs; ++b) {
+  for (unsigned batch = 0; batch < bs; ++batch) {
     REPEAT_OP(i, size, dest[i] = src_a[i] * src_b[i]);
     dest += size;
     src_a += skip_a;
@@ -309,7 +309,7 @@ Tensor CPUDevice::divide_impl(
   float *dest = DATA(ret);
   const float *src_a = CDATA(a);
   const float *src_b = CDATA(b);
-  for (unsigned b = 0; b < bs; ++b) {
+  for (unsigned batch = 0; batch < bs; ++batch) {
     REPEAT_OP(i, size, dest[i] = src_a[i] / src_b[i]);
     dest += size;
     src_a += skip_a;
@@ -357,7 +357,7 @@ Tensor CPUDevice::dot_impl(
   float *dest = DATA(ret);
   const float *src_a = CDATA(a);
   const float *src_b = CDATA(b);
-  for (unsigned b = 0; b < bs; ++b) {
+  for (unsigned batch = 0; batch < bs; ++batch) {
     for (unsigned i = 0; i < d1; ++i) {
       for (unsigned ky = 0, kb = 0; ky < dest_shift; ky += d1, kb += d2) {
         float tmp = 0;
@@ -492,7 +492,7 @@ Tensor CPUDevice::batch_sum_impl(const Tensor &x) {
   const unsigned size = ret.shape().num_total_elements();
   for (unsigned i = 0; i < size; ++i) {
     float temp = 0;
-    for (unsigned b = 0, pos = i; b < bs; ++b, pos += size) {
+    for (unsigned batch = 0, pos = i; batch < bs; ++batch, pos += size) {
       temp += src[pos];
     }
     dest[i] = temp;
@@ -509,7 +509,7 @@ void CPUDevice::add_gradient_impl(Tensor &a, const Tensor &b) {
   const unsigned b_skip_s = (sb.batch_size() > 1) * size;
   float *dest = DATA(a);
   const float *src = CDATA(b);
-  for (unsigned b = 0; b < bs; ++b) {
+  for (unsigned batch = 0; batch < bs; ++batch) {
     REPEAT_OP(i, size, dest[i] += src[i]);
     dest += b_skip_d;
     src += b_skip_s;
@@ -525,11 +525,13 @@ void CPUDevice::add_gradient_offset_impl(
   const unsigned skip = base * sa[dim];
   const unsigned repeat = sa.num_elements_per_sample() / skip;
   const unsigned bs = std::max(sa.batch_size(), sb.batch_size());
-  const unsigned b_skip_d = (sa.batch_size() > 1) * sa.num_elements_per_sample();
-  const unsigned b_skip_s = (sb.batch_size() > 1) * sb.num_elements_per_sample();
+  const unsigned b_skip_d =
+    (sa.batch_size() > 1) * sa.num_elements_per_sample();
+  const unsigned b_skip_s =
+    (sb.batch_size() > 1) * sb.num_elements_per_sample();
   float *dest = DATA(a) + base * offset;
   const float *src = CDATA(b);
-  for (unsigned b = 0; b < bs; ++b) {
+  for (unsigned batch = 0; batch < bs; ++batch) {
     float *dp = dest;
     const float *sp = src;
     for (unsigned i = 0; i < repeat; ++i) {
@@ -545,7 +547,22 @@ void CPUDevice::add_gradient_offset_impl(
 void CPUDevice::add_gradient_sparse_impl(
     Tensor &a, const Tensor &b,
     unsigned dim, const std::vector<unsigned>& ids) {
-  THROW_ERROR("not implemented");
+  const unsigned bs = b.shape().batch_size();
+  const unsigned skip_a =
+    (a.shape().batch_size() > 1) * a.shape().num_elements_per_sample();
+  const unsigned skip_i = ids.size() > 1;
+  const unsigned base = b.shape().num_elements_under_rank(dim);
+  const unsigned skip = base * a.shape()[dim];
+  const unsigned repeat = b.shape().num_elements_per_sample() / base;
+  const float *src = CDATA(b);
+  for (unsigned batch = 0; batch < bs; ++batch) {
+    float *dest = DATA(a) + batch * skip_a + base * ids[batch * skip_i];
+    for (unsigned i = 0; i < repeat; ++i) {
+      float *dp = dest;
+      REPEAT_OP(j, base, *dp++ += *src++);
+      dest += skip;
+    }
+  }
 }
 
 }  // namespace primitiv

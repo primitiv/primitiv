@@ -363,4 +363,145 @@ TEST_F(TensorTest, CheckInvalidAddGradientOffset) {
   }
 }
 
+TEST_F(TensorTest, CheckAddGradientSparseNN) {
+  const vector<float> a_data {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+  struct TestCase {
+    Shape b_shape;
+    vector<float> b_data;
+    unsigned dim;
+    vector<unsigned> ids;
+    vector<float> y_data;
+  };
+  const vector<TestCase> test_cases {
+    {Shape({1, 2}, 3), {1, 1, 2, 2, 3, 3}, 0, {0, 0, 0},
+      {1, 1, 3, 3, 2, 1, 4, 3, 3, 1, 5, 3}},
+    {Shape({1, 2}, 3), {1, 1, 2, 2, 3, 3}, 0, {1, 1, 1},
+      {0, 2, 2, 4, 0, 3, 2, 5, 0, 4, 2, 6}},
+    {Shape({1, 2}, 3), {1, 1, 2, 2, 3, 3}, 0, {0, 1, 0},
+      {1, 1, 3, 3, 0, 3, 2, 5, 3, 1, 5, 3}},
+    {Shape({1, 2}, 3), {1, 1, 2, 2, 3, 3}, 0, {1, 0, 1},
+      {0, 2, 2, 4, 2, 1, 4, 3, 0, 4, 2, 6}},
+    {Shape({2}, 3), {1, 1, 2, 2, 3, 3}, 1, {0, 0, 0},
+      {1, 2, 2, 3, 2, 3, 2, 3, 3, 4, 2, 3}},
+    {Shape({2}, 3), {1, 1, 2, 2, 3, 3}, 1, {1, 1, 1},
+      {0, 1, 3, 4, 0, 1, 4, 5, 0, 1, 5, 6}},
+    {Shape({2}, 3), {1, 1, 2, 2, 3, 3}, 1, {0, 1, 0},
+      {1, 2, 2, 3, 0, 1, 4, 5, 3, 4, 2, 3}},
+    {Shape({2}, 3), {1, 1, 2, 2, 3, 3}, 1, {1, 0, 1},
+      {0, 1, 3, 4, 2, 3, 2, 3, 0, 1, 5, 6}},
+    {Shape({2, 2}, 3), {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}, 2, {0, 0, 0},
+      {1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6}},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      Tensor a = dev->new_tensor(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor(tc.b_shape, tc.b_data);
+      a.add_gradient_sparse(b, tc.dim, tc.ids);
+      EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorTest, CheckAddGradientSparseN1) {
+  const vector<float> a_data {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+  struct TestCase {
+    Shape b_shape;
+    vector<float> b_data;
+    unsigned dim;
+    vector<unsigned> ids;
+    vector<float> y_data;
+  };
+  const vector<TestCase> test_cases {
+    {Shape({1, 2}, 3), {1, 1, 2, 2, 3, 3}, 0, {0},
+      {1, 1, 3, 3, 2, 1, 4, 3, 3, 1, 5, 3}},
+    {Shape({1, 2}, 3), {1, 1, 2, 2, 3, 3}, 0, {1},
+      {0, 2, 2, 4, 0, 3, 2, 5, 0, 4, 2, 6}},
+    {Shape({2}, 3), {1, 1, 2, 2, 3, 3}, 1, {0},
+      {1, 2, 2, 3, 2, 3, 2, 3, 3, 4, 2, 3}},
+    {Shape({2}, 3), {1, 1, 2, 2, 3, 3}, 1, {1},
+      {0, 1, 3, 4, 0, 1, 4, 5, 0, 1, 5, 6}},
+    {Shape({2, 2}, 3), {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}, 2, {0},
+      {1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6}},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      Tensor a = dev->new_tensor(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor(tc.b_shape, tc.b_data);
+      a.add_gradient_sparse(b, tc.dim, tc.ids);
+      EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorTest, CheckAddGradientSparse1N) {
+  const vector<float> a_data {0, 1, 2, 3};
+  struct TestCase {
+    Shape b_shape;
+    vector<float> b_data;
+    unsigned dim;
+    vector<unsigned> ids;
+    vector<float> y_data;
+  };
+  const vector<TestCase> test_cases {
+    {Shape({1, 2}, 3), {1, 1, 2, 2, 3, 3}, 0, {0, 0, 0},
+      {6, 1, 8, 3}},
+    {Shape({1, 2}, 3), {1, 1, 2, 2, 3, 3}, 0, {1, 1, 1},
+      {0, 7, 2, 9}},
+    {Shape({1, 2}, 3), {1, 1, 2, 2, 3, 3}, 0, {0, 1, 0},
+      {4, 3, 6, 5}},
+    {Shape({1, 2}, 3), {1, 1, 2, 2, 3, 3}, 0, {1, 0, 1},
+      {2, 5, 4, 7}},
+    {Shape({2}, 3), {1, 1, 2, 2, 3, 3}, 1, {0, 0, 0},
+      {6, 7, 2, 3}},
+    {Shape({2}, 3), {1, 1, 2, 2, 3, 3}, 1, {1, 1, 1},
+      {0, 1, 8, 9}},
+    {Shape({2}, 3), {1, 1, 2, 2, 3, 3}, 1, {0, 1, 0},
+      {4, 5, 4, 5}},
+    {Shape({2}, 3), {1, 1, 2, 2, 3, 3}, 1, {1, 0, 1},
+      {2, 3, 6, 7}},
+    {Shape({2, 2}, 3), {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}, 2, {0, 0, 0},
+      {6, 7, 8, 9}},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      Tensor a = dev->new_tensor({2, 2}, a_data);
+      const Tensor b = dev->new_tensor(tc.b_shape, tc.b_data);
+      a.add_gradient_sparse(b, tc.dim, tc.ids);
+      EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorTest, CheckInvalidAddGradientSparse) {
+  struct TestCase {
+    Shape a_shape, b_shape;
+    unsigned dim;
+    vector<unsigned> ids;
+  };
+  vector<TestCase> test_cases {
+    // Out-of-range IDs.
+    {{}, {}, 0, {1}},
+    {{}, Shape({}, 3), 0, {0, 0, 1}},
+    {Shape({}, 3), Shape({}, 3), 0, {1}},
+    {Shape({}, 3), Shape({}, 3), 0, {0, 0, 1}},
+    // Batch size mismatched.
+    {{}, {}, 0, {}},
+    {{}, {}, 0, {0, 0, 0}},
+    {Shape({}, 3), {}, 0, {}},
+    {Shape({}, 3), {}, 0, {0, 0, 0}},
+    // Shape mismatched.
+    {{2}, {3}, 0, {0}},
+    {{2}, Shape({3}, 3), 0, {0, 0, 0}},
+    {Shape({2}, 3), Shape({3}, 3), 0, {0}},
+    {Shape({2}, 3), Shape({3}, 3), 0, {0, 0, 0}},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      Tensor a = dev->new_tensor(tc.a_shape, 0);
+      const Tensor b = dev->new_tensor(tc.b_shape, 0);
+      EXPECT_THROW(a.add_gradient_sparse(b, tc.dim, tc.ids), Error);
+    }
+  }
+}
+
 }  // namespace primitiv

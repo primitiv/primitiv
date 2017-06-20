@@ -89,13 +89,23 @@ public:
   void add_gradient(const Tensor &x);
 
   /**
-   * Same as `add_gradient`, but updates only specific range of elements
-   * specified by `dim` and `offset`.
+   * Same as `add_gradient`, but updates only elements specified by `dim` and
+   * `offset`.
    * @param x A tensor to add.
    * @param dim Dimension to specify the range.
    * @param offset Offset on the dimension `dim`.
    */
   void add_gradient_offset(const Tensor &x, unsigned dim, unsigned offset);
+
+  /**
+   * Same as `add_gradient`, byt updates only elements specified by `dim` and
+   * `ids`.
+   * @param x A tensor to add.
+   * @param dim Dimension to specify the range.
+   * @param ids List of offsets on the dimension `dim`.
+   */
+  void add_gradient_sparse(
+      const Tensor &x, unsigned dim, const std::vector<unsigned> &ids);
 
 private:
   /**

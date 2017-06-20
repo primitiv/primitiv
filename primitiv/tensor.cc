@@ -57,4 +57,9 @@ void Tensor::add_gradient_offset(
   device_->add_gradient_offset(*this, x, dim, offset);
 }
 
+void Tensor::add_gradient_sparse(
+    const Tensor &x, unsigned dim, const std::vector<unsigned> &ids) {
+  device_->add_gradient_sparse(*this, x, dim, ids);
+}
+
 }  // namepsace primitiv
