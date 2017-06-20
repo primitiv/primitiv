@@ -404,8 +404,9 @@ private:
   virtual Tensor divide_impl(
       const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
 
-  virtual Tensor transpose_impl(const Tensor &x) = 0;
-  virtual Tensor dot_impl(const Tensor &a, const Tensor &b) = 0;
+  virtual Tensor transpose_impl(const Tensor &x, Shape &&new_shape) = 0;
+  virtual Tensor dot_impl(
+      const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
 
   virtual Tensor exp_impl(const Tensor &x) = 0;
   virtual Tensor tanh_impl(const Tensor &x) = 0;

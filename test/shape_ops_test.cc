@@ -169,5 +169,67 @@ TEST_F(ShapeOpsTest, CheckInvalidPick) {
   }
 }
 
+TEST_F(ShapeOpsTest, CheckTranspose) {
+  EXPECT_EQ(Shape(), transpose({}));
+  EXPECT_EQ(Shape({}, 5), transpose(Shape({}, 5)));
+  EXPECT_EQ(Shape({2}), transpose({1, 2}));
+  EXPECT_EQ(Shape({2}, 5), transpose(Shape({1, 2}, 5)));
+  EXPECT_EQ(Shape({1, 2}), transpose({2}));
+  EXPECT_EQ(Shape({1, 2}, 5), transpose(Shape({2}, 5)));
+  EXPECT_EQ(Shape({2, 3}), transpose({3, 2}));
+  EXPECT_EQ(Shape({2, 3}, 5), transpose(Shape({3, 2}, 5)));
+}
+
+TEST_F(ShapeOpsTest, CheckInvalidTranspose) {
+  EXPECT_THROW(transpose({1, 1, 2}), Error);
+  EXPECT_THROW(transpose(Shape({1, 1, 2}, 5)), Error);
+  EXPECT_THROW(transpose({1, 2, 2}), Error);
+  EXPECT_THROW(transpose(Shape({1, 2, 2}, 5)), Error);
+  EXPECT_THROW(transpose({2, 3, 4}), Error);
+  EXPECT_THROW(transpose(Shape({2, 3, 4}, 5)), Error);
+}
+
+TEST_F(ShapeOpsTest, CheckDot) {
+  EXPECT_EQ(Shape(), dot({}, {}));
+  EXPECT_EQ(Shape({}, 3), dot(Shape({}, 3), {}));
+  EXPECT_EQ(Shape({}, 3), dot({}, Shape({}, 3)));
+  EXPECT_EQ(Shape({}, 3), dot(Shape({}, 3), Shape({}, 3)));
+  EXPECT_EQ(Shape({10}), dot({10}, {}));
+  EXPECT_EQ(Shape({10}, 3), dot(Shape({10}, 3), {}));
+  EXPECT_EQ(Shape({10}, 3), dot({10}, Shape({}, 3)));
+  EXPECT_EQ(Shape({10}, 3), dot(Shape({10}, 3), Shape({}, 3)));
+  EXPECT_EQ(Shape({1, 10}), dot({}, {1, 10}));
+  EXPECT_EQ(Shape({1, 10}, 3), dot(Shape({}, 3), {1, 10}));
+  EXPECT_EQ(Shape({1, 10}, 3), dot({}, Shape({1, 10}, 3)));
+  EXPECT_EQ(Shape({1, 10}, 3), dot(Shape({}, 3), Shape({1, 10}, 3)));
+  EXPECT_EQ(Shape({}), dot({1, 10}, {10}));
+  EXPECT_EQ(Shape({}, 3), dot(Shape({1, 10}, 3), {10}));
+  EXPECT_EQ(Shape({}, 3), dot({1, 10}, Shape({10}, 3)));
+  EXPECT_EQ(Shape({}, 3), dot(Shape({1, 10}, 3), Shape({10}, 3)));
+  EXPECT_EQ(Shape({10, 10}), dot({10}, {1, 10}));
+  EXPECT_EQ(Shape({10, 10}, 3), dot(Shape({10}, 3), {1, 10}));
+  EXPECT_EQ(Shape({10, 10}, 3), dot({10}, Shape({1, 10}, 3)));
+  EXPECT_EQ(Shape({10, 10}, 3), dot(Shape({10}, 3), Shape({1, 10}, 3)));
+  EXPECT_EQ(Shape({20}), dot({20, 10}, {10}));
+  EXPECT_EQ(Shape({20}, 3), dot(Shape({20, 10}, 3), {10}));
+  EXPECT_EQ(Shape({20}, 3), dot({20, 10}, Shape({10}, 3)));
+  EXPECT_EQ(Shape({20}, 3), dot(Shape({20, 10}, 3), Shape({10}, 3)));
+  EXPECT_EQ(Shape({1, 20}), dot({1, 10}, {10, 20}));
+  EXPECT_EQ(Shape({1, 20}, 3), dot(Shape({1, 10}, 3), {10, 20}));
+  EXPECT_EQ(Shape({1, 20}, 3), dot({1, 10}, Shape({10, 20}, 3)));
+  EXPECT_EQ(Shape({1, 20}, 3), dot(Shape({1, 10}, 3), Shape({10, 20}, 3)));
+  EXPECT_EQ(Shape({20, 30}), dot({20, 10}, {10, 30}));
+  EXPECT_EQ(Shape({20, 30}, 3), dot(Shape({20, 10}, 3), {10, 30}));
+  EXPECT_EQ(Shape({20, 30}, 3), dot({20, 10}, Shape({10, 30}, 3)));
+  EXPECT_EQ(Shape({20, 30}, 3), dot(Shape({20, 10}, 3), Shape({10, 30}, 3)));
+}
+
+TEST_F(ShapeOpsTest, CheckInvalidDot) {
+  EXPECT_THROW(dot({1, 1, 2}, {2}), Error);
+  EXPECT_THROW(dot({}, {1, 1, 2}), Error);
+  EXPECT_THROW(dot({2, 3}, {4, 5}), Error);
+  EXPECT_THROW(dot(Shape({}, 2), Shape({}, 3)), Error);
+}
+
 }  // namespace shape_ops
 }  // namespace primitiv

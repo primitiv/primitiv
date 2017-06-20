@@ -51,6 +51,20 @@ Shape broadcast(const Shape &x, unsigned dim, unsigned size);
  */
 Shape pick(const Shape &x, unsigned dim, const std::vector<unsigned> &ids);
 
+/**
+ * Calculates the transposed shape.
+ * @param x A shape.
+ * @return A shape.
+ */
+Shape transpose(const Shape &x);
+
+/** Calculates the shape of matrix products.
+ * @param l Shape of the left hand side.
+ * @param r Shape of the right hand side.
+ * @return A shape.
+ */
+Shape dot(const Shape &l, const Shape &r);
+
 }  // namespace shape_ops
 }  // namespace primitiv
 

@@ -136,31 +136,12 @@ FWD_SHAPE_ARITHMETIC(Divide);
 
 Shape Transpose::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 1);
-  const Shape &a = *args[0];
-  if (a.depth() > 2) {
-    THROW_ERROR(
-        "Shape mismatched."
-        << " function: " << name()
-        << ", arg1: " << a.to_string());
-  }
-  return Shape({a[1], a[0]}, a.batch_size());
+  return shape_ops::transpose(*args[0]);
 }
 
 Shape Dot::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 2);
-  const Shape &a = *args[0];
-  const Shape &b = *args[1];
-  const unsigned a_bs = a.batch_size();
-  const unsigned b_bs = b.batch_size();
-  if (a.depth() > 2 || b.depth() > 2 || a[1] != b[0] ||
-      !a.has_compatible_batch(b)) {
-    THROW_ERROR(
-        "Shape mismatched."
-        << " function: " << name()
-        << ", arg1: " << a.to_string()
-        << " != arg2: " << b.to_string());
-  }
-  return Shape({a[0], b[1]}, std::max(a_bs, b_bs));
+  return shape_ops::dot(*args[0], *args[1]);
 }
 
 Shape Sum::forward_shape(const vector<const Shape *> &args) const {

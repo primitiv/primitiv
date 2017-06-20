@@ -174,29 +174,14 @@ Tensor Device::divide(const Tensor &a, const Tensor &b) {
 }
 
 Tensor Device::transpose(const Tensor &x) {
-  const Shape &s = x.shape();
-  if (s.depth() > 2) {
-    THROW_ERROR(
-        "Attempted to transpose a tensor with shape " << s.to_string() << '.');
-  }
-
   CHECK_DEVICE(x);
-  return transpose_impl(x);
+  return transpose_impl(x, shape_ops::transpose(x.shape()));
 }
 
 Tensor Device::dot(const Tensor &a, const Tensor &b) {
-  const Shape &sa = a.shape();
-  const Shape &sb = b.shape();
-  if (sa.depth() > 2 || sb.depth() > 2 || sa[1] != sb[0] ||
-      !sa.has_compatible_batch(sb)) {
-    THROW_ERROR(
-        "Attempted to calculate the dot product of tensors with shapes "
-        << sa.to_string() << " and " << sb.to_string() << '.');
-  }
-
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);
-  return dot_impl(a, b);
+  return dot_impl(a, b, shape_ops::dot(a.shape(), b.shape()));
 }
 
 Tensor Device::exp(const Tensor &x) {

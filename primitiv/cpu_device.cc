@@ -318,13 +318,12 @@ Tensor CPUDevice::divide_impl(
   return ret;
 }
 
-Tensor CPUDevice::transpose_impl(const Tensor &x) {
-  const Shape &s = x.shape();
-  const unsigned d1 = s[0];
-  const unsigned d2 = s[1];
+Tensor CPUDevice::transpose_impl(const Tensor &x, Shape &&new_shape) {
+  const unsigned d1 = new_shape[1];
+  const unsigned d2 = new_shape[0];
   const unsigned ms = d1 * d2;
-  const unsigned bs = s.batch_size();
-  Tensor ret = new_tensor(Shape({d2, d1}, bs));
+  const unsigned bs = new_shape.batch_size();
+  Tensor ret = new_tensor(new_shape);
   float *dest = DATA(ret);
   const float *src = CDATA(x);
 
@@ -344,18 +343,17 @@ Tensor CPUDevice::transpose_impl(const Tensor &x) {
   return ret;
 }
 
-Tensor CPUDevice::dot_impl(const Tensor &a, const Tensor &b) {
-  const Shape &sa = a.shape();
-  const Shape &sb = b.shape();
-  const unsigned d1 = sa[0];
-  const unsigned d2 = sa[1];
-  const unsigned d3 = sb[1];
-  const unsigned bs = std::max(sa.batch_size(), sb.batch_size());
+Tensor CPUDevice::dot_impl(
+    const Tensor &a, const Tensor &b, Shape &&new_shape) {
+  const unsigned d1 = new_shape[0];
+  const unsigned d2 = a.shape()[1];
+  const unsigned d3 = new_shape[1];
+  const unsigned bs = new_shape.batch_size();
   const unsigned dest_shift = d1 * d3;
-  const unsigned src_a_shift = (sa.batch_size() > 1) * d1 * d2;
-  const unsigned src_b_shift = (sb.batch_size() > 1) * d2 * d3;
+  const unsigned src_a_shift = (a.shape().batch_size() > 1) * d1 * d2;
+  const unsigned src_b_shift = (b.shape().batch_size() > 1) * d2 * d3;
 
-  Tensor ret = new_tensor(Shape({d1, d3}, bs));
+  Tensor ret = new_tensor(new_shape);
   float *dest = DATA(ret);
   const float *src_a = CDATA(a);
   const float *src_b = CDATA(b);

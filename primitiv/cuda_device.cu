@@ -508,34 +508,31 @@ CUDA_DEV_BINARY_AB(divide_impl, dev_divide);
 #undef CUDA_DEV_BINARY_XK
 #undef CUDA_DEV_BINARY_AB
 
-Tensor CUDADevice::transpose_impl(const Tensor &x) {
-  const Shape &s = x.shape();
-  const unsigned d1 = s[0];
-  const unsigned d2 = s[1];
-  const unsigned bs = s.batch_size();
+Tensor CUDADevice::transpose_impl(const Tensor &x, Shape &&new_shape) {
+  const unsigned d1 = new_shape[1];
+  const unsigned d2 = new_shape[0];
+  const unsigned bs = new_shape.batch_size();
   const unsigned g1 = GRID_SIZE(d1, dim2_x_);
   const unsigned g2 = GRID_SIZE(d2, dim2_y_);
-  Tensor ret = new_tensor(Shape({d2, d1}, bs));
+  Tensor ret = new_tensor(new_shape);
   ::dev_transpose<<<dim3(g1, g2, bs), dim3(dim2_x_, dim2_y_, 1)>>>(
       DATA(ret), CDATA(x), d1, d2);
   return ret;
 }
 
-Tensor CUDADevice::dot_impl(const Tensor &a, const Tensor &b) {
-  const Shape &sa = a.shape();
-  const Shape &sb = b.shape();
-  const unsigned di = sa[0];
-  const unsigned dj = sa[1];
-  const unsigned dk = sb[1];
-  const unsigned ba = sa.batch_size();
-  const unsigned bb = sb.batch_size();
-  const unsigned bs = std::max(ba, bb);
+Tensor CUDADevice::dot_impl(
+    const Tensor &a, const Tensor &b, Shape &&new_shape) {
+  const unsigned di = new_shape[0];
+  const unsigned dj = a.shape()[1];
+  const unsigned dk = new_shape[1];
+  const unsigned ba = a.shape().batch_size();
+  const unsigned bb = b.shape().batch_size();
+  const unsigned bs = new_shape.batch_size();
   float alpha = 1.;
   float beta = 0.;
-  Tensor ret = new_tensor(Shape({di, dk}, bs));
-  reset_tensor(ret, 0);
+  Tensor ret = new_tensor(new_shape, 0);
   if (ba == 1) {
-    // Do gemm only once to calculate dot with combined matrices.
+    // Do gemm only once to calculate the dot with a combined matrix.
     CUBLAS_CALL(::cublasSgemm(
           cublas_, ::CUBLAS_OP_N, ::CUBLAS_OP_N,
           di, bb * dk, dj,
