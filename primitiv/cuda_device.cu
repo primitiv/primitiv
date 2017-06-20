@@ -256,6 +256,14 @@ __global__ void dev_add_grad_ofs(
   }
 }
 
+__global__ void dev_add_grad_sparse(
+    float *pgx, const float *pgy, unsigned wx, unsigned wy, unsigned repeat) {
+  const unsigned i = IDX;
+  if (i < wy * repeat) {
+    ::atomicAdd(pgx + (i / wy) * wx + (i % wy), pgy[i]);
+  }
+}
+
 #undef IDX
 
 }  // namespace
@@ -654,7 +662,25 @@ void CUDADevice::add_gradient_offset_impl(
 void CUDADevice::add_gradient_sparse_impl(
     Tensor &a, const Tensor &b,
     unsigned dim, const std::vector<unsigned>& ids) {
-  THROW_ERROR("not implemented");
+  const Shape &sa = a.shape();
+  const Shape &sb = b.shape();
+  const unsigned size = sb.num_elements_per_sample();
+  const unsigned base = sb.num_elements_under_rank(dim);
+  const unsigned repeat = size / base;
+  const unsigned wx = base * sa[dim];
+  const unsigned g1 = GRID_SIZE(size, dim1_x_);
+  const unsigned bs = sb.batch_size();
+  const unsigned skip_a = (sa.batch_size() > 1) * sa.num_elements_per_sample();
+  const unsigned skip_i = ids.size() > 1;
+  float *dest = DATA(a);
+  const float *src = CDATA(b);
+
+  for (unsigned batch = 0; batch < bs; ++batch) {
+    ::dev_add_grad_sparse<<<g1, dim1_x_>>>(
+        dest + batch * skip_a + base * ids[batch * skip_i],
+        src + batch * size,
+        wx, base, repeat);
+  }
 }
 
 }  // namespace primitiv
