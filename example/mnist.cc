@@ -122,21 +122,19 @@ int main() {
     for (unsigned batch = 0; batch < NUM_TRAIN_BATCHES; ++batch) {
       // Makes a minibatch for training.
       vector<float> inputs(BATCH_SIZE * NUM_INPUT_UNITS);
-      vector<float> labels(BATCH_SIZE * NUM_OUTPUT_UNITS, 0);
+      vector<unsigned> labels(BATCH_SIZE);
       for (unsigned i = 0; i < BATCH_SIZE; ++i) {
         const unsigned id = ids[i + batch * BATCH_SIZE];
         copy(&train_inputs[id * NUM_INPUT_UNITS],
              &train_inputs[(id + 1) * NUM_INPUT_UNITS],
              &inputs[i * NUM_INPUT_UNITS]);
-        labels[train_labels[id] + i * NUM_OUTPUT_UNITS] = 1;
+        labels[i] = train_labels[id];
       }
 
       // Constructs the graph.
       Graph g;
       Node y = make_graph(g, inputs);
-      Node t = F::input(
-          &g, &dev, Shape({NUM_OUTPUT_UNITS}, BATCH_SIZE), labels);
-      Node loss = F::softmax_cross_entropy(y, t, 0);
+      Node loss = F::softmax_cross_entropy(y, 0, labels);
       Node avg_loss = F::batch_sum(loss) / BATCH_SIZE;
 
       // Forward, backward, and updates parameters.

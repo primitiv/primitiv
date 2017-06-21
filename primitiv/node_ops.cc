@@ -137,6 +137,10 @@ Node softmax_cross_entropy(const Node &x, const Node &t, unsigned dim) {
   return x.graph()->add_function(
       new functions::SoftmaxCrossEntropy(dim), {x, t});
 }
+Node softmax_cross_entropy(
+    const Node &x, unsigned dim, const std::vector<unsigned> &ids) {
+  return pick(-log_softmax(x, dim), dim, ids);
+}
 
 }  // namespace node_ops
 }  // namespace primitiv
