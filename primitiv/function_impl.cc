@@ -70,6 +70,22 @@ void ParameterInput::backward(
   param_->add_gradient(cur_grad);
 }
 
+Shape Pick::forward_shape(const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 1);
+  return shape_ops::pick(*args[0], dim_, ids_);
+}
+
+Tensor Pick::forward(const vector<const Tensor *> &args) const {
+  CHECK_ARGNUM(args, 1);
+  return tensor_ops::pick(*args[0], dim_, ids_);
+}
+
+void Pick::backward(
+    const Tensor &y, const Tensor &yg,
+    const vector<const Tensor *> &x, const vector<Tensor *> &xg) const {
+  xg[0]->add_gradient_sparse(yg, dim_, ids_);
+}
+
 Shape Slice::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 1);
   return shape_ops::slice(*args[0], dim_, lower_, upper_);

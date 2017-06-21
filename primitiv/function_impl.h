@@ -62,6 +62,27 @@ private:
   primitiv::Parameter *param_;
 };
 
+/**
+ * Function to pick tensors from a large tensor.
+ */
+class Pick : public primitiv::Function {
+  DEFAULT_METHODS(Pick);
+
+private:
+  Pick() = delete;
+
+public:
+  Pick(const unsigned dim, const std::vector<unsigned> &ids)
+    : dim_(dim), ids_(ids) {}
+  std::string name() const override {
+    return "Pick(" + std::to_string(dim_) + ')';
+  };
+
+private:
+  unsigned dim_;
+  std::vector<unsigned> ids_;
+};
+
 // Function to slice a tensor.
 class Slice : public primitiv::Function {
   DEFAULT_METHODS(Slice);
@@ -71,7 +92,7 @@ private:
 
 public:
   Slice(unsigned dim, unsigned lower, unsigned upper)
-  : dim_(dim), lower_(lower), upper_(upper) {}
+    : dim_(dim), lower_(lower), upper_(upper) {}
   std::string name() const override {
     return "Slice(" + std::to_string(dim_) +
       ',' + std::to_string(lower_) + ':' + std::to_string(upper_) + ')';

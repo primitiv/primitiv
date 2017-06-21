@@ -77,6 +77,10 @@ Node parameter(Graph *g, Parameter *param) {
   return g->add_function(new functions::ParameterInput(param), {});
 }
 
+Node pick(const Node &x, unsigned dim, const std::vector<unsigned> &ids) {
+  return x.graph()->add_function(new functions::Pick(dim, ids), {x});
+}
+
 Node slice(const Node &x, unsigned dim, unsigned lower, unsigned upper) {
   return x.graph()->add_function(new functions::Slice(dim, lower, upper), {x});
 }
