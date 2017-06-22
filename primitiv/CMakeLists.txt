@@ -36,8 +36,11 @@ set(primitiv_LIBRARY_SRCS
   trainer_impl.cc
 )
 
+include_directories(${PROJECT_SOURCE_DIR}/submodules/yaml-cpp/include)
+link_directories(${PROJECT_BINARY_DIR}/submodules/yaml-cpp)
+
 add_library(primitiv SHARED ${primitiv_LIBRARY_HDRS} ${primitiv_LIBRARY_SRCS})
-target_link_libraries(primitiv)
+target_link_libraries(primitiv yaml-cpp)
 
 if(USE_CUDA)
   set(primitiv_cuda_LIBRARY_HDRS

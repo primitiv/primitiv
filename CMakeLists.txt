@@ -8,6 +8,9 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast -Wall -Werror")
 endif()
 
+# subproject settings
+set(YAML_CPP_BUILD_TOOLS CACHE BOOL OFF)
+
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/config.h
@@ -25,8 +28,7 @@ endif()
 enable_testing()
 
 # sources
-add_subdirectory(primitiv)
-
-# tests
 add_subdirectory(submodules/googletest)
+add_subdirectory(submodules/yaml-cpp)
+add_subdirectory(primitiv)
 add_subdirectory(test)
