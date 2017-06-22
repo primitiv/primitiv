@@ -116,7 +116,7 @@ TEST_F(ParameterTest, CheckAddValue) {
   const initializers::Constant init(0);
   const vector<float> diff_values1 {1, 2, 3, 4};
   const vector<float> diff_values2 {2, 4, 6, 8};
-  const Tensor diff = dev.new_tensor(shape, diff_values1);
+  const Tensor diff = dev.new_tensor_by_vector(shape, diff_values1);
   Parameter p("test", shape, &dev);
   p.reset_value(init);
   p.add_value(diff);
@@ -129,13 +129,25 @@ TEST_F(ParameterTest, CheckAddGradient) {
   const Shape shape {2, 2};
   const vector<float> diff_values1 {1, 2, 3, 4};
   const vector<float> diff_values2 {2, 4, 6, 8};
-  const Tensor diff = dev.new_tensor(shape, diff_values1);
+  const Tensor diff = dev.new_tensor_by_vector(shape, diff_values1);
   Parameter p("test", shape, &dev);
   p.reset_gradient();
   p.add_gradient(diff);
   EXPECT_TRUE(vector_match(diff_values1, p.gradient().to_vector()));
   p.add_gradient(diff);
   EXPECT_TRUE(vector_match(diff_values2, p.gradient().to_vector()));
+}
+
+TEST_F(ParameterTest, CheckSaveLoad) {
+  const Shape shape {2, 2};
+  const vector<float> values {1, 2, 3, 4};
+  const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveLoad_p.yaml";
+  const Parameter p1("test", shape, &dev, values);
+  p1.save(path);
+  const Parameter p2 = Parameter::load(path, &dev);
+  EXPECT_EQ("test", p2.name());
+  EXPECT_EQ(shape, p2.shape());
+  EXPECT_TRUE(vector_match(values, p2.value().to_vector()));
 }
 
 }  // namespace primitiv

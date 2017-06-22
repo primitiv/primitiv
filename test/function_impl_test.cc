@@ -19,14 +19,14 @@ class FunctionImplTest : public testing::Test {
 public:
   void setup_1arg() {
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
-    arg_values.emplace_back(new Tensor(dev.new_tensor(
+    arg_values.emplace_back(new Tensor(dev.new_tensor_by_vector(
         *arg_shapes[0], {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4})));
     arg_grads.emplace_back(new Tensor(dev.new_tensor(*arg_shapes[0], 0)));
   }
 
   void setup_1arg_nonzero() {
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
-    arg_values.emplace_back(new Tensor(dev.new_tensor(
+    arg_values.emplace_back(new Tensor(dev.new_tensor_by_vector(
         *arg_shapes[0], {1, 2, 3, 4, 1, -1, 1, -1, -1, -2, -3, -4})));
     arg_grads.emplace_back(new Tensor(dev.new_tensor(*arg_shapes[0], 0)));
   }
@@ -34,9 +34,9 @@ public:
   void setup_2args() {
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
-    arg_values.emplace_back(new Tensor(dev.new_tensor(
+    arg_values.emplace_back(new Tensor(dev.new_tensor_by_vector(
         *arg_shapes[0], {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4})));
-    arg_values.emplace_back(new Tensor(dev.new_tensor(
+    arg_values.emplace_back(new Tensor(dev.new_tensor_by_vector(
         *arg_shapes[1], {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3})));
     arg_grads.emplace_back(new Tensor(dev.new_tensor(*arg_shapes[0], 0)));
     arg_grads.emplace_back(new Tensor(dev.new_tensor(*arg_shapes[1], 0)));
@@ -45,9 +45,9 @@ public:
   void setup_2args_softmax_cross_entropy() {
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
-    arg_values.emplace_back(new Tensor(dev.new_tensor(
+    arg_values.emplace_back(new Tensor(dev.new_tensor_by_vector(
         *arg_shapes[0], {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4})));
-    arg_values.emplace_back(new Tensor(dev.new_tensor(
+    arg_values.emplace_back(new Tensor(dev.new_tensor_by_vector(
         *arg_shapes[1], {1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1})));
     arg_grads.emplace_back(new Tensor(dev.new_tensor(*arg_shapes[0], 0)));
     arg_grads.emplace_back(new Tensor(dev.new_tensor(*arg_shapes[1], 0)));
@@ -274,7 +274,7 @@ TEST_F(FunctionImplTest, CheckConcat) {
     const Concat node(tc.dim);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = dev.new_tensor(tc.cur_shape, tc.cur_grad_data);
+    const Tensor cur_grad = dev.new_tensor_by_vector(tc.cur_shape, tc.cur_grad_data);
     reset_gradients();
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ("Concat(" + std::to_string(tc.dim) + ')', node.name());

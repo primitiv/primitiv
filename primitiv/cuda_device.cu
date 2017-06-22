@@ -358,11 +358,10 @@ void CUDADevice::reset_tensor_impl(Tensor &x, float k) {
   ::dev_set_const<<<num_blocks, dim1_x_>>>(DATA(x), k, size);
 }
 
-void CUDADevice::reset_tensor_impl(
-    Tensor &x, const std::vector<float> &values) {
+void CUDADevice::reset_tensor_by_array_impl(Tensor &x, const float values[]) {
   const unsigned size = x.shape().num_total_elements();
   CUDA_CALL(::cudaMemcpy(
-        x.data(), &values[0], sizeof(float) * size, cudaMemcpyHostToDevice));
+        x.data(), values, sizeof(float) * size, cudaMemcpyHostToDevice));
 }
 
 Tensor CUDADevice::random_bernoulli_impl(const Shape &shape, float p) {

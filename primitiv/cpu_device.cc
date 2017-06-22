@@ -67,8 +67,8 @@ void CPUDevice::reset_tensor_impl(Tensor &x, float k) {
   REPEAT_OP(i, size, dest[i] = k);
 }
 
-void CPUDevice::reset_tensor_impl(Tensor &x, const std::vector<float> &values) {
-  std::memcpy(x.data(), &values[0], sizeof(float) * x.shape().num_total_elements());
+void CPUDevice::reset_tensor_by_array_impl(Tensor &x, const float values[]) {
+  std::memcpy(x.data(), values, sizeof(float) * x.shape().num_total_elements());
 }
 
 Tensor CPUDevice::random_bernoulli_impl(const Shape &shape, float p) {

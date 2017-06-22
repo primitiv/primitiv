@@ -92,7 +92,7 @@ TEST_F(TensorTest, CheckNewScalarWithData) {
 TEST_F(TensorTest, CheckNewMatrixWithData) {
   for (Device *dev : devices ) {
     const vector<float> data {1, 2, 3, 4, 5, 6};
-    const Tensor x = dev->new_tensor({2, 3}, data);
+    const Tensor x = dev->new_tensor_by_vector({2, 3}, data);
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({2, 3}), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
@@ -106,7 +106,7 @@ TEST_F(TensorTest, CheckNewMatrixMinibatchWithData) {
       3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8,
       9, 7, 9, 3, 2, 3, 8, 4, 6, 2, 6, 4,
     };
-    const Tensor x = dev->new_tensor(Shape({2, 3}, 4), data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 4), data);
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({2, 3}, 4), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
@@ -116,7 +116,7 @@ TEST_F(TensorTest, CheckNewMatrixMinibatchWithData) {
 
 TEST_F(TensorTest, CheckMoveCtor) {
   for (Device *dev : devices) {
-    Tensor tmp = dev->new_tensor(Shape({2}, 3), {1, 2, 3, 4, 5, 6});
+    Tensor tmp = dev->new_tensor_by_vector(Shape({2}, 3), {1, 2, 3, 4, 5, 6});
     void *ptr = tmp.data();
 
     Tensor x = std::move(tmp);
@@ -131,7 +131,7 @@ TEST_F(TensorTest, CheckMoveCtor) {
 
 TEST_F(TensorTest, CheckMoveOpToValidObj) {
   for (Device *dev : devices) {
-    Tensor tmp = dev->new_tensor({6}, {2, 4, 6, 8, 10 ,12});
+    Tensor tmp = dev->new_tensor_by_vector({6}, {2, 4, 6, 8, 10 ,12});
     void *ptr = tmp.data();
 
     Tensor x = dev->new_tensor({}, 1);
@@ -147,7 +147,8 @@ TEST_F(TensorTest, CheckMoveOpToValidObj) {
 
 TEST_F(TensorTest, CheckMoveOpToInvalidObj) {
   for (Device *dev : devices) {
-    Tensor tmp = dev->new_tensor(Shape({1}, 6), {3, 6, 9, 12, 15, 18});
+    Tensor tmp = dev->new_tensor_by_vector(
+        Shape({1}, 6), {3, 6, 9, 12, 15, 18});
     void *ptr = tmp.data();
 
     Tensor x;
@@ -166,8 +167,8 @@ TEST_F(TensorTest, CheckAddGradientNN) {
     const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     const vector<float> b_data {0, -1, -2, -3, -3, -4, -5, -6, -6, -7, -8, -9};
     const vector<float> y_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
-    Tensor a = dev->new_tensor(Shape({2, 2}, 3), a_data);
-    const Tensor b = dev->new_tensor(Shape({2, 2}, 3), b_data);
+    Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
     a.add_gradient(b);
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
   }
@@ -178,8 +179,8 @@ TEST_F(TensorTest, CheckAddGradient1N) {
     const vector<float> a_data {1, 2, 3, 4};
     const vector<float> b_data {0, -1, -2, -3, -3, -4, -5, -6, -6, -7, -8, -9};
     const vector<float> y_data {-8, -10, -12, -14};
-    Tensor a = dev->new_tensor({2, 2}, a_data);
-    const Tensor b = dev->new_tensor(Shape({2, 2}, 3), b_data);
+    Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
     a.add_gradient(b);
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
   }
@@ -190,8 +191,8 @@ TEST_F(TensorTest, CheckAddGradientN1) {
     const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     const vector<float> b_data {0, -1, -2, -3};
     const vector<float> y_data {1, 1, 1, 1, 5, 5, 5, 5, 9, 9, 9, 9};
-    Tensor a = dev->new_tensor(Shape({2, 2}, 3), a_data);
-    const Tensor b = dev->new_tensor({2, 2}, b_data);
+    Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+    const Tensor b = dev->new_tensor_by_vector({2, 2}, b_data);
     a.add_gradient(b);
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
   }
@@ -219,8 +220,8 @@ TEST_F(TensorTest, CheckAddGradientOffsetNN_1) {
   const vector<float> y_data {1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6};
   for (Device *dev : devices) {
     for (unsigned i : {0, 1, 2, 5, 10}) {
-      Tensor a = dev->new_tensor(Shape({2, 2}, 3), a_data);
-      const Tensor b = dev->new_tensor(Shape({2, 2}, 3), b_data);
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
       a.add_gradient_offset(b, i, 0);
       EXPECT_TRUE(vector_match(y_data, a.to_vector()));
     }
@@ -243,8 +244,8 @@ TEST_F(TensorTest, CheckAddGradientOffsetNN_2) {
   };
   for (Device *dev : devices) {
     for (const TestCase &tc : test_cases) {
-      Tensor a = dev->new_tensor(Shape({2, 2}, 3), a_data);
-      const Tensor b = dev->new_tensor(tc.shape, b_data);
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector(tc.shape, b_data);
       a.add_gradient_offset(b, tc.dim, tc.offset);
       EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
     }
@@ -257,8 +258,8 @@ TEST_F(TensorTest, CheckAddGradientOffset1N_1) {
   const vector<float> y_data {6, 7, 8, 9};
   for (Device *dev : devices) {
     for (unsigned i : {0, 1, 2, 5, 10}) {
-      Tensor a = dev->new_tensor({2, 2}, a_data);
-      const Tensor b = dev->new_tensor(Shape({2, 2}, 3), b_data);
+      Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
+      const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
       a.add_gradient_offset(b, i, 0);
       EXPECT_TRUE(vector_match(y_data, a.to_vector()));
     }
@@ -281,8 +282,8 @@ TEST_F(TensorTest, CheckAddGradientOffset1N_2) {
   };
   for (Device *dev : devices) {
     for (const TestCase &tc : test_cases) {
-      Tensor a = dev->new_tensor({2, 2}, a_data);
-      const Tensor b = dev->new_tensor(tc.shape, b_data);
+      Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
+      const Tensor b = dev->new_tensor_by_vector(tc.shape, b_data);
       a.add_gradient_offset(b, tc.dim, tc.offset);
       EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
     }
@@ -295,8 +296,8 @@ TEST_F(TensorTest, CheckAddGradientOffsetN1_1) {
   const vector<float> y_data {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
   for (Device *dev : devices) {
     for (unsigned i : {0, 1, 2, 5, 10}) {
-      Tensor a = dev->new_tensor(Shape({2, 2}, 3), a_data);
-      const Tensor b = dev->new_tensor({2, 2}, b_data);
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector({2, 2}, b_data);
       a.add_gradient_offset(b, i, 0);
       EXPECT_TRUE(vector_match(y_data, a.to_vector()));
     }
@@ -319,8 +320,8 @@ TEST_F(TensorTest, CheckAddGradientOffsetN1_2) {
   };
   for (Device *dev : devices) {
     for (const TestCase &tc : test_cases) {
-      Tensor a = dev->new_tensor(Shape({2, 2}, 3), a_data);
-      const Tensor b = dev->new_tensor(tc.shape, b_data);
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector(tc.shape, b_data);
       a.add_gradient_offset(b, tc.dim, tc.offset);
       EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
     }
@@ -394,8 +395,8 @@ TEST_F(TensorTest, CheckAddGradientSparseNN) {
   };
   for (Device *dev : devices) {
     for (const TestCase &tc : test_cases) {
-      Tensor a = dev->new_tensor(Shape({2, 2}, 3), a_data);
-      const Tensor b = dev->new_tensor(tc.b_shape, tc.b_data);
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector(tc.b_shape, tc.b_data);
       a.add_gradient_sparse(b, tc.dim, tc.ids);
       EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
     }
@@ -425,8 +426,8 @@ TEST_F(TensorTest, CheckAddGradientSparseN1) {
   };
   for (Device *dev : devices) {
     for (const TestCase &tc : test_cases) {
-      Tensor a = dev->new_tensor(Shape({2, 2}, 3), a_data);
-      const Tensor b = dev->new_tensor(tc.b_shape, tc.b_data);
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector(tc.b_shape, tc.b_data);
       a.add_gradient_sparse(b, tc.dim, tc.ids);
       EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
     }
@@ -464,8 +465,8 @@ TEST_F(TensorTest, CheckAddGradientSparse1N) {
   };
   for (Device *dev : devices) {
     for (const TestCase &tc : test_cases) {
-      Tensor a = dev->new_tensor({2, 2}, a_data);
-      const Tensor b = dev->new_tensor(tc.b_shape, tc.b_data);
+      Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
+      const Tensor b = dev->new_tensor_by_vector(tc.b_shape, tc.b_data);
       a.add_gradient_sparse(b, tc.dim, tc.ids);
       EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
     }

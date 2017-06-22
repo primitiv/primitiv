@@ -119,9 +119,30 @@ public:
    */
   const Tensor &gradient() const { return grad_; }
 
+  /**
+   * Loads parameters and returns a new Parameter object.
+   * @param path File path to load parameters.
+   * @param device Device object to manage internal memories.
+   * @return A new Parameter object.
+   */
+  static Parameter load(const std::string &path, Device *device);
+
+  /**
+   * Saves current parameters into specified file with YAML format.
+   * @param path File path to write parameters.
+   */
+  void save(const std::string &path) const;
+
 private:
   /**
-   * Check shape of the parameter.
+   * Makes a Parameter object directly from its values.
+   * @param name Name of the parameter.
+   * @param value Value of the parameter.
+   */
+  Parameter(const std::string &name, Tensor &&value);
+
+  /**
+   * Checks the shape of the parameter.
    */
   void check_shape();
 

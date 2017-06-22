@@ -27,10 +27,16 @@ Tensor Device::new_tensor(const Shape &shape, float k) {
   return ret;
 }
 
-Tensor Device::new_tensor(
+Tensor Device::new_tensor_by_array(const Shape &shape, const float values[]) {
+  Tensor ret(shape, this, new_handle(shape));
+  reset_tensor_by_array(ret, values);
+  return ret;
+}
+
+Tensor Device::new_tensor_by_vector(
     const Shape &shape, const vector<float> &values) {
   Tensor ret(shape, this, new_handle(shape));
-  reset_tensor(ret, values);
+  reset_tensor_by_vector(ret, values);
   return ret;
 }
 
@@ -48,7 +54,14 @@ void Device::reset_tensor(Tensor &x, float k) {
   reset_tensor_impl(x, k);
 }
 
-void Device::reset_tensor(Tensor &x, const vector<float> &values) {
+void Device::reset_tensor_by_array(Tensor &x, const float values[]) {
+  // NOTE(odashi):
+  // There is no method to guarantee the size of the array for now.
+  CHECK_DEVICE(x);
+  reset_tensor_by_array_impl(x, values);
+}
+
+void Device::reset_tensor_by_vector(Tensor &x, const vector<float> &values) {
   const unsigned num_elements = x.shape().num_total_elements();
   if (values.size() != num_elements) {
     THROW_ERROR(
@@ -58,7 +71,7 @@ void Device::reset_tensor(Tensor &x, const vector<float> &values) {
   }
 
   CHECK_DEVICE(x);
-  reset_tensor_impl(x, values);
+  reset_tensor_by_array_impl(x, values.data());
 }
 
 Tensor Device::random_bernoulli(const Shape &shape, float p) {

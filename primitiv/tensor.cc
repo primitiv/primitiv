@@ -44,8 +44,12 @@ void Tensor::reset(const float k) {
   device_->reset_tensor(*this, k);
 }
 
-void Tensor::reset(const std::vector<float> &values) {
-  device_->reset_tensor(*this, values);
+void Tensor::reset_by_array(const float *values) {
+  device_->reset_tensor_by_array(*this, values);
+}
+
+void Tensor::reset_by_vector(const std::vector<float> &values) {
+  device_->reset_tensor_by_vector(*this, values);
 }
 
 void Tensor::add_gradient(const Tensor &x) {

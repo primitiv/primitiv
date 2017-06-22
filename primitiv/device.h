@@ -37,10 +37,19 @@ public:
   /**
    * Provides a new Tensor object with specific values.
    * @param shape Shape of the tensor.
+   * @param values Pointer to array of internal values.
+   * @return A new Tensor object.
+   */
+  Tensor new_tensor_by_array(const Shape &shape, const float values[]);
+
+  /**
+   * Provides a new Tensor object with specific values.
+   * @param shape Shape of the tensor.
    * @param values List of internal values.
    * @return A new Tensor object.
    */
-  Tensor new_tensor(const Shape &shape, const std::vector<float> &values);
+  Tensor new_tensor_by_vector(
+      const Shape &shape, const std::vector<float> &values);
 
   /**
    * Deallocates the memory of the tensor.
@@ -68,12 +77,22 @@ public:
   /**
    * Reset internal values of the tensor using specific values.
    * @param x A tensor to be updated.
+   * @param values Array of each element.
+   * @remarks `values.size()` should be same as `x.shape().size()`. Each element
+   *          is ordered by the column-major order, and the batch size is
+   *          assumed as the last dimension of the tensor.
+   */
+  void reset_tensor_by_array(Tensor &x, const float values[]);
+
+  /**
+   * Reset internal values of the tensor using specific values.
+   * @param x A tensor to be updated.
    * @param values List of each element.
    * @remarks `values.size()` should be same as `x.shape().size()`. Each element
    *          is ordered by the column-major order, and the batch size is
    *          assumed as the last dimension of the tensor.
    */
-  void reset_tensor(Tensor &x, const std::vector<float> &values);
+  void reset_tensor_by_vector(Tensor &x, const std::vector<float> &values);
 
   /**
    * Provides a new Tensor object in which all elements are initialized by
@@ -368,8 +387,7 @@ private:
   virtual std::vector<float> tensor_to_vector_impl(const Tensor &x) = 0;
 
   virtual void reset_tensor_impl(Tensor &x, float k) = 0;
-  virtual void reset_tensor_impl(
-      Tensor &x, const std::vector<float> &values) = 0;
+  virtual void reset_tensor_by_array_impl(Tensor &x, const float values[]) = 0;
 
   virtual Tensor random_bernoulli_impl(const Shape &shape, float p) = 0;
   virtual Tensor random_uniform_impl(

@@ -79,7 +79,7 @@ TEST_F(TensorOpsTest, CheckPickNN) {
       std::cerr << ']' << std::endl;
       vector<float> x_data(tc.x_shape.num_total_elements());
       iota(x_data.begin(), x_data.end(), 0);
-      const Tensor x = dev->new_tensor(tc.x_shape, x_data);
+      const Tensor x = dev->new_tensor_by_vector(tc.x_shape, x_data);
       const Tensor y = pick(x, tc.dim, tc.ids);
       EXPECT_EQ(tc.y_shape, y.shape());
       EXPECT_TRUE(vector_match(tc.values, y.to_vector()));
@@ -167,7 +167,7 @@ TEST_F(TensorOpsTest, CheckSlice) {
     {3, 0, 1, Shape({3, 3, 2}, 4), x_data},
   };
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({3, 3, 2}, 4), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({3, 3, 2}, 4), x_data);
     for (const TestCase &tc : test_cases) {
       std::cerr << "dim=" << tc.dim << ", lower=" << tc.lower
         << ", upper=" << tc.upper << std::endl;
@@ -198,9 +198,9 @@ TEST_F(TensorOpsTest, CheckConcatN_3x3) {
     1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
   };
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor({1, 3}, {1, 1, 1});
-    const Tensor b = dev->new_tensor({2, 3}, {2, 3, 2, 3, 2, 3});
-    const Tensor c = dev->new_tensor({3, 3}, {4, 5, 6, 4, 5, 6, 4, 5, 6});
+    const Tensor a = dev->new_tensor_by_vector({1, 3}, {1, 1, 1});
+    const Tensor b = dev->new_tensor_by_vector({2, 3}, {2, 3, 2, 3, 2, 3});
+    const Tensor c = dev->new_tensor_by_vector({3, 3}, {4, 5, 6, 4, 5, 6, 4, 5, 6});
     const Tensor y = concat({&a, &b, &c}, 0);
     EXPECT_EQ(Shape({6, 3}), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -217,10 +217,10 @@ TEST_F(TensorOpsTest, CheckConcat5x4) {
     1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4,
   };
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor({5}, {1, 1, 1, 1, 1});
-    const Tensor b = dev->new_tensor({5}, {2, 2, 2, 2, 2});
-    const Tensor c = dev->new_tensor({5}, {3, 3, 3, 3, 3});
-    const Tensor d = dev->new_tensor({5}, {4, 4, 4, 4, 4});
+    const Tensor a = dev->new_tensor_by_vector({5}, {1, 1, 1, 1, 1});
+    const Tensor b = dev->new_tensor_by_vector({5}, {2, 2, 2, 2, 2});
+    const Tensor c = dev->new_tensor_by_vector({5}, {3, 3, 3, 3, 3});
+    const Tensor d = dev->new_tensor_by_vector({5}, {4, 4, 4, 4, 4});
     for (const unsigned i : {0, 1, 2}) {
       const Tensor y = concat({&a, &b, &c, &d}, i);
       EXPECT_EQ(shapes[i], y.shape());
@@ -254,8 +254,8 @@ TEST_F(TensorOpsTest, CheckConcat2_2_2x2) {
       11, 22, 33, 44, 55, 66, 77, 88, -11, -22, -33, -44, -55, -66, -77, -88},
   };
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor(Shape({2, 2, 2}, 2), a_data);
-    const Tensor b = dev->new_tensor(Shape({2, 2, 2}, 2), b_data);
+    const Tensor a = dev->new_tensor_by_vector(Shape({2, 2, 2}, 2), a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2, 2}, 2), b_data);
     for (const unsigned i : {0, 1, 2, 3, 4}) {
       const Tensor y = concat({&a, &b}, i);
       EXPECT_EQ(shapes[i], y.shape());
@@ -271,9 +271,9 @@ TEST_F(TensorOpsTest, CheckConcatBatchBroadcast) {
         1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3,
         11, 11, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3,
       };
-      const Tensor a = dev->new_tensor(Shape({2, 1}, 2), {1, 1, 11, 11});
-      const Tensor b = dev->new_tensor({2, 2}, {2, 2, 2, 2});
-      const Tensor c = dev->new_tensor({2, 3}, {3, 3, 3, 3, 3, 3});
+      const Tensor a = dev->new_tensor_by_vector(Shape({2, 1}, 2), {1, 1, 11, 11});
+      const Tensor b = dev->new_tensor_by_vector({2, 2}, {2, 2, 2, 2});
+      const Tensor c = dev->new_tensor_by_vector({2, 3}, {3, 3, 3, 3, 3, 3});
       const Tensor y = concat({&a, &b, &c}, 1);
       EXPECT_EQ(Shape({2, 6}, 2), y.shape());
       EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -283,19 +283,19 @@ TEST_F(TensorOpsTest, CheckConcatBatchBroadcast) {
         1, 1, 1, 2, 2, 3, 1, 1, 1, 2, 2, 3,
         1, 1, 1, 22, 22, 33, 1, 1, 1, 22, 22, 33,
       };
-      const Tensor a = dev->new_tensor({3, 2}, {1, 1, 1, 1, 1, 1});
-      const Tensor b = dev->new_tensor(
+      const Tensor a = dev->new_tensor_by_vector({3, 2}, {1, 1, 1, 1, 1, 1});
+      const Tensor b = dev->new_tensor_by_vector(
           Shape({2, 2}, 2), {2, 2, 2, 2, 22, 22, 22, 22});
-      const Tensor c = dev->new_tensor(Shape({1, 2}, 2), {3, 3, 33, 33});
+      const Tensor c = dev->new_tensor_by_vector(Shape({1, 2}, 2), {3, 3, 33, 33});
       const Tensor y = concat({&a, &b, &c}, 0);
       EXPECT_EQ(Shape({6, 2}, 2), y.shape());
       EXPECT_TRUE(vector_match(y_data, y.to_vector()));
     }
     {
       const vector<float> y_data {1, 2, 3, 1, 2, 33, 1, 2, 333};
-      const Tensor a = dev->new_tensor({}, {1});
-      const Tensor b = dev->new_tensor({}, {2});
-      const Tensor c = dev->new_tensor(Shape({}, 3), {3, 33, 333});
+      const Tensor a = dev->new_tensor_by_vector({}, {1});
+      const Tensor b = dev->new_tensor_by_vector({}, {2});
+      const Tensor c = dev->new_tensor_by_vector(Shape({}, 3), {3, 33, 333});
       const Tensor y = concat({&a, &b, &c}, 0);
       EXPECT_EQ(Shape({3}, 3), y.shape());
       EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -328,7 +328,7 @@ TEST_F(TensorOpsTest, CheckInvalidConcat) {
 TEST_F(TensorOpsTest, CheckDuplicate) {
   const vector<float> x_data {1000, 100, 10, 1, 0.1, 0.01, 0.001, 0.0001};
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 2}, 2), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), x_data);
     const Tensor y = +x;
     EXPECT_EQ(Shape({2, 2}, 2), y.shape());
     EXPECT_TRUE(vector_match(x_data, y.to_vector()));
@@ -341,7 +341,7 @@ TEST_F(TensorOpsTest, CheckNegate) {
     -1000, -100, -10, -1, -0.1, -0.01, -0.001, -0.0001,
   };
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 2}, 2), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), x_data);
     const Tensor y = -x;
     EXPECT_EQ(Shape({2, 2}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -353,7 +353,7 @@ TEST_F(TensorOpsTest, CheckAddConst) {
   const float k = 1;
   const vector<float> y_data {1001, 101, 11, 2, 1.1, 1.01, 1.001, 1.0001};
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 2}, 2), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), x_data);
     const Tensor y1 = k + x;
     EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
     EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
@@ -368,8 +368,8 @@ TEST_F(TensorOpsTest, CheckAdd) {
   const vector<float> b_data {   0, 100, 20, 3, 0.4, 0.05, 0.006, 0.0007};
   const vector<float> y_data {1000, 200, 30, 4, 0.5, 0.06, 0.007, 0.0008};
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor(Shape({2, 2}, 2), a_data);
-    const Tensor b = dev->new_tensor(Shape({2, 2}, 2), b_data);
+    const Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 2), a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 2), b_data);
     const Tensor y1 = a + b;
     EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
     EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
@@ -384,8 +384,8 @@ TEST_F(TensorOpsTest, CheckAddBatchBroadcast) {
   const vector<float> b_data {0, 0, 0, 0, 4, 4, 4, 4};
   const vector<float> y_data {0, 1, 2, 3, 4, 5, 6, 7};
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor({2, 2}, a_data);
-    const Tensor b = dev->new_tensor(Shape({2, 2}, 2), b_data);
+    const Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 2), b_data);
     const Tensor y1 = a + b;
     EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
     EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
@@ -401,7 +401,7 @@ TEST_F(TensorOpsTest, CheckSubtractConst) {
   const vector<float> y1_data {-999, -99, -9, 0, 0.9, 0.99, 0.999, 0.9999};
   const vector<float> y2_data {999, 99, 9, 0, -0.9, -0.99, -0.999, -0.9999};
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 2}, 2), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), x_data);
     const Tensor y1 = k - x;
     EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
     EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
@@ -417,8 +417,8 @@ TEST_F(TensorOpsTest, CheckSubtract) {
   const vector<float> y1_data {1000, 0, -10, -2, -0.3, -0.04, -0.005, -0.0006};
   const vector<float> y2_data {-1000, 0, 10, 2, 0.3, 0.04, 0.005, 0.0006};
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor(Shape({2, 2}, 2), a_data);
-    const Tensor b = dev->new_tensor(Shape({2, 2}, 2), b_data);
+    const Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 2), a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 2), b_data);
     const Tensor y1 = a - b;
     EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
     EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
@@ -434,8 +434,8 @@ TEST_F(TensorOpsTest, CheckSubtractBatchBroadcast) {
   const vector<float> y1_data {0, 1, 2, 3, -4, -3, -2, -1};
   const vector<float> y2_data {0, -1, -2, -3, 4, 3, 2, 1};
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor({2, 2}, a_data);
-    const Tensor b = dev->new_tensor(Shape({2, 2}, 2), b_data);
+    const Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 2), b_data);
     const Tensor y1 = a - b;
     EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
     EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
@@ -450,7 +450,7 @@ TEST_F(TensorOpsTest, CheckMultiplyConst) {
   const float k = 10;
   const vector<float> y_data {10000, -1000, 100, -10, 1, -0.1, 0.01, -0.001};
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 2}, 2), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), x_data);
     const Tensor y1 = k * x;
     EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
     EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
@@ -465,8 +465,8 @@ TEST_F(TensorOpsTest, CheckMultiply) {
   const vector<float> b_data {0, 1, 2, 3, -4, -5, -6, -7};
   const vector<float> y_data {0, -100, 20, -3, -0.4, 0.05, -0.006, 0.0007};
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor(Shape({2, 2}, 2), a_data);
-    const Tensor b = dev->new_tensor(Shape({2, 2}, 2), b_data);
+    const Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 2), a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 2), b_data);
     const Tensor y1 = a * b;
     EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
     EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
@@ -481,8 +481,8 @@ TEST_F(TensorOpsTest, CheckMultiplyBatchBroadcast) {
   const vector<float> b_data {1, 1, 1, 1, 0, 1, 2, 3};
   const vector<float> y_data {0, 1, 2, 3, 0, 1, 4, 9};
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor({2, 2}, a_data);
-    const Tensor b = dev->new_tensor(Shape({2, 2}, 2), b_data);
+    const Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 2), b_data);
     const Tensor y1 = a * b;
     EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
     EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
@@ -500,7 +500,7 @@ TEST_F(TensorOpsTest, CheckDivideConst) {
     100, -10, 1, -0.1, 0.01, -0.001, 0.0001, -0.00001,
   };
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 2}, 2), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), x_data);
     const Tensor y1 = k / x;
     EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
     EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
@@ -518,8 +518,8 @@ TEST_F(TensorOpsTest, CheckDivide) {
   };
   const vector<float> y2_data {0.001, -0.02, 0.3, -4, -50, 600, -7000, 80000};
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor(Shape({2, 2}, 2), a_data);
-    const Tensor b = dev->new_tensor(Shape({2, 2}, 2), b_data);
+    const Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 2), a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 2), b_data);
     const Tensor y1 = a / b;
     EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
     EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
@@ -535,8 +535,8 @@ TEST_F(TensorOpsTest, CheckDivideBatchBroadcast) {
   const vector<float> y1_data {1, 2, 3, 4, 1, 1, 1, 1};
   const vector<float> y2_data {1, 0.5, 0.333333333, 0.25, 1, 1, 1, 1};
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor({2, 2}, a_data);
-    const Tensor b = dev->new_tensor(Shape({2, 2}, 2), b_data);
+    const Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 2), b_data);
     const Tensor y1 = a / b;
     EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
     EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
@@ -555,9 +555,9 @@ TEST_F(TensorOpsTest, CheckInvalidArithmeticOps) {
   };
   for (Device *dev : devices) {
     for (unsigned i = 0; i < sa.size(); ++i) {
-      const Tensor a = dev->new_tensor(
+      const Tensor a = dev->new_tensor_by_vector(
           sa[i], vector<float>(sa[i].num_total_elements()));
-      const Tensor b = dev->new_tensor(
+      const Tensor b = dev->new_tensor_by_vector(
           sb[i], vector<float>(sb[i].num_total_elements()));
       EXPECT_THROW(a + b, Error);
       EXPECT_THROW(a - b, Error);
@@ -571,7 +571,7 @@ TEST_F(TensorOpsTest, CheckTranspose11) {
   for (Device *dev : devices) {
     const vector<float> x_data {42};
     const vector<float> y_data {42};
-    const Tensor x = dev->new_tensor({}, x_data);
+    const Tensor x = dev->new_tensor_by_vector({}, x_data);
     const Tensor y = transpose(x);
     EXPECT_EQ(Shape(), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -582,7 +582,7 @@ TEST_F(TensorOpsTest, CheckTransposeN1) {
   const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
   const vector<float> y_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor({12}, x_data);
+    const Tensor x = dev->new_tensor_by_vector({12}, x_data);
     const Tensor y = transpose(x);
     EXPECT_EQ(Shape({1, 12}), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -593,7 +593,7 @@ TEST_F(TensorOpsTest, CheckTranspose1N) {
   const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
   const vector<float> y_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({1, 3}, 4), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({1, 3}, 4), x_data);
     const Tensor y = transpose(x);
     EXPECT_EQ(Shape({3}, 4), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -604,7 +604,7 @@ TEST_F(TensorOpsTest, CheckTransposeNN) {
   const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
   const vector<float> y_data {1, 3, 2, 4, 5, 7, 6, 8, 9, 11, 10, 12};
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 2}, 3), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
     const Tensor y = transpose(x);
     EXPECT_EQ(Shape({2, 2}, 3), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -615,7 +615,7 @@ TEST_F(TensorOpsTest, CheckTransposeMN) {
   const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
   const vector<float> y_data {1, 3, 5, 2, 4, 6, 7, 9, 11, 8, 10, 12};
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 3}, 2), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
     const Tensor y = transpose(x);
     EXPECT_EQ(Shape({3, 2}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -633,7 +633,7 @@ TEST_F(TensorOpsTest, CheckDotAA) {
   const vector<float> x_data {1, 2, 3, 4, 1, 0, 0, 1, 0, 2, 3, 0};
   const vector<float> y_data {7, 10, 15, 22, 1, 0, 0, 1, 6, 0, 0, 6};
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 2}, 3), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
     const Tensor y = dot(x, x);
     EXPECT_EQ(Shape({2, 2}, 3), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -664,8 +664,8 @@ TEST_F(TensorOpsTest, CheckDotAB) {
     149, 9410, 10409,
   };
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor({3, 4}, a_data);
-    const Tensor b = dev->new_tensor({4, 6}, b_data);
+    const Tensor a = dev->new_tensor_by_vector({3, 4}, a_data);
+    const Tensor b = dev->new_tensor_by_vector({4, 6}, b_data);
     const Tensor y = dot(a, b);
     EXPECT_EQ(Shape({3, 6}), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -677,8 +677,8 @@ TEST_F(TensorOpsTest, CheckDotBatchBroadcast1N) {
   const vector<float> b_data {1, 2, 3, 4, 5, 6, 7, 8};
   const vector<float> y_data {12, 1200, 34, 3400, 56, 5600, 78, 7800};
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor({2, 2}, a_data);
-    const Tensor b = dev->new_tensor(Shape({2, 2}, 2), b_data);
+    const Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 2), b_data);
     const Tensor y = dot(a, b);
     EXPECT_EQ(Shape({2, 2}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -690,8 +690,8 @@ TEST_F(TensorOpsTest, CheckDotBatchBroadcastN1) {
   const vector<float> b_data {10, 1, 1000, 100};
   const vector<float> y_data {13, 24, 1300, 2400, 57, 68, 5700, 6800};
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor(Shape({2, 2}, 2), a_data);
-    const Tensor b = dev->new_tensor({2, 2}, b_data);
+    const Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 2), a_data);
+    const Tensor b = dev->new_tensor_by_vector({2, 2}, b_data);
     const Tensor y = dot(a, b);
     EXPECT_EQ(Shape({2, 2}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -740,7 +740,7 @@ TEST_F(TensorOpsTest, CheckExp) {
     1, .60653066, .36787944, .13533528, .018315639, .00033546263,
   };
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 3}, 2), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
     const Tensor y = exp(x);
     EXPECT_EQ(Shape({2, 3}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -757,7 +757,7 @@ TEST_F(TensorOpsTest, CheckTanh) {
     0, -.46211716, -.76159416, -.96402758, -.99932930, -.99999977,
   };
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 3}, 2), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
     const Tensor y = tanh(x);
     EXPECT_EQ(Shape({2, 3}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -774,7 +774,7 @@ TEST_F(TensorOpsTest, CheckSigmoid) {
     .5, .37754067, .26894142, .11920292, .047425873, .017986210,
   };
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 3}, 2), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
     const Tensor y = sigmoid(x);
     EXPECT_EQ(Shape({2, 3}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -791,7 +791,7 @@ TEST_F(TensorOpsTest, CheckStep) {
     0, 0, 0, 0, 0, 0,
   };
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 3}, 2), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
     const Tensor y = step(x);
     EXPECT_EQ(Shape({2, 3}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -808,7 +808,7 @@ TEST_F(TensorOpsTest, CheckRelu) {
     0, 0, 0, 0, 0, 0,
   };
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 3}, 2), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
     const Tensor y = relu(x);
     EXPECT_EQ(Shape({2, 3}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -832,7 +832,7 @@ TEST_F(TensorOpsTest, CheckSum) {
     {1, 2, 3, 4, 5, 6, 7, 8, -1, -2, -3, -4, -5, -6, -7, -8},
   };
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 2, 2}, 2), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 2, 2}, 2), x_data);
     for (unsigned i = 0; i < 4; ++i) {
       const Tensor y = sum(x, i);
       EXPECT_EQ(shape[i], y.shape());
@@ -876,7 +876,7 @@ TEST_F(TensorOpsTest, CheckLogSumExp) {
     {1, 2, 3, 4, 5, 6, 7, 8, -1, -2, -3, -4, -5, -6, -7, -8},
   };
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 2, 2}, 2), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 2, 2}, 2), x_data);
     for (unsigned i = 0; i < 4; ++i) {
       const Tensor y = logsumexp(x, i);
       EXPECT_EQ(shape[i], y.shape());
@@ -923,7 +923,7 @@ TEST_F(TensorOpsTest, CheckLogSoftmax) {
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
   };
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 2, 2}, 2), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 2, 2}, 2), x_data);
     for (unsigned i = 0; i < 4; ++i) {
       const Tensor y = log_softmax(x, i);
       EXPECT_EQ(Shape({2, 2, 2}, 2), y.shape());
@@ -970,7 +970,7 @@ TEST_F(TensorOpsTest, CheckSoftmax) {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
   };
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 2, 2}, 2), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 2, 2}, 2), x_data);
     for (unsigned i = 0; i < 4; ++i) {
       const Tensor y = softmax(x, i);
       EXPECT_EQ(Shape({2, 2, 2}, 2), y.shape());
@@ -1032,7 +1032,7 @@ TEST_F(TensorOpsTest, CheckBroadcast2) {
   };
   for (Device *dev : devices) {
     for (const TestCase &tc : test_cases) {
-      const Tensor x = dev->new_tensor(Shape({2}, 3), {1, 2, 3, 4, 5, 6});
+      const Tensor x = dev->new_tensor_by_vector(Shape({2}, 3), {1, 2, 3, 4, 5, 6});
       const Tensor y = broadcast(x, tc.dim, tc.size);
       EXPECT_EQ(tc.shape, y.shape());
       EXPECT_TRUE(vector_match(tc.values, y.to_vector()));
@@ -1062,7 +1062,7 @@ TEST_F(TensorOpsTest, CheckBroadcast3) {
   };
   for (Device *dev : devices) {
     for (const TestCase &tc : test_cases) {
-      const Tensor x = dev->new_tensor(
+      const Tensor x = dev->new_tensor_by_vector(
           Shape({1, 2, 1, 2}, 2), {1, 2, 3, 4, 5, 6, 7, 8});
       const Tensor y = broadcast(x, tc.dim, tc.size);
       EXPECT_EQ(tc.shape, y.shape());
@@ -1091,7 +1091,7 @@ TEST_F(TensorOpsTest, CheckBatchSum) {
     -1, -2, -3, -4, -5, -6, -7, -8,
   };
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 2, 2}, 2), x_data);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 2, 2}, 2), x_data);
     const Tensor y = batch_sum(x);
     EXPECT_EQ(Shape({2, 2, 2}), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
@@ -1114,8 +1114,8 @@ TEST_F(TensorOpsTest, CheckSoftmaxCrossEntropy) {
   const vector<Shape> shape {{1, 3}, {3}};
   for (Device *dev : devices) {
     for (const unsigned dim : {0, 1}) {
-      const Tensor x = dev->new_tensor({3, 3}, x_data[dim]);
-      const Tensor t = dev->new_tensor({3, 3}, t_data[dim]);
+      const Tensor x = dev->new_tensor_by_vector({3, 3}, x_data[dim]);
+      const Tensor t = dev->new_tensor_by_vector({3, 3}, t_data[dim]);
       const Tensor y = softmax_cross_entropy(x, t, dim);
       EXPECT_EQ(shape[dim], y.shape());
       EXPECT_TRUE(vector_match(y_data[dim], y.to_vector()));
@@ -1140,8 +1140,8 @@ TEST_F(TensorOpsTest, CheckSoftmaxCrossEntropyBatchBroadcast) {
   };
   for (Device *dev : devices) {
     for (const TestCase &tc : test_cases) {
-      const Tensor x = dev->new_tensor(tc.x_shape, tc.x_data);
-      const Tensor t = dev->new_tensor(tc.t_shape, tc.t_data);
+      const Tensor x = dev->new_tensor_by_vector(tc.x_shape, tc.x_data);
+      const Tensor t = dev->new_tensor_by_vector(tc.t_shape, tc.t_data);
       const Tensor y = softmax_cross_entropy(x, t, 0);
       EXPECT_EQ(tc.y_shape, y.shape());
       EXPECT_TRUE(vector_match(tc.y_data, y.to_vector()));

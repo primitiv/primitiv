@@ -44,7 +44,7 @@ Shape Input::forward_shape(const vector<const Shape *> &args) const {
 Tensor Input::forward(const vector<const Tensor *> &args) const {
   CHECK_ARGNUM(args, 0);
   Tensor ret = device_->new_tensor(shape_);
-  ret.reset(data_);
+  ret.reset_by_vector(data_);
   return ret;
 }
 

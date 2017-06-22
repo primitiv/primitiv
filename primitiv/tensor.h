@@ -67,12 +67,21 @@ public:
 
   /**
    * Reset internal values using a vector.
+   * @param values Array of values to be used to initialize each element.
+   * @remarks Length of `values` should be equal to `shape().size()`. Each
+   *          element should be ordered by the column-major order, and the batch
+   *          size is assumed as the last dimension.
+   */
+  void reset_by_array(const float *values);
+
+  /**
+   * Reset internal values using a vector.
    * @param values List of values to be used to initialize each element.
    * @remarks `values.size()` should be equal to `shape().size()`. Each element
    *          should be ordered by the column-major order, and the batch size is
    *          assumed as the last dimension.
    */
-  void reset(const std::vector<float> &values);
+  void reset_by_vector(const std::vector<float> &values);
 
   /**
    * Check whether the object is valid or not.

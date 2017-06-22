@@ -54,17 +54,34 @@ TEST_F(CPUDeviceTest, CheckSetValuesByConstant) {
   }
 }
 
+TEST_F(CPUDeviceTest, CheckSetValuesByArray) {
+  CPUDevice dev;
+  {
+    const float data[] {1, 2, 3, 4, 5, 6, 7, 8};
+    Tensor x = dev.new_tensor_by_array(Shape({2, 2}, 2), data);
+    EXPECT_TRUE(
+        vector_match(vector<float> {1, 2, 3, 4, 5, 6, 7, 8}, x.to_vector()));
+  }
+  {
+    const float data[] {1, 2, 3, 4, 5, 6, 7, 8};
+    Tensor x = dev.new_tensor(Shape({2, 2}, 2));
+    x.reset_by_array(data);
+    EXPECT_TRUE(
+        vector_match(vector<float> {1, 2, 3, 4, 5, 6, 7, 8}, x.to_vector()));
+  }
+}
+
 TEST_F(CPUDeviceTest, CheckSetValuesByVector) {
   CPUDevice dev;
   {
     const vector<float> data {1, 2, 3, 4, 5, 6, 7, 8};
-    Tensor x = dev.new_tensor(Shape({2, 2}, 2), data);
+    Tensor x = dev.new_tensor_by_vector(Shape({2, 2}, 2), data);
     EXPECT_TRUE(vector_match(data, x.to_vector()));
   }
   {
     const vector<float> data {1, 2, 3, 4, 5, 6, 7, 8};
     Tensor x = dev.new_tensor(Shape({2, 2}, 2));
-    x.reset(data);
+    x.reset_by_vector(data);
     EXPECT_TRUE(vector_match(data, x.to_vector()));
   }
 }
