@@ -39,10 +39,10 @@ int main() {
   CUDADevice dev(0);
 
   // Parameters
-  Parameter pw1({8, 2}, &dev, XavierUniform());
-  Parameter pb1({8}, &dev, Constant(0.0f));
-  Parameter pw2({1, 8}, &dev, XavierUniform());
-  Parameter pb2({}, &dev, Constant(0.0f));
+  Parameter pw1("w1", {8, 2}, &dev, XavierUniform());
+  Parameter pb1("b1", {8}, &dev, Constant(0.0f));
+  Parameter pw2("w2", {1, 8}, &dev, XavierUniform());
+  Parameter pb2("b2", {}, &dev, Constant(0.0f));
 
   // Trainer
   SGDTrainer trainer(0.1f);

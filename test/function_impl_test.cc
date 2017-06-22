@@ -138,7 +138,7 @@ TEST_F(FunctionImplTest, CheckInput) {
 TEST_F(FunctionImplTest, CheckParameterInput) {
   const Shape ret_shape {2, 2};
   const initializers::Constant init(42);
-  Parameter param(ret_shape, &dev);
+  Parameter param("param", ret_shape, &dev);
   param.reset_value(init);
   param.reset_gradient();
   ASSERT_TRUE(vector_match(vector<float>(4, 42), param.value().to_vector()));

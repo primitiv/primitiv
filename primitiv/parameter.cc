@@ -15,8 +15,10 @@ void Parameter::check_shape() {
   }
 }
 
-Parameter::Parameter(const Shape &shape, Device *device)
-: shape_(shape)
+Parameter::Parameter(
+    const std::string &name, const Shape &shape, Device *device)
+: name_(name)
+, shape_(shape)
 , device_(device)
 , value_(device->new_tensor(shape))
 , grad_(device->new_tensor(shape)) {
@@ -24,8 +26,10 @@ Parameter::Parameter(const Shape &shape, Device *device)
 }
 
 Parameter::Parameter(
-    const Shape &shape, Device *device, const std::vector<float> & value)
-: shape_(shape)
+    const std::string &name, const Shape &shape, Device *device,
+    const std::vector<float> & value)
+: name_(name)
+, shape_(shape)
 , device_(device)
 , value_(device->new_tensor(shape))
 , grad_(device->new_tensor(shape)) {
@@ -34,8 +38,10 @@ Parameter::Parameter(
 }
 
 Parameter::Parameter(
-    const Shape &shape, Device *device, const Initializer &init)
-: shape_(shape)
+    const std::string &name, const Shape &shape, Device *device,
+    const Initializer &init)
+: name_(name)
+, shape_(shape)
 , device_(device)
 , value_(device->new_tensor(shape))
 , grad_(device->new_tensor(shape)) {

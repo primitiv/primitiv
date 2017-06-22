@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_PARAMETER_H_
 #define PRIMITIV_PARAMETER_H_
 
+#include <string>
 #include <vector>
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
@@ -13,37 +14,48 @@ class Initializer;
  * Class to manage a trainable tensor parameter.
  */
 class Parameter {
-  Parameter() = delete;
   Parameter(const Parameter &) = delete;
-  Parameter(Parameter &&) = delete;
   Parameter &operator=(const Parameter &) = delete;
-  Parameter &operator=(Parameter &&) = delete;
 
 public:
+  Parameter(Parameter &&) = default;
+  Parameter &operator=(Parameter &&) = default;
+  
+  /**
+   * Creates an invalid parameter object.
+   */
+  Parameter() : name_(), shape_(), device_(nullptr), value_(), grad_() {}
+
   /**
    * Creates a new Parameter object.
+   * @param name Name of the parameter.
    * @param shape The shape of the parameter. The batch size should be 1.
    * @param device The device object to manage internal memory.
    */
-  Parameter(const Shape &shape, Device *device);
+  Parameter(const std::string &name, const Shape &shape, Device *device);
 
   /**
    * Creates a new Parameter object.
+   * @param name Name of the parameter.
    * @param shape The shape of the parameter. The batch size should be 1.
    * @param device The device object to manage internal memory.
    * @param value List of initial values. Order of elements should be of
    *              `Tensor::set_values()`.
    */
   Parameter(
-      const Shape &shape, Device *device, const std::vector<float> &value);
+      const std::string &name, const Shape &shape, Device *device,
+      const std::vector<float> &value);
 
   /**
    * Creates a new Parameter object.
+   * @param name Name of the parameter.
    * @param shape The shape of the parameter. The batch size should be 1.
    * @param device The device object to manage internal memory.
    * @param init An Initializer object.
    */
-  Parameter(const Shape &shape, Device *device, const Initializer &init);
+  Parameter(
+      const std::string &name, const Shape &shape, Device *device,
+      const Initializer &init);
 
   /**
    * Set all values.
@@ -78,6 +90,12 @@ public:
   void add_gradient(const Tensor &diff);
 
   /**
+   * Returns the name of the parameter.
+   * @return Name of the parameter.
+   */
+  const std::string &name() const { return name_; }
+
+  /**
    * Returns the shape of the parameter.
    * @return Shape object.
    */
@@ -107,6 +125,7 @@ private:
    */
   void check_shape();
 
+  std::string name_;
   Shape shape_;
   Device *device_;
   Tensor value_;

@@ -86,10 +86,14 @@ int main() {
   CUDADevice dev(0);
 
   // Parameters
-  Parameter pw1({NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, &dev, XavierUniform());
-  Parameter pb1({NUM_HIDDEN_UNITS}, &dev, Constant(0));
-  Parameter pw2({NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, &dev, XavierUniform());
-  Parameter pb2({NUM_OUTPUT_UNITS}, &dev, Constant(0));
+  Parameter pw1(
+      "w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, &dev, XavierUniform());
+  Parameter pb1(
+      "b1", {NUM_HIDDEN_UNITS}, &dev, Constant(0));
+  Parameter pw2(
+      "w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, &dev, XavierUniform());
+  Parameter pb2(
+      "b2", {NUM_OUTPUT_UNITS}, &dev, Constant(0));
 
   // Trainer
   SGDTrainer trainer(.1);
