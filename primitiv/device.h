@@ -16,8 +16,22 @@ class Device {
   Device &operator=(Device &&) = delete;
 
 public:
+  /**
+   * Device type.
+   */
+  enum DeviceType {
+    DEVICE_TYPE_CPU = 0x0,
+    DEVICE_TYPE_CUDA = 0x10000,
+  };
+
   Device() = default;
   virtual ~Device() = default;
+
+  /**
+   * Retrieves the type of the device.
+   * @return A DeviceType value.
+   */
+  virtual DeviceType type() const = 0;
 
   /**
    * Provides a new Tensor object on the device.

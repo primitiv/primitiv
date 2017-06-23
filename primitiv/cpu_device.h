@@ -32,6 +32,8 @@ public:
 
   ~CPUDevice() override;
 
+  Device::DeviceType type() const override { return Device::DEVICE_TYPE_CPU; }
+
 private:
   void *new_handle(const Shape &shape) override;
   void delete_tensor_impl(Tensor &x) override;

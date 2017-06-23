@@ -37,6 +37,8 @@ public:
 
   ~CUDADevice() override;
 
+  Device::DeviceType type() const override { return Device::DEVICE_TYPE_CUDA; }
+
 private:
   void *new_handle(const Shape &shape) override;
   void delete_tensor_impl(Tensor &x) override;
