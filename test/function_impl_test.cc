@@ -157,6 +157,22 @@ TEST_F(FunctionImplTest, CheckParameterInput) {
   EXPECT_TRUE(vector_match(vector<float>(4, 1), param.gradient().to_vector()));
 }
 
+TEST_F(FunctionImplTest, CheckCopy) {
+  CPUDevice dev2;
+  const Shape ret_shape({2, 2}, 3);
+  setup_1arg();
+  const Copy node(&dev2);
+  const Shape cur_shape = node.forward_shape(arg_shapes);
+  const Tensor cur_value = node.forward(arg_values);
+  const Tensor cur_grad = dev2.new_tensor_by_vector(
+      ret_shape, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
+  EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
+  EXPECT_EQ("Copy", node.name());
+  EXPECT_EQ(ret_shape, cur_shape);
+  EXPECT_TRUE(vector_match(arg_values[0]->to_vector(), cur_value.to_vector()));
+  EXPECT_TRUE(vector_match(arg_grads[0]->to_vector(), cur_grad.to_vector()));
+}
+
 TEST_F(FunctionImplTest, CheckPick) {
   struct TestCase {
     unsigned dim;

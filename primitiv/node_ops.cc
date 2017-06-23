@@ -77,6 +77,10 @@ Node parameter(Graph *g, Parameter *param) {
   return g->add_function(new functions::ParameterInput(param), {});
 }
 
+Node copy(const Node &x, Device *dev) {
+  return x.graph()->add_function(new functions::Copy(dev), {x});
+}
+
 Node pick(const Node &x, unsigned dim, const std::vector<unsigned> &ids) {
   return x.graph()->add_function(new functions::Pick(dim, ids), {x});
 }

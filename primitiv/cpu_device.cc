@@ -77,10 +77,7 @@ Tensor CPUDevice::copy_tensor_impl(const Tensor &x) {
       return new_tensor_by_array(
           x.shape(), reinterpret_cast<const float *>(x.data()));
     default:
-      {
-        const std::vector<float> values = x.to_vector();
-        return new_tensor_by_vector(x.shape(), values);
-      }
+      return new_tensor_by_vector(x.shape(), x.to_vector());
   }
 }
 

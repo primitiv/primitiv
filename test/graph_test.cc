@@ -20,7 +20,36 @@ namespace primitiv {
 class GraphTest : public testing::Test {
 protected:
   CPUDevice dev;
+  CPUDevice dev2;
 };
+
+TEST_F(GraphTest, CheckMultipleDevices) {
+  Graph g;
+  const vector<float> data1 {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4};
+  const vector<float> data2 {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
+  const vector<float> data3 {1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6};
+  const vector<float> grad(12, 1);
+  const Node x1 = node_ops::input(&g, &dev, Shape({2, 2}, 3), data1);
+  const Node x2 = node_ops::input(&g, &dev2, Shape({2, 2}, 3), data2);
+  const Node x3 = node_ops::copy(x1, &dev2) + x2;
+  EXPECT_NO_THROW(g.forward(x3));
+  EXPECT_TRUE(vector_match(data1, g.get_value(x1).to_vector()));
+  EXPECT_TRUE(vector_match(data2, g.get_value(x2).to_vector()));
+  EXPECT_TRUE(vector_match(data3, g.get_value(x3).to_vector()));
+  EXPECT_NO_THROW(g.backward(x3));
+  EXPECT_TRUE(vector_match(grad, g.get_gradient(x1).to_vector()));
+  EXPECT_TRUE(vector_match(grad, g.get_gradient(x2).to_vector()));
+  EXPECT_TRUE(vector_match(grad, g.get_gradient(x3).to_vector()));
+}
+
+TEST_F(GraphTest, CheckInvalidMultipleDevices) {
+  Graph g;
+  const vector<float> dummy(12);
+  const Node x1 = node_ops::input(&g, &dev, Shape({2, 2}, 3), dummy);
+  const Node x2 = node_ops::input(&g, &dev2, Shape({2, 2}, 3), dummy);
+  const Node x3 = x1 + x2;
+  EXPECT_THROW(g.forward(x3), Error);
+}
 
 TEST_F(GraphTest, CheckForwardBackward) {
   Graph g;

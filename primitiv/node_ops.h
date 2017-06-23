@@ -31,6 +31,8 @@ Node input(
     Graph *g, Device *dev, const Shape &shape, const std::vector<float> &data);
 Node parameter(Graph *g, Parameter *param);
 
+Node copy(const Node &x, Device *dev);
+
 Node pick(const Node &x, unsigned dim, const std::vector<unsigned> &ids);
 
 Node slice(const Node &x, unsigned dim, unsigned lower, unsigned upper);

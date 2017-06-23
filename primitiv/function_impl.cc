@@ -43,9 +43,7 @@ Shape Input::forward_shape(const vector<const Shape *> &args) const {
 
 Tensor Input::forward(const vector<const Tensor *> &args) const {
   CHECK_ARGNUM(args, 0);
-  Tensor ret = device_->new_tensor(shape_);
-  ret.reset_by_vector(data_);
-  return ret;
+  return device_->new_tensor_by_vector(shape_, data_);
 }
 
 void Input::backward(
@@ -68,6 +66,22 @@ void ParameterInput::backward(
     const Tensor &, const Tensor &cur_grad,
     const vector<const Tensor *> &, const vector<Tensor *> &) const {
   param_->add_gradient(cur_grad);
+}
+
+Shape Copy::forward_shape(const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 1);
+  return *args[0];
+}
+
+Tensor Copy::forward(const vector<const Tensor *> &args) const {
+  CHECK_ARGNUM(args, 1);
+  return T::copy(*args[0], device_);
+}
+
+void Copy::backward(
+    const Tensor &y, const Tensor &yg,
+    const vector<const Tensor *> &x, const vector<Tensor *> &xg) const {
+  xg[0]->add_gradient(T::copy(yg, xg[0]->device()));
 }
 
 Shape Pick::forward_shape(const vector<const Shape *> &args) const {

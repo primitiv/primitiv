@@ -63,6 +63,23 @@ private:
 };
 
 /**
+ * Function to copy tensors to other device.
+ */
+class Copy : public primitiv::Function {
+  DEFAULT_METHODS(Copy);
+
+private:
+  Copy() = delete;
+
+public:
+  Copy(Device *device) : device_(device) {}
+  std::string name() const override { return "Copy"; }
+
+private:
+  Device *device_;
+};
+
+/**
  * Function to pick tensors from a large tensor.
  */
 class Pick : public primitiv::Function {
