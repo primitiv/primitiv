@@ -71,6 +71,19 @@ void CPUDevice::reset_tensor_by_array_impl(Tensor &x, const float values[]) {
   std::memcpy(x.data(), values, sizeof(float) * x.shape().num_total_elements());
 }
 
+Tensor CPUDevice::copy_tensor_impl(const Tensor &x) {
+  switch (x.device()->type()) {
+    case Device::DEVICE_TYPE_CPU:
+      return new_tensor_by_array(
+          x.shape(), reinterpret_cast<const float *>(x.data()));
+    default:
+      {
+        const std::vector<float> values = x.to_vector();
+        return new_tensor_by_vector(x.shape(), values);
+      }
+  }
+}
+
 Tensor CPUDevice::random_bernoulli_impl(const Shape &shape, float p) {
   std::bernoulli_distribution dist(p);
   Tensor ret = new_tensor(shape);

@@ -270,6 +270,12 @@ __global__ void dev_add_grad_sparse(
 
 namespace primitiv {
 
+unsigned CUDADevice::num_devices() {
+  int ret;
+  CUDA_CALL(::cudaGetDeviceCount(&ret));
+  return ret;
+}
+
 void CUDADevice::initialize() {
   // Retrieves device properties.
   ::cudaDeviceProp prop;
@@ -362,6 +368,28 @@ void CUDADevice::reset_tensor_by_array_impl(Tensor &x, const float values[]) {
   const unsigned size = x.shape().num_total_elements();
   CUDA_CALL(::cudaMemcpy(
         x.data(), values, sizeof(float) * size, cudaMemcpyHostToDevice));
+}
+
+Tensor CUDADevice::copy_tensor_impl(const Tensor &x) {
+  switch (x.device()->type()) {
+    case Device::DEVICE_TYPE_CPU:
+      return new_tensor_by_array(
+          x.shape(), reinterpret_cast<const float *>(x.data()));
+    case Device::DEVICE_TYPE_CUDA:
+      {
+        Tensor ret = new_tensor(x.shape());
+        CUDA_CALL(::cudaMemcpy(
+              ret.data(), x.data(),
+              sizeof(float) * x.shape().num_total_elements(),
+              cudaMemcpyDeviceToDevice));
+        return ret;
+      }
+    default:
+      {
+        const std::vector<float> values = x.to_vector();
+        return new_tensor_by_vector(x.shape(), values);
+      }
+  }
 }
 
 Tensor CUDADevice::random_bernoulli_impl(const Shape &shape, float p) {

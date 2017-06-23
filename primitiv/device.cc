@@ -74,6 +74,12 @@ void Device::reset_tensor_by_vector(Tensor &x, const vector<float> &values) {
   reset_tensor_by_array_impl(x, values.data());
 }
 
+Tensor Device::copy_tensor(const Tensor &x) {
+  if (!x.valid()) THROW_ERROR("Attempted to copy an invalid tensor.");
+  if (x.device() == this) return duplicate(x);
+  return copy_tensor_impl(x);
+}
+
 Tensor Device::random_bernoulli(const Shape &shape, float p) {
   if (p < 0 || p > 1) {
     THROW_ERROR("Invalid Bernoulli probability: " << p);

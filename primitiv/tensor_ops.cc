@@ -63,6 +63,10 @@ Tensor operator/(const Tensor &a, const Tensor &b) {
 
 namespace tensor_ops {
 
+Tensor copy(const Tensor &x, Device *dev) {
+  return dev->copy_tensor(x);
+}
+
 Tensor pick(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids) {
   return x.device()->pick(x, dim, ids);
 }

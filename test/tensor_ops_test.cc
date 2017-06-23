@@ -28,8 +28,13 @@ protected:
 
   void SetUp() override {
     devices.emplace_back(new CPUDevice());
+    devices.emplace_back(new CPUDevice()); // other device on the same hardware
 #ifdef USE_CUDA
     devices.emplace_back(new CUDADevice(0));
+    devices.emplace_back(new CUDADevice(0)); // other device on the same hardware
+    if (CUDADevice::num_devices() > 2) {
+      devices.emplace_back(new CUDADevice(1));
+    }
 #endif  // USE_CUDA
   }
 
@@ -39,6 +44,24 @@ protected:
     }
   }
 };
+
+TEST_F(TensorOpsTest, CheckCopy) {
+  const vector<float> data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), data);
+    for (Device *dev2 : devices) {
+      const Tensor y = copy(x, dev2);
+      EXPECT_EQ(Shape({2, 2}, 3), y.shape());
+      EXPECT_TRUE(vector_match(data, y.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorOpsTest, CheckInvalidCopy) {
+  for (Device *dev : devices) {
+    EXPECT_THROW(copy(Tensor(), dev), Error);
+  }
+}
 
 TEST_F(TensorOpsTest, CheckPickNN) {
   struct TestCase {

@@ -109,6 +109,13 @@ public:
   void reset_tensor_by_vector(Tensor &x, const std::vector<float> &values);
 
   /**
+   * Copies tensor from specified source.
+   * @param x A tensor to be copied.
+   * @return Copied tensor.
+   */
+  Tensor copy_tensor(const Tensor &x);
+
+  /**
    * Provides a new Tensor object in which all elements are initialized by
    * the Bernoulli distribution.
    * @param shape Shape of the tensor.
@@ -402,6 +409,8 @@ private:
 
   virtual void reset_tensor_impl(Tensor &x, float k) = 0;
   virtual void reset_tensor_by_array_impl(Tensor &x, const float values[]) = 0;
+
+  virtual Tensor copy_tensor_impl(const Tensor &x) = 0;
 
   virtual Tensor random_bernoulli_impl(const Shape &shape, float p) = 0;
   virtual Tensor random_uniform_impl(

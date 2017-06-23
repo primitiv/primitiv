@@ -43,6 +43,8 @@ private:
   void reset_tensor_impl(Tensor &x, float k) override;
   void reset_tensor_by_array_impl(Tensor &x, const float values[]) override;
 
+  Tensor copy_tensor_impl(const Tensor &x) override;
+
   Tensor random_bernoulli_impl(const Shape &shape, float p) override;
   Tensor random_uniform_impl(
       const Shape &shape, float lower, float upper) override;
