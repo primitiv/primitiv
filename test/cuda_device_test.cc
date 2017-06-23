@@ -17,6 +17,11 @@ namespace primitiv {
 
 class CUDADeviceTest : public testing::Test {};
 
+TEST_F(CUDADeviceTest, CheckDeviceType) {
+  CUDADevice dev(0);
+  EXPECT_EQ(Device::DEVICE_TYPE_CUDA, dev.type());
+}
+
 TEST_F(CUDADeviceTest, CheckInvalidInit) {
   // We might not have millions of GPUs in one host.
   EXPECT_THROW(CUDADevice dev(12345678), Error);

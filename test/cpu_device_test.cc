@@ -17,6 +17,11 @@ namespace primitiv {
 
 class CPUDeviceTest : public testing::Test {};
 
+TEST_F(CPUDeviceTest, CheckDeviceType) {
+  CPUDevice dev;
+  EXPECT_EQ(Device::DEVICE_TYPE_CPU, dev.type());
+}
+
 TEST_F(CPUDeviceTest, CheckNewDelete) {
   {
     CPUDevice dev;
