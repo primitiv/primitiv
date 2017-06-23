@@ -157,12 +157,6 @@ Tensor CPUDevice::concat_impl(
   return ret;
 }
 
-Tensor CPUDevice::duplicate_impl(const Tensor &x) {
-  Tensor ret = new_tensor(x.shape());
-  std::memcpy(ret.data(), x.data(), sizeof(float) * x.shape().num_total_elements());
-  return ret;
-}
-
 Tensor CPUDevice::negate_impl(const Tensor &x) {
   Tensor ret = new_tensor(x.shape());
   float *dest = DATA(ret);

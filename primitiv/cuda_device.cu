@@ -474,15 +474,6 @@ Tensor CUDADevice::concat_impl(
   return ret;
 }
 
-Tensor CUDADevice::duplicate_impl(const Tensor &x) {
-  Tensor ret = new_tensor(x.shape());
-  CUDA_CALL(::cudaSetDevice(dev_id_));
-  CUDA_CALL(::cudaMemcpy(
-      ret.data(), x.data(), sizeof(float) * x.shape().num_total_elements(),
-      cudaMemcpyDeviceToDevice));
-  return ret;
-}
-
 #define CUDA_DEV_UNARY(name, kernel) \
 Tensor CUDADevice::name(const Tensor &x) { \
   Tensor ret = new_tensor(x.shape()); \

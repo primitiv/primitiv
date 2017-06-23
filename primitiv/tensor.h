@@ -15,11 +15,10 @@ class Device;
 class Tensor {
   friend Device;
 
-  Tensor(const Tensor &) = delete;
-  Tensor &operator=(const Tensor &) = delete;
-
 public:
+  Tensor(const Tensor &) = default;
   Tensor(Tensor &&);
+  Tensor &operator=(const Tensor &) = default;
   Tensor &operator=(Tensor &&);
   ~Tensor() = default;
 

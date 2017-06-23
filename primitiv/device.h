@@ -167,13 +167,6 @@ public:
   Tensor concat(const std::vector<const Tensor *> &xs, unsigned dim);
 
   /**
-   * Duplicates the tensor.
-   * @param x A tensor.
-   * @return Duplicated tensor.
-   */
-  Tensor duplicate(const Tensor &x);
-
-  /**
    * Inverts the sign of each elements.
    * @param x A tensor.
    * @return `-x`
@@ -420,7 +413,6 @@ private:
       const std::vector<const Tensor *> &xs,
       unsigned dim, Shape &&new_shape) = 0;
 
-  virtual Tensor duplicate_impl(const Tensor &x) = 0;
   virtual Tensor negate_impl(const Tensor &x) = 0;
 
   virtual Tensor add_impl(const Tensor &x, float k) = 0;

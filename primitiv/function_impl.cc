@@ -59,7 +59,7 @@ Shape ParameterInput::forward_shape(const vector<const Shape *> &args) const {
 
 Tensor ParameterInput::forward(const vector<const Tensor *> &args) const {
   CHECK_ARGNUM(args, 0);
-  return +param_->value();
+  return param_->value();
 }
 
 void ParameterInput::backward(
@@ -208,7 +208,7 @@ Shape SoftmaxCrossEntropy::forward_shape(
 #define FORWARD(name) \
     Tensor name::forward(const vector<const Tensor *> &x) const
 
-FORWARD(Positive) { return +(*x[0]); }
+FORWARD(Positive) { return *x[0]; }
 FORWARD(Negative) { return -(*x[0]); }
 FORWARD(AddConst) { return *x[0] + k_; }
 FORWARD(SubtractConstL) { return k_ - *x[0]; }

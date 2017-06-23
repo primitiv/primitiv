@@ -58,7 +58,6 @@ private:
       const std::vector<const Tensor *> &xs,
       unsigned dim, Shape &&new_shape) override;
 
-  Tensor duplicate_impl(const Tensor &x) override;
   Tensor negate_impl(const Tensor &x) override;
 
   Tensor add_impl(const Tensor &x, float k) override;

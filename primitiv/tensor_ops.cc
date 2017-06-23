@@ -6,7 +6,7 @@
 namespace primitiv {
 
 Tensor operator+(const Tensor &x) {
-  return x.device()->duplicate(x);
+  return x;
 }
 
 Tensor operator-(const Tensor &x) {

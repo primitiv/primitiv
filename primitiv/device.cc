@@ -72,7 +72,7 @@ void Device::reset_tensor_by_vector(Tensor &x, const vector<float> &values) {
 
 Tensor Device::copy_tensor(const Tensor &x) {
   if (!x.valid()) THROW_ERROR("Attempted to copy an invalid tensor.");
-  if (x.device() == this) return duplicate(x);
+  if (x.device() == this) return x;
   return copy_tensor_impl(x);
 }
 
@@ -122,11 +122,6 @@ Tensor Device::concat(const vector<const Tensor *> &xs, unsigned dim) {
     shapes[i] = &xs[i]->shape();
   }
   return concat_impl(xs, dim, shape_ops::concat(shapes, dim));
-}
-
-Tensor Device::duplicate(const Tensor &x) {
-  CHECK_DEVICE(x);
-  return duplicate_impl(x);
 }
 
 Tensor Device::negate(const Tensor &x) {
