@@ -42,24 +42,24 @@ CUDAMemoryPool::~CUDAMemoryPool() {
   }
 }
 
-void *CUDAMemoryPool::allocate(unsigned size) {
+std::shared_ptr<void> CUDAMemoryPool::allocate(unsigned size) {
   unsigned i = 0;
   while (1u << i < size) ++i;
 
+  void *ptr;
   if (reserved_[i].empty()) {
     // Allocates a new block.
-    void *ptr;
     CUDA_CALL(::cudaSetDevice(dev_id_));
     CUDA_CALL(::cudaMalloc(&ptr, 1u << i));
     supplied_.insert(make_pair(ptr, i));
-    return ptr;
+  } else {
+    // Returns an existing block.
+    ptr = reserved_[i].back();
+    reserved_[i].pop_back();
+    supplied_.insert(make_pair(ptr, i));
   }
 
-  // Returns an existing block.
-  void *ptr = reserved_[i].back();
-  reserved_[i].pop_back();
-  supplied_.insert(make_pair(ptr, i));
-  return ptr;
+  return std::shared_ptr<void>(ptr, CUDAMemoryDeleter(*this));
 }
 
 void CUDAMemoryPool::free(void *ptr) {

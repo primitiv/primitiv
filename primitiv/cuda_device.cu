@@ -337,13 +337,8 @@ CUDADevice::~CUDADevice() {
   CURAND_CALL(::curandDestroyGenerator(curand_));
 }
 
-void *CUDADevice::new_handle(const Shape &shape) {
-  const unsigned size = sizeof(float) * shape.num_total_elements();
-  return pool_.allocate(size);
-}
-
-void CUDADevice::delete_tensor_impl(Tensor &x) {
-  pool_.free(x.data());
+std::shared_ptr<void> CUDADevice::new_handle(const Shape &shape) {
+  return pool_.allocate(sizeof(float) * shape.num_total_elements());
 }
 
 #define GRID_SIZE(x, threads) (((x) + (threads) - 1) / (threads))

@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_DEVICE_H_
 #define PRIMITIV_DEVICE_H_
 
+#include <memory>
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
 
@@ -64,13 +65,6 @@ public:
    */
   Tensor new_tensor_by_vector(
       const Shape &shape, const std::vector<float> &values);
-
-  /**
-   * Deallocates the memory of the tensor.
-   * @param x Tensor object to be deallocated.
-   * @remarks This method should not be used directly by users.
-   */
-  void delete_tensor(Tensor &x);
 
   /**
    * Retrieves internal values of the tensor as a vector.
@@ -402,8 +396,7 @@ public:
 private:
   // device-specific implementations.
 
-  virtual void *new_handle(const Shape &shape) = 0;
-  virtual void delete_tensor_impl(Tensor &x) = 0;
+  virtual std::shared_ptr<void> new_handle(const Shape &shape) = 0;
 
   virtual std::vector<float> tensor_to_vector_impl(const Tensor &x) = 0;
 

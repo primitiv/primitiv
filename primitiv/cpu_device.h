@@ -1,7 +1,6 @@
 #ifndef PRIMITIV_CPU_DEVICE_H_
 #define PRIMITIV_CPU_DEVICE_H_
 
-#include <map>
 #include <random>
 #include <primitiv/device.h>
 
@@ -22,21 +21,20 @@ public:
    * @remarks The internal random number generator is initialized by
    *          `std::random_device`.
    */
-  CPUDevice();
+  CPUDevice() : rng_(std::random_device()()) {}
 
   /**
    * Creates a CPUDevice object.
    * @param rng_seed The seed value of internal random number generator.
    */
-  explicit CPUDevice(unsigned rng_seed);
+  explicit CPUDevice(unsigned rng_seed) : rng_(rng_seed) {}
 
-  ~CPUDevice() override;
+  ~CPUDevice() override = default;
 
   Device::DeviceType type() const override { return Device::DEVICE_TYPE_CPU; }
 
 private:
-  void *new_handle(const Shape &shape) override;
-  void delete_tensor_impl(Tensor &x) override;
+  std::shared_ptr<void> new_handle(const Shape &shape) override;
 
   std::vector<float> tensor_to_vector_impl(const Tensor &x) override;
 
@@ -102,7 +100,6 @@ private:
       unsigned dim, const std::vector<unsigned> &ids) override;
 
 private:
-  std::map<void *, unsigned> blocks_;
   std::mt19937 rng_;
 };
 

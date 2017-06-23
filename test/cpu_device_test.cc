@@ -35,6 +35,8 @@ TEST_F(CPUDeviceTest, CheckNewDelete) {
   SUCCEED();
 }
 
+// NOTE(odashi): Now the CPUDevice does not manage memories.
+#if 0
 TEST_F(CPUDeviceTest, CheckInvalidNewDelete) {
   EXPECT_DEATH({
     Tensor x0;
@@ -45,6 +47,7 @@ TEST_F(CPUDeviceTest, CheckInvalidNewDelete) {
     // abort.
   }, "");
 }
+#endif
 
 TEST_F(CPUDeviceTest, CheckSetValuesByConstant) {
   CPUDevice dev;

@@ -40,10 +40,6 @@ Tensor Device::new_tensor_by_vector(
   return ret;
 }
 
-void Device::delete_tensor(Tensor &x) {
-  delete_tensor_impl(x);
-}
-
 vector<float> Device::tensor_to_vector(const Tensor &x) {
   CHECK_DEVICE(x);
   return tensor_to_vector_impl(x);

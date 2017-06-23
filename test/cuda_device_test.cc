@@ -43,6 +43,8 @@ TEST_F(CUDADeviceTest, CheckNewDelete) {
 /*
  * TODO(odashi): the death test requires a single-thread program,
  *               but CUDA behaves on multi-threads.
+ */
+#if 0
 TEST_F(CUDADeviceTest, CheckInvalidNewDelete) {
   EXPECT_DEATH({
     Tensor x0;
@@ -53,7 +55,7 @@ TEST_F(CUDADeviceTest, CheckInvalidNewDelete) {
     // abort.
   }, "");
 }
-*/
+#endif
 
 TEST_F(CUDADeviceTest, CheckSetValuesByConstant) {
   CUDADevice dev(0);

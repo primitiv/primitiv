@@ -45,8 +45,7 @@ public:
   Device::DeviceType type() const override { return Device::DEVICE_TYPE_CUDA; }
 
 private:
-  void *new_handle(const Shape &shape) override;
-  void delete_tensor_impl(Tensor &x) override;
+  std::shared_ptr<void> new_handle(const Shape &shape) override;
 
   std::vector<float> tensor_to_vector_impl(const Tensor &x) override;
 

@@ -13,39 +13,13 @@ using std::endl;
 
 namespace primitiv {
 
-CPUDevice::CPUDevice() : blocks_(), rng_(std::random_device()()) {}
-CPUDevice::CPUDevice(unsigned rng_seed) : blocks_(), rng_(rng_seed) {}
-
-CPUDevice::~CPUDevice() {
-  // check memory leak
-  if (!blocks_.empty()) {
-    cerr << "FATAL ERROR: Detected memory leak on CPUDevice!" << endl;
-    cerr << "Leaked blocks (handle: size):" << endl;
-    for (const auto &kv : blocks_) {
-      cerr << "  " << kv.first << ": " << kv.second << endl;
-    }
-    std::abort();
-  }
-}
-
-void *CPUDevice::new_handle(const Shape &shape) {
+std::shared_ptr<void> CPUDevice::new_handle(const Shape &shape) {
   const unsigned mem_size = sizeof(float) * shape.num_total_elements();
   void *data = std::malloc(mem_size);
   if (!data) {
     THROW_ERROR("Memory allocation failed. Requested size: " << mem_size);
   }
-  blocks_.insert(std::make_pair(data, mem_size));
-  return data;
-}
-
-void CPUDevice::delete_tensor_impl(Tensor &x) {
-  void *data = x.data();
-  auto it = blocks_.find(data);
-  if (it == blocks_.end()) {
-    THROW_ERROR("Attempted to dispose unknown memory block: " << data);
-  }
-  blocks_.erase(it);
-  std::free(data);
+  return std::shared_ptr<void>(data, std::free);
 }
 
 #define DATA(x) static_cast<float *>((x).data())

@@ -11,27 +11,16 @@ namespace primitiv {
 Tensor::Tensor(Tensor &&src)
 : shape_(move(src.shape_))
 , device_(src.device_)
-, data_(src.data_) {
+, data_(move(src.data_)) {
   src.device_ = nullptr;
-  src.data_ = nullptr;
-}
-
-Tensor::~Tensor() {
-  if (valid()) {
-    device_->delete_tensor(*this);
-  }
 }
 
 Tensor &Tensor::operator=(Tensor &&src) {
   if (this != &src) {
-    if (valid()) {
-      device_->delete_tensor(*this);
-    }
     shape_ = move(src.shape_);
     device_ = src.device_;
-    data_ = src.data_;
+    data_ = move(src.data_);
     src.device_ = nullptr;
-    src.data_ = nullptr;
   }
   return *this;
 }

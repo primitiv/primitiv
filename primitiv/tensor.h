@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_TENSOR_H_
 #define PRIMITIV_TENSOR_H_
 
+#include <memory>
 #include <vector>
 #include <primitiv/shape.h>
 
@@ -20,7 +21,7 @@ class Tensor {
 public:
   Tensor(Tensor &&);
   Tensor &operator=(Tensor &&);
-  ~Tensor();
+  ~Tensor() = default;
 
   /**
    * Creates an invalid Tensor.
@@ -43,13 +44,13 @@ public:
    * Returns the raw pointer of the internal memory.
    * @return Pointer of the internal memory.
    */
-  void *data() { return data_; }
+  void *data() { return data_.get(); }
 
   /**
    * Returns the raw const-pointer of the internal memory.
    * @return Const-pointer of the internal memory.
    */
-  const void *data() const { return data_; }
+  const void *data() const { return data_.get(); }
 
   /**
    * Retrieves internal values of the tensor as a vector.
@@ -89,7 +90,7 @@ public:
    * @remarks This returns false when the object is created through the default
    *          constructor or the object had been moved.
    */
-  bool valid() const { return !!data_; }
+  bool valid() const { return static_cast<bool>(data_); }
 
   /**
    * Adds a tensor for gradient calculation.
@@ -123,12 +124,12 @@ private:
    * @param device Device object to manage the internal memory.
    * @param data Pointer of the device-specific object.
    */
-  Tensor(const Shape &shape, Device *device, void *data)
+  Tensor(const Shape &shape, Device *device, const std::shared_ptr<void> &data)
     : shape_(shape), device_(device), data_(data) {}
 
   Shape shape_;
   Device *device_;
-  void *data_;
+  std::shared_ptr<void> data_;
 };
 
 }  // namespace primitiv
