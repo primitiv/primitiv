@@ -4,8 +4,8 @@
 // The model consists of a full-connected 2-layer (input/hidden/output)
 // perceptron with the softmax cross entropy loss.
 //
-// Difference of mnist.cc:
-// This sample uses 2 GPUs for calculating different layers.
+// Difference from `mnist.cc`:
+//   This example calculates hidden/output layers using 2 different GPUs.
 
 #include <algorithm>
 #include <cmath>
@@ -85,17 +85,17 @@ int main() {
   vector<char> test_labels = ::load_labels(
       "mnist_data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES);
 
-  // Initializes 2 device object which manages different GPUs.
+  // Initializes 2 device objects which manage different GPUs.
   CUDADevice dev0(0);  // GPU 0
   CUDADevice dev1(1);  // GPU 1
 
-  // Parameters which are stored on GPU 0.
+  // Parameters managed by GPU 0.
   Parameter pw1(
       "w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, &dev0, XavierUniform());
   Parameter pb1(
       "b1", {NUM_HIDDEN_UNITS}, &dev0, Constant(0));
   
-  // Parameters which are stored on GPU 1.
+  // Parameters managed by GPU 1.
   Parameter pw2(
       "w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, &dev1, XavierUniform());
   Parameter pb2(
@@ -110,7 +110,7 @@ int main() {
 
   // Helper lambda to construct the predictor network.
   auto make_graph = [&](Graph &g, const vector<float> &inputs) {
-    // Input values are stored on GPU 0.
+    // We first stores input values on GPU 0.
     Node x = F::input(&g, &dev0, Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs);
     Node w1 = F::parameter(&g, &pw1);
     Node b1 = F::parameter(&g, &pb1);
@@ -118,12 +118,12 @@ int main() {
     Node b2 = F::parameter(&g, &pb2);
     // The hidden layer is calculated and implicitly stored on GPU 0.
     Node h_on_gpu0 = F::relu(F::dot(w1, x) + b1);
-    // copy() transfers the hiddne layer to GPU 1.
+    // `copy()` transfers the hiddne layer to GPU 1.
     Node h_on_gpu1 = F::copy(h_on_gpu0, &dev1);
     // The output layer is calculated and implicitly stored on GPU 1.
     return F::dot(w2, h_on_gpu1) + b2;
     // Below line attempts to calculate values beyond multiple devices and
-    // will throw an exception.
+    // will throw an exception (try if it's OK with you).
     //return F::dot(w2, h_on_gpu0) + b2;
   };
 
