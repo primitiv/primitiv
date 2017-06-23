@@ -1,7 +1,6 @@
 #ifndef PRIMITIV_TRAINER_IMPL_H_
 #define PRIMITIV_TRAINER_IMPL_H_
 
-#include <vector>
 #include <primitiv/trainer.h>
 
 namespace primitiv {
@@ -23,13 +22,11 @@ public:
    */
   explicit SGDTrainer(const float eta) : eta_(eta) {}
 
-  void add_parameter(Parameter *param) override;
   void reset_gradients() override;
   void update(float scale) override;
 
 private:
   float eta_;
-  std::vector<Parameter *> params_;
 };
 
 }  // namespace primitiv

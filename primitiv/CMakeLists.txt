@@ -33,6 +33,7 @@ set(primitiv_LIBRARY_SRCS
   shape_ops.cc
   tensor.cc
   tensor_ops.cc
+  trainer.cc
   trainer_impl.cc
 )
 

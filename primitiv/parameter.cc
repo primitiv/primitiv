@@ -162,17 +162,16 @@ void Parameter::add_gradient(const Tensor &diff) {
 }
 
 void Parameter::save(const string &path) const  {
-  YAML::Emitter em;
-  em << YAML::BeginMap;
-  em << YAML::Key << "name" << YAML::Value << name_;
-  em << YAML::Key << "value" << YAML::Value << value_;
-  em << YAML::EndMap;
-
   std::ofstream ofs(path);
   if (!ofs.is_open()) {
     THROW_ERROR("Could not open file: " << path);
   }
-  ofs << em.c_str();
+
+  YAML::Emitter em(ofs);
+  em << YAML::BeginMap;
+  em << YAML::Key << "name" << YAML::Value << name_;
+  em << YAML::Key << "value" << YAML::Value << value_;
+  em << YAML::EndMap;
 }
 
 Parameter Parameter::load(const string &path, Device *device) {

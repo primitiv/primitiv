@@ -17,13 +17,6 @@ protected:
   CPUDevice dev;
 };
 
-TEST_F(TraingerImplTest, CheckSGDAddParameter) {
-  SGDTrainer trainer(.1);
-  Parameter param("param", {2, 2}, &dev);
-  EXPECT_NO_THROW(trainer.add_parameter(&param));
-  EXPECT_THROW(trainer.add_parameter(&param), Error);
-}
-
 TEST_F(TraingerImplTest, CheckSGDUpdate) {
   SGDTrainer trainer(.1);
   Parameter param("param", {2, 2}, &dev, {1, 2, 3, 4});

@@ -24,6 +24,7 @@ primitiv_test(shape)
 primitiv_test(shape_ops)
 primitiv_test(tensor)
 primitiv_test(tensor_ops)
+primitiv_test(trainer)
 primitiv_test(trainer_impl)
 
 if(USE_CUDA)
