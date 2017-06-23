@@ -17,7 +17,7 @@ YAML::Emitter &operator<<(YAML::Emitter &em, const primitiv::Shape &shape) {
   em << YAML::BeginMap;
 
   em << YAML::Key << "dims";
-  em << YAML::Value << YAML::Flow << YAML::BeginSeq;
+  em << YAML::Value << YAML::BeginSeq;
   for (unsigned i = 0; i < shape.depth(); ++i) em << shape[i];
   em << YAML::EndSeq;
   em << YAML::Key << "batch";
