@@ -117,6 +117,13 @@ Node relu(const Node &x) {
   return x.graph()->add_function(new functions::ReLU(), {x});
 }
 
+Node dropout(const Node &x, float rate, bool enabled) {
+  if (!enabled) return x;
+  if (rate == 1.) return 0. * x;
+  const float p = 1. - rate;
+  return (1. / p) * x * random_bernoulli(x.shape(), p, x.device(), x.graph());
+}
+
 Node sum(const Node &x, unsigned dim) {
   return x.graph()->add_function(new functions::Sum(dim), {x});
 }

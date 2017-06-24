@@ -103,13 +103,13 @@ int main() {
   trainer.add_parameter(&pb2);
 
   // Helper lambda to construct the predictor network.
-  auto make_graph = [&](Graph &g, const vector<float> &inputs) {
+  auto make_graph = [&](Graph &g, const vector<float> &inputs, bool train) {
     Node x = F::input(&g, &dev, Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs);
     Node w1 = F::parameter(&g, &pw1);
     Node b1 = F::parameter(&g, &pb1);
     Node w2 = F::parameter(&g, &pw2);
     Node b2 = F::parameter(&g, &pb2);
-    Node h = F::relu(F::dot(w1, x) + b1);
+    Node h = F::dropout(F::relu(F::dot(w1, x) + b1), .5, train);
     return F::dot(w2, h) + b2;
   };
 
@@ -137,9 +137,12 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      Node y = make_graph(g, inputs);
+      Node y = make_graph(g, inputs, true);
       Node loss = F::softmax_cross_entropy(y, 0, labels);
       Node avg_loss = F::batch_sum(loss) / BATCH_SIZE;
+
+      // Dump computation graph at the first time.
+      if (epoch == 0 && batch == 0) g.dump();
 
       // Forward, backward, and updates parameters.
       trainer.reset_gradients();
@@ -160,7 +163,7 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      Node y = make_graph(g, inputs);
+      Node y = make_graph(g, inputs, false);
 
       // Gets outputs, argmax, and compares them with the label.
       vector<float> y_val = g.forward(y).to_vector();

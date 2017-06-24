@@ -3,9 +3,8 @@
 //
 // The model consists of a full-connected 2-layer (input/hidden/output)
 // perceptron with the softmax cross entropy loss.
-//
-// Difference from `mnist.cc`:
-//   This example calculates hidden/output layers using 2 different GPUs.
+// In addition, his example calculates hidden/output layers using 2 different
+// GPUs.
 
 #include <algorithm>
 #include <cmath>

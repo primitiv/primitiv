@@ -46,6 +46,8 @@ Node tanh(const Node &x);
 Node sigmoid(const Node &x);
 Node relu(const Node &x);
 
+Node dropout(const Node &x, float rate, bool enabled);
+
 Node sum(const Node &x, unsigned dim);
 Node logsumexp(const Node &x, unsigned dim);
 Node log_softmax(const Node &x, unsigned dim);
