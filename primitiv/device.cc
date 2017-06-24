@@ -72,7 +72,6 @@ void Device::reset_tensor_by_vector(Tensor &x, const vector<float> &values) {
 
 Tensor Device::copy_tensor(const Tensor &x) {
   if (!x.valid()) THROW_ERROR("Attempted to copy an invalid tensor.");
-  if (x.device() == this) return x;
   return copy_tensor_impl(x);
 }
 

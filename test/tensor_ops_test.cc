@@ -52,6 +52,7 @@ TEST_F(TensorOpsTest, CheckCopy) {
     for (Device *dev2 : devices) {
       const Tensor y = copy(x, dev2);
       EXPECT_EQ(Shape({2, 2}, 3), y.shape());
+      EXPECT_TRUE(y.device() != x.device() || y.data() != x.data());
       EXPECT_TRUE(vector_match(data, y.to_vector()));
     }
   }

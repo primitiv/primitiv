@@ -103,9 +103,12 @@ public:
   void reset_tensor_by_vector(Tensor &x, const std::vector<float> &values);
 
   /**
-   * Copies tensor from specified source.
+   * Copies the tensor to this device with allocating a new memory.
    * @param x A tensor to be copied.
    * @return Copied tensor.
+   * @remarks The value of `x` is always duplicated, and the internal memory of
+   *          the resulting tensor becomes always different from `x` even if
+   *          `x.device()` is same as this.
    */
   Tensor copy_tensor(const Tensor &x);
 
