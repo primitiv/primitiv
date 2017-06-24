@@ -110,7 +110,7 @@ int main() {
 
   // Helper lambda to construct the predictor network.
   auto make_graph = [&](Graph &g, const vector<float> &inputs) {
-    // We first stores input values on GPU 0.
+    // We first store input values on GPU 0.
     Node x = F::input(&g, &dev0, Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs);
     Node w1 = F::parameter(&g, &pw1);
     Node b1 = F::parameter(&g, &pb1);
