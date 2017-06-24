@@ -2,12 +2,12 @@
 #define PRIMITIV_FUNCTION_IMPL_H_
 
 #include <primitiv/function.h>
+#include <primitiv/parameter.h>
 #include <primitiv/shape.h>
 
 namespace primitiv {
 
 class Device;
-class Parameter;
 
 namespace functions {
 
@@ -35,6 +35,7 @@ class Input : public primitiv::Function {
   NO_CTOR_CLASS_DECL(Input);
 public:
   Input(const Shape &shape, Device *device, const std::vector<float> &data);
+  Device *get_device() const override { return device_; }
   std::string name() const override { return "Input"; }
 private:
   Shape shape_;
@@ -46,6 +47,7 @@ class ParameterInput : public primitiv::Function {
   NO_CTOR_CLASS_DECL(ParameterInput);
 public:
   explicit ParameterInput(Parameter *param) : param_(param) {}
+  Device *get_device() const override { return param_->device(); }
   std::string name() const override { return "ParameterInput"; }
 private:
   primitiv::Parameter *param_;
@@ -55,6 +57,7 @@ class Copy : public primitiv::Function {
   NO_CTOR_CLASS_DECL(Copy);
 public:
   Copy(Device *device) : device_(device) {}
+  Device *get_device() const override { return device_; }
   std::string name() const override { return "Copy"; }
 private:
   Device *device_;
@@ -65,6 +68,7 @@ class RandomBernoulli : public primitiv::Function {
 public:
   RandomBernoulli(const Shape &shape, float p, Device *device)
     : shape_(shape), p_(p), device_(device) {}
+  Device *get_device() const override { return device_; }
   std::string name() const override {
     return "RandomBernoulli(" + std::to_string(p_) + ')';
   }

@@ -83,6 +83,7 @@ protected:
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ(#name_, node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
+  EXPECT_EQ(nullptr, node.get_device()); \
   EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector())); \
   EXPECT_TRUE(vector_match(bw_grad, arg_grads[0]->to_vector())); \
 }
@@ -97,6 +98,7 @@ protected:
       std::string(#name_) + '(' + \
       std::to_string(static_cast<float>(k_)) + ')', node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
+  EXPECT_EQ(nullptr, node.get_device()); \
   EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector())); \
   EXPECT_TRUE(vector_match(bw_grad, arg_grads[0]->to_vector())); \
 }
@@ -109,6 +111,7 @@ protected:
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ(#name_, node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
+  EXPECT_EQ(nullptr, node.get_device()); \
   EXPECT_TRUE(vector_near(ret_data, cur_value.to_vector(), err)); \
   EXPECT_TRUE(vector_near(bw_grad, arg_grads[0]->to_vector(), err)); \
 }
@@ -121,6 +124,7 @@ protected:
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ(#name_, node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
+  EXPECT_EQ(nullptr, node.get_device()); \
   EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector())); \
   EXPECT_TRUE(vector_match(bw_grads[0], arg_grads[0]->to_vector())); \
   EXPECT_TRUE(vector_match(bw_grads[1], arg_grads[1]->to_vector())); \
@@ -137,6 +141,7 @@ TEST_F(FunctionImplTest, CheckInput) {
   EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
   EXPECT_EQ("Input", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
+  EXPECT_EQ(dev, node.get_device());
   EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector()));
 }
 
@@ -157,6 +162,7 @@ TEST_F(FunctionImplTest, CheckParameterInput) {
   EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
   EXPECT_EQ("ParameterInput", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
+  EXPECT_EQ(dev, node.get_device());
   EXPECT_TRUE(vector_match(vector<float>(4, 42), cur_value.to_vector()));
   EXPECT_TRUE(vector_match(vector<float>(4, 42), param.value().to_vector()));
   EXPECT_TRUE(vector_match(vector<float>(4, 1), param.gradient().to_vector()));
@@ -174,6 +180,7 @@ TEST_F(FunctionImplTest, CheckCopy) {
   EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
   EXPECT_EQ("Copy", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
+  EXPECT_EQ(&dev2, node.get_device());
   EXPECT_TRUE(vector_match(arg_values[0]->to_vector(), cur_value.to_vector()));
   EXPECT_TRUE(vector_match(arg_grads[0]->to_vector(), cur_grad.to_vector()));
 }
@@ -198,6 +205,7 @@ TEST_F(FunctionImplTest, CheckRandomBernoulli) {
     EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
     EXPECT_EQ("RandomBernoulli(" + std::to_string(tc.p) + ')', node.name());
     EXPECT_EQ(cur_shape, tc.shape);
+    EXPECT_EQ(dev, node.get_device());
     EXPECT_TRUE(vector_match(tc.data, cur_value.to_vector()));
     // Dump results.
     for (float x : cur_value.to_vector()) std::cout << x;
@@ -240,6 +248,7 @@ TEST_F(FunctionImplTest, CheckPick) {
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ("Pick(" + std::to_string(tc.dim) + ')', node.name());
     EXPECT_EQ(tc.ret_shape, cur_shape);
+    EXPECT_EQ(nullptr, node.get_device());
     EXPECT_TRUE(vector_match(tc.ret_data, cur_value.to_vector()));
     EXPECT_TRUE(vector_match(tc.bw_grad, arg_grads[0]->to_vector()));
   }
@@ -291,6 +300,7 @@ TEST_F(FunctionImplTest, CheckSlice) {
         std::to_string(tc.lower) + ':' + std::to_string(tc.upper) + ')',
         node.name());
     EXPECT_EQ(tc.ret_shape, cur_shape);
+    EXPECT_EQ(nullptr, node.get_device());
     EXPECT_TRUE(vector_match(tc.ret_data, cur_value.to_vector()));
     EXPECT_TRUE(vector_match(tc.bw_grad, arg_grads[0]->to_vector()));
   }
@@ -299,7 +309,7 @@ TEST_F(FunctionImplTest, CheckSlice) {
 TEST_F(FunctionImplTest, CheckConcat) {
   struct TestCase {
     unsigned dim;
-    Shape cur_shape;
+    Shape ret_shape;
     vector<float> cur_value_data;
     vector<float> cur_grad_data;
   };
@@ -322,10 +332,12 @@ TEST_F(FunctionImplTest, CheckConcat) {
     const Concat node(tc.dim);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = dev->new_tensor_by_vector(tc.cur_shape, tc.cur_grad_data);
+    const Tensor cur_grad = dev->new_tensor_by_vector(tc.ret_shape, tc.cur_grad_data);
     reset_gradients();
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ("Concat(" + std::to_string(tc.dim) + ')', node.name());
+    EXPECT_EQ(tc.ret_shape, cur_shape);
+    EXPECT_EQ(nullptr, node.get_device());
     EXPECT_TRUE(vector_match(tc.cur_value_data, cur_value.to_vector()));
     EXPECT_TRUE(vector_match(vector<float>(12, 1), arg_grads[0]->to_vector()));
     EXPECT_TRUE(vector_match(vector<float>(12, 2), arg_grads[1]->to_vector()));
@@ -587,6 +599,7 @@ TEST_F(FunctionImplTest, CheckSum) {
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ("Sum(" + std::to_string(tc.dim) + ')', node.name());
     EXPECT_EQ(tc.ret_shape, cur_shape);
+    EXPECT_EQ(nullptr, node.get_device());
     EXPECT_TRUE(vector_match(tc.ret_data, cur_value.to_vector()));
     EXPECT_TRUE(vector_match(vector<float>(12, 1), arg_grads[0]->to_vector()));
   }
@@ -630,6 +643,7 @@ TEST_F(FunctionImplTest, CheckLogSumExp) {
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ("LogSumExp(" + std::to_string(tc.dim) + ')', node.name());
     EXPECT_EQ(tc.ret_shape, cur_shape);
+    EXPECT_EQ(nullptr, node.get_device());
     EXPECT_TRUE(vector_match(tc.ret_data, cur_value.to_vector()));
     EXPECT_TRUE(vector_match(tc.bw_grad, arg_grads[0]->to_vector()));
   }
@@ -669,6 +683,7 @@ TEST_F(FunctionImplTest, CheckBroadcast) {
         "Broadcast(" + std::to_string(tc.dim) + ','
         + std::to_string(tc.size) + ')', node.name());
     EXPECT_EQ(tc.ret_shape, cur_shape);
+    EXPECT_EQ(nullptr, node.get_device());
     EXPECT_TRUE(vector_match(tc.ret_data, cur_value.to_vector()));
     EXPECT_TRUE(
         vector_match(vector<float>(12, tc.size), arg_grads[0]->to_vector()));
@@ -709,6 +724,7 @@ TEST_F(FunctionImplTest, CheckSoftmaxCrossEntropy) {
   node.backward(cur_value, cur_grad, arg_values, arg_grads);
   EXPECT_EQ("SoftmaxCrossEntropy(0)", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
+  EXPECT_EQ(nullptr, node.get_device());
   EXPECT_TRUE(vector_near(ret_data, cur_value.to_vector(), 1e-6));
   EXPECT_TRUE(vector_near(bw_grads[0], arg_grads[0]->to_vector(), 1e-6));
   EXPECT_TRUE(vector_near(bw_grads[1], arg_grads[1]->to_vector(), 1e-6));

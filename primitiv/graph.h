@@ -8,6 +8,8 @@
 
 namespace primitiv {
 
+class Device;
+
 /**
  * Computation graph.
  */
@@ -59,6 +61,13 @@ public:
   const Shape &get_shape(const Node &node) const;
 
   /**
+   * Retrieves the device of the node.
+   * @param node Node object specifying the target node.
+   * @return the device of the node.
+   */
+  Device *get_device(const Node &node) const;
+
+  /**
    * Retrieves the value of the node.
    * @param node Node object specifying the target node.
    * @return Calculated value if it is already calculated, or an invalid tensor
@@ -101,6 +110,7 @@ private:
    */
   struct NodeInfo {
     Shape shape;
+    Device *device;
     Tensor *value;
     Tensor *grad;
     std::vector<unsigned> sinks;

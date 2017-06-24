@@ -47,6 +47,12 @@ public:
   const Shape &shape() const;
 
   /**
+   * Returns device of the node.
+   * @return Pointer of the Device object.
+   */
+  Device *device() const;
+
+  /**
    * Returns the value of the node.
    * @return A Tensor object if the node has been forwarded.
    */

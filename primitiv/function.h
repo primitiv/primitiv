@@ -8,6 +8,8 @@
 
 namespace primitiv {
 
+class Device;
+
 /**
  * Interface of the function on the computation graph.
  */
@@ -28,6 +30,13 @@ public:
    */
   virtual Shape forward_shape(
       const std::vector<const Shape *> &args) const = 0;
+
+  /**
+   * Returns the device object if the class holds it.
+   * @return A pointer of the Device object if the class holds it, or nullptr
+   *         otherwise.
+   */
+  virtual Device *get_device() const { return nullptr; }
 
   /**
    * Calculates the forward path.

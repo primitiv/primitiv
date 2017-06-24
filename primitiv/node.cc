@@ -10,6 +10,11 @@ const Shape &Node::shape() const {
   return g_->get_shape(*this);
 }
 
+Device *Node::device() const {
+  if (!g_) THROW_ERROR("Invalid node.");
+  return g_->get_device(*this);
+}
+
 const Tensor &Node::value() const {
   if (!g_) THROW_ERROR("Invalid node.");
   return g_->get_value(*this);

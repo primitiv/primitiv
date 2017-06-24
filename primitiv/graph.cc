@@ -45,6 +45,8 @@ Graph::~Graph() {
   } \
 }
 
+#define ACCESS(n) (funcs_[n.fid_].rets[n.vid_])
+
 Node Graph::add_function(Function *func, const std::vector<Node> &args) {
   // Gathers information of args.
   vector<Address> arg_addrs(args.size());
@@ -53,7 +55,7 @@ Node Graph::add_function(Function *func, const std::vector<Node> &args) {
     const Node &arg = args[i];
     CHECK_NODE(arg);
     arg_addrs[i] = { arg.fid_, arg.vid_ };
-    arg_shapes[i] = &funcs_[arg.fid_].rets[arg.vid_].shape;
+    arg_shapes[i] = &ACCESS(arg).shape;
   }
 
   // Calculates the shape of the resulting value.
@@ -61,10 +63,23 @@ Node Graph::add_function(Function *func, const std::vector<Node> &args) {
   // TODO(odashi): fix this
   vector<Shape> ret_shapes { func->forward_shape(arg_shapes) };
 
+  // Retrieves the device object which manages return values itself.
+  Device *ret_device = func->get_device();
+  if (!ret_device) {
+    // If nullptr, the device object is inherited from `args[0]`.
+    ret_device = args.size() > 0 ? ACCESS(args[0]).device : nullptr;
+    if (!ret_device) {
+      THROW_ERROR(
+          "Bad device forwarding of function '" << func->name()
+          << "' with " << args.size() << " argument(s).");
+    }
+  }
+
   // Make nodes of return values.
   const unsigned NUM_NODES = 1;  // TODO(odashi): fix this
   vector<NodeInfo> rets(
-      NUM_NODES, NodeInfo { Shape(), nullptr, nullptr, vector<unsigned>() });
+      NUM_NODES,
+      NodeInfo { Shape(), ret_device, nullptr, nullptr, vector<unsigned>() });
   for (unsigned i = 0; i < NUM_NODES; ++i) {
     rets[i].shape = move(ret_shapes[i]);
   }
@@ -108,7 +123,7 @@ const Tensor &Graph::forward(const Node &node) {
   };
 
   forward_recursive(node.fid_);
-  return *funcs_[node.fid_].rets[node.vid_].value;
+  return *ACCESS(node).value;
 }
 
 void Graph::backward(const Node &node) {
@@ -153,19 +168,24 @@ void Graph::backward(const Node &node) {
 
 const Shape &Graph::get_shape(const Node &node) const {
   CHECK_NODE(node);
-  return funcs_[node.fid_].rets[node.vid_].shape;
+  return ACCESS(node).shape;
+}
+
+Device *Graph::get_device(const Node &node) const {
+  CHECK_NODE(node);
+  return ACCESS(node).device;
 }
 
 const Tensor &Graph::get_value(const Node &node) const {
   CHECK_NODE(node);
-  const Tensor *ret = funcs_[node.fid_].rets[node.vid_].value;
+  const Tensor *ret = ACCESS(node).value;
   if (!ret) THROW_ERROR("Node is still not calculated.");
   return *ret;
 }
 
 const Tensor &Graph::get_gradient(const Node &node) const {
   CHECK_NODE(node);
-  const Tensor *ret = funcs_[node.fid_].rets[node.vid_].grad;
+  const Tensor *ret = ACCESS(node).grad;
   if (!ret) THROW_ERROR("Node is still not calculated.");
   return *ret;
 }

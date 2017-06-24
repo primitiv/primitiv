@@ -32,6 +32,10 @@ TEST_F(GraphTest, CheckMultipleDevices) {
   const Node x1 = node_ops::input(&g, &dev, Shape({2, 2}, 3), data1);
   const Node x2 = node_ops::input(&g, &dev2, Shape({2, 2}, 3), data2);
   const Node x3 = node_ops::copy(x1, &dev2) + x2;
+  EXPECT_EQ(Shape({2, 2}, 3), x3.shape());
+  EXPECT_EQ(&dev, x1.device());
+  EXPECT_EQ(&dev2, x2.device());
+  EXPECT_EQ(&dev2, x3.device());
   EXPECT_NO_THROW(g.forward(x3));
   EXPECT_TRUE(vector_match(data1, g.get_value(x1).to_vector()));
   EXPECT_TRUE(vector_match(data2, g.get_value(x2).to_vector()));
@@ -68,10 +72,23 @@ TEST_F(GraphTest, CheckForwardBackward) {
   nodes.emplace_back(node_ops::sum(nodes[7], 1));
   nodes.emplace_back(node_ops::batch_sum(nodes[8]));
 
-  EXPECT_EQ(nodes.size(), g.num_functions());
+  EXPECT_EQ(10u, nodes.size());
+  EXPECT_EQ(10u, g.num_functions());
 
   // Dump the graph to the output log.
   g.dump();
+
+  // Check all shapes and devices.
+  const vector<Shape> expected_shapes {
+    Shape({2, 2}, 3), {2, 2}, Shape({2, 2}, 3),
+    Shape({2, 2}, 3), Shape({2, 2}, 3), Shape({2, 2}, 3),
+    Shape({2, 2}, 3),
+    Shape({1, 2}, 3), Shape({}, 3), {},
+  };
+  for (unsigned i = 0; i < nodes.size(); ++i) {
+    EXPECT_EQ(expected_shapes[i], nodes[i].shape());
+    EXPECT_EQ(&dev, nodes[i].device());
+  }
 
   // Check all node values are still invalid.
   for (const Node &node : nodes) {
