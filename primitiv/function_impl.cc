@@ -100,6 +100,38 @@ void RandomBernoulli::backward(
   // Nothing to do.
 }
 
+Shape RandomUniform::forward_shape(const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 0);
+  return shape_;
+}
+
+Tensor RandomUniform::forward(const vector<const Tensor *> &args) const {
+  CHECK_ARGNUM(args, 0);
+  return device_->random_uniform(shape_, lower_, upper_);
+}
+
+void RandomUniform::backward(
+    const Tensor &, const Tensor &cur_grad,
+    const vector<const Tensor *> &, const vector<Tensor *> &) const {
+  // Nothing to do.
+}
+
+Shape RandomNormal::forward_shape(const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 0);
+  return shape_;
+}
+
+Tensor RandomNormal::forward(const vector<const Tensor *> &args) const {
+  CHECK_ARGNUM(args, 0);
+  return device_->random_normal(shape_, mean_, sd_);
+}
+
+void RandomNormal::backward(
+    const Tensor &, const Tensor &cur_grad,
+    const vector<const Tensor *> &, const vector<Tensor *> &) const {
+  // Nothing to do.
+}
+
 Shape Pick::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 1);
   return shape_ops::pick(*args[0], dim_, ids_);

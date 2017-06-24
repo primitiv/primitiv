@@ -78,6 +78,42 @@ private:
   Device *device_;
 };
 
+class RandomUniform : public primitiv::Function {
+  NO_CTOR_CLASS_DECL(RandomUniform);
+public:
+  RandomUniform(const Shape &shape, float lower, float upper, Device *device)
+    : shape_(shape), lower_(lower), upper_(upper), device_(device) {}
+  Device *get_device() const override { return device_; }
+  std::string name() const override {
+    return
+      "RandomUniform(" + std::to_string(lower_) + ',' +
+      std::to_string(upper_) + ')';
+  }
+private:
+  Shape shape_;
+  float lower_;
+  float upper_;
+  Device *device_;
+};
+
+class RandomNormal : public primitiv::Function {
+  NO_CTOR_CLASS_DECL(RandomNormal);
+public:
+  RandomNormal(const Shape &shape, float mean, float sd, Device *device)
+    : shape_(shape), mean_(mean), sd_(sd), device_(device) {}
+  Device *get_device() const override { return device_; }
+  std::string name() const override {
+    return
+      "RandomNormal(" + std::to_string(mean_) + ',' +
+      std::to_string(sd_) + ')';
+  }
+private:
+  Shape shape_;
+  float mean_;
+  float sd_;
+  Device *device_;
+};
+
 class Pick : public primitiv::Function {
   NO_CTOR_CLASS_DECL(Pick);
 public:

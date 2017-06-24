@@ -95,8 +95,7 @@ public:
    * @param upper Upper bound of values.
    * @return A new Tensor object.
    */
-  Tensor random_uniform(
-      const Shape &shape, float lower, float upper);
+  Tensor random_uniform(const Shape &shape, float lower, float upper);
 
   /**
    * Provides a new Tensor object in which all elements are initialized by

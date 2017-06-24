@@ -207,9 +207,78 @@ TEST_F(FunctionImplTest, CheckRandomBernoulli) {
     EXPECT_EQ(cur_shape, tc.shape);
     EXPECT_EQ(dev, node.get_device());
     EXPECT_TRUE(vector_match(tc.data, cur_value.to_vector()));
-    // Dump results.
-    for (float x : cur_value.to_vector()) std::cout << x;
-    std::cout << std::endl;
+  }
+}
+
+TEST_F(FunctionImplTest, CheckRandomUniform) {
+  struct TestCase {
+    Shape shape;
+    float lower, upper;
+    vector<float> data;
+  };
+  const vector<TestCase> test_cases {
+    {Shape({2, 2}, 3), -2, -1,
+      {-1.07038391, -1.10984528, -1.68362451, -1.86929274,
+        -1.81608117, -1.96024048, -1.79543972, -1.17356396,
+        -1.43227506, -1.46792209, -1.40445530, -1.04368997}},
+    {Shape({2, 2}, 3), -1, 1,
+      {0.92902899, -0.07614738, 0.30635417, 0.84747636,
+        0.49781322, -0.25215763, 0.30713975, -0.69005328,
+        0.49542964, 0.78468740, 0.92261350, -0.94642055}},
+    {Shape({2, 2}, 3), 1, 2,
+      {1.00838828, 1.29150236, 1.10644436, 1.39874411,
+        1.29870367, 1.80728865, 1.65641117, 1.62709427,
+        1.80981255, 1.90792489, 1.87217593, 1.55639732}},
+  };
+  for (const TestCase &tc : test_cases) {
+    const RandomUniform node(tc.shape, tc.lower, tc.upper, dev);
+    const Shape cur_shape = node.forward_shape(arg_shapes);
+    const Tensor cur_value = node.forward(arg_values);
+    const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
+    // backward() has no effect.
+    EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
+    EXPECT_EQ(
+        "RandomUniform(" + std::to_string(tc.lower) + ',' +
+        std::to_string(tc.upper) + ')', node.name());
+    EXPECT_EQ(cur_shape, tc.shape);
+    EXPECT_EQ(dev, node.get_device());
+    EXPECT_TRUE(vector_match(tc.data, cur_value.to_vector()));
+  }
+}
+
+TEST_F(FunctionImplTest, CheckRandomNormal) {
+  struct TestCase {
+    Shape shape;
+    float mean, sd;
+    vector<float> data;
+  };
+  const vector<TestCase> test_cases {
+    {Shape({2, 2}, 3), -2, 2,
+      {-3.57166052, -2.78148127, -0.94226873, -2.95729542,
+        0.35889030, 2.98024511, -0.96429956, -1.78313935,
+        -2.08661819, -0.94322312, -0.78637350, -1.56128621}},
+    {Shape({2, 2}, 3), 0, 1,
+      {-0.69024169, 1.36268508, -0.96791244, 0.43081367,
+        0.46228078, 0.29187113, -0.22691579, -0.88196278,
+        0.92891538, -0.60850668, 1.20224774, 1.47957015}},
+    {Shape({2, 2}, 3), 2, .5,
+      {2.07982802, 2.52679920, 2.56787491, 2.26420283,
+        2.16808653, 2.08484149, 0.90178788, 1.73830211,
+        2.59950328, 1.45240283, 1.47200286, 1.91403091}},
+  };
+  for (const TestCase &tc : test_cases) {
+    const RandomNormal node(tc.shape, tc.mean, tc.sd, dev);
+    const Shape cur_shape = node.forward_shape(arg_shapes);
+    const Tensor cur_value = node.forward(arg_values);
+    const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
+    // backward() has no effect.
+    EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
+    EXPECT_EQ(
+        "RandomNormal(" + std::to_string(tc.mean) + ',' +
+        std::to_string(tc.sd) + ')', node.name());
+    EXPECT_EQ(cur_shape, tc.shape);
+    EXPECT_EQ(dev, node.get_device());
+    EXPECT_TRUE(vector_match(tc.data, cur_value.to_vector()));
   }
 }
 

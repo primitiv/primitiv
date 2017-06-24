@@ -85,6 +85,18 @@ Node random_bernoulli(const Shape &shape, float p, Device *dev, Graph *g) {
   return g->add_function(new functions::RandomBernoulli(shape, p, dev), {});
 }
 
+Node random_uniform(
+    const Shape &shape, float lower, float upper, Device *dev, Graph *g) {
+  return g->add_function(
+      new functions::RandomUniform(shape, lower, upper, dev), {});
+}
+
+Node random_normal(
+    const Shape &shape, float mean, float sd, Device *dev, Graph *g) {
+  return g->add_function(
+      new functions::RandomNormal(shape, mean, sd, dev), {});
+}
+
 Node pick(const Node &x, unsigned dim, const std::vector<unsigned> &ids) {
   return x.graph()->add_function(new functions::Pick(dim, ids), {x});
 }
