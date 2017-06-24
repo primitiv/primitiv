@@ -11,6 +11,8 @@ namespace primitiv {
  * Interface of the Tensor provider.
  */
 class Device {
+  friend Tensor;
+
   Device(const Device &) = delete;
   Device(Device &&) = delete;
   Device &operator=(const Device &) = delete;
@@ -65,42 +67,6 @@ public:
    */
   Tensor new_tensor_by_vector(
       const Shape &shape, const std::vector<float> &values);
-
-  /**
-   * Retrieves internal values of the tensor as a vector.
-   * @param x A tensor.
-   * @return A list of the internal values.
-   * @remarks Each resulting values are ordered by the column-major order, and
-   *          the batch size is assumed as the last dimension of the tensor.
-   */
-  std::vector<float> tensor_to_vector(const Tensor &x);
-
-  /**
-   * Reset internal values of the tensor using a constant.
-   * @param x A tensor to be updated.
-   * @param k A value used to initialize each element.
-   */
-  void reset_tensor(Tensor &x, float k);
-
-  /**
-   * Reset internal values of the tensor using specific values.
-   * @param x A tensor to be updated.
-   * @param values Array of each element.
-   * @remarks `values.size()` should be same as `x.shape().size()`. Each element
-   *          is ordered by the column-major order, and the batch size is
-   *          assumed as the last dimension of the tensor.
-   */
-  void reset_tensor_by_array(Tensor &x, const float values[]);
-
-  /**
-   * Reset internal values of the tensor using specific values.
-   * @param x A tensor to be updated.
-   * @param values List of each element.
-   * @remarks `values.size()` should be same as `x.shape().size()`. Each element
-   *          is ordered by the column-major order, and the batch size is
-   *          assumed as the last dimension of the tensor.
-   */
-  void reset_tensor_by_vector(Tensor &x, const std::vector<float> &values);
 
   /**
    * Copies the tensor to this device with allocating a new memory.
@@ -353,6 +319,43 @@ public:
    */
   Tensor batch_sum(const Tensor &x);
 
+private:
+  /**
+   * Retrieves internal values of the tensor as a vector.
+   * @param x A tensor.
+   * @return A list of the internal values.
+   * @remarks Each resulting values are ordered by the column-major order, and
+   *          the batch size is assumed as the last dimension of the tensor.
+   */
+  std::vector<float> tensor_to_vector(const Tensor &x);
+
+  /**
+   * Reset internal values of the tensor using a constant.
+   * @param x A tensor to be updated.
+   * @param k A value used to initialize each element.
+   */
+  void reset_tensor(Tensor &x, float k);
+
+  /**
+   * Reset internal values of the tensor using specific values.
+   * @param x A tensor to be updated.
+   * @param values Array of each element.
+   * @remarks `values.size()` should be same as `x.shape().size()`. Each element
+   *          is ordered by the column-major order, and the batch size is
+   *          assumed as the last dimension of the tensor.
+   */
+  void reset_tensor_by_array(Tensor &x, const float values[]);
+
+  /**
+   * Reset internal values of the tensor using specific values.
+   * @param x A tensor to be updated.
+   * @param values List of each element.
+   * @remarks `values.size()` should be same as `x.shape().size()`. Each element
+   *          is ordered by the column-major order, and the batch size is
+   *          assumed as the last dimension of the tensor.
+   */
+  void reset_tensor_by_vector(Tensor &x, const std::vector<float> &values);
+
   /**
    * Directly adds the second tensor to the first tensor.
    * @param a A tensor to be udpated.
@@ -389,7 +392,6 @@ public:
       Tensor &a, const Tensor &b,
       unsigned dim, const std::vector<unsigned> &ids);
 
-private:
   // device-specific implementations.
 
   virtual std::shared_ptr<void> new_handle(const Shape &shape) = 0;

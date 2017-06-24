@@ -35,6 +35,36 @@ protected:
   }
 };
 
+TEST_F(TensorTest, CheckNewDelete) {
+  for (Device *dev : devices) {
+    Tensor x1 = dev->new_tensor(Shape()); // 1 value
+    Tensor x2 = dev->new_tensor(Shape {16, 16}); // 256 values
+    Tensor x3 = dev->new_tensor(Shape({16, 16, 16}, 16)); // 65536 values
+    // According to the C++ standard, local values are destroyed in the order:
+    // x3 -> x2 -> x1 -> dev.
+    // Then `dev` has no remaining memories.
+  }
+  SUCCEED();
+}
+
+// NOTE(odashi):
+//   Now the CPUDevice does not manage memories itself, and the CUDADevice is
+//   run on multi-threading that does not allow to perform the death test due to
+//   the constraint of gTest.
+#if 0
+TEST_F(TensorTest, CheckInvalidNewDelete) {
+  for (Device *dev : devices) {
+    EXPECT_DEATH({
+      Tensor x0;
+      x0 = dev->new_tensor(Shape());
+      // Local values are destroyed in the order: dev -> x0.
+      // `x0` still have a memory when destroying `dev` and the process will
+      // abort.
+    }, "");
+  }
+}
+#endif
+
 TEST_F(TensorTest, CheckNewDefault) {
   const Tensor x;
   EXPECT_FALSE(x.valid());
@@ -114,13 +144,12 @@ TEST_F(TensorTest, CheckNewMatrixMinibatchWithData) {
   }
 }
 
-TEST_F(TensorTest, CheckMoveCtor) {
+TEST_F(TensorTest, CheckMoveValidToNew) {
   for (Device *dev : devices) {
     Tensor tmp = dev->new_tensor_by_vector(Shape({2}, 3), {1, 2, 3, 4, 5, 6});
     void *ptr = tmp.data();
 
-    Tensor x = std::move(tmp);
-
+    const Tensor x = std::move(tmp);
     EXPECT_TRUE(x.valid());
     EXPECT_FALSE(tmp.valid());
     EXPECT_EQ(Shape({2}, 3), x.shape());
@@ -129,14 +158,15 @@ TEST_F(TensorTest, CheckMoveCtor) {
   }
 }
 
-TEST_F(TensorTest, CheckMoveOpToValidObj) {
+TEST_F(TensorTest, CheckMoveValidToValid) {
   for (Device *dev : devices) {
     Tensor tmp = dev->new_tensor_by_vector({6}, {2, 4, 6, 8, 10 ,12});
     void *ptr = tmp.data();
 
     Tensor x = dev->new_tensor({}, 1);
-    x = std::move(tmp);
+    ASSERT_TRUE(x.valid());
 
+    x = std::move(tmp);
     EXPECT_TRUE(x.valid());
     EXPECT_FALSE(tmp.valid());
     EXPECT_EQ(Shape({6}), x.shape());
@@ -145,20 +175,278 @@ TEST_F(TensorTest, CheckMoveOpToValidObj) {
   }
 }
 
-TEST_F(TensorTest, CheckMoveOpToInvalidObj) {
+TEST_F(TensorTest, CheckMoveValidToInvalid) {
   for (Device *dev : devices) {
     Tensor tmp = dev->new_tensor_by_vector(
         Shape({1}, 6), {3, 6, 9, 12, 15, 18});
     void *ptr = tmp.data();
 
     Tensor x;
-    x = std::move(tmp);
+    ASSERT_FALSE(x.valid());
 
+    x = std::move(tmp);
     EXPECT_TRUE(x.valid());
     EXPECT_FALSE(tmp.valid());
     EXPECT_EQ(Shape({1}, 6), x.shape());
     EXPECT_EQ(ptr, x.data());
     EXPECT_TRUE(vector_match({3, 6, 9, 12, 15, 18}, x.to_vector()));
+  }
+}
+
+TEST_F(TensorTest, CheckMoveValidToThis) {
+  for (Device *dev : devices) {
+    Tensor x = dev->new_tensor_by_vector({6}, {2, 4, 6, 8, 10 ,12});
+    void *ptr = x.data();
+
+    x = std::move(x);
+    EXPECT_TRUE(x.valid());
+    EXPECT_EQ(Shape({6}), x.shape());
+    EXPECT_EQ(ptr, x.data());
+    EXPECT_TRUE(vector_match({2, 4, 6, 8, 10 ,12}, x.to_vector()));
+  }
+}
+
+TEST_F(TensorTest, CheckMoveInvalidToNew) {
+  Tensor tmp;
+  ASSERT_FALSE(tmp.valid());
+
+  const Tensor x = std::move(tmp);
+  EXPECT_FALSE(x.valid());
+  EXPECT_FALSE(tmp.valid());
+}
+
+TEST_F(TensorTest, CheckMoveInvalidToValid) {
+  for (Device *dev : devices) {
+    Tensor tmp;
+    ASSERT_FALSE(tmp.valid());
+
+    Tensor x = dev->new_tensor({}, 1);
+    ASSERT_TRUE(x.valid());
+
+    x = std::move(tmp);
+    EXPECT_FALSE(x.valid());
+    EXPECT_FALSE(tmp.valid());
+  }
+}
+
+TEST_F(TensorTest, CheckMoveInvalidToInalid) {
+  Tensor tmp;
+  ASSERT_FALSE(tmp.valid());
+
+  Tensor x;
+  ASSERT_FALSE(x.valid());
+
+  x = std::move(tmp);
+  EXPECT_FALSE(x.valid());
+  EXPECT_FALSE(tmp.valid());
+}
+
+TEST_F(TensorTest, CheckMoveInvalidToThis) {
+  Tensor x;
+  ASSERT_FALSE(x.valid());
+
+  x = std::move(x);
+  EXPECT_FALSE(x.valid());
+}
+
+TEST_F(TensorTest, CheckCopyValidToNew) {
+  for (Device *dev : devices) {
+    Tensor tmp = dev->new_tensor_by_vector(Shape({2}, 3), {1, 2, 3, 4, 5, 6});
+    void *ptr = tmp.data();
+
+    const Tensor x = tmp;
+    EXPECT_TRUE(x.valid());
+    EXPECT_TRUE(tmp.valid());
+    EXPECT_EQ(Shape({2}, 3), x.shape());
+    EXPECT_EQ(Shape({2}, 3), tmp.shape());
+    EXPECT_EQ(ptr, x.data());
+    EXPECT_EQ(ptr, tmp.data());
+    EXPECT_TRUE(vector_match({1, 2, 3, 4, 5, 6}, x.to_vector()));
+    EXPECT_TRUE(vector_match({1, 2, 3, 4, 5, 6}, tmp.to_vector()));
+  }
+}
+
+TEST_F(TensorTest, CheckCopyValidToValid) {
+  for (Device *dev : devices) {
+    Tensor tmp = dev->new_tensor_by_vector({6}, {2, 4, 6, 8, 10 ,12});
+    void *ptr = tmp.data();
+
+    Tensor x = dev->new_tensor({}, 1);
+    ASSERT_TRUE(x.valid());
+
+    x = tmp;
+    EXPECT_TRUE(x.valid());
+    EXPECT_TRUE(tmp.valid());
+    EXPECT_EQ(Shape({6}), x.shape());
+    EXPECT_EQ(Shape({6}), tmp.shape());
+    EXPECT_EQ(ptr, x.data());
+    EXPECT_EQ(ptr, tmp.data());
+    EXPECT_TRUE(vector_match({2, 4, 6, 8, 10 ,12}, x.to_vector()));
+    EXPECT_TRUE(vector_match({2, 4, 6, 8, 10 ,12}, tmp.to_vector()));
+  }
+}
+
+TEST_F(TensorTest, CheckCopyValidToInvalid) {
+  for (Device *dev : devices) {
+    Tensor tmp = dev->new_tensor_by_vector(
+        Shape({1}, 6), {3, 6, 9, 12, 15, 18});
+    void *ptr = tmp.data();
+
+    Tensor x;
+    ASSERT_FALSE(x.valid());
+
+    x = tmp;
+    EXPECT_TRUE(x.valid());
+    EXPECT_TRUE(tmp.valid());
+    EXPECT_EQ(Shape({1}, 6), x.shape());
+    EXPECT_EQ(Shape({1}, 6), tmp.shape());
+    EXPECT_EQ(ptr, x.data());
+    EXPECT_EQ(ptr, tmp.data());
+    EXPECT_TRUE(vector_match({3, 6, 9, 12, 15, 18}, x.to_vector()));
+    EXPECT_TRUE(vector_match({3, 6, 9, 12, 15, 18}, tmp.to_vector()));
+  }
+}
+
+TEST_F(TensorTest, CheckCopyValidToThis) {
+  for (Device *dev : devices) {
+    Tensor x = dev->new_tensor_by_vector({6}, {2, 4, 6, 8, 10 ,12});
+    void *ptr = x.data();
+
+    x = x;
+    EXPECT_TRUE(x.valid());
+    EXPECT_EQ(Shape({6}), x.shape());
+    EXPECT_EQ(ptr, x.data());
+    EXPECT_TRUE(vector_match({2, 4, 6, 8, 10 ,12}, x.to_vector()));
+  }
+}
+
+TEST_F(TensorTest, CheckCopyInvalidToNew) {
+  Tensor tmp;
+  ASSERT_FALSE(tmp.valid());
+
+  const Tensor x = tmp;
+  EXPECT_FALSE(x.valid());
+  EXPECT_FALSE(tmp.valid());
+}
+
+TEST_F(TensorTest, CheckCopyInvalidToValid) {
+  for (Device *dev : devices) {
+    Tensor tmp;
+    ASSERT_FALSE(tmp.valid());
+
+    Tensor x = dev->new_tensor({}, 1);
+    ASSERT_TRUE(x.valid());
+
+    x = tmp;
+    EXPECT_FALSE(x.valid());
+    EXPECT_FALSE(tmp.valid());
+  }
+}
+
+TEST_F(TensorTest, CheckCopyInvalidToInalid) {
+  Tensor tmp;
+  ASSERT_FALSE(tmp.valid());
+
+  Tensor x;
+  ASSERT_FALSE(x.valid());
+
+  x = tmp;
+  EXPECT_FALSE(x.valid());
+  EXPECT_FALSE(tmp.valid());
+}
+
+TEST_F(TensorTest, CheckCopyInvalidToThis) {
+  Tensor x;
+  ASSERT_FALSE(x.valid());
+
+  x = x;
+  EXPECT_FALSE(x.valid());
+}
+
+TEST_F(TensorTest, CheckResetValuesByConstant) {
+  for (Device *dev : devices) {
+    {
+      const Tensor x = dev->new_tensor(Shape({2, 2}, 2), 42);
+      EXPECT_TRUE(vector_match(vector<float>(8, 42), x.to_vector()));
+    }
+    {
+      Tensor x = dev->new_tensor(Shape({2, 2}, 2));
+      const void *ptr = x.data();
+      x.reset(42);
+      EXPECT_EQ(ptr, x.data());
+      EXPECT_TRUE(vector_match(vector<float>(8, 42), x.to_vector()));
+    }
+    {
+      Tensor x = dev->new_tensor(Shape({2, 2}, 2), 123);
+      const Tensor copied = x;
+      EXPECT_EQ(x.data(), copied.data());
+
+      x.reset(42);
+      EXPECT_NE(x.data(), copied.data());
+      EXPECT_TRUE(vector_match(vector<float>(8, 42), x.to_vector()));
+      EXPECT_TRUE(vector_match(vector<float>(8, 123), copied.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorTest, CheckResetValuesByArray) {
+  for (Device *dev : devices) {
+    {
+      const float data[] {1, 2, 3, 4, 5, 6, 7, 8};
+      const Tensor x = dev->new_tensor_by_array(Shape({2, 2}, 2), data);
+      EXPECT_TRUE(
+          vector_match(vector<float> {1, 2, 3, 4, 5, 6, 7, 8}, x.to_vector()));
+    }
+    {
+      const float data[] {1, 2, 3, 4, 5, 6, 7, 8};
+      Tensor x = dev->new_tensor(Shape({2, 2}, 2));
+      const void *ptr = x.data();
+      x.reset_by_array(data);
+      EXPECT_EQ(ptr, x.data());
+      EXPECT_TRUE(
+          vector_match(vector<float> {1, 2, 3, 4, 5, 6, 7, 8}, x.to_vector()));
+    }
+    {
+      const float data[] {1, 2, 3, 4, 5, 6, 7, 8};
+      Tensor x = dev->new_tensor(Shape({2, 2}, 2), 123);
+      const Tensor copied = x;
+      EXPECT_EQ(x.data(), copied.data());
+
+      x.reset_by_array(data);
+      EXPECT_NE(x.data(), copied.data());
+      EXPECT_TRUE(
+          vector_match(vector<float> {1, 2, 3, 4, 5, 6, 7, 8}, x.to_vector()));
+      EXPECT_TRUE(vector_match(vector<float>(8, 123), copied.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorTest, CheckResetValuesByVector) {
+  for (Device *dev : devices) {
+    {
+      const vector<float> data {1, 2, 3, 4, 5, 6, 7, 8};
+      const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), data);
+      EXPECT_TRUE(vector_match(data, x.to_vector()));
+    }
+    {
+      const vector<float> data {1, 2, 3, 4, 5, 6, 7, 8};
+      Tensor x = dev->new_tensor(Shape({2, 2}, 2));
+      const void *ptr = x.data();
+      x.reset_by_vector(data);
+      EXPECT_EQ(ptr, x.data());
+      EXPECT_TRUE(vector_match(data, x.to_vector()));
+    }
+    {
+      const vector<float> data {1, 2, 3, 4, 5, 6, 7, 8};
+      Tensor x = dev->new_tensor(Shape({2, 2}, 2), 123);
+      const Tensor copied = x;
+      EXPECT_EQ(x.data(), copied.data());
+
+      x.reset_by_vector(data);
+      EXPECT_NE(x.data(), copied.data());
+      EXPECT_TRUE(vector_match(data, x.to_vector()));
+      EXPECT_TRUE(vector_match(vector<float>(8, 123), copied.to_vector()));
+    }
   }
 }
 
@@ -211,6 +499,24 @@ TEST_F(TensorTest, CheckInvalidAddGradient) {
       Tensor b = dev->new_tensor(shape);
       EXPECT_THROW(a.add_gradient(b), Error);
     }
+  }
+}
+
+TEST_F(TensorTest, CheckCopyAndAddGradient) {
+  for (Device *dev : devices) {
+    const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    const vector<float> b_data {0, -1, -2, -3, -3, -4, -5, -6, -6, -7, -8, -9};
+    const vector<float> y_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
+    Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+
+    const Tensor copied = a;
+    EXPECT_EQ(a.data(), copied.data());
+
+    a.add_gradient(b);
+    EXPECT_NE(a.data(), copied.data());
+    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
   }
 }
 
@@ -364,6 +670,26 @@ TEST_F(TensorTest, CheckInvalidAddGradientOffset) {
   }
 }
 
+TEST_F(TensorTest, CheckCopyAndAddGradientOffset) {
+  const vector<float> a_data {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+  const vector<float> b_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
+  const vector<float> y_data {1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6};
+  for (Device *dev : devices) {
+    for (unsigned i : {0, 1, 2, 5, 10}) {
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+
+      const Tensor copied = a;
+      EXPECT_EQ(a.data(), copied.data());
+
+      a.add_gradient_offset(b, i, 0);
+      EXPECT_NE(a.data(), copied.data());
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+      EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
+    }
+  }
+}
+
 TEST_F(TensorTest, CheckAddGradientSparseNN) {
   const vector<float> a_data {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
   struct TestCase {
@@ -502,6 +828,24 @@ TEST_F(TensorTest, CheckInvalidAddGradientSparse) {
       const Tensor b = dev->new_tensor(tc.b_shape, 0);
       EXPECT_THROW(a.add_gradient_sparse(b, tc.dim, tc.ids), Error);
     }
+  }
+}
+
+TEST_F(TensorTest, CheckCopyAndAddGradientSparse) {
+  const vector<float> a_data {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+  const vector<float> b_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
+  const vector<float> y_data {1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6};
+  for (Device *dev : devices) {
+    Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+
+    const Tensor copied = a;
+    EXPECT_EQ(a.data(), copied.data());
+
+    a.add_gradient_sparse(b, 2, {0, 0, 0});
+    EXPECT_NE(a.data(), copied.data());
+    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
   }
 }
 
