@@ -11,7 +11,7 @@ class Parameter;
 
 namespace functions {
 
-#define DEFAULT_METHODS(name_) \
+#define DEFAULT_CLASS_DECL(name_) \
 private: \
   name_(const name_ &) = delete; \
   name_(name_ &&) = delete; \
@@ -26,87 +26,55 @@ public: \
       const std::vector<const Tensor *> &arg_values, \
       const std::vector<Tensor *> &arg_grads) const override;
 
-/**
- * Function object that behaves data source of the computation graph.
- */
+#define NO_CTOR_CLASS_DECL(name_) \
+  DEFAULT_CLASS_DECL(name_); \
+private: \
+  name_() = delete;
+
 class Input : public primitiv::Function {
-  DEFAULT_METHODS(Input);
-
-private:
-  Input() = delete;
-
+  NO_CTOR_CLASS_DECL(Input);
 public:
   Input(const Shape &shape, Device *device, const std::vector<float> &data);
   std::string name() const override { return "Input"; }
-
 private:
   Shape shape_;
   Device *device_;
   std::vector<float> data_;
 };
 
-/**
- * Function object to manage parameters.
- */
 class ParameterInput : public primitiv::Function {
-  DEFAULT_METHODS(ParameterInput);
-
-private:
-  ParameterInput() = delete;
-
+  NO_CTOR_CLASS_DECL(ParameterInput);
 public:
   explicit ParameterInput(Parameter *param) : param_(param) {}
   std::string name() const override { return "ParameterInput"; }
-
 private:
   primitiv::Parameter *param_;
 };
 
-/**
- * Function to copy tensors to other device.
- */
 class Copy : public primitiv::Function {
-  DEFAULT_METHODS(Copy);
-
-private:
-  Copy() = delete;
-
+  NO_CTOR_CLASS_DECL(Copy);
 public:
   Copy(Device *device) : device_(device) {}
   std::string name() const override { return "Copy"; }
-
 private:
   Device *device_;
 };
 
-/**
- * Function to pick tensors from a large tensor.
- */
 class Pick : public primitiv::Function {
-  DEFAULT_METHODS(Pick);
-
-private:
-  Pick() = delete;
-
+  NO_CTOR_CLASS_DECL(Pick);
 public:
   Pick(const unsigned dim, const std::vector<unsigned> &ids)
     : dim_(dim), ids_(ids) {}
   std::string name() const override {
     return "Pick(" + std::to_string(dim_) + ')';
   };
-
 private:
   unsigned dim_;
   std::vector<unsigned> ids_;
 };
 
-// Function to slice a tensor.
 class Slice : public primitiv::Function {
-  DEFAULT_METHODS(Slice);
-
-private:
-  Slice() = delete;
-
+  NO_CTOR_CLASS_DECL(Slice);
 public:
   Slice(unsigned dim, unsigned lower, unsigned upper)
     : dim_(dim), lower_(lower), upper_(upper) {}
@@ -114,104 +82,65 @@ public:
     return "Slice(" + std::to_string(dim_) +
       ',' + std::to_string(lower_) + ':' + std::to_string(upper_) + ')';
   }
-
 private:
   unsigned dim_;
   unsigned lower_;
   unsigned upper_;
 };
 
-// Function to concat tensors.
 class Concat : public primitiv::Function {
-  DEFAULT_METHODS(Concat);
-
-private:
-  Concat() = delete;
-
+  NO_CTOR_CLASS_DECL(Concat);
 public:
   Concat(unsigned dim) : dim_(dim) {}
   std::string name() const override {
     return "Concat(" + std::to_string(dim_) + ')';
   }
-
 private:
   unsigned dim_;
 };
 
-/**
- * Function to sum a dimension.
- */
 class Sum : public Function {
-  DEFAULT_METHODS(Sum);
-
-private:
-  Sum() = delete;
-
+  NO_CTOR_CLASS_DECL(Sum);
 public:
   explicit Sum(unsigned dim) : dim_(dim) {}
   std::string name() const override {
     return "Sum(" + std::to_string(dim_) + ')';
   }
-
 private:
   unsigned dim_;
 };
 
-/**
- * Function to calculate logsumexp.
- */
 class LogSumExp : public Function {
-  DEFAULT_METHODS(LogSumExp);
-
-private:
-  LogSumExp() = delete;
-
+  NO_CTOR_CLASS_DECL(LogSumExp);
 public:
   explicit LogSumExp(unsigned dim) : dim_(dim) {}
   std::string name() const override {
     return "LogSumExp(" + std::to_string(dim_) + ')';
   }
-
 private:
   unsigned dim_;
 };
 
-/**
- * Function to broadcast a dimension.
- */
 class Broadcast : public Function {
-  DEFAULT_METHODS(Broadcast);
-
-private:
-  Broadcast() = delete;
-
+  NO_CTOR_CLASS_DECL(Broadcast);
 public:
   Broadcast(unsigned dim, unsigned size) : dim_(dim), size_(size) {}
   std::string name() const override {
     return "Broadcast(" + std::to_string(dim_)
       + ',' + std::to_string(size_) + ')';
   }
-
 private:
   unsigned dim_;
   unsigned size_;
 };
 
-/**
- * Function to calculate the softmax cross entropy.
- */
 class SoftmaxCrossEntropy : public Function {
-  DEFAULT_METHODS(SoftmaxCrossEntropy);
-
-private:
-  SoftmaxCrossEntropy() = delete;
-
+  NO_CTOR_CLASS_DECL(SoftmaxCrossEntropy);
 public:
   explicit SoftmaxCrossEntropy(unsigned dim) : dim_(dim) {}
   std::string name() const override {
     return "SoftmaxCrossEntropy(" + std::to_string(dim_) + ')';
   }
-
 private:
   unsigned dim_;
 };
@@ -219,7 +148,7 @@ private:
 // Function with no parameter.
 #define DECL_FUNC(name_) \
   class name_ : public Function { \
-    DEFAULT_METHODS(name_); \
+    DEFAULT_CLASS_DECL(name_); \
   public: \
     name_() {} \
     std::string name() const override { return #name_; } \
@@ -228,9 +157,7 @@ private:
 // Function with a constant.
 #define DECL_FUNC_K(name_) \
   class name_ : public Function { \
-    DEFAULT_METHODS(name_); \
-  private: \
-    name_() = delete; \
+    NO_CTOR_CLASS_DECL(name_); \
   public: \
     explicit name_(float  k) : k_(k) {} \
     std::string name() const override { \
@@ -263,7 +190,8 @@ DECL_FUNC_K(DivideConstR);
 
 #undef DECL_FUNC
 #undef DECL_FUNC_K
-#undef DEFAULT_METHODS
+#undef NO_CTOR_CLASS_DECL
+#undef DEFAULT_CLASS_DECL
 
 }  // namespace functions
 }  // namespace primitiv
