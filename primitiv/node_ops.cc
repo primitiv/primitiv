@@ -81,6 +81,10 @@ Node copy(const Node &x, Device *dev) {
   return x.graph()->add_function(new functions::Copy(dev), {x});
 }
 
+Node random_bernoulli(const Shape &shape, float p, Device *dev, Graph *g) {
+  return g->add_function(new functions::RandomBernoulli(shape, p, dev), {});
+}
+
 Node pick(const Node &x, unsigned dim, const std::vector<unsigned> &ids) {
   return x.graph()->add_function(new functions::Pick(dim, ids), {x});
 }

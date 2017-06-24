@@ -33,6 +33,8 @@ Node parameter(Graph *g, Parameter *param);
 
 Node copy(const Node &x, Device *dev);
 
+Node random_bernoulli(const Shape &shape, float p, Device *dev, Graph *g);
+
 Node pick(const Node &x, unsigned dim, const std::vector<unsigned> &ids);
 
 Node slice(const Node &x, unsigned dim, unsigned lower, unsigned upper);

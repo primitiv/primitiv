@@ -49,7 +49,7 @@ Tensor Input::forward(const vector<const Tensor *> &args) const {
 void Input::backward(
     const Tensor &, const Tensor &cur_grad,
     const vector<const Tensor *> &, const vector<Tensor *> &) const {
-  // Nothing to do
+  // Nothing to do.
 }
 
 Shape ParameterInput::forward_shape(const vector<const Shape *> &args) const {
@@ -82,6 +82,22 @@ void Copy::backward(
     const Tensor &y, const Tensor &yg,
     const vector<const Tensor *> &x, const vector<Tensor *> &xg) const {
   xg[0]->add_gradient(T::copy(yg, xg[0]->device()));
+}
+
+Shape RandomBernoulli::forward_shape(const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 0);
+  return shape_;
+}
+
+Tensor RandomBernoulli::forward(const vector<const Tensor *> &args) const {
+  CHECK_ARGNUM(args, 0);
+  return device_->random_bernoulli(shape_, p_);
+}
+
+void RandomBernoulli::backward(
+    const Tensor &, const Tensor &cur_grad,
+    const vector<const Tensor *> &, const vector<Tensor *> &) const {
+  // Nothing to do.
 }
 
 Shape Pick::forward_shape(const vector<const Shape *> &args) const {

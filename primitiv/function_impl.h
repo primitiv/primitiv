@@ -60,10 +60,24 @@ private:
   Device *device_;
 };
 
+class RandomBernoulli : public primitiv::Function {
+  NO_CTOR_CLASS_DECL(RandomBernoulli);
+public:
+  RandomBernoulli(const Shape &shape, float p, Device *device)
+    : shape_(shape), p_(p), device_(device) {}
+  std::string name() const override {
+    return "RandomBernoulli(" + std::to_string(p_) + ')';
+  }
+private:
+  Shape shape_;
+  float p_;
+  Device *device_;
+};
+
 class Pick : public primitiv::Function {
   NO_CTOR_CLASS_DECL(Pick);
 public:
-  Pick(const unsigned dim, const std::vector<unsigned> &ids)
+  Pick(unsigned dim, const std::vector<unsigned> &ids)
     : dim_(dim), ids_(ids) {}
   std::string name() const override {
     return "Pick(" + std::to_string(dim_) + ')';

@@ -178,6 +178,33 @@ TEST_F(FunctionImplTest, CheckCopy) {
   EXPECT_TRUE(vector_match(arg_grads[0]->to_vector(), cur_grad.to_vector()));
 }
 
+TEST_F(FunctionImplTest, CheckRandomBernoulli) {
+  struct TestCase {
+    Shape shape;
+    float p;
+    vector<float> data;
+  };
+  const vector<TestCase> test_cases {
+    {Shape({2, 2}, 3), 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+    {Shape({2, 2}, 3), 0.5, {1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0}},
+    {Shape({2, 2}, 3), 1, {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
+  };
+  for (const TestCase &tc : test_cases) {
+    const RandomBernoulli node(tc.shape, tc.p, dev);
+    const Shape cur_shape = node.forward_shape(arg_shapes);
+    const Tensor cur_value = node.forward(arg_values);
+    const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
+    // backward() has no effect.
+    EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
+    EXPECT_EQ("RandomBernoulli(" + std::to_string(tc.p) + ')', node.name());
+    EXPECT_EQ(cur_shape, tc.shape);
+    EXPECT_TRUE(vector_match(tc.data, cur_value.to_vector()));
+    // Dump results.
+    for (float x : cur_value.to_vector()) std::cout << x;
+    std::cout << std::endl;
+  }
+}
+
 TEST_F(FunctionImplTest, CheckPick) {
   struct TestCase {
     unsigned dim;
