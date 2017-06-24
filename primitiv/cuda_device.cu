@@ -268,6 +268,14 @@ __global__ void dev_add_grad_sparse(
 
 }  // namespace
 
+namespace {
+
+// Minimum requirements of the compute capability.
+static const int MIN_CC_MAJOR = 3;
+static const int MIN_CC_MINOR = 0;
+
+}
+
 namespace primitiv {
 
 unsigned CUDADevice::num_devices() {
@@ -283,16 +291,28 @@ void CUDADevice::initialize() {
 
   // Dump device properties.
   cerr << "Selected CUDA Device " << dev_id_ << ':' << endl;
-  cerr << "  Name ............ " << prop.name << endl;
-  cerr << "  Global Memory ... " << prop.totalGlobalMem << endl;
-  cerr << "  Shared Memory ... " << prop.sharedMemPerBlock << endl;
-  cerr << "  Threads/block ... " << prop.maxThreadsPerBlock << endl;
-  cerr << "  Threads dim ..... " << prop.maxThreadsDim[0] << ','
-                                 << prop.maxThreadsDim[1] << ','
-                                 << prop.maxThreadsDim[2] << endl;
-  cerr << "  Grid size ....... " << prop.maxGridSize[0] << ','
-                                 << prop.maxGridSize[1] << ','
-                                 << prop.maxGridSize[2] << endl;
+  cerr << "  Name ................. " << prop.name << endl;
+  cerr << "  Global Memory ........ " << prop.totalGlobalMem << endl;
+  cerr << "  Shared Memory ........ " << prop.sharedMemPerBlock << endl;
+  cerr << "  Threads/block ........ " << prop.maxThreadsPerBlock << endl;
+  cerr << "  Threads dim .......... " << prop.maxThreadsDim[0] << ','
+                                      << prop.maxThreadsDim[1] << ','
+                                      << prop.maxThreadsDim[2] << endl;
+  cerr << "  Grid size ............ " << prop.maxGridSize[0] << ','
+                                      << prop.maxGridSize[1] << ','
+                                      << prop.maxGridSize[2] << endl;
+  cerr << "  Compute Capability ... " << prop.major << '.'
+                                      << prop.minor << endl;
+
+  // Check compute capability requirements.
+  if (prop.major < ::MIN_CC_MAJOR ||
+      (prop.major == ::MIN_CC_MAJOR && prop.minor < ::MIN_CC_MINOR)) {
+    THROW_ERROR(
+        "CUDA Device " << dev_id_ << " does not satisfy the "
+        "minimum requirement of the compute capability: "
+        << prop.major << '.' << prop.minor << " < "
+        << ::MIN_CC_MAJOR << '.' << ::MIN_CC_MINOR);
+  }
 
   // Calculates size of dims to be used in CUDA kernels.
   dim1_x_ = 1;
