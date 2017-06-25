@@ -21,7 +21,8 @@ CUDAMemoryPool::CUDAMemoryPool(unsigned device_id)
   CUDA_CALL(::cudaGetDeviceCount(&max_devs));
   if (dev_id_ >= static_cast<unsigned>(max_devs)) {
     THROW_ERROR(
-        "Invalid CUDA device ID. given: " << dev_id_ << " >= " << max_devs);
+        "Invalid CUDA device ID. given: " << dev_id_
+        << " >= #devices: " << max_devs);
   }
 }
 

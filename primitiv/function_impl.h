@@ -34,13 +34,13 @@ private: \
 class Input : public primitiv::Function {
   NO_CTOR_CLASS_DECL(Input);
 public:
-  Input(const Shape &shape, Device *device, const std::vector<float> &data);
+  Input(const Shape &shape, const std::vector<float> &data, Device *device);
   Device *get_device() const override { return device_; }
   std::string name() const override { return "Input"; }
 private:
   Shape shape_;
-  Device *device_;
   std::vector<float> data_;
+  Device *device_;
 };
 
 class ParameterInput : public primitiv::Function {

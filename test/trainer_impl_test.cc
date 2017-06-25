@@ -19,7 +19,7 @@ protected:
 
 TEST_F(TraingerImplTest, CheckSGDUpdate) {
   SGDTrainer trainer(.1);
-  Parameter param("param", {2, 2}, &dev, {1, 2, 3, 4});
+  Parameter param("param", {2, 2}, {1, 2, 3, 4}, &dev);
   trainer.add_parameter(&param);
   trainer.reset_gradients();
 

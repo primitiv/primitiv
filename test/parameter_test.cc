@@ -39,7 +39,7 @@ TEST_F(ParameterTest, CheckNew) {
 
 TEST_F(ParameterTest, CheckNewWithValues) {
   const Shape shape {2, 2};
-  Parameter p("test", shape, &dev, {1, 2, 3, 4});
+  Parameter p("test", shape, {1, 2, 3, 4}, &dev);
   EXPECT_EQ("test", p.name());
   EXPECT_EQ(shape, p.shape());
   EXPECT_EQ(&dev, p.device());
@@ -51,7 +51,7 @@ TEST_F(ParameterTest, CheckNewWithValues) {
 TEST_F(ParameterTest, CheckNewWithInitializer) {
   const Shape shape {2, 2};
   const initializers::Constant init(42);
-  Parameter p("test", shape, &dev, init);
+  Parameter p("test", shape, init, &dev);
   EXPECT_EQ("test", p.name());
   EXPECT_EQ(shape, p.shape());
   EXPECT_EQ(&dev, p.device());
@@ -62,7 +62,7 @@ TEST_F(ParameterTest, CheckNewWithInitializer) {
 
 TEST_F(ParameterTest, CheckMove) {
   const Shape shape {2, 2};
-  Parameter p1("test", shape, &dev, {1, 2, 3, 4});
+  Parameter p1("test", shape, {1, 2, 3, 4}, &dev);
 
   Parameter p2 = std::move(p1);
   EXPECT_EQ("test", p2.name());
@@ -142,7 +142,7 @@ TEST_F(ParameterTest, CheckSaveLoad) {
   const Shape shape {2, 2};
   const vector<float> values {1, 2, 3, 4};
   const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveLoad_p.yaml";
-  const Parameter p1("test", shape, &dev, values);
+  const Parameter p1("test", shape, values, &dev);
   p1.save(path);
   const Parameter p2 = Parameter::load(path, &dev);
   EXPECT_EQ("test", p2.name());

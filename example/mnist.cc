@@ -86,14 +86,10 @@ int main() {
   CUDADevice dev(0);
 
   // Parameters
-  Parameter pw1(
-      "w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, &dev, XavierUniform());
-  Parameter pb1(
-      "b1", {NUM_HIDDEN_UNITS}, &dev, Constant(0));
-  Parameter pw2(
-      "w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, &dev, XavierUniform());
-  Parameter pb2(
-      "b2", {NUM_OUTPUT_UNITS}, &dev, Constant(0));
+  Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, XavierUniform(), &dev);
+  Parameter pb1("b1", {NUM_HIDDEN_UNITS}, Constant(0), &dev);
+  Parameter pw2("w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, XavierUniform(), &dev);
+  Parameter pb2("b2", {NUM_OUTPUT_UNITS}, Constant(0), &dev);
 
   // Trainer
   SGDTrainer trainer(.1);
@@ -103,12 +99,12 @@ int main() {
   trainer.add_parameter(&pb2);
 
   // Helper lambda to construct the predictor network.
-  auto make_graph = [&](Graph &g, const vector<float> &inputs, bool train) {
-    Node x = F::input(&g, &dev, Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs);
-    Node w1 = F::parameter(&g, &pw1);
-    Node b1 = F::parameter(&g, &pb1);
-    Node w2 = F::parameter(&g, &pw2);
-    Node b2 = F::parameter(&g, &pb2);
+  auto make_graph = [&](const vector<float> &inputs, bool train, Graph &g) {
+    Node x = F::input(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs, &dev, &g);
+    Node w1 = F::input(&pw1, &g);
+    Node b1 = F::input(&pb1, &g);
+    Node w2 = F::input(&pw2, &g);
+    Node b2 = F::input(&pb2, &g);
     Node h = F::dropout(F::relu(F::dot(w1, x) + b1), .5, train);
     return F::dot(w2, h) + b2;
   };
@@ -137,9 +133,9 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      Node y = make_graph(g, inputs, true);
+      Node y = make_graph(inputs, true, g);
       Node loss = F::softmax_cross_entropy(y, 0, labels);
-      Node avg_loss = F::batch_sum(loss) / BATCH_SIZE;
+      Node avg_loss = F::batch::sum(loss) / BATCH_SIZE;
 
       // Dump computation graph at the first time.
       if (epoch == 0 && batch == 0) g.dump();
@@ -163,7 +159,7 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      Node y = make_graph(g, inputs, false);
+      Node y = make_graph(inputs, false, g);
 
       // Gets outputs, argmax, and compares them with the label.
       vector<float> y_val = g.forward(y).to_vector();

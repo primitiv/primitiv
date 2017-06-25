@@ -39,10 +39,10 @@ int main() {
   CUDADevice dev(0);
 
   // Parameters
-  Parameter pw1("w1", {8, 2}, &dev, XavierUniform());
-  Parameter pb1("b1", {8}, &dev, Constant(0.0f));
-  Parameter pw2("w2", {1, 8}, &dev, XavierUniform());
-  Parameter pb2("b2", {}, &dev, Constant(0.0f));
+  Parameter pw1("w1", {8, 2}, XavierUniform(), &dev);
+  Parameter pb1("b1", {8}, Constant(0.0f), &dev);
+  Parameter pw2("w2", {1, 8}, XavierUniform(), &dev);
+  Parameter pb2("b2", {}, Constant(0.0f), &dev);
 
   // Trainer
   SGDTrainer trainer(0.1f);
@@ -67,11 +67,11 @@ int main() {
     Graph g;
     
     // Builds a computation graph.
-    Node x = F::input(&g, &dev, Shape({2}, 4), input_data);
-    Node w1 = F::parameter(&g, &pw1);
-    Node b1 = F::parameter(&g, &pb1);
-    Node w2 = F::parameter(&g, &pw2);
-    Node b2 = F::parameter(&g, &pb2);
+    Node x = F::input(Shape({2}, 4), input_data, &dev, &g);
+    Node w1 = F::input(&pw1, &g);
+    Node b1 = F::input(&pb1, &g);
+    Node w2 = F::input(&pw2, &g);
+    Node b2 = F::input(&pb2, &g);
     Node h = F::tanh(F::dot(w1, x) + b1);
     Node y = F::dot(w2, h) + b2;
 
@@ -83,9 +83,9 @@ int main() {
     }
 
     // Builds an additional computation graph for the mean squared loss.
-    Node t = F::input(&g, &dev, Shape({}, 4), output_data);
+    Node t = F::input(Shape({}, 4), output_data, &dev, &g);
     Node diff = t - y;
-    Node loss = F::batch_sum(diff * diff) / 4;
+    Node loss = F::batch::sum(diff * diff) / 4;
     
     // Calculates losses.
     // The forward() function performs over only additional paths.

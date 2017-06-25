@@ -109,8 +109,9 @@ Parameter::Parameter(
 }
 
 Parameter::Parameter(
-    const string &name, const Shape &shape, Device *device,
-    const vector<float> & value)
+    const string &name, const Shape &shape,
+    const vector<float> & value,
+    Device *device)
 : name_(name)
 , shape_(shape)
 , device_(device)
@@ -121,8 +122,9 @@ Parameter::Parameter(
 }
 
 Parameter::Parameter(
-    const string &name, const Shape &shape, Device *device,
-    const Initializer &init)
+    const string &name, const Shape &shape,
+    const Initializer &init,
+    Device *device)
 : name_(name)
 , shape_(shape)
 , device_(device)

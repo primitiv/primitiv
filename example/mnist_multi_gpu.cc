@@ -89,16 +89,12 @@ int main() {
   CUDADevice dev1(1);  // GPU 1
 
   // Parameters managed by GPU 0.
-  Parameter pw1(
-      "w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, &dev0, XavierUniform());
-  Parameter pb1(
-      "b1", {NUM_HIDDEN_UNITS}, &dev0, Constant(0));
+  Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, XavierUniform(), &dev0);
+  Parameter pb1("b1", {NUM_HIDDEN_UNITS}, Constant(0), &dev0);
   
   // Parameters managed by GPU 1.
-  Parameter pw2(
-      "w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, &dev1, XavierUniform());
-  Parameter pb2(
-      "b2", {NUM_OUTPUT_UNITS}, &dev1, Constant(0));
+  Parameter pw2("w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, XavierUniform(), &dev1);
+  Parameter pb2("b2", {NUM_OUTPUT_UNITS}, Constant(0), &dev1);
 
   // Trainer
   SGDTrainer trainer(.1);
@@ -108,13 +104,13 @@ int main() {
   trainer.add_parameter(&pb2);
 
   // Helper lambda to construct the predictor network.
-  auto make_graph = [&](Graph &g, const vector<float> &inputs) {
+  auto make_graph = [&](const vector<float> &inputs, Graph &g) {
     // We first store input values on GPU 0.
-    Node x = F::input(&g, &dev0, Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs);
-    Node w1 = F::parameter(&g, &pw1);
-    Node b1 = F::parameter(&g, &pb1);
-    Node w2 = F::parameter(&g, &pw2);
-    Node b2 = F::parameter(&g, &pb2);
+    Node x = F::input(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs, &dev0, &g);
+    Node w1 = F::input(&pw1, &g);
+    Node b1 = F::input(&pb1, &g);
+    Node w2 = F::input(&pw2, &g);
+    Node b2 = F::input(&pb2, &g);
     // The hidden layer is calculated and implicitly stored on GPU 0.
     Node h_on_gpu0 = F::relu(F::dot(w1, x) + b1);
     // `copy()` transfers the hiddne layer to GPU 1.
@@ -150,9 +146,9 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      Node y = make_graph(g, inputs);
+      Node y = make_graph(inputs, g);
       Node loss = F::softmax_cross_entropy(y, 0, labels);
-      Node avg_loss = F::batch_sum(loss) / BATCH_SIZE;
+      Node avg_loss = F::batch::sum(loss) / BATCH_SIZE;
 
       // Forward, backward, and updates parameters.
       trainer.reset_gradients();
@@ -173,7 +169,7 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      Node y = make_graph(g, inputs);
+      Node y = make_graph(inputs, g);
 
       // Gets outputs, argmax, and compares them with the label.
       vector<float> y_val = g.forward(y).to_vector();

@@ -38,24 +38,26 @@ public:
    * Creates a new Parameter object.
    * @param name Name of the parameter.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @param device The device object to manage internal memory.
    * @param value List of initial values. Order of elements should be of
    *              `Tensor::set_values()`.
+   * @param device The device object to manage internal memory.
    */
   Parameter(
-      const std::string &name, const Shape &shape, Device *device,
-      const std::vector<float> &value);
+      const std::string &name, const Shape &shape,
+      const std::vector<float> &value,
+      Device *device);
 
   /**
    * Creates a new Parameter object.
    * @param name Name of the parameter.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @param device The device object to manage internal memory.
    * @param init An Initializer object.
+   * @param device The device object to manage internal memory.
    */
   Parameter(
-      const std::string &name, const Shape &shape, Device *device,
-      const Initializer &init);
+      const std::string &name, const Shape &shape,
+      const Initializer &init,
+      Device *device);
 
   /**
    * Set all values.

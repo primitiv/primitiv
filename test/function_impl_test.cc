@@ -133,7 +133,7 @@ protected:
 TEST_F(FunctionImplTest, CheckInput) {
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4};
-  const Input node(ret_shape, dev, ret_data);
+  const Input node(ret_shape, ret_data, dev);
   const Shape cur_shape = node.forward_shape(arg_shapes);
   const Tensor cur_value = node.forward(arg_values);
   const Tensor cur_grad = dev->new_tensor(ret_shape, 1);

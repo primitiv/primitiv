@@ -22,10 +22,10 @@ namespace functions {
         << " != actual: " << args.size()); \
   }
 
-Input::Input(const Shape &shape, Device *device, const vector<float> &data)
+Input::Input(const Shape &shape, const vector<float> &data, Device *device)
 : shape_(shape)
-, device_(device)
-, data_(data) {
+, data_(data)
+, device_(device) {
   const unsigned shape_size = shape_.num_total_elements();
   if (data_.size() != shape_size) {
     THROW_ERROR(
