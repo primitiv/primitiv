@@ -282,6 +282,42 @@ TEST_F(FunctionImplTest, CheckRandomNormal) {
   }
 }
 
+TEST_F(FunctionImplTest, CheckRandomLogNormal) {
+  struct TestCase {
+    Shape shape;
+    float mean, sd;
+    vector<float> data;
+  };
+  const vector<TestCase> test_cases {
+    {Shape({2, 2}, 3), -2, 2,
+      {0.02810914, 0.06194668, 0.38974261, 0.05195925,
+        1.43173969, 19.69264221, 0.38125014, 0.16810957,
+        0.12410613, 0.38937083, 0.45549366, 0.20986597}},
+    {Shape({2, 2}, 3), 0, 1,
+      {0.50145483, 3.90666890, 0.37987521, 1.53850889,
+        1.58769107, 1.33893049, 0.79698789, 0.41396958,
+        2.53176165, 0.54416287, 3.32758808, 4.39105797}},
+    {Shape({2, 2}, 3), 2, .5,
+      {8.00309277, 12.51338959, 13.03808784, 9.62345028,
+        8.74154091, 8.04331684, 2.46400452, 5.68767834,
+        13.45705223, 4.27337027, 4.35795498, 6.78036499}},
+  };
+  for (const TestCase &tc : test_cases) {
+    const RandomLogNormal node(tc.shape, tc.mean, tc.sd, dev);
+    const Shape cur_shape = node.forward_shape(arg_shapes);
+    const Tensor cur_value = node.forward(arg_values);
+    const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
+    // backward() has no effect.
+    EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
+    EXPECT_EQ(
+        "RandomLogNormal(" + std::to_string(tc.mean) + ',' +
+        std::to_string(tc.sd) + ')', node.name());
+    EXPECT_EQ(cur_shape, tc.shape);
+    EXPECT_EQ(dev, node.get_device());
+    EXPECT_TRUE(vector_match(tc.data, cur_value.to_vector()));
+  }
+}
+
 TEST_F(FunctionImplTest, CheckPick) {
   struct TestCase {
     unsigned dim;

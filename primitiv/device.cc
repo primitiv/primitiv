@@ -101,6 +101,15 @@ Tensor Device::random_normal(const Shape &shape, float mean, float sd) {
   return random_normal_impl(shape, mean, sd);
 }
 
+Tensor Device::random_log_normal(const Shape &shape, float mean, float sd) {
+  if (sd <= 0) {
+    THROW_ERROR(
+        "Invalid parameter of the log-normal distribution. mean: " << mean
+        << ", SD: " << sd);
+  }
+  return random_log_normal_impl(shape, mean, sd);
+}
+
 Tensor Device::pick(
     const Tensor &x, unsigned dim, const vector<unsigned> &ids) {
   CHECK_DEVICE(x);

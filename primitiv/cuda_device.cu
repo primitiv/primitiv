@@ -439,6 +439,15 @@ Tensor CUDADevice::random_normal_impl(
   return ret;
 }
 
+Tensor CUDADevice::random_log_normal_impl(
+    const Shape &shape, float mean, float sd) {
+  const unsigned size = shape.num_total_elements();
+  Tensor ret = new_tensor(shape);
+  CUDA_CALL(::cudaSetDevice(dev_id_));
+  CURAND_CALL(::curandGenerateLogNormal(curand_, DATA(ret), size, mean, sd));
+  return ret;
+}
+
 Tensor CUDADevice::pick_impl(
     const Tensor &x, unsigned dim,
     const std::vector<unsigned> &ids, Shape &&new_shape) {

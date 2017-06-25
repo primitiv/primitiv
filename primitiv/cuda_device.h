@@ -58,6 +58,8 @@ private:
   Tensor random_uniform_impl(
       const Shape &shape, float lower, float upper) override;
   Tensor random_normal_impl(const Shape &shape, float mean, float sd) override;
+  Tensor random_log_normal_impl(
+      const Shape &shape, float mean, float sd) override;
 
   Tensor pick_impl(
       const Tensor &x, unsigned dim,

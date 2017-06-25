@@ -114,6 +114,24 @@ private:
   Device *device_;
 };
 
+class RandomLogNormal : public primitiv::Function {
+  NO_CTOR_CLASS_DECL(RandomLogNormal);
+public:
+  RandomLogNormal(const Shape &shape, float mean, float sd, Device *device)
+    : shape_(shape), mean_(mean), sd_(sd), device_(device) {}
+  Device *get_device() const override { return device_; }
+  std::string name() const override {
+    return
+      "RandomLogNormal(" + std::to_string(mean_) + ',' +
+      std::to_string(sd_) + ')';
+  }
+private:
+  Shape shape_;
+  float mean_;
+  float sd_;
+  Device *device_;
+};
+
 class Pick : public primitiv::Function {
   NO_CTOR_CLASS_DECL(Pick);
 public:

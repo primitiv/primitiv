@@ -108,6 +108,16 @@ public:
   Tensor random_normal(const Shape &shape, float mean, float sd);
 
   /**
+   * Provides a new Tensor object in which all elements are initialized by
+   * the log-normal distribution with specific mean and standard deviation.
+   * @param shape Shape of the tensor.
+   * @param mean Mean of the corresponding normal distribution.
+   * @param sd Standard deviation of the corresponding normal distribution.
+   * @return A new Tensor object.
+   */
+  Tensor random_log_normal(const Shape &shape, float mean, float sd);
+
+  /**
    * Pick-up subplane specified by the dimension and the ID.
    * @param x A tensor.
    * @param dim Target dimension.
@@ -406,6 +416,8 @@ private:
   virtual Tensor random_uniform_impl(
       const Shape &shape, float lower, float upper) = 0;
   virtual Tensor random_normal_impl(
+      const Shape &shape, float mean, float sd) = 0;
+  virtual Tensor random_log_normal_impl(
       const Shape &shape, float mean, float sd) = 0;
 
   virtual Tensor pick_impl(

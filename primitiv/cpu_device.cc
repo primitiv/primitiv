@@ -86,6 +86,16 @@ Tensor CPUDevice::random_normal_impl(const Shape &shape, float mean, float sd) {
   return ret;
 }
 
+Tensor CPUDevice::random_log_normal_impl(
+    const Shape &shape, float mean, float sd) {
+  std::lognormal_distribution<float> dist(mean, sd);
+  Tensor ret = new_tensor(shape);
+  float *dest = DATA(ret);
+  const unsigned size = shape.num_total_elements();
+  REPEAT_OP(i, size, dest[i] = dist(rng_));
+  return ret;
+}
+
 Tensor CPUDevice::pick_impl(
     const Tensor &x, unsigned dim,
     const std::vector<unsigned> &ids, Shape &&new_shape) {

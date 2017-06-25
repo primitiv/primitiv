@@ -132,6 +132,22 @@ void RandomNormal::backward(
   // Nothing to do.
 }
 
+Shape RandomLogNormal::forward_shape(const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 0);
+  return shape_;
+}
+
+Tensor RandomLogNormal::forward(const vector<const Tensor *> &args) const {
+  CHECK_ARGNUM(args, 0);
+  return device_->random_log_normal(shape_, mean_, sd_);
+}
+
+void RandomLogNormal::backward(
+    const Tensor &, const Tensor &cur_grad,
+    const vector<const Tensor *> &, const vector<Tensor *> &) const {
+  // Nothing to do.
+}
+
 Shape Pick::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 1);
   return shape_ops::pick(*args[0], dim_, ids_);

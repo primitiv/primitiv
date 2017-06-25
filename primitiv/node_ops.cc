@@ -97,6 +97,12 @@ Node random_normal(
       new functions::RandomNormal(shape, mean, sd, dev), {});
 }
 
+Node random_log_normal(
+    const Shape &shape, float mean, float sd, Device *dev, Graph *g) {
+  return g->add_function(
+      new functions::RandomLogNormal(shape, mean, sd, dev), {});
+}
+
 Node pick(const Node &x, unsigned dim, const std::vector<unsigned> &ids) {
   return x.graph()->add_function(new functions::Pick(dim, ids), {x});
 }

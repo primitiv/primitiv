@@ -2,12 +2,12 @@
 #define PRIMITIV_NODE_OPS_H_
 
 #include <vector>
-#include <primitiv/node.h>
 
 namespace primitiv {
 
 class Device;
 class Graph;
+class Node;
 class Parameter;
 
 Node operator+(const Node &x);
@@ -37,6 +37,8 @@ Node random_bernoulli(const Shape &shape, float p, Device *dev, Graph *g);
 Node random_uniform(
     const Shape &shape, float lower, float upper, Device *dev, Graph *g);
 Node random_normal(
+    const Shape &shape, float mean, float sd, Device *dev, Graph *g);
+Node random_log_normal(
     const Shape &shape, float mean, float sd, Device *dev, Graph *g);
 
 Node pick(const Node &x, unsigned dim, const std::vector<unsigned> &ids);

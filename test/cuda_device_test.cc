@@ -128,4 +128,37 @@ TEST_F(CUDADeviceTest, CheckRandomNormalWithSeed) {
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
 }
 
+TEST_F(CUDADeviceTest, CheckRandomLogNormal) {
+  vector<vector<float>> history;
+  for (unsigned i = 0; i < 10; ++i) {
+    CUDADevice dev(0);
+    const Tensor x = dev.random_log_normal(Shape({2, 2}, 2), 1, 3);
+    const vector<float> x_val = x.to_vector();
+
+    std::cout << "Epoch " << i << ':';
+    for (float x_i : x_val) {
+      std::cout << ' ' << x_i;
+    }
+    std::cout << std::endl;
+
+    for (const vector<float> &h_val : history) {
+      EXPECT_FALSE(vector_match(x_val, h_val));
+    }
+    history.emplace_back(x_val);
+
+    // Wait for updating the device randomizer.
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  }
+}
+
+TEST_F(CUDADeviceTest, CheckRandomLogNormalWithSeed) {
+  const vector<float> expected {
+    6.4730049e+01, 8.9038946e-02, 4.5090632e+00, 2.6302049e-01,
+    6.5925200e-03, 5.7442045e-01, 1.8024327e+00, 4.6354327e+00,
+  };
+  CUDADevice dev(0, 12345);
+  const Tensor x = dev.random_log_normal(Shape({2, 2}, 2), 1, 3);
+  EXPECT_TRUE(vector_match(expected, x.to_vector()));
+}
+
 }  // namespace primitiv
