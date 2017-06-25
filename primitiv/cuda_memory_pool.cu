@@ -43,21 +43,28 @@ CUDAMemoryPool::~CUDAMemoryPool() {
   }
 }
 
-std::shared_ptr<void> CUDAMemoryPool::allocate(unsigned size) {
-  unsigned i = 0;
-  while (1u << i < size) ++i;
+std::shared_ptr<void> CUDAMemoryPool::allocate(std::uint64_t size) {
+  static const unsigned MAX_SCALE = 63;
+  unsigned scale = 0;
+  while (1ull << scale < size) {
+    if (scale == MAX_SCALE) {
+      THROW_ERROR(
+          "Attempted to allocate more than 2^" << MAX_SCALE << " bytes.");
+    }
+    ++scale;
+  }
 
   void *ptr;
-  if (reserved_[i].empty()) {
+  if (reserved_[scale].empty()) {
     // Allocates a new block.
     CUDA_CALL(::cudaSetDevice(dev_id_));
-    CUDA_CALL(::cudaMalloc(&ptr, 1u << i));
-    supplied_.insert(make_pair(ptr, i));
+    CUDA_CALL(::cudaMalloc(&ptr, 1ull << scale));
+    supplied_.insert(make_pair(ptr, scale));
   } else {
     // Returns an existing block.
-    ptr = reserved_[i].back();
-    reserved_[i].pop_back();
-    supplied_.insert(make_pair(ptr, i));
+    ptr = reserved_[scale].back();
+    reserved_[scale].pop_back();
+    supplied_.insert(make_pair(ptr, scale));
   }
 
   return std::shared_ptr<void>(ptr, CUDAMemoryDeleter(*this));

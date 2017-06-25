@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_CUDA_MEMORY_POOL_H_
 #define PRIMITIV_CUDA_MEMORY_POOL_H_
 
+#include <cstdint>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -35,7 +36,7 @@ public:
    * @param size Size of the resulting memory.
    * @return Shared pointer of the allocated memory.
    */
-  std::shared_ptr<void> allocate(unsigned size);
+  std::shared_ptr<void> allocate(std::uint64_t size);
   
 private:
   /**
