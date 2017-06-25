@@ -75,14 +75,10 @@ vector<char> load_labels(const string &filename, const unsigned n) {
 
 int main() {
   // Loads data
-  vector<float> train_inputs = ::load_images(
-      "mnist_data/train-images-idx3-ubyte", NUM_TRAIN_SAMPLES);
-  vector<char> train_labels = ::load_labels(
-      "mnist_data/train-labels-idx1-ubyte", NUM_TRAIN_SAMPLES);
-  vector<float> test_inputs = ::load_images(
-      "mnist_data/t10k-images-idx3-ubyte", NUM_TEST_SAMPLES);
-  vector<char> test_labels = ::load_labels(
-      "mnist_data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES);
+  vector<float> train_inputs = ::load_images("mnist_data/train-images-idx3-ubyte", NUM_TRAIN_SAMPLES);
+  vector<char> train_labels = ::load_labels("mnist_data/train-labels-idx1-ubyte", NUM_TRAIN_SAMPLES);
+  vector<float> test_inputs = ::load_images("mnist_data/t10k-images-idx3-ubyte", NUM_TEST_SAMPLES);
+  vector<char> test_labels = ::load_labels("mnist_data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES);
 
   // Initializes 2 device objects which manage different GPUs.
   CUDADevice dev0(0);  // GPU 0

@@ -124,6 +124,15 @@ Node mean(const Node &x) {
   return (1. / x.shape().batch_size()) * sum(x);
 }
 
+Node normalize(const Node &x) {
+  const unsigned b = x.shape().batch_size();
+  if (b == 1) return x;  // No meaning of normalization.
+  const float scale = b / (b - 1.);
+  const Node m = mean(x);
+  const Node v = scale * (mean(x * x) - m * m);
+  return (x - m) / sqrt(v + 1e-8);
+}
+
 }  // namespace batch
 
 namespace random {

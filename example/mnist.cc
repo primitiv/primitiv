@@ -33,7 +33,7 @@ const unsigned NUM_TEST_SAMPLES = 10000;
 const unsigned NUM_INPUT_UNITS = 28 * 28;
 const unsigned NUM_HIDDEN_UNITS = 800;
 const unsigned NUM_OUTPUT_UNITS = 10;
-const unsigned BATCH_SIZE = 50;
+const unsigned BATCH_SIZE = 200;
 const unsigned NUM_TRAIN_BATCHES = NUM_TRAIN_SAMPLES / BATCH_SIZE;
 const unsigned NUM_TEST_BATCHES = NUM_TEST_SAMPLES / BATCH_SIZE;
 const unsigned MAX_EPOCH = 100;
@@ -73,39 +73,50 @@ vector<char> load_labels(const string &filename, const unsigned n) {
 
 int main() {
   // Loads data
-  vector<float> train_inputs = ::load_images(
-      "mnist_data/train-images-idx3-ubyte", NUM_TRAIN_SAMPLES);
-  vector<char> train_labels = ::load_labels(
-      "mnist_data/train-labels-idx1-ubyte", NUM_TRAIN_SAMPLES);
-  vector<float> test_inputs = ::load_images(
-      "mnist_data/t10k-images-idx3-ubyte", NUM_TEST_SAMPLES);
-  vector<char> test_labels = ::load_labels(
-      "mnist_data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES);
+  vector<float> train_inputs = ::load_images("mnist_data/train-images-idx3-ubyte", NUM_TRAIN_SAMPLES);
+  vector<char> train_labels = ::load_labels("mnist_data/train-labels-idx1-ubyte", NUM_TRAIN_SAMPLES);
+  vector<float> test_inputs = ::load_images("mnist_data/t10k-images-idx3-ubyte", NUM_TEST_SAMPLES);
+  vector<char> test_labels = ::load_labels("mnist_data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES);
 
   // Uses GPU.
   CUDADevice dev(0);
 
-  // Parameters
+  // Parameters for the multilayer perceptron.
   Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, XavierUniform(), &dev);
   Parameter pb1("b1", {NUM_HIDDEN_UNITS}, Constant(0), &dev);
   Parameter pw2("w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, XavierUniform(), &dev);
   Parameter pb2("b2", {NUM_OUTPUT_UNITS}, Constant(0), &dev);
 
+  // Parameters for batch normalization.
+  Parameter pbeta("beta", {NUM_HIDDEN_UNITS}, Constant(0), &dev);
+  Parameter pgamma("gamma", {NUM_HIDDEN_UNITS}, Constant(1), &dev);
+
   // Trainer
-  SGDTrainer trainer(.1);
+  SGDTrainer trainer(.5);
   trainer.add_parameter(&pw1);
   trainer.add_parameter(&pb1);
   trainer.add_parameter(&pw2);
   trainer.add_parameter(&pb2);
+  trainer.add_parameter(&pbeta);
+  trainer.add_parameter(&pgamma);
 
   // Helper lambda to construct the predictor network.
   auto make_graph = [&](const vector<float> &inputs, bool train, Graph &g) {
+    // Stores input values.
     Node x = F::input(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs, &dev, &g);
+    // Calculates the hidden layer.
     Node w1 = F::input(&pw1, &g);
     Node b1 = F::input(&pb1, &g);
+    Node h = F::relu(F::dot(w1, x) + b1);
+    // Batch normalization
+    Node beta = F::input(&pbeta, &g);
+    Node gamma = F::input(&pgamma, &g);
+    h = F::batch::normalize(h) * gamma + beta;
+    // Dropout
+    //h = F::dropout(h, .5, train);
+    // Calculates the output layer.
     Node w2 = F::input(&pw2, &g);
     Node b2 = F::input(&pb2, &g);
-    Node h = F::dropout(F::relu(F::dot(w1, x) + b1), .5, train);
     return F::dot(w2, h) + b2;
   };
 

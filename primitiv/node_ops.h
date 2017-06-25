@@ -52,6 +52,7 @@ Node dropout(const Node &x, float rate, bool enabled);
 namespace batch {
 Node sum(const Node &x);
 Node mean(const Node &x);
+Node normalize(const Node &x);
 }  // namespace batch
 
 namespace random {
