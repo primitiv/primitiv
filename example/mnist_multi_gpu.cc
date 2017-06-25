@@ -148,7 +148,7 @@ int main() {
       Graph g;
       Node y = make_graph(inputs, g);
       Node loss = F::softmax_cross_entropy(y, 0, labels);
-      Node avg_loss = F::batch::sum(loss) / BATCH_SIZE;
+      Node avg_loss = F::batch::mean(loss);
 
       // Forward, backward, and updates parameters.
       trainer.reset_gradients();

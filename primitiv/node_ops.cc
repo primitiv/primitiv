@@ -75,6 +75,10 @@ Node sum(const Node &x, unsigned dim) {
   return x.graph()->add_function(new functions::Sum(dim), {x});
 }
 
+Node mean(const Node &x, unsigned dim) {
+  return (1. / x.shape()[dim]) * sum(x, dim);
+}
+
 Node logsumexp(const Node &x, unsigned dim) {
   return x.graph()->add_function(new functions::LogSumExp(dim), {x});
 }
@@ -110,6 +114,10 @@ namespace batch {
 
 Node sum(const Node &x) {
   return x.graph()->add_function(new functions::BatchSum(), {x});
+}
+
+Node mean(const Node &x) {
+  return (1. / x.shape().batch_size()) * sum(x);
 }
 
 }  // namespace batch

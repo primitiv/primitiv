@@ -135,7 +135,7 @@ int main() {
       Graph g;
       Node y = make_graph(inputs, true, g);
       Node loss = F::softmax_cross_entropy(y, 0, labels);
-      Node avg_loss = F::batch::sum(loss) / BATCH_SIZE;
+      Node avg_loss = F::batch::mean(loss);
 
       // Dump computation graph at the first time.
       if (epoch == 0 && batch == 0) g.dump();

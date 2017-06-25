@@ -85,7 +85,7 @@ int main() {
     // Builds an additional computation graph for the mean squared loss.
     Node t = F::input(Shape({}, 4), output_data, &dev, &g);
     Node diff = t - y;
-    Node loss = F::batch::sum(diff * diff) / 4;
+    Node loss = F::batch::mean(diff * diff);
     
     // Calculates losses.
     // The forward() function performs over only additional paths.

@@ -39,6 +39,7 @@ Node tanh(const Node &x);
 Node sigmoid(const Node &x);
 Node relu(const Node &x);
 Node sum(const Node &x, unsigned dim);
+Node mean(const Node &x, unsigned dim);
 Node logsumexp(const Node &x, unsigned dim);
 Node log_softmax(const Node &x, unsigned dim);
 Node softmax(const Node &x, unsigned dim);
@@ -49,6 +50,7 @@ Node dropout(const Node &x, float rate, bool enabled);
 
 namespace batch {
 Node sum(const Node &x);
+Node mean(const Node &x);
 }  // namespace batch
 
 namespace random {
