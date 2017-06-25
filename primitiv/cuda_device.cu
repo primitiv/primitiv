@@ -130,6 +130,11 @@ __global__ void dev_transpose(
   }
 }
 
+__global__ void dev_sqrt(float *py, const float *px, unsigned size) {
+  const unsigned i = IDX;
+  if (i < size) py[i] = ::sqrtf(px[i]);
+}
+
 __global__ void dev_exp(float *py, const float *px, unsigned size) {
   const unsigned i = IDX;
   if (i < size) py[i] = ::expf(px[i]);
@@ -547,6 +552,7 @@ Tensor CUDADevice::name(const Tensor &a, const Tensor &b, Shape &&new_shape) { \
 }
 
 CUDA_DEV_UNARY(negate_impl, dev_negate);
+CUDA_DEV_UNARY(sqrt_impl, dev_sqrt);
 CUDA_DEV_UNARY(exp_impl, dev_exp);
 CUDA_DEV_UNARY(tanh_impl, dev_tanh);
 CUDA_DEV_UNARY(sigmoid_impl, dev_sigmoid);

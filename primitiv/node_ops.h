@@ -34,6 +34,7 @@ Node pick(const Node &x, unsigned dim, const std::vector<unsigned> &ids);
 Node slice(const Node &x, unsigned dim, unsigned lower, unsigned upper);
 Node transpose(const Node &x);
 Node dot(const Node &a, const Node &b);
+Node sqrt(const Node &x);
 Node exp(const Node &x);
 Node tanh(const Node &x);
 Node sigmoid(const Node &x);

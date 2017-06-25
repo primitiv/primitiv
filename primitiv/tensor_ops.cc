@@ -87,6 +87,10 @@ Tensor dot(const Tensor &a, const Tensor &b) {
   return a.device()->dot(a, b);
 }
 
+Tensor sqrt(const Tensor &x) {
+  return x.device()->sqrt(x);
+}
+
 Tensor exp(const Tensor &x) {
   return x.device()->exp(x);
 }

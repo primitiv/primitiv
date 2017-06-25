@@ -55,6 +55,10 @@ Node dot(const Node &a, const Node &b) {
   return a.graph()->add_function(new functions::Dot(), {a, b});
 }
 
+Node sqrt(const Node &x) {
+  return x.graph()->add_function(new functions::Sqrt(), {x});
+}
+
 Node exp(const Node &x) {
   return x.graph()->add_function(new functions::Exp(), {x});
 }

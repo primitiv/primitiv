@@ -80,6 +80,7 @@ private:
   Tensor transpose_impl(const Tensor &x, Shape &&new_shape) override;
   Tensor dot_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) override;
 
+  Tensor sqrt_impl(const Tensor &x) override;
   Tensor exp_impl(const Tensor &x) override;
   Tensor tanh_impl(const Tensor &x) override;
   Tensor sigmoid_impl(const Tensor &x) override;

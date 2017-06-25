@@ -754,6 +754,23 @@ TEST_F(TensorOpsTest, CheckInvalidDot) {
   }
 }
 
+TEST_F(TensorOpsTest, CheckSqrt) {
+  const vector<float> x_data {
+    0, 1, 2, 3, 4, 5,
+    0, 1, 4, 9, 16, 25,
+  };
+  const vector<float> y_data {
+    0, 1, 1.41421356, 1.73205041, 2, 2.23606798,
+    0, 1, 2, 3, 4, 5,
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
+    const Tensor y = sqrt(x);
+    EXPECT_EQ(Shape({2, 3}, 2), y.shape());
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+  }
+}
+
 TEST_F(TensorOpsTest, CheckExp) {
   const vector<float> x_data {
     0, .5, 1, 2, 4, 8,

@@ -33,6 +33,7 @@ Tensor concat(const std::vector<const Tensor *> &xs, unsigned dim);
 
 Tensor transpose(const Tensor &x);
 Tensor dot(const Tensor &a, const Tensor &b);
+Tensor sqrt(const Tensor &x);
 Tensor exp(const Tensor &x);
 Tensor tanh(const Tensor &x);
 Tensor sigmoid(const Tensor &x);

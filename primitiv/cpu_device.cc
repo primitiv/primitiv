@@ -362,6 +362,15 @@ Tensor CPUDevice::dot_impl(
   return ret;
 }
 
+Tensor CPUDevice::sqrt_impl(const Tensor &x) {
+  Tensor ret = new_tensor(x.shape());
+  float *dest = DATA(ret);
+  const float *src = CDATA(x);
+  const unsigned size = x.shape().num_total_elements();
+  REPEAT_OP(i, size, dest[i] = std::sqrt(src[i]));
+  return ret;
+}
+
 Tensor CPUDevice::exp_impl(const Tensor &x) {
   Tensor ret = new_tensor(x.shape());
   float *dest = DATA(ret);

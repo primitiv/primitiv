@@ -262,6 +262,13 @@ public:
   Tensor dot(const Tensor &a, const Tensor &b);
 
   /**
+   * Calculates the sqrt function.
+   * @param x A tensor.
+   * @return `sqrt(x)`
+   */
+  Tensor sqrt(const Tensor &x);
+
+  /**
    * Calculates the exp function.
    * @param x A tensor.
    * @return `exp(x)`
@@ -450,6 +457,7 @@ private:
   virtual Tensor dot_impl(
       const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
 
+  virtual Tensor sqrt_impl(const Tensor &x) = 0;
   virtual Tensor exp_impl(const Tensor &x) = 0;
   virtual Tensor tanh_impl(const Tensor &x) = 0;
   virtual Tensor sigmoid_impl(const Tensor &x) = 0;

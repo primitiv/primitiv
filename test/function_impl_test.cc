@@ -24,6 +24,13 @@ public:
     arg_grads.emplace_back(new Tensor(dev->new_tensor(*arg_shapes[0], 0)));
   }
 
+  void setup_1arg_nonnegative() {
+    arg_shapes.emplace_back(new Shape({2, 2}, 3));
+    arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
+        *arg_shapes[0], {1, 2, 3, 4, .01, .01, .01, .01, 1, 4, 9, 16})));
+    arg_grads.emplace_back(new Tensor(dev->new_tensor(*arg_shapes[0], 0)));
+  }
+
   void setup_1arg_nonzero() {
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
     arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
@@ -611,6 +618,20 @@ TEST_F(FunctionImplTest, CheckDot) {
     {3, 7, 3, 7, 0, 0, 0, 0, -3, -7, -3, -7},
   };
   TEST_2ARGS(Dot);
+}
+
+TEST_F(FunctionImplTest, CheckSqrt) {
+  // y = exp(x)
+  // dy/dx = y
+  setup_1arg_nonnegative();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    1, 1.41421356, 1.73205041, 2, .1, .1, .1, .1, 1, 2, 3, 4,
+  };
+  const vector<float> bw_grad {
+    .5, .5/1.41421356, .5/1.73205041, .25, 5, 5, 5, 5, .5, .25, .5/3, .125,
+  };
+  TEST_1ARG(Sqrt);
 }
 
 TEST_F(FunctionImplTest, CheckExp) {

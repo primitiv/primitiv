@@ -202,6 +202,11 @@ Tensor Device::dot(const Tensor &a, const Tensor &b) {
   return dot_impl(a, b, shape_ops::dot(a.shape(), b.shape()));
 }
 
+Tensor Device::sqrt(const Tensor &x) {
+  CHECK_DEVICE(x);
+  return sqrt_impl(x);
+}
+
 Tensor Device::exp(const Tensor &x) {
   CHECK_DEVICE(x);
   return exp_impl(x);

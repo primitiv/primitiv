@@ -219,6 +219,7 @@ FWD_SHAPE_UNARY(SubtractConstR);
 FWD_SHAPE_UNARY(MultiplyConst);
 FWD_SHAPE_UNARY(DivideConstL);
 FWD_SHAPE_UNARY(DivideConstR);
+FWD_SHAPE_UNARY(Sqrt);
 FWD_SHAPE_UNARY(Exp);
 FWD_SHAPE_UNARY(Tanh);
 FWD_SHAPE_UNARY(Sigmoid);
@@ -286,6 +287,7 @@ FORWARD(Subtract) { return *x[0] - *x[1]; }
 FORWARD(Multiply) { return *x[0] * *x[1]; }
 FORWARD(Divide) { return *x[0] / *x[1]; }
 FORWARD(Dot) { return T::dot(*x[0], *x[1]); }
+FORWARD(Sqrt) { return T::sqrt(*x[0]); }
 FORWARD(Exp) { return T::exp(*x[0]); }
 FORWARD(Tanh) { return T::tanh(*x[0]); }
 FORWARD(Sigmoid) { return T::sigmoid(*x[0]); }
@@ -325,6 +327,7 @@ BACKWARD(Dot) {
   ADD(0, T::dot(yg, T::transpose(*x[1])));
   ADD(1, T::dot(T::transpose(*x[0]), yg));
 }
+BACKWARD(Sqrt) { ADD(0, .5 * yg / y); }
 BACKWARD(Exp) { ADD(0, y * yg); }
 BACKWARD(Tanh) { ADD(0, (1 - y * y) * yg); }
 BACKWARD(Sigmoid) { ADD(0, y * (1 - y) * yg); }
