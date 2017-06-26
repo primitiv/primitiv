@@ -125,8 +125,8 @@ Node mean(const Node &x) {
 }
 
 Node normalize(const Node &x) {
+  if (!x.shape().has_batch()) return x;  // No meaning of normalization.
   const unsigned b = x.shape().batch_size();
-  if (b == 1) return x;  // No meaning of normalization.
   const float scale = b / (b - 1.);
   const Node m = mean(x);
   const Node v = scale * (mean(x * x) - m * m);

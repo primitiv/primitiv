@@ -91,7 +91,7 @@ primitiv::Tensor parse_tensor(
 namespace primitiv {
 
 void Parameter::check_shape() {
-  if (shape_.batch_size() > 1) {
+  if (shape_.has_batch()) {
     THROW_ERROR(
         "The batch size of the parameter shape should be 1. Given shape: "
         << shape_.to_string());

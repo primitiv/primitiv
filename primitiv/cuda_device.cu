@@ -461,7 +461,7 @@ Tensor CUDADevice::pick_impl(
   const unsigned size = new_shape.num_elements_per_sample();
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
   const unsigned skip_x =
-    (x.shape().batch_size() > 1) * x.shape().num_elements_per_sample();
+    (x.shape().has_batch()) * x.shape().num_elements_per_sample();
   const unsigned skip_i = ids.size() > 1;
   Tensor ret = new_tensor(new_shape);
   CUDA_CALL(::cudaSetDevice(dev_id_));
@@ -547,7 +547,7 @@ Tensor CUDADevice::name(const Tensor &a, const Tensor &b, Shape &&new_shape) { \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::kernel<<<dim3(x, y, 1), dim1_x_>>>( \
       DATA(ret), CDATA(a), CDATA(b), size, \
-      a.shape().batch_size() > 1, b.shape().batch_size() > 1); \
+      a.shape().has_batch(), b.shape().has_batch()); \
   return ret; \
 }
 
@@ -601,17 +601,10 @@ Tensor CUDADevice::dot_impl(
   float beta = 0.;
   Tensor ret = new_tensor(new_shape, 0);
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  if (ba == 1) {
-    // Do gemm only once to calculate the dot with a combined matrix.
-    CUBLAS_CALL(::cublasSgemm(
-          cublas_, ::CUBLAS_OP_N, ::CUBLAS_OP_N,
-          di, bb * dk, dj,
-          &alpha, CDATA(a), di, CDATA(b), dj,
-          &beta, DATA(ret), di));
-  } else {
+  if (a.shape().has_batch()) {
     // Do gemm multiple times.
     const unsigned a_skip = di * dj;
-    const unsigned b_skip = static_cast<unsigned>(bb > 1) * dj * dk;
+    const unsigned b_skip = b.shape().has_batch() * dj * dk;
     const unsigned y_skip = di * dk;
     for (unsigned n = 0; n < ba; ++n) {
       CUBLAS_CALL(::cublasSgemm(
@@ -620,6 +613,13 @@ Tensor CUDADevice::dot_impl(
             &alpha, CDATA(a) + n * a_skip, di, CDATA(b) + n * b_skip, dj,
             &beta, DATA(ret) + n * y_skip, di));
     }
+  } else {
+    // Do gemm only once to calculate the dot with a combined matrix.
+    CUBLAS_CALL(::cublasSgemm(
+          cublas_, ::CUBLAS_OP_N, ::CUBLAS_OP_N,
+          di, bb * dk, dj,
+          &alpha, CDATA(a), di, CDATA(b), dj,
+          &beta, DATA(ret), di));
   }
   return ret;
 }
@@ -738,7 +738,7 @@ void CUDADevice::add_gradient_sparse_impl(
   const unsigned wx = base * sa[dim];
   const unsigned g1 = GRID_SIZE(size, dim1_x_);
   const unsigned bs = sb.batch_size();
-  const unsigned skip_a = (sa.batch_size() > 1) * sa.num_elements_per_sample();
+  const unsigned skip_a = (sa.has_batch()) * sa.num_elements_per_sample();
   const unsigned skip_i = ids.size() > 1;
   float *dest = DATA(a);
   const float *src = CDATA(b);

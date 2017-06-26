@@ -42,7 +42,7 @@ Shape concat(const std::vector<const Shape *> &xs, unsigned dim) {
       }
       THROW_ERROR("Invalid shapes to concatenate: " << dims_str);
     }
-    if (s0.batch_size() == 1) s0.update_batch(s.batch_size());
+    if (!s0.has_batch()) s0.update_batch(s.batch_size());
     sum += s[dim];
   }
 
@@ -61,9 +61,8 @@ Shape broadcast(const Shape &x, unsigned dim, unsigned size) {
 
 Shape pick(const Shape &x, unsigned dim, const std::vector<unsigned> &ids) {
   const unsigned n = x[dim];
-  const unsigned bx = x.batch_size();
   const unsigned bi = ids.size();
-  if (bi == 0 || (bx != bi && bx > 1 && bi > 1)) {
+  if (bi == 0 || (x.batch_size() != bi && x.has_batch() && bi > 1)) {
     THROW_ERROR(
         "Invalid IDs to pick. shape: " << x.to_string()
         << ", ids.size(): " << ids.size());
@@ -77,7 +76,7 @@ Shape pick(const Shape &x, unsigned dim, const std::vector<unsigned> &ids) {
   }
 
   Shape ret = x.resize_dim(dim, 1);
-  ret.update_batch(std::max(bx, bi));
+  ret.update_batch(std::max(x.batch_size(), bi));
   return ret;
 }
 

@@ -81,6 +81,12 @@ public:
   unsigned num_total_elements() const { return k_ * num_elms_per_sample_; }
 
   /**
+   * Returns whether the shape has minibatch or not.
+   * @return true if the shape has minibatch, false otherwise.
+   */
+  bool has_batch() const { return k_ > 1; }
+
+  /**
    * Returns a string representation of the shape.
    * The format is: "[n,m,...]xk"
    * @return Encoded string.
