@@ -182,12 +182,13 @@ Parameter Parameter::load(const string &path, Device *device) {
     THROW_ERROR("Could not open file: " << path);
   }
   ifs.seekg(0, std::ios::end);
-  const unsigned size = ifs.tellg();
+  const size_t size = ifs.tellg();
   ifs.seekg(0, std::ios::beg);
-  vector<char> data(size);
-  ifs.read(&data[0], size);
+  vector<char> data(size + 1);
+  ifs.read(data.data(), size);
+  data[size] = '\0';
 
-  YAML::Node node = YAML::Load(&data[0]);
+  YAML::Node node = YAML::Load(data.data());
   string name;
   Tensor value;
 
