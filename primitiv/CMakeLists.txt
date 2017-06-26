@@ -38,9 +38,7 @@ set(primitiv_base_SRCS
 include_directories(${PROJECT_SOURCE_DIR}/submodules/yaml-cpp/include)
 link_directories(${PROJECT_BINARY_DIR}/submodules/yaml-cpp)
 
-add_library(primitiv_base OBJECT
-  ${primitiv_base_HDRS}
-  ${primitiv_base_SRCS})
+add_library(primitiv_base OBJECT ${primitiv_base_HDRS} ${primitiv_base_SRCS})
 set(primitiv_OBJS $<TARGET_OBJECTS:primitiv_base>)
 set(primitiv_DEPS yaml-cpp)
 
@@ -68,11 +66,10 @@ if(USE_CUDA)
   list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=sm_52")
   list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=compute_52")
 
-  cuda_add_library(primitiv_cuda STATIC
-    ${primitiv_cuda_HDRS}
-    ${primitiv_cuda_SRCS})
+  cuda_compile(primitiv_cuda_OBJ ${primitiv_cuda_HDRS} ${primitiv_cuda_SRCS})
+  list(APPEND primitiv_OBJS ${primitiv_cuda_OBJ})
   list(APPEND primitiv_DEPS
-    primitiv_cuda
+    ${CUDA_LIBRARIES}
     ${CUDA_cublas_LIBRARY}
     ${CUDA_curand_LIBRARY})
 endif()
