@@ -44,38 +44,32 @@ private:
   Tensor copy_tensor_impl(const Tensor &x) override;
 
   Tensor random_bernoulli_impl(const Shape &shape, float p) override;
-  Tensor random_uniform_impl(
-      const Shape &shape, float lower, float upper) override;
+  Tensor random_uniform_impl(const Shape &shape, float lower, float upper) override;
   Tensor random_normal_impl(const Shape &shape, float mean, float sd) override;
-  Tensor random_log_normal_impl(
-      const Shape &shape, float mean, float sd) override;
+  Tensor random_log_normal_impl(const Shape &shape, float mean, float sd) override;
 
-  Tensor pick_impl(
-      const Tensor &x, unsigned dim,
-      const std::vector<unsigned> &ids, Shape &&new_shape) override;
-  Tensor slice_impl(
-      const Tensor &x,
-      unsigned dim, unsigned offset, Shape &&new_shape) override;
-  Tensor concat_impl(
-      const std::vector<const Tensor *> &xs,
-      unsigned dim, Shape &&new_shape) override;
+  Tensor pick_impl(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids, Shape &&new_shape) override;
+  Tensor slice_impl(const Tensor &x, unsigned dim, unsigned offset, Shape &&new_shape) override;
+  Tensor concat_impl(const std::vector<const Tensor *> &xs, unsigned dim, Shape &&new_shape) override;
 
   Tensor negate_impl(const Tensor &x) override;
 
   Tensor add_const_impl(const Tensor &x, float k) override;
-  Tensor add_impl(
-      const Tensor &a, const Tensor &b, Shape &&new_shape) override;
+  Tensor add_scalar_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) override;
+  Tensor add_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) override;
   Tensor subtract_const_r_impl(const Tensor &x, float k) override;
-  Tensor subtract_const_l_impl(float k, const Tensor &x) override;
-  Tensor subtract_impl(
-      const Tensor &a, const Tensor &b, Shape &&new_shape) override;
+  Tensor subtract_const_l_impl(const Tensor &x, float k) override;
+  Tensor subtract_scalar_r_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) override;
+  Tensor subtract_scalar_l_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) override;
+  Tensor subtract_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) override;
   Tensor multiply_const_impl(const Tensor &x, float k) override;
-  Tensor multiply_impl(
-      const Tensor &a, const Tensor &b, Shape &&new_shape) override;
+  Tensor multiply_scalar_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) override;
+  Tensor multiply_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) override;
   Tensor divide_const_r_impl(const Tensor &x, float k) override;
-  Tensor divide_const_l_impl(float k, const Tensor &x) override;
-  Tensor divide_impl(
-      const Tensor &a, const Tensor &b, Shape &&new_shape) override;
+  Tensor divide_const_l_impl(const Tensor &x, float k) override;
+  Tensor divide_scalar_r_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) override;
+  Tensor divide_scalar_l_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) override;
+  Tensor divide_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) override;
 
   Tensor transpose_impl(const Tensor &x, Shape &&new_shape) override;
   Tensor dot_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) override;
@@ -89,17 +83,13 @@ private:
 
   Tensor sum_impl(const Tensor &x, unsigned dim) override;
   Tensor logsumexp_impl(const Tensor &x, unsigned dim) override;
-  Tensor broadcast_impl(
-      const Tensor &x, unsigned dim, unsigned size, Shape &&new_shape) override;
+  Tensor broadcast_impl(const Tensor &x, unsigned dim, unsigned size, Shape &&new_shape) override;
 
   Tensor batch_sum_impl(const Tensor &x) override;
 
   void add_gradient_impl(Tensor &a, const Tensor &b) override;
-  void add_gradient_offset_impl(
-      Tensor &a, const Tensor &b, unsigned dim, unsigned offset) override;
-  void add_gradient_sparse_impl(
-      Tensor &a, const Tensor &b,
-      unsigned dim, const std::vector<unsigned> &ids) override;
+  void add_gradient_offset_impl(Tensor &a, const Tensor &b, unsigned dim, unsigned offset) override;
+  void add_gradient_sparse_impl(Tensor &a, const Tensor &b, unsigned dim, const std::vector<unsigned> &ids) override;
 
 private:
   std::mt19937 rng_;

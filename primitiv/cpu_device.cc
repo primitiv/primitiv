@@ -185,6 +185,11 @@ Tensor CPUDevice::add_const_impl(const Tensor &x, float k) {
   return ret;
 }
 
+Tensor CPUDevice::add_scalar_impl(
+    const Tensor &x, const Tensor &k, Shape &&new_shape) {
+  THROW_ERROR("not implemented.");
+}
+
 Tensor CPUDevice::add_impl(
     const Tensor &a, const Tensor &b, Shape &&new_shape) {
   const unsigned size = new_shape.num_elements_per_sample();
@@ -213,13 +218,23 @@ Tensor CPUDevice::subtract_const_r_impl(const Tensor &x, float k) {
   return ret;
 }
 
-Tensor CPUDevice::subtract_const_l_impl(float k, const Tensor &x) {
+Tensor CPUDevice::subtract_const_l_impl(const Tensor &x, float k) {
   Tensor ret = new_tensor(x.shape());
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   const unsigned size = x.shape().num_total_elements();
   REPEAT_OP(i, size, dest[i] = k - src[i]);
   return ret;
+}
+
+Tensor CPUDevice::subtract_scalar_r_impl(
+    const Tensor &x, const Tensor &k, Shape &&new_shape) {
+  THROW_ERROR("not implemented.");
+}
+
+Tensor CPUDevice::subtract_scalar_l_impl(
+    const Tensor &x, const Tensor &k, Shape &&new_shape) {
+  THROW_ERROR("not implemented.");
 }
 
 Tensor CPUDevice::subtract_impl(
@@ -250,6 +265,11 @@ Tensor CPUDevice::multiply_const_impl(const Tensor &x, float k) {
   return ret;
 }
 
+Tensor CPUDevice::multiply_scalar_impl(
+    const Tensor &x, const Tensor &k, Shape &&new_shape) {
+  THROW_ERROR("not implemented.");
+}
+
 Tensor CPUDevice::multiply_impl(
     const Tensor &a, const Tensor &b, Shape &&new_shape) {
   const unsigned size = new_shape.num_elements_per_sample();
@@ -278,13 +298,23 @@ Tensor CPUDevice::divide_const_r_impl(const Tensor &x, float k) {
   return ret;
 }
 
-Tensor CPUDevice::divide_const_l_impl(float k, const Tensor &x) {
+Tensor CPUDevice::divide_const_l_impl(const Tensor &x, float k) {
   Tensor ret = new_tensor(x.shape());
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   const unsigned size = x.shape().num_total_elements();
   REPEAT_OP(i, size, dest[i] = k / src[i]);
   return ret;
+}
+
+Tensor CPUDevice::divide_scalar_r_impl(
+    const Tensor &x, const Tensor &k, Shape &&new_shape) {
+  THROW_ERROR("not implemented.");
+}
+
+Tensor CPUDevice::divide_scalar_l_impl(
+    const Tensor &x, const Tensor &k, Shape &&new_shape) {
+  THROW_ERROR("not implemented.");
 }
 
 Tensor CPUDevice::divide_impl(

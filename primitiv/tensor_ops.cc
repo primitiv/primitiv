@@ -10,7 +10,7 @@ Tensor operator+(const Tensor &x) {
 }
 
 Tensor operator-(const Tensor &x) {
-  return x.device()->negate(x);\
+  return x.device()->negate(x);
 }
 
 Tensor operator+(const Tensor &x, float k) {
@@ -22,7 +22,9 @@ Tensor operator+(float k, const Tensor &x) {
 }
 
 Tensor operator+(const Tensor &a, const Tensor &b) {
-  return a.device()->add(a, b);
+  if (a.shape().is_scalar()) return a.device()->add_scalar(b, a);
+  else if (b.shape().is_scalar()) return a.device()->add_scalar(a, b);
+  else return a.device()->add(a, b);
 }
 
 Tensor operator-(const Tensor &x, float k) {
@@ -30,11 +32,13 @@ Tensor operator-(const Tensor &x, float k) {
 }
 
 Tensor operator-(float k, const Tensor &x) {
-  return x.device()->subtract_const_l(k, x);
+  return x.device()->subtract_const_l(x, k);
 }
 
 Tensor operator-(const Tensor &a, const Tensor &b) {
-  return a.device()->subtract(a, b);
+  if (a.shape().is_scalar()) return a.device()->subtract_scalar_l(b, a);
+  else if (b.shape().is_scalar()) return a.device()->subtract_scalar_r(a, b);
+  else return a.device()->subtract(a, b);
 }
 
 Tensor operator*(const Tensor &x, float k) {
@@ -46,7 +50,9 @@ Tensor operator*(float k, const Tensor &x) {
 }
 
 Tensor operator*(const Tensor &a, const Tensor &b) {
-  return a.device()->multiply(a, b);
+  if (a.shape().is_scalar()) return a.device()->multiply_scalar(b, a);
+  else if (b.shape().is_scalar()) return a.device()->multiply_scalar(a, b);
+  else return a.device()->multiply(a, b);
 }
 
 Tensor operator/(const Tensor &x, float k) {
@@ -54,11 +60,13 @@ Tensor operator/(const Tensor &x, float k) {
 }
 
 Tensor operator/(float k, const Tensor &x) {
-  return x.device()->divide_const_l(k, x);
+  return x.device()->divide_const_l(x, k);
 }
 
 Tensor operator/(const Tensor &a, const Tensor &b) {
-  return a.device()->divide(a, b);
+  if (a.shape().is_scalar()) return a.device()->divide_scalar_l(b, a);
+  else if (b.shape().is_scalar()) return a.device()->divide_scalar_r(a, b);
+  else return a.device()->divide(a, b);
 }
 
 namespace tensor_ops {

@@ -142,6 +142,12 @@ Tensor Device::add_const(const Tensor &x, float k) {
   return add_const_impl(x, k);
 }
 
+Tensor Device::add_scalar(const Tensor &x, const Tensor &k) {
+  CHECK_DEVICE(x);
+  CHECK_DEVICE(k);
+  return add_scalar_impl(x, k, shape_ops::scalar_op(x.shape(), k.shape()));
+}
+
 Tensor Device::add(const Tensor &a, const Tensor &b) {
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);
@@ -153,9 +159,23 @@ Tensor Device::subtract_const_r(const Tensor &x, float k) {
   return subtract_const_r_impl(x, k);
 }
 
-Tensor Device::subtract_const_l(float k, const Tensor &x) {
+Tensor Device::subtract_const_l(const Tensor &x, float k) {
   CHECK_DEVICE(x);
-  return subtract_const_l_impl(k, x);
+  return subtract_const_l_impl(x, k);
+}
+
+Tensor Device::subtract_scalar_r(const Tensor &x, const Tensor &k) {
+  CHECK_DEVICE(x);
+  CHECK_DEVICE(k);
+  return subtract_scalar_r_impl(
+      x, k, shape_ops::scalar_op(x.shape(), k.shape()));
+}
+
+Tensor Device::subtract_scalar_l(const Tensor &x, const Tensor &k) {
+  CHECK_DEVICE(x);
+  CHECK_DEVICE(k);
+  return subtract_scalar_l_impl(
+      x, k, shape_ops::scalar_op(x.shape(), k.shape()));
 }
 
 Tensor Device::subtract(const Tensor &a, const Tensor &b) {
@@ -169,6 +189,12 @@ Tensor Device::multiply_const(const Tensor &x, float k) {
   return multiply_const_impl(x, k);
 }
 
+Tensor Device::multiply_scalar(const Tensor &x, const Tensor &k) {
+  CHECK_DEVICE(x);
+  CHECK_DEVICE(k);
+  return multiply_scalar_impl(x, k, shape_ops::scalar_op(x.shape(), k.shape()));
+}
+
 Tensor Device::multiply(const Tensor &a, const Tensor &b) {
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);
@@ -180,9 +206,21 @@ Tensor Device::divide_const_r(const Tensor &x, float k) {
   return divide_const_r_impl(x, k);
 }
 
-Tensor Device::divide_const_l(float k, const Tensor &x) {
+Tensor Device::divide_const_l(const Tensor &x, float k) {
   CHECK_DEVICE(x);
-  return divide_const_l_impl(k, x);
+  return divide_const_l_impl(x, k);
+}
+
+Tensor Device::divide_scalar_r(const Tensor &x, const Tensor &k) {
+  CHECK_DEVICE(x);
+  CHECK_DEVICE(k);
+  return divide_scalar_r_impl(x, k, shape_ops::scalar_op(x.shape(), k.shape()));
+}
+
+Tensor Device::divide_scalar_l(const Tensor &x, const Tensor &k) {
+  CHECK_DEVICE(x);
+  CHECK_DEVICE(k);
+  return divide_scalar_l_impl(x, k, shape_ops::scalar_op(x.shape(), k.shape()));
 }
 
 Tensor Device::divide(const Tensor &a, const Tensor &b) {

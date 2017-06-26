@@ -387,6 +387,14 @@ TEST_F(TensorOpsTest, CheckAddConst) {
   }
 }
 
+TEST_F(TensorOpsTest, CheckAddScalar) {
+  FAIL() << "not implemented.";
+}
+
+TEST_F(TensorOpsTest, CheckAddScalarBatchBroadcast) {
+  FAIL() << "not implemented.";
+}
+
 TEST_F(TensorOpsTest, CheckAdd) {
   const vector<float> a_data {1000, 100, 10, 1, 0.1, 0.01, 0.001, 0.0001};
   const vector<float> b_data {   0, 100, 20, 3, 0.4, 0.05, 0.006, 0.0007};
@@ -433,6 +441,14 @@ TEST_F(TensorOpsTest, CheckSubtractConst) {
     EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
     EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
   }
+}
+
+TEST_F(TensorOpsTest, CheckSubtractScalar) {
+  FAIL() << "not implemented.";
+}
+
+TEST_F(TensorOpsTest, CheckSubtractScalarBatchBroadcast) {
+  FAIL() << "not implemented.";
 }
 
 TEST_F(TensorOpsTest, CheckSubtract) {
@@ -484,6 +500,14 @@ TEST_F(TensorOpsTest, CheckMultiplyConst) {
   }
 }
 
+TEST_F(TensorOpsTest, CheckMultiplyScalar) {
+  FAIL() << "not implemented.";
+}
+
+TEST_F(TensorOpsTest, CheckMultiplyScalarBatchBroadcast) {
+  FAIL() << "not implemented.";
+}
+
 TEST_F(TensorOpsTest, CheckMultiply) {
   const vector<float> a_data {1000, -100, 10, -1, 0.1, -0.01, 0.001, -0.0001};
   const vector<float> b_data {0, 1, 2, 3, -4, -5, -6, -7};
@@ -532,6 +556,14 @@ TEST_F(TensorOpsTest, CheckDivideConst) {
     EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
     EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
   }
+}
+
+TEST_F(TensorOpsTest, CheckDivideScalar) {
+  FAIL() << "not implemented.";
+}
+
+TEST_F(TensorOpsTest, CheckDivideScalarBatchBroadcast) {
+  FAIL() << "not implemented.";
 }
 
 TEST_F(TensorOpsTest, CheckDivide) {

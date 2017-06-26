@@ -155,9 +155,17 @@ public:
    * Adds a constant to each element in the tensor.
    * @param x A tensor.
    * @param k Constant to add.
-   * @return `x + k * ones(x.shape())`
+   * @return `x + k`
    */
   Tensor add_const(const Tensor &x, float k);
+
+  /**
+   * Adds a scalar tensor to a general tensor.
+   * @param x A tensor.
+   * @param k A scalar tensor.
+   * @return `x + k`
+   */
+  Tensor add_scalar(const Tensor &x, const Tensor &k);
 
   /**
    * Adds two tensors.
@@ -173,17 +181,33 @@ public:
    * Subtracts a constant from each element in a tensor.
    * @param x A tensor.
    * @param k Constant to subtract.
-   * @return `x - k * ones(x.shape())`
+   * @return `x - k`
    */
   Tensor subtract_const_r(const Tensor &x, float k);
 
   /**
    * Subtracts a tensor from a constant.
-   * @param k Constant to be subtracted.
    * @param x A tensor.
-   * @return `k * ones(x.shape()) - x`
+   * @param k Constant to be subtracted.
+   * @return `k - x`
    */
-  Tensor subtract_const_l(float k, const Tensor &x);
+  Tensor subtract_const_l(const Tensor &x, float k);
+
+  /**
+   * Subtracts a scalar tensor from each element in a tensor.
+   * @param x A tensor.
+   * @param k A scalar tensor.
+   * @return `x - k`
+   */
+  Tensor subtract_scalar_r(const Tensor &x, const Tensor &k);
+
+  /**
+   * Subtracts a tensor from a scalar tensor.
+   * @param x A tensor.
+   * @param k A scalar tensor.
+   * @return `k - x`
+   */
+  Tensor subtract_scalar_l(const Tensor &x, const Tensor &k);
 
   /**
    * Subtracts the second tensor from the first tensor.
@@ -202,6 +226,14 @@ public:
    * @return `k * x`
    */
   Tensor multiply_const(const Tensor &x, float k);
+
+  /**
+   * Multiplies each element in a tensor by a scalar tensor.
+   * @param x A tensor.
+   * @param k A scalar tensor.
+   * @return `k * x`
+   */
+  Tensor multiply_scalar(const Tensor &x, const Tensor &k);
 
   /**
    * Element-wise multiplication of two tensors.
@@ -224,12 +256,30 @@ public:
 
   /**
    * Divides a constant by each element in a tensor.
-   * @param k Constant to be divided.
    * @param x A divisor tensor.
-   * @return `k * ones(x.shape()) ./ x`
+   * @param k Constant to be divided.
+   * @return `k ./ x`
    * @remarks This function won't check the zero-division.
    */
-  Tensor divide_const_l(float k, const Tensor &x);
+  Tensor divide_const_l(const Tensor &x, float k);
+
+  /**
+   * Divides each element in a tensor by a scalar tensor.
+   * @param x A tensor.
+   * @param k A divisor scalar tensor.
+   * @return `x / k`
+   * @remarks This function won't check the zero-division.
+   */
+  Tensor divide_scalar_r(const Tensor &x, const Tensor &k);
+
+  /**
+   * Divides a scalar tensor by each element in a tensor.
+   * @param x A divisor tensor.
+   * @param k A scalar tensor to be divided.
+   * @return `k ./ x`
+   * @remarks This function won't check the zero-division.
+   */
+  Tensor divide_scalar_l(const Tensor &x, const Tensor &k);
 
   /**
    * Divides the first tensor by the second tensor.
@@ -420,42 +470,35 @@ private:
   virtual Tensor copy_tensor_impl(const Tensor &x) = 0;
 
   virtual Tensor random_bernoulli_impl(const Shape &shape, float p) = 0;
-  virtual Tensor random_uniform_impl(
-      const Shape &shape, float lower, float upper) = 0;
-  virtual Tensor random_normal_impl(
-      const Shape &shape, float mean, float sd) = 0;
-  virtual Tensor random_log_normal_impl(
-      const Shape &shape, float mean, float sd) = 0;
+  virtual Tensor random_uniform_impl(const Shape &shape, float lower, float upper) = 0;
+  virtual Tensor random_normal_impl(const Shape &shape, float mean, float sd) = 0;
+  virtual Tensor random_log_normal_impl(const Shape &shape, float mean, float sd) = 0;
 
-  virtual Tensor pick_impl(
-      const Tensor &x, unsigned dim,
-      const std::vector<unsigned> &ids, Shape &&new_shape) = 0;
-  virtual Tensor slice_impl(
-      const Tensor &x, unsigned dim, unsigned offset, Shape &&new_shape) = 0;
-  virtual Tensor concat_impl(
-      const std::vector<const Tensor *> &xs,
-      unsigned dim, Shape &&new_shape) = 0;
+  virtual Tensor pick_impl(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids, Shape &&new_shape) = 0;
+  virtual Tensor slice_impl(const Tensor &x, unsigned dim, unsigned offset, Shape &&new_shape) = 0;
+  virtual Tensor concat_impl(const std::vector<const Tensor *> &xs, unsigned dim, Shape &&new_shape) = 0;
 
   virtual Tensor negate_impl(const Tensor &x) = 0;
 
   virtual Tensor add_const_impl(const Tensor &x, float k) = 0;
-  virtual Tensor add_impl(
-      const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
+  virtual Tensor add_scalar_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
+  virtual Tensor add_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
   virtual Tensor subtract_const_r_impl(const Tensor &x, float k) = 0;
-  virtual Tensor subtract_const_l_impl(float k, const Tensor &x)  = 0;
-  virtual Tensor subtract_impl(
-      const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
+  virtual Tensor subtract_const_l_impl(const Tensor &x, float k) = 0;
+  virtual Tensor subtract_scalar_r_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
+  virtual Tensor subtract_scalar_l_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
+  virtual Tensor subtract_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
   virtual Tensor multiply_const_impl(const Tensor &x, float k) = 0;
-  virtual Tensor multiply_impl(
-      const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
+  virtual Tensor multiply_scalar_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
+  virtual Tensor multiply_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
   virtual Tensor divide_const_r_impl(const Tensor &x, float k) = 0;
-  virtual Tensor divide_const_l_impl(float k, const Tensor &x)  = 0;
-  virtual Tensor divide_impl(
-      const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
+  virtual Tensor divide_const_l_impl(const Tensor &x, float k)  = 0;
+  virtual Tensor divide_scalar_r_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
+  virtual Tensor divide_scalar_l_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
+  virtual Tensor divide_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
 
   virtual Tensor transpose_impl(const Tensor &x, Shape &&new_shape) = 0;
-  virtual Tensor dot_impl(
-      const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
+  virtual Tensor dot_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
 
   virtual Tensor sqrt_impl(const Tensor &x) = 0;
   virtual Tensor exp_impl(const Tensor &x) = 0;
@@ -466,17 +509,13 @@ private:
 
   virtual Tensor sum_impl(const Tensor &x, unsigned dim) = 0;
   virtual Tensor logsumexp_impl(const Tensor &x, unsigned dim) = 0;
-  virtual Tensor broadcast_impl(
-      const Tensor &x, unsigned dim, unsigned size, Shape &&new_shape) = 0;
+  virtual Tensor broadcast_impl(const Tensor &x, unsigned dim, unsigned size, Shape &&new_shape) = 0;
 
   virtual Tensor batch_sum_impl(const Tensor &x) = 0;
 
   virtual void add_gradient_impl(Tensor &a, const Tensor &b) = 0;
-  virtual void add_gradient_offset_impl(
-      Tensor &a, const Tensor &b, unsigned dim, unsigned offset) = 0;
-  virtual void add_gradient_sparse_impl(
-      Tensor &a, const Tensor &b,
-      unsigned dim, const std::vector<unsigned> &ids) = 0;
+  virtual void add_gradient_offset_impl(Tensor &a, const Tensor &b, unsigned dim, unsigned offset) = 0;
+  virtual void add_gradient_sparse_impl(Tensor &a, const Tensor &b, unsigned dim, const std::vector<unsigned> &ids) = 0;
 };
 
 }  // namespace primitiv

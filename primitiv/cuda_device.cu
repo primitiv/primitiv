@@ -518,17 +518,7 @@ Tensor CUDADevice::name(const Tensor &x) { \
   return ret; \
 }
 
-#define CUDA_DEV_BINARY_KX(name, kernel) \
-Tensor CUDADevice::name(float k, const Tensor &x) { \
-  Tensor ret = new_tensor(x.shape()); \
-  const unsigned size = x.shape().num_total_elements(); \
-  const unsigned num_blocks = GRID_SIZE(size, dim1_x_); \
-  CUDA_CALL(::cudaSetDevice(dev_id_)); \
-  ::kernel<<<num_blocks, dim1_x_>>>(DATA(ret), CDATA(x), k, size); \
-  return ret; \
-}
-
-#define CUDA_DEV_BINARY_XK(name, kernel) \
+#define CUDA_DEV_BINARY_CONST(name, kernel) \
 Tensor CUDADevice::name(const Tensor &x, float k) { \
   Tensor ret = new_tensor(x.shape()); \
   const unsigned size = x.shape().num_total_elements(); \
@@ -536,6 +526,11 @@ Tensor CUDADevice::name(const Tensor &x, float k) { \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::kernel<<<num_blocks, dim1_x_>>>(DATA(ret), CDATA(x), k, size); \
   return ret; \
+}
+
+#define CUDA_DEV_BINARY_SCALAR(name, kernel) \
+Tensor CUDADevice::name(const Tensor &x, const Tensor &k, Shape &&new_shape) { \
+  THROW_ERROR("not implemented."); \
 }
 
 #define CUDA_DEV_BINARY_AB(name, kernel) \
@@ -559,12 +554,19 @@ CUDA_DEV_UNARY(sigmoid_impl, dev_sigmoid);
 CUDA_DEV_UNARY(step_impl, dev_step);
 CUDA_DEV_UNARY(relu_impl, dev_relu);
 
-CUDA_DEV_BINARY_XK(add_const_impl, dev_add_const);
-CUDA_DEV_BINARY_XK(subtract_const_r_impl, dev_subtract_const_r);
-CUDA_DEV_BINARY_KX(subtract_const_l_impl, dev_subtract_const_l);
-CUDA_DEV_BINARY_XK(multiply_const_impl, dev_multiply_const);
-CUDA_DEV_BINARY_XK(divide_const_r_impl, dev_divide_const_r);
-CUDA_DEV_BINARY_KX(divide_const_l_impl, dev_divide_const_l);
+CUDA_DEV_BINARY_CONST(add_const_impl, dev_add_const);
+CUDA_DEV_BINARY_CONST(subtract_const_r_impl, dev_subtract_const_r);
+CUDA_DEV_BINARY_CONST(subtract_const_l_impl, dev_subtract_const_l);
+CUDA_DEV_BINARY_CONST(multiply_const_impl, dev_multiply_const);
+CUDA_DEV_BINARY_CONST(divide_const_r_impl, dev_divide_const_r);
+CUDA_DEV_BINARY_CONST(divide_const_l_impl, dev_divide_const_l);
+
+CUDA_DEV_BINARY_SCALAR(add_scalar_impl, dev_add_scalar);
+CUDA_DEV_BINARY_SCALAR(subtract_scalar_r_impl, dev_subtract_scalar_r);
+CUDA_DEV_BINARY_SCALAR(subtract_scalar_l_impl, dev_subtract_scalar_l);
+CUDA_DEV_BINARY_SCALAR(multiply_scalar_impl, dev_multiply_scalar);
+CUDA_DEV_BINARY_SCALAR(divide_scalar_r_impl, dev_divide_scalar_r);
+CUDA_DEV_BINARY_SCALAR(divide_scalar_l_impl, dev_divide_scalar_l);
 
 CUDA_DEV_BINARY_AB(add_impl, dev_add);
 CUDA_DEV_BINARY_AB(subtract_impl, dev_subtract);
@@ -572,8 +574,8 @@ CUDA_DEV_BINARY_AB(multiply_impl, dev_multiply);
 CUDA_DEV_BINARY_AB(divide_impl, dev_divide);
 
 #undef CUDA_DEV_UNARY
-#undef CUDA_DEV_BINARY_KX
-#undef CUDA_DEV_BINARY_XK
+#undef CUDA_DEV_BINARY_CONST
+#undef CUDA_DEV_BINARY_SCALAR
 #undef CUDA_DEV_BINARY_AB
 
 Tensor CUDADevice::transpose_impl(const Tensor &x, Shape &&new_shape) {
