@@ -1,4 +1,4 @@
-set(primitiv_LIBRARY_HDRS
+set(primitiv_base_HDRS
   cpu_device.h
   device.h
   error.h
@@ -17,10 +17,9 @@ set(primitiv_LIBRARY_HDRS
   tensor.h
   tensor_ops.h
   trainer.h
-  trainer_impl.h
-)
+  trainer_impl.h)
 
-set(primitiv_LIBRARY_SRCS
+set(primitiv_base_SRCS
   cpu_device.cc
   device.cc
   function_impl.cc
@@ -34,27 +33,27 @@ set(primitiv_LIBRARY_SRCS
   tensor.cc
   tensor_ops.cc
   trainer.cc
-  trainer_impl.cc
-)
+  trainer_impl.cc)
 
 include_directories(${PROJECT_SOURCE_DIR}/submodules/yaml-cpp/include)
 link_directories(${PROJECT_BINARY_DIR}/submodules/yaml-cpp)
 
-add_library(primitiv SHARED ${primitiv_LIBRARY_HDRS} ${primitiv_LIBRARY_SRCS})
-target_link_libraries(primitiv yaml-cpp)
+add_library(primitiv_base OBJECT
+  ${primitiv_base_HDRS}
+  ${primitiv_base_SRCS})
+set(primitiv_OBJS $<TARGET_OBJECTS:primitiv_base>)
+set(primitiv_DEPS yaml-cpp)
 
 if(USE_CUDA)
-  set(primitiv_cuda_LIBRARY_HDRS
-    ${primitiv_LIBRARY_HDRS}
+  set(primitiv_cuda_HDRS
+    ${primitiv_base_HDRS}
     cuda_device.h
     cuda_memory_pool.h
-    cuda_utils.h
-  )
-  set(primitiv_cuda_LIBRARY_SRCS
+    cuda_utils.h)
+  set(primitiv_cuda_SRCS
     cuda_device.cu
     cuda_memory_pool.cu
-    cuda_utils.cu
-  )
+    cuda_utils.cu)
   list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
 
   # Workaround for some systems.
@@ -69,12 +68,14 @@ if(USE_CUDA)
   list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=sm_52")
   list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=compute_52")
 
-  cuda_add_library(primitiv_cuda SHARED
-    ${primitiv_cuda_LIBRARY_HDRS}
-    ${primitiv_cuda_LIBRARY_SRCS}
-  )
-  target_link_libraries(primitiv_cuda
+  cuda_add_library(primitiv_cuda STATIC
+    ${primitiv_cuda_HDRS}
+    ${primitiv_cuda_SRCS})
+  list(APPEND primitiv_DEPS
+    primitiv_cuda
     ${CUDA_cublas_LIBRARY}
-    ${CUDA_curand_LIBRARY}
-  )
+    ${CUDA_curand_LIBRARY})
 endif()
+
+add_library(primitiv SHARED ${primitiv_OBJS})
+target_link_libraries(primitiv ${primitiv_DEPS})

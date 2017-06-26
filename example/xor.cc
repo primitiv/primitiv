@@ -7,7 +7,7 @@
 //   -I/path/to/primitiv
 //   -I/path/to/cuda/include
 //   -L/path/to/primitiv/build/primitiv
-//   xor.cc -lprimitiv -lprimitiv_cuda
+//   xor.cc -lprimitiv
 
 #include <iostream>
 
