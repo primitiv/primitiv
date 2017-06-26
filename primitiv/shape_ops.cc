@@ -7,10 +7,21 @@
 namespace primitiv {
 namespace shape_ops {
 
+Shape scalar_op(const Shape &a, const Shape &b) {
+  if ((!a.is_scalar() && !b.is_scalar()) || !a.has_compatible_batch(b)) {
+    THROW_ERROR(
+        "Shape mismatched for the scalar operation. "
+        "a: " << a.to_string() << " != b: " << b.to_string());
+  }
+  unsigned bs = std::max(a.batch_size(), b.batch_size());
+  return a.is_scalar() ? b.resize_batch(bs) : a.resize_batch(bs);
+}
+
 Shape elementwise(const Shape &a, const Shape &b) {
   if (!a.has_same_dims(b) || !a.has_compatible_batch(b)) {
     THROW_ERROR(
-        "Shape mismatched. a: " << a.to_string() << " != b: " << b.to_string());
+        "Shape mismatched for the elementwise operation. "
+        "a: " << a.to_string() << " != b: " << b.to_string());
   }
   return a.resize_batch(std::max(a.batch_size(), b.batch_size()));
 }

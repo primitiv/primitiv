@@ -8,6 +8,15 @@ namespace primitiv {
 namespace shape_ops {
 
 /**
+ * Calculates the shape after the scalar operation.
+ * @param a A shape.
+ * @param b Other shape.
+ * @return A shape, that is equivalent to `(a + b).shape()`.
+ * @remarks At least one of `a` or `b` should be the scalar: `Shape({}, k)`.
+ */
+Shape scalar_op(const Shape &a, const Shape &b);
+
+/**
  * Calculates the shape after the elementwise operation.
  * @param a A shape.
  * @param b Other shape.
