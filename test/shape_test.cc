@@ -206,6 +206,17 @@ TEST_F(ShapeTest, CheckMove) {
   EXPECT_EQ(trg2, moved);
 }
 
+TEST_F(ShapeTest, CheckHasBatch) {
+  EXPECT_FALSE(Shape().has_batch());
+  EXPECT_FALSE(Shape({2}).has_batch());
+  EXPECT_FALSE(Shape({2, 3}).has_batch());
+  EXPECT_FALSE(Shape({2, 3, 4}).has_batch());
+  EXPECT_TRUE(Shape({}, 5).has_batch());
+  EXPECT_TRUE(Shape({2}, 5).has_batch());
+  EXPECT_TRUE(Shape({2, 3}, 5).has_batch());
+  EXPECT_TRUE(Shape({2, 3, 4}, 5).has_batch());
+}
+
 TEST_F(ShapeTest, CheckHasCompatibleBatch) {
   const Shape src1({2, 3, 5});
   EXPECT_TRUE(src1.has_compatible_batch(Shape({2, 3, 5})));
@@ -222,6 +233,39 @@ TEST_F(ShapeTest, CheckHasCompatibleBatch) {
   EXPECT_TRUE(src2.has_compatible_batch(Shape({2, 3, 4})));
   EXPECT_FALSE(src2.has_compatible_batch(Shape({2, 3, 4}, 2)));
   EXPECT_TRUE(src2.has_compatible_batch(Shape({2, 3, 4}, 7)));
+}
+
+TEST_F(ShapeTest, CheckIsScalar) {
+  EXPECT_TRUE(Shape().is_scalar());
+  EXPECT_FALSE(Shape({2}).is_scalar());
+  EXPECT_FALSE(Shape({2, 3}).is_scalar());
+  EXPECT_FALSE(Shape({2, 3, 4}).is_scalar());
+  EXPECT_TRUE(Shape({}, 5).is_scalar());
+  EXPECT_FALSE(Shape({2}, 5).is_scalar());
+  EXPECT_FALSE(Shape({2, 3}, 5).is_scalar());
+  EXPECT_FALSE(Shape({2, 3, 4}, 5).is_scalar());
+}
+
+TEST_F(ShapeTest, CheckIsRowVector) {
+  EXPECT_TRUE(Shape().is_row_vector());
+  EXPECT_TRUE(Shape({2}).is_row_vector());
+  EXPECT_FALSE(Shape({2, 3}).is_row_vector());
+  EXPECT_FALSE(Shape({2, 3, 4}).is_row_vector());
+  EXPECT_TRUE(Shape({}, 5).is_row_vector());
+  EXPECT_TRUE(Shape({2}, 5).is_row_vector());
+  EXPECT_FALSE(Shape({2, 3}, 5).is_row_vector());
+  EXPECT_FALSE(Shape({2, 3, 4}, 5).is_row_vector());
+}
+
+TEST_F(ShapeTest, CheckIsMatrix) {
+  EXPECT_TRUE(Shape().is_matrix());
+  EXPECT_TRUE(Shape({2}).is_matrix());
+  EXPECT_TRUE(Shape({2, 3}).is_matrix());
+  EXPECT_FALSE(Shape({2, 3, 4}).is_matrix());
+  EXPECT_TRUE(Shape({}, 5).is_matrix());
+  EXPECT_TRUE(Shape({2}, 5).is_matrix());
+  EXPECT_TRUE(Shape({2, 3}, 5).is_matrix());
+  EXPECT_FALSE(Shape({2, 3, 4}, 5).is_matrix());
 }
 
 TEST_F(ShapeTest, CheckHasSameDims) {

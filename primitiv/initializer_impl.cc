@@ -15,7 +15,7 @@ void Constant::apply(Tensor &x) const {
 
 void XavierUniform::apply(Tensor &x) const {
   const Shape s = x.shape();
-  if (s.depth() > 2) {
+  if (!s.is_matrix()) {
     THROW_ERROR(
         "XavierUniform initializer can be used to only matrices or vectors.");
   }

@@ -81,12 +81,6 @@ public:
   unsigned num_total_elements() const { return k_ * num_elms_per_sample_; }
 
   /**
-   * Returns whether the shape has minibatch or not.
-   * @return true if the shape has minibatch, false otherwise.
-   */
-  bool has_batch() const { return k_ > 1; }
-
-  /**
    * Returns a string representation of the shape.
    * The format is: "[n,m,...]xk"
    * @return Encoded string.
@@ -110,6 +104,12 @@ public:
   bool operator!=(const Shape &rhs) const { return !operator==(rhs); }
 
   /**
+   * Checks whether the shape has minibatch or not.
+   * @return true if the shape has minibatch, false otherwise.
+   */
+  bool has_batch() const { return k_ > 1; }
+
+  /**
    * Checks whether two batch size is compatible (broadcastable) or not.
    * @param rhs Shape object to compare.
    * @return true if both batch size is compatible, false otherwise.
@@ -117,6 +117,24 @@ public:
   bool has_compatible_batch(const Shape &rhs) const {
     return k_ == rhs.k_ || k_ == 1 || rhs.k_ == 1;
   }
+
+  /**
+   * Checks whether the shape is a scalar or not.
+   * @return true if the shape is a scalar, false otherwise.
+   */
+  bool is_scalar() const { return depth() == 0; }
+
+  /**
+   * Checks whether the shape is a row vector or not.
+   * @return true if the shape is a row vector, false otherwise.
+   */
+  bool is_row_vector() const { return depth() <= 1; }
+
+  /**
+   * Checks whether the shape is a vector or a matrix, or not.
+   * @return true if the shape is a vector or a matrix, false otherwise.
+   */
+  bool is_matrix() const { return depth() <= 2; }
 
   /**
    * Checks whether two shapes have completely same dimensions.

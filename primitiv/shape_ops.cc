@@ -81,14 +81,14 @@ Shape pick(const Shape &x, unsigned dim, const std::vector<unsigned> &ids) {
 }
 
 Shape transpose(const Shape &x) {
-  if (x.depth() > 2) {
+  if (!x.is_matrix()) {
     THROW_ERROR("Invalid shape to transpose: " << x.to_string());
   }
   return Shape({x[1], x[0]}, x.batch_size());
 }
 
 Shape dot(const Shape &l, const Shape &r) {
-  if (l.depth() > 2 || r.depth() > 2 || l[1] != r[0] ||
+  if (!l.is_matrix() || !r.is_matrix() || l[1] != r[0] ||
       !l.has_compatible_batch(r)) {
     THROW_ERROR(
         "Invalid shapes to calculate the dot product: "
