@@ -62,18 +62,18 @@ private:
 
   Tensor negate_impl(const Tensor &x) override;
 
-  Tensor add_impl(const Tensor &x, float k) override;
+  Tensor add_const_impl(const Tensor &x, float k) override;
   Tensor add_impl(
       const Tensor &a, const Tensor &b, Shape &&new_shape) override;
-  Tensor subtract_impl(const Tensor &x, float k) override;
-  Tensor subtract_impl(float k, const Tensor &x) override;
+  Tensor subtract_const_r_impl(const Tensor &x, float k) override;
+  Tensor subtract_const_l_impl(float k, const Tensor &x) override;
   Tensor subtract_impl(
       const Tensor &a, const Tensor &b, Shape &&new_shape) override;
-  Tensor multiply_impl(const Tensor &x, float k) override;
+  Tensor multiply_const_impl(const Tensor &x, float k) override;
   Tensor multiply_impl(
       const Tensor &a, const Tensor &b, Shape &&new_shape) override;
-  Tensor divide_impl(const Tensor &x, float k) override;
-  Tensor divide_impl(float k, const Tensor &x) override;
+  Tensor divide_const_r_impl(const Tensor &x, float k) override;
+  Tensor divide_const_l_impl(float k, const Tensor &x) override;
   Tensor divide_impl(
       const Tensor &a, const Tensor &b, Shape &&new_shape) override;
 

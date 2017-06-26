@@ -559,12 +559,12 @@ CUDA_DEV_UNARY(sigmoid_impl, dev_sigmoid);
 CUDA_DEV_UNARY(step_impl, dev_step);
 CUDA_DEV_UNARY(relu_impl, dev_relu);
 
-CUDA_DEV_BINARY_XK(add_impl, dev_add_const);
-CUDA_DEV_BINARY_KX(subtract_impl, dev_subtract_const_l);
-CUDA_DEV_BINARY_XK(subtract_impl, dev_subtract_const_r);
-CUDA_DEV_BINARY_XK(multiply_impl, dev_multiply_const);
-CUDA_DEV_BINARY_KX(divide_impl, dev_divide_const_l);
-CUDA_DEV_BINARY_XK(divide_impl, dev_divide_const_r);
+CUDA_DEV_BINARY_XK(add_const_impl, dev_add_const);
+CUDA_DEV_BINARY_XK(subtract_const_r_impl, dev_subtract_const_r);
+CUDA_DEV_BINARY_KX(subtract_const_l_impl, dev_subtract_const_l);
+CUDA_DEV_BINARY_XK(multiply_const_impl, dev_multiply_const);
+CUDA_DEV_BINARY_XK(divide_const_r_impl, dev_divide_const_r);
+CUDA_DEV_BINARY_KX(divide_const_l_impl, dev_divide_const_l);
 
 CUDA_DEV_BINARY_AB(add_impl, dev_add);
 CUDA_DEV_BINARY_AB(subtract_impl, dev_subtract);

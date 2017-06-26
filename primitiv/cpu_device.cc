@@ -176,7 +176,7 @@ Tensor CPUDevice::negate_impl(const Tensor &x) {
   return ret;
 }
 
-Tensor CPUDevice::add_impl(const Tensor &x, float k) {
+Tensor CPUDevice::add_const_impl(const Tensor &x, float k) {
   Tensor ret = new_tensor(x.shape());
   float *dest = DATA(ret);
   const float *src = CDATA(x);
@@ -204,7 +204,7 @@ Tensor CPUDevice::add_impl(
   return ret;
 }
 
-Tensor CPUDevice::subtract_impl(const Tensor &x, float k) {
+Tensor CPUDevice::subtract_const_r_impl(const Tensor &x, float k) {
   Tensor ret = new_tensor(x.shape());
   float *dest = DATA(ret);
   const float *src = CDATA(x);
@@ -213,7 +213,7 @@ Tensor CPUDevice::subtract_impl(const Tensor &x, float k) {
   return ret;
 }
 
-Tensor CPUDevice::subtract_impl(float k, const Tensor &x) {
+Tensor CPUDevice::subtract_const_l_impl(float k, const Tensor &x) {
   Tensor ret = new_tensor(x.shape());
   float *dest = DATA(ret);
   const float *src = CDATA(x);
@@ -241,7 +241,7 @@ Tensor CPUDevice::subtract_impl(
   return ret;
 }
 
-Tensor CPUDevice::multiply_impl(const Tensor &x, float k) {
+Tensor CPUDevice::multiply_const_impl(const Tensor &x, float k) {
   Tensor ret = new_tensor(x.shape());
   float *dest = DATA(ret);
   const float *src = CDATA(x);
@@ -269,7 +269,7 @@ Tensor CPUDevice::multiply_impl(
   return ret;
 }
 
-Tensor CPUDevice::divide_impl(const Tensor &x, float k) {
+Tensor CPUDevice::divide_const_r_impl(const Tensor &x, float k) {
   Tensor ret = new_tensor(x.shape());
   float *dest = DATA(ret);
   const float *src = CDATA(x);
@@ -278,7 +278,7 @@ Tensor CPUDevice::divide_impl(const Tensor &x, float k) {
   return ret;
 }
 
-Tensor CPUDevice::divide_impl(float k, const Tensor &x) {
+Tensor CPUDevice::divide_const_l_impl(float k, const Tensor &x) {
   Tensor ret = new_tensor(x.shape());
   float *dest = DATA(ret);
   const float *src = CDATA(x);

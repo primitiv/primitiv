@@ -157,7 +157,7 @@ public:
    * @param k Constant to add.
    * @return `x + k * ones(x.shape())`
    */
-  Tensor add(const Tensor &x, float k);
+  Tensor add_const(const Tensor &x, float k);
 
   /**
    * Adds two tensors.
@@ -175,7 +175,7 @@ public:
    * @param k Constant to subtract.
    * @return `x - k * ones(x.shape())`
    */
-  Tensor subtract(const Tensor &x, float k);
+  Tensor subtract_const_r(const Tensor &x, float k);
 
   /**
    * Subtracts a tensor from a constant.
@@ -183,7 +183,7 @@ public:
    * @param x A tensor.
    * @return `k * ones(x.shape()) - x`
    */
-  Tensor subtract(float k, const Tensor &x);
+  Tensor subtract_const_l(float k, const Tensor &x);
 
   /**
    * Subtracts the second tensor from the first tensor.
@@ -201,7 +201,7 @@ public:
    * @param k Multiplier.
    * @return `k * x`
    */
-  Tensor multiply(const Tensor &x, float k);
+  Tensor multiply_const(const Tensor &x, float k);
 
   /**
    * Element-wise multiplication of two tensors.
@@ -220,7 +220,7 @@ public:
    * @return `x / k`
    * @remarks This function won't check the zero-division.
    */
-  Tensor divide(const Tensor &x, float k);
+  Tensor divide_const_r(const Tensor &x, float k);
 
   /**
    * Divides a constant by each element in a tensor.
@@ -229,7 +229,7 @@ public:
    * @return `k * ones(x.shape()) ./ x`
    * @remarks This function won't check the zero-division.
    */
-  Tensor divide(float k, const Tensor &x);
+  Tensor divide_const_l(float k, const Tensor &x);
 
   /**
    * Divides the first tensor by the second tensor.
@@ -438,18 +438,18 @@ private:
 
   virtual Tensor negate_impl(const Tensor &x) = 0;
 
-  virtual Tensor add_impl(const Tensor &x, float k) = 0;
+  virtual Tensor add_const_impl(const Tensor &x, float k) = 0;
   virtual Tensor add_impl(
       const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
-  virtual Tensor subtract_impl(const Tensor &x, float k) = 0;
-  virtual Tensor subtract_impl(float k, const Tensor &x)  = 0;
+  virtual Tensor subtract_const_r_impl(const Tensor &x, float k) = 0;
+  virtual Tensor subtract_const_l_impl(float k, const Tensor &x)  = 0;
   virtual Tensor subtract_impl(
       const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
-  virtual Tensor multiply_impl(const Tensor &x, float k) = 0;
+  virtual Tensor multiply_const_impl(const Tensor &x, float k) = 0;
   virtual Tensor multiply_impl(
       const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
-  virtual Tensor divide_impl(const Tensor &x, float k) = 0;
-  virtual Tensor divide_impl(float k, const Tensor &x)  = 0;
+  virtual Tensor divide_const_r_impl(const Tensor &x, float k) = 0;
+  virtual Tensor divide_const_l_impl(float k, const Tensor &x)  = 0;
   virtual Tensor divide_impl(
       const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
 

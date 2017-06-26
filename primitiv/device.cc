@@ -137,9 +137,9 @@ Tensor Device::negate(const Tensor &x) {
   return negate_impl(x);
 }
 
-Tensor Device::add(const Tensor &x, float k) {
+Tensor Device::add_const(const Tensor &x, float k) {
   CHECK_DEVICE(x);
-  return add_impl(x, k);
+  return add_const_impl(x, k);
 }
 
 Tensor Device::add(const Tensor &a, const Tensor &b) {
@@ -148,14 +148,14 @@ Tensor Device::add(const Tensor &a, const Tensor &b) {
   return add_impl(a, b, shape_ops::elementwise(a.shape(), b.shape()));
 }
 
-Tensor Device::subtract(const Tensor &x, float k) {
+Tensor Device::subtract_const_r(const Tensor &x, float k) {
   CHECK_DEVICE(x);
-  return subtract_impl(x, k);
+  return subtract_const_r_impl(x, k);
 }
 
-Tensor Device::subtract(float k, const Tensor &x) {
+Tensor Device::subtract_const_l(float k, const Tensor &x) {
   CHECK_DEVICE(x);
-  return subtract_impl(k, x);
+  return subtract_const_l_impl(k, x);
 }
 
 Tensor Device::subtract(const Tensor &a, const Tensor &b) {
@@ -164,9 +164,9 @@ Tensor Device::subtract(const Tensor &a, const Tensor &b) {
   return subtract_impl(a, b, shape_ops::elementwise(a.shape(), b.shape()));
 }
 
-Tensor Device::multiply(const Tensor &x, float k) {
+Tensor Device::multiply_const(const Tensor &x, float k) {
   CHECK_DEVICE(x);
-  return multiply_impl(x, k);
+  return multiply_const_impl(x, k);
 }
 
 Tensor Device::multiply(const Tensor &a, const Tensor &b) {
@@ -175,14 +175,14 @@ Tensor Device::multiply(const Tensor &a, const Tensor &b) {
   return multiply_impl(a, b, shape_ops::elementwise(a.shape(), b.shape()));
 }
 
-Tensor Device::divide(const Tensor &x, float k) {
+Tensor Device::divide_const_r(const Tensor &x, float k) {
   CHECK_DEVICE(x);
-  return divide_impl(x, k);
+  return divide_const_r_impl(x, k);
 }
 
-Tensor Device::divide(float k, const Tensor &x) {
+Tensor Device::divide_const_l(float k, const Tensor &x) {
   CHECK_DEVICE(x);
-  return divide_impl(k, x);
+  return divide_const_l_impl(k, x);
 }
 
 Tensor Device::divide(const Tensor &a, const Tensor &b) {

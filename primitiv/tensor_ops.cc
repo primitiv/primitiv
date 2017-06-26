@@ -14,11 +14,11 @@ Tensor operator-(const Tensor &x) {
 }
 
 Tensor operator+(const Tensor &x, float k) {
-  return x.device()->add(x, k);
+  return x.device()->add_const(x, k);
 }
 
 Tensor operator+(float k, const Tensor &x) {
-  return x.device()->add(x, k);
+  return x.device()->add_const(x, k);
 }
 
 Tensor operator+(const Tensor &a, const Tensor &b) {
@@ -26,11 +26,11 @@ Tensor operator+(const Tensor &a, const Tensor &b) {
 }
 
 Tensor operator-(const Tensor &x, float k) {
-  return x.device()->subtract(x, k);
+  return x.device()->subtract_const_r(x, k);
 }
 
 Tensor operator-(float k, const Tensor &x) {
-  return x.device()->subtract(k, x);
+  return x.device()->subtract_const_l(k, x);
 }
 
 Tensor operator-(const Tensor &a, const Tensor &b) {
@@ -38,11 +38,11 @@ Tensor operator-(const Tensor &a, const Tensor &b) {
 }
 
 Tensor operator*(const Tensor &x, float k) {
-  return x.device()->multiply(x, k);
+  return x.device()->multiply_const(x, k);
 }
 
 Tensor operator*(float k, const Tensor &x) {
-  return x.device()->multiply(x, k);
+  return x.device()->multiply_const(x, k);
 }
 
 Tensor operator*(const Tensor &a, const Tensor &b) {
@@ -50,11 +50,11 @@ Tensor operator*(const Tensor &a, const Tensor &b) {
 }
 
 Tensor operator/(const Tensor &x, float k) {
-  return x.device()->divide(x, k);
+  return x.device()->divide_const_r(x, k);
 }
 
 Tensor operator/(float k, const Tensor &x) {
-  return x.device()->divide(k, x);
+  return x.device()->divide_const_l(k, x);
 }
 
 Tensor operator/(const Tensor &a, const Tensor &b) {
