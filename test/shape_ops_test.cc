@@ -35,6 +35,15 @@ TEST_F(ShapeOpsTest, CheckReshape) {
     {Shape({4}, 3), {2, 1, 2}, Shape({2, 1, 2}, 3)},
     {Shape({4}, 3), {2, 2}, Shape({2, 2}, 3)},
     {Shape({4}, 3), {4}, Shape({4}, 3)},
+    {Shape({2, 1, 2}, 3), Shape({2, 1, 2}, 3), Shape({2, 1, 2}, 3)},
+    {Shape({2, 1, 2}, 3), Shape({2, 2}, 3), Shape({2, 2}, 3)},
+    {Shape({2, 1, 2}, 3), Shape({4}, 3), Shape({4}, 3)},
+    {Shape({2, 2}, 3), Shape({2, 1, 2}, 3), Shape({2, 1, 2}, 3)},
+    {Shape({2, 2}, 3), Shape({2, 2}, 3), Shape({2, 2}, 3)},
+    {Shape({2, 2}, 3), Shape({4}, 3), Shape({4}, 3)},
+    {Shape({4}, 3), Shape({2, 1, 2}, 3), Shape({2, 1, 2}, 3)},
+    {Shape({4}, 3), Shape({2, 2}, 3), Shape({2, 2}, 3)},
+    {Shape({4}, 3), Shape({4}, 3), Shape({4}, 3)},
   };
   for (const TestCase &tc : test_cases) {
     EXPECT_EQ(tc.expected, reshape(tc.a, tc.b));
@@ -47,6 +56,7 @@ TEST_F(ShapeOpsTest, CheckInvalidReshape) {
     {{2}, {3}},
     {{}, Shape({}, 4)},
     {{2}, Shape({3}, 4)},
+    {Shape({2}, 4), Shape({3}, 4)},
   };
   for (const TestCase &tc : test_cases) {
     EXPECT_THROW(reshape(tc.a, tc.b), Error);

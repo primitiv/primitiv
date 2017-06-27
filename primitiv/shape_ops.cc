@@ -9,7 +9,7 @@ namespace shape_ops {
 
 Shape reshape(const Shape &before, const Shape &after) {
   if (before.num_elements_per_sample() != after.num_elements_per_sample() ||
-      after.has_batch()) {
+      (after.has_batch() && after.batch_size() != before.batch_size())) {
     THROW_ERROR(
         "Invalid shapes to reshape. before: " << before.to_string()
         << ", after: " << after.to_string());

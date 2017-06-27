@@ -359,9 +359,12 @@ TEST_F(TensorOpsTest, CheckReshape) {
     const vector<float> data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     const Tensor a = dev->new_tensor_by_vector(Shape({6}, 2), data);
     for (const Shape &shape : shapes) {
-      const Tensor y = reshape(a, shape);
-      EXPECT_EQ(shape.resize_batch(2), y.shape());
-      EXPECT_TRUE(vector_match(data, y.to_vector()));
+      const Tensor y1 = reshape(a, shape);
+      EXPECT_EQ(shape.resize_batch(2), y1.shape());
+      EXPECT_TRUE(vector_match(data, y1.to_vector()));
+      const Tensor y2 = reshape(a, shape.resize_batch(2));
+      EXPECT_EQ(shape.resize_batch(2), y2.shape());
+      EXPECT_TRUE(vector_match(data, y2.to_vector()));
     }
   }
 }
@@ -369,8 +372,9 @@ TEST_F(TensorOpsTest, CheckReshape) {
 TEST_F(TensorOpsTest, CheckInvalidReshape) {
   for (Device *dev : devices) {
     const Tensor a = dev->new_tensor(Shape({6}, 2), 0);
-    EXPECT_THROW(reshape(a, {5}), Error);
-    EXPECT_THROW(reshape(a, Shape({6}, 2)), Error);
+    EXPECT_THROW(reshape(a, {7}), Error);
+    EXPECT_THROW(reshape(a, Shape({6}, 3)), Error);
+    EXPECT_THROW(reshape(a, Shape({7}, 3)), Error);
   }
 }
 

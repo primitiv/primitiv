@@ -10,7 +10,7 @@ namespace shape_ops {
 /**
  * Modifies the shape with keeping the number of elements.
  * @param before Source shape.
- * @param after Target shape with batch size 1.
+ * @param after Target shape.
  * @return A shape with dims of `after` and batch size of `before`.
  */
 Shape reshape(const Shape &before, const Shape &after);
