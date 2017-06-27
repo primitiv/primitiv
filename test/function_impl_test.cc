@@ -523,16 +523,6 @@ TEST_F(FunctionImplTest, CheckAddConst) {
   TEST_1ARG_K(AddConst, 3);
 }
 
-TEST_F(FunctionImplTest, CheckSubtractConstL) {
-  // y = k - x
-  // dy/dx = -1
-  setup_1arg();
-  const Shape ret_shape({2, 2}, 3);
-  const vector<float> ret_data {2, 1, 0, -1, 3, 3, 3, 3, 4, 5, 6, 7};
-  const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), -1);
-  TEST_1ARG_K(SubtractConstL, 3);
-}
-
 TEST_F(FunctionImplTest, CheckSubtractConstR) {
   // y = x - k
   // dy/dx = 1
@@ -543,6 +533,16 @@ TEST_F(FunctionImplTest, CheckSubtractConstR) {
   TEST_1ARG_K(SubtractConstR, 3);
 }
 
+TEST_F(FunctionImplTest, CheckSubtractConstL) {
+  // y = k - x
+  // dy/dx = -1
+  setup_1arg();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {2, 1, 0, -1, 3, 3, 3, 3, 4, 5, 6, 7};
+  const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), -1);
+  TEST_1ARG_K(SubtractConstL, 3);
+}
+
 TEST_F(FunctionImplTest, CheckMultiplyConst) {
   // y = kx
   // dy/dx = k
@@ -551,6 +551,17 @@ TEST_F(FunctionImplTest, CheckMultiplyConst) {
   const vector<float> ret_data {3, 6, 9, 12, 0, 0, 0, 0, -3, -6, -9, -12};
   const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), 3);
   TEST_1ARG_K(MultiplyConst, 3);
+}
+
+TEST_F(FunctionImplTest, CheckDivideConstR) {
+  // y = x/k
+  // dy/dx = 1/k
+  setup_1arg();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    1./3, 2./3, 1, 4./3, 0, 0, 0, 0, -1./3, -2./3, -1, -4./3};
+  const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), 1./3);
+  TEST_1ARG_K(DivideConstR, 3);
 }
 
 TEST_F(FunctionImplTest, CheckDivideConstL) {
@@ -565,25 +576,28 @@ TEST_F(FunctionImplTest, CheckDivideConstL) {
   TEST_1ARG_K(DivideConstL, 3);
 }
 
-TEST_F(FunctionImplTest, CheckDivideConstR) {
-  // y = x/k
-  // dy/dx = 1/k
-  setup_1arg();
-  const Shape ret_shape({2, 2}, 3);
-  const vector<float> ret_data {
-    1./3, 2./3, 1, 4./3, 0, 0, 0, 0, -1./3, -2./3, -1, -4./3};
-  const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), 1./3);
-  TEST_1ARG_K(DivideConstR, 3);
+TEST_F(FunctionImplTest, CheckAddScalar) {
+  FAIL() << "not implemented";
 }
 
-TEST_F(FunctionImplTest, CheckTranspose) {
-  // y = x^T
-  // dy/dx = 1^T
-  setup_1arg();
-  const Shape ret_shape({2, 2}, 3);
-  const vector<float> ret_data {1, 3, 2, 4, 0, 0, 0, 0, -1, -3, -2, -4};
-  const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), 1);
-  TEST_1ARG(Transpose);
+TEST_F(FunctionImplTest, CheckSubtractScalarR) {
+  FAIL() << "not implemented";
+}
+
+TEST_F(FunctionImplTest, CheckSubtractScalarL) {
+  FAIL() << "not implemented";
+}
+
+TEST_F(FunctionImplTest, CheckMultiplyScalar) {
+  FAIL() << "not implemented";
+}
+
+TEST_F(FunctionImplTest, CheckDivideScalarR) {
+  FAIL() << "not implemented";
+}
+
+TEST_F(FunctionImplTest, CheckDivideScalarL) {
+  FAIL() << "not implemented";
 }
 
 TEST_F(FunctionImplTest, CheckAdd) {
@@ -641,6 +655,16 @@ TEST_F(FunctionImplTest, CheckDivide) {
     {-1, -2, -3, -4, 0, 0, 0, 0, 1./9, 2./9, 1./3, 4./9},
   };
   TEST_2ARGS(Divide);
+}
+
+TEST_F(FunctionImplTest, CheckTranspose) {
+  // y = x^T
+  // dy/dx = 1^T
+  setup_1arg();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {1, 3, 2, 4, 0, 0, 0, 0, -1, -3, -2, -4};
+  const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), 1);
+  TEST_1ARG(Transpose);
 }
 
 TEST_F(FunctionImplTest, CheckDot) {

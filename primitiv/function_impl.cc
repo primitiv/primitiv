@@ -215,7 +215,13 @@ Shape Flatten::forward_shape(const vector<const Shape *> &args) const {
     return *args[0]; \
   }
 
-#define FWD_SHAPE_ARITHMETIC(clsname) \
+#define FWD_SHAPE_SCALAR(clsname) \
+  Shape clsname::forward_shape(const vector<const Shape *> &args) const { \
+    CHECK_ARGNUM(args, 2); \
+    return shape_ops::scalar_op(*args[0], *args[1]); \
+  }
+
+#define FWD_SHAPE_ELEMENTWISE(clsname) \
   Shape clsname::forward_shape(const vector<const Shape *> &args) const { \
     CHECK_ARGNUM(args, 2); \
     return shape_ops::elementwise(*args[0], *args[1]); \
@@ -224,23 +230,29 @@ Shape Flatten::forward_shape(const vector<const Shape *> &args) const {
 FWD_SHAPE_UNARY(Positive);
 FWD_SHAPE_UNARY(Negative);
 FWD_SHAPE_UNARY(AddConst);
-FWD_SHAPE_UNARY(SubtractConstL);
 FWD_SHAPE_UNARY(SubtractConstR);
+FWD_SHAPE_UNARY(SubtractConstL);
 FWD_SHAPE_UNARY(MultiplyConst);
-FWD_SHAPE_UNARY(DivideConstL);
 FWD_SHAPE_UNARY(DivideConstR);
+FWD_SHAPE_UNARY(DivideConstL);
 FWD_SHAPE_UNARY(Sqrt);
 FWD_SHAPE_UNARY(Exp);
 FWD_SHAPE_UNARY(Tanh);
 FWD_SHAPE_UNARY(Sigmoid);
 FWD_SHAPE_UNARY(ReLU);
-FWD_SHAPE_ARITHMETIC(Add);
-FWD_SHAPE_ARITHMETIC(Subtract);
-FWD_SHAPE_ARITHMETIC(Multiply);
-FWD_SHAPE_ARITHMETIC(Divide);
+FWD_SHAPE_SCALAR(AddScalar);
+FWD_SHAPE_SCALAR(SubtractScalarR);
+FWD_SHAPE_SCALAR(SubtractScalarL);
+FWD_SHAPE_SCALAR(MultiplyScalar);
+FWD_SHAPE_SCALAR(DivideScalarR);
+FWD_SHAPE_SCALAR(DivideScalarL);
+FWD_SHAPE_ELEMENTWISE(Add);
+FWD_SHAPE_ELEMENTWISE(Subtract);
+FWD_SHAPE_ELEMENTWISE(Multiply);
+FWD_SHAPE_ELEMENTWISE(Divide);
 
 #undef FWD_SHAPE_UNARY
-#undef FWD_SHAPE_ARITHMETIC
+#undef FWD_SHAPE_ELEMENTWISE
 
 Shape Transpose::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 1);
@@ -285,29 +297,44 @@ Shape SoftmaxCrossEntropy::forward_shape(
 
 FORWARD(Reshape) { return T::reshape(*x[0], shape_); }
 FORWARD(Flatten) { return T::flatten(*x[0]); }
+
 FORWARD(Positive) { return *x[0]; }
 FORWARD(Negative) { return -(*x[0]); }
+
 FORWARD(AddConst) { return *x[0] + k_; }
-FORWARD(SubtractConstL) { return k_ - *x[0]; }
 FORWARD(SubtractConstR) { return *x[0] - k_; }
+FORWARD(SubtractConstL) { return k_ - *x[0]; }
 FORWARD(MultiplyConst) { return *x[0] * k_; }
-FORWARD(DivideConstL) { return k_ / *x[0]; }
 FORWARD(DivideConstR) { return *x[0] / k_; }
-FORWARD(Transpose) { return T::transpose(*x[0]); }
+FORWARD(DivideConstL) { return k_ / *x[0]; }
+
+FORWARD(AddScalar) { return *x[0] + *x[1]; }
+FORWARD(SubtractScalarR) { return *x[0] - *x[1]; }
+FORWARD(SubtractScalarL) { return *x[1] - *x[0]; }
+FORWARD(MultiplyScalar) { return *x[0] * *x[1]; }
+FORWARD(DivideScalarR) { return *x[0] / *x[1]; }
+FORWARD(DivideScalarL) { return *x[1] / *x[0]; }
+
 FORWARD(Add) { return *x[0] + *x[1]; }
 FORWARD(Subtract) { return *x[0] - *x[1]; }
 FORWARD(Multiply) { return *x[0] * *x[1]; }
 FORWARD(Divide) { return *x[0] / *x[1]; }
+
+FORWARD(Transpose) { return T::transpose(*x[0]); }
 FORWARD(Dot) { return T::dot(*x[0], *x[1]); }
+
 FORWARD(Sqrt) { return T::sqrt(*x[0]); }
 FORWARD(Exp) { return T::exp(*x[0]); }
 FORWARD(Tanh) { return T::tanh(*x[0]); }
 FORWARD(Sigmoid) { return T::sigmoid(*x[0]); }
 FORWARD(ReLU) { return T::relu(*x[0]); }
+
 FORWARD(Sum) { return T::sum(*x[0], dim_); }
 FORWARD(LogSumExp) { return T::logsumexp(*x[0], dim_); }
 FORWARD(Broadcast) { return T::broadcast(*x[0], dim_, size_); }
+
 FORWARD(BatchSum) { return T::batch_sum(*x[0]); }
+
 FORWARD(SoftmaxCrossEntropy) {
   return T::softmax_cross_entropy(*x[0], *x[1], dim_);
 }
@@ -324,28 +351,74 @@ FORWARD(SoftmaxCrossEntropy) {
 
 BACKWARD(Reshape) { ADD(0, yg.reshape(x[0]->shape())); }
 BACKWARD(Flatten) { ADD(0, yg.reshape(x[0]->shape())); }
+
 BACKWARD(Positive) { ADD(0, yg); }
 BACKWARD(Negative) { ADD(0, -yg); }
+
 BACKWARD(AddConst) { ADD(0, yg); }
-BACKWARD(SubtractConstL) { ADD(0, -yg); }
 BACKWARD(SubtractConstR) { ADD(0, yg); }
+BACKWARD(SubtractConstL) { ADD(0, -yg); }
 BACKWARD(MultiplyConst) { ADD(0, k_ * yg); }
-BACKWARD(DivideConstL) { ADD(0, -y * yg / *x[0]); }
 BACKWARD(DivideConstR) { ADD(0, yg / k_); }
+BACKWARD(DivideConstL) { ADD(0, -y * yg / *x[0]); }
+
+BACKWARD(AddScalar) {
+  ADD(0, yg);
+  ADD(1, T::sum(yg.flatten(), 0));
+}
+BACKWARD(SubtractScalarR) {
+  ADD(0, yg);
+  ADD(1, -T::sum(yg.flatten(), 0));
+}
+BACKWARD(SubtractScalarL) {
+  ADD(0, -yg);
+  ADD(1, T::sum(yg.flatten(), 0));
+}
+BACKWARD(MultiplyScalar) {
+  ADD(0, *x[1] * yg);
+  ADD(1, T::sum((*x[0] * yg).flatten(), 0));
+}
+BACKWARD(DivideScalarR) {
+  const Tensor a = yg / *x[1];
+  ADD(0, a);
+  ADD(1, T::sum((-a * y).flatten(), 0));
+}
+BACKWARD(DivideScalarL) {
+  const Tensor a = yg / *x[0];
+  ADD(0, -a * y);
+  ADD(1, T::sum(a.flatten(), 0));
+}
+
+BACKWARD(Add) {
+  ADD(0, yg);
+  ADD(1, yg);
+}
+BACKWARD(Subtract) {
+  ADD(0, yg);
+  ADD(1, -yg);
+}
+BACKWARD(Multiply) {
+  ADD(0, *x[1] * yg);
+  ADD(1, *x[0] * yg);
+}
+BACKWARD(Divide) {
+  const Tensor a = yg / *x[1];
+  ADD(0, a);
+  ADD(1, -a * y);
+}
+
 BACKWARD(Transpose) { ADD(0, T::transpose(yg)); }
-BACKWARD(Add) { ADD(0, yg); ADD(1, yg); }
-BACKWARD(Subtract) { ADD(0, yg); ADD(1, -yg); }
-BACKWARD(Multiply) { ADD(0, *x[1] * yg); ADD(1, *x[0] * yg); }
-BACKWARD(Divide) { Tensor a = yg / *x[1]; ADD(0, a); ADD(1, -a * y); }
 BACKWARD(Dot) {
   ADD(0, T::dot(yg, T::transpose(*x[1])));
   ADD(1, T::dot(T::transpose(*x[0]), yg));
 }
+
 BACKWARD(Sqrt) { ADD(0, .5 * yg / y); }
 BACKWARD(Exp) { ADD(0, y * yg); }
 BACKWARD(Tanh) { ADD(0, (1 - y * y) * yg); }
 BACKWARD(Sigmoid) { ADD(0, y * (1 - y) * yg); }
 BACKWARD(ReLU) { ADD(0, T::step(*x[0]) * yg); }
+
 BACKWARD(Sum) { ADD(0, T::broadcast(yg, dim_, x[0]->shape()[dim_])); }
 BACKWARD(LogSumExp) {
   // NOTE(odashi): dy/dx = softmax(x) = exp(x - y)
@@ -353,7 +426,9 @@ BACKWARD(LogSumExp) {
   ADD(0, T::exp(*x[0] - T::broadcast(y, dim_, n)) * T::broadcast(yg, dim_, n));
 }
 BACKWARD(Broadcast) { ADD(0, T::sum(yg, dim_)); }
+
 BACKWARD(BatchSum) { ADD(0, yg); }
+
 BACKWARD(SoftmaxCrossEntropy) {
   const Tensor log_softmax_x = T::log_softmax(*x[0], dim_);
   const Tensor bcast_yg = T::broadcast(yg, dim_, x[0]->shape()[dim_]);

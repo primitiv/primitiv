@@ -251,27 +251,39 @@ private:
   }
 
 DECL_FUNC(Flatten);
+
 DECL_FUNC(Positive);
 DECL_FUNC(Negative);
+
+DECL_FUNC_K(AddConst);
+DECL_FUNC_K(SubtractConstR);
+DECL_FUNC_K(SubtractConstL);
+DECL_FUNC_K(MultiplyConst);
+DECL_FUNC_K(DivideConstR);
+DECL_FUNC_K(DivideConstL);
+
+DECL_FUNC(AddScalar);
+DECL_FUNC(SubtractScalarR);
+DECL_FUNC(SubtractScalarL);
+DECL_FUNC(MultiplyScalar);
+DECL_FUNC(DivideScalarR);
+DECL_FUNC(DivideScalarL);
+
 DECL_FUNC(Add);
 DECL_FUNC(Subtract);
 DECL_FUNC(Multiply);
 DECL_FUNC(Divide);
+
 DECL_FUNC(Transpose);
 DECL_FUNC(Dot);
+
 DECL_FUNC(Sqrt);
 DECL_FUNC(Exp);
 DECL_FUNC(Tanh);
 DECL_FUNC(Sigmoid);
 DECL_FUNC(ReLU);
-DECL_FUNC(BatchSum);
 
-DECL_FUNC_K(AddConst);
-DECL_FUNC_K(SubtractConstL);
-DECL_FUNC_K(SubtractConstR);
-DECL_FUNC_K(MultiplyConst);
-DECL_FUNC_K(DivideConstL);
-DECL_FUNC_K(DivideConstR);
+DECL_FUNC(BatchSum);
 
 #undef DECL_FUNC
 #undef DECL_FUNC_K

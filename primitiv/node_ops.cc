@@ -19,16 +19,40 @@ Node operator+(const Node &x) { return REG(x)(new F::Positive(), {x}); }
 Node operator-(const Node &x) { return REG(x)(new F::Negative(), {x}); }
 Node operator+(const Node &x, float k) { return REG(x)(new F::AddConst(k), {x}); }
 Node operator+(float k, const Node &x) { return REG(x)(new F::AddConst(k), {x}); }
-Node operator+(const Node &a, const Node &b) { return REG(a)(new F::Add(), {a, b}); }
+
+Node operator+(const Node &a, const Node &b) {
+  if (a.shape().is_scalar()) return REG(a)(new F::AddScalar(), {b, a});
+  else if (b.shape().is_scalar()) return REG(a)(new F::AddScalar(), {a, b});
+  else return REG(a)(new F::Add(), {a, b});
+}
+
 Node operator-(const Node &x, float k) { return REG(x)(new F::SubtractConstR(k), {x}); }
 Node operator-(float k, const Node &x) { return REG(x)(new F::SubtractConstL(k), {x}); }
-Node operator-(const Node &a, const Node &b) { return REG(a)(new F::Subtract(), {a, b}); }
+
+Node operator-(const Node &a, const Node &b) {
+  if (a.shape().is_scalar()) return REG(a)(new F::SubtractScalarL(), {b, a});
+  else if (b.shape().is_scalar()) return REG(a)(new F::SubtractScalarR(), {a, b});
+  else return REG(a)(new F::Subtract(), {a, b});
+}
+
 Node operator*(const Node &x, float k) { return REG(x)(new F::MultiplyConst(k), {x}); }
 Node operator*(float k, const Node &x) { return REG(x)(new F::MultiplyConst(k), {x}); }
-Node operator*(const Node &a, const Node &b) { return REG(a)(new F::Multiply(), {a, b}); }
+
+Node operator*(const Node &a, const Node &b) {
+  if (a.shape().is_scalar()) return REG(a)(new F::MultiplyScalar(), {b, a});
+  else if (b.shape().is_scalar()) return REG(a)(new F::MultiplyScalar(), {a, b});
+  else return REG(a)(new F::Multiply(), {a, b});
+}
+
+
 Node operator/(const Node &x, float k) { return REG(x)(new F::DivideConstR(k), {x}); }
 Node operator/(float k, const Node &x) { return REG(x)(new F::DivideConstL(k), {x}); }
-Node operator/(const Node &a, const Node &b) { return REG(a)(new F::Divide(), {a, b}); }
+
+Node operator/(const Node &a, const Node &b) {
+  if (a.shape().is_scalar()) return REG(a)(new F::DivideScalarL(), {b, a});
+  else if (b.shape().is_scalar()) return REG(a)(new F::DivideScalarR(), {a, b});
+  else return REG(a)(new F::Divide(), {a, b});
+}
 
 namespace node_ops {
 
