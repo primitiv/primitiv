@@ -17,7 +17,7 @@ Prerequisites
 
 - CMake 3.1.0
 - GCC 4.9
-- CUDA 8.0
+- (optional) CUDA 8.0
 
 Build
 -----
