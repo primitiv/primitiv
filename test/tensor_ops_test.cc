@@ -349,6 +349,48 @@ TEST_F(TensorOpsTest, CheckInvalidConcat) {
   }
 }
 
+TEST_F(TensorOpsTest, CheckReshape) {
+  const vector<Shape> shapes {
+    {6}, {1, 6}, {1, 1, 6}, {1, 1, 1, 6},
+    {2, 3}, {2, 1, 3}, {1, 2, 3}, {2, 1, 1, 3}, {1, 2, 1, 3}, {1, 1, 2, 3},
+    {3, 2}, {3, 1, 2}, {1, 3, 2}, {3, 1, 1, 2}, {1, 3, 1, 2}, {1, 1, 3, 2},
+  };
+  for (Device *dev : devices) {
+    const vector<float> data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    const Tensor a = dev->new_tensor_by_vector(Shape({6}, 2), data);
+    for (const Shape &shape : shapes) {
+      const Tensor y = reshape(a, shape);
+      EXPECT_EQ(shape.resize_batch(2), y.shape());
+      EXPECT_TRUE(vector_match(data, y.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorOpsTest, CheckInvalidReshape) {
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor(Shape({6}, 2), 0);
+    EXPECT_THROW(reshape(a, {5}), Error);
+    EXPECT_THROW(reshape(a, Shape({6}, 2)), Error);
+  }
+}
+
+TEST_F(TensorOpsTest, CheckFlatten) {
+  const vector<Shape> shapes {
+    {6}, {1, 6}, {1, 1, 6}, {1, 1, 1, 6},
+    {2, 3}, {2, 1, 3}, {1, 2, 3}, {2, 1, 1, 3}, {1, 2, 1, 3}, {1, 1, 2, 3},
+    {3, 2}, {3, 1, 2}, {1, 3, 2}, {3, 1, 1, 2}, {1, 3, 1, 2}, {1, 1, 3, 2},
+  };
+  for (Device *dev : devices) {
+    const vector<float> data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    for (const Shape &shape : shapes) {
+      const Tensor a = dev->new_tensor_by_vector(shape.resize_batch(2), data);
+      const Tensor y = flatten(a);
+      EXPECT_EQ(Shape({6}, 2), y.shape());
+      EXPECT_TRUE(vector_match(data, y.to_vector()));
+    }
+  }
+}
+
 TEST_F(TensorOpsTest, CheckDuplicate) {
   const vector<float> x_data {1000, 100, 10, 1, 0.1, 0.01, 0.001, 0.0001};
   for (Device *dev : devices) {

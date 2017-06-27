@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <primitiv/device.h>
+#include <primitiv/shape_ops.h>
 #include <primitiv/tensor.h>
 
 using std::move;
@@ -52,6 +53,14 @@ void Tensor::add_gradient_sparse(
     const Tensor &x, unsigned dim, const std::vector<unsigned> &ids) {
   if (data_.use_count() > 1) *this = device_->copy_tensor(*this);
   device_->add_gradient_sparse(*this, x, dim, ids);
+}
+
+Tensor Tensor::reshape(const Shape &new_shape) const {
+  return Tensor(shape_ops::reshape(shape_, new_shape), device_, data_);
+}
+
+Tensor Tensor::flatten() const {
+  return Tensor(shape_ops::flatten(shape_), device_, data_);
 }
 
 }  // namepsace primitiv

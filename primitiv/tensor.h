@@ -115,6 +115,19 @@ public:
   void add_gradient_sparse(
       const Tensor &x, unsigned dim, const std::vector<unsigned> &ids);
 
+  /**
+   * Returns a tensor which have the same values and different shape.
+   * @param new_shape New shape with batch size 1.
+   * @return A new tensor.
+   */
+  Tensor reshape(const Shape &new_shape) const;
+
+  /**
+   * Returns a flattened tensor.
+   * @return A new tensor.
+   */
+  Tensor flatten() const;
+
 private:
   /**
    * Creates a new uninitialized Tensor.

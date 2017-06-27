@@ -82,9 +82,18 @@ Tensor pick(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids) {
 Tensor slice(const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
   return x.device()->slice(x, dim, lower, upper);
 }
+
 Tensor concat(const std::vector<const Tensor *> &xs, unsigned dim) {
   if (xs.empty()) THROW_ERROR("No tensors to be concatenated.");
   return xs[0]->device()->concat(xs, dim);
+}
+
+Tensor reshape(const Tensor &x, const Shape &new_shape) {
+  return x.reshape(new_shape);
+}
+
+Tensor flatten(const Tensor &x) {
+  return x.flatten();
 }
 
 Tensor transpose(const Tensor &x) {

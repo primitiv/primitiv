@@ -31,6 +31,9 @@ Tensor pick(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids);
 Tensor slice(const Tensor &x, unsigned dim, unsigned lower, unsigned upper);
 Tensor concat(const std::vector<const Tensor *> &xs, unsigned dim);
 
+Tensor reshape(const Tensor &x, const Shape &new_shape);
+Tensor flatten(const Tensor &x);
+
 Tensor transpose(const Tensor &x);
 Tensor dot(const Tensor &a, const Tensor &b);
 Tensor sqrt(const Tensor &x);
