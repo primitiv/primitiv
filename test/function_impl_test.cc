@@ -456,6 +456,43 @@ TEST_F(FunctionImplTest, CheckConcat) {
   }
 }
 
+TEST_F(FunctionImplTest, CheckReshape) {
+  // y = reshape(x)
+  // dy/dx = 1
+  setup_1arg();
+  const vector<Shape> shapes {
+    {4}, {1, 4}, {1, 1, 4},
+    {2, 2}, {2, 1, 2}, {1, 2, 2},
+    Shape({4}, 3), Shape({1, 4}, 3), Shape({1, 1, 4}, 3),
+    Shape({2, 2}, 3), Shape({2, 1, 2}, 3), Shape({1, 2, 2}, 3),
+  };
+  const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4};
+  const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), 1);
+  for (const Shape ret_shape : shapes) {
+    const Reshape node(ret_shape);
+    const Shape cur_shape = node.forward_shape(arg_shapes);
+    const Tensor cur_value = node.forward(arg_values);
+    const Tensor cur_grad = dev->new_tensor(ret_shape.resize_batch(3), 1);
+    reset_gradients();
+    node.backward(cur_value, cur_grad, arg_values, arg_grads);
+    EXPECT_EQ("Reshape(" + ret_shape.to_string() + ')', node.name());
+    EXPECT_EQ(ret_shape.resize_batch(3), cur_shape);
+    EXPECT_EQ(nullptr, node.get_device());
+    EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector()));
+    EXPECT_TRUE(vector_match(bw_grad, arg_grads[0]->to_vector()));
+  }
+}
+
+TEST_F(FunctionImplTest, CheckFlatten) {
+  // y = flatten(x)
+  // dy/dx = 1
+  setup_1arg();
+  const Shape ret_shape({4}, 3);
+  const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4};
+  const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), 1);
+  TEST_1ARG(Flatten);
+}
+
 TEST_F(FunctionImplTest, CheckPositive) {
   // y = x
   // dy/dx = 1

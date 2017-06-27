@@ -199,6 +199,16 @@ void Concat::backward(
   }
 }
 
+Shape Reshape::forward_shape(const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 1);
+  return shape_ops::reshape(*args[0], shape_);
+}
+
+Shape Flatten::forward_shape(const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 1);
+  return shape_ops::flatten(*args[0]);
+}
+
 #define FWD_SHAPE_UNARY(clsname) \
   Shape clsname::forward_shape(const vector<const Shape *> &args) const { \
     CHECK_ARGNUM(args, 1); \
@@ -228,6 +238,9 @@ FWD_SHAPE_ARITHMETIC(Add);
 FWD_SHAPE_ARITHMETIC(Subtract);
 FWD_SHAPE_ARITHMETIC(Multiply);
 FWD_SHAPE_ARITHMETIC(Divide);
+
+#undef FWD_SHAPE_UNARY
+#undef FWD_SHAPE_ARITHMETIC
 
 Shape Transpose::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 1);
@@ -267,12 +280,11 @@ Shape SoftmaxCrossEntropy::forward_shape(
   return y;
 }
 
-#undef FWD_SHAPE_UNARY
-#undef FWD_SHAPE_ARITHMETIC
-
 #define FORWARD(name) \
     Tensor name::forward(const vector<const Tensor *> &x) const
 
+FORWARD(Reshape) { return T::reshape(*x[0], shape_); }
+FORWARD(Flatten) { return T::flatten(*x[0]); }
 FORWARD(Positive) { return *x[0]; }
 FORWARD(Negative) { return -(*x[0]); }
 FORWARD(AddConst) { return *x[0] + k_; }
@@ -310,6 +322,8 @@ FORWARD(SoftmaxCrossEntropy) {
       const vector<Tensor *> &xg) const
 #define ADD(n, g) xg[n]->add_gradient(g)
 
+BACKWARD(Reshape) { ADD(0, yg.reshape(x[0]->shape())); }
+BACKWARD(Flatten) { ADD(0, yg.reshape(x[0]->shape())); }
 BACKWARD(Positive) { ADD(0, yg); }
 BACKWARD(Negative) { ADD(0, -yg); }
 BACKWARD(AddConst) { ADD(0, yg); }

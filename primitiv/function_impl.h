@@ -171,6 +171,17 @@ private:
   unsigned dim_;
 };
 
+class Reshape : public primitiv::Function {
+  NO_CTOR_CLASS_DECL(Reshape);
+public:
+  explicit Reshape(const Shape &shape) : shape_(shape) {}
+  std::string name() const override {
+    return "Reshape(" + shape_.to_string() + ')';
+  }
+private:
+  Shape shape_;
+};
+
 class Sum : public Function {
   NO_CTOR_CLASS_DECL(Sum);
 public:
@@ -239,6 +250,7 @@ private:
     float k_; \
   }
 
+DECL_FUNC(Flatten);
 DECL_FUNC(Positive);
 DECL_FUNC(Negative);
 DECL_FUNC(Add);

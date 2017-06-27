@@ -57,6 +57,14 @@ Node concat(const std::vector<Node> &xs, unsigned dim) {
   return REG(xs[0])(new F::Concat(dim), xs);
 }
 
+Node reshape(const Node &x, const Shape &shape) {
+  return REG(x)(new F::Reshape(shape), {x});
+}
+
+Node flatten(const Node &x) {
+  return REG(x)(new F::Flatten(), {x});
+}
+
 Node transpose(const Node &x) {
   return REG(x)(new F::Transpose(), {x});
 }
