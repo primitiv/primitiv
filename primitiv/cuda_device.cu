@@ -58,16 +58,16 @@ __global__ void dev_add_const(
   if (i < size) py[i] = px[i] + k;
 }
 
-__global__ void dev_subtract_const_l(
-    float *py, const float *px, float k, unsigned size) {
-  const unsigned i = IDX;
-  if (i < size) py[i] = k - px[i];
-}
-
 __global__ void dev_subtract_const_r(
     float *py, const float *px, float k, unsigned size) {
   const unsigned i = IDX;
   if (i < size) py[i] = px[i] - k;
+}
+
+__global__ void dev_subtract_const_l(
+    float *py, const float *px, float k, unsigned size) {
+  const unsigned i = IDX;
+  if (i < size) py[i] = k - px[i];
 }
 
 __global__ void dev_multiply_const(
@@ -76,16 +76,64 @@ __global__ void dev_multiply_const(
   if (i < size) py[i] = px[i] * k;
 }
 
+__global__ void dev_divide_const_r(
+    float *py, const float *px, float k, unsigned size) {
+  const unsigned i = IDX;
+  if (i < size) py[i] = px[i] / k;
+}
+
 __global__ void dev_divide_const_l(
     float *py, const float *px, float k, unsigned size) {
   const unsigned i = IDX;
   if (i < size) py[i] = k / px[i];
 }
 
-__global__ void dev_divide_const_r(
-    float *py, const float *px, float k, unsigned size) {
+__global__ void dev_add_scalar(
+    float *py, const float *px, const float *pk,
+    unsigned size, unsigned mbx, unsigned mbk) {
   const unsigned i = IDX;
-  if (i < size) py[i] = px[i] / k;
+  const unsigned shift = blockIdx.y * size;
+  if (i < size) py[i + shift] = px[i + mbx * shift] + pk[mbk * blockIdx.y];
+}
+
+__global__ void dev_subtract_scalar_r(
+    float *py, const float *px, const float *pk,
+    unsigned size, unsigned mbx, unsigned mbk) {
+  const unsigned i = IDX;
+  const unsigned shift = blockIdx.y * size;
+  if (i < size) py[i + shift] = px[i + mbx * shift] - pk[mbk * blockIdx.y];
+}
+
+__global__ void dev_subtract_scalar_l(
+    float *py, const float *px, const float *pk,
+    unsigned size, unsigned mbx, unsigned mbk) {
+  const unsigned i = IDX;
+  const unsigned shift = blockIdx.y * size;
+  if (i < size) py[i + shift] = pk[mbk * blockIdx.y] - px[i + mbx * shift];
+}
+
+__global__ void dev_multiply_scalar(
+    float *py, const float *px, const float *pk,
+    unsigned size, unsigned mbx, unsigned mbk) {
+  const unsigned i = IDX;
+  const unsigned shift = blockIdx.y * size;
+  if (i < size) py[i + shift] = px[i + mbx * shift] * pk[mbk * blockIdx.y];
+}
+
+__global__ void dev_divide_scalar_r(
+    float *py, const float *px, const float *pk,
+    unsigned size, unsigned mbx, unsigned mbk) {
+  const unsigned i = IDX;
+  const unsigned shift = blockIdx.y * size;
+  if (i < size) py[i + shift] = px[i + mbx * shift] / pk[mbk * blockIdx.y];
+}
+
+__global__ void dev_divide_scalar_l(
+    float *py, const float *px, const float *pk,
+    unsigned size, unsigned mbx, unsigned mbk) {
+  const unsigned i = IDX;
+  const unsigned shift = blockIdx.y * size;
+  if (i < size) py[i + shift] = pk[mbk * blockIdx.y] / px[i + mbx * shift];
 }
 
 __global__ void dev_add(
@@ -530,7 +578,15 @@ Tensor CUDADevice::name(const Tensor &x, float k) { \
 
 #define CUDA_DEV_BINARY_SCALAR(name, kernel) \
 Tensor CUDADevice::name(const Tensor &x, const Tensor &k, Shape &&new_shape) { \
-  THROW_ERROR("not implemented."); \
+  const unsigned size = new_shape.num_elements_per_sample(); \
+  const unsigned g1 = GRID_SIZE(size, dim1_x_); \
+  const unsigned g2 = new_shape.batch_size(); \
+  Tensor ret = new_tensor(new_shape); \
+  CUDA_CALL(::cudaSetDevice(dev_id_)); \
+  ::kernel<<<dim3(g1, g2, 1), dim1_x_>>>( \
+      DATA(ret), CDATA(x), CDATA(k), size, \
+      x.shape().has_batch(), k.shape().has_batch()); \
+  return ret; \
 }
 
 #define CUDA_DEV_BINARY_AB(name, kernel) \

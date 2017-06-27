@@ -187,7 +187,21 @@ Tensor CPUDevice::add_const_impl(const Tensor &x, float k) {
 
 Tensor CPUDevice::add_scalar_impl(
     const Tensor &x, const Tensor &k, Shape &&new_shape) {
-  THROW_ERROR("not implemented.");
+  const unsigned size = new_shape.num_elements_per_sample();
+  const unsigned bs = new_shape.batch_size();
+  const unsigned skip_x = x.shape().has_batch() * size;
+  const unsigned skip_k = k.shape().has_batch();
+  Tensor ret = new_tensor(new_shape);
+  float *dest = DATA(ret);
+  const float *src_x = CDATA(x);
+  const float *src_k = CDATA(k);
+  for (unsigned batch = 0; batch < bs; ++batch) {
+    REPEAT_OP(i, size, dest[i] = src_x[i] + *src_k);
+    dest += size;
+    src_x += skip_x;
+    src_k += skip_k;
+  }
+  return ret;
 }
 
 Tensor CPUDevice::add_impl(
@@ -229,12 +243,40 @@ Tensor CPUDevice::subtract_const_l_impl(const Tensor &x, float k) {
 
 Tensor CPUDevice::subtract_scalar_r_impl(
     const Tensor &x, const Tensor &k, Shape &&new_shape) {
-  THROW_ERROR("not implemented.");
+  const unsigned size = new_shape.num_elements_per_sample();
+  const unsigned bs = new_shape.batch_size();
+  const unsigned skip_x = x.shape().has_batch() * size;
+  const unsigned skip_k = k.shape().has_batch();
+  Tensor ret = new_tensor(new_shape);
+  float *dest = DATA(ret);
+  const float *src_x = CDATA(x);
+  const float *src_k = CDATA(k);
+  for (unsigned batch = 0; batch < bs; ++batch) {
+    REPEAT_OP(i, size, dest[i] = src_x[i] - *src_k);
+    dest += size;
+    src_x += skip_x;
+    src_k += skip_k;
+  }
+  return ret;
 }
 
 Tensor CPUDevice::subtract_scalar_l_impl(
     const Tensor &x, const Tensor &k, Shape &&new_shape) {
-  THROW_ERROR("not implemented.");
+  const unsigned size = new_shape.num_elements_per_sample();
+  const unsigned bs = new_shape.batch_size();
+  const unsigned skip_x = x.shape().has_batch() * size;
+  const unsigned skip_k = k.shape().has_batch();
+  Tensor ret = new_tensor(new_shape);
+  float *dest = DATA(ret);
+  const float *src_x = CDATA(x);
+  const float *src_k = CDATA(k);
+  for (unsigned batch = 0; batch < bs; ++batch) {
+    REPEAT_OP(i, size, dest[i] = *src_k - src_x[i]);
+    dest += size;
+    src_x += skip_x;
+    src_k += skip_k;
+  }
+  return ret;
 }
 
 Tensor CPUDevice::subtract_impl(
@@ -267,7 +309,21 @@ Tensor CPUDevice::multiply_const_impl(const Tensor &x, float k) {
 
 Tensor CPUDevice::multiply_scalar_impl(
     const Tensor &x, const Tensor &k, Shape &&new_shape) {
-  THROW_ERROR("not implemented.");
+  const unsigned size = new_shape.num_elements_per_sample();
+  const unsigned bs = new_shape.batch_size();
+  const unsigned skip_x = x.shape().has_batch() * size;
+  const unsigned skip_k = k.shape().has_batch();
+  Tensor ret = new_tensor(new_shape);
+  float *dest = DATA(ret);
+  const float *src_x = CDATA(x);
+  const float *src_k = CDATA(k);
+  for (unsigned batch = 0; batch < bs; ++batch) {
+    REPEAT_OP(i, size, dest[i] = src_x[i] * *src_k);
+    dest += size;
+    src_x += skip_x;
+    src_k += skip_k;
+  }
+  return ret;
 }
 
 Tensor CPUDevice::multiply_impl(
@@ -309,12 +365,40 @@ Tensor CPUDevice::divide_const_l_impl(const Tensor &x, float k) {
 
 Tensor CPUDevice::divide_scalar_r_impl(
     const Tensor &x, const Tensor &k, Shape &&new_shape) {
-  THROW_ERROR("not implemented.");
+  const unsigned size = new_shape.num_elements_per_sample();
+  const unsigned bs = new_shape.batch_size();
+  const unsigned skip_x = x.shape().has_batch() * size;
+  const unsigned skip_k = k.shape().has_batch();
+  Tensor ret = new_tensor(new_shape);
+  float *dest = DATA(ret);
+  const float *src_x = CDATA(x);
+  const float *src_k = CDATA(k);
+  for (unsigned batch = 0; batch < bs; ++batch) {
+    REPEAT_OP(i, size, dest[i] = src_x[i] / *src_k);
+    dest += size;
+    src_x += skip_x;
+    src_k += skip_k;
+  }
+  return ret;
 }
 
 Tensor CPUDevice::divide_scalar_l_impl(
     const Tensor &x, const Tensor &k, Shape &&new_shape) {
-  THROW_ERROR("not implemented.");
+  const unsigned size = new_shape.num_elements_per_sample();
+  const unsigned bs = new_shape.batch_size();
+  const unsigned skip_x = x.shape().has_batch() * size;
+  const unsigned skip_k = k.shape().has_batch();
+  Tensor ret = new_tensor(new_shape);
+  float *dest = DATA(ret);
+  const float *src_x = CDATA(x);
+  const float *src_k = CDATA(k);
+  for (unsigned batch = 0; batch < bs; ++batch) {
+    REPEAT_OP(i, size, dest[i] = *src_k / src_x[i]);
+    dest += size;
+    src_x += skip_x;
+    src_k += skip_k;
+  }
+  return ret;
 }
 
 Tensor CPUDevice::divide_impl(
