@@ -8,6 +8,21 @@ namespace primitiv {
 namespace shape_ops {
 
 /**
+ * Modifies the shape with keeping the number of elements.
+ * @param before Source shape.
+ * @param after Target shape with batch size 1.
+ * @return A shape with dims of `after` and batch size of `before`.
+ */
+Shape reshape(const Shape &before, const Shape &after);
+
+/**
+ * Calculates the flattened shape.
+ * @param x A shape.
+ * @return Flattened shape.
+ */
+Shape flatten(const Shape &x);
+
+/**
  * Calculates the shape after the scalar operation.
  * @param x A shape.
  * @param k A scalar shape.

@@ -13,6 +13,63 @@ namespace shape_ops {
 
 class ShapeOpsTest : public testing::Test {};
 
+TEST_F(ShapeOpsTest, CheckReshape) {
+  struct TestCase { Shape a, b, expected; };
+  const vector<TestCase> test_cases {
+    {{}, {}, {}},
+    {{2, 1, 2}, {2, 1, 2}, {2, 1, 2}},
+    {{2, 1, 2}, {2, 2}, {2, 2}},
+    {{2, 1, 2}, {4}, {4}},
+    {{2, 2}, {2, 1, 2}, {2, 1, 2}},
+    {{2, 2}, {2, 2}, {2, 2}},
+    {{2, 2}, {4}, {4}},
+    {{4}, {2, 1, 2}, {2, 1, 2}},
+    {{4}, {2, 2}, {2, 2}},
+    {{4}, {4}, {4}},
+    {Shape({2, 1, 2}, 3), {2, 1, 2}, Shape({2, 1, 2}, 3)},
+    {Shape({2, 1, 2}, 3), {2, 2}, Shape({2, 2}, 3)},
+    {Shape({2, 1, 2}, 3), {4}, Shape({4}, 3)},
+    {Shape({2, 2}, 3), {2, 1, 2}, Shape({2, 1, 2}, 3)},
+    {Shape({2, 2}, 3), {2, 2}, Shape({2, 2}, 3)},
+    {Shape({2, 2}, 3), {4}, Shape({4}, 3)},
+    {Shape({4}, 3), {2, 1, 2}, Shape({2, 1, 2}, 3)},
+    {Shape({4}, 3), {2, 2}, Shape({2, 2}, 3)},
+    {Shape({4}, 3), {4}, Shape({4}, 3)},
+  };
+  for (const TestCase &tc : test_cases) {
+    EXPECT_EQ(tc.expected, reshape(tc.a, tc.b));
+  }
+}
+
+TEST_F(ShapeOpsTest, CheckInvalidReshape) {
+  struct TestCase { Shape a, b; };
+  const vector<TestCase> test_cases {
+    {{2}, {3}},
+    {{}, Shape({}, 4)},
+    {{2}, Shape({3}, 4)},
+  };
+  for (const TestCase &tc : test_cases) {
+    EXPECT_THROW(reshape(tc.a, tc.b), Error);
+  }
+}
+
+TEST_F(ShapeOpsTest, CheckFlatten) {
+  struct TestCase { Shape x, expected; };
+  const vector<TestCase> test_cases {
+    {{}, {}},
+    {{2}, {2}},
+    {{2, 2}, {4}},
+    {{2, 1, 2}, {4}},
+    {Shape({}, 3), Shape({}, 3)},
+    {Shape({2}, 3), Shape({2}, 3)},
+    {Shape({2, 2}, 3), Shape({4}, 3)},
+    {Shape({2, 1, 2}, 3), Shape({4}, 3)},
+  };
+  for (const TestCase &tc : test_cases) {
+    EXPECT_EQ(tc.expected, flatten(tc.x));
+  }
+}
+
 TEST_F(ShapeOpsTest, CheckScalarOp) {
   struct TestCase { Shape a, b, expected; };
   const vector<TestCase> test_cases {

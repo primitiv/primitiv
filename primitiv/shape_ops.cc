@@ -7,6 +7,20 @@
 namespace primitiv {
 namespace shape_ops {
 
+Shape reshape(const Shape &before, const Shape &after) {
+  if (before.num_elements_per_sample() != after.num_elements_per_sample() ||
+      after.has_batch()) {
+    THROW_ERROR(
+        "Invalid shapes to reshape. before: " << before.to_string()
+        << ", after: " << after.to_string());
+  }
+  return after.resize_batch(before.batch_size());
+}
+
+Shape flatten(const Shape &x) {
+  return Shape({x.num_elements_per_sample()}, x.batch_size());
+}
+
 Shape scalar_op(const Shape &x, const Shape &k) {
   if (!k.is_scalar() || !x.has_compatible_batch(k)) {
     THROW_ERROR(
