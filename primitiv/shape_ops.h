@@ -9,12 +9,12 @@ namespace shape_ops {
 
 /**
  * Calculates the shape after the scalar operation.
- * @param a A shape.
- * @param b Other shape.
- * @return A shape, that is equivalent to `(a + b).shape()`.
- * @remarks At least one of `a` or `b` should be the scalar: `Shape({}, k)`.
+ * @param x A shape.
+ * @param k A scalar shape.
+ * @return A shape, that is equivalent to `(x + k).shape()`.
+ * @remarks `k` should be a scalar: `Shape({}, batch_size)`.
  */
-Shape scalar_op(const Shape &a, const Shape &b);
+Shape scalar_op(const Shape &x, const Shape &k);
 
 /**
  * Calculates the shape after the elementwise operation.

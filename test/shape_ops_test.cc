@@ -18,13 +18,10 @@ TEST_F(ShapeOpsTest, CheckScalarOp) {
   const vector<TestCase> test_cases {
     {{}, {}, {}},
     {{2}, {}, {2}},
-    {{}, {2}, {2}},
     {{}, Shape({}, 4), Shape({}, 4)},
     {{2}, Shape({}, 4), Shape({2}, 4)},
-    {{}, Shape({2}, 4), Shape({2}, 4)},
     {Shape({}, 3), {}, Shape({}, 3)},
     {Shape({2}, 3), {}, Shape({2}, 3)},
-    {Shape({}, 3), {2}, Shape({2}, 3)},
   };
   for (const TestCase &tc : test_cases) {
     EXPECT_EQ(tc.expected, scalar_op(tc.a, tc.b));
@@ -34,8 +31,11 @@ TEST_F(ShapeOpsTest, CheckScalarOp) {
 TEST_F(ShapeOpsTest, CheckInvalidScalarOp) {
   struct TestCase { Shape a, b; };
   const vector<TestCase> test_cases {
+    {{}, {2}},
     {{2}, {2}},
+    {{}, Shape({2}, 4)},
     {{2}, Shape({2}, 4)},
+    {Shape({}, 3), {2}},
     {Shape({2}, 3), {2}},
     {Shape({}, 3), Shape({}, 4)},
     {Shape({2}, 3), Shape({}, 4)},
