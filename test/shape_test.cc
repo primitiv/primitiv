@@ -191,6 +191,12 @@ TEST_F(ShapeTest, CheckCopy) {
   EXPECT_EQ(src2, copied);
 }
 
+TEST_F(ShapeTest, CheckCopyToThis) {
+  Shape a({2, 3, 5}, 7);
+  a = a;
+  EXPECT_EQ(Shape({2, 3, 5}, 7), a);
+}
+
 TEST_F(ShapeTest, CheckMove) {
   Shape src1({2, 3, 5}, 7);
   const Shape trg1({2, 3, 5}, 7);
@@ -204,6 +210,12 @@ TEST_F(ShapeTest, CheckMove) {
   // operator=
   moved = std::move(src2);
   EXPECT_EQ(trg2, moved);
+}
+
+TEST_F(ShapeTest, CheckMoveToThis) {
+  Shape a({2, 3, 5}, 7);
+  a = std::move(a);
+  EXPECT_EQ(Shape({2, 3, 5}, 7), a);
 }
 
 TEST_F(ShapeTest, CheckHasBatch) {

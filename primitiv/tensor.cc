@@ -8,13 +8,6 @@ using std::move;
 
 namespace primitiv {
 
-Tensor::Tensor(Tensor &&src)
-: shape_(move(src.shape_))
-, device_(src.device_)
-, data_(move(src.data_)) {
-  src.device_ = nullptr;
-}
-
 Tensor &Tensor::operator=(Tensor &&src) {
   if (this != &src) {
     shape_ = move(src.shape_);

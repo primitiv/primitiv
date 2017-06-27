@@ -19,6 +19,11 @@ namespace primitiv {
  */
 class Shape {
 public:
+  Shape(const Shape &) = default;
+  Shape(Shape &&) = default;
+  Shape &operator=(const Shape &) = default;
+  Shape &operator=(Shape &&);
+
   /**
    * Creates a new scalar Shape object.
    */
@@ -29,14 +34,24 @@ public:
    * @param dims List of the dimension sizes.
    * @param k Batch size.
    */
-  Shape(const std::initializer_list<unsigned> &dims, const unsigned k = 1);
+  Shape(std::initializer_list<unsigned> dims, const unsigned k = 1)
+    : dims_(dims), k_(k) { adjust(); }
 
   /**
    * Creates a new Shape object.
    * @param dims List of the dimension sizes.
    * @param k Batch size.
    */
-  Shape(const std::vector<unsigned> &dims, const unsigned k = 1);
+  Shape(const std::vector<unsigned> &dims, const unsigned k = 1)
+    : dims_(dims), k_(k) { adjust(); }
+
+  /**
+   * Creates a new Shape object.
+   * @param dims List of the dimension sizes.
+   * @param k Batch size.
+   */
+  Shape(std::vector<unsigned> &&dims, const unsigned k = 1)
+    : dims_(std::move(dims)), k_(k) { adjust(); }
 
   /**
    * Returns the size of the i-th dimension.
@@ -141,9 +156,7 @@ public:
    * @param rhs Shape object to compare.
    * @return true if both shape have same dimensions, false otherwise.
    */
-  bool has_same_dims(const Shape &rhs) const {
-    return dims_ == rhs.dims_;
-  }
+  bool has_same_dims(const Shape &rhs) const { return dims_ == rhs.dims_; }
 
   /**
    * Checks whether two shapes have same dimensions without an axis.

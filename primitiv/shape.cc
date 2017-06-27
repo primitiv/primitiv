@@ -3,20 +3,15 @@
 #include <primitiv/error.h>
 #include <primitiv/shape.h>
 
-using std::initializer_list;
-using std::string;
-using std::vector;
-
 namespace primitiv {
 
-Shape::Shape(const initializer_list<unsigned> &dims, const unsigned k)
-: dims_(dims), k_(k) {
-  adjust();
-}
-
-Shape::Shape(const vector<unsigned> &dims, const unsigned k)
-: dims_(dims), k_(k) {
-  adjust();
+Shape &Shape::operator=(Shape &&src) {
+  if (&src != this) {
+    dims_ = std::move(src.dims_);
+    k_ = src.k_;
+    num_elms_per_sample_ = src.num_elms_per_sample_;
+  }
+  return *this;
 }
 
 unsigned Shape::num_elements_under_rank(unsigned rank) const {
@@ -25,7 +20,7 @@ unsigned Shape::num_elements_under_rank(unsigned rank) const {
   return ret;
 }
 
-string Shape::to_string() const {
+std::string Shape::to_string() const {
   std::stringstream s;
   s << '[';
   for (unsigned i = 0; i < depth(); ++i) {

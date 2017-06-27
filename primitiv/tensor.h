@@ -17,15 +17,14 @@ class Tensor {
 
 public:
   Tensor(const Tensor &) = default;
-  Tensor(Tensor &&);
+  Tensor(Tensor &&) = default;
   Tensor &operator=(const Tensor &) = default;
   Tensor &operator=(Tensor &&);
-  ~Tensor() = default;
 
   /**
    * Creates an invalid Tensor.
    */
-  Tensor() : shape_(), device_(nullptr), data_(nullptr) {}
+  Tensor() : shape_(), device_(nullptr), data_() {}
 
   /**
    * Returns the shape of the Tensor.
@@ -123,8 +122,11 @@ private:
    * @param device Device object to manage the internal memory.
    * @param data Pointer of the device-specific object.
    */
-  Tensor(const Shape &shape, Device *device, const std::shared_ptr<void> &data)
-    : shape_(shape), device_(device), data_(data) {}
+  template <typename ShapeT, typename SharedPtrT>
+  Tensor(ShapeT &&shape, Device *device, SharedPtrT &&data)
+    : shape_(std::forward<ShapeT>(shape))
+    , device_(device)
+    , data_(std::forward<SharedPtrT>(data)) {}
 
   Shape shape_;
   Device *device_;
