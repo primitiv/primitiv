@@ -1,6 +1,7 @@
 #include <config.h>
 
 #include <vector>
+#include <primitiv/error.h>
 #include <primitiv/function_impl.h>
 #include <primitiv/graph.h>
 #include <primitiv/node.h>
@@ -8,75 +9,84 @@
 #include <primitiv/shape.h>
 #include <primitiv/parameter.h>
 
+namespace F = primitiv::functions;
+
+#define REG(x) (x).graph()->add_function
+
 namespace primitiv {
 
-Node operator+(const Node &x) { return x.graph()->add_function(new functions::Positive(), {x}); }
-Node operator-(const Node &x) { return x.graph()->add_function(new functions::Negative(), {x}); }
-Node operator+(const Node &x, float k) { return x.graph()->add_function(new functions::AddConst(k), {x}); }
-Node operator+(float k, const Node &x) { return x.graph()->add_function(new functions::AddConst(k), {x}); }
-Node operator+(const Node &a, const Node &b) { return a.graph()->add_function(new functions::Add(), {a, b}); }
-Node operator-(const Node &x, float k) { return x.graph()->add_function(new functions::SubtractConstR(k), {x}); }
-Node operator-(float k, const Node &x) { return x.graph()->add_function(new functions::SubtractConstL(k), {x}); }
-Node operator-(const Node &a, const Node &b) { return a.graph()->add_function(new functions::Subtract(), {a, b}); }
-Node operator*(const Node &x, float k) { return x.graph()->add_function(new functions::MultiplyConst(k), {x}); }
-Node operator*(float k, const Node &x) { return x.graph()->add_function(new functions::MultiplyConst(k), {x}); }
-Node operator*(const Node &a, const Node &b) { return a.graph()->add_function(new functions::Multiply(), {a, b}); }
-Node operator/(const Node &x, float k) { return x.graph()->add_function(new functions::DivideConstR(k), {x}); }
-Node operator/(float k, const Node &x) { return x.graph()->add_function(new functions::DivideConstL(k), {x}); }
-Node operator/(const Node &a, const Node &b) { return a.graph()->add_function(new functions::Divide(), {a, b}); }
+Node operator+(const Node &x) { return REG(x)(new F::Positive(), {x}); }
+Node operator-(const Node &x) { return REG(x)(new F::Negative(), {x}); }
+Node operator+(const Node &x, float k) { return REG(x)(new F::AddConst(k), {x}); }
+Node operator+(float k, const Node &x) { return REG(x)(new F::AddConst(k), {x}); }
+Node operator+(const Node &a, const Node &b) { return REG(a)(new F::Add(), {a, b}); }
+Node operator-(const Node &x, float k) { return REG(x)(new F::SubtractConstR(k), {x}); }
+Node operator-(float k, const Node &x) { return REG(x)(new F::SubtractConstL(k), {x}); }
+Node operator-(const Node &a, const Node &b) { return REG(a)(new F::Subtract(), {a, b}); }
+Node operator*(const Node &x, float k) { return REG(x)(new F::MultiplyConst(k), {x}); }
+Node operator*(float k, const Node &x) { return REG(x)(new F::MultiplyConst(k), {x}); }
+Node operator*(const Node &a, const Node &b) { return REG(a)(new F::Multiply(), {a, b}); }
+Node operator/(const Node &x, float k) { return REG(x)(new F::DivideConstR(k), {x}); }
+Node operator/(float k, const Node &x) { return REG(x)(new F::DivideConstL(k), {x}); }
+Node operator/(const Node &a, const Node &b) { return REG(a)(new F::Divide(), {a, b}); }
 
 namespace node_ops {
 
 Node input(const Shape &shape, const std::vector<float> &data, Device *dev, Graph *g) {
-  return g->add_function(new functions::Input(shape, data, dev), {});
+  return g->add_function(new F::Input(shape, data, dev), {});
 }
 
 Node input(Parameter *param, Graph *g) {
-  return g->add_function(new functions::ParameterInput(param), {});
+  return g->add_function(new F::ParameterInput(param), {});
 }
 
 Node copy(const Node &x, Device *dev) {
-  return x.graph()->add_function(new functions::Copy(dev), {x});
+  return REG(x)(new F::Copy(dev), {x});
 }
 
 Node pick(const Node &x, unsigned dim, const std::vector<unsigned> &ids) {
-  return x.graph()->add_function(new functions::Pick(dim, ids), {x});
+  return REG(x)(new F::Pick(dim, ids), {x});
 }
 
 Node slice(const Node &x, unsigned dim, unsigned lower, unsigned upper) {
-  return x.graph()->add_function(new functions::Slice(dim, lower, upper), {x});
+  return REG(x)(new F::Slice(dim, lower, upper), {x});
+}
+
+Node concat(const std::vector<Node> &xs, unsigned dim) {
+  if (xs.empty()) THROW_ERROR("No nodes to concat.");
+  return REG(xs[0])(new F::Concat(dim), xs);
 }
 
 Node transpose(const Node &x) {
-  return x.graph()->add_function(new functions::Transpose(), {x});
+  return REG(x)(new F::Transpose(), {x});
 }
 
 Node dot(const Node &a, const Node &b) {
-  return a.graph()->add_function(new functions::Dot(), {a, b});
+  return REG(a)(new F::Dot(), {a, b});
 }
 
 Node sqrt(const Node &x) {
-  return x.graph()->add_function(new functions::Sqrt(), {x});
+  return REG(x)(new F::Sqrt(), {x});
 }
 
 Node exp(const Node &x) {
-  return x.graph()->add_function(new functions::Exp(), {x});
+  return REG(x)(new F::Exp(), {x});
 }
 
 Node tanh(const Node &x) {
-  return x.graph()->add_function(new functions::Tanh(), {x});
+  return REG(x)(new F::Tanh(), {x});
 }
 
 Node sigmoid(const Node &x) {
-  return x.graph()->add_function(new functions::Sigmoid(), {x});
+  return REG(x)(new F::Sigmoid(), {x});
 }
 
 Node relu(const Node &x) {
-  return x.graph()->add_function(new functions::ReLU(), {x});
+  return REG(x)(new F::ReLU(), {x});
 }
 
 Node sum(const Node &x, unsigned dim) {
-  return x.graph()->add_function(new functions::Sum(dim), {x});
+  return REG(x)(new F::Sum(dim), {x});
 }
 
 Node mean(const Node &x, unsigned dim) {
@@ -84,7 +94,7 @@ Node mean(const Node &x, unsigned dim) {
 }
 
 Node logsumexp(const Node &x, unsigned dim) {
-  return x.graph()->add_function(new functions::LogSumExp(dim), {x});
+  return REG(x)(new F::LogSumExp(dim), {x});
 }
 
 Node log_softmax(const Node &x, unsigned dim) {
@@ -96,11 +106,11 @@ Node softmax(const Node &x, unsigned dim) {
 }
 
 Node broadcast(const Node &x, unsigned dim, unsigned size) {
-  return x.graph()->add_function(new functions::Broadcast(dim, size), {x});
+  return REG(x)(new F::Broadcast(dim, size), {x});
 }
 
 Node softmax_cross_entropy(const Node &x, const Node &t, unsigned dim) {
-  return x.graph()->add_function(new functions::SoftmaxCrossEntropy(dim), {x, t});
+  return REG(x)(new F::SoftmaxCrossEntropy(dim), {x, t});
 }
 
 Node softmax_cross_entropy(const Node &x, unsigned dim, const std::vector<unsigned> &ids) {
@@ -117,7 +127,7 @@ Node dropout(const Node &x, float rate, bool enabled) {
 namespace batch {
 
 Node sum(const Node &x) {
-  return x.graph()->add_function(new functions::BatchSum(), {x});
+  return REG(x)(new F::BatchSum(), {x});
 }
 
 Node mean(const Node &x) {
@@ -138,19 +148,19 @@ Node normalize(const Node &x) {
 namespace random {
 
 Node bernoulli(const Shape &shape, float p, Device *dev, Graph *g) {
-  return g->add_function(new functions::RandomBernoulli(shape, p, dev), {});
+  return g->add_function(new F::RandomBernoulli(shape, p, dev), {});
 }
 
 Node uniform(const Shape &shape, float lower, float upper, Device *dev, Graph *g) {
-  return g->add_function(new functions::RandomUniform(shape, lower, upper, dev), {});
+  return g->add_function(new F::RandomUniform(shape, lower, upper, dev), {});
 }
 
 Node normal(const Shape &shape, float mean, float sd, Device *dev, Graph *g) {
-  return g->add_function(new functions::RandomNormal(shape, mean, sd, dev), {});
+  return g->add_function(new F::RandomNormal(shape, mean, sd, dev), {});
 }
 
 Node log_normal(const Shape &shape, float mean, float sd, Device *dev, Graph *g) {
-  return g->add_function(new functions::RandomLogNormal(shape, mean, sd, dev), {});
+  return g->add_function(new F::RandomLogNormal(shape, mean, sd, dev), {});
 }
 
 }  // namespace random

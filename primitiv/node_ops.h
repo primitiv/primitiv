@@ -32,6 +32,7 @@ Node input(Parameter *param, Graph *g);
 Node copy(const Node &x, Device *dev);
 Node pick(const Node &x, unsigned dim, const std::vector<unsigned> &ids);
 Node slice(const Node &x, unsigned dim, unsigned lower, unsigned upper);
+Node concat(const std::vector<Node> &xs, unsigned dim);
 Node transpose(const Node &x);
 Node dot(const Node &a, const Node &b);
 Node sqrt(const Node &x);
