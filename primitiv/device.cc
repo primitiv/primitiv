@@ -260,6 +260,21 @@ Tensor Device::sigmoid(const Tensor &x) {
   return sigmoid_impl(x);
 }
 
+Tensor Device::sin(const Tensor &x) {
+  CHECK_DEVICE(x);
+  return sin_impl(x);
+}
+
+Tensor Device::cos(const Tensor &x) {
+  CHECK_DEVICE(x);
+  return cos_impl(x);
+}
+
+Tensor Device::tan(const Tensor &x) {
+  CHECK_DEVICE(x);
+  return tan_impl(x);
+}
+
 Tensor Device::pstep(const Tensor &x, float a) {
   if (a < 0 || a > 1) {
     THROW_ERROR("Parameter of 'pstep' should be in [0, 1]. a: " << a);

@@ -282,6 +282,9 @@ DECL_FUNC(Sqrt);
 DECL_FUNC(Exp);
 DECL_FUNC(Tanh);
 DECL_FUNC(Sigmoid);
+DECL_FUNC(Sin);
+DECL_FUNC(Cos);
+DECL_FUNC(Tan);
 DECL_FUNC(ReLU);
 
 DECL_FUNC(BatchSum);

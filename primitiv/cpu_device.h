@@ -78,6 +78,9 @@ private:
   Tensor exp_impl(const Tensor &x) override;
   Tensor tanh_impl(const Tensor &x) override;
   Tensor sigmoid_impl(const Tensor &x) override;
+  Tensor sin_impl(const Tensor &x) override;
+  Tensor cos_impl(const Tensor &x) override;
+  Tensor tan_impl(const Tensor &x) override;
   Tensor pstep_impl(const Tensor &x, float a) override;
   Tensor prelu_impl(const Tensor &x, float a) override;
 

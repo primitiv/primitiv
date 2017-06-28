@@ -239,6 +239,9 @@ FWD_SHAPE_UNARY(Sqrt);
 FWD_SHAPE_UNARY(Exp);
 FWD_SHAPE_UNARY(Tanh);
 FWD_SHAPE_UNARY(Sigmoid);
+FWD_SHAPE_UNARY(Sin);
+FWD_SHAPE_UNARY(Cos);
+FWD_SHAPE_UNARY(Tan);
 FWD_SHAPE_UNARY(ReLU);
 FWD_SHAPE_UNARY(PReLU);
 FWD_SHAPE_SCALAR(AddScalar);
@@ -328,6 +331,9 @@ FORWARD(Sqrt) { return T::sqrt(*x[0]); }
 FORWARD(Exp) { return T::exp(*x[0]); }
 FORWARD(Tanh) { return T::tanh(*x[0]); }
 FORWARD(Sigmoid) { return T::sigmoid(*x[0]); }
+FORWARD(Sin) { return T::sin(*x[0]); }
+FORWARD(Cos) { return T::cos(*x[0]); }
+FORWARD(Tan) { return T::tan(*x[0]); }
 FORWARD(ReLU) { return T::relu(*x[0]); }
 FORWARD(PReLU) { return T::prelu(*x[0], k_); }
 
@@ -419,6 +425,9 @@ BACKWARD(Sqrt) { ADD(0, .5 * yg / y); }
 BACKWARD(Exp) { ADD(0, y * yg); }
 BACKWARD(Tanh) { ADD(0, (1 - y * y) * yg); }
 BACKWARD(Sigmoid) { ADD(0, y * (1 - y) * yg); }
+BACKWARD(Sin) { ADD(0, T::cos(*x[0]) * yg); }
+BACKWARD(Cos) { ADD(0, -T::sin(*x[0]) * yg); }
+BACKWARD(Tan) { ADD(0, (1 + y * y) * yg); }
 BACKWARD(ReLU) { ADD(0, T::step(*x[0]) * yg); }
 BACKWARD(PReLU) { ADD(0, T::pstep(*x[0], k_) * yg); }
 

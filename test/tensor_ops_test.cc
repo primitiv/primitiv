@@ -1070,6 +1070,57 @@ TEST_F(TensorOpsTest, CheckSigmoid) {
   }
 }
 
+TEST_F(TensorOpsTest, CheckSin) {
+  const vector<float> x_data {
+    0, .5, 1, 2, 3, 4,
+    0, -.5, -1, -2, -3, -4,
+  };
+  const vector<float> y_data {
+    0, .47942554, .84147098, .90929743, .14112001, -.75680250,
+    0, -.47942554, -.84147098, -.90929743, -.14112001, .75680250,
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
+    const Tensor y = sin(x);
+    EXPECT_EQ(Shape({2, 3}, 2), y.shape());
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+  }
+}
+
+TEST_F(TensorOpsTest, CheckCos) {
+  const vector<float> x_data {
+    0, .5, 1, 2, 3, 4,
+    0, -.5, -1, -2, -3, -4,
+  };
+  const vector<float> y_data {
+    1, .87758256, .54030231, -.41614684, -.98999250, -.65364362,
+    1, .87758256, .54030231, -.41614684, -.98999250, -.65364362,
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
+    const Tensor y = cos(x);
+    EXPECT_EQ(Shape({2, 3}, 2), y.shape());
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+  }
+}
+
+TEST_F(TensorOpsTest, CheckTan) {
+  const vector<float> x_data {
+    0, .5, 1, 2, 3, 4,
+    0, -.5, -1, -2, -3, -4,
+  };
+  const vector<float> y_data {
+    0, .54630249, 1.5574077, -2.1850399, -.14254654, 1.1578213,
+    0, -.54630249, -1.5574077, 2.1850399, .14254654, -1.1578213,
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
+    const Tensor y = tan(x);
+    EXPECT_EQ(Shape({2, 3}, 2), y.shape());
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+  }
+}
+
 TEST_F(TensorOpsTest, CheckStep) {
   const vector<float> x_data {
     0, .5, 1, 2, 4, 8,

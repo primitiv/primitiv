@@ -813,6 +813,60 @@ TEST_F(FunctionImplTest, CheckTanh) {
   TEST_1ARG_NEAR(Tanh, 1e-6);
 }
 
+TEST_F(FunctionImplTest, CheckSin) {
+  // y = sin(x)
+  // dy/dx = cos(x)
+  setup_1arg();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    .84147098, .90929743, .14112001, -.75680250,
+    0, 0, 0, 0,
+    -.84147098, -.90929743, -.14112001, .75680250,
+  };
+  const vector<float> bw_grad {
+    .54030231, -.41614684, -.98999250, -.65364362,
+    1, 1, 1, 1,
+    .54030231, -.41614684, -.98999250, -.65364362,
+  };
+  TEST_1ARG(Sin);
+}
+
+TEST_F(FunctionImplTest, CheckCos) {
+  // y = cos(x)
+  // dy/dx = -sin(x)
+  setup_1arg();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    .54030231, -.41614684, -.98999250, -.65364362,
+    1, 1, 1, 1,
+    .54030231, -.41614684, -.98999250, -.65364362,
+  };
+  const vector<float> bw_grad {
+    -.84147098, -.90929743, -.14112001, .75680250,
+    0, 0, 0, 0,
+    .84147098, .90929743, .14112001, -.75680250,
+  };
+  TEST_1ARG(Cos);
+}
+
+TEST_F(FunctionImplTest, CheckTan) {
+  // y = tan(x)
+  // dy/dx = 1 + y^2
+  setup_1arg();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    1.5574077, -2.1850399, -.14254654, 1.1578213,
+    0, 0, 0, 0,
+    -1.5574077, 2.1850399, .14254654, -1.1578213,
+  };
+  const vector<float> bw_grad {
+    3.4255188, 5.7743992, 1.0203195, 2.3405501,
+    1, 1, 1, 1,
+    3.4255188, 5.7743992, 1.0203195, 2.3405501,
+  };
+  TEST_1ARG(Tan);
+}
+
 TEST_F(FunctionImplTest, CheckSigmoid) {
   // y = sigmoid(x)
   // dy/dx = y * (1 - y)

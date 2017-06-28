@@ -120,6 +120,18 @@ Tensor sigmoid(const Tensor &x) {
   return x.device()->sigmoid(x);
 }
 
+Tensor sin(const Tensor &x) {
+  return x.device()->sin(x);
+}
+
+Tensor cos(const Tensor &x) {
+  return x.device()->cos(x);
+}
+
+Tensor tan(const Tensor &x) {
+  return x.device()->tan(x);
+}
+
 Tensor step(const Tensor &x) {
   return x.device()->pstep(x, 0);
 }

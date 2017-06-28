@@ -29,28 +29,38 @@ namespace node_ops {
 
 Node input(const Shape &shape, const std::vector<float> &data, Device *dev, Graph *g);
 Node input(Parameter *param, Graph *g);
+
 Node copy(const Node &x, Device *dev);
 Node pick(const Node &x, unsigned dim, const std::vector<unsigned> &ids);
 Node slice(const Node &x, unsigned dim, unsigned lower, unsigned upper);
 Node concat(const std::vector<Node> &xs, unsigned dim);
+
 Node reshape(const Node &x, const Shape &shape);
 Node flatten(const Node &x);
+
 Node transpose(const Node &x);
 Node dot(const Node &a, const Node &b);
+
 Node sqrt(const Node &x);
 Node exp(const Node &x);
 Node tanh(const Node &x);
 Node sigmoid(const Node &x);
+Node sin(const Node &x);
+Node cos(const Node &x);
+Node tan(const Node &x);
 Node relu(const Node &x);
 Node prelu(const Node &x, float a);
+
 Node sum(const Node &x, unsigned dim);
 Node mean(const Node &x, unsigned dim);
 Node logsumexp(const Node &x, unsigned dim);
 Node log_softmax(const Node &x, unsigned dim);
 Node softmax(const Node &x, unsigned dim);
 Node broadcast(const Node &x, unsigned dim, unsigned size);
+
 Node softmax_cross_entropy(const Node &x, const Node &t, unsigned dim);
 Node softmax_cross_entropy(const Node &x, unsigned dim, const std::vector<unsigned> &ids);
+
 Node dropout(const Node &x, float rate, bool enabled);
 
 namespace batch {

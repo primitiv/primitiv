@@ -64,6 +64,9 @@ CUDA_KERNEL_X(dev_sqrt, ::sqrtf(px[i]));
 CUDA_KERNEL_X(dev_exp, ::expf(px[i]));
 CUDA_KERNEL_X(dev_tanh, ::tanhf(px[i]));
 CUDA_KERNEL_X(dev_sigmoid, .5f + .5f * ::tanhf(.5f * px[i]));
+CUDA_KERNEL_X(dev_sin, ::sinf(px[i]));
+CUDA_KERNEL_X(dev_cos, ::cosf(px[i]));
+CUDA_KERNEL_X(dev_tan, ::tanf(px[i]));
 
 CUDA_KERNEL_XK(dev_add_const, px[i] + k);
 CUDA_KERNEL_XK(dev_subtract_const_r, px[i] - k);
@@ -566,6 +569,9 @@ CUDA_DEV_UNARY(sqrt_impl, dev_sqrt);
 CUDA_DEV_UNARY(exp_impl, dev_exp);
 CUDA_DEV_UNARY(tanh_impl, dev_tanh);
 CUDA_DEV_UNARY(sigmoid_impl, dev_sigmoid);
+CUDA_DEV_UNARY(sin_impl, dev_sin);
+CUDA_DEV_UNARY(cos_impl, dev_cos);
+CUDA_DEV_UNARY(tan_impl, dev_tan);
 
 CUDA_DEV_BINARY_CONST(add_const_impl, dev_add_const);
 CUDA_DEV_BINARY_CONST(subtract_const_r_impl, dev_subtract_const_r);

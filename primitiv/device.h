@@ -340,6 +340,27 @@ public:
   Tensor sigmoid(const Tensor &x);
 
   /**
+   * Calculates the sin function.
+   * @param x A tensor.
+   * @return `sin(x)`
+   */
+  Tensor sin(const Tensor &x);
+
+  /**
+   * Calculates the cos function.
+   * @param x A tensor.
+   * @return `sin(x)`
+   */
+  Tensor cos(const Tensor &x);
+
+  /**
+   * Calculates the tan function.
+   * @param x A tensor.
+   * @return `sin(x)`
+   */
+  Tensor tan(const Tensor &x);
+
+  /**
    * Calculates the step function with the lowerbound.
    * @param x A tensor.
    * @param a Lowerbound value.
@@ -507,6 +528,9 @@ private:
   virtual Tensor exp_impl(const Tensor &x) = 0;
   virtual Tensor tanh_impl(const Tensor &x) = 0;
   virtual Tensor sigmoid_impl(const Tensor &x) = 0;
+  virtual Tensor sin_impl(const Tensor &x) = 0;
+  virtual Tensor cos_impl(const Tensor &x) = 0;
+  virtual Tensor tan_impl(const Tensor &x) = 0;
   virtual Tensor pstep_impl(const Tensor &x, float a) = 0;
   virtual Tensor prelu_impl(const Tensor &x, float a) = 0;
 

@@ -113,6 +113,18 @@ Node sigmoid(const Node &x) {
   return REG(x)(new F::Sigmoid(), {x});
 }
 
+Node sin(const Node &x) {
+  return REG(x)(new F::Sin(), {x});
+}
+
+Node cos(const Node &x) {
+  return REG(x)(new F::Cos(), {x});
+}
+
+Node tan(const Node &x) {
+  return REG(x)(new F::Tan(), {x});
+}
+
 Node relu(const Node &x) {
   return REG(x)(new F::ReLU(), {x});
 }

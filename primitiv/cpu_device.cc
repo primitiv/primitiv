@@ -476,59 +476,38 @@ Tensor CPUDevice::dot_impl(
   return ret;
 }
 
-Tensor CPUDevice::sqrt_impl(const Tensor &x) {
-  Tensor ret = new_tensor(x.shape());
-  float *dest = DATA(ret);
-  const float *src = CDATA(x);
-  const unsigned size = x.shape().num_total_elements();
-  REPEAT_OP(i, size, dest[i] = std::sqrt(src[i]));
-  return ret;
+#define CPUDEV_FUNC_X(name, op) \
+Tensor CPUDevice::name(const Tensor &x) { \
+  Tensor ret = new_tensor(x.shape()); \
+  float *dest = DATA(ret); \
+  const float *src = CDATA(x); \
+  const unsigned size = x.shape().num_total_elements(); \
+  REPEAT_OP(i, size, dest[i] = (op)); \
+  return ret; \
 }
 
-Tensor CPUDevice::exp_impl(const Tensor &x) {
-  Tensor ret = new_tensor(x.shape());
-  float *dest = DATA(ret);
-  const float *src = CDATA(x);
-  const unsigned size = x.shape().num_total_elements();
-  REPEAT_OP(i, size, dest[i] = std::exp(src[i]));
-  return ret;
+#define CPUDEV_FUNC_XK(name, op) \
+Tensor CPUDevice::name(const Tensor &x, float k) { \
+  Tensor ret = new_tensor(x.shape()); \
+  float *dest = DATA(ret); \
+  const float *src = CDATA(x); \
+  const unsigned size = x.shape().num_total_elements(); \
+  REPEAT_OP(i, size, dest[i] = (op)); \
+  return ret; \
 }
 
-Tensor CPUDevice::tanh_impl(const Tensor &x) {
-  Tensor ret = new_tensor(x.shape());
-  float *dest = DATA(ret);
-  const float *src = CDATA(x);
-  const unsigned size = x.shape().num_total_elements();
-  REPEAT_OP(i, size, dest[i] = std::tanh(src[i]));
-  return ret;
-}
+CPUDEV_FUNC_X(sqrt_impl, std::sqrt(src[i]));
+CPUDEV_FUNC_X(exp_impl, std::exp(src[i]));
+CPUDEV_FUNC_X(tanh_impl, std::tanh(src[i]));
+CPUDEV_FUNC_X(sigmoid_impl, .5 + .5 * std::tanh(.5 * src[i]));
+CPUDEV_FUNC_X(sin_impl, std::sin(src[i]));
+CPUDEV_FUNC_X(cos_impl, std::cos(src[i]));
+CPUDEV_FUNC_X(tan_impl, std::tan(src[i]));
+CPUDEV_FUNC_XK(pstep_impl, (src[i] > 0) + k * (src[i] <= 0));
+CPUDEV_FUNC_XK(prelu_impl, src[i] * ((src[i] > 0) + k * (src[i] <= 0)));
 
-Tensor CPUDevice::sigmoid_impl(const Tensor &x) {
-  Tensor ret = new_tensor(x.shape());
-  float *dest = DATA(ret);
-  const float *src = CDATA(x);
-  const unsigned size = x.shape().num_total_elements();
-  REPEAT_OP(i, size, dest[i] = .5 + .5 * std::tanh(.5 * src[i]));
-  return ret;
-}
-
-Tensor CPUDevice::pstep_impl(const Tensor &x, float a) {
-  Tensor ret = new_tensor(x.shape());
-  float *dest = DATA(ret);
-  const float *src = CDATA(x);
-  const unsigned size = x.shape().num_total_elements();
-  REPEAT_OP(i, size, dest[i] = (src[i] > 0) + a * (src[i] <= 0));
-  return ret;
-}
-
-Tensor CPUDevice::prelu_impl(const Tensor &x, float a) {
-  Tensor ret = new_tensor(x.shape());
-  float *dest = DATA(ret);
-  const float *src = CDATA(x);
-  const unsigned size = x.shape().num_total_elements();
-  REPEAT_OP(i, size, dest[i] = std::max(src[i], a * src[i]));
-  return ret;
-}
+#undef CPUDEV_FUNC_X
+#undef CPUDEV_FUNC_XK
 
 Tensor CPUDevice::sum_impl(const Tensor &x, unsigned dim) {
   const Shape new_shape = x.shape().resize_dim(dim, 1);
