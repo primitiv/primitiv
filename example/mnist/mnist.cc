@@ -3,8 +3,6 @@
 //
 // The model consists of a full-connected 2-layer (input/hidden/output)
 // perceptron with the softmax cross entropy loss.
-// In addition, his example calculates hidden/output layers using 2 different
-// GPUs.
 
 #include <algorithm>
 #include <cmath>
@@ -35,7 +33,7 @@ const unsigned NUM_TEST_SAMPLES = 10000;
 const unsigned NUM_INPUT_UNITS = 28 * 28;
 const unsigned NUM_HIDDEN_UNITS = 800;
 const unsigned NUM_OUTPUT_UNITS = 10;
-const unsigned BATCH_SIZE = 50;
+const unsigned BATCH_SIZE = 200;
 const unsigned NUM_TRAIN_BATCHES = NUM_TRAIN_SAMPLES / BATCH_SIZE;
 const unsigned NUM_TEST_BATCHES = NUM_TEST_SAMPLES / BATCH_SIZE;
 const unsigned MAX_EPOCH = 100;
@@ -75,47 +73,51 @@ vector<char> load_labels(const string &filename, const unsigned n) {
 
 int main() {
   // Loads data
-  vector<float> train_inputs = ::load_images("mnist_data/train-images-idx3-ubyte", NUM_TRAIN_SAMPLES);
-  vector<char> train_labels = ::load_labels("mnist_data/train-labels-idx1-ubyte", NUM_TRAIN_SAMPLES);
-  vector<float> test_inputs = ::load_images("mnist_data/t10k-images-idx3-ubyte", NUM_TEST_SAMPLES);
-  vector<char> test_labels = ::load_labels("mnist_data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES);
+  vector<float> train_inputs = ::load_images("data/train-images-idx3-ubyte", NUM_TRAIN_SAMPLES);
+  vector<char> train_labels = ::load_labels("data/train-labels-idx1-ubyte", NUM_TRAIN_SAMPLES);
+  vector<float> test_inputs = ::load_images("data/t10k-images-idx3-ubyte", NUM_TEST_SAMPLES);
+  vector<char> test_labels = ::load_labels("data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES);
 
-  // Initializes 2 device objects which manage different GPUs.
-  CUDADevice dev0(0);  // GPU 0
-  CUDADevice dev1(1);  // GPU 1
+  // Uses GPU.
+  CUDADevice dev(0);
 
-  // Parameters managed by GPU 0.
-  Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, XavierUniform(), &dev0);
-  Parameter pb1("b1", {NUM_HIDDEN_UNITS}, Constant(0), &dev0);
-  
-  // Parameters managed by GPU 1.
-  Parameter pw2("w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, XavierUniform(), &dev1);
-  Parameter pb2("b2", {NUM_OUTPUT_UNITS}, Constant(0), &dev1);
+  // Parameters for the multilayer perceptron.
+  Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, XavierUniform(), &dev);
+  Parameter pb1("b1", {NUM_HIDDEN_UNITS}, Constant(0), &dev);
+  Parameter pw2("w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, XavierUniform(), &dev);
+  Parameter pb2("b2", {NUM_OUTPUT_UNITS}, Constant(0), &dev);
+
+  // Parameters for batch normalization.
+  Parameter pbeta("beta", {NUM_HIDDEN_UNITS}, Constant(0), &dev);
+  Parameter pgamma("gamma", {NUM_HIDDEN_UNITS}, Constant(1), &dev);
 
   // Trainer
-  SGD trainer(.1);
+  SGD trainer(.5);
   trainer.add_parameter(&pw1);
   trainer.add_parameter(&pb1);
   trainer.add_parameter(&pw2);
   trainer.add_parameter(&pb2);
+  trainer.add_parameter(&pbeta);
+  trainer.add_parameter(&pgamma);
 
   // Helper lambda to construct the predictor network.
-  auto make_graph = [&](const vector<float> &inputs, Graph &g) {
-    // We first store input values on GPU 0.
-    Node x = F::input(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs, &dev0, &g);
+  auto make_graph = [&](const vector<float> &inputs, bool train, Graph &g) {
+    // Stores input values.
+    Node x = F::input(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs, &dev, &g);
+    // Calculates the hidden layer.
     Node w1 = F::input(&pw1, &g);
     Node b1 = F::input(&pb1, &g);
+    Node h = F::relu(F::dot(w1, x) + b1);
+    // Batch normalization
+    Node beta = F::input(&pbeta, &g);
+    Node gamma = F::input(&pgamma, &g);
+    h = F::batch::normalize(h) * gamma + beta;
+    // Dropout
+    //h = F::dropout(h, .5, train);
+    // Calculates the output layer.
     Node w2 = F::input(&pw2, &g);
     Node b2 = F::input(&pb2, &g);
-    // The hidden layer is calculated and implicitly stored on GPU 0.
-    Node h_on_gpu0 = F::relu(F::dot(w1, x) + b1);
-    // `copy()` transfers the hiddne layer to GPU 1.
-    Node h_on_gpu1 = F::copy(h_on_gpu0, &dev1);
-    // The output layer is calculated and implicitly stored on GPU 1.
-    return F::dot(w2, h_on_gpu1) + b2;
-    // Below line attempts to calculate values beyond multiple devices and
-    // will throw an exception (try if it's OK with you).
-    //return F::dot(w2, h_on_gpu0) + b2;
+    return F::dot(w2, h) + b2;
   };
 
   // Batch randomizer
@@ -142,9 +144,12 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      Node y = make_graph(inputs, g);
+      Node y = make_graph(inputs, true, g);
       Node loss = F::softmax_cross_entropy(y, 0, labels);
       Node avg_loss = F::batch::mean(loss);
+
+      // Dump computation graph at the first time.
+      if (epoch == 0 && batch == 0) g.dump();
 
       // Forward, backward, and updates parameters.
       trainer.reset_gradients();
@@ -165,7 +170,7 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      Node y = make_graph(inputs, g);
+      Node y = make_graph(inputs, false, g);
 
       // Gets outputs, argmax, and compares them with the label.
       vector<float> y_val = g.forward(y).to_vector();
@@ -182,6 +187,12 @@ int main() {
 
     const float accuracy = 100.0 * match / NUM_TEST_SAMPLES;
     printf("epoch %d: accuracy: %.2f%%\n", epoch, accuracy);
+    pw1.save("mnist-params-w1.yaml");
+    pb1.save("mnist-params-b1.yaml");
+    pw2.save("mnist-params-w2.yaml");
+    pb2.save("mnist-params-b2.yaml");
+    pbeta.save("mnist-params-beta.yaml");
+    pgamma.save("mnist-params-gamma.yaml");
   }
 
   return 0;
