@@ -340,18 +340,21 @@ public:
   Tensor sigmoid(const Tensor &x);
 
   /**
-   * Calculates the step function.
+   * Calculates the step function with the lowerbound.
    * @param x A tensor.
-   * @return `x >= 0 ? 1 : 0`
+   * @param a Lowerbound value.
+   * @return `x > 0 ? 1 : a`
+   * @remarks `a` should be in [0, 1].
    */
-  Tensor step(const Tensor &x);
+  Tensor pstep(const Tensor &x, float a);
 
   /**
-   * Calculates the rectifier function.
+   * Calculates the parameterized rectifier function.
    * @param x A tensor.
-   * @return `max(x, 0)`
+   * @return `x > 0 ? x : ax`
+   * @remarks `a` should be in [0, 1].
    */
-  Tensor relu(const Tensor &x);
+  Tensor prelu(const Tensor &x, float a);
 
   /**
    * Integrates a specified dimension.
@@ -504,8 +507,8 @@ private:
   virtual Tensor exp_impl(const Tensor &x) = 0;
   virtual Tensor tanh_impl(const Tensor &x) = 0;
   virtual Tensor sigmoid_impl(const Tensor &x) = 0;
-  virtual Tensor step_impl(const Tensor &x) = 0;
-  virtual Tensor relu_impl(const Tensor &x) = 0;
+  virtual Tensor pstep_impl(const Tensor &x, float a) = 0;
+  virtual Tensor prelu_impl(const Tensor &x, float a) = 0;
 
   virtual Tensor sum_impl(const Tensor &x, unsigned dim) = 0;
   virtual Tensor logsumexp_impl(const Tensor &x, unsigned dim) = 0;

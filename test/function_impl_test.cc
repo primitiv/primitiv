@@ -832,8 +832,8 @@ TEST_F(FunctionImplTest, CheckSigmoid) {
 }
 
 TEST_F(FunctionImplTest, CheckReLU) {
-  // y = max(x, 0)
-  // dy/dx = x >= 0 ? 1 : 0
+  // y = x > 0 ? x : 0
+  // dy/dx = x > 0 ? 1 : 0
   setup_1arg();
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {
@@ -847,6 +847,24 @@ TEST_F(FunctionImplTest, CheckReLU) {
     0, 0, 0, 0,
   };
   TEST_1ARG(ReLU);
+}
+
+TEST_F(FunctionImplTest, CheckPReLU) {
+  // y = x > 0 ? x : ax
+  // dy/dx = x > 0 ? 1 : a
+  setup_1arg();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    1, 2, 3, 4,
+    0, 0, 0, 0,
+    -.1, -.2, -.3, -.4,
+  };
+  const vector<float> bw_grad {
+    1, 1, 1, 1,
+    .1, .1, .1, .1,
+    .1, .1, .1, .1,
+  };
+  TEST_1ARG_K(PReLU, .1);
 }
 
 TEST_F(FunctionImplTest, CheckSum) {

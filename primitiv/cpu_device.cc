@@ -512,21 +512,21 @@ Tensor CPUDevice::sigmoid_impl(const Tensor &x) {
   return ret;
 }
 
-Tensor CPUDevice::step_impl(const Tensor &x) {
+Tensor CPUDevice::pstep_impl(const Tensor &x, float a) {
   Tensor ret = new_tensor(x.shape());
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   const unsigned size = x.shape().num_total_elements();
-  REPEAT_OP(i, size, dest[i] = static_cast<float>(src[i] > 0));
+  REPEAT_OP(i, size, dest[i] = (src[i] > 0) + a * (src[i] <= 0));
   return ret;
 }
 
-Tensor CPUDevice::relu_impl(const Tensor &x) {
+Tensor CPUDevice::prelu_impl(const Tensor &x, float a) {
   Tensor ret = new_tensor(x.shape());
   float *dest = DATA(ret);
   const float *src = CDATA(x);
   const unsigned size = x.shape().num_total_elements();
-  REPEAT_OP(i, size, dest[i] = std::max(src[i], .0f));
+  REPEAT_OP(i, size, dest[i] = std::max(src[i], a * src[i]));
   return ret;
 }
 

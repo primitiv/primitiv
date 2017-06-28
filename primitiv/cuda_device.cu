@@ -198,14 +198,14 @@ __global__ void dev_sigmoid(float *py, const float *px, unsigned size) {
   if (i < size) py[i] = .5f + .5f * ::tanhf(.5f * px[i]);
 }
 
-__global__ void dev_step(float *py, const float *px, unsigned size) {
+__global__ void dev_pstep(float *py, const float *px, float a, unsigned size) {
   const unsigned i = IDX;
-  if (i < size) py[i] = (float)(px[i] > .0f);
+  if (i < size) py[i] = (px[i] > .0f) + a * (px[i] <= .0f);
 }
 
-__global__ void dev_relu(float *py, const float *px, unsigned size) {
+__global__ void dev_prelu(float *py, const float *px, float a, unsigned size) {
   const unsigned i = IDX;
-  if (i < size) py[i] = ::fmaxf(px[i], .0f);
+  if (i < size) py[i] = ::fmaxf(px[i], a * px[i]);
 }
 
 template<unsigned BLOCK_SIZE>
@@ -607,8 +607,6 @@ CUDA_DEV_UNARY(sqrt_impl, dev_sqrt);
 CUDA_DEV_UNARY(exp_impl, dev_exp);
 CUDA_DEV_UNARY(tanh_impl, dev_tanh);
 CUDA_DEV_UNARY(sigmoid_impl, dev_sigmoid);
-CUDA_DEV_UNARY(step_impl, dev_step);
-CUDA_DEV_UNARY(relu_impl, dev_relu);
 
 CUDA_DEV_BINARY_CONST(add_const_impl, dev_add_const);
 CUDA_DEV_BINARY_CONST(subtract_const_r_impl, dev_subtract_const_r);
@@ -616,6 +614,8 @@ CUDA_DEV_BINARY_CONST(subtract_const_l_impl, dev_subtract_const_l);
 CUDA_DEV_BINARY_CONST(multiply_const_impl, dev_multiply_const);
 CUDA_DEV_BINARY_CONST(divide_const_r_impl, dev_divide_const_r);
 CUDA_DEV_BINARY_CONST(divide_const_l_impl, dev_divide_const_l);
+CUDA_DEV_BINARY_CONST(pstep_impl, dev_pstep);
+CUDA_DEV_BINARY_CONST(prelu_impl, dev_prelu);
 
 CUDA_DEV_BINARY_SCALAR(add_scalar_impl, dev_add_scalar);
 CUDA_DEV_BINARY_SCALAR(subtract_scalar_r_impl, dev_subtract_scalar_r);

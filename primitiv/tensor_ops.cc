@@ -121,11 +121,19 @@ Tensor sigmoid(const Tensor &x) {
 }
 
 Tensor step(const Tensor &x) {
-  return x.device()->step(x);
+  return x.device()->pstep(x, 0);
+}
+
+Tensor pstep(const Tensor &x, float a) {
+  return x.device()->pstep(x, a);
 }
 
 Tensor relu(const Tensor &x) {
-  return x.device()->relu(x);
+  return x.device()->prelu(x, 0);
+}
+
+Tensor prelu(const Tensor &x, float a) {
+  return x.device()->prelu(x, a);
 }
 
 Tensor sum(const Tensor &x, unsigned dim) {

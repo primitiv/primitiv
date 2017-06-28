@@ -240,6 +240,7 @@ FWD_SHAPE_UNARY(Exp);
 FWD_SHAPE_UNARY(Tanh);
 FWD_SHAPE_UNARY(Sigmoid);
 FWD_SHAPE_UNARY(ReLU);
+FWD_SHAPE_UNARY(PReLU);
 FWD_SHAPE_SCALAR(AddScalar);
 FWD_SHAPE_SCALAR(SubtractScalarR);
 FWD_SHAPE_SCALAR(SubtractScalarL);
@@ -328,6 +329,7 @@ FORWARD(Exp) { return T::exp(*x[0]); }
 FORWARD(Tanh) { return T::tanh(*x[0]); }
 FORWARD(Sigmoid) { return T::sigmoid(*x[0]); }
 FORWARD(ReLU) { return T::relu(*x[0]); }
+FORWARD(PReLU) { return T::prelu(*x[0], k_); }
 
 FORWARD(Sum) { return T::sum(*x[0], dim_); }
 FORWARD(LogSumExp) { return T::logsumexp(*x[0], dim_); }
@@ -418,6 +420,7 @@ BACKWARD(Exp) { ADD(0, y * yg); }
 BACKWARD(Tanh) { ADD(0, (1 - y * y) * yg); }
 BACKWARD(Sigmoid) { ADD(0, y * (1 - y) * yg); }
 BACKWARD(ReLU) { ADD(0, T::step(*x[0]) * yg); }
+BACKWARD(PReLU) { ADD(0, T::pstep(*x[0], k_) * yg); }
 
 BACKWARD(Sum) { ADD(0, T::broadcast(yg, dim_, x[0]->shape()[dim_])); }
 BACKWARD(LogSumExp) {

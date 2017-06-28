@@ -42,6 +42,7 @@ Node exp(const Node &x);
 Node tanh(const Node &x);
 Node sigmoid(const Node &x);
 Node relu(const Node &x);
+Node prelu(const Node &x, float a);
 Node sum(const Node &x, unsigned dim);
 Node mean(const Node &x, unsigned dim);
 Node logsumexp(const Node &x, unsigned dim);

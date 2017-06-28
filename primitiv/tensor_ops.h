@@ -41,7 +41,9 @@ Tensor exp(const Tensor &x);
 Tensor tanh(const Tensor &x);
 Tensor sigmoid(const Tensor &x);
 Tensor step(const Tensor &x);
+Tensor pstep(const Tensor &x, float a);
 Tensor relu(const Tensor &x);
+Tensor prelu(const Tensor &x, float a);
 
 Tensor sum(const Tensor &x, unsigned dim);
 Tensor logsumexp(const Tensor &x, unsigned dim);

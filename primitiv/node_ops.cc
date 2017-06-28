@@ -117,6 +117,10 @@ Node relu(const Node &x) {
   return REG(x)(new F::ReLU(), {x});
 }
 
+Node prelu(const Node &x, float a) {
+  return REG(x)(new F::PReLU(a), {x});
+}
+
 Node sum(const Node &x, unsigned dim) {
   return REG(x)(new F::Sum(dim), {x});
 }

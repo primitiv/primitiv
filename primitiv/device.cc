@@ -260,14 +260,20 @@ Tensor Device::sigmoid(const Tensor &x) {
   return sigmoid_impl(x);
 }
 
-Tensor Device::step(const Tensor &x) {
+Tensor Device::pstep(const Tensor &x, float a) {
+  if (a < 0 || a > 1) {
+    THROW_ERROR("Parameter of 'pstep' should be in [0, 1]. a: " << a);
+  }
   CHECK_DEVICE(x);
-  return step_impl(x);
+  return pstep_impl(x, a);
 }
 
-Tensor Device::relu(const Tensor &x) {
+Tensor Device::prelu(const Tensor &x, float a) {
+  if (a < 0 || a > 1) {
+    THROW_ERROR("Parameter of 'prelu' should be in [0, 1]. a: " << a);
+  }
   CHECK_DEVICE(x);
-  return relu_impl(x);
+  return prelu_impl(x, a);
 }
 
 Tensor Device::sum(const Tensor &x, unsigned dim) {
