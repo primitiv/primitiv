@@ -47,46 +47,35 @@ __global__ void dev_concat(
   if (i < y_size) py[(i / span) * skip + (i % span)] = px[i % x_size];
 }
 
-__global__ void dev_negate(float *py, const float *px, unsigned size) {
-  const unsigned i = IDX;
-  if (i < size) py[i] = -px[i];
+#define CUDA_KERNEL_X(name, op) \
+__global__ void name(float *py, const float *px, unsigned size) { \
+  const unsigned i = IDX; \
+  if (i < size) py[i] = (op); \
 }
 
-__global__ void dev_add_const(
-    float *py, const float *px, float k, unsigned size) {
-  const unsigned i = IDX;
-  if (i < size) py[i] = px[i] + k;
+#define CUDA_KERNEL_XK(name, op) \
+__global__ void name(float *py, const float *px, float k, unsigned size) { \
+  const unsigned i = IDX; \
+  if (i < size) py[i] = (op); \
 }
 
-__global__ void dev_subtract_const_r(
-    float *py, const float *px, float k, unsigned size) {
-  const unsigned i = IDX;
-  if (i < size) py[i] = px[i] - k;
-}
+CUDA_KERNEL_X(dev_negate, -px[i]);
+CUDA_KERNEL_X(dev_sqrt, ::sqrtf(px[i]));
+CUDA_KERNEL_X(dev_exp, ::expf(px[i]));
+CUDA_KERNEL_X(dev_tanh, ::tanhf(px[i]));
+CUDA_KERNEL_X(dev_sigmoid, .5f + .5f * ::tanhf(.5f * px[i]));
 
-__global__ void dev_subtract_const_l(
-    float *py, const float *px, float k, unsigned size) {
-  const unsigned i = IDX;
-  if (i < size) py[i] = k - px[i];
-}
+CUDA_KERNEL_XK(dev_add_const, px[i] + k);
+CUDA_KERNEL_XK(dev_subtract_const_r, px[i] - k);
+CUDA_KERNEL_XK(dev_subtract_const_l, k - px[i]);
+CUDA_KERNEL_XK(dev_multiply_const, px[i] * k);
+CUDA_KERNEL_XK(dev_divide_const_r, px[i] / k);
+CUDA_KERNEL_XK(dev_divide_const_l, k / px[i]);
+CUDA_KERNEL_XK(dev_pstep, (px[i] > .0f) + k * (px[i] <= .0f));
+CUDA_KERNEL_XK(dev_prelu, px[i] * ((px[i] > .0f) + k * (px[i] <= .0f)));
 
-__global__ void dev_multiply_const(
-    float *py, const float *px, float k, unsigned size) {
-  const unsigned i = IDX;
-  if (i < size) py[i] = px[i] * k;
-}
-
-__global__ void dev_divide_const_r(
-    float *py, const float *px, float k, unsigned size) {
-  const unsigned i = IDX;
-  if (i < size) py[i] = px[i] / k;
-}
-
-__global__ void dev_divide_const_l(
-    float *py, const float *px, float k, unsigned size) {
-  const unsigned i = IDX;
-  if (i < size) py[i] = k / px[i];
-}
+#undef CUDA_KERNEL_X
+#undef CUDA_KERNEL_XK
 
 __global__ void dev_add_scalar(
     float *py, const float *px, const float *pk,
@@ -176,36 +165,6 @@ __global__ void dev_transpose(
   if (i < rows && j < cols) {
     py[ofs + j + i * cols] = px[ofs + i + j * rows];
   }
-}
-
-__global__ void dev_sqrt(float *py, const float *px, unsigned size) {
-  const unsigned i = IDX;
-  if (i < size) py[i] = ::sqrtf(px[i]);
-}
-
-__global__ void dev_exp(float *py, const float *px, unsigned size) {
-  const unsigned i = IDX;
-  if (i < size) py[i] = ::expf(px[i]);
-}
-
-__global__ void dev_tanh(float *py, const float *px, unsigned size) {
-  const unsigned i = IDX;
-  if (i < size) py[i] = ::tanhf(px[i]);
-}
-
-__global__ void dev_sigmoid(float *py, const float *px, unsigned size) {
-  const unsigned i = IDX;
-  if (i < size) py[i] = .5f + .5f * ::tanhf(.5f * px[i]);
-}
-
-__global__ void dev_pstep(float *py, const float *px, float a, unsigned size) {
-  const unsigned i = IDX;
-  if (i < size) py[i] = (px[i] > .0f) + a * (px[i] <= .0f);
-}
-
-__global__ void dev_prelu(float *py, const float *px, float a, unsigned size) {
-  const unsigned i = IDX;
-  if (i < size) py[i] = ::fmaxf(px[i], a * px[i]);
 }
 
 template<unsigned BLOCK_SIZE>
