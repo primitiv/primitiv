@@ -49,6 +49,28 @@ public:
     arg_grads.emplace_back(new Tensor(dev->new_tensor(*arg_shapes[1], 0)));
   }
 
+  void setup_2args_scalar() {
+    arg_shapes.emplace_back(new Shape({2, 2}, 3));
+    arg_shapes.emplace_back(new Shape({}, 3));
+    arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
+        *arg_shapes[0], {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4})));
+    arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
+        *arg_shapes[1], {1, 2, 3})));
+    arg_grads.emplace_back(new Tensor(dev->new_tensor(*arg_shapes[0], 0)));
+    arg_grads.emplace_back(new Tensor(dev->new_tensor(*arg_shapes[1], 0)));
+  }
+
+  void setup_2args_scalar_nonzero() {
+    arg_shapes.emplace_back(new Shape({2, 2}, 3));
+    arg_shapes.emplace_back(new Shape({}, 3));
+    arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
+        *arg_shapes[0], {1, 2, 3, 4, 1, -1, 1, -1, -1, -2, -3, -4})));
+    arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
+        *arg_shapes[1], {1, 2, 3})));
+    arg_grads.emplace_back(new Tensor(dev->new_tensor(*arg_shapes[0], 0)));
+    arg_grads.emplace_back(new Tensor(dev->new_tensor(*arg_shapes[1], 0)));
+  }
+
   void setup_2args_softmax_cross_entropy() {
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
@@ -577,27 +599,91 @@ TEST_F(FunctionImplTest, CheckDivideConstL) {
 }
 
 TEST_F(FunctionImplTest, CheckAddScalar) {
-  FAIL() << "not implemented";
+  // y = x + k
+  // dy/dx = 1
+  // dy/dk = 1
+  setup_2args_scalar();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {2, 3, 4, 5, 2, 2, 2, 2, 2, 1, 0, -1};
+  const vector<vector<float>> bw_grads {
+    vector<float>(arg_shapes[0]->num_total_elements(), 1),
+    vector<float>(arg_shapes[1]->num_total_elements(), 4),
+  };
+  TEST_2ARGS(AddScalar);
 }
 
 TEST_F(FunctionImplTest, CheckSubtractScalarR) {
-  FAIL() << "not implemented";
+  // y = x - k
+  // dy/dx = 1
+  // dy/dk = -1
+  setup_2args_scalar();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {0, 1, 2, 3, -2, -2, -2, -2, -4, -5, -6, -7};
+  const vector<vector<float>> bw_grads {
+    vector<float>(arg_shapes[0]->num_total_elements(), 1),
+    vector<float>(arg_shapes[1]->num_total_elements(), -4),
+  };
+  TEST_2ARGS(SubtractScalarR);
 }
 
 TEST_F(FunctionImplTest, CheckSubtractScalarL) {
-  FAIL() << "not implemented";
+  // y = k - x
+  // dy/dx = -1
+  // dy/dk = 1
+  setup_2args_scalar();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {0, -1, -2, -3, 2, 2, 2, 2, 4, 5, 6, 7};
+  const vector<vector<float>> bw_grads {
+    vector<float>(arg_shapes[0]->num_total_elements(), -1),
+    vector<float>(arg_shapes[1]->num_total_elements(), 4),
+  };
+  TEST_2ARGS(SubtractScalarL);
 }
 
 TEST_F(FunctionImplTest, CheckMultiplyScalar) {
-  FAIL() << "not implemented";
+  // y = kx
+  // dy/dx = k
+  // dy/dk = x
+  setup_2args_scalar();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, -3, -6, -9, -12};
+  const vector<vector<float>> bw_grads {
+    {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3},
+    {10, 0, -10},
+  };
+  TEST_2ARGS(MultiplyScalar);
 }
 
 TEST_F(FunctionImplTest, CheckDivideScalarR) {
-  FAIL() << "not implemented";
+  // y = x/k
+  // dy/dx = 1/k
+  // dy/dk = -x/(k^2)
+  setup_2args_scalar();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    1, 2, 3, 4, 0, 0, 0, 0, -1./3, -2./3, -1, -4./3,
+  };
+  const vector<vector<float>> bw_grads {
+    {1, 1, 1, 1, .5, .5, .5, .5, 1./3, 1./3, 1./3, 1./3},
+    {-10, 0, 10./9},
+  };
+  TEST_2ARGS(DivideScalarR);
 }
 
 TEST_F(FunctionImplTest, CheckDivideScalarL) {
-  FAIL() << "not implemented";
+  // y = k/x
+  // dy/dx = -k/(x^2)
+  // dy/dk = 1/x
+  setup_2args_scalar_nonzero();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    1, .5, 1./3, .25, 2, -2, 2, -2, -3, -1.5, -1, -.75,
+  };
+  const vector<vector<float>> bw_grads {
+    {-1, -.25, -1./9, -.0625, -2, -2, -2, -2, -3, -.75, -1./3, -.1875},
+    {1.75 + 1./3, 0, -1.75 - 1./3},
+  };
+  TEST_2ARGS(DivideScalarL);
 }
 
 TEST_F(FunctionImplTest, CheckAdd) {
