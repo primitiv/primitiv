@@ -167,10 +167,10 @@ TEST_F(GraphTest, CheckXor) {
   nodes.emplace_back(node_ops::input(&w2, &g));
   nodes.emplace_back(node_ops::input(&b2, &g));
   // calculation
-  nodes.emplace_back(node_ops::dot(nodes[1], nodes[0]));
+  nodes.emplace_back(node_ops::matmul(nodes[1], nodes[0]));
   nodes.emplace_back(nodes[5] + nodes[2]);
   nodes.emplace_back(node_ops::tanh(nodes[6]));
-  nodes.emplace_back(node_ops::dot(nodes[3], nodes[7]));
+  nodes.emplace_back(node_ops::matmul(nodes[3], nodes[7]));
   nodes.emplace_back(nodes[8] + nodes[4]);
   // losses
   nodes.emplace_back(node_ops::input(Shape({}, 4), outputs, &dev, &g));
@@ -238,7 +238,7 @@ TEST_F(GraphTest, CheckLSTM) {
   Parameter pbj("bj", {2}, initializers::Constant(0), &dev);
 
   Graph g;
-  using node_ops::dot;
+  using node_ops::matmul;
   using node_ops::input;
   using node_ops::sigmoid;
   using node_ops::tanh;
@@ -259,10 +259,10 @@ TEST_F(GraphTest, CheckLSTM) {
   const Node bo = input(&pbo, &g);
   const Node bj = input(&pbj, &g);
 
-  const Node i = sigmoid(dot(Wix, x) + dot(Wih, h) + bi);
-  const Node f = sigmoid(dot(Wfx, x) + dot(Wfh, h) + bf);
-  const Node o = sigmoid(dot(Wox, x) + dot(Woh, h) + bo);
-  const Node j = tanh(dot(Wjx, x) + dot(Wjh, h) + bj);
+  const Node i = sigmoid(matmul(Wix, x) + matmul(Wih, h) + bi);
+  const Node f = sigmoid(matmul(Wfx, x) + matmul(Wfh, h) + bf);
+  const Node o = sigmoid(matmul(Wox, x) + matmul(Woh, h) + bo);
+  const Node j = tanh(matmul(Wjx, x) + matmul(Wjh, h) + bj);
   const Node cc = f * c + i * j;
   const Node hh = o * tanh(cc);
 
@@ -321,7 +321,7 @@ TEST_F(GraphTest, CheckConcatLSTM) {
   Parameter pb("b", {8}, initializers::Constant(0), &dev);
 
   Graph g;
-  using node_ops::dot;
+  using node_ops::matmul;
   using node_ops::input;
   using node_ops::sigmoid;
   using node_ops::slice;
@@ -334,7 +334,7 @@ TEST_F(GraphTest, CheckConcatLSTM) {
   const Node Wh = input(&pWh, &g);
   const Node b = input(&pb, &g);
 
-  const Node u = dot(Wx, x) + dot(Wh, h) + b;
+  const Node u = matmul(Wx, x) + matmul(Wh, h) + b;
   const Node i = sigmoid(slice(u, 0, 0, 2));
   const Node f = sigmoid(slice(u, 0, 2, 4));
   const Node o = sigmoid(slice(u, 0, 4, 6));

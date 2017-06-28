@@ -301,7 +301,7 @@ public:
   Tensor transpose(const Tensor &x);
 
   /**
-   * Calculates the matrix product (dot product) of two matrices.
+   * Calculates the matrix product of two matrices.
    * @param a A tensor.
    * @param b Other tensor.
    * @return `a . b`
@@ -309,7 +309,7 @@ public:
    *          second dimension of `a` and the first dimension of `b` should be
    *          same.
    */
-  Tensor dot(const Tensor &a, const Tensor &b);
+  Tensor matmul(const Tensor &a, const Tensor &b);
 
   /**
    * Calculates the sqrt function.
@@ -522,7 +522,7 @@ private:
   virtual Tensor divide_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
 
   virtual Tensor transpose_impl(const Tensor &x, Shape &&new_shape) = 0;
-  virtual Tensor dot_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
+  virtual Tensor matmul_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
 
   virtual Tensor sqrt_impl(const Tensor &x) = 0;
   virtual Tensor exp_impl(const Tensor &x) = 0;

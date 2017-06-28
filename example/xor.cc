@@ -72,8 +72,8 @@ int main() {
     Node b1 = F::input(&pb1, &g);
     Node w2 = F::input(&pw2, &g);
     Node b2 = F::input(&pb2, &g);
-    Node h = F::tanh(F::dot(w1, x) + b1);
-    Node y = F::dot(w2, h) + b2;
+    Node h = F::tanh(F::matmul(w1, x) + b1);
+    Node y = F::matmul(w2, h) + b2;
 
     // Calculates values.
     vector<float> y_val = g.forward(y).to_vector();

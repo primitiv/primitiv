@@ -39,7 +39,7 @@ Node reshape(const Node &x, const Shape &shape);
 Node flatten(const Node &x);
 
 Node transpose(const Node &x);
-Node dot(const Node &a, const Node &b);
+Node matmul(const Node &a, const Node &b);
 
 Node sqrt(const Node &x);
 Node exp(const Node &x);

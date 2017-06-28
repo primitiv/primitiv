@@ -93,8 +93,8 @@ Node transpose(const Node &x) {
   return REG(x)(new F::Transpose(), {x});
 }
 
-Node dot(const Node &a, const Node &b) {
-  return REG(a)(new F::Dot(), {a, b});
+Node matmul(const Node &a, const Node &b) {
+  return REG(a)(new F::MatrixMultiply(), {a, b});
 }
 
 Node sqrt(const Node &x) {

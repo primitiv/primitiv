@@ -87,7 +87,7 @@ Shape transpose(const Shape &x);
  * @param r Shape of the right hand side.
  * @return A shape.
  */
-Shape dot(const Shape &l, const Shape &r);
+Shape matmul(const Shape &l, const Shape &r);
 
 }  // namespace shape_ops
 }  // namespace primitiv

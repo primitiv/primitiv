@@ -276,7 +276,7 @@ DECL_FUNC(Multiply);
 DECL_FUNC(Divide);
 
 DECL_FUNC(Transpose);
-DECL_FUNC(Dot);
+DECL_FUNC(MatrixMultiply);
 
 DECL_FUNC(Sqrt);
 DECL_FUNC(Exp);

@@ -263,9 +263,9 @@ Shape Transpose::forward_shape(const vector<const Shape *> &args) const {
   return shape_ops::transpose(*args[0]);
 }
 
-Shape Dot::forward_shape(const vector<const Shape *> &args) const {
+Shape MatrixMultiply::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 2);
-  return shape_ops::dot(*args[0], *args[1]);
+  return shape_ops::matmul(*args[0], *args[1]);
 }
 
 Shape Sum::forward_shape(const vector<const Shape *> &args) const {
@@ -325,7 +325,7 @@ FORWARD(Multiply) { return *x[0] * *x[1]; }
 FORWARD(Divide) { return *x[0] / *x[1]; }
 
 FORWARD(Transpose) { return T::transpose(*x[0]); }
-FORWARD(Dot) { return T::dot(*x[0], *x[1]); }
+FORWARD(MatrixMultiply) { return T::matmul(*x[0], *x[1]); }
 
 FORWARD(Sqrt) { return T::sqrt(*x[0]); }
 FORWARD(Exp) { return T::exp(*x[0]); }
@@ -416,9 +416,10 @@ BACKWARD(Divide) {
 }
 
 BACKWARD(Transpose) { ADD(0, T::transpose(yg)); }
-BACKWARD(Dot) {
-  ADD(0, T::dot(yg, T::transpose(*x[1])));
-  ADD(1, T::dot(T::transpose(*x[0]), yg));
+BACKWARD(MatrixMultiply) {
+  // TODO(odashi): This requires large memory. Suppress it.
+  ADD(0, T::matmul(yg, T::transpose(*x[1])));
+  ADD(1, T::matmul(T::transpose(*x[0]), yg));
 }
 
 BACKWARD(Sqrt) { ADD(0, .5 * yg / y); }

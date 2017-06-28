@@ -901,18 +901,18 @@ TEST_F(TensorOpsTest, CheckInvalidTranspose) {
   }
 }
 
-TEST_F(TensorOpsTest, CheckDotAA) {
+TEST_F(TensorOpsTest, CheckMatMulAA) {
   const vector<float> x_data {1, 2, 3, 4, 1, 0, 0, 1, 0, 2, 3, 0};
   const vector<float> y_data {7, 10, 15, 22, 1, 0, 0, 1, 6, 0, 0, 6};
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
-    const Tensor y = dot(x, x);
+    const Tensor y = matmul(x, x);
     EXPECT_EQ(Shape({2, 2}, 3), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
 }
 
-TEST_F(TensorOpsTest, CheckDotAB) {
+TEST_F(TensorOpsTest, CheckMatMulAB) {
   const vector<float> a_data {
     1, 1000, 1,
     10, 100, 100,
@@ -938,66 +938,66 @@ TEST_F(TensorOpsTest, CheckDotAB) {
   for (Device *dev : devices) {
     const Tensor a = dev->new_tensor_by_vector({3, 4}, a_data);
     const Tensor b = dev->new_tensor_by_vector({4, 6}, b_data);
-    const Tensor y = dot(a, b);
+    const Tensor y = matmul(a, b);
     EXPECT_EQ(Shape({3, 6}), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
 }
 
-TEST_F(TensorOpsTest, CheckDotBatchBroadcast1N) {
+TEST_F(TensorOpsTest, CheckMatMulBatchBroadcast1N) {
   const vector<float> a_data {10, 1000, 1, 100};
   const vector<float> b_data {1, 2, 3, 4, 5, 6, 7, 8};
   const vector<float> y_data {12, 1200, 34, 3400, 56, 5600, 78, 7800};
   for (Device *dev : devices) {
     const Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
     const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 2), b_data);
-    const Tensor y = dot(a, b);
+    const Tensor y = matmul(a, b);
     EXPECT_EQ(Shape({2, 2}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
 }
 
-TEST_F(TensorOpsTest, CheckDotBatchBroadcastN1) {
+TEST_F(TensorOpsTest, CheckMatMulBatchBroadcastN1) {
   const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8};
   const vector<float> b_data {10, 1, 1000, 100};
   const vector<float> y_data {13, 24, 1300, 2400, 57, 68, 5700, 6800};
   for (Device *dev : devices) {
     const Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 2), a_data);
     const Tensor b = dev->new_tensor_by_vector({2, 2}, b_data);
-    const Tensor y = dot(a, b);
+    const Tensor y = matmul(a, b);
     EXPECT_EQ(Shape({2, 2}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
 }
 
-TEST_F(TensorOpsTest, CheckInvalidDot) {
+TEST_F(TensorOpsTest, CheckInvalidMatMul) {
   for (Device *dev : devices) {
     {
       // Not a scalar multiplication.
       const Tensor a = dev->new_tensor({2, 3});
       const Tensor b = dev->new_tensor({});
-      EXPECT_THROW(dot(a, b), Error);
+      EXPECT_THROW(matmul(a, b), Error);
     }
     {
       // Not a scalar multiplication.
       const Tensor a = dev->new_tensor({});
       const Tensor b = dev->new_tensor({2, 3});
-      EXPECT_THROW(dot(a, b), Error);
+      EXPECT_THROW(matmul(a, b), Error);
     }
     {
       const Tensor a = dev->new_tensor({2, 3, 4});
       const Tensor b = dev->new_tensor({4});
-      EXPECT_THROW(dot(a, b), Error);
+      EXPECT_THROW(matmul(a, b), Error);
     }
     {
       const Tensor a = dev->new_tensor({1, 2});
       const Tensor b = dev->new_tensor({2, 3, 4});
-      EXPECT_THROW(dot(a, b), Error);
+      EXPECT_THROW(matmul(a, b), Error);
     }
     {
       const Tensor a = dev->new_tensor({2, 3});
       const Tensor b = dev->new_tensor({2, 3});
-      EXPECT_THROW(dot(a, b), Error);
+      EXPECT_THROW(matmul(a, b), Error);
     }
   }
 }

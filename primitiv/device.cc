@@ -234,10 +234,10 @@ Tensor Device::transpose(const Tensor &x) {
   return transpose_impl(x, shape_ops::transpose(x.shape()));
 }
 
-Tensor Device::dot(const Tensor &a, const Tensor &b) {
+Tensor Device::matmul(const Tensor &a, const Tensor &b) {
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);
-  return dot_impl(a, b, shape_ops::dot(a.shape(), b.shape()));
+  return matmul_impl(a, b, shape_ops::matmul(a.shape(), b.shape()));
 }
 
 Tensor Device::sqrt(const Tensor &x) {

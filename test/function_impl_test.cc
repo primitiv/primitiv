@@ -753,7 +753,7 @@ TEST_F(FunctionImplTest, CheckTranspose) {
   TEST_1ARG(Transpose);
 }
 
-TEST_F(FunctionImplTest, CheckDot) {
+TEST_F(FunctionImplTest, CheckMatrixMultiply) {
   // y = a . b
   // dy/da = b^T
   // dy/db = a^T
@@ -764,7 +764,7 @@ TEST_F(FunctionImplTest, CheckDot) {
     {2, 2, 2, 2, 4, 4, 4, 4, 6, 6, 6, 6},
     {3, 7, 3, 7, 0, 0, 0, 0, -3, -7, -3, -7},
   };
-  TEST_2ARGS(Dot);
+  TEST_2ARGS(MatrixMultiply);
 }
 
 TEST_F(FunctionImplTest, CheckSqrt) {

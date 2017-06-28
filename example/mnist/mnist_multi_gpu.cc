@@ -108,14 +108,14 @@ int main() {
     Node w2 = F::input(&pw2, &g);
     Node b2 = F::input(&pb2, &g);
     // The hidden layer is calculated and implicitly stored on GPU 0.
-    Node h_on_gpu0 = F::relu(F::dot(w1, x) + b1);
+    Node h_on_gpu0 = F::relu(F::matmul(w1, x) + b1);
     // `copy()` transfers the hiddne layer to GPU 1.
     Node h_on_gpu1 = F::copy(h_on_gpu0, &dev1);
     // The output layer is calculated and implicitly stored on GPU 1.
-    return F::dot(w2, h_on_gpu1) + b2;
+    return F::matmul(w2, h_on_gpu1) + b2;
     // Below line attempts to calculate values beyond multiple devices and
     // will throw an exception (try if it's OK with you).
-    //return F::dot(w2, h_on_gpu0) + b2;
+    //return F::matmul(w2, h_on_gpu0) + b2;
   };
 
   // Batch randomizer

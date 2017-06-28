@@ -100,8 +100,8 @@ Tensor transpose(const Tensor &x) {
   return x.device()->transpose(x);
 }
 
-Tensor dot(const Tensor &a, const Tensor &b) {
-  return a.device()->dot(a, b);
+Tensor matmul(const Tensor &a, const Tensor &b) {
+  return a.device()->matmul(a, b);
 }
 
 Tensor sqrt(const Tensor &x) {

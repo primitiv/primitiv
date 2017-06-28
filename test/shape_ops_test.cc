@@ -290,46 +290,46 @@ TEST_F(ShapeOpsTest, CheckInvalidTranspose) {
   EXPECT_THROW(transpose(Shape({2, 3, 4}, 5)), Error);
 }
 
-TEST_F(ShapeOpsTest, CheckDot) {
-  EXPECT_EQ(Shape(), dot({}, {}));
-  EXPECT_EQ(Shape({}, 3), dot(Shape({}, 3), {}));
-  EXPECT_EQ(Shape({}, 3), dot({}, Shape({}, 3)));
-  EXPECT_EQ(Shape({}, 3), dot(Shape({}, 3), Shape({}, 3)));
-  EXPECT_EQ(Shape({10}), dot({10}, {}));
-  EXPECT_EQ(Shape({10}, 3), dot(Shape({10}, 3), {}));
-  EXPECT_EQ(Shape({10}, 3), dot({10}, Shape({}, 3)));
-  EXPECT_EQ(Shape({10}, 3), dot(Shape({10}, 3), Shape({}, 3)));
-  EXPECT_EQ(Shape({1, 10}), dot({}, {1, 10}));
-  EXPECT_EQ(Shape({1, 10}, 3), dot(Shape({}, 3), {1, 10}));
-  EXPECT_EQ(Shape({1, 10}, 3), dot({}, Shape({1, 10}, 3)));
-  EXPECT_EQ(Shape({1, 10}, 3), dot(Shape({}, 3), Shape({1, 10}, 3)));
-  EXPECT_EQ(Shape({}), dot({1, 10}, {10}));
-  EXPECT_EQ(Shape({}, 3), dot(Shape({1, 10}, 3), {10}));
-  EXPECT_EQ(Shape({}, 3), dot({1, 10}, Shape({10}, 3)));
-  EXPECT_EQ(Shape({}, 3), dot(Shape({1, 10}, 3), Shape({10}, 3)));
-  EXPECT_EQ(Shape({10, 10}), dot({10}, {1, 10}));
-  EXPECT_EQ(Shape({10, 10}, 3), dot(Shape({10}, 3), {1, 10}));
-  EXPECT_EQ(Shape({10, 10}, 3), dot({10}, Shape({1, 10}, 3)));
-  EXPECT_EQ(Shape({10, 10}, 3), dot(Shape({10}, 3), Shape({1, 10}, 3)));
-  EXPECT_EQ(Shape({20}), dot({20, 10}, {10}));
-  EXPECT_EQ(Shape({20}, 3), dot(Shape({20, 10}, 3), {10}));
-  EXPECT_EQ(Shape({20}, 3), dot({20, 10}, Shape({10}, 3)));
-  EXPECT_EQ(Shape({20}, 3), dot(Shape({20, 10}, 3), Shape({10}, 3)));
-  EXPECT_EQ(Shape({1, 20}), dot({1, 10}, {10, 20}));
-  EXPECT_EQ(Shape({1, 20}, 3), dot(Shape({1, 10}, 3), {10, 20}));
-  EXPECT_EQ(Shape({1, 20}, 3), dot({1, 10}, Shape({10, 20}, 3)));
-  EXPECT_EQ(Shape({1, 20}, 3), dot(Shape({1, 10}, 3), Shape({10, 20}, 3)));
-  EXPECT_EQ(Shape({20, 30}), dot({20, 10}, {10, 30}));
-  EXPECT_EQ(Shape({20, 30}, 3), dot(Shape({20, 10}, 3), {10, 30}));
-  EXPECT_EQ(Shape({20, 30}, 3), dot({20, 10}, Shape({10, 30}, 3)));
-  EXPECT_EQ(Shape({20, 30}, 3), dot(Shape({20, 10}, 3), Shape({10, 30}, 3)));
+TEST_F(ShapeOpsTest, CheckMatMul) {
+  EXPECT_EQ(Shape(), matmul({}, {}));
+  EXPECT_EQ(Shape({}, 3), matmul(Shape({}, 3), {}));
+  EXPECT_EQ(Shape({}, 3), matmul({}, Shape({}, 3)));
+  EXPECT_EQ(Shape({}, 3), matmul(Shape({}, 3), Shape({}, 3)));
+  EXPECT_EQ(Shape({10}), matmul({10}, {}));
+  EXPECT_EQ(Shape({10}, 3), matmul(Shape({10}, 3), {}));
+  EXPECT_EQ(Shape({10}, 3), matmul({10}, Shape({}, 3)));
+  EXPECT_EQ(Shape({10}, 3), matmul(Shape({10}, 3), Shape({}, 3)));
+  EXPECT_EQ(Shape({1, 10}), matmul({}, {1, 10}));
+  EXPECT_EQ(Shape({1, 10}, 3), matmul(Shape({}, 3), {1, 10}));
+  EXPECT_EQ(Shape({1, 10}, 3), matmul({}, Shape({1, 10}, 3)));
+  EXPECT_EQ(Shape({1, 10}, 3), matmul(Shape({}, 3), Shape({1, 10}, 3)));
+  EXPECT_EQ(Shape({}), matmul({1, 10}, {10}));
+  EXPECT_EQ(Shape({}, 3), matmul(Shape({1, 10}, 3), {10}));
+  EXPECT_EQ(Shape({}, 3), matmul({1, 10}, Shape({10}, 3)));
+  EXPECT_EQ(Shape({}, 3), matmul(Shape({1, 10}, 3), Shape({10}, 3)));
+  EXPECT_EQ(Shape({10, 10}), matmul({10}, {1, 10}));
+  EXPECT_EQ(Shape({10, 10}, 3), matmul(Shape({10}, 3), {1, 10}));
+  EXPECT_EQ(Shape({10, 10}, 3), matmul({10}, Shape({1, 10}, 3)));
+  EXPECT_EQ(Shape({10, 10}, 3), matmul(Shape({10}, 3), Shape({1, 10}, 3)));
+  EXPECT_EQ(Shape({20}), matmul({20, 10}, {10}));
+  EXPECT_EQ(Shape({20}, 3), matmul(Shape({20, 10}, 3), {10}));
+  EXPECT_EQ(Shape({20}, 3), matmul({20, 10}, Shape({10}, 3)));
+  EXPECT_EQ(Shape({20}, 3), matmul(Shape({20, 10}, 3), Shape({10}, 3)));
+  EXPECT_EQ(Shape({1, 20}), matmul({1, 10}, {10, 20}));
+  EXPECT_EQ(Shape({1, 20}, 3), matmul(Shape({1, 10}, 3), {10, 20}));
+  EXPECT_EQ(Shape({1, 20}, 3), matmul({1, 10}, Shape({10, 20}, 3)));
+  EXPECT_EQ(Shape({1, 20}, 3), matmul(Shape({1, 10}, 3), Shape({10, 20}, 3)));
+  EXPECT_EQ(Shape({20, 30}), matmul({20, 10}, {10, 30}));
+  EXPECT_EQ(Shape({20, 30}, 3), matmul(Shape({20, 10}, 3), {10, 30}));
+  EXPECT_EQ(Shape({20, 30}, 3), matmul({20, 10}, Shape({10, 30}, 3)));
+  EXPECT_EQ(Shape({20, 30}, 3), matmul(Shape({20, 10}, 3), Shape({10, 30}, 3)));
 }
 
-TEST_F(ShapeOpsTest, CheckInvalidDot) {
-  EXPECT_THROW(dot({1, 1, 2}, {2}), Error);
-  EXPECT_THROW(dot({}, {1, 1, 2}), Error);
-  EXPECT_THROW(dot({2, 3}, {4, 5}), Error);
-  EXPECT_THROW(dot(Shape({}, 2), Shape({}, 3)), Error);
+TEST_F(ShapeOpsTest, CheckInvalidMatMul) {
+  EXPECT_THROW(matmul({1, 1, 2}, {2}), Error);
+  EXPECT_THROW(matmul({}, {1, 1, 2}), Error);
+  EXPECT_THROW(matmul({2, 3}, {4, 5}), Error);
+  EXPECT_THROW(matmul(Shape({}, 2), Shape({}, 3)), Error);
 }
 
 }  // namespace shape_ops

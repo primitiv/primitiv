@@ -111,11 +111,11 @@ Shape transpose(const Shape &x) {
   return Shape({x[1], x[0]}, x.batch_size());
 }
 
-Shape dot(const Shape &l, const Shape &r) {
+Shape matmul(const Shape &l, const Shape &r) {
   if (!l.is_matrix() || !r.is_matrix() || l[1] != r[0] ||
       !l.has_compatible_batch(r)) {
     THROW_ERROR(
-        "Invalid shapes to calculate the dot product: "
+        "Invalid shapes to calculate the matrix product: "
         << l.to_string() << ", " << r.to_string());
   }
   return Shape({l[0], r[1]}, std::max(l.batch_size(), r.batch_size()));

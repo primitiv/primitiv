@@ -445,7 +445,7 @@ Tensor CPUDevice::transpose_impl(const Tensor &x, Shape &&new_shape) {
   return ret;
 }
 
-Tensor CPUDevice::dot_impl(
+Tensor CPUDevice::matmul_impl(
     const Tensor &a, const Tensor &b, Shape &&new_shape) {
   const unsigned d1 = new_shape[0];
   const unsigned d2 = a.shape()[1];

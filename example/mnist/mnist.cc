@@ -107,7 +107,7 @@ int main() {
     // Calculates the hidden layer.
     Node w1 = F::input(&pw1, &g);
     Node b1 = F::input(&pb1, &g);
-    Node h = F::relu(F::dot(w1, x) + b1);
+    Node h = F::relu(F::matmul(w1, x) + b1);
     // Batch normalization
     Node beta = F::input(&pbeta, &g);
     Node gamma = F::input(&pgamma, &g);
@@ -117,7 +117,7 @@ int main() {
     // Calculates the output layer.
     Node w2 = F::input(&pw2, &g);
     Node b2 = F::input(&pb2, &g);
-    return F::dot(w2, h) + b2;
+    return F::matmul(w2, h) + b2;
   };
 
   // Batch randomizer

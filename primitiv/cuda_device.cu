@@ -612,7 +612,7 @@ Tensor CUDADevice::transpose_impl(const Tensor &x, Shape &&new_shape) {
   return ret;
 }
 
-Tensor CUDADevice::dot_impl(
+Tensor CUDADevice::matmul_impl(
     const Tensor &a, const Tensor &b, Shape &&new_shape) {
   const unsigned di = new_shape[0];
   const unsigned dj = a.shape()[1];
@@ -637,7 +637,7 @@ Tensor CUDADevice::dot_impl(
             &beta, DATA(ret) + n * y_skip, di));
     }
   } else {
-    // Do gemm only once to calculate the dot with a combined matrix.
+    // Do gemm only once to calculate the product with a combined matrix.
     CUBLAS_CALL(::cublasSgemm(
           cublas_, ::CUBLAS_OP_N, ::CUBLAS_OP_N,
           di, bb * dk, dj,
