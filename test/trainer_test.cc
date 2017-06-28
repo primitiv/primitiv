@@ -34,6 +34,10 @@ TEST_F(TraingerTest, CheckAddParameter) {
   EXPECT_THROW(trainer.add_parameter(&param1), Error);
   EXPECT_THROW(trainer.add_parameter(&param2), Error);
   EXPECT_THROW(trainer.add_parameter(&param3), Error);
+
+  // Different object but same name
+  Parameter param4("param1", {}, &dev);
+  EXPECT_THROW(trainer.add_parameter(&param4), Error);
 }
 
 }  // namespace primitiv

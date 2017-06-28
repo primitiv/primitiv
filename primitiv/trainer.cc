@@ -8,7 +8,7 @@ namespace primitiv {
 
 void Trainer::add_parameter(Parameter *param) {
   if (params_.find(param->name()) != params_.end()) {
-    THROW_ERROR("Parameter '" << param->name() << "' already registered.");
+    THROW_ERROR("Parameter '" << param->name() << "' is already registered.");
   }
   params_.insert(std::make_pair(param->name(), param));
 }
