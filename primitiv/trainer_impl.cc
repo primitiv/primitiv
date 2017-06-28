@@ -6,18 +6,20 @@
 #include <primitiv/trainer_impl.h>
 
 namespace primitiv {
+namespace trainers {
 
-void SGDTrainer::reset_gradients() {
+void SGD::reset_gradients() {
   for (const auto &kv : params()) {
     kv.second->reset_gradient();
   }
 }
 
-void SGDTrainer::update(const float scale) {
+void SGD::update(const float scale) {
   const float factor = -eta_ * scale;
   for (const auto &kv : params()) {
     kv.second->add_value(factor * kv.second->gradient());
   }
 }
 
+}  // namespace trainers
 }  // namespace primitiv

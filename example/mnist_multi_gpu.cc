@@ -21,7 +21,7 @@ using primitiv::CUDADevice;
 using primitiv::Graph;
 using primitiv::Node;
 using primitiv::Parameter;
-using primitiv::SGDTrainer;
+using primitiv::trainers::SGD;
 using primitiv::Shape;
 using primitiv::initializers::Constant;
 using primitiv::initializers::XavierUniform;
@@ -93,7 +93,7 @@ int main() {
   Parameter pb2("b2", {NUM_OUTPUT_UNITS}, Constant(0), &dev1);
 
   // Trainer
-  SGDTrainer trainer(.1);
+  SGD trainer(.1);
   trainer.add_parameter(&pw1);
   trainer.add_parameter(&pb1);
   trainer.add_parameter(&pw2);

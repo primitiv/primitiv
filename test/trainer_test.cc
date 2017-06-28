@@ -18,7 +18,7 @@ protected:
 };
 
 TEST_F(TraingerTest, CheckAddParameter) {
-  SGDTrainer trainer(.1);
+  trainers::SGD trainer(.1);
   Parameter param1("param1", {2, 2}, &dev);
   Parameter param2("param2", {2, 2}, &dev);
   Parameter param3("param3", {2, 2}, &dev);

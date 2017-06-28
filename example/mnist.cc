@@ -19,7 +19,7 @@ using primitiv::CUDADevice;
 using primitiv::Graph;
 using primitiv::Node;
 using primitiv::Parameter;
-using primitiv::SGDTrainer;
+using primitiv::trainers::SGD;
 using primitiv::Shape;
 using primitiv::initializers::Constant;
 using primitiv::initializers::XavierUniform;
@@ -92,7 +92,7 @@ int main() {
   Parameter pgamma("gamma", {NUM_HIDDEN_UNITS}, Constant(1), &dev);
 
   // Trainer
-  SGDTrainer trainer(.5);
+  SGD trainer(.5);
   trainer.add_parameter(&pw1);
   trainer.add_parameter(&pb1);
   trainer.add_parameter(&pw2);

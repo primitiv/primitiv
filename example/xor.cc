@@ -28,7 +28,7 @@ using primitiv::CUDADevice;
 using primitiv::Graph;
 using primitiv::Node;
 using primitiv::Parameter;
-using primitiv::SGDTrainer;
+using primitiv::trainers::SGD;
 using primitiv::Shape;
 namespace F = primitiv::node_ops;
 
@@ -45,7 +45,7 @@ int main() {
   Parameter pb2("b2", {}, Constant(0.0f), &dev);
 
   // Trainer
-  SGDTrainer trainer(0.1f);
+  SGD trainer(0.1f);
   trainer.add_parameter(&pw1);
   trainer.add_parameter(&pb1);
   trainer.add_parameter(&pw2);

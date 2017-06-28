@@ -11,6 +11,7 @@ using std::vector;
 using test_utils::vector_match;
 
 namespace primitiv {
+namespace trainers {
 
 class TraingerImplTest : public testing::Test {
 protected:
@@ -18,7 +19,7 @@ protected:
 };
 
 TEST_F(TraingerImplTest, CheckSGDUpdate) {
-  SGDTrainer trainer(.1);
+  SGD trainer(.1);
   Parameter param("param", {2, 2}, {1, 2, 3, 4}, &dev);
   trainer.add_parameter(&param);
   trainer.reset_gradients();
@@ -44,4 +45,5 @@ TEST_F(TraingerImplTest, CheckSGDUpdate) {
         vector<float>(4, 0), param.gradient().to_vector()));
 }
 
+}  // namespace trainers
 }  // namespace primitiv
