@@ -903,6 +903,24 @@ TEST_F(FunctionImplTest, CheckReLU) {
   TEST_1ARG(ReLU);
 }
 
+TEST_F(FunctionImplTest, CheckLReLU) {
+  // y = x > 0 ? x : 0.01x
+  // dy/dx = x > 0 ? 1 : 0.01
+  setup_1arg();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    1, 2, 3, 4,
+    0, 0, 0, 0,
+    -.01, -.02, -.03, -.04,
+  };
+  const vector<float> bw_grad {
+    1, 1, 1, 1,
+    .01, .01, .01, .01,
+    .01, .01, .01, .01,
+  };
+  TEST_1ARG(LReLU);
+}
+
 TEST_F(FunctionImplTest, CheckPReLU) {
   // y = x > 0 ? x : ax
   // dy/dx = x > 0 ? 1 : a

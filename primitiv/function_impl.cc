@@ -243,6 +243,7 @@ FWD_SHAPE_UNARY(Sin);
 FWD_SHAPE_UNARY(Cos);
 FWD_SHAPE_UNARY(Tan);
 FWD_SHAPE_UNARY(ReLU);
+FWD_SHAPE_UNARY(LReLU);
 FWD_SHAPE_UNARY(PReLU);
 FWD_SHAPE_SCALAR(AddScalar);
 FWD_SHAPE_SCALAR(SubtractScalarR);
@@ -335,6 +336,7 @@ FORWARD(Sin) { return T::sin(*x[0]); }
 FORWARD(Cos) { return T::cos(*x[0]); }
 FORWARD(Tan) { return T::tan(*x[0]); }
 FORWARD(ReLU) { return T::relu(*x[0]); }
+FORWARD(LReLU) { return T::lrelu(*x[0]); }
 FORWARD(PReLU) { return T::prelu(*x[0], k_); }
 
 FORWARD(Sum) { return T::sum(*x[0], dim_); }
@@ -430,6 +432,7 @@ BACKWARD(Sin) { ADD(0, T::cos(*x[0]) * yg); }
 BACKWARD(Cos) { ADD(0, -T::sin(*x[0]) * yg); }
 BACKWARD(Tan) { ADD(0, (1 + y * y) * yg); }
 BACKWARD(ReLU) { ADD(0, T::step(*x[0]) * yg); }
+BACKWARD(LReLU) { ADD(0, T::lstep(*x[0]) * yg); }
 BACKWARD(PReLU) { ADD(0, T::pstep(*x[0], k_) * yg); }
 
 BACKWARD(Sum) { ADD(0, T::broadcast(yg, dim_, x[0]->shape()[dim_])); }

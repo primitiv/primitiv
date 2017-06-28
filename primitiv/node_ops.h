@@ -49,6 +49,7 @@ Node sin(const Node &x);
 Node cos(const Node &x);
 Node tan(const Node &x);
 Node relu(const Node &x);
+Node lrelu(const Node &x);
 Node prelu(const Node &x, float a);
 
 Node sum(const Node &x, unsigned dim);

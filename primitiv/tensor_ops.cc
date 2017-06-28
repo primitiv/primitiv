@@ -136,12 +136,20 @@ Tensor step(const Tensor &x) {
   return x.device()->pstep(x, 0);
 }
 
+Tensor lstep(const Tensor &x) {
+  return x.device()->pstep(x, .01);
+}
+
 Tensor pstep(const Tensor &x, float a) {
   return x.device()->pstep(x, a);
 }
 
 Tensor relu(const Tensor &x) {
   return x.device()->prelu(x, 0);
+}
+
+Tensor lrelu(const Tensor &x) {
+  return x.device()->prelu(x, .01);
 }
 
 Tensor prelu(const Tensor &x, float a) {

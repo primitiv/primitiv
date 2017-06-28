@@ -129,6 +129,10 @@ Node relu(const Node &x) {
   return REG(x)(new F::ReLU(), {x});
 }
 
+Node lrelu(const Node &x) {
+  return REG(x)(new F::LReLU(), {x});
+}
+
 Node prelu(const Node &x, float a) {
   return REG(x)(new F::PReLU(a), {x});
 }
