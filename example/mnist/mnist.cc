@@ -193,6 +193,7 @@ int main() {
     pb2.save("mnist-params-b2.yaml");
     pbeta.save("mnist-params-beta.yaml");
     pgamma.save("mnist-params-gamma.yaml");
+    cout << "epoch " << epoch << ": saved parameters." << endl;
   }
 
   return 0;
