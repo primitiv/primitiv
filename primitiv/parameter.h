@@ -20,7 +20,7 @@ class Parameter {
 public:
   Parameter(Parameter &&) = default;
   Parameter &operator=(Parameter &&) = default;
-  
+
   /**
    * Creates an invalid parameter object.
    */

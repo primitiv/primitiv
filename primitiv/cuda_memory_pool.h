@@ -28,7 +28,7 @@ public:
    * @param device_id CUDA Device ID on which memories are stored.
    */
   explicit CUDAMemoryPool(unsigned device_id);
-  
+
   ~CUDAMemoryPool();
 
   /**
@@ -37,7 +37,7 @@ public:
    * @return Shared pointer of the allocated memory.
    */
   std::shared_ptr<void> allocate(std::uint64_t size);
-  
+
 private:
   /**
    * Disposes the memory.

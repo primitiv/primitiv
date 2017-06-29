@@ -82,7 +82,7 @@ primitiv::Tensor parse_tensor(
 
   return device->new_tensor_by_array(
       shape, reinterpret_cast<const float *>(data.data()));
-  
+
   THROW_ERROR("not implemented");
 }
 

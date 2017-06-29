@@ -78,336 +78,60 @@ public:
    */
   Tensor copy_tensor(const Tensor &x);
 
-  /**
-   * Provides a new Tensor object in which all elements are initialized by
-   * the Bernoulli distribution.
-   * @param shape Shape of the tensor.
-   * @param p Probability to generate 1.
-   * @return A new Tensor object.
-   */
+  // Random value generators.
   Tensor random_bernoulli(const Shape &shape, float p);
-
-  /**
-   * Provides a new Tensor object in which all elements are initialized by
-   * the uniform distribution with range (lower, upper].
-   * @param shape Shape of the tensor.
-   * @param lower Lower bound of values.
-   * @param upper Upper bound of values.
-   * @return A new Tensor object.
-   */
   Tensor random_uniform(const Shape &shape, float lower, float upper);
-
-  /**
-   * Provides a new Tensor object in which all elements are initialized by
-   * the normal distribution with specific mean and standard deviation.
-   * @param shape Shape of the tensor.
-   * @param mean Mean of the normal distribution.
-   * @param sd Standard deviation of the normal distribution.
-   * @return A new Tensor object.
-   */
   Tensor random_normal(const Shape &shape, float mean, float sd);
-
-  /**
-   * Provides a new Tensor object in which all elements are initialized by
-   * the log-normal distribution with specific mean and standard deviation.
-   * @param shape Shape of the tensor.
-   * @param mean Mean of the corresponding normal distribution.
-   * @param sd Standard deviation of the corresponding normal distribution.
-   * @return A new Tensor object.
-   */
   Tensor random_log_normal(const Shape &shape, float mean, float sd);
 
-  /**
-   * Pick-up subplane specified by the dimension and the ID.
-   * @param x A tensor.
-   * @param dim Target dimension.
-   * @param ids List of positions in the dimension `dim`.
-   * @return `x[:, :, ..., ids, ..., :, :]`
-   */
-  Tensor pick(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids);
+  // Tensor manipulations.
+  Tensor pick_fw(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids);
+  Tensor slice_fw(const Tensor &x, unsigned dim, unsigned lower, unsigned upper);
+  Tensor concat_fw(const std::vector<const Tensor *> &xs, unsigned dim);
 
-  /**
-   * Provides partial tensor.
-   * @param x A tensor.
-   * @param dim Target dimension.
-   * @param lower The lower bound.
-   * @param upper The upper bound.
-   * @return `x([lower,upper) in dim)`
-   */
-  Tensor slice(const Tensor &x, unsigned dim, unsigned lower, unsigned upper);
+  // Unary operations.
+  Tensor negate_fw(const Tensor &x);
+  Tensor sqrt_fw(const Tensor &x);
+  Tensor exp_fw(const Tensor &x);
+  Tensor tanh_fw(const Tensor &x);
+  Tensor sigmoid_fw(const Tensor &x);
+  Tensor sin_fw(const Tensor &x);
+  Tensor cos_fw(const Tensor &x);
+  Tensor tan_fw(const Tensor &x);
 
-  /**
-   * Provides concatenated tensor.
-   * @param xs A list of tensor.
-   * @param dim Dimension to join.
-   * @return `[xs[0], xs[1], ..., xs[n] in dim]`
-   */
-  Tensor concat(const std::vector<const Tensor *> &xs, unsigned dim);
+  // Tensor-constant operations.
+  Tensor add_const_fw(const Tensor &x, float k);
+  Tensor subtract_const_r_fw(const Tensor &x, float k);
+  Tensor subtract_const_l_fw(const Tensor &x, float k);
+  Tensor multiply_const_fw(const Tensor &x, float k);
+  Tensor divide_const_r_fw(const Tensor &x, float k);
+  Tensor divide_const_l_fw(const Tensor &x, float k);
+  Tensor pstep_fw(const Tensor &x, float k);
+  Tensor prelu_fw(const Tensor &x, float k);
 
-  /**
-   * Inverts the sign of each elements.
-   * @param x A tensor.
-   * @return `-x`
-   */
-  Tensor negate(const Tensor &x);
+  // Tensor-scalar operations.
+  Tensor add_scalar_fw(const Tensor &x, const Tensor &k);
+  Tensor subtract_scalar_r_fw(const Tensor &x, const Tensor &k);
+  Tensor subtract_scalar_l_fw(const Tensor &x, const Tensor &k);
+  Tensor multiply_scalar_fw(const Tensor &x, const Tensor &k);
+  Tensor divide_scalar_r_fw(const Tensor &x, const Tensor &k);
+  Tensor divide_scalar_l_fw(const Tensor &x, const Tensor &k);
 
-  /**
-   * Adds a constant to each element in the tensor.
-   * @param x A tensor.
-   * @param k Constant to add.
-   * @return `x + k`
-   */
-  Tensor add_const(const Tensor &x, float k);
+  // Binary operations.
+  Tensor add_fw(const Tensor &a, const Tensor &b);
+  Tensor subtract_fw(const Tensor &a, const Tensor &b);
+  Tensor multiply_fw(const Tensor &a, const Tensor &b);
+  Tensor divide_fw(const Tensor &a, const Tensor &b);
 
-  /**
-   * Adds a scalar tensor to a general tensor.
-   * @param x A tensor.
-   * @param k A scalar tensor.
-   * @return `x + k`
-   */
-  Tensor add_scalar(const Tensor &x, const Tensor &k);
+  // Matrix operations.
+  Tensor transpose_fw(const Tensor &x);
+  Tensor matmul_fw(const Tensor &a, const Tensor &b);
 
-  /**
-   * Adds two tensors.
-   * @param a A tensor.
-   * @param b Other tensor.
-   * @return `a + b`
-   * @remarks If the batch size of `a` or `b` is 1, the single-batch side is
-   *          broadcasted to all minibatches in the opposite side.
-   */
-  Tensor add(const Tensor &a, const Tensor &b);
-
-  /**
-   * Subtracts a constant from each element in a tensor.
-   * @param x A tensor.
-   * @param k Constant to subtract.
-   * @return `x - k`
-   */
-  Tensor subtract_const_r(const Tensor &x, float k);
-
-  /**
-   * Subtracts a tensor from a constant.
-   * @param x A tensor.
-   * @param k Constant to be subtracted.
-   * @return `k - x`
-   */
-  Tensor subtract_const_l(const Tensor &x, float k);
-
-  /**
-   * Subtracts a scalar tensor from each element in a tensor.
-   * @param x A tensor.
-   * @param k A scalar tensor.
-   * @return `x - k`
-   */
-  Tensor subtract_scalar_r(const Tensor &x, const Tensor &k);
-
-  /**
-   * Subtracts a tensor from a scalar tensor.
-   * @param x A tensor.
-   * @param k A scalar tensor.
-   * @return `k - x`
-   */
-  Tensor subtract_scalar_l(const Tensor &x, const Tensor &k);
-
-  /**
-   * Subtracts the second tensor from the first tensor.
-   * @param a Tensor to be subtracted.
-   * @param b Tensor to subtract.
-   * @return `a - b`
-   * @remarks If the batch size of `a` or `b` is 1, the single-batch side is
-   *          broadcasted to all minibatches in the opposite side.
-   */
-  Tensor subtract(const Tensor &a, const Tensor &b);
-
-  /**
-   * Multiples each element in a tensor by a constant.
-   * @param x A tensor.
-   * @param k Multiplier.
-   * @return `k * x`
-   */
-  Tensor multiply_const(const Tensor &x, float k);
-
-  /**
-   * Multiplies each element in a tensor by a scalar tensor.
-   * @param x A tensor.
-   * @param k A scalar tensor.
-   * @return `k * x`
-   */
-  Tensor multiply_scalar(const Tensor &x, const Tensor &k);
-
-  /**
-   * Element-wise multiplication of two tensors.
-   * @param a A tensor.
-   * @param b Other tensor.
-   * @return `a \circ b`
-   * @remarks If the batch size of `a` or `b` is 1, the single-batch side is
-   *          broadcasted to all minibatches in the opposite side.
-   */
-  Tensor multiply(const Tensor &a, const Tensor &b);
-
-  /**
-   * Divides each element in a tensor by a constant.
-   * @param x A tensor.
-   * @param k Divisor.
-   * @return `x / k`
-   * @remarks This function won't check the zero-division.
-   */
-  Tensor divide_const_r(const Tensor &x, float k);
-
-  /**
-   * Divides a constant by each element in a tensor.
-   * @param x A divisor tensor.
-   * @param k Constant to be divided.
-   * @return `k ./ x`
-   * @remarks This function won't check the zero-division.
-   */
-  Tensor divide_const_l(const Tensor &x, float k);
-
-  /**
-   * Divides each element in a tensor by a scalar tensor.
-   * @param x A tensor.
-   * @param k A divisor scalar tensor.
-   * @return `x / k`
-   * @remarks This function won't check the zero-division.
-   */
-  Tensor divide_scalar_r(const Tensor &x, const Tensor &k);
-
-  /**
-   * Divides a scalar tensor by each element in a tensor.
-   * @param x A divisor tensor.
-   * @param k A scalar tensor to be divided.
-   * @return `k ./ x`
-   * @remarks This function won't check the zero-division.
-   */
-  Tensor divide_scalar_l(const Tensor &x, const Tensor &k);
-
-  /**
-   * Divides the first tensor by the second tensor.
-   * @param a Dividend tensor.
-   * @param b Divisor tensor.
-   * @return `a ./ b`
-   * @remarks If the batch size of `a` or `b` is 1, the single-batch side is
-   *          broadcasted to all minibatches in the opposite side.
-   *          This function won't check the zero-division.
-   */
-  Tensor divide(const Tensor &a, const Tensor &b);
-
-  /**
-   * Calculates the transposed matrix.
-   * @param x A tensor.
-   * @return `x^T`
-   * @remarks Number of dimensions of `x` should be 0, 1 or 2.
-   */
-  Tensor transpose(const Tensor &x);
-
-  /**
-   * Calculates the matrix product of two matrices.
-   * @param a A tensor.
-   * @param b Other tensor.
-   * @return `a . b`
-   * @remarks Number of dimensions of `a` and `b` should be 0, 1 or 2, and the
-   *          second dimension of `a` and the first dimension of `b` should be
-   *          same.
-   */
-  Tensor matmul(const Tensor &a, const Tensor &b);
-
-  /**
-   * Calculates the sqrt function.
-   * @param x A tensor.
-   * @return `sqrt(x)`
-   */
-  Tensor sqrt(const Tensor &x);
-
-  /**
-   * Calculates the exp function.
-   * @param x A tensor.
-   * @return `exp(x)`
-   */
-  Tensor exp(const Tensor &x);
-
-  /**
-   * Calculates the tanh function.
-   * @param x A tensor.
-   * @return `tanh(x)`
-   */
-  Tensor tanh(const Tensor &x);
-
-  /**
-   * Calculates the logistic sigmoid function.
-   * @param x A tensor.
-   * @return `sigmoid(x)`
-   */
-  Tensor sigmoid(const Tensor &x);
-
-  /**
-   * Calculates the sin function.
-   * @param x A tensor.
-   * @return `sin(x)`
-   */
-  Tensor sin(const Tensor &x);
-
-  /**
-   * Calculates the cos function.
-   * @param x A tensor.
-   * @return `sin(x)`
-   */
-  Tensor cos(const Tensor &x);
-
-  /**
-   * Calculates the tan function.
-   * @param x A tensor.
-   * @return `sin(x)`
-   */
-  Tensor tan(const Tensor &x);
-
-  /**
-   * Calculates the step function with the lowerbound.
-   * @param x A tensor.
-   * @param a Lowerbound value.
-   * @return `x > 0 ? 1 : a`
-   * @remarks `a` should be in [0, 1].
-   */
-  Tensor pstep(const Tensor &x, float a);
-
-  /**
-   * Calculates the parameterized rectifier function.
-   * @param x A tensor.
-   * @return `x > 0 ? x : ax`
-   * @remarks `a` should be in [0, 1].
-   */
-  Tensor prelu(const Tensor &x, float a);
-
-  /**
-   * Integrates a specified dimension.
-   * @param x A tensor.
-   * @param dim Dimension to integrate.
-   * @return Integrated tensor.
-   */
-  Tensor sum(const Tensor &x, unsigned dim);
-
-  /**
-   * Calculates the logsumexp over specified dimension.
-   * @param x A tensor.
-   * @param dim Dimension to calculate logsumexp.
-   * @return `logsumexp(x)` over specified dimension.
-   */
-  Tensor logsumexp(const Tensor &x, unsigned dim);
-
-  /**
-   * Broadcasts a specified dimension.
-   * @param x A tensor.
-   * @param dim Dimension to broadcast.
-   * @param size Size of the dimension `dim`.
-   * @return Broadcasted tensor.
-   */
-  Tensor broadcast(const Tensor &x, unsigned dim, unsigned size);
-
-  /**
-   * Calculates the sum over minibatches.
-   * @param x A tensor.
-   * @return `sum(x[0], x[1], ..., x[x.batch_size])`
-   */
-  Tensor batch_sum(const Tensor &x);
+  // Dimension operations.
+  Tensor sum_fw(const Tensor &x, unsigned dim);
+  Tensor logsumexp_fw(const Tensor &x, unsigned dim);
+  Tensor broadcast_fw(const Tensor &x, unsigned dim, unsigned size);
+  Tensor batch_sum_fw(const Tensor &x);
 
 private:
   /**
@@ -498,47 +222,47 @@ private:
   virtual Tensor random_normal_impl(const Shape &shape, float mean, float sd) = 0;
   virtual Tensor random_log_normal_impl(const Shape &shape, float mean, float sd) = 0;
 
-  virtual Tensor pick_impl(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids, Shape &&new_shape) = 0;
-  virtual Tensor slice_impl(const Tensor &x, unsigned dim, unsigned offset, Shape &&new_shape) = 0;
-  virtual Tensor concat_impl(const std::vector<const Tensor *> &xs, unsigned dim, Shape &&new_shape) = 0;
+  virtual Tensor pick_fw_impl(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids, Shape &&new_shape) = 0;
+  virtual Tensor slice_fw_impl(const Tensor &x, unsigned dim, unsigned offset, Shape &&new_shape) = 0;
+  virtual Tensor concat_fw_impl(const std::vector<const Tensor *> &xs, unsigned dim, Shape &&new_shape) = 0;
 
-  virtual Tensor negate_impl(const Tensor &x) = 0;
+  virtual Tensor negate_fw_impl(const Tensor &x) = 0;
+  virtual Tensor sqrt_fw_impl(const Tensor &x) = 0;
+  virtual Tensor exp_fw_impl(const Tensor &x) = 0;
+  virtual Tensor tanh_fw_impl(const Tensor &x) = 0;
+  virtual Tensor sigmoid_fw_impl(const Tensor &x) = 0;
+  virtual Tensor sin_fw_impl(const Tensor &x) = 0;
+  virtual Tensor cos_fw_impl(const Tensor &x) = 0;
+  virtual Tensor tan_fw_impl(const Tensor &x) = 0;
 
-  virtual Tensor add_const_impl(const Tensor &x, float k) = 0;
-  virtual Tensor add_scalar_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
-  virtual Tensor add_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
-  virtual Tensor subtract_const_r_impl(const Tensor &x, float k) = 0;
-  virtual Tensor subtract_const_l_impl(const Tensor &x, float k) = 0;
-  virtual Tensor subtract_scalar_r_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
-  virtual Tensor subtract_scalar_l_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
-  virtual Tensor subtract_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
-  virtual Tensor multiply_const_impl(const Tensor &x, float k) = 0;
-  virtual Tensor multiply_scalar_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
-  virtual Tensor multiply_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
-  virtual Tensor divide_const_r_impl(const Tensor &x, float k) = 0;
-  virtual Tensor divide_const_l_impl(const Tensor &x, float k)  = 0;
-  virtual Tensor divide_scalar_r_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
-  virtual Tensor divide_scalar_l_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
-  virtual Tensor divide_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
+  virtual Tensor add_const_fw_impl(const Tensor &x, float k) = 0;
+  virtual Tensor subtract_const_r_fw_impl(const Tensor &x, float k) = 0;
+  virtual Tensor subtract_const_l_fw_impl(const Tensor &x, float k) = 0;
+  virtual Tensor multiply_const_fw_impl(const Tensor &x, float k) = 0;
+  virtual Tensor divide_const_r_fw_impl(const Tensor &x, float k) = 0;
+  virtual Tensor divide_const_l_fw_impl(const Tensor &x, float k)  = 0;
+  virtual Tensor pstep_fw_impl(const Tensor &x, float k) = 0;
+  virtual Tensor prelu_fw_impl(const Tensor &x, float k) = 0;
 
-  virtual Tensor transpose_impl(const Tensor &x, Shape &&new_shape) = 0;
-  virtual Tensor matmul_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
+  virtual Tensor add_scalar_fw_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
+  virtual Tensor subtract_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
+  virtual Tensor subtract_scalar_l_fw_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
+  virtual Tensor multiply_scalar_fw_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
+  virtual Tensor divide_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
+  virtual Tensor divide_scalar_l_fw_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
 
-  virtual Tensor sqrt_impl(const Tensor &x) = 0;
-  virtual Tensor exp_impl(const Tensor &x) = 0;
-  virtual Tensor tanh_impl(const Tensor &x) = 0;
-  virtual Tensor sigmoid_impl(const Tensor &x) = 0;
-  virtual Tensor sin_impl(const Tensor &x) = 0;
-  virtual Tensor cos_impl(const Tensor &x) = 0;
-  virtual Tensor tan_impl(const Tensor &x) = 0;
-  virtual Tensor pstep_impl(const Tensor &x, float a) = 0;
-  virtual Tensor prelu_impl(const Tensor &x, float a) = 0;
+  virtual Tensor add_fw_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
+  virtual Tensor subtract_fw_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
+  virtual Tensor multiply_fw_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
+  virtual Tensor divide_fw_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
 
-  virtual Tensor sum_impl(const Tensor &x, unsigned dim) = 0;
-  virtual Tensor logsumexp_impl(const Tensor &x, unsigned dim) = 0;
-  virtual Tensor broadcast_impl(const Tensor &x, unsigned dim, unsigned size, Shape &&new_shape) = 0;
+  virtual Tensor transpose_fw_impl(const Tensor &x, Shape &&new_shape) = 0;
+  virtual Tensor matmul_fw_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
 
-  virtual Tensor batch_sum_impl(const Tensor &x) = 0;
+  virtual Tensor sum_fw_impl(const Tensor &x, unsigned dim) = 0;
+  virtual Tensor logsumexp_fw_impl(const Tensor &x, unsigned dim) = 0;
+  virtual Tensor broadcast_fw_impl(const Tensor &x, unsigned dim, unsigned size, Shape &&new_shape) = 0;
+  virtual Tensor batch_sum_fw_impl(const Tensor &x) = 0;
 
   virtual void add_gradient_impl(Tensor &a, const Tensor &b) = 0;
   virtual void add_gradient_offset_impl(Tensor &a, const Tensor &b, unsigned dim, unsigned offset) = 0;

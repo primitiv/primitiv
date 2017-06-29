@@ -59,47 +59,47 @@ private:
   Tensor random_normal_impl(const Shape &shape, float mean, float sd) override;
   Tensor random_log_normal_impl(const Shape &shape, float mean, float sd) override;
 
-  Tensor pick_impl(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids, Shape &&new_shape) override;
-  Tensor slice_impl(const Tensor &x, unsigned dim, unsigned offset, Shape &&new_shape) override;
-  Tensor concat_impl(const std::vector<const Tensor *> &xs, unsigned dim, Shape &&new_shape) override;
+  Tensor pick_fw_impl(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids, Shape &&new_shape) override;
+  Tensor slice_fw_impl(const Tensor &x, unsigned dim, unsigned offset, Shape &&new_shape) override;
+  Tensor concat_fw_impl(const std::vector<const Tensor *> &xs, unsigned dim, Shape &&new_shape) override;
 
-  Tensor negate_impl(const Tensor &x) override;
+  Tensor negate_fw_impl(const Tensor &x) override;
+  Tensor sqrt_fw_impl(const Tensor &x) override;
+  Tensor exp_fw_impl(const Tensor &x) override;
+  Tensor tanh_fw_impl(const Tensor &x) override;
+  Tensor sigmoid_fw_impl(const Tensor &x) override;
+  Tensor sin_fw_impl(const Tensor &x) override;
+  Tensor cos_fw_impl(const Tensor &x) override;
+  Tensor tan_fw_impl(const Tensor &x) override;
 
-  Tensor add_const_impl(const Tensor &x, float k) override;
-  Tensor add_scalar_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) override;
-  Tensor add_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) override;
-  Tensor subtract_const_r_impl(const Tensor &x, float k) override;
-  Tensor subtract_const_l_impl(const Tensor &x, float k) override;
-  Tensor subtract_scalar_r_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) override;
-  Tensor subtract_scalar_l_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) override;
-  Tensor subtract_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) override;
-  Tensor multiply_const_impl(const Tensor &x, float k) override;
-  Tensor multiply_scalar_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) override;
-  Tensor multiply_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) override;
-  Tensor divide_const_r_impl(const Tensor &x, float k) override;
-  Tensor divide_const_l_impl(const Tensor &x, float k) override;
-  Tensor divide_scalar_r_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) override;
-  Tensor divide_scalar_l_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) override;
-  Tensor divide_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) override;
+  Tensor add_const_fw_impl(const Tensor &x, float k) override;
+  Tensor subtract_const_r_fw_impl(const Tensor &x, float k) override;
+  Tensor subtract_const_l_fw_impl(const Tensor &x, float k) override;
+  Tensor multiply_const_fw_impl(const Tensor &x, float k) override;
+  Tensor divide_const_r_fw_impl(const Tensor &x, float k) override;
+  Tensor divide_const_l_fw_impl(const Tensor &x, float k) override;
+  Tensor pstep_fw_impl(const Tensor &x, float k) override;
+  Tensor prelu_fw_impl(const Tensor &x, float k) override;
 
-  Tensor transpose_impl(const Tensor &x, Shape &&new_shape) override;
-  Tensor matmul_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) override;
+  Tensor add_scalar_fw_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) override;
+  Tensor subtract_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) override;
+  Tensor subtract_scalar_l_fw_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) override;
+  Tensor multiply_scalar_fw_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) override;
+  Tensor divide_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) override;
+  Tensor divide_scalar_l_fw_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) override;
 
-  Tensor sqrt_impl(const Tensor &x) override;
-  Tensor exp_impl(const Tensor &x) override;
-  Tensor tanh_impl(const Tensor &x) override;
-  Tensor sigmoid_impl(const Tensor &x) override;
-  Tensor sin_impl(const Tensor &x) override;
-  Tensor cos_impl(const Tensor &x) override;
-  Tensor tan_impl(const Tensor &x) override;
-  Tensor pstep_impl(const Tensor &x, float a) override;
-  Tensor prelu_impl(const Tensor &x, float a) override;
+  Tensor add_fw_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) override;
+  Tensor subtract_fw_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) override;
+  Tensor multiply_fw_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) override;
+  Tensor divide_fw_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) override;
 
-  Tensor sum_impl(const Tensor &x, unsigned dim) override;
-  Tensor logsumexp_impl(const Tensor &x, unsigned dim) override;
-  Tensor broadcast_impl(const Tensor &x, unsigned dim, unsigned size, Shape &&new_shape) override;
+  Tensor transpose_fw_impl(const Tensor &x, Shape &&new_shape) override;
+  Tensor matmul_fw_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) override;
 
-  Tensor batch_sum_impl(const Tensor &x) override;
+  Tensor sum_fw_impl(const Tensor &x, unsigned dim) override;
+  Tensor logsumexp_fw_impl(const Tensor &x, unsigned dim) override;
+  Tensor broadcast_fw_impl(const Tensor &x, unsigned dim, unsigned size, Shape &&new_shape) override;
+  Tensor batch_sum_fw_impl(const Tensor &x) override;
 
   void add_gradient_impl(Tensor &a, const Tensor &b) override;
   void add_gradient_offset_impl(Tensor &a, const Tensor &b, unsigned dim, unsigned offset) override;
