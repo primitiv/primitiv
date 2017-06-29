@@ -42,7 +42,7 @@ public:
    * Returns the raw pointer of the internal memory.
    * @return Pointer of the internal memory.
    */
-  void *data() { return data_.get(); }
+  void *data();
 
   /**
    * Returns the raw const-pointer of the internal memory.
@@ -140,6 +140,11 @@ private:
     : shape_(std::forward<ShapeT>(shape))
     , device_(device)
     , data_(std::forward<SharedPtrT>(data)) {}
+
+  /**
+   * Duplicate internal data if current data is used in other place.
+   */
+  void unique();
 
   Shape shape_;
   Device *device_;

@@ -126,10 +126,8 @@ TEST_F(TensorOpsTest, CheckInvalidPick) {
      {3, {1}},
   };
   for (Device *dev : devices) {
-    std::cout << dev << std::endl;
     const Tensor x = dev->new_tensor(Shape({2, 2, 2}, 3), 0);
     for (const TestCase &tc : test_cases) {
-      std::cout << tc.dim << std::endl;
       EXPECT_THROW(pick(x, tc.dim, tc.ids), Error);
     }
   }
