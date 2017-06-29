@@ -31,3 +31,16 @@ Build
     cmake .. [-DUSE_CUDA=ON]
     make [-j <threads>]
     make test
+
+Usage
+-----
+
+See [examples](https://github.com/odashi/primitiv/tree/master/example).
+
+Contact
+-------
+
+- yus.takara at gmail.com
+- [@odashi_t on Twitter](https://twitter.com/odashi_t)
+
+This project is supported by [ASTREC](http://astrec.nict.go.jp/) in [NICT](http://nict.go.jp/).
