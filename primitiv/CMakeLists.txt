@@ -52,7 +52,7 @@ if(USE_CUDA)
     cuda_device.cu
     cuda_memory_pool.cu
     cuda_utils.cu)
-  list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
+  list(APPEND CUDA_NVCC_FLAGS "-std=c++11 -O3 -Xcompiler -fPIC")
 
   # Workaround for some systems.
   #list(APPEND CUDA_NVCC_FLAGS "-D_FORCE_INLINES")
