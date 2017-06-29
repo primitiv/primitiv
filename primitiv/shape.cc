@@ -9,12 +9,12 @@ Shape &Shape::operator=(Shape &&src) {
   if (&src != this) {
     dims_ = std::move(src.dims_);
     k_ = src.k_;
-    num_elms_per_sample_ = src.num_elms_per_sample_;
+    volume_ = src.volume_;
   }
   return *this;
 }
 
-unsigned Shape::num_elements_under_rank(unsigned rank) const {
+unsigned Shape::lower_volume(unsigned rank) const {
   unsigned ret = 1;
   for (unsigned i = 0; i < rank && i < depth(); ++i) ret *= dims_[i];
   return ret;
@@ -76,13 +76,13 @@ void Shape::adjust() {
   }
 
   // calculates the number of elements.
-  num_elms_per_sample_ = 1;
-  for (const unsigned n : dims_) num_elms_per_sample_ *= n;
+  volume_ = 1;
+  for (const unsigned n : dims_) volume_ *= n;
 
   // check size of the shape.
   // if 1 or more dimensions or the batch size is 0,
-  // then num_total_elements() returns 0.
-  if (num_total_elements() == 0) {
+  // size() returns 0.
+  if (size() == 0) {
     THROW_ERROR("invalid shape: " << to_string());
   }
 }

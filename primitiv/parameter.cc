@@ -21,7 +21,7 @@ YAML::Emitter &operator<<(YAML::Emitter &em, const primitiv::Shape &shape) {
   for (unsigned i = 0; i < shape.depth(); ++i) em << shape[i];
   em << YAML::EndSeq;
   em << YAML::Key << "batch";
-  em << YAML::Value << shape.batch_size();
+  em << YAML::Value << shape.batch();
 
   em << YAML::EndMap;
   return em;
@@ -35,7 +35,7 @@ YAML::Emitter &operator<<(YAML::Emitter&em, const primitiv::Tensor &tensor) {
   em << YAML::Value << tensor.shape();
   em << YAML::Key << "value";
   const vector<float> v = tensor.to_vector();
-  const unsigned s = sizeof(float) * tensor.shape().num_total_elements();
+  const unsigned s = sizeof(float) * tensor.shape().size();
   em << YAML::Value;
   em << YAML::Binary(reinterpret_cast<const unsigned char *>(&v[0]), s);
 
@@ -71,7 +71,7 @@ primitiv::Tensor parse_tensor(
     else THROW_ERROR("Unknown YAML key: " << key);
   }
 
-  const unsigned size = sizeof(float) * shape.num_total_elements();
+  const unsigned size = sizeof(float) * shape.size();
 
   if (data.size() != size) {
     THROW_ERROR(

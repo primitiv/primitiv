@@ -8,17 +8,17 @@ namespace primitiv {
 namespace shape_ops {
 
 Shape reshape(const Shape &before, const Shape &after) {
-  if (before.num_elements_per_sample() != after.num_elements_per_sample() ||
-      (after.has_batch() && after.batch_size() != before.batch_size())) {
+  if (before.volume() != after.volume() ||
+      (after.has_batch() && after.batch() != before.batch())) {
     THROW_ERROR(
         "Invalid shapes to reshape. before: " << before.to_string()
         << ", after: " << after.to_string());
   }
-  return after.resize_batch(before.batch_size());
+  return after.resize_batch(before.batch());
 }
 
 Shape flatten(const Shape &x) {
-  return Shape({x.num_elements_per_sample()}, x.batch_size());
+  return Shape({x.volume()}, x.batch());
 }
 
 Shape scalar_op(const Shape &x, const Shape &k) {
@@ -27,7 +27,7 @@ Shape scalar_op(const Shape &x, const Shape &k) {
         "Shape mismatched for the scalar operation. "
         "x: " << x.to_string() << " != k: " << k.to_string());
   }
-  return x.resize_batch(std::max(x.batch_size(), k.batch_size()));
+  return x.resize_batch(std::max(x.batch(), k.batch()));
 }
 
 Shape elementwise(const Shape &a, const Shape &b) {
@@ -36,7 +36,7 @@ Shape elementwise(const Shape &a, const Shape &b) {
         "Shape mismatched for the elementwise operation. "
         "a: " << a.to_string() << " != b: " << b.to_string());
   }
-  return a.resize_batch(std::max(a.batch_size(), b.batch_size()));
+  return a.resize_batch(std::max(a.batch(), b.batch()));
 }
 
 Shape slice(const Shape &x, unsigned dim, unsigned lower, unsigned upper) {
@@ -66,7 +66,7 @@ Shape concat(const std::vector<const Shape *> &xs, unsigned dim) {
       }
       THROW_ERROR("Invalid shapes to concatenate: " << dims_str);
     }
-    if (!s0.has_batch()) s0.update_batch(s.batch_size());
+    if (!s0.has_batch()) s0.update_batch(s.batch());
     sum += s[dim];
   }
 
@@ -86,7 +86,7 @@ Shape broadcast(const Shape &x, unsigned dim, unsigned size) {
 Shape pick(const Shape &x, unsigned dim, const std::vector<unsigned> &ids) {
   const unsigned n = x[dim];
   const unsigned bi = ids.size();
-  if (bi == 0 || (x.batch_size() != bi && x.has_batch() && bi > 1)) {
+  if (bi == 0 || (x.batch() != bi && x.has_batch() && bi > 1)) {
     THROW_ERROR(
         "Invalid IDs to pick. shape: " << x.to_string()
         << ", ids.size(): " << ids.size());
@@ -100,7 +100,7 @@ Shape pick(const Shape &x, unsigned dim, const std::vector<unsigned> &ids) {
   }
 
   Shape ret = x.resize_dim(dim, 1);
-  ret.update_batch(std::max(x.batch_size(), bi));
+  ret.update_batch(std::max(x.batch(), bi));
   return ret;
 }
 
@@ -108,7 +108,7 @@ Shape transpose(const Shape &x) {
   if (!x.is_matrix()) {
     THROW_ERROR("Invalid shape to transpose: " << x.to_string());
   }
-  return Shape({x[1], x[0]}, x.batch_size());
+  return Shape({x[1], x[0]}, x.batch());
 }
 
 Shape matmul(const Shape &l, const Shape &r) {
@@ -118,7 +118,7 @@ Shape matmul(const Shape &l, const Shape &r) {
         "Invalid shapes to calculate the matrix product: "
         << l.to_string() << ", " << r.to_string());
   }
-  return Shape({l[0], r[1]}, std::max(l.batch_size(), r.batch_size()));
+  return Shape({l[0], r[1]}, std::max(l.batch(), r.batch()));
 }
 
 }  // namespace shape_ops

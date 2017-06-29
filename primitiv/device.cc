@@ -58,10 +58,9 @@ void Device::reset_tensor_by_array(Tensor &x, const float values[]) {
 }
 
 void Device::reset_tensor_by_vector(Tensor &x, const vector<float> &values) {
-  const unsigned num_elements = x.shape().num_total_elements();
-  if (values.size() != num_elements) {
+  if (values.size() != x.shape().size()) {
     THROW_ERROR(
-        "Data sizes mismatched. required: " << num_elements
+        "Data sizes mismatched. required: " << x.shape().size()
         << " (shape: " << x.shape().to_string() << ") != actual: "
         << values.size());
   }

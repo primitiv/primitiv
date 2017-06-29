@@ -489,7 +489,7 @@ TEST_F(FunctionImplTest, CheckReshape) {
     Shape({2, 2}, 3), Shape({2, 1, 2}, 3), Shape({1, 2, 2}, 3),
   };
   const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4};
-  const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), 1);
+  const vector<float> bw_grad(arg_shapes[0]->size(), 1);
   for (const Shape ret_shape : shapes) {
     const Reshape node(ret_shape);
     const Shape cur_shape = node.forward_shape(arg_shapes);
@@ -511,7 +511,7 @@ TEST_F(FunctionImplTest, CheckFlatten) {
   setup_1arg();
   const Shape ret_shape({4}, 3);
   const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4};
-  const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), 1);
+  const vector<float> bw_grad(arg_shapes[0]->size(), 1);
   TEST_1ARG(Flatten);
 }
 
@@ -521,7 +521,7 @@ TEST_F(FunctionImplTest, CheckPositive) {
   setup_1arg();
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4};
-  const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), 1);
+  const vector<float> bw_grad(arg_shapes[0]->size(), 1);
   TEST_1ARG(Positive);
 }
 
@@ -531,7 +531,7 @@ TEST_F(FunctionImplTest, CheckNegative) {
   setup_1arg();
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {-1, -2, -3, -4, 0, 0, 0, 0, 1, 2, 3, 4};
-  const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), -1);
+  const vector<float> bw_grad(arg_shapes[0]->size(), -1);
   TEST_1ARG(Negative);
 }
 
@@ -541,7 +541,7 @@ TEST_F(FunctionImplTest, CheckAddConst) {
   setup_1arg();
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {4, 5, 6, 7, 3, 3, 3, 3, 2, 1, 0, -1};
-  const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), 1);
+  const vector<float> bw_grad(arg_shapes[0]->size(), 1);
   TEST_1ARG_K(AddConst, 3);
 }
 
@@ -551,7 +551,7 @@ TEST_F(FunctionImplTest, CheckSubtractConstR) {
   setup_1arg();
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {-2, -1, 0, 1, -3, -3, -3, -3, -4, -5, -6, -7};
-  const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), 1);
+  const vector<float> bw_grad(arg_shapes[0]->size(), 1);
   TEST_1ARG_K(SubtractConstR, 3);
 }
 
@@ -561,7 +561,7 @@ TEST_F(FunctionImplTest, CheckSubtractConstL) {
   setup_1arg();
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {2, 1, 0, -1, 3, 3, 3, 3, 4, 5, 6, 7};
-  const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), -1);
+  const vector<float> bw_grad(arg_shapes[0]->size(), -1);
   TEST_1ARG_K(SubtractConstL, 3);
 }
 
@@ -571,7 +571,7 @@ TEST_F(FunctionImplTest, CheckMultiplyConst) {
   setup_1arg();
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {3, 6, 9, 12, 0, 0, 0, 0, -3, -6, -9, -12};
-  const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), 3);
+  const vector<float> bw_grad(arg_shapes[0]->size(), 3);
   TEST_1ARG_K(MultiplyConst, 3);
 }
 
@@ -582,7 +582,7 @@ TEST_F(FunctionImplTest, CheckDivideConstR) {
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {
     1./3, 2./3, 1, 4./3, 0, 0, 0, 0, -1./3, -2./3, -1, -4./3};
-  const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), 1./3);
+  const vector<float> bw_grad(arg_shapes[0]->size(), 1./3);
   TEST_1ARG_K(DivideConstR, 3);
 }
 
@@ -606,8 +606,8 @@ TEST_F(FunctionImplTest, CheckAddScalar) {
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {2, 3, 4, 5, 2, 2, 2, 2, 2, 1, 0, -1};
   const vector<vector<float>> bw_grads {
-    vector<float>(arg_shapes[0]->num_total_elements(), 1),
-    vector<float>(arg_shapes[1]->num_total_elements(), 4),
+    vector<float>(arg_shapes[0]->size(), 1),
+    vector<float>(arg_shapes[1]->size(), 4),
   };
   TEST_2ARGS(AddScalar);
 }
@@ -620,8 +620,8 @@ TEST_F(FunctionImplTest, CheckSubtractScalarR) {
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {0, 1, 2, 3, -2, -2, -2, -2, -4, -5, -6, -7};
   const vector<vector<float>> bw_grads {
-    vector<float>(arg_shapes[0]->num_total_elements(), 1),
-    vector<float>(arg_shapes[1]->num_total_elements(), -4),
+    vector<float>(arg_shapes[0]->size(), 1),
+    vector<float>(arg_shapes[1]->size(), -4),
   };
   TEST_2ARGS(SubtractScalarR);
 }
@@ -634,8 +634,8 @@ TEST_F(FunctionImplTest, CheckSubtractScalarL) {
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {0, -1, -2, -3, 2, 2, 2, 2, 4, 5, 6, 7};
   const vector<vector<float>> bw_grads {
-    vector<float>(arg_shapes[0]->num_total_elements(), -1),
-    vector<float>(arg_shapes[1]->num_total_elements(), 4),
+    vector<float>(arg_shapes[0]->size(), -1),
+    vector<float>(arg_shapes[1]->size(), 4),
   };
   TEST_2ARGS(SubtractScalarL);
 }
@@ -694,8 +694,8 @@ TEST_F(FunctionImplTest, CheckAdd) {
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {2, 3, 4, 5, 2, 2, 2, 2, 2, 1, 0, -1};
   const vector<vector<float>> bw_grads {
-    vector<float>(arg_shapes[0]->num_total_elements(), 1),
-    vector<float>(arg_shapes[1]->num_total_elements(), 1),
+    vector<float>(arg_shapes[0]->size(), 1),
+    vector<float>(arg_shapes[1]->size(), 1),
   };
   TEST_2ARGS(Add);
 }
@@ -708,8 +708,8 @@ TEST_F(FunctionImplTest, CheckSubtract) {
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {0, 1, 2, 3, -2, -2, -2, -2, -4, -5, -6, -7};
   const vector<vector<float>> bw_grads {
-    vector<float>(arg_shapes[0]->num_total_elements(), 1),
-    vector<float>(arg_shapes[1]->num_total_elements(), -1),
+    vector<float>(arg_shapes[0]->size(), 1),
+    vector<float>(arg_shapes[1]->size(), -1),
   };
   TEST_2ARGS(Subtract);
 }
@@ -749,7 +749,7 @@ TEST_F(FunctionImplTest, CheckTranspose) {
   setup_1arg();
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {1, 3, 2, 4, 0, 0, 0, 0, -1, -3, -2, -4};
-  const vector<float> bw_grad(arg_shapes[0]->num_total_elements(), 1);
+  const vector<float> bw_grad(arg_shapes[0]->size(), 1);
   TEST_1ARG(Transpose);
 }
 

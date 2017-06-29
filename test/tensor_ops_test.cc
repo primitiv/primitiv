@@ -101,7 +101,7 @@ TEST_F(TensorOpsTest, CheckPickNN) {
         std::cerr << tc.ids[i];
       }
       std::cerr << ']' << std::endl;
-      vector<float> x_data(tc.x_shape.num_total_elements());
+      vector<float> x_data(tc.x_shape.size());
       iota(x_data.begin(), x_data.end(), 0);
       const Tensor x = dev->new_tensor_by_vector(tc.x_shape, x_data);
       const Tensor y = pick(x, tc.dim, tc.ids);
@@ -828,9 +828,9 @@ TEST_F(TensorOpsTest, CheckInvalidArithmeticOps) {
   for (Device *dev : devices) {
     for (unsigned i = 0; i < sa.size(); ++i) {
       const Tensor a = dev->new_tensor_by_vector(
-          sa[i], vector<float>(sa[i].num_total_elements()));
+          sa[i], vector<float>(sa[i].size()));
       const Tensor b = dev->new_tensor_by_vector(
-          sb[i], vector<float>(sb[i].num_total_elements()));
+          sb[i], vector<float>(sb[i].size()));
       EXPECT_THROW(a + b, Error);
       EXPECT_THROW(a - b, Error);
       EXPECT_THROW(a * b, Error);

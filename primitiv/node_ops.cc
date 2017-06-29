@@ -183,12 +183,12 @@ Node sum(const Node &x) {
 }
 
 Node mean(const Node &x) {
-  return (1. / x.shape().batch_size()) * sum(x);
+  return (1. / x.shape().batch()) * sum(x);
 }
 
 Node normalize(const Node &x) {
   if (!x.shape().has_batch()) return x;  // No meaning of normalization.
-  const unsigned b = x.shape().batch_size();
+  const unsigned b = x.shape().batch();
   const float scale = b / (b - 1.);
   const Node m = mean(x);
   const Node v = scale * (mean(x * x) - m * m);
