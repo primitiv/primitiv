@@ -54,10 +54,10 @@ private:
 
   Tensor copy_tensor_impl(const Tensor &x) override;
 
-  Tensor random_bernoulli_impl(const Shape &shape, float p) override;
-  Tensor random_uniform_impl(const Shape &shape, float lower, float upper) override;
-  Tensor random_normal_impl(const Shape &shape, float mean, float sd) override;
-  Tensor random_log_normal_impl(const Shape &shape, float mean, float sd) override;
+  void random_bernoulli_impl(float p, Tensor &y) override;
+  void random_uniform_impl(float lower, float upper, Tensor &y) override;
+  void random_normal_impl(float mean, float sd, Tensor &y) override;
+  void random_log_normal_impl(float mean, float sd, Tensor &y) override;
 
   Tensor pick_fw_impl(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids, Shape &&new_shape) override;
   Tensor slice_fw_impl(const Tensor &x, unsigned dim, unsigned offset, Shape &&new_shape) override;

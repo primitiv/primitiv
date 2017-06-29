@@ -384,44 +384,33 @@ Tensor CUDADevice::copy_tensor_impl(const Tensor &x) {
   }
 }
 
-Tensor CUDADevice::random_bernoulli_impl(const Shape &shape, float p) {
-  const unsigned size = shape.size();
+void CUDADevice::random_bernoulli_impl(float p, Tensor &y) {
+  const unsigned size = y.shape().size();
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
-  Tensor ret = new_tensor(shape);
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  CURAND_CALL(::curandGenerateUniform(curand_, DATA(ret), size));
-  ::rand_bernoulli_dev<<<num_blocks, dim1_x_>>>(DATA(ret), p, size);
-  return ret;
+  CURAND_CALL(::curandGenerateUniform(curand_, DATA(y), size));
+  ::rand_bernoulli_dev<<<num_blocks, dim1_x_>>>(DATA(y), p, size);
 }
 
-Tensor CUDADevice::random_uniform_impl(
-    const Shape &shape, float lower, float upper) {
-  const unsigned size = shape.size();
+void CUDADevice::random_uniform_impl(float lower, float upper, Tensor &y) {
+  const unsigned size = y.shape().size();
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
   const float scale = upper - lower;
-  Tensor ret = new_tensor(shape);
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  CURAND_CALL(::curandGenerateUniform(curand_, DATA(ret), size));
-  ::rand_affine_dev<<<num_blocks, dim1_x_>>>(DATA(ret), lower, scale, size);
-  return ret;
+  CURAND_CALL(::curandGenerateUniform(curand_, DATA(y), size));
+  ::rand_affine_dev<<<num_blocks, dim1_x_>>>(DATA(y), lower, scale, size);
 }
 
-Tensor CUDADevice::random_normal_impl(
-    const Shape &shape, float mean, float sd) {
-  const unsigned size = shape.size();
-  Tensor ret = new_tensor(shape);
+void CUDADevice::random_normal_impl(float mean, float sd, Tensor &y) {
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  CURAND_CALL(::curandGenerateNormal(curand_, DATA(ret), size, mean, sd));
-  return ret;
+  CURAND_CALL(::curandGenerateNormal(
+        curand_, DATA(y), y.shape().size(), mean, sd));
 }
 
-Tensor CUDADevice::random_log_normal_impl(
-    const Shape &shape, float mean, float sd) {
-  const unsigned size = shape.size();
-  Tensor ret = new_tensor(shape);
+void CUDADevice::random_log_normal_impl(float mean, float sd, Tensor &y) {
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  CURAND_CALL(::curandGenerateLogNormal(curand_, DATA(ret), size, mean, sd));
-  return ret;
+  CURAND_CALL(::curandGenerateLogNormal(
+        curand_, DATA(y), y.shape().size(), mean, sd));
 }
 
 Tensor CUDADevice::pick_fw_impl(

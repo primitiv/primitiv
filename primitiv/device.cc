@@ -78,7 +78,9 @@ Tensor Device::random_bernoulli(const Shape &shape, float p) {
   if (p < 0 || p > 1) {
     THROW_ERROR("Invalid Bernoulli probability: " << p);
   }
-  return random_bernoulli_impl(shape, p);
+  Tensor y = new_tensor(shape);
+  random_bernoulli_impl(p, y);
+  return y;
 }
 
 Tensor Device::random_uniform(
@@ -88,7 +90,9 @@ Tensor Device::random_uniform(
         "Invalid parameter of the uniform distribution. lower: " << lower
         << ", upper: " << upper);
   }
-  return random_uniform_impl(shape, lower, upper);
+  Tensor y = new_tensor(shape);
+  random_uniform_impl(lower, upper, y);
+  return y;
 }
 
 Tensor Device::random_normal(const Shape &shape, float mean, float sd) {
@@ -97,7 +101,9 @@ Tensor Device::random_normal(const Shape &shape, float mean, float sd) {
         "Invalid parameter of the normal distribution. mean: " << mean
         << ", SD: " << sd);
   }
-  return random_normal_impl(shape, mean, sd);
+  Tensor y = new_tensor(shape);
+  random_normal_impl(mean, sd, y);
+  return y;
 }
 
 Tensor Device::random_log_normal(const Shape &shape, float mean, float sd) {
@@ -106,7 +112,9 @@ Tensor Device::random_log_normal(const Shape &shape, float mean, float sd) {
         "Invalid parameter of the log-normal distribution. mean: " << mean
         << ", SD: " << sd);
   }
-  return random_log_normal_impl(shape, mean, sd);
+  Tensor y = new_tensor(shape);
+  random_log_normal_impl(mean, sd, y);
+  return y;
 }
 
 Tensor Device::pick_fw(

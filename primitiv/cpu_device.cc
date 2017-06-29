@@ -55,45 +55,35 @@ Tensor CPUDevice::copy_tensor_impl(const Tensor &x) {
   }
 }
 
-Tensor CPUDevice::random_bernoulli_impl(const Shape &shape, float p) {
+void CPUDevice::random_bernoulli_impl(float p, Tensor &y) {
   std::bernoulli_distribution dist(p);
-  Tensor ret = new_tensor(shape);
-  float *dest = DATA(ret);
-  const unsigned size = shape.size();
+  float *dest = DATA(y);
+  const unsigned size = y.shape().size();
   REPEAT_OP(i, size, dest[i] = dist(rng_));
-  return ret;
 }
 
-Tensor CPUDevice::random_uniform_impl(
-    const Shape &shape, float lower, float upper) {
+void CPUDevice::random_uniform_impl(float lower, float upper, Tensor &y) {
   std::uniform_real_distribution<float> dist(lower, upper);
-  Tensor ret = new_tensor(shape);
-  float *dest = DATA(ret);
-  const unsigned size = shape.size();
+  float *dest = DATA(y);
+  const unsigned size = y.shape().size();
   for (unsigned i = 0; i < size; ++i) {
     const float x = dist(rng_);
     dest[i] = x == lower ? upper : x;
   }
-  return ret;
 }
 
-Tensor CPUDevice::random_normal_impl(const Shape &shape, float mean, float sd) {
+void CPUDevice::random_normal_impl(float mean, float sd, Tensor &y) {
   std::normal_distribution<float> dist(mean, sd);
-  Tensor ret = new_tensor(shape);
-  float *dest = DATA(ret);
-  const unsigned size = shape.size();
+  float *dest = DATA(y);
+  const unsigned size = y.shape().size();
   REPEAT_OP(i, size, dest[i] = dist(rng_));
-  return ret;
 }
 
-Tensor CPUDevice::random_log_normal_impl(
-    const Shape &shape, float mean, float sd) {
+void CPUDevice::random_log_normal_impl(float mean, float sd, Tensor &y) {
   std::lognormal_distribution<float> dist(mean, sd);
-  Tensor ret = new_tensor(shape);
-  float *dest = DATA(ret);
-  const unsigned size = shape.size();
+  float *dest = DATA(y);
+  const unsigned size = y.shape().size();
   REPEAT_OP(i, size, dest[i] = dist(rng_));
-  return ret;
 }
 
 Tensor CPUDevice::pick_fw_impl(

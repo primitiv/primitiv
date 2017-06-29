@@ -220,10 +220,10 @@ private:
 
   virtual Tensor copy_tensor_impl(const Tensor &x) = 0;
 
-  virtual Tensor random_bernoulli_impl(const Shape &shape, float p) = 0;
-  virtual Tensor random_uniform_impl(const Shape &shape, float lower, float upper) = 0;
-  virtual Tensor random_normal_impl(const Shape &shape, float mean, float sd) = 0;
-  virtual Tensor random_log_normal_impl(const Shape &shape, float mean, float sd) = 0;
+  virtual void random_bernoulli_impl(float p, Tensor &y) = 0;
+  virtual void random_uniform_impl(float lower, float upper, Tensor &y) = 0;
+  virtual void random_normal_impl(float mean, float sd, Tensor &y) = 0;
+  virtual void random_log_normal_impl(float mean, float sd, Tensor &y) = 0;
 
   virtual Tensor pick_fw_impl(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids, Shape &&new_shape) = 0;
   virtual Tensor slice_fw_impl(const Tensor &x, unsigned dim, unsigned offset, Shape &&new_shape) = 0;
