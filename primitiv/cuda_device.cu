@@ -53,14 +53,41 @@ __global__ void name##_fw_dev(float *py, const float *px, unsigned size) { \
   if (i < size) py[i] = (op); \
 }
 
-#define CUDA_KERNEL_XK(name, op) \
+#define CUDA_KERNEL_X_CONST(name, op) \
 __global__ void name##_fw_dev(float *py, const float *px, float k, unsigned size) { \
   const unsigned i = IDX; \
   if (i < size) py[i] = (op); \
 }
 
+#define CUDA_KERNEL_X_SCALAR_R(name, op) \
+__global__ void name##_fw_dev( \
+    float *py, const float *px, const float *pk, \
+    unsigned size, unsigned mbx, unsigned mbk) { \
+  const unsigned i = IDX; \
+  const unsigned shift = blockIdx.y * size; \
+  if (i < size) py[i + shift] = op(px[i + mbx * shift], pk[mbk * blockIdx.y]); \
+}
+
+#define CUDA_KERNEL_X_SCALAR_L(name, op) \
+__global__ void name##_fw_dev( \
+    float *py, const float *px, const float *pk, \
+    unsigned size, unsigned mbx, unsigned mbk) { \
+  const unsigned i = IDX; \
+  const unsigned shift = blockIdx.y * size; \
+  if (i < size) py[i + shift] = op(pk[mbk * blockIdx.y], px[i + mbx * shift]); \
+}
+
+#define CUDA_KERNEL_AB(name, op) \
+__global__ void name##_fw_dev( \
+    float *py, const float *pa, const float *pb, \
+    unsigned size, unsigned mba, unsigned mbb) { \
+  const unsigned i = IDX; \
+  const unsigned shift = blockIdx.y * size; \
+  if (i < size) py[i + shift] = op(pa[i + mba * shift], pb[i + mbb * shift]); \
+}
+
 CUDA_KERNEL_X(negate, -px[i]);
-CUDA_KERNEL_X(sqrt, ::sqrtf(px[i]));
+CUDA_KERNEL_X(sqrt, ::__fsqrt_rn(px[i]));
 CUDA_KERNEL_X(exp, ::expf(px[i]));
 CUDA_KERNEL_X(tanh, ::tanhf(px[i]));
 CUDA_KERNEL_X(sigmoid, .5f + .5f * ::tanhf(.5f * px[i]));
@@ -68,97 +95,31 @@ CUDA_KERNEL_X(sin, ::sinf(px[i]));
 CUDA_KERNEL_X(cos, ::cosf(px[i]));
 CUDA_KERNEL_X(tan, ::tanf(px[i]));
 
-CUDA_KERNEL_XK(add_const, px[i] + k);
-CUDA_KERNEL_XK(subtract_const_r, px[i] - k);
-CUDA_KERNEL_XK(subtract_const_l, k - px[i]);
-CUDA_KERNEL_XK(multiply_const, px[i] * k);
-CUDA_KERNEL_XK(divide_const_r, px[i] / k);
-CUDA_KERNEL_XK(divide_const_l, k / px[i]);
-CUDA_KERNEL_XK(pstep, (px[i] > .0f) + k * (px[i] <= .0f));
-CUDA_KERNEL_XK(prelu, px[i] * ((px[i] > .0f) + k * (px[i] <= .0f)));
+CUDA_KERNEL_X_CONST(add_const, px[i] + k);
+CUDA_KERNEL_X_CONST(subtract_const_r, px[i] - k);
+CUDA_KERNEL_X_CONST(subtract_const_l, k - px[i]);
+CUDA_KERNEL_X_CONST(multiply_const, px[i] * k);
+CUDA_KERNEL_X_CONST(divide_const_r, px[i] / k);
+CUDA_KERNEL_X_CONST(divide_const_l, k / px[i]);
+CUDA_KERNEL_X_CONST(pstep, (px[i] > .0f) + k * (px[i] <= .0f));
+CUDA_KERNEL_X_CONST(prelu, px[i] * ((px[i] > .0f) + k * (px[i] <= .0f)));
+
+CUDA_KERNEL_X_SCALAR_R(add_scalar, ::__fadd_rn);
+CUDA_KERNEL_X_SCALAR_R(subtract_scalar_r, ::__fsub_rn);
+CUDA_KERNEL_X_SCALAR_L(subtract_scalar_l, ::__fsub_rn);
+CUDA_KERNEL_X_SCALAR_R(multiply_scalar, ::__fmul_rn);
+CUDA_KERNEL_X_SCALAR_R(divide_scalar_r, ::__fdiv_rn);
+CUDA_KERNEL_X_SCALAR_L(divide_scalar_l, ::__fdiv_rn);
+
+CUDA_KERNEL_AB(add, ::__fadd_rn);
+CUDA_KERNEL_AB(subtract, ::__fsub_rn);
+CUDA_KERNEL_AB(multiply, ::__fmul_rn);
+CUDA_KERNEL_AB(divide, ::__fdiv_rn);
 
 #undef CUDA_KERNEL_X
-#undef CUDA_KERNEL_XK
-
-__global__ void add_scalar_fw_dev(
-    float *py, const float *px, const float *pk,
-    unsigned size, unsigned mbx, unsigned mbk) {
-  const unsigned i = IDX;
-  const unsigned shift = blockIdx.y * size;
-  if (i < size) py[i + shift] = px[i + mbx * shift] + pk[mbk * blockIdx.y];
-}
-
-__global__ void subtract_scalar_r_fw_dev(
-    float *py, const float *px, const float *pk,
-    unsigned size, unsigned mbx, unsigned mbk) {
-  const unsigned i = IDX;
-  const unsigned shift = blockIdx.y * size;
-  if (i < size) py[i + shift] = px[i + mbx * shift] - pk[mbk * blockIdx.y];
-}
-
-__global__ void subtract_scalar_l_fw_dev(
-    float *py, const float *px, const float *pk,
-    unsigned size, unsigned mbx, unsigned mbk) {
-  const unsigned i = IDX;
-  const unsigned shift = blockIdx.y * size;
-  if (i < size) py[i + shift] = pk[mbk * blockIdx.y] - px[i + mbx * shift];
-}
-
-__global__ void multiply_scalar_fw_dev(
-    float *py, const float *px, const float *pk,
-    unsigned size, unsigned mbx, unsigned mbk) {
-  const unsigned i = IDX;
-  const unsigned shift = blockIdx.y * size;
-  if (i < size) py[i + shift] = px[i + mbx * shift] * pk[mbk * blockIdx.y];
-}
-
-__global__ void divide_scalar_r_fw_dev(
-    float *py, const float *px, const float *pk,
-    unsigned size, unsigned mbx, unsigned mbk) {
-  const unsigned i = IDX;
-  const unsigned shift = blockIdx.y * size;
-  if (i < size) py[i + shift] = px[i + mbx * shift] / pk[mbk * blockIdx.y];
-}
-
-__global__ void divide_scalar_l_fw_dev(
-    float *py, const float *px, const float *pk,
-    unsigned size, unsigned mbx, unsigned mbk) {
-  const unsigned i = IDX;
-  const unsigned shift = blockIdx.y * size;
-  if (i < size) py[i + shift] = pk[mbk * blockIdx.y] / px[i + mbx * shift];
-}
-
-__global__ void add_fw_dev(
-    float *py, const float *pa, const float *pb,
-    unsigned size, unsigned mba, unsigned mbb) {
-  const unsigned i = IDX;
-  const unsigned shift = blockIdx.y * size;
-  if (i < size) py[i + shift] = pa[i + mba * shift] + pb[i + mbb * shift];
-}
-
-__global__ void subtract_fw_dev(
-    float *py, const float *pa, const float *pb,
-    unsigned size, unsigned mba, unsigned mbb) {
-  const unsigned i = IDX;
-  const unsigned shift = blockIdx.y * size;
-  if (i < size) py[i + shift] = pa[i + mba * shift] - pb[i + mbb * shift];
-}
-
-__global__ void multiply_fw_dev(
-    float *py, const float *pa, const float *pb,
-    unsigned size, unsigned mba, unsigned mbb) {
-  const unsigned i = IDX;
-  const unsigned shift = blockIdx.y * size;
-  if (i < size) py[i + shift] = pa[i + mba * shift] * pb[i + mbb * shift];
-}
-
-__global__ void divide_fw_dev(
-    float *py, const float *pa, const float *pb,
-    unsigned size, unsigned mba, unsigned mbb) {
-  const unsigned i = IDX;
-  const unsigned shift = blockIdx.y * size;
-  if (i < size) py[i + shift] = pa[i + mba * shift] / pb[i + mbb * shift];
-}
+#undef CUDA_KERNEL_X_CONST
+#undef CUDA_KERNEL_X_SCALAR_R
+#undef CUDA_KERNEL_X_SCALAR_L
 
 __global__ void transpose_fw_dev(
     float *py, const float *px, unsigned rows, unsigned cols) {
@@ -624,7 +585,7 @@ Tensor CUDADevice::matmul_fw_impl(
   const unsigned bs = new_shape.batch();
   float alpha = 1.;
   float beta = 0.;
-  Tensor ret = new_tensor(new_shape, 0);
+  Tensor ret = new_tensor(new_shape);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
