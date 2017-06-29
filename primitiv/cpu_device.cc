@@ -476,6 +476,14 @@ Tensor CPUDevice::matmul_fw_impl(
   return ret;
 }
 
+void CPUDevice::matmul_bw_impl(
+    const Tensor &a, const Tensor &b, const Tensor &gy,
+    Tensor &ga, Tensor &gb) {
+  // TODO(odashi): This code could be slow and requires memory. Fix this.
+  add_gradient_impl(ga, matmul_fw(gy, transpose_fw(b)));
+  add_gradient_impl(gb, matmul_fw(transpose_fw(a), gy));
+}
+
 #define CPUDEV_FW_X(name, op) \
 Tensor CPUDevice::name(const Tensor &x) { \
   Tensor ret = new_tensor(x.shape()); \

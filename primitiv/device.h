@@ -126,6 +126,9 @@ public:
   // Matrix operations.
   Tensor transpose_fw(const Tensor &x);
   Tensor matmul_fw(const Tensor &a, const Tensor &b);
+  void matmul_bw(
+      const Tensor &a, const Tensor &b, const Tensor &gy,
+      Tensor &ga, Tensor &gb);
 
   // Dimension operations.
   Tensor sum_fw(const Tensor &x, unsigned dim);
@@ -258,6 +261,9 @@ private:
 
   virtual Tensor transpose_fw_impl(const Tensor &x, Shape &&new_shape) = 0;
   virtual Tensor matmul_fw_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
+  virtual void matmul_bw_impl(
+      const Tensor &a, const Tensor &b, const Tensor &gy,
+      Tensor &ga, Tensor &gb) = 0;
 
   virtual Tensor sum_fw_impl(const Tensor &x, unsigned dim) = 0;
   virtual Tensor logsumexp_fw_impl(const Tensor &x, unsigned dim) = 0;

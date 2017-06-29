@@ -203,6 +203,27 @@ Tensor Device::matmul_fw(const Tensor &a, const Tensor &b) {
   return matmul_fw_impl(a, b, shape_ops::matmul(a.shape(), b.shape()));
 }
 
+void Device::matmul_bw(
+    const Tensor &a, const Tensor &b, const Tensor &gy,
+    Tensor &ga, Tensor &gb) {
+  if (a.shape() != ga.shape() || b.shape() != gb.shape() ||
+      gy.shape() != shape_ops::matmul(a.shape(), b.shape())) {
+    THROW_ERROR(
+        "Shape mismatched at matmul_bw"
+        << ". a.shape: " << a.shape().to_string()
+        << ", b.shape: " << b.shape().to_string()
+        << ", gy.shape: " << gy.shape().to_string()
+        << ", ga.shape: " << ga.shape().to_string()
+        << ", gb.shape: " << gb.shape().to_string());
+  }
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(ga);
+  CHECK_DEVICE(gb);
+  matmul_bw_impl(a, b, gy, ga, gb);
+}
+
 Tensor Device::sum_fw(const Tensor &x, unsigned dim) {
   CHECK_DEVICE(x);
   return sum_fw_impl(x, dim);

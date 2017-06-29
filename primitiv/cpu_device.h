@@ -84,6 +84,9 @@ private:
 
   Tensor transpose_fw_impl(const Tensor &x, Shape &&new_shape) override;
   Tensor matmul_fw_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) override;
+  void matmul_bw_impl(
+      const Tensor &a, const Tensor &b, const Tensor &gy,
+      Tensor &ga, Tensor &gb) override;
 
   Tensor sum_fw_impl(const Tensor &x, unsigned dim) override;
   Tensor logsumexp_fw_impl(const Tensor &x, unsigned dim) override;

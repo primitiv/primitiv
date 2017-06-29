@@ -418,9 +418,7 @@ BACKWARD(Divide) {
 
 BACKWARD(Transpose) { ADD(0, T::transpose(yg)); }
 BACKWARD(MatrixMultiply) {
-  // TODO(odashi): This requires large memory. Suppress it.
-  ADD(0, T::matmul(yg, T::transpose(*x[1])));
-  ADD(1, T::matmul(T::transpose(*x[0]), yg));
+  yg.device()->matmul_bw(*x[0], *x[1], yg, *xg[0], *xg[1]);
 }
 
 BACKWARD(Sqrt) { ADD(0, .5 * yg / y); }

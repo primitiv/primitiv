@@ -580,9 +580,6 @@ Tensor CUDADevice::matmul_fw_impl(
   const unsigned di = new_shape[0];
   const unsigned dj = a.shape()[1];
   const unsigned dk = new_shape[1];
-  const unsigned ba = a.shape().batch();
-  const unsigned bb = b.shape().batch();
-  const unsigned bs = new_shape.batch();
   float alpha = 1.;
   float beta = 0.;
   Tensor ret = new_tensor(new_shape);
@@ -592,7 +589,8 @@ Tensor CUDADevice::matmul_fw_impl(
     const unsigned a_skip = di * dj;
     const unsigned b_skip = b.shape().has_batch() * dj * dk;
     const unsigned y_skip = di * dk;
-    for (unsigned n = 0; n < ba; ++n) {
+    const unsigned bs = a.shape().batch();
+    for (unsigned n = 0; n < bs; ++n) {
       CUBLAS_CALL(::cublasSgemm(
             cublas_, ::CUBLAS_OP_N, ::CUBLAS_OP_N,
             di, dk, dj,
@@ -603,11 +601,55 @@ Tensor CUDADevice::matmul_fw_impl(
     // Do gemm only once to calculate the product with a combined matrix.
     CUBLAS_CALL(::cublasSgemm(
           cublas_, ::CUBLAS_OP_N, ::CUBLAS_OP_N,
-          di, bb * dk, dj,
+          di, dk * b.shape().batch(), dj,
           &alpha, CDATA(a), di, CDATA(b), dj,
           &beta, DATA(ret), di));
   }
   return ret;
+}
+
+void CUDADevice::matmul_bw_impl(
+    const Tensor &a, const Tensor &b, const Tensor &gy,
+    Tensor &ga, Tensor &gb) {
+  // ga += gy . b^T
+  // gb += a^T . gy
+  const unsigned di = a.shape()[0];
+  const unsigned dj = a.shape()[1];
+  const unsigned dk = b.shape()[1];
+  float alpha = 1.;
+  float beta = 1.;
+  CUDA_CALL(::cudaSetDevice(dev_id_));
+  if (a.shape().has_batch()) {
+    // Do gemm multiple times.
+    const unsigned a_skip = di * dj;
+    const unsigned b_skip = b.shape().has_batch() * dj * dk;
+    const unsigned y_skip = di * dk;
+    const unsigned bs = a.shape().batch();
+    for (unsigned n = 0; n < bs; ++n) {
+      CUBLAS_CALL(::cublasSgemm(
+            cublas_, ::CUBLAS_OP_N, ::CUBLAS_OP_T,
+            di, dj, dk,
+            &alpha, CDATA(gy) + n * y_skip, di, CDATA(b) + n * b_skip, dj,
+            &beta, DATA(ga) + n * a_skip, di));
+      CUBLAS_CALL(::cublasSgemm(
+            cublas_, ::CUBLAS_OP_T, ::CUBLAS_OP_N,
+            dj, dk, di,
+            &alpha, CDATA(a) + n * a_skip, di, CDATA(gy) + n * y_skip, di,
+            &beta, DATA(gb) + n * b_skip, dj));
+    }
+  } else {
+    // Do gemm only once to calculate the product with a combined matrix.
+    CUBLAS_CALL(::cublasSgemm(
+          cublas_, ::CUBLAS_OP_N, ::CUBLAS_OP_T,
+          di, dj, dk * b.shape().batch(),
+          &alpha, CDATA(gy), di, CDATA(b), dj,
+          &beta, DATA(ga), di));
+    CUBLAS_CALL(::cublasSgemm(
+          cublas_, ::CUBLAS_OP_T, ::CUBLAS_OP_N,
+          dj, dk * b.shape().batch(), di,
+          &alpha, CDATA(a), di, CDATA(gy), di,
+          &beta, DATA(gb), dj));
+  }
 }
 
 Tensor CUDADevice::sum_fw_impl(const Tensor &x, unsigned dim) {
