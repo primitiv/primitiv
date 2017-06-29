@@ -12,7 +12,7 @@ using std::vector;
   if ((x).device() != this) { \
     THROW_ERROR( \
         "Device mismatched. (" #x ").device(): " << (x).device() \
-        << "!= this: " << this); \
+        << " != this: " << this); \
   }
 
 namespace primitiv {
@@ -58,20 +58,21 @@ void Device::reset_tensor_by_array(Tensor &x, const float values[]) {
 }
 
 void Device::reset_tensor_by_vector(Tensor &x, const vector<float> &values) {
+  CHECK_DEVICE(x);
   if (values.size() != x.shape().size()) {
     THROW_ERROR(
         "Data sizes mismatched. required: " << x.shape().size()
         << " (shape: " << x.shape().to_string() << ") != actual: "
         << values.size());
   }
-
-  CHECK_DEVICE(x);
   reset_tensor_by_array_impl(x, values.data());
 }
 
 Tensor Device::copy_tensor(const Tensor &x) {
   if (!x.valid()) THROW_ERROR("Attempted to copy an invalid tensor.");
-  return copy_tensor_impl(x);
+  Tensor y = new_tensor(x.shape());
+  copy_tensor_impl(x, y);
+  return y;
 }
 
 Tensor Device::random_bernoulli(const Shape &shape, float p) {
@@ -131,6 +132,7 @@ Tensor Device::slice_fw(
 }
 
 Tensor Device::concat_fw(const vector<const Tensor *> &xs, unsigned dim) {
+  if (xs.empty()) THROW_ERROR("No tensors to concat.");
   vector<const Shape *> shapes(xs.size());
   for (unsigned i = 0; i < xs.size(); ++i) {
     CHECK_DEVICE(*xs[i]);
@@ -214,6 +216,11 @@ Tensor Device::matmul_fw(const Tensor &a, const Tensor &b) {
 void Device::matmul_bw(
     const Tensor &a, const Tensor &b, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(ga);
+  CHECK_DEVICE(gb);
   if (a.shape() != ga.shape() || b.shape() != gb.shape() ||
       gy.shape() != shape_ops::matmul(a.shape(), b.shape())) {
     THROW_ERROR(
@@ -224,11 +231,6 @@ void Device::matmul_bw(
         << ", ga.shape: " << ga.shape().to_string()
         << ", gb.shape: " << gb.shape().to_string());
   }
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
-  CHECK_DEVICE(gy);
-  CHECK_DEVICE(ga);
-  CHECK_DEVICE(gb);
   matmul_bw_impl(a, b, gy, ga, gb);
 }
 
@@ -254,6 +256,8 @@ Tensor Device::batch_sum_fw(const Tensor &x) {
 }
 
 void Device::add_gradient(Tensor &a, const Tensor &b) {
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
   if (!sa.has_same_dims(sb) || !sa.has_compatible_batch(sb)) {
@@ -261,14 +265,13 @@ void Device::add_gradient(Tensor &a, const Tensor &b) {
         "Attempted to add gradients with shape "
         << sb.to_string() << " to " << sa.to_string() << '.');
   }
-
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
   add_gradient_impl(a, b);
 }
 
 void Device::add_gradient_offset(
     Tensor &a, const Tensor &b, unsigned dim, unsigned offset) {
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
   const Shape &sa = a.shape();
   const Shape &sb = b.shape();
   if (!sa.has_same_loo_dims(sb, dim) || !sa.has_compatible_batch(sb) ||
@@ -278,29 +281,21 @@ void Device::add_gradient_offset(
         << sb.to_string() << ", dim " << dim << ", offset " << offset
         << " to shape" << sa.to_string() << '.');
   }
-
-  if (dim >= sa.depth()) {
-    add_gradient(a, b);
-    return;
-  }
-
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
-  add_gradient_offset_impl(a, b, dim, offset);
+  if (dim >= sa.depth()) add_gradient(a, b);
+  else add_gradient_offset_impl(a, b, dim, offset);
 }
 
 void Device::add_gradient_sparse(
     Tensor &a, const Tensor &b,
     unsigned dim, const std::vector<unsigned> &ids) {
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
   const Shape sb = shape_ops::pick(a.shape(), dim, ids);
   if (sb != b.shape()) {
     THROW_ERROR(
         "Shape mismatched. b.shape(): " << b.shape().to_string()
         << " != expected shape: " << sb.to_string());
   }
-
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
   add_gradient_sparse_impl(a, b, dim, ids);
 }
 

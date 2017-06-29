@@ -146,6 +146,7 @@ private:
    */
   std::vector<float> tensor_to_vector(const Tensor &x);
 
+protected:
   /**
    * Reset internal values of the tensor using a constant.
    * @param x A tensor to be updated.
@@ -173,6 +174,7 @@ private:
    */
   void reset_tensor_by_vector(Tensor &x, const std::vector<float> &values);
 
+private:
   /**
    * Directly adds the second tensor to the first tensor.
    * @param a A tensor to be udpated.
@@ -209,6 +211,7 @@ private:
       Tensor &a, const Tensor &b,
       unsigned dim, const std::vector<unsigned> &ids);
 
+private:
   // device-specific implementations.
 
   virtual std::shared_ptr<void> new_handle(const Shape &shape) = 0;
@@ -218,7 +221,7 @@ private:
   virtual void reset_tensor_impl(Tensor &x, float k) = 0;
   virtual void reset_tensor_by_array_impl(Tensor &x, const float values[]) = 0;
 
-  virtual Tensor copy_tensor_impl(const Tensor &x) = 0;
+  virtual void copy_tensor_impl(const Tensor &x, Tensor &y) = 0;
 
   virtual void random_bernoulli_impl(float p, Tensor &y) = 0;
   virtual void random_uniform_impl(float lower, float upper, Tensor &y) = 0;

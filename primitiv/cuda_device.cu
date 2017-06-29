@@ -364,23 +364,20 @@ void CUDADevice::reset_tensor_by_array_impl(Tensor &x, const float values[]) {
         x.data(), values, sizeof(float) * size, cudaMemcpyHostToDevice));
 }
 
-Tensor CUDADevice::copy_tensor_impl(const Tensor &x) {
+void CUDADevice::copy_tensor_impl(const Tensor &x, Tensor &y) {
   switch (x.device()->type()) {
     case Device::DEVICE_TYPE_CPU:
-      return new_tensor_by_array(
-          x.shape(), reinterpret_cast<const float *>(x.data()));
+      reset_tensor_by_array(y, CDATA(x));
+      break;
     case Device::DEVICE_TYPE_CUDA:
-      {
-        Tensor ret = new_tensor(x.shape());
-        CUDA_CALL(::cudaSetDevice(dev_id_));
-        CUDA_CALL(::cudaMemcpy(
-              ret.data(), x.data(),
-              sizeof(float) * x.shape().size(),
-              cudaMemcpyDeviceToDevice));
-        return ret;
-      }
+      CUDA_CALL(::cudaSetDevice(dev_id_));
+      CUDA_CALL(::cudaMemcpy(
+            DATA(y), CDATA(x),
+            sizeof(float) * x.shape().size(),
+            cudaMemcpyDeviceToDevice));
+      break;
     default:
-      return new_tensor_by_vector(x.shape(), x.to_vector());
+      reset_tensor_by_vector(y, x.to_vector());
   }
 }
 
