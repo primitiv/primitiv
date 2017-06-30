@@ -116,11 +116,6 @@ private:
     , device_(device)
     , data_(std::forward<SharedPtrT>(data)) {}
 
-  /**
-   * Duplicate internal data if current data is used in other place.
-   */
-  void unique();
-
   Shape shape_;
   Device *device_;
   std::shared_ptr<void> data_;

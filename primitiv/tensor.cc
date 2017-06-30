@@ -9,12 +9,6 @@ using std::move;
 
 namespace primitiv {
 
-void Tensor::unique() {
-  if (data_.use_count() > 1) {
-    *this = device_->copy_tensor(*this);
-  }
-}
-
 Tensor &Tensor::operator=(Tensor &&src) {
   if (this != &src) {
     shape_ = move(src.shape_);
@@ -30,22 +24,23 @@ std::vector<float> Tensor::to_vector() const {
 }
 
 void *Tensor::data() {
-  unique();
+  // If the internal memory is shared with other objects, the memory will be
+  // duplicated to maintain the safety of other objects.
+  if (data_.use_count() > 1) {
+    *this = device_->copy_tensor(*this);
+  }
   return data_.get();
 }
 
 void Tensor::reset(const float k) {
-  unique();
   device_->reset_tensor(k, *this);
 }
 
 void Tensor::reset_by_array(const float *values) {
-  unique();
   device_->reset_tensor_by_array(values, *this);
 }
 
 void Tensor::reset_by_vector(const std::vector<float> &values) {
-  unique();
   device_->reset_tensor_by_vector(values, *this);
 }
 
