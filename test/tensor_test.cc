@@ -482,7 +482,7 @@ TEST_F(TensorTest, CheckAddGradientNN) {
     const vector<float> y_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
     Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
     const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
-    a.add_gradient(b);
+    dev->add_gradient(b, a);
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
   }
 }
@@ -494,7 +494,7 @@ TEST_F(TensorTest, CheckAddGradient1N) {
     const vector<float> y_data {-8, -10, -12, -14};
     Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
     const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
-    a.add_gradient(b);
+    dev->add_gradient(b, a);
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
   }
 }
@@ -506,7 +506,7 @@ TEST_F(TensorTest, CheckAddGradientN1) {
     const vector<float> y_data {1, 1, 1, 1, 5, 5, 5, 5, 9, 9, 9, 9};
     Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
     const Tensor b = dev->new_tensor_by_vector({2, 2}, b_data);
-    a.add_gradient(b);
+    dev->add_gradient(b, a);
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
   }
 }
@@ -522,7 +522,7 @@ TEST_F(TensorTest, CheckInvalidAddGradient) {
 
     for (const Shape &shape : shapes) {
       Tensor b = dev->new_tensor(shape);
-      EXPECT_THROW(a.add_gradient(b), Error);
+      EXPECT_THROW(dev->add_gradient(b, a), Error);
     }
   }
 }
@@ -538,7 +538,7 @@ TEST_F(TensorTest, CheckCopyAndAddGradient) {
     const Tensor copied = a;
     EXPECT_EQ(static_cast<const Tensor>(a).data(), copied.data());
 
-    a.add_gradient(b);
+    dev->add_gradient(b, a);
     EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
     EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
@@ -553,7 +553,7 @@ TEST_F(TensorTest, CheckAddGradientOffsetNN_1) {
     for (unsigned i : {0, 1, 2, 5, 10}) {
       Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
       const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
-      a.add_gradient_offset(b, i, 0);
+      dev->add_gradient_offset(b, i, 0, a);
       EXPECT_TRUE(vector_match(y_data, a.to_vector()));
     }
   }
@@ -577,7 +577,7 @@ TEST_F(TensorTest, CheckAddGradientOffsetNN_2) {
     for (const TestCase &tc : test_cases) {
       Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
       const Tensor b = dev->new_tensor_by_vector(tc.shape, b_data);
-      a.add_gradient_offset(b, tc.dim, tc.offset);
+      dev->add_gradient_offset(b, tc.dim, tc.offset, a);
       EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
     }
   }
@@ -591,7 +591,7 @@ TEST_F(TensorTest, CheckAddGradientOffset1N_1) {
     for (unsigned i : {0, 1, 2, 5, 10}) {
       Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
       const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
-      a.add_gradient_offset(b, i, 0);
+      dev->add_gradient_offset(b, i, 0, a);
       EXPECT_TRUE(vector_match(y_data, a.to_vector()));
     }
   }
@@ -615,7 +615,7 @@ TEST_F(TensorTest, CheckAddGradientOffset1N_2) {
     for (const TestCase &tc : test_cases) {
       Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
       const Tensor b = dev->new_tensor_by_vector(tc.shape, b_data);
-      a.add_gradient_offset(b, tc.dim, tc.offset);
+      dev->add_gradient_offset(b, tc.dim, tc.offset, a);
       EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
     }
   }
@@ -629,7 +629,7 @@ TEST_F(TensorTest, CheckAddGradientOffsetN1_1) {
     for (unsigned i : {0, 1, 2, 5, 10}) {
       Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
       const Tensor b = dev->new_tensor_by_vector({2, 2}, b_data);
-      a.add_gradient_offset(b, i, 0);
+      dev->add_gradient_offset(b, i, 0, a);
       EXPECT_TRUE(vector_match(y_data, a.to_vector()));
     }
   }
@@ -653,7 +653,7 @@ TEST_F(TensorTest, CheckAddGradientOffsetN1_2) {
     for (const TestCase &tc : test_cases) {
       Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
       const Tensor b = dev->new_tensor_by_vector(tc.shape, b_data);
-      a.add_gradient_offset(b, tc.dim, tc.offset);
+      dev->add_gradient_offset(b, tc.dim, tc.offset, a);
       EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
     }
   }
@@ -689,8 +689,11 @@ TEST_F(TensorTest, CheckInvalidAddGradientOffset) {
     for (const TestCase &tc : test_cases) {
       Tensor a = dev->new_tensor(tc.a_shape, 0);
       const Tensor b = dev->new_tensor(tc.b_shape, 0);
-      if (tc.ok) EXPECT_NO_THROW(a.add_gradient_offset(b, tc.dim, tc.offset));
-      else EXPECT_THROW(a.add_gradient_offset(b, tc.dim, tc.offset), Error);
+      if (tc.ok) {
+        EXPECT_NO_THROW(dev->add_gradient_offset(b, tc.dim, tc.offset, a));
+      } else {
+        EXPECT_THROW(dev->add_gradient_offset(b, tc.dim, tc.offset, a), Error);
+      }
     }
   }
 }
@@ -707,7 +710,7 @@ TEST_F(TensorTest, CheckCopyAndAddGradientOffset) {
       const Tensor copied = a;
       EXPECT_EQ(static_cast<const Tensor>(a).data(), copied.data());
 
-      a.add_gradient_offset(b, i, 0);
+      dev->add_gradient_offset(b, i, 0, a);
       EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
       EXPECT_TRUE(vector_match(y_data, a.to_vector()));
       EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
@@ -748,7 +751,7 @@ TEST_F(TensorTest, CheckAddGradientSparseNN) {
     for (const TestCase &tc : test_cases) {
       Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
       const Tensor b = dev->new_tensor_by_vector(tc.b_shape, tc.b_data);
-      a.add_gradient_sparse(b, tc.dim, tc.ids);
+      dev->add_gradient_sparse(b, tc.dim, tc.ids, a);
       EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
     }
   }
@@ -779,7 +782,7 @@ TEST_F(TensorTest, CheckAddGradientSparseN1) {
     for (const TestCase &tc : test_cases) {
       Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
       const Tensor b = dev->new_tensor_by_vector(tc.b_shape, tc.b_data);
-      a.add_gradient_sparse(b, tc.dim, tc.ids);
+      dev->add_gradient_sparse(b, tc.dim, tc.ids, a);
       EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
     }
   }
@@ -818,7 +821,7 @@ TEST_F(TensorTest, CheckAddGradientSparse1N) {
     for (const TestCase &tc : test_cases) {
       Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
       const Tensor b = dev->new_tensor_by_vector(tc.b_shape, tc.b_data);
-      a.add_gradient_sparse(b, tc.dim, tc.ids);
+      dev->add_gradient_sparse(b, tc.dim, tc.ids, a);
       EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
     }
   }
@@ -851,7 +854,7 @@ TEST_F(TensorTest, CheckInvalidAddGradientSparse) {
     for (const TestCase &tc : test_cases) {
       Tensor a = dev->new_tensor(tc.a_shape, 0);
       const Tensor b = dev->new_tensor(tc.b_shape, 0);
-      EXPECT_THROW(a.add_gradient_sparse(b, tc.dim, tc.ids), Error);
+      EXPECT_THROW(dev->add_gradient_sparse(b, tc.dim, tc.ids, a), Error);
     }
   }
 }
@@ -867,7 +870,7 @@ TEST_F(TensorTest, CheckCopyAndAddGradientSparse) {
     const Tensor copied = a;
     EXPECT_EQ(static_cast<const Tensor>(a).data(), copied.data());
 
-    a.add_gradient_sparse(b, 2, {0, 0, 0});
+    dev->add_gradient_sparse(b, 2, {0, 0, 0}, a);
     EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
     EXPECT_TRUE(vector_match(a_data, copied.to_vector()));

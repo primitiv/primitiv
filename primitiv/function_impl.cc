@@ -80,7 +80,7 @@ Tensor Copy::forward(const vector<const Tensor *> &args) const {
 void Copy::backward(
     const Tensor &y, const Tensor &yg,
     const vector<const Tensor *> &x, const vector<Tensor *> &xg) const {
-  xg[0]->add_gradient(T::copy(yg, xg[0]->device()));
+  xg[0]->device()->add_gradient(T::copy(yg, xg[0]->device()), *xg[0]);
 }
 
 Shape RandomBernoulli::forward_shape(const vector<const Shape *> &args) const {
@@ -160,7 +160,7 @@ Tensor Pick::forward(const vector<const Tensor *> &args) const {
 void Pick::backward(
     const Tensor &y, const Tensor &yg,
     const vector<const Tensor *> &x, const vector<Tensor *> &xg) const {
-  xg[0]->add_gradient_sparse(yg, dim_, ids_);
+  xg[0]->device()->add_gradient_sparse(yg, dim_, ids_, *xg[0]);
 }
 
 Shape Slice::forward_shape(const vector<const Shape *> &args) const {
@@ -176,7 +176,7 @@ Tensor Slice::forward(const std::vector<const Tensor *> &args) const {
 void Slice::backward(
     const Tensor &y, const Tensor &yg,
     const vector<const Tensor *> &x, const vector<Tensor *> &xg) const {
-  xg[0]->add_gradient_offset(yg, dim_, lower_);
+  xg[0]->device()->add_gradient_offset(yg, dim_, lower_, *xg[0]);
 }
 
 Shape Concat::forward_shape(const vector<const Shape *> &args) const {
@@ -193,7 +193,8 @@ void Concat::backward(
   unsigned offset = 0;
   for (Tensor *xgi : xg) {
     const unsigned span = xgi->shape()[dim_];
-    xgi->add_gradient(T::slice(yg, dim_, offset, offset + span));
+    xgi->device()->add_gradient(
+        T::slice(yg, dim_, offset, offset + span), *xgi);
     offset += span;
   }
 }
@@ -356,7 +357,8 @@ FORWARD(SoftmaxCrossEntropy) {
       const Tensor &yg, \
       const vector<const Tensor *> &x, \
       const vector<Tensor *> &xg) const
-#define ADD(n, g) xg[n]->add_gradient(g)
+
+#define ADD(n, op) xg[n]->device()->add_gradient(op, *xg[n])
 
 BACKWARD(Reshape) { ADD(0, yg.reshape(x[0]->shape())); }
 BACKWARD(Flatten) { ADD(0, yg.reshape(x[0]->shape())); }

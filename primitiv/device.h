@@ -74,7 +74,7 @@ public:
    * @return Copied tensor.
    * @remarks The value of `x` is always duplicated, and the internal memory of
    *          the resulting tensor becomes always different from `x` even if
-   *          `x.device()` is same as this.
+   *          `x.device()` is same as `this`.
    */
   Tensor copy_tensor(const Tensor &x);
 
@@ -158,67 +158,67 @@ private:
 protected:
   /**
    * Reset internal values of the tensor using a constant.
-   * @param x A tensor to be updated.
    * @param k A value used to initialize each element.
+   * @param x A tensor to be updated.
    */
-  void reset_tensor(Tensor &x, float k);
+  void reset_tensor(float k, Tensor &x);
 
   /**
    * Reset internal values of the tensor using specific values.
-   * @param x A tensor to be updated.
    * @param values Array of each element.
+   * @param x A tensor to be updated.
    * @remarks `values.size()` should be same as `x.shape().size()`. Each element
    *          is ordered by the column-major order, and the batch size is
    *          assumed as the last dimension of the tensor.
    */
-  void reset_tensor_by_array(Tensor &x, const float values[]);
+  void reset_tensor_by_array(const float values[], Tensor &x);
 
   /**
    * Reset internal values of the tensor using specific values.
-   * @param x A tensor to be updated.
    * @param values List of each element.
+   * @param x A tensor to be updated.
    * @remarks `values.size()` should be same as `x.shape().size()`. Each element
    *          is ordered by the column-major order, and the batch size is
    *          assumed as the last dimension of the tensor.
    */
-  void reset_tensor_by_vector(Tensor &x, const std::vector<float> &values);
+  void reset_tensor_by_vector(const std::vector<float> &values, Tensor &x);
 
-private:
+public:
   /**
    * Directly adds the second tensor to the first tensor.
-   * @param a A tensor to be udpated.
-   * @param b A source tensor.
-   * @remarks This method keeps the shape of `a`, and the behavior is
-   *          conditioned according to the batch size of `a` and `b`:
-   *              a == b: a += b
-   *              a == 1: a += batch_sum(b)
-   *              b == 1: a += batch_broadcast(b)
+   * @param gy A source tensor.
+   * @param gx A tensor to be udpated.
+   * @remarks This method keeps the shape of `gx`, and the behavior is
+   *          conditioned according to the batch size of `gx` and `gy`:
+   *              gx.shape == gy.shape: gx += gy
+   *              gx.shape == 1:        gx += batch_sum(gy)
+   *              gy.shape == 1:        gx += batch_broadcast(gy)
    *              otherwise: error.
    */
-  void add_gradient(Tensor &a, const Tensor &b);
+  void add_gradient(const Tensor &gy, Tensor &gx);
 
   /**
    * Same as `add_gradient`, but updates only elements in the specified range
    * defined by `dim` and `offset`.
-   * @param a A tensor to be updated.
-   * @param b A source tensor.
-   * @param dim Dimension to determine the range of `a`.
+   * @param gy A source tensor.
+   * @param gx A tensor to be updated.
+   * @param dim Dimension to determine the range of `gx`.
    * @param offset Offset of the dimension `dim`.
    */
   void add_gradient_offset(
-      Tensor &a, const Tensor &b, unsigned dim, unsigned offset);
+      const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx);
 
   /**
    * Same as `add_gradient`, but updates only elements in the specified range
    * defined by `dim` and `ids`.
-   * @param a A tensor to be updated.
-   * @param b A source tensor.
+   * @param gy A source tensor.
+   * @param gx A tensor to be updated.
    * @param dim Dimension.
    * @param ids List of IDs to update values.
    */
   void add_gradient_sparse(
-      Tensor &a, const Tensor &b,
-      unsigned dim, const std::vector<unsigned> &ids);
+      const Tensor &gy, unsigned dim, const std::vector<unsigned> &ids,
+      Tensor &gx);
 
 private:
   // device-specific implementations.
@@ -227,8 +227,8 @@ private:
 
   virtual std::vector<float> tensor_to_vector_impl(const Tensor &x) = 0;
 
-  virtual void reset_tensor_impl(Tensor &x, float k) = 0;
-  virtual void reset_tensor_by_array_impl(Tensor &x, const float values[]) = 0;
+  virtual void reset_tensor_impl(float k, Tensor &x) = 0;
+  virtual void reset_tensor_by_array_impl(const float values[], Tensor &x) = 0;
 
   virtual void copy_tensor_impl(const Tensor &x, Tensor &y) = 0;
 
@@ -282,18 +282,17 @@ private:
 
   virtual void transpose_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) = 0;
-  virtual void matmul_bw_impl(
-      const Tensor &a, const Tensor &b, const Tensor &gy,
-      Tensor &ga, Tensor &gb) = 0;
+
+  virtual void matmul_bw_impl(const Tensor &a, const Tensor &b, const Tensor &gy, Tensor &ga, Tensor &gb) = 0;
 
   virtual void sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) = 0;
   virtual void logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) = 0;
   virtual void broadcast_fw_impl(const Tensor &x, unsigned dim, unsigned size, Tensor &y) = 0;
   virtual void batch_sum_fw_impl(const Tensor &x, Tensor &y) = 0;
 
-  virtual void add_gradient_impl(Tensor &a, const Tensor &b) = 0;
-  virtual void add_gradient_offset_impl(Tensor &a, const Tensor &b, unsigned dim, unsigned offset) = 0;
-  virtual void add_gradient_sparse_impl(Tensor &a, const Tensor &b, unsigned dim, const std::vector<unsigned> &ids) = 0;
+  virtual void add_gradient_impl(const Tensor &gy, Tensor &gx) = 0;
+  virtual void add_gradient_offset_impl(const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) = 0;
+  virtual void add_gradient_sparse_impl(const Tensor &gy, unsigned dim, const std::vector<unsigned> &ids, Tensor &gx) = 0;
 };
 
 }  // namespace primitiv

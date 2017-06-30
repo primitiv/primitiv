@@ -36,34 +36,17 @@ void *Tensor::data() {
 
 void Tensor::reset(const float k) {
   unique();
-  device_->reset_tensor(*this, k);
+  device_->reset_tensor(k, *this);
 }
 
 void Tensor::reset_by_array(const float *values) {
   unique();
-  device_->reset_tensor_by_array(*this, values);
+  device_->reset_tensor_by_array(values, *this);
 }
 
 void Tensor::reset_by_vector(const std::vector<float> &values) {
   unique();
-  device_->reset_tensor_by_vector(*this, values);
-}
-
-void Tensor::add_gradient(const Tensor &x) {
-  unique();
-  device_->add_gradient(*this, x);
-}
-
-void Tensor::add_gradient_offset(
-    const Tensor &x, unsigned dim, unsigned offset) {
-  unique();
-  device_->add_gradient_offset(*this, x, dim, offset);
-}
-
-void Tensor::add_gradient_sparse(
-    const Tensor &x, unsigned dim, const std::vector<unsigned> &ids) {
-  unique();
-  device_->add_gradient_sparse(*this, x, dim, ids);
+  device_->reset_tensor_by_vector(values, *this);
 }
 
 Tensor Tensor::reshape(const Shape &new_shape) const {

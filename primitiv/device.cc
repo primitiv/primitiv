@@ -23,20 +23,20 @@ Tensor Device::new_tensor(const Shape &shape) {
 
 Tensor Device::new_tensor(const Shape &shape, float k) {
   Tensor ret(shape, this, new_handle(shape));
-  reset_tensor(ret, k);
+  reset_tensor(k, ret);
   return ret;
 }
 
 Tensor Device::new_tensor_by_array(const Shape &shape, const float values[]) {
   Tensor ret(shape, this, new_handle(shape));
-  reset_tensor_by_array(ret, values);
+  reset_tensor_by_array(values, ret);
   return ret;
 }
 
 Tensor Device::new_tensor_by_vector(
     const Shape &shape, const vector<float> &values) {
   Tensor ret(shape, this, new_handle(shape));
-  reset_tensor_by_vector(ret, values);
+  reset_tensor_by_vector(values, ret);
   return ret;
 }
 
@@ -45,19 +45,19 @@ vector<float> Device::tensor_to_vector(const Tensor &x) {
   return tensor_to_vector_impl(x);
 }
 
-void Device::reset_tensor(Tensor &x, float k) {
+void Device::reset_tensor(float k, Tensor &x) {
   CHECK_DEVICE(x);
-  reset_tensor_impl(x, k);
+  reset_tensor_impl(k, x);
 }
 
-void Device::reset_tensor_by_array(Tensor &x, const float values[]) {
+void Device::reset_tensor_by_array(const float values[], Tensor &x) {
   // NOTE(odashi):
   // There is no method to guarantee the size of the array for now.
   CHECK_DEVICE(x);
-  reset_tensor_by_array_impl(x, values);
+  reset_tensor_by_array_impl(values, x);
 }
 
-void Device::reset_tensor_by_vector(Tensor &x, const vector<float> &values) {
+void Device::reset_tensor_by_vector(const vector<float> &values, Tensor &x) {
   CHECK_DEVICE(x);
   if (values.size() != x.shape().size()) {
     THROW_ERROR(
@@ -65,10 +65,12 @@ void Device::reset_tensor_by_vector(Tensor &x, const vector<float> &values) {
         << " (shape: " << x.shape().to_string() << ") != actual: "
         << values.size());
   }
-  reset_tensor_by_array_impl(x, values.data());
+  reset_tensor_by_array_impl(values.data(), x);
 }
 
 Tensor Device::copy_tensor(const Tensor &x) {
+  // NOTE(odashi):
+  // This function should return always different memory with x.
   if (!x.valid()) THROW_ERROR("Attempted to copy an invalid tensor.");
   Tensor y = new_tensor(x.shape());
   copy_tensor_impl(x, y);
@@ -292,48 +294,48 @@ Tensor Device::batch_sum_fw(const Tensor &x) {
   return y;
 }
 
-void Device::add_gradient(Tensor &a, const Tensor &b) {
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
-  const Shape &sa = a.shape();
-  const Shape &sb = b.shape();
-  if (!sa.has_same_dims(sb) || !sa.has_compatible_batch(sb)) {
+void Device::add_gradient(const Tensor &gy, Tensor &gx) {
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(gx);
+  const Shape &sy = gy.shape();
+  const Shape &sx = gx.shape();
+  if (!sy.has_same_dims(sx) || !sy.has_compatible_batch(sx)) {
     THROW_ERROR(
         "Attempted to add gradients with shape "
-        << sb.to_string() << " to " << sa.to_string() << '.');
+        << sy.to_string() << " to " << sx.to_string() << '.');
   }
-  add_gradient_impl(a, b);
+  add_gradient_impl(gy, gx);
 }
 
 void Device::add_gradient_offset(
-    Tensor &a, const Tensor &b, unsigned dim, unsigned offset) {
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
-  const Shape &sa = a.shape();
-  const Shape &sb = b.shape();
-  if (!sa.has_same_loo_dims(sb, dim) || !sa.has_compatible_batch(sb) ||
-      offset + sb[dim] > sa[dim]) {
+    const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) {
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(gx);
+  const Shape &sy = gy.shape();
+  const Shape &sx = gx.shape();
+  if (!sy.has_same_loo_dims(sx, dim) || !sy.has_compatible_batch(sx) ||
+      offset + sy[dim] > sx[dim]) {
     THROW_ERROR(
         "Attempted to add gradients with shape "
-        << sb.to_string() << ", dim " << dim << ", offset " << offset
-        << " to shape" << sa.to_string() << '.');
+        << sy.to_string() << ", dim " << dim << ", offset " << offset
+        << " to shape" << sx.to_string() << '.');
   }
-  if (dim >= sa.depth()) add_gradient(a, b);
-  else add_gradient_offset_impl(a, b, dim, offset);
+  if (dim >= sx.depth()) add_gradient_impl(gy, gx);
+  else add_gradient_offset_impl(gy, dim, offset, gx);
 }
 
 void Device::add_gradient_sparse(
-    Tensor &a, const Tensor &b,
-    unsigned dim, const std::vector<unsigned> &ids) {
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
-  const Shape sb = shape_ops::pick(a.shape(), dim, ids);
-  if (sb != b.shape()) {
+    const Tensor &gy, unsigned dim, const std::vector<unsigned> &ids,
+    Tensor &gx) {
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(gx);
+  const Shape sy = shape_ops::pick(gx.shape(), dim, ids);
+  if (gy.shape() != sy) {
     THROW_ERROR(
-        "Shape mismatched. b.shape(): " << b.shape().to_string()
-        << " != expected shape: " << sb.to_string());
+        "Shape mismatched. gy.shape(): " << gy.shape().to_string()
+        << " != expected shape: " << sy.to_string());
   }
-  add_gradient_sparse_impl(a, b, dim, ids);
+  add_gradient_sparse_impl(gy, dim, ids, gx);
 }
 
 }  // namespace primitiv

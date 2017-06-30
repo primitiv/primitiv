@@ -49,8 +49,8 @@ private:
 
   std::vector<float> tensor_to_vector_impl(const Tensor &x) override;
 
-  void reset_tensor_impl(Tensor &x, float k) override;
-  void reset_tensor_by_array_impl(Tensor &x, const float values[]) override;
+  void reset_tensor_impl(float k, Tensor &x) override;
+  void reset_tensor_by_array_impl(const float values[], Tensor &x) override;
 
   void copy_tensor_impl(const Tensor &x, Tensor &y) override;
 
@@ -104,18 +104,17 @@ private:
 
   void transpose_fw_impl(const Tensor &x, Tensor &y) override;
   void matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override;
-  void matmul_bw_impl(
-      const Tensor &a, const Tensor &b, const Tensor &gy,
-      Tensor &ga, Tensor &gb) override;
+
+  void matmul_bw_impl(const Tensor &a, const Tensor &b, const Tensor &gy, Tensor &ga, Tensor &gb) override;
 
   void sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) override;
   void logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) override;
   void broadcast_fw_impl(const Tensor &x, unsigned dim, unsigned size, Tensor &y) override;
   void batch_sum_fw_impl(const Tensor &x, Tensor &y) override;
 
-  void add_gradient_impl(Tensor &a, const Tensor &b) override;
-  void add_gradient_offset_impl(Tensor &a, const Tensor &b, unsigned dim, unsigned offset) override;
-  void add_gradient_sparse_impl(Tensor &a, const Tensor &b, unsigned dim, const std::vector<unsigned> &ids) override;
+  void add_gradient_impl(const Tensor &b, Tensor &a) override;
+  void add_gradient_offset_impl(const Tensor &b, unsigned dim, unsigned offset, Tensor &a) override;
+  void add_gradient_sparse_impl(const Tensor &b, unsigned dim, const std::vector<unsigned> &ids, Tensor &a) override;
 
 private:
   unsigned dev_id_;

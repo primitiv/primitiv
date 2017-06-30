@@ -91,31 +91,6 @@ public:
   bool valid() const { return static_cast<bool>(data_); }
 
   /**
-   * Adds a tensor for gradient calculation.
-   * @param x A tensor to add.
-   */
-  void add_gradient(const Tensor &x);
-
-  /**
-   * Same as `add_gradient`, but updates only elements specified by `dim` and
-   * `offset`.
-   * @param x A tensor to add.
-   * @param dim Dimension to specify the range.
-   * @param offset Offset on the dimension `dim`.
-   */
-  void add_gradient_offset(const Tensor &x, unsigned dim, unsigned offset);
-
-  /**
-   * Same as `add_gradient`, byt updates only elements specified by `dim` and
-   * `ids`.
-   * @param x A tensor to add.
-   * @param dim Dimension to specify the range.
-   * @param ids List of offsets on the dimension `dim`.
-   */
-  void add_gradient_sparse(
-      const Tensor &x, unsigned dim, const std::vector<unsigned> &ids);
-
-  /**
    * Returns a tensor which have the same values and different shape.
    * @param new_shape New shape with batch size 1.
    * @return A new tensor.
