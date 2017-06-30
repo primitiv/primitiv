@@ -99,6 +99,15 @@ public:
   Tensor cos_fw(const Tensor &x);
   Tensor tan_fw(const Tensor &x);
 
+  void negate_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
+  void sqrt_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
+  void exp_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
+  void tanh_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
+  void sigmoid_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
+  void sin_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
+  void cos_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
+  void tan_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
+
   // Tensor-constant operations.
   Tensor add_const_fw(const Tensor &x, float k);
   Tensor subtract_const_r_fw(const Tensor &x, float k);
@@ -240,6 +249,15 @@ private:
   virtual void sin_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void cos_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void tan_fw_impl(const Tensor &x, Tensor &y) = 0;
+
+  virtual void negate_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
+  virtual void sqrt_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
+  virtual void exp_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
+  virtual void tanh_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
+  virtual void sigmoid_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
+  virtual void sin_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
+  virtual void cos_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
+  virtual void tan_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
 
   virtual void add_const_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
   virtual void subtract_const_r_fw_impl(const Tensor &x, float k, Tensor &y) = 0;

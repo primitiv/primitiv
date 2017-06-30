@@ -362,7 +362,7 @@ BACKWARD(Reshape) { ADD(0, yg.reshape(x[0]->shape())); }
 BACKWARD(Flatten) { ADD(0, yg.reshape(x[0]->shape())); }
 
 BACKWARD(Positive) { ADD(0, yg); }
-BACKWARD(Negative) { ADD(0, -yg); }
+BACKWARD(Negative) { yg.device()->negate_bw(*x[0], y, yg, *xg[0]); }
 
 BACKWARD(AddConst) { ADD(0, yg); }
 BACKWARD(SubtractConstR) { ADD(0, yg); }
@@ -421,13 +421,13 @@ BACKWARD(MatrixMultiply) {
   yg.device()->matmul_bw(*x[0], *x[1], yg, *xg[0], *xg[1]);
 }
 
-BACKWARD(Sqrt) { ADD(0, .5 * yg / y); }
-BACKWARD(Exp) { ADD(0, y * yg); }
-BACKWARD(Tanh) { ADD(0, (1 - y * y) * yg); }
-BACKWARD(Sigmoid) { ADD(0, y * (1 - y) * yg); }
-BACKWARD(Sin) { ADD(0, T::cos(*x[0]) * yg); }
-BACKWARD(Cos) { ADD(0, -T::sin(*x[0]) * yg); }
-BACKWARD(Tan) { ADD(0, (1 + y * y) * yg); }
+BACKWARD(Sqrt) { yg.device()->sqrt_bw(*x[0], y, yg, *xg[0]); }
+BACKWARD(Exp) {  yg.device()->exp_bw(*x[0], y, yg, *xg[0]);}
+BACKWARD(Tanh) {  yg.device()->tanh_bw(*x[0], y, yg, *xg[0]);}
+BACKWARD(Sigmoid) {  yg.device()->sigmoid_bw(*x[0], y, yg, *xg[0]);}
+BACKWARD(Sin) {  yg.device()->sin_bw(*x[0], y, yg, *xg[0]);}
+BACKWARD(Cos) {  yg.device()->cos_bw(*x[0], y, yg, *xg[0]);}
+BACKWARD(Tan) {  yg.device()->tan_bw(*x[0], y, yg, *xg[0]);}
 BACKWARD(ReLU) { ADD(0, T::step(*x[0]) * yg); }
 BACKWARD(LReLU) { ADD(0, T::lstep(*x[0]) * yg); }
 BACKWARD(PReLU) { ADD(0, T::pstep(*x[0], k_) * yg); }

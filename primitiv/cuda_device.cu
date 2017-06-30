@@ -47,19 +47,29 @@ __global__ void concat_fw_dev(
   if (i < y_size) py[(i / span) * skip + (i % span)] = px[i % x_size];
 }
 
-#define CUDA_KERNEL_X(name, op) \
+#define CUDADEV_KERNEL_FW_X(name, op) \
 __global__ void name##_fw_dev(float *py, const float *px, unsigned size) { \
   const unsigned i = IDX; \
   if (i < size) py[i] = (op); \
 }
 
-#define CUDA_KERNEL_X_CONST(name, op) \
+#define CUDADEV_KERNEL_BW_X(name, op) \
+__global__ void name##_bw_dev( \
+    const float *px, const float *py, const float *pgy, unsigned size, \
+    float *pgx) { \
+  static_cast<void>(px); \
+  static_cast<void>(py); \
+  const unsigned i = IDX; \
+  if (i < size) pgx[i] += (op); \
+}
+
+#define CUDADEV_KERNEL_FW_X_CONST(name, op) \
 __global__ void name##_fw_dev(float *py, const float *px, float k, unsigned size) { \
   const unsigned i = IDX; \
   if (i < size) py[i] = (op); \
 }
 
-#define CUDA_KERNEL_X_SCALAR_R(name, op) \
+#define CUDADEV_KERNEL_FW_X_SCALAR_R(name, op) \
 __global__ void name##_fw_dev( \
     float *py, const float *px, const float *pk, \
     unsigned size, unsigned mbx, unsigned mbk) { \
@@ -68,7 +78,7 @@ __global__ void name##_fw_dev( \
   if (i < size) py[i + shift] = op(px[i + mbx * shift], pk[mbk * blockIdx.y]); \
 }
 
-#define CUDA_KERNEL_X_SCALAR_L(name, op) \
+#define CUDADEV_KERNEL_FW_X_SCALAR_L(name, op) \
 __global__ void name##_fw_dev( \
     float *py, const float *px, const float *pk, \
     unsigned size, unsigned mbx, unsigned mbk) { \
@@ -77,7 +87,7 @@ __global__ void name##_fw_dev( \
   if (i < size) py[i + shift] = op(pk[mbk * blockIdx.y], px[i + mbx * shift]); \
 }
 
-#define CUDA_KERNEL_AB(name, op) \
+#define CUDADEV_KERNEL_FW_AB(name, op) \
 __global__ void name##_fw_dev( \
     float *py, const float *pa, const float *pb, \
     unsigned size, unsigned mba, unsigned mbb) { \
@@ -86,40 +96,49 @@ __global__ void name##_fw_dev( \
   if (i < size) py[i + shift] = op(pa[i + mba * shift], pb[i + mbb * shift]); \
 }
 
-CUDA_KERNEL_X(negate, -px[i]);
-CUDA_KERNEL_X(sqrt, ::__fsqrt_rn(px[i]));
-CUDA_KERNEL_X(exp, ::expf(px[i]));
-CUDA_KERNEL_X(tanh, ::tanhf(px[i]));
-CUDA_KERNEL_X(sigmoid, .5f + .5f * ::tanhf(.5f * px[i]));
-CUDA_KERNEL_X(sin, ::sinf(px[i]));
-CUDA_KERNEL_X(cos, ::cosf(px[i]));
-CUDA_KERNEL_X(tan, ::tanf(px[i]));
+CUDADEV_KERNEL_FW_X(negate, -px[i]);
+CUDADEV_KERNEL_FW_X(sqrt, ::__fsqrt_rn(px[i]));
+CUDADEV_KERNEL_FW_X(exp, ::expf(px[i]));
+CUDADEV_KERNEL_FW_X(tanh, ::tanhf(px[i]));
+CUDADEV_KERNEL_FW_X(sigmoid, .5f + .5f * ::tanhf(.5f * px[i]));
+CUDADEV_KERNEL_FW_X(sin, ::sinf(px[i]));
+CUDADEV_KERNEL_FW_X(cos, ::cosf(px[i]));
+CUDADEV_KERNEL_FW_X(tan, ::tanf(px[i]));
 
-CUDA_KERNEL_X_CONST(add_const, px[i] + k);
-CUDA_KERNEL_X_CONST(subtract_const_r, px[i] - k);
-CUDA_KERNEL_X_CONST(subtract_const_l, k - px[i]);
-CUDA_KERNEL_X_CONST(multiply_const, px[i] * k);
-CUDA_KERNEL_X_CONST(divide_const_r, px[i] / k);
-CUDA_KERNEL_X_CONST(divide_const_l, k / px[i]);
-CUDA_KERNEL_X_CONST(pstep, (px[i] > .0f) + k * (px[i] <= .0f));
-CUDA_KERNEL_X_CONST(prelu, px[i] * ((px[i] > .0f) + k * (px[i] <= .0f)));
+CUDADEV_KERNEL_BW_X(negate, -pgy[i]);
+CUDADEV_KERNEL_BW_X(sqrt, .5f * pgy[i] / py[i]);
+CUDADEV_KERNEL_BW_X(exp, py[i] * pgy[i]);
+CUDADEV_KERNEL_BW_X(tanh, (1.f - py[i] * py[i]) * pgy[i]);
+CUDADEV_KERNEL_BW_X(sigmoid, py[i] * (1.f - py[i]) * pgy[i]);
+CUDADEV_KERNEL_BW_X(sin, ::cosf(px[i]) * pgy[i]);
+CUDADEV_KERNEL_BW_X(cos, -::sinf(px[i]) * pgy[i]);
+CUDADEV_KERNEL_BW_X(tan, (1.f + py[i] * py[i]) * pgy[i]);
 
-CUDA_KERNEL_X_SCALAR_R(add_scalar, ::__fadd_rn);
-CUDA_KERNEL_X_SCALAR_R(subtract_scalar_r, ::__fsub_rn);
-CUDA_KERNEL_X_SCALAR_L(subtract_scalar_l, ::__fsub_rn);
-CUDA_KERNEL_X_SCALAR_R(multiply_scalar, ::__fmul_rn);
-CUDA_KERNEL_X_SCALAR_R(divide_scalar_r, ::__fdiv_rn);
-CUDA_KERNEL_X_SCALAR_L(divide_scalar_l, ::__fdiv_rn);
+CUDADEV_KERNEL_FW_X_CONST(add_const, px[i] + k);
+CUDADEV_KERNEL_FW_X_CONST(subtract_const_r, px[i] - k);
+CUDADEV_KERNEL_FW_X_CONST(subtract_const_l, k - px[i]);
+CUDADEV_KERNEL_FW_X_CONST(multiply_const, px[i] * k);
+CUDADEV_KERNEL_FW_X_CONST(divide_const_r, px[i] / k);
+CUDADEV_KERNEL_FW_X_CONST(divide_const_l, k / px[i]);
+CUDADEV_KERNEL_FW_X_CONST(pstep, (px[i] > .0f) + k * (px[i] <= .0f));
+CUDADEV_KERNEL_FW_X_CONST(prelu, px[i] * ((px[i] > .0f) + k * (px[i] <= .0f)));
 
-CUDA_KERNEL_AB(add, ::__fadd_rn);
-CUDA_KERNEL_AB(subtract, ::__fsub_rn);
-CUDA_KERNEL_AB(multiply, ::__fmul_rn);
-CUDA_KERNEL_AB(divide, ::__fdiv_rn);
+CUDADEV_KERNEL_FW_X_SCALAR_R(add_scalar, ::__fadd_rn);
+CUDADEV_KERNEL_FW_X_SCALAR_R(subtract_scalar_r, ::__fsub_rn);
+CUDADEV_KERNEL_FW_X_SCALAR_L(subtract_scalar_l, ::__fsub_rn);
+CUDADEV_KERNEL_FW_X_SCALAR_R(multiply_scalar, ::__fmul_rn);
+CUDADEV_KERNEL_FW_X_SCALAR_R(divide_scalar_r, ::__fdiv_rn);
+CUDADEV_KERNEL_FW_X_SCALAR_L(divide_scalar_l, ::__fdiv_rn);
 
-#undef CUDA_KERNEL_X
-#undef CUDA_KERNEL_X_CONST
-#undef CUDA_KERNEL_X_SCALAR_R
-#undef CUDA_KERNEL_X_SCALAR_L
+CUDADEV_KERNEL_FW_AB(add, ::__fadd_rn);
+CUDADEV_KERNEL_FW_AB(subtract, ::__fsub_rn);
+CUDADEV_KERNEL_FW_AB(multiply, ::__fmul_rn);
+CUDADEV_KERNEL_FW_AB(divide, ::__fdiv_rn);
+
+#undef CUDADEV_KERNEL_FW_X
+#undef CUDADEV_KERNEL_FW_X_CONST
+#undef CUDADEV_KERNEL_FW_X_SCALAR_R
+#undef CUDADEV_KERNEL_FW_X_SCALAR_L
 
 __global__ void transpose_fw_dev(
     float *py, const float *px, unsigned rows, unsigned cols) {
@@ -467,6 +486,16 @@ void CUDADevice::name##_fw_impl(const Tensor &x, Tensor &y) { \
   ::name##_fw_dev<<<num_blocks, dim1_x_>>>(DATA(y), CDATA(x), size); \
 }
 
+#define CUDADEV_BW_X(name) \
+void CUDADevice::name##_bw_impl( \
+    const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) { \
+  const unsigned size = x.shape().size(); \
+  const unsigned num_blocks = GRID_SIZE(size, dim1_x_); \
+  CUDA_CALL(::cudaSetDevice(dev_id_)); \
+  ::name##_bw_dev<<<num_blocks, dim1_x_>>>( \
+      CDATA(x), CDATA(y), CDATA(gy), size, DATA(gx)); \
+}
+
 #define CUDADEV_FW_X_CONST(name) \
 void CUDADevice::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
   const unsigned size = x.shape().size(); \
@@ -505,6 +534,15 @@ CUDADEV_FW_X(sigmoid);
 CUDADEV_FW_X(sin);
 CUDADEV_FW_X(cos);
 CUDADEV_FW_X(tan);
+
+CUDADEV_BW_X(negate);
+CUDADEV_BW_X(sqrt);
+CUDADEV_BW_X(exp);
+CUDADEV_BW_X(tanh);
+CUDADEV_BW_X(sigmoid);
+CUDADEV_BW_X(sin);
+CUDADEV_BW_X(cos);
+CUDADEV_BW_X(tan);
 
 CUDADEV_FW_X_CONST(add_const);
 CUDADEV_FW_X_CONST(subtract_const_r);

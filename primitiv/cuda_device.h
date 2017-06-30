@@ -72,6 +72,15 @@ private:
   void cos_fw_impl(const Tensor &x, Tensor &y) override;
   void tan_fw_impl(const Tensor &x, Tensor &y) override;
 
+  void negate_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
+  void sqrt_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
+  void exp_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
+  void tanh_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
+  void sigmoid_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
+  void sin_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
+  void cos_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
+  void tan_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
+
   void add_const_fw_impl(const Tensor &x, float k, Tensor &y) override;
   void subtract_const_r_fw_impl(const Tensor &x, float k, Tensor &y) override;
   void subtract_const_l_fw_impl(const Tensor &x, float k, Tensor &y) override;

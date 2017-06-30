@@ -158,6 +158,17 @@ void CPUDevice::name##_fw_impl(const Tensor &x, Tensor &y) { \
   REPEAT_OP(i, size, dest[i] = (op)); \
 }
 
+#define CPUDEV_BW_X(name, op) \
+void CPUDevice::name##_bw_impl( \
+    const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) { \
+  const float *px = CDATA(x); static_cast<void>(px); \
+  const float *py = CDATA(y); static_cast<void>(py); \
+  const float *pgy = CDATA(gy); \
+  float *pgx = DATA(gx); \
+  const unsigned size = x.shape().size(); \
+  REPEAT_OP(i, size, pgx[i] += (op)); \
+}
+
 #define CPUDEV_FW_X_CONST(name, op) \
 void CPUDevice::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
   float *dest = DATA(y); \
@@ -209,6 +220,15 @@ CPUDEV_FW_X(sin, std::sin(src[i]));
 CPUDEV_FW_X(cos, std::cos(src[i]));
 CPUDEV_FW_X(tan, std::tan(src[i]));
 
+CPUDEV_BW_X(negate, -pgy[i]);
+CPUDEV_BW_X(sqrt, .5 * pgy[i] / py[i]);
+CPUDEV_BW_X(exp, py[i] * pgy[i]);
+CPUDEV_BW_X(tanh, (1. - py[i] * py[i]) * pgy[i]);
+CPUDEV_BW_X(sigmoid, py[i] * (1. - py[i]) * pgy[i]);
+CPUDEV_BW_X(sin, std::cos(px[i]) * pgy[i]);
+CPUDEV_BW_X(cos, -std::sin(px[i]) * pgy[i]);
+CPUDEV_BW_X(tan, (1 + py[i] * py[i]) * pgy[i]);
+
 CPUDEV_FW_X_CONST(add_const, src[i] + k);
 CPUDEV_FW_X_CONST(subtract_const_r, src[i] - k);
 CPUDEV_FW_X_CONST(subtract_const_l, k - src[i]);
@@ -232,6 +252,7 @@ CPUDEV_FW_AB(multiply, src_a[i] * src_b[i]);
 CPUDEV_FW_AB(divide, src_a[i] / src_b[i]);
 
 #undef CPUDEV_FW_X
+#undef CPUDEV_BW_X
 #undef CPUDEV_FW_X_CONST
 #undef CPUDEV_FW_X_SCALAR
 #undef CPUDEV_FW_AB
