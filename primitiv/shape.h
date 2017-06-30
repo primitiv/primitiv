@@ -90,7 +90,7 @@ public:
 
   /**
    * Returns the number of elements in all samples of the mini-batch.
-   * This value is equal to `batch_size() * volume()`.
+   * This value is equal to `batch() * volume()`.
    * @return Number of elements.
    */
   unsigned size() const { return k_ * volume_; }

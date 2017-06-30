@@ -228,50 +228,50 @@ private:
   virtual void random_normal_impl(float mean, float sd, Tensor &y) = 0;
   virtual void random_log_normal_impl(float mean, float sd, Tensor &y) = 0;
 
-  virtual Tensor pick_fw_impl(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids, Shape &&new_shape) = 0;
-  virtual Tensor slice_fw_impl(const Tensor &x, unsigned dim, unsigned offset, Shape &&new_shape) = 0;
-  virtual Tensor concat_fw_impl(const std::vector<const Tensor *> &xs, unsigned dim, Shape &&new_shape) = 0;
+  virtual void pick_fw_impl(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids, Tensor &y) = 0;
+  virtual void slice_fw_impl(const Tensor &x, unsigned dim, unsigned offset, Tensor &y) = 0;
+  virtual void concat_fw_impl(const std::vector<const Tensor *> &xs, unsigned dim, Tensor &y) = 0;
 
-  virtual Tensor negate_fw_impl(const Tensor &x) = 0;
-  virtual Tensor sqrt_fw_impl(const Tensor &x) = 0;
-  virtual Tensor exp_fw_impl(const Tensor &x) = 0;
-  virtual Tensor tanh_fw_impl(const Tensor &x) = 0;
-  virtual Tensor sigmoid_fw_impl(const Tensor &x) = 0;
-  virtual Tensor sin_fw_impl(const Tensor &x) = 0;
-  virtual Tensor cos_fw_impl(const Tensor &x) = 0;
-  virtual Tensor tan_fw_impl(const Tensor &x) = 0;
+  virtual void negate_fw_impl(const Tensor &x, Tensor &y) = 0;
+  virtual void sqrt_fw_impl(const Tensor &x, Tensor &y) = 0;
+  virtual void exp_fw_impl(const Tensor &x, Tensor &y) = 0;
+  virtual void tanh_fw_impl(const Tensor &x, Tensor &y) = 0;
+  virtual void sigmoid_fw_impl(const Tensor &x, Tensor &y) = 0;
+  virtual void sin_fw_impl(const Tensor &x, Tensor &y) = 0;
+  virtual void cos_fw_impl(const Tensor &x, Tensor &y) = 0;
+  virtual void tan_fw_impl(const Tensor &x, Tensor &y) = 0;
 
-  virtual Tensor add_const_fw_impl(const Tensor &x, float k) = 0;
-  virtual Tensor subtract_const_r_fw_impl(const Tensor &x, float k) = 0;
-  virtual Tensor subtract_const_l_fw_impl(const Tensor &x, float k) = 0;
-  virtual Tensor multiply_const_fw_impl(const Tensor &x, float k) = 0;
-  virtual Tensor divide_const_r_fw_impl(const Tensor &x, float k) = 0;
-  virtual Tensor divide_const_l_fw_impl(const Tensor &x, float k)  = 0;
-  virtual Tensor pstep_fw_impl(const Tensor &x, float k) = 0;
-  virtual Tensor prelu_fw_impl(const Tensor &x, float k) = 0;
+  virtual void add_const_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
+  virtual void subtract_const_r_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
+  virtual void subtract_const_l_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
+  virtual void multiply_const_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
+  virtual void divide_const_r_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
+  virtual void divide_const_l_fw_impl(const Tensor &x, float k, Tensor &y)  = 0;
+  virtual void pstep_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
+  virtual void prelu_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
 
-  virtual Tensor add_scalar_fw_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
-  virtual Tensor subtract_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
-  virtual Tensor subtract_scalar_l_fw_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
-  virtual Tensor multiply_scalar_fw_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
-  virtual Tensor divide_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
-  virtual Tensor divide_scalar_l_fw_impl(const Tensor &x, const Tensor &k, Shape &&new_shape) = 0;
+  virtual void add_scalar_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) = 0;
+  virtual void subtract_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) = 0;
+  virtual void subtract_scalar_l_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) = 0;
+  virtual void multiply_scalar_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) = 0;
+  virtual void divide_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) = 0;
+  virtual void divide_scalar_l_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) = 0;
 
-  virtual Tensor add_fw_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
-  virtual Tensor subtract_fw_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
-  virtual Tensor multiply_fw_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
-  virtual Tensor divide_fw_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
+  virtual void add_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) = 0;
+  virtual void subtract_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) = 0;
+  virtual void multiply_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) = 0;
+  virtual void divide_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) = 0;
 
-  virtual Tensor transpose_fw_impl(const Tensor &x, Shape &&new_shape) = 0;
-  virtual Tensor matmul_fw_impl(const Tensor &a, const Tensor &b, Shape &&new_shape) = 0;
+  virtual void transpose_fw_impl(const Tensor &x, Tensor &y) = 0;
+  virtual void matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) = 0;
   virtual void matmul_bw_impl(
       const Tensor &a, const Tensor &b, const Tensor &gy,
       Tensor &ga, Tensor &gb) = 0;
 
-  virtual Tensor sum_fw_impl(const Tensor &x, unsigned dim) = 0;
-  virtual Tensor logsumexp_fw_impl(const Tensor &x, unsigned dim) = 0;
-  virtual Tensor broadcast_fw_impl(const Tensor &x, unsigned dim, unsigned size, Shape &&new_shape) = 0;
-  virtual Tensor batch_sum_fw_impl(const Tensor &x) = 0;
+  virtual void sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) = 0;
+  virtual void logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) = 0;
+  virtual void broadcast_fw_impl(const Tensor &x, unsigned dim, unsigned size, Tensor &y) = 0;
+  virtual void batch_sum_fw_impl(const Tensor &x, Tensor &y) = 0;
 
   virtual void add_gradient_impl(Tensor &a, const Tensor &b) = 0;
   virtual void add_gradient_offset_impl(Tensor &a, const Tensor &b, unsigned dim, unsigned offset) = 0;

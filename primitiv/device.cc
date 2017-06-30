@@ -121,14 +121,17 @@ Tensor Device::random_log_normal(const Shape &shape, float mean, float sd) {
 Tensor Device::pick_fw(
     const Tensor &x, unsigned dim, const vector<unsigned> &ids) {
   CHECK_DEVICE(x);
-  return pick_fw_impl(x, dim, ids, shape_ops::pick(x.shape(), dim, ids));
+  Tensor y = new_tensor(shape_ops::pick(x.shape(), dim, ids));
+  pick_fw_impl(x, dim, ids, y);
+  return y;
 }
 
 Tensor Device::slice_fw(
     const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
   CHECK_DEVICE(x);
-  return slice_fw_impl(
-      x, dim, lower, shape_ops::slice(x.shape(), dim, lower, upper));
+  Tensor y = new_tensor(shape_ops::slice(x.shape(), dim, lower, upper));
+  slice_fw_impl(x, dim, lower, y);
+  return y;
 }
 
 Tensor Device::concat_fw(const vector<const Tensor *> &xs, unsigned dim) {
@@ -138,33 +141,34 @@ Tensor Device::concat_fw(const vector<const Tensor *> &xs, unsigned dim) {
     CHECK_DEVICE(*xs[i]);
     shapes[i] = &xs[i]->shape();
   }
-  return concat_fw_impl(xs, dim, shape_ops::concat(shapes, dim));
+  Tensor y = new_tensor(shape_ops::concat(shapes, dim));
+  concat_fw_impl(xs, dim, y);
+  return y;
 }
 
 #define DEV_FW_X(name) \
 Tensor Device::name##_fw(const Tensor &x) { \
   CHECK_DEVICE(x); \
-  return name##_fw_impl(x); \
+  Tensor y = new_tensor(x.shape()); \
+  name##_fw_impl(x, y); \
+  return y; \
 }
 
 #define DEV_FW_X_CONST(name) \
 Tensor Device::name##_fw(const Tensor &x, float k) { \
   CHECK_DEVICE(x); \
-  return name##_fw_impl(x, k); \
+  Tensor y = new_tensor(x.shape()); \
+  name##_fw_impl(x, k, y); \
+  return y; \
 }
 
-#define DEV_FW_X_SCALAR(name) \
-Tensor Device::name##_fw(const Tensor &x, const Tensor &k) { \
-  CHECK_DEVICE(x); \
-  CHECK_DEVICE(k); \
-  return name##_fw_impl(x, k, shape_ops::scalar_op(x.shape(), k.shape())); \
-}
-
-#define DEV_FW_AB(name) \
+#define DEV_FW_AB(name, sop) \
 Tensor Device::name##_fw(const Tensor &a, const Tensor &b) { \
   CHECK_DEVICE(a); \
   CHECK_DEVICE(b); \
-  return name##_fw_impl(a, b, shape_ops::elementwise(a.shape(), b.shape())); \
+  Tensor y = new_tensor(shape_ops::sop(a.shape(), b.shape())); \
+  name##_fw_impl(a, b, y); \
+  return y; \
 }
 
 DEV_FW_X(negate);
@@ -182,35 +186,33 @@ DEV_FW_X_CONST(subtract_const_l);
 DEV_FW_X_CONST(multiply_const);
 DEV_FW_X_CONST(divide_const_r);
 DEV_FW_X_CONST(divide_const_l);
+
 DEV_FW_X_CONST(pstep);
 DEV_FW_X_CONST(prelu);
 
-DEV_FW_X_SCALAR(add_scalar);
-DEV_FW_X_SCALAR(subtract_scalar_r);
-DEV_FW_X_SCALAR(subtract_scalar_l);
-DEV_FW_X_SCALAR(multiply_scalar);
-DEV_FW_X_SCALAR(divide_scalar_r);
-DEV_FW_X_SCALAR(divide_scalar_l);
+DEV_FW_AB(add_scalar, scalar_op);
+DEV_FW_AB(subtract_scalar_r, scalar_op);
+DEV_FW_AB(subtract_scalar_l, scalar_op);
+DEV_FW_AB(multiply_scalar, scalar_op);
+DEV_FW_AB(divide_scalar_r, scalar_op);
+DEV_FW_AB(divide_scalar_l, scalar_op);
 
-DEV_FW_AB(add);
-DEV_FW_AB(subtract);
-DEV_FW_AB(multiply);
-DEV_FW_AB(divide);
+DEV_FW_AB(add, elementwise);
+DEV_FW_AB(subtract, elementwise);
+DEV_FW_AB(multiply, elementwise);
+DEV_FW_AB(divide, elementwise);
+
+DEV_FW_AB(matmul, matmul);
 
 #undef DEV_FW_X
 #undef DEV_FW_X_CONST
-#undef DEV_FW_X_SCALAR
 #undef DEV_FW_AB
 
 Tensor Device::transpose_fw(const Tensor &x) {
   CHECK_DEVICE(x);
-  return transpose_fw_impl(x, shape_ops::transpose(x.shape()));
-}
-
-Tensor Device::matmul_fw(const Tensor &a, const Tensor &b) {
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
-  return matmul_fw_impl(a, b, shape_ops::matmul(a.shape(), b.shape()));
+  Tensor y = new_tensor(shape_ops::transpose(x.shape()));
+  transpose_fw_impl(x, y);
+  return y;
 }
 
 void Device::matmul_bw(
@@ -236,23 +238,30 @@ void Device::matmul_bw(
 
 Tensor Device::sum_fw(const Tensor &x, unsigned dim) {
   CHECK_DEVICE(x);
-  return sum_fw_impl(x, dim);
+  Tensor y = new_tensor(x.shape().resize_dim(dim, 1));
+  sum_fw_impl(x, dim, y);
+  return y;
 }
 
 Tensor Device::logsumexp_fw(const Tensor &x, unsigned dim) {
   CHECK_DEVICE(x);
-  return logsumexp_fw_impl(x, dim);
+  Tensor y = new_tensor(x.shape().resize_dim(dim, 1));
+  logsumexp_fw_impl(x, dim, y);
+  return y;
 }
 
 Tensor Device::broadcast_fw(const Tensor &x, unsigned dim, unsigned size) {
   CHECK_DEVICE(x);
-  return broadcast_fw_impl(
-      x, dim, size, shape_ops::broadcast(x.shape(), dim, size));
+  Tensor y = new_tensor(shape_ops::broadcast(x.shape(), dim, size));
+  broadcast_fw_impl(x, dim, size, y);
+  return y;
 }
 
 Tensor Device::batch_sum_fw(const Tensor &x) {
   CHECK_DEVICE(x);
-  return batch_sum_fw_impl(x);
+  Tensor y = new_tensor(x.shape().resize_batch(1));
+  batch_sum_fw_impl(x, y);
+  return y;
 }
 
 void Device::add_gradient(Tensor &a, const Tensor &b) {
