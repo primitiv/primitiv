@@ -370,6 +370,11 @@ void CPUDevice::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   }
 }
 
+void CPUDevice::transpose_bw_impl(const Tensor &gy, Tensor &gx) {
+  // TODO(odashi): This code could be slow and requires memory. Fix this.
+  add_gradient_impl(transpose_fw(gy), gx);
+}
+
 void CPUDevice::matmul_bw_impl(
     const Tensor &a, const Tensor &b, const Tensor &gy,
     Tensor &ga, Tensor &gb) {

@@ -504,7 +504,7 @@ TEST_F(TensorBackwardTest, CheckTan) {
 
 TEST_F(TensorBackwardTest, CheckAddConst) {
   const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
-  for (Device *dev :devices) {
+  for (Device *dev : devices) {
     for (const float k : ks) {
       const Tensor x = dev->new_tensor_by_vector(
           Shape({2, 2}, 2), {0, 1, 2, 3, 0, -1, -2, -3});
@@ -523,7 +523,7 @@ TEST_F(TensorBackwardTest, CheckAddConst) {
 
 TEST_F(TensorBackwardTest, CheckSubtractConstR) {
   const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
-  for (Device *dev :devices) {
+  for (Device *dev : devices) {
     for (const float k : ks) {
       const Tensor x = dev->new_tensor_by_vector(
           Shape({2, 2}, 2), {0, 1, 2, 3, 0, -1, -2, -3});
@@ -542,7 +542,7 @@ TEST_F(TensorBackwardTest, CheckSubtractConstR) {
 
 TEST_F(TensorBackwardTest, CheckSubtractConstL) {
   const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
-  for (Device *dev :devices) {
+  for (Device *dev : devices) {
     for (const float k : ks) {
       const Tensor x = dev->new_tensor_by_vector(
           Shape({2, 2}, 2), {0, 1, 2, 3, 0, -1, -2, -3});
@@ -561,7 +561,7 @@ TEST_F(TensorBackwardTest, CheckSubtractConstL) {
 
 TEST_F(TensorBackwardTest, CheckMultiplyConst) {
   const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
-  for (Device *dev :devices) {
+  for (Device *dev : devices) {
     for (const float k : ks) {
       const Tensor x = dev->new_tensor_by_vector(
           Shape({2, 2}, 2), {0, 1, 2, 3, 0, -1, -2, -3});
@@ -580,7 +580,7 @@ TEST_F(TensorBackwardTest, CheckMultiplyConst) {
 
 TEST_F(TensorBackwardTest, CheckDivideConstR) {
   const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
-  for (Device *dev :devices) {
+  for (Device *dev : devices) {
     for (const float k : ks) {
       const Tensor x = dev->new_tensor_by_vector(
           Shape({2, 2}, 2), {0, 1, 2, 3, 0, -1, -2, -3});
@@ -599,7 +599,7 @@ TEST_F(TensorBackwardTest, CheckDivideConstR) {
 
 TEST_F(TensorBackwardTest, CheckDivideConstL) {
   const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
-  for (Device *dev :devices) {
+  for (Device *dev : devices) {
     for (const float k : ks) {
       const Tensor x = dev->new_tensor_by_vector(
           Shape({2, 2}, 2), {.1, 1, 2, 3, -.1, -1, -2, -3});
@@ -618,7 +618,7 @@ TEST_F(TensorBackwardTest, CheckDivideConstL) {
 
 TEST_F(TensorBackwardTest, CheckPReLU) {
   const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
-  for (Device *dev :devices) {
+  for (Device *dev : devices) {
     for (const float k : ks) {
       const Tensor x = dev->new_tensor_by_vector(
           Shape({2, 2}, 2), {0, 1, 2, 3, 0, -1, -2, -3});
@@ -632,6 +632,23 @@ TEST_F(TensorBackwardTest, CheckPReLU) {
       };
       EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
     }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckTranspose) {
+  for (Device *dev : devices) {
+    const Tensor gy = dev->new_tensor_by_vector(
+        Shape({4, 3}, 2), {
+          0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+          12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+        });
+    Tensor gx = dev->new_tensor(Shape({3, 4}, 2), 0);
+    dev->transpose_bw(gy, gx);
+    const vector<float> gx_val {
+      0, 4, 8, 1, 5, 9, 2, 6, 10, 3, 7, 11,
+      12, 16, 20, 13, 17, 21, 14, 18, 22, 15, 19, 23,
+    };
+    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
   }
 }
 

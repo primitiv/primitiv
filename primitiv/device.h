@@ -91,7 +91,6 @@ public:
 
   void pick_bw(const Tensor &gy, unsigned dim, const std::vector<unsigned> &ids, Tensor &gx);
   void slice_bw(const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx);
-  void concat_bw(const Tensor &gy, const std::vector<Tensor *> &gx);
 
   // Unary operations.
   Tensor negate_fw(const Tensor &x);
@@ -146,9 +145,9 @@ public:
   // Matrix operations.
   Tensor transpose_fw(const Tensor &x);
   Tensor matmul_fw(const Tensor &a, const Tensor &b);
-  void matmul_bw(
-      const Tensor &a, const Tensor &b, const Tensor &gy,
-      Tensor &ga, Tensor &gb);
+
+  void transpose_bw(const Tensor &gy, Tensor &gx);
+  void matmul_bw(const Tensor &a, const Tensor &b, const Tensor &gy, Tensor &ga, Tensor &gb);
 
   // Dimension operations.
   Tensor sum_fw(const Tensor &x, unsigned dim);
@@ -280,6 +279,7 @@ private:
   virtual void transpose_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) = 0;
 
+  virtual void transpose_bw_impl(const Tensor &gy, Tensor &gx) = 0;
   virtual void matmul_bw_impl(const Tensor &a, const Tensor &b, const Tensor &gy, Tensor &ga, Tensor &gb) = 0;
 
   virtual void sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) = 0;

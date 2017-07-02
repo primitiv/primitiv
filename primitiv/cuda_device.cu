@@ -17,6 +17,7 @@ namespace {
  */
 
 #define IDX (threadIdx.x + blockIdx.x * blockDim.x)
+#define IDY (threadIdx.y + blockIdx.y * blockDim.y)
 
 __global__ void set_const_dev(float k, unsigned size, float *py) {
   const unsigned i = IDX;
@@ -178,12 +179,18 @@ CUDADEV_KERNEL_FW_AB(divide, ::__fdiv_rn);
 
 __global__ void transpose_fw_dev(
     const float *px, unsigned rows, unsigned cols, float *py) {
-  const unsigned i = threadIdx.x + blockIdx.x * blockDim.x;
-  const unsigned j = threadIdx.y + blockIdx.y * blockDim.y;
+  const unsigned i = IDX;
+  const unsigned j = IDY;
   unsigned ofs = blockIdx.z * rows * cols;
-  if (i < rows && j < cols) {
-    py[ofs + j + i * cols] = px[ofs + i + j * rows];
-  }
+  if (i < rows && j < cols) py[ofs + j + i * cols] = px[ofs + i + j * rows];
+}
+
+__global__ void transpose_bw_dev(
+    const float *py, unsigned rows, unsigned cols, float *px) {
+  const unsigned i = IDX;
+  const unsigned j = IDY;
+  unsigned ofs = blockIdx.z * rows * cols;
+  if (i < rows && j < cols) px[ofs + i + j * rows] += py[ofs + j + i * cols];
 }
 
 template<unsigned BLOCK_SIZE>
@@ -278,6 +285,7 @@ __global__ void add_grad_dev(
 }
 
 #undef IDX
+#undef IDY
 
 }  // namespace
 
@@ -647,14 +655,14 @@ CUDADEV_FW_AB(divide);
 #undef CUDADEV_FW_AB
 
 void CUDADevice::transpose_fw_impl(const Tensor &x, Tensor &y) {
-  const unsigned d1 = x.shape()[0];
-  const unsigned d2 = x.shape()[1];
+  const unsigned rows = x.shape()[0];
+  const unsigned cols = x.shape()[1];
   const unsigned bs = x.shape().batch();
-  const unsigned g1 = GRID_SIZE(d1, dim2_x_);
-  const unsigned g2 = GRID_SIZE(d2, dim2_y_);
+  const unsigned g1 = GRID_SIZE(rows, dim2_x_);
+  const unsigned g2 = GRID_SIZE(cols, dim2_y_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::transpose_fw_dev<<<dim3(g1, g2, bs), dim3(dim2_x_, dim2_y_, 1)>>>(
-      CDATA(x), d1, d2, DATA(y));
+      CDATA(x), rows, cols, DATA(y));
 }
 
 void CUDADevice::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
@@ -685,6 +693,17 @@ void CUDADevice::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
           &alpha, CDATA(a), di, CDATA(b), dj,
           &beta, DATA(y), di));
   }
+}
+
+void CUDADevice::transpose_bw_impl(const Tensor &gy, Tensor &gx) {
+  const unsigned rows = gx.shape()[0];
+  const unsigned cols = gx.shape()[1];
+  const unsigned bs = gx.shape().batch();
+  const unsigned g1 = GRID_SIZE(rows, dim2_x_);
+  const unsigned g2 = GRID_SIZE(cols, dim2_y_);
+  CUDA_CALL(::cudaSetDevice(dev_id_));
+  ::transpose_bw_dev<<<dim3(g1, g2, bs), dim3(dim2_x_, dim2_y_, 1)>>>(
+      CDATA(gy), rows, cols, DATA(gx));
 }
 
 void CUDADevice::matmul_bw_impl(

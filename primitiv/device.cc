@@ -301,6 +301,18 @@ Tensor Device::transpose_fw(const Tensor &x) {
   return y;
 }
 
+void Device::transpose_bw(const Tensor &gy, Tensor &gx) {
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(gx);
+  if (gy.shape() != shape_ops::transpose(gx.shape())) {
+    THROW_ERROR(
+        "Shape mismatched at transpose_bw"
+        << ". gy.shape: " << gy.shape().to_string()
+        << ", gx.shape: " << gx.shape().to_string());
+  }
+  transpose_bw_impl(gy, gx);
+}
+
 void Device::matmul_bw(
     const Tensor &a, const Tensor &b, const Tensor &gy,
     Tensor &ga, Tensor &gb) {

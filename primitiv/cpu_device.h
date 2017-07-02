@@ -104,6 +104,7 @@ private:
   void transpose_fw_impl(const Tensor &x, Tensor &y) override;
   void matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override;
 
+  void transpose_bw_impl(const Tensor &gy, Tensor &gx) override;
   void matmul_bw_impl(const Tensor &a, const Tensor &b, const Tensor &gy, Tensor &ga, Tensor &gb) override;
 
   void sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) override;

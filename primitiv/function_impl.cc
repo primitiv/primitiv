@@ -427,7 +427,7 @@ BACKWARD(Divide) {
   ADD(1, -a * y);
 }
 
-BACKWARD(Transpose) { ADD(0, T::transpose(gy)); }
+BACKWARD(Transpose) { gy.device()->transpose_bw(gy, *gx[0]); }
 BACKWARD(MatrixMultiply) {
   gy.device()->matmul_bw(*x[0], *x[1], gy, *gx[0], *gx[1]);
 }
