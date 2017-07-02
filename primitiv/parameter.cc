@@ -184,11 +184,12 @@ Parameter Parameter::load(const string &path, Device *device) {
   ifs.seekg(0, std::ios::end);
   const size_t size = ifs.tellg();
   ifs.seekg(0, std::ios::beg);
-  vector<char> data(size + 1);
-  ifs.read(data.data(), size);
+
+  std::unique_ptr<char[]> data(new char[size + 1]);
+  ifs.read(data.get(), size);
   data[size] = '\0';
 
-  YAML::Node node = YAML::Load(data.data());
+  YAML::Node node = YAML::Load(data.get());
   string name;
   Tensor value;
 
