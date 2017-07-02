@@ -150,6 +150,52 @@ void CPUDevice::concat_fw_impl(
   }
 }
 
+void CPUDevice::pick_bw_impl(
+    const Tensor &gy, unsigned dim, const std::vector<unsigned>& ids,
+    Tensor &gx) {
+  const unsigned bs = gy.shape().batch();
+  const unsigned skip_x = gx.shape().has_batch() * gx.shape().volume();
+  const unsigned skip_i = ids.size() > 1;
+  const unsigned base = gy.shape().lower_volume(dim);
+  const unsigned skip = base * gx.shape()[dim];
+  const unsigned repeat = gy.shape().volume() / base;
+  const float *src = CDATA(gy);
+  for (unsigned batch = 0; batch < bs; ++batch) {
+    float *dest = DATA(gx) + batch * skip_x + base * ids[batch * skip_i];
+    for (unsigned i = 0; i < repeat; ++i) {
+      float *dp = dest;
+      REPEAT_OP(j, base, *dp++ += *src++);
+      dest += skip;
+    }
+  }
+}
+
+void CPUDevice::slice_bw_impl(
+    const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) {
+  const Shape &sy = gy.shape();
+  const Shape &sx = gx.shape();
+  const unsigned base = sx.lower_volume(dim);
+  const unsigned span = base * sy[dim];
+  const unsigned skip = base * sx[dim];
+  const unsigned repeat = sx.volume() / skip;
+  const unsigned bs = std::max(sx.batch(), sy.batch());
+  const unsigned b_skip_d = sx.has_batch() * sx.volume();
+  const unsigned b_skip_s = sy.has_batch() * sy.volume();
+  float *dest = DATA(gx) + base * offset;
+  const float *src = CDATA(gy);
+  for (unsigned batch = 0; batch < bs; ++batch) {
+    float *dp = dest;
+    const float *sp = src;
+    for (unsigned i = 0; i < repeat; ++i) {
+      float *ddp = dp;
+      REPEAT_OP(j, span, *ddp++ += *sp++);
+      dp += skip;
+    }
+    dest += b_skip_d;
+    src += b_skip_s;
+  }
+}
+
 #define CPUDEV_FW_X(name, op) \
 void CPUDevice::name##_fw_impl(const Tensor &x, Tensor &y) { \
   float *dest = DATA(y); \
@@ -399,52 +445,6 @@ void CPUDevice::add_gradient_impl(const Tensor &gy, Tensor &gx) {
     REPEAT_OP(i, size, dest[i] += src[i]);
     dest += b_skip_d;
     src += b_skip_s;
-  }
-}
-
-void CPUDevice::add_gradient_offset_impl(
-    const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) {
-  const Shape &sy = gy.shape();
-  const Shape &sx = gx.shape();
-  const unsigned base = sx.lower_volume(dim);
-  const unsigned span = base * sy[dim];
-  const unsigned skip = base * sx[dim];
-  const unsigned repeat = sx.volume() / skip;
-  const unsigned bs = std::max(sx.batch(), sy.batch());
-  const unsigned b_skip_d = sx.has_batch() * sx.volume();
-  const unsigned b_skip_s = sy.has_batch() * sy.volume();
-  float *dest = DATA(gx) + base * offset;
-  const float *src = CDATA(gy);
-  for (unsigned batch = 0; batch < bs; ++batch) {
-    float *dp = dest;
-    const float *sp = src;
-    for (unsigned i = 0; i < repeat; ++i) {
-      float *ddp = dp;
-      REPEAT_OP(j, span, *ddp++ += *sp++);
-      dp += skip;
-    }
-    dest += b_skip_d;
-    src += b_skip_s;
-  }
-}
-
-void CPUDevice::add_gradient_sparse_impl(
-    const Tensor &gy, unsigned dim, const std::vector<unsigned>& ids,
-    Tensor &gx) {
-  const unsigned bs = gy.shape().batch();
-  const unsigned skip_x = gx.shape().has_batch() * gx.shape().volume();
-  const unsigned skip_i = ids.size() > 1;
-  const unsigned base = gy.shape().lower_volume(dim);
-  const unsigned skip = base * gx.shape()[dim];
-  const unsigned repeat = gy.shape().volume() / base;
-  const float *src = CDATA(gy);
-  for (unsigned batch = 0; batch < bs; ++batch) {
-    float *dest = DATA(gx) + batch * skip_x + base * ids[batch * skip_i];
-    for (unsigned i = 0; i < repeat; ++i) {
-      float *dp = dest;
-      REPEAT_OP(j, base, *dp++ += *src++);
-      dest += skip;
-    }
   }
 }
 

@@ -47,6 +47,24 @@ __global__ void concat_fw_dev(
   if (i < y_size) py[(i / span) * skip + (i % span)] = px[i % x_size];
 }
 
+__global__ void pick_bw_dev(
+    const float *pgy, unsigned wx, unsigned wy, unsigned repeat, float *pgx) {
+  const unsigned i = IDX;
+  if (i < wy * repeat) {
+    ::atomicAdd(pgx + (i / wy) * wx + (i % wy), pgy[i]);
+  }
+}
+
+__global__ void slice_bw_dev(
+    const float *pgy, unsigned wx, unsigned wy, unsigned nx, unsigned ny,
+    float *pgx) {
+  const unsigned i = IDX;
+  if (i < wy * ::max(nx, ny)) {
+    ::atomicAdd(
+        pgx + ((i / wy) * wx + (i % wy)) % (wx * nx), pgy[i % (wy * ny)]);
+  }
+}
+
 #define CUDADEV_KERNEL_FW_X(name, op) \
 __global__ void name##_fw_dev(const float *px, unsigned size, float *py) { \
   const unsigned i = IDX; \
@@ -240,25 +258,6 @@ __global__ void add_grad_dev(
     const float *pgy, unsigned nx, unsigned ny, float *pgx) {
   const unsigned i = IDX;
   if (i < ::max(nx, ny)) ::atomicAdd(pgx + i % nx, pgy[i % ny]);
-}
-
-__global__ void add_grad_ofs_dev(
-    const float *pgy, unsigned wx, unsigned wy, unsigned nx, unsigned ny,
-    float *pgx) {
-  const unsigned i = IDX;
-  if (i < wy * ::max(nx, ny)) {
-    ::atomicAdd(
-        pgx + ((i / wy) * wx + (i % wy)) % (wx * nx),
-        pgy[i % (wy * ny)]);
-  }
-}
-
-__global__ void add_grad_sparse_dev(
-    const float *pgy, unsigned wx, unsigned wy, unsigned repeat, float *pgx) {
-  const unsigned i = IDX;
-  if (i < wy * repeat) {
-    ::atomicAdd(pgx + (i / wy) * wx + (i % wy), pgy[i]);
-  }
 }
 
 #undef IDX
@@ -478,6 +477,47 @@ void CUDADevice::concat_fw_impl(
        CDATA(*x), span, skip, x_size, y_size, DATA(y) + offset);
     offset += span;
   }
+}
+
+void CUDADevice::pick_bw_impl(
+    const Tensor &gy, unsigned dim, const std::vector<unsigned>& ids,
+    Tensor &gx) {
+  const Shape &sx = gx.shape();
+  const Shape &sy = gy.shape();
+  const unsigned size = sy.volume();
+  const unsigned base = sy.lower_volume(dim);
+  const unsigned repeat = size / base;
+  const unsigned wx = base * sx[dim];
+  const unsigned g1 = GRID_SIZE(size, dim1_x_);
+  const unsigned bs = sy.batch();
+  const unsigned skip_a = (sx.has_batch()) * sx.volume();
+  const unsigned skip_i = ids.size() > 1;
+  float *dest = DATA(gx);
+  const float *src = CDATA(gy);
+
+  CUDA_CALL(::cudaSetDevice(dev_id_));
+  for (unsigned batch = 0; batch < bs; ++batch) {
+    ::pick_bw_dev<<<g1, dim1_x_>>>(
+        src + batch * size,
+        wx, base, repeat,
+        dest + batch * skip_a + base * ids[batch * skip_i]);
+  }
+}
+
+void CUDADevice::slice_bw_impl(
+    const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) {
+  const Shape &sx = gx.shape();
+  const Shape &sy = gy.shape();
+  const unsigned base = sx.lower_volume(dim);
+  const unsigned ox = base * offset;
+  const unsigned wx = base * sx[dim];
+  const unsigned wy = base * sy[dim];
+  const unsigned repeat = sx.volume() / wx;
+  const unsigned nx = repeat * sx.batch();
+  const unsigned ny = repeat * sy.batch();
+  const unsigned g1 = GRID_SIZE(wy * std::max(nx, ny), dim1_x_);
+  CUDA_CALL(::cudaSetDevice(dev_id_));
+  ::slice_bw_dev<<<g1, dim1_x_>>>(CDATA(gy), wx, wy, nx, ny, DATA(gx) + ox);
 }
 
 #define CUDADEV_FW_X(name) \
@@ -731,47 +771,6 @@ void CUDADevice::add_gradient_impl(const Tensor &gy, Tensor &gx) {
   const unsigned g1 = GRID_SIZE(std::max(nx, ny), dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::add_grad_dev<<<g1, dim1_x_>>>(CDATA(gy), nx, ny, DATA(gx));
-}
-
-void CUDADevice::add_gradient_offset_impl(
-    const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) {
-  const Shape &sx = gx.shape();
-  const Shape &sy = gy.shape();
-  const unsigned base = sx.lower_volume(dim);
-  const unsigned ox = base * offset;
-  const unsigned wx = base * sx[dim];
-  const unsigned wy = base * sy[dim];
-  const unsigned repeat = sx.volume() / wx;
-  const unsigned nx = repeat * sx.batch();
-  const unsigned ny = repeat * sy.batch();
-  const unsigned g1 = GRID_SIZE(wy * std::max(nx, ny), dim1_x_);
-  CUDA_CALL(::cudaSetDevice(dev_id_));
-  ::add_grad_ofs_dev<<<g1, dim1_x_>>>(CDATA(gy), wx, wy, nx, ny, DATA(gx) + ox);
-}
-
-void CUDADevice::add_gradient_sparse_impl(
-    const Tensor &gy, unsigned dim, const std::vector<unsigned>& ids,
-    Tensor &gx) {
-  const Shape &sx = gx.shape();
-  const Shape &sy = gy.shape();
-  const unsigned size = sy.volume();
-  const unsigned base = sy.lower_volume(dim);
-  const unsigned repeat = size / base;
-  const unsigned wx = base * sx[dim];
-  const unsigned g1 = GRID_SIZE(size, dim1_x_);
-  const unsigned bs = sy.batch();
-  const unsigned skip_a = (sx.has_batch()) * sx.volume();
-  const unsigned skip_i = ids.size() > 1;
-  float *dest = DATA(gx);
-  const float *src = CDATA(gy);
-
-  CUDA_CALL(::cudaSetDevice(dev_id_));
-  for (unsigned batch = 0; batch < bs; ++batch) {
-    ::add_grad_sparse_dev<<<g1, dim1_x_>>>(
-        src + batch * size,
-        wx, base, repeat,
-        dest + batch * skip_a + base * ids[batch * skip_i]);
-  }
 }
 
 }  // namespace primitiv

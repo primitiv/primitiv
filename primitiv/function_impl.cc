@@ -78,9 +78,9 @@ Tensor Copy::forward(const vector<const Tensor *> &args) const {
 }
 
 void Copy::backward(
-    const Tensor &y, const Tensor &yg,
-    const vector<const Tensor *> &x, const vector<Tensor *> &xg) const {
-  xg[0]->device()->add_gradient(T::copy(yg, xg[0]->device()), *xg[0]);
+    const Tensor &y, const Tensor &gy,
+    const vector<const Tensor *> &x, const vector<Tensor *> &gx) const {
+  gx[0]->device()->add_gradient(T::copy(gy, gx[0]->device()), *gx[0]);
 }
 
 Shape RandomBernoulli::forward_shape(const vector<const Shape *> &args) const {
@@ -158,9 +158,9 @@ Tensor Pick::forward(const vector<const Tensor *> &args) const {
 }
 
 void Pick::backward(
-    const Tensor &y, const Tensor &yg,
-    const vector<const Tensor *> &x, const vector<Tensor *> &xg) const {
-  xg[0]->device()->add_gradient_sparse(yg, dim_, ids_, *xg[0]);
+    const Tensor &y, const Tensor &gy,
+    const vector<const Tensor *> &x, const vector<Tensor *> &gx) const {
+  gy.device()->pick_bw(gy, dim_, ids_, *gx[0]);
 }
 
 Shape Slice::forward_shape(const vector<const Shape *> &args) const {
@@ -174,9 +174,9 @@ Tensor Slice::forward(const std::vector<const Tensor *> &args) const {
 }
 
 void Slice::backward(
-    const Tensor &y, const Tensor &yg,
-    const vector<const Tensor *> &x, const vector<Tensor *> &xg) const {
-  xg[0]->device()->add_gradient_offset(yg, dim_, lower_, *xg[0]);
+    const Tensor &y, const Tensor &gy,
+    const vector<const Tensor *> &x, const vector<Tensor *> &gx) const {
+  gy.device()->slice_bw(gy, dim_, lower_, *gx[0]);
 }
 
 Shape Concat::forward_shape(const vector<const Shape *> &args) const {
@@ -188,13 +188,13 @@ Tensor Concat::forward(const std::vector<const Tensor *> &args) const {
 }
 
 void Concat::backward(
-    const Tensor &y, const Tensor &yg,
-    const vector<const Tensor *> &x, const vector<Tensor *> &xg) const {
+    const Tensor &y, const Tensor &gy,
+    const vector<const Tensor *> &x, const vector<Tensor *> &gx) const {
   unsigned offset = 0;
-  for (Tensor *xgi : xg) {
-    const unsigned span = xgi->shape()[dim_];
-    xgi->device()->add_gradient(
-        T::slice(yg, dim_, offset, offset + span), *xgi);
+  for (Tensor *gxi : gx) {
+    const unsigned span = gxi->shape()[dim_];
+    gxi->device()->add_gradient(
+        T::slice(gy, dim_, offset, offset + span), *gxi);
     offset += span;
   }
 }
@@ -354,101 +354,101 @@ FORWARD(SoftmaxCrossEntropy) {
 #define BACKWARD(name) \
   void name::backward( \
       const Tensor &y, \
-      const Tensor &yg, \
+      const Tensor &gy, \
       const vector<const Tensor *> &x, \
-      const vector<Tensor *> &xg) const
+      const vector<Tensor *> &gx) const
 
-#define ADD(n, op) xg[n]->device()->add_gradient(op, *xg[n])
+#define ADD(n, op) gx[n]->device()->add_gradient(op, *gx[n])
 
-BACKWARD(Reshape) { ADD(0, yg.reshape(x[0]->shape())); }
-BACKWARD(Flatten) { ADD(0, yg.reshape(x[0]->shape())); }
+BACKWARD(Reshape) { ADD(0, gy.reshape(x[0]->shape())); }
+BACKWARD(Flatten) { ADD(0, gy.reshape(x[0]->shape())); }
 
-BACKWARD(Positive) { ADD(0, yg); }
-BACKWARD(Negative) { yg.device()->negate_bw(*x[0], y, yg, *xg[0]); }
+BACKWARD(Positive) { ADD(0, gy); }
+BACKWARD(Negative) { gy.device()->negate_bw(*x[0], y, gy, *gx[0]); }
 
-BACKWARD(AddConst) { ADD(0, yg); }
-BACKWARD(SubtractConstR) { ADD(0, yg); }
-BACKWARD(SubtractConstL) { ADD(0, -yg); }
-BACKWARD(MultiplyConst) { ADD(0, k_ * yg); }
-BACKWARD(DivideConstR) { ADD(0, yg / k_); }
-BACKWARD(DivideConstL) { ADD(0, -y * yg / *x[0]); }
+BACKWARD(AddConst) { ADD(0, gy); }
+BACKWARD(SubtractConstR) { ADD(0, gy); }
+BACKWARD(SubtractConstL) { ADD(0, -gy); }
+BACKWARD(MultiplyConst) { ADD(0, k_ * gy); }
+BACKWARD(DivideConstR) { ADD(0, gy / k_); }
+BACKWARD(DivideConstL) { ADD(0, -y * gy / *x[0]); }
 
 BACKWARD(AddScalar) {
-  ADD(0, yg);
-  ADD(1, T::sum(yg.flatten(), 0));
+  ADD(0, gy);
+  ADD(1, T::sum(gy.flatten(), 0));
 }
 BACKWARD(SubtractScalarR) {
-  ADD(0, yg);
-  ADD(1, -T::sum(yg.flatten(), 0));
+  ADD(0, gy);
+  ADD(1, -T::sum(gy.flatten(), 0));
 }
 BACKWARD(SubtractScalarL) {
-  ADD(0, -yg);
-  ADD(1, T::sum(yg.flatten(), 0));
+  ADD(0, -gy);
+  ADD(1, T::sum(gy.flatten(), 0));
 }
 BACKWARD(MultiplyScalar) {
-  ADD(0, *x[1] * yg);
-  ADD(1, T::sum((*x[0] * yg).flatten(), 0));
+  ADD(0, *x[1] * gy);
+  ADD(1, T::sum((*x[0] * gy).flatten(), 0));
 }
 BACKWARD(DivideScalarR) {
-  const Tensor a = yg / *x[1];
+  const Tensor a = gy / *x[1];
   ADD(0, a);
   ADD(1, T::sum((-a * y).flatten(), 0));
 }
 BACKWARD(DivideScalarL) {
-  const Tensor a = yg / *x[0];
+  const Tensor a = gy / *x[0];
   ADD(0, -a * y);
   ADD(1, T::sum(a.flatten(), 0));
 }
 
 BACKWARD(Add) {
-  ADD(0, yg);
-  ADD(1, yg);
+  ADD(0, gy);
+  ADD(1, gy);
 }
 BACKWARD(Subtract) {
-  ADD(0, yg);
-  ADD(1, -yg);
+  ADD(0, gy);
+  ADD(1, -gy);
 }
 BACKWARD(Multiply) {
-  ADD(0, *x[1] * yg);
-  ADD(1, *x[0] * yg);
+  ADD(0, *x[1] * gy);
+  ADD(1, *x[0] * gy);
 }
 BACKWARD(Divide) {
-  const Tensor a = yg / *x[1];
+  const Tensor a = gy / *x[1];
   ADD(0, a);
   ADD(1, -a * y);
 }
 
-BACKWARD(Transpose) { ADD(0, T::transpose(yg)); }
+BACKWARD(Transpose) { ADD(0, T::transpose(gy)); }
 BACKWARD(MatrixMultiply) {
-  yg.device()->matmul_bw(*x[0], *x[1], yg, *xg[0], *xg[1]);
+  gy.device()->matmul_bw(*x[0], *x[1], gy, *gx[0], *gx[1]);
 }
 
-BACKWARD(Sqrt) { yg.device()->sqrt_bw(*x[0], y, yg, *xg[0]); }
-BACKWARD(Exp) {  yg.device()->exp_bw(*x[0], y, yg, *xg[0]);}
-BACKWARD(Tanh) {  yg.device()->tanh_bw(*x[0], y, yg, *xg[0]);}
-BACKWARD(Sigmoid) {  yg.device()->sigmoid_bw(*x[0], y, yg, *xg[0]);}
-BACKWARD(Sin) {  yg.device()->sin_bw(*x[0], y, yg, *xg[0]);}
-BACKWARD(Cos) {  yg.device()->cos_bw(*x[0], y, yg, *xg[0]);}
-BACKWARD(Tan) {  yg.device()->tan_bw(*x[0], y, yg, *xg[0]);}
-BACKWARD(ReLU) { ADD(0, T::step(*x[0]) * yg); }
-BACKWARD(LReLU) { ADD(0, T::lstep(*x[0]) * yg); }
-BACKWARD(PReLU) { ADD(0, T::pstep(*x[0], k_) * yg); }
+BACKWARD(Sqrt) { gy.device()->sqrt_bw(*x[0], y, gy, *gx[0]); }
+BACKWARD(Exp) {  gy.device()->exp_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(Tanh) {  gy.device()->tanh_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(Sigmoid) {  gy.device()->sigmoid_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(Sin) {  gy.device()->sin_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(Cos) {  gy.device()->cos_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(Tan) {  gy.device()->tan_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(ReLU) { ADD(0, T::step(*x[0]) * gy); }
+BACKWARD(LReLU) { ADD(0, T::lstep(*x[0]) * gy); }
+BACKWARD(PReLU) { ADD(0, T::pstep(*x[0], k_) * gy); }
 
-BACKWARD(Sum) { ADD(0, T::broadcast(yg, dim_, x[0]->shape()[dim_])); }
+BACKWARD(Sum) { ADD(0, T::broadcast(gy, dim_, x[0]->shape()[dim_])); }
 BACKWARD(LogSumExp) {
   // NOTE(odashi): dy/dx = softmax(x) = exp(x - y)
   const unsigned n = x[0]->shape()[dim_];
-  ADD(0, T::exp(*x[0] - T::broadcast(y, dim_, n)) * T::broadcast(yg, dim_, n));
+  ADD(0, T::exp(*x[0] - T::broadcast(y, dim_, n)) * T::broadcast(gy, dim_, n));
 }
-BACKWARD(Broadcast) { ADD(0, T::sum(yg, dim_)); }
+BACKWARD(Broadcast) { ADD(0, T::sum(gy, dim_)); }
 
-BACKWARD(BatchSum) { ADD(0, yg); }
+BACKWARD(BatchSum) { ADD(0, gy); }
 
 BACKWARD(SoftmaxCrossEntropy) {
   const Tensor log_softmax_x = T::log_softmax(*x[0], dim_);
-  const Tensor bcast_yg = T::broadcast(yg, dim_, x[0]->shape()[dim_]);
-  ADD(0, (T::exp(log_softmax_x) - *x[1]) * bcast_yg);
-  ADD(1, -log_softmax_x * bcast_yg);
+  const Tensor bcast_gy = T::broadcast(gy, dim_, x[0]->shape()[dim_]);
+  ADD(0, (T::exp(log_softmax_x) - *x[1]) * bcast_gy);
+  ADD(1, -log_softmax_x * bcast_gy);
 }
 
 #undef BACKWARD

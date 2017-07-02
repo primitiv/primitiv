@@ -89,6 +89,10 @@ public:
   Tensor slice_fw(const Tensor &x, unsigned dim, unsigned lower, unsigned upper);
   Tensor concat_fw(const std::vector<const Tensor *> &xs, unsigned dim);
 
+  void pick_bw(const Tensor &gy, unsigned dim, const std::vector<unsigned> &ids, Tensor &gx);
+  void slice_bw(const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx);
+  void concat_bw(const Tensor &gy, const std::vector<Tensor *> &gx);
+
   // Unary operations.
   Tensor negate_fw(const Tensor &x);
   Tensor sqrt_fw(const Tensor &x);
@@ -145,6 +149,19 @@ public:
   Tensor broadcast_fw(const Tensor &x, unsigned dim, unsigned size);
   Tensor batch_sum_fw(const Tensor &x);
 
+  /**
+   * Directly adds the second tensor to the first tensor.
+   * @param gy A source tensor.
+   * @param gx A tensor to be udpated.
+   * @remarks This method keeps the shape of `gx`, and the behavior is
+   *          conditioned according to the batch size of `gx` and `gy`:
+   *              gx.shape == gy.shape: gx += gy
+   *              gx.shape == 1:        gx += batch_sum(gy)
+   *              gy.shape == 1:        gx += batch_broadcast(gy)
+   *              otherwise: error.
+   */
+  void add_gradient(const Tensor &gy, Tensor &gx);
+
 private:
   /**
    * Retrieves internal values of the tensor as a vector.
@@ -183,43 +200,6 @@ protected:
    */
   void reset_tensor_by_vector(const std::vector<float> &values, Tensor &x);
 
-public:
-  /**
-   * Directly adds the second tensor to the first tensor.
-   * @param gy A source tensor.
-   * @param gx A tensor to be udpated.
-   * @remarks This method keeps the shape of `gx`, and the behavior is
-   *          conditioned according to the batch size of `gx` and `gy`:
-   *              gx.shape == gy.shape: gx += gy
-   *              gx.shape == 1:        gx += batch_sum(gy)
-   *              gy.shape == 1:        gx += batch_broadcast(gy)
-   *              otherwise: error.
-   */
-  void add_gradient(const Tensor &gy, Tensor &gx);
-
-  /**
-   * Same as `add_gradient`, but updates only elements in the specified range
-   * defined by `dim` and `offset`.
-   * @param gy A source tensor.
-   * @param gx A tensor to be updated.
-   * @param dim Dimension to determine the range of `gx`.
-   * @param offset Offset of the dimension `dim`.
-   */
-  void add_gradient_offset(
-      const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx);
-
-  /**
-   * Same as `add_gradient`, but updates only elements in the specified range
-   * defined by `dim` and `ids`.
-   * @param gy A source tensor.
-   * @param gx A tensor to be updated.
-   * @param dim Dimension.
-   * @param ids List of IDs to update values.
-   */
-  void add_gradient_sparse(
-      const Tensor &gy, unsigned dim, const std::vector<unsigned> &ids,
-      Tensor &gx);
-
 private:
   // device-specific implementations.
 
@@ -240,6 +220,9 @@ private:
   virtual void pick_fw_impl(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids, Tensor &y) = 0;
   virtual void slice_fw_impl(const Tensor &x, unsigned dim, unsigned offset, Tensor &y) = 0;
   virtual void concat_fw_impl(const std::vector<const Tensor *> &xs, unsigned dim, Tensor &y) = 0;
+
+  virtual void pick_bw_impl(const Tensor &gy, unsigned dim, const std::vector<unsigned> &ids, Tensor &gx) = 0;
+  virtual void slice_bw_impl(const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) = 0;
 
   virtual void negate_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void sqrt_fw_impl(const Tensor &x, Tensor &y) = 0;
@@ -291,8 +274,6 @@ private:
   virtual void batch_sum_fw_impl(const Tensor &x, Tensor &y) = 0;
 
   virtual void add_gradient_impl(const Tensor &gy, Tensor &gx) = 0;
-  virtual void add_gradient_offset_impl(const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) = 0;
-  virtual void add_gradient_sparse_impl(const Tensor &gy, unsigned dim, const std::vector<unsigned> &ids, Tensor &gx) = 0;
 };
 
 }  // namespace primitiv

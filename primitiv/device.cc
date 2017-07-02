@@ -148,6 +148,37 @@ Tensor Device::concat_fw(const vector<const Tensor *> &xs, unsigned dim) {
   return y;
 }
 
+void Device::pick_bw(
+    const Tensor &gy, unsigned dim, const std::vector<unsigned> &ids,
+    Tensor &gx) {
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(gx);
+  const Shape sy = shape_ops::pick(gx.shape(), dim, ids);
+  if (gy.shape() != sy) {
+    THROW_ERROR(
+        "Shape mismatched. gy.shape(): " << gy.shape().to_string()
+        << " != expected shape: " << sy.to_string());
+  }
+  pick_bw_impl(gy, dim, ids, gx);
+}
+
+void Device::slice_bw(
+    const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) {
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(gx);
+  const Shape &sy = gy.shape();
+  const Shape &sx = gx.shape();
+  if (!sy.has_same_loo_dims(sx, dim) || !sy.has_compatible_batch(sx) ||
+      offset + sy[dim] > sx[dim]) {
+    THROW_ERROR(
+        "Attempted to add gradients with shape "
+        << sy.to_string() << ", dim " << dim << ", offset " << offset
+        << " to shape" << sx.to_string() << '.');
+  }
+  if (dim >= sx.depth()) add_gradient_impl(gy, gx);
+  else slice_bw_impl(gy, dim, offset, gx);
+}
+
 #define DEV_FW_X(name) \
 Tensor Device::name##_fw(const Tensor &x) { \
   CHECK_DEVICE(x); \
@@ -305,37 +336,6 @@ void Device::add_gradient(const Tensor &gy, Tensor &gx) {
         << sy.to_string() << " to " << sx.to_string() << '.');
   }
   add_gradient_impl(gy, gx);
-}
-
-void Device::add_gradient_offset(
-    const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) {
-  CHECK_DEVICE(gy);
-  CHECK_DEVICE(gx);
-  const Shape &sy = gy.shape();
-  const Shape &sx = gx.shape();
-  if (!sy.has_same_loo_dims(sx, dim) || !sy.has_compatible_batch(sx) ||
-      offset + sy[dim] > sx[dim]) {
-    THROW_ERROR(
-        "Attempted to add gradients with shape "
-        << sy.to_string() << ", dim " << dim << ", offset " << offset
-        << " to shape" << sx.to_string() << '.');
-  }
-  if (dim >= sx.depth()) add_gradient_impl(gy, gx);
-  else add_gradient_offset_impl(gy, dim, offset, gx);
-}
-
-void Device::add_gradient_sparse(
-    const Tensor &gy, unsigned dim, const std::vector<unsigned> &ids,
-    Tensor &gx) {
-  CHECK_DEVICE(gy);
-  CHECK_DEVICE(gx);
-  const Shape sy = shape_ops::pick(gx.shape(), dim, ids);
-  if (gy.shape() != sy) {
-    THROW_ERROR(
-        "Shape mismatched. gy.shape(): " << gy.shape().to_string()
-        << " != expected shape: " << sy.to_string());
-  }
-  add_gradient_sparse_impl(gy, dim, ids, gx);
 }
 
 }  // namespace primitiv

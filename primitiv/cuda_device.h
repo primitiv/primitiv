@@ -63,6 +63,9 @@ private:
   void slice_fw_impl(const Tensor &x, unsigned dim, unsigned offset, Tensor &y) override;
   void concat_fw_impl(const std::vector<const Tensor *> &xs, unsigned dim, Tensor &y) override;
 
+  void pick_bw_impl(const Tensor &gy, unsigned dim, const std::vector<unsigned> &ids, Tensor &gx) override;
+  void slice_bw_impl(const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) override;
+
   void negate_fw_impl(const Tensor &x, Tensor &y) override;
   void sqrt_fw_impl(const Tensor &x, Tensor &y) override;
   void exp_fw_impl(const Tensor &x, Tensor &y) override;
@@ -113,8 +116,6 @@ private:
   void batch_sum_fw_impl(const Tensor &x, Tensor &y) override;
 
   void add_gradient_impl(const Tensor &b, Tensor &a) override;
-  void add_gradient_offset_impl(const Tensor &b, unsigned dim, unsigned offset, Tensor &a) override;
-  void add_gradient_sparse_impl(const Tensor &b, unsigned dim, const std::vector<unsigned> &ids, Tensor &a) override;
 
 private:
   unsigned dev_id_;
