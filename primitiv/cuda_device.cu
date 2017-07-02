@@ -88,6 +88,16 @@ __global__ void name##_fw_dev( \
   if (i < size) py[i] = (op); \
 }
 
+#define CUDADEV_KERNEL_BW_X_CONST(name, op) \
+__global__ void name##_bw_dev( \
+    const float *px, const float *py, const float *pgy, float k, \
+    unsigned size, float *pgx) { \
+  static_cast<void>(px); \
+  static_cast<void>(py); \
+  const unsigned i = IDX; \
+  if (i < size) pgx[i] += (op); \
+}
+
 #define CUDADEV_KERNEL_FW_X_SCALAR_R(name, op) \
 __global__ void name##_fw_dev( \
     const float *px, const float *pk, unsigned size, unsigned mbx, \
@@ -139,8 +149,15 @@ CUDADEV_KERNEL_FW_X_CONST(subtract_const_l, k - px[i]);
 CUDADEV_KERNEL_FW_X_CONST(multiply_const, px[i] * k);
 CUDADEV_KERNEL_FW_X_CONST(divide_const_r, px[i] / k);
 CUDADEV_KERNEL_FW_X_CONST(divide_const_l, k / px[i]);
-CUDADEV_KERNEL_FW_X_CONST(pstep, (px[i] > .0f) + k * (px[i] <= .0f));
 CUDADEV_KERNEL_FW_X_CONST(prelu, px[i] * ((px[i] > .0f) + k * (px[i] <= .0f)));
+
+CUDADEV_KERNEL_BW_X_CONST(add_const, pgy[i]);
+CUDADEV_KERNEL_BW_X_CONST(subtract_const_r, pgy[i]);
+CUDADEV_KERNEL_BW_X_CONST(subtract_const_l, -pgy[i]);
+CUDADEV_KERNEL_BW_X_CONST(multiply_const, k * pgy[i]);
+CUDADEV_KERNEL_BW_X_CONST(divide_const_r, pgy[i] / k);
+CUDADEV_KERNEL_BW_X_CONST(divide_const_l, -py[i] * pgy[i] / px[i]);
+CUDADEV_KERNEL_BW_X_CONST(prelu, pgy[i] * ((px[i] > .0f) + k * (px[i] <= .0f)));
 
 CUDADEV_KERNEL_FW_X_SCALAR_R(add_scalar, ::__fadd_rn);
 CUDADEV_KERNEL_FW_X_SCALAR_R(subtract_scalar_r, ::__fsub_rn);
@@ -546,6 +563,16 @@ void CUDADevice::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
   ::name##_fw_dev<<<num_blocks, dim1_x_>>>(CDATA(x), k, size, DATA(y)); \
 }
 
+#define CUDADEV_BW_X_CONST(name) \
+void CUDADevice::name##_bw_impl( \
+    const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) { \
+  const unsigned size = x.shape().size(); \
+  const unsigned num_blocks = GRID_SIZE(size, dim1_x_); \
+  CUDA_CALL(::cudaSetDevice(dev_id_)); \
+  ::name##_bw_dev<<<num_blocks, dim1_x_>>>( \
+      CDATA(x), CDATA(y), CDATA(gy), k, size, DATA(gx)); \
+}
+
 #define CUDADEV_FW_X_SCALAR(name) \
 void CUDADevice::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
   const unsigned size = y.shape().volume(); \
@@ -592,8 +619,15 @@ CUDADEV_FW_X_CONST(subtract_const_l);
 CUDADEV_FW_X_CONST(multiply_const);
 CUDADEV_FW_X_CONST(divide_const_r);
 CUDADEV_FW_X_CONST(divide_const_l);
-CUDADEV_FW_X_CONST(pstep);
 CUDADEV_FW_X_CONST(prelu);
+
+CUDADEV_BW_X_CONST(add_const);
+CUDADEV_BW_X_CONST(subtract_const_r);
+CUDADEV_BW_X_CONST(subtract_const_l);
+CUDADEV_BW_X_CONST(multiply_const);
+CUDADEV_BW_X_CONST(divide_const_r);
+CUDADEV_BW_X_CONST(divide_const_l);
+CUDADEV_BW_X_CONST(prelu);
 
 CUDADEV_FW_X_SCALAR(add_scalar);
 CUDADEV_FW_X_SCALAR(subtract_scalar_r);

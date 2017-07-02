@@ -305,6 +305,15 @@ FORWARD(Flatten) { return T::flatten(*x[0]); }
 
 FORWARD(Positive) { return *x[0]; }
 FORWARD(Negative) { return -(*x[0]); }
+FORWARD(Sqrt) { return T::sqrt(*x[0]); }
+FORWARD(Exp) { return T::exp(*x[0]); }
+FORWARD(Tanh) { return T::tanh(*x[0]); }
+FORWARD(Sigmoid) { return T::sigmoid(*x[0]); }
+FORWARD(Sin) { return T::sin(*x[0]); }
+FORWARD(Cos) { return T::cos(*x[0]); }
+FORWARD(Tan) { return T::tan(*x[0]); }
+FORWARD(ReLU) { return T::relu(*x[0]); }
+FORWARD(LReLU) { return T::lrelu(*x[0]); }
 
 FORWARD(AddConst) { return *x[0] + k_; }
 FORWARD(SubtractConstR) { return *x[0] - k_; }
@@ -312,6 +321,7 @@ FORWARD(SubtractConstL) { return k_ - *x[0]; }
 FORWARD(MultiplyConst) { return *x[0] * k_; }
 FORWARD(DivideConstR) { return *x[0] / k_; }
 FORWARD(DivideConstL) { return k_ / *x[0]; }
+FORWARD(PReLU) { return T::prelu(*x[0], k_); }
 
 FORWARD(AddScalar) { return *x[0] + *x[1]; }
 FORWARD(SubtractScalarR) { return *x[0] - *x[1]; }
@@ -327,17 +337,6 @@ FORWARD(Divide) { return *x[0] / *x[1]; }
 
 FORWARD(Transpose) { return T::transpose(*x[0]); }
 FORWARD(MatrixMultiply) { return T::matmul(*x[0], *x[1]); }
-
-FORWARD(Sqrt) { return T::sqrt(*x[0]); }
-FORWARD(Exp) { return T::exp(*x[0]); }
-FORWARD(Tanh) { return T::tanh(*x[0]); }
-FORWARD(Sigmoid) { return T::sigmoid(*x[0]); }
-FORWARD(Sin) { return T::sin(*x[0]); }
-FORWARD(Cos) { return T::cos(*x[0]); }
-FORWARD(Tan) { return T::tan(*x[0]); }
-FORWARD(ReLU) { return T::relu(*x[0]); }
-FORWARD(LReLU) { return T::lrelu(*x[0]); }
-FORWARD(PReLU) { return T::prelu(*x[0], k_); }
 
 FORWARD(Sum) { return T::sum(*x[0], dim_); }
 FORWARD(LogSumExp) { return T::logsumexp(*x[0], dim_); }
@@ -365,13 +364,23 @@ BACKWARD(Flatten) { ADD(0, gy.reshape(x[0]->shape())); }
 
 BACKWARD(Positive) { ADD(0, gy); }
 BACKWARD(Negative) { gy.device()->negate_bw(*x[0], y, gy, *gx[0]); }
+BACKWARD(Sqrt) { gy.device()->sqrt_bw(*x[0], y, gy, *gx[0]); }
+BACKWARD(Exp) {  gy.device()->exp_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(Tanh) {  gy.device()->tanh_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(Sigmoid) {  gy.device()->sigmoid_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(Sin) {  gy.device()->sin_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(Cos) {  gy.device()->cos_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(Tan) {  gy.device()->tan_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(ReLU) { gy.device()->prelu_bw(*x[0], y, gy, 0, *gx[0]); }
+BACKWARD(LReLU) { gy.device()->prelu_bw(*x[0], y, gy, .01, *gx[0]); }
 
-BACKWARD(AddConst) { ADD(0, gy); }
-BACKWARD(SubtractConstR) { ADD(0, gy); }
-BACKWARD(SubtractConstL) { ADD(0, -gy); }
-BACKWARD(MultiplyConst) { ADD(0, k_ * gy); }
-BACKWARD(DivideConstR) { ADD(0, gy / k_); }
-BACKWARD(DivideConstL) { ADD(0, -y * gy / *x[0]); }
+BACKWARD(AddConst) { gy.device()->add_const_bw(*x[0], y, gy, k_, *gx[0]); }
+BACKWARD(SubtractConstR) { gy.device()->subtract_const_r_bw(*x[0], y, gy, k_, *gx[0]); }
+BACKWARD(SubtractConstL) { gy.device()->subtract_const_l_bw(*x[0], y, gy, k_, *gx[0]); }
+BACKWARD(MultiplyConst) { gy.device()->multiply_const_bw(*x[0], y, gy, k_, *gx[0]); }
+BACKWARD(DivideConstR) { gy.device()->divide_const_r_bw(*x[0], y, gy, k_, *gx[0]); }
+BACKWARD(DivideConstL) { gy.device()->divide_const_l_bw(*x[0], y, gy, k_, *gx[0]); }
+BACKWARD(PReLU) { gy.device()->prelu_bw(*x[0], y, gy, k_, *gx[0]); }
 
 BACKWARD(AddScalar) {
   ADD(0, gy);
@@ -422,17 +431,6 @@ BACKWARD(Transpose) { ADD(0, T::transpose(gy)); }
 BACKWARD(MatrixMultiply) {
   gy.device()->matmul_bw(*x[0], *x[1], gy, *gx[0], *gx[1]);
 }
-
-BACKWARD(Sqrt) { gy.device()->sqrt_bw(*x[0], y, gy, *gx[0]); }
-BACKWARD(Exp) {  gy.device()->exp_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(Tanh) {  gy.device()->tanh_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(Sigmoid) {  gy.device()->sigmoid_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(Sin) {  gy.device()->sin_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(Cos) {  gy.device()->cos_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(Tan) {  gy.device()->tan_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(ReLU) { ADD(0, T::step(*x[0]) * gy); }
-BACKWARD(LReLU) { ADD(0, T::lstep(*x[0]) * gy); }
-BACKWARD(PReLU) { ADD(0, T::pstep(*x[0], k_) * gy); }
 
 BACKWARD(Sum) { ADD(0, T::broadcast(gy, dim_, x[0]->shape()[dim_])); }
 BACKWARD(LogSumExp) {

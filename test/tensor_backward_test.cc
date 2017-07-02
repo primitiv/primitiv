@@ -502,6 +502,139 @@ TEST_F(TensorBackwardTest, CheckTan) {
   }
 }
 
+TEST_F(TensorBackwardTest, CheckAddConst) {
+  const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
+  for (Device *dev :devices) {
+    for (const float k : ks) {
+      const Tensor x = dev->new_tensor_by_vector(
+          Shape({2, 2}, 2), {0, 1, 2, 3, 0, -1, -2, -3});
+      const Tensor y = dev->add_const_fw(x, k);
+      const Tensor gy = dev->new_tensor_by_vector(
+          y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
+      Tensor gx = dev->new_tensor(x.shape(), 0);
+      dev->add_const_bw(x, y, gy, k, gx);
+      const vector<float> gx_val {
+        1, -1, 2, -2, 2, -2, 1, -1,
+      };
+      EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckSubtractConstR) {
+  const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
+  for (Device *dev :devices) {
+    for (const float k : ks) {
+      const Tensor x = dev->new_tensor_by_vector(
+          Shape({2, 2}, 2), {0, 1, 2, 3, 0, -1, -2, -3});
+      const Tensor y = dev->subtract_const_r_fw(x, k);
+      const Tensor gy = dev->new_tensor_by_vector(
+          y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
+      Tensor gx = dev->new_tensor(x.shape(), 0);
+      dev->subtract_const_r_bw(x, y, gy, k, gx);
+      const vector<float> gx_val {
+        1, -1, 2, -2, 2, -2, 1, -1,
+      };
+      EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckSubtractConstL) {
+  const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
+  for (Device *dev :devices) {
+    for (const float k : ks) {
+      const Tensor x = dev->new_tensor_by_vector(
+          Shape({2, 2}, 2), {0, 1, 2, 3, 0, -1, -2, -3});
+      const Tensor y = dev->subtract_const_l_fw(x, k);
+      const Tensor gy = dev->new_tensor_by_vector(
+          y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
+      Tensor gx = dev->new_tensor(x.shape(), 0);
+      dev->subtract_const_l_bw(x, y, gy, k, gx);
+      const vector<float> gx_val {
+        -1, 1, -2, 2, -2, 2, -1, 1,
+      };
+      EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckMultiplyConst) {
+  const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
+  for (Device *dev :devices) {
+    for (const float k : ks) {
+      const Tensor x = dev->new_tensor_by_vector(
+          Shape({2, 2}, 2), {0, 1, 2, 3, 0, -1, -2, -3});
+      const Tensor y = dev->multiply_const_fw(x, k);
+      const Tensor gy = dev->new_tensor_by_vector(
+          y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
+      Tensor gx = dev->new_tensor(x.shape(), 0);
+      dev->multiply_const_bw(x, y, gy, k, gx);
+      const vector<float> gx_val {
+        k, -k, 2 *k, -2 * k, 2 * k, -2 * k, k, -k,
+      };
+      EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckDivideConstR) {
+  const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
+  for (Device *dev :devices) {
+    for (const float k : ks) {
+      const Tensor x = dev->new_tensor_by_vector(
+          Shape({2, 2}, 2), {0, 1, 2, 3, 0, -1, -2, -3});
+      const Tensor y = dev->divide_const_r_fw(x, k);
+      const Tensor gy = dev->new_tensor_by_vector(
+          y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
+      Tensor gx = dev->new_tensor(x.shape(), 0);
+      dev->divide_const_r_bw(x, y, gy, k, gx);
+      const vector<float> gx_val {
+        1 / k, -1 / k, 2 / k, -2 / k, 2 / k, -2 / k, 1 / k, -1 / k,
+      };
+      EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckDivideConstL) {
+  const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
+  for (Device *dev :devices) {
+    for (const float k : ks) {
+      const Tensor x = dev->new_tensor_by_vector(
+          Shape({2, 2}, 2), {.1, 1, 2, 3, -.1, -1, -2, -3});
+      const Tensor y = dev->divide_const_l_fw(x, k);
+      const Tensor gy = dev->new_tensor_by_vector(
+          y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
+      Tensor gx = dev->new_tensor(x.shape(), 0);
+      dev->divide_const_l_bw(x, y, gy, k, gx);
+      const vector<float> gx_val {
+       -100 * k, k, -k / 2, 2 * k / 9, -200 * k, 2 * k, -k / 4, k / 9,
+      };
+      EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckPReLU) {
+  const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
+  for (Device *dev :devices) {
+    for (const float k : ks) {
+      const Tensor x = dev->new_tensor_by_vector(
+          Shape({2, 2}, 2), {0, 1, 2, 3, 0, -1, -2, -3});
+      const Tensor y = dev->prelu_fw(x, k);
+      const Tensor gy = dev->new_tensor_by_vector(
+          y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
+      Tensor gx = dev->new_tensor(x.shape(), 0);
+      dev->prelu_bw(x, y, gy, k, gx);
+      const vector<float> gx_val {
+        k, -1, 2, -2, 2 * k, -2 * k, k, -k,
+      };
+      EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    }
+  }
+}
+
 TEST_F(TensorBackwardTest, CheckMatMul11) {
   for (Device *dev : devices) {
     const Tensor a = dev->new_tensor_by_vector({2, 2}, {1, 2, 3, 4});

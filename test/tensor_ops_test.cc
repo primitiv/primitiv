@@ -1119,59 +1119,6 @@ TEST_F(TensorOpsTest, CheckTan) {
   }
 }
 
-TEST_F(TensorOpsTest, CheckStep) {
-  const vector<float> x_data {
-    0, .5, 1, 2, 4, 8,
-    0, -.5, -1, -2, -4, -8,
-  };
-  const vector<float> y_data {
-    0, 1, 1, 1, 1, 1,
-    0, 0, 0, 0, 0, 0,
-  };
-  for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
-    const Tensor y = step(x);
-    EXPECT_EQ(Shape({2, 3}, 2), y.shape());
-    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
-  }
-}
-
-TEST_F(TensorOpsTest, CheckLStep) {
-  const vector<float> x_data {
-    0, .5, 1, 2, 4, 8,
-    0, -.5, -1, -2, -4, -8,
-  };
-  const vector<float> y_data {
-    .01, 1, 1, 1, 1, 1,
-    .01, .01, .01, .01, .01, .01,
-  };
-  for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
-    const Tensor y = lstep(x);
-    EXPECT_EQ(Shape({2, 3}, 2), y.shape());
-    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
-  }
-}
-
-TEST_F(TensorOpsTest, CheckPStep) {
-  for (Device *dev : devices) {
-    for (const float k : {.01, .1, .2, .5, 1., 2., 5., 10., 100.}) {
-      const vector<float> x_data {
-        0, .5, 1, 2, 4, 8,
-        0, -.5, -1, -2, -4, -8,
-      };
-      const vector<float> y_data {
-        k, 1, 1, 1, 1, 1,
-        k, k, k, k, k, k,
-      };
-      const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
-      const Tensor y = pstep(x, k);
-      EXPECT_EQ(Shape({2, 3}, 2), y.shape());
-      EXPECT_TRUE(vector_match(y_data, y.to_vector()));
-    }
-  }
-}
-
 TEST_F(TensorOpsTest, CheckReLU) {
   const vector<float> x_data {
     0, .5, 1, 2, 4, 8,
@@ -1207,8 +1154,9 @@ TEST_F(TensorOpsTest, CheckLReLU) {
 }
 
 TEST_F(TensorOpsTest, CheckPReLU) {
+  const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
   for (Device *dev : devices) {
-    for (const float k : {.01, .1, .2, .5, 1., 2., 5., 10., 100.}) {
+    for (const float k : ks) {
       const vector<float> x_data {
         0, .5, 1, 2, 4, 8,
         0, -.5, -1, -2, -4, -8,

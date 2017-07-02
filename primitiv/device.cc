@@ -214,6 +214,25 @@ Tensor Device::name##_fw(const Tensor &x, float k) { \
   return y; \
 }
 
+#define DEV_BW_X_CONST(name) \
+void Device::name##_bw( \
+    const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) { \
+  CHECK_DEVICE(x); \
+  CHECK_DEVICE(y); \
+  CHECK_DEVICE(gy); \
+  CHECK_DEVICE(gx); \
+  const Shape &s = x.shape(); \
+  if (y.shape() != s || gy.shape() != s || gx.shape() != s) { \
+    THROW_ERROR( \
+        "Shape mismatched at " #name "_bw" \
+        << ". x.shape: " << s.to_string() \
+        << ", y.shape: " << y.shape().to_string() \
+        << ", gy.shape: " << gy.shape().to_string() \
+        << ", gx.shape: " << gx.shape().to_string()); \
+  } \
+  name##_bw_impl(x, y, gy, k, gx); \
+}
+
 #define DEV_FW_AB(name, sop) \
 Tensor Device::name##_fw(const Tensor &a, const Tensor &b) { \
   CHECK_DEVICE(a); \
@@ -247,9 +266,15 @@ DEV_FW_X_CONST(subtract_const_l);
 DEV_FW_X_CONST(multiply_const);
 DEV_FW_X_CONST(divide_const_r);
 DEV_FW_X_CONST(divide_const_l);
-
-DEV_FW_X_CONST(pstep);
 DEV_FW_X_CONST(prelu);
+
+DEV_BW_X_CONST(add_const);
+DEV_BW_X_CONST(subtract_const_r);
+DEV_BW_X_CONST(subtract_const_l);
+DEV_BW_X_CONST(multiply_const);
+DEV_BW_X_CONST(divide_const_r);
+DEV_BW_X_CONST(divide_const_l);
+DEV_BW_X_CONST(prelu);
 
 DEV_FW_AB(add_scalar, scalar_op);
 DEV_FW_AB(subtract_scalar_r, scalar_op);

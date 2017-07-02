@@ -223,6 +223,17 @@ void CPUDevice::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
   REPEAT_OP(i, size, dest[i] = (op)); \
 }
 
+#define CPUDEV_BW_X_CONST(name, op) \
+void CPUDevice::name##_bw_impl( \
+    const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) { \
+  const float *px = CDATA(x); static_cast<void>(px); \
+  const float *py = CDATA(y); static_cast<void>(py); \
+  const float *pgy = CDATA(gy); \
+  float *pgx = DATA(gx); \
+  const unsigned size = x.shape().size(); \
+  REPEAT_OP(i, size, pgx[i] += (op)); \
+}
+
 #define CPUDEV_FW_X_SCALAR(name, op) \
 void CPUDevice::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
   const unsigned size = y.shape().volume(); \
@@ -281,9 +292,15 @@ CPUDEV_FW_X_CONST(subtract_const_l, k - src[i]);
 CPUDEV_FW_X_CONST(multiply_const, src[i] * k);
 CPUDEV_FW_X_CONST(divide_const_r, src[i] / k);
 CPUDEV_FW_X_CONST(divide_const_l, k / src[i]);
-
-CPUDEV_FW_X_CONST(pstep, (src[i] > 0) + k * (src[i] <= 0));
 CPUDEV_FW_X_CONST(prelu, src[i] * ((src[i] > 0) + k * (src[i] <= 0)));
+
+CPUDEV_BW_X_CONST(add_const, pgy[i]);
+CPUDEV_BW_X_CONST(subtract_const_r, pgy[i]);
+CPUDEV_BW_X_CONST(subtract_const_l, -pgy[i]);
+CPUDEV_BW_X_CONST(multiply_const, k * pgy[i]);
+CPUDEV_BW_X_CONST(divide_const_r, pgy[i] / k);
+CPUDEV_BW_X_CONST(divide_const_l, -py[i] * pgy[i] / px[i]);
+CPUDEV_BW_X_CONST(prelu, pgy[i] * ((px[i] > 0) + k * (px[i] <= 0)));
 
 CPUDEV_FW_X_SCALAR(add_scalar, src_x[i] + *src_k);
 CPUDEV_FW_X_SCALAR(subtract_scalar_r, src_x[i] - *src_k);

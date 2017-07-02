@@ -132,18 +132,6 @@ Tensor tan(const Tensor &x) {
   return x.device()->tan_fw(x);
 }
 
-Tensor step(const Tensor &x) {
-  return x.device()->pstep_fw(x, 0);
-}
-
-Tensor lstep(const Tensor &x) {
-  return x.device()->pstep_fw(x, .01);
-}
-
-Tensor pstep(const Tensor &x, float a) {
-  return x.device()->pstep_fw(x, a);
-}
-
 Tensor relu(const Tensor &x) {
   return x.device()->prelu_fw(x, 0);
 }
