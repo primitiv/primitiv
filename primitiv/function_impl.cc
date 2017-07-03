@@ -373,6 +373,7 @@ BACKWARD(Cos) {  gy.device()->cos_bw(*x[0], y, gy, *gx[0]);}
 BACKWARD(Tan) {  gy.device()->tan_bw(*x[0], y, gy, *gx[0]);}
 BACKWARD(ReLU) { gy.device()->prelu_bw(*x[0], y, gy, 0, *gx[0]); }
 BACKWARD(LReLU) { gy.device()->prelu_bw(*x[0], y, gy, .01, *gx[0]); }
+BACKWARD(Transpose) { gy.device()->transpose_bw(*x[0], y, gy, *gx[0]); }
 
 BACKWARD(AddConst) { gy.device()->add_const_bw(*x[0], y, gy, k_, *gx[0]); }
 BACKWARD(SubtractConstR) { gy.device()->subtract_const_r_bw(*x[0], y, gy, k_, *gx[0]); }
@@ -409,28 +410,11 @@ BACKWARD(DivideScalarL) {
   ADD(1, T::sum(a.flatten(), 0));
 }
 
-BACKWARD(Add) {
-  ADD(0, gy);
-  ADD(1, gy);
-}
-BACKWARD(Subtract) {
-  ADD(0, gy);
-  ADD(1, -gy);
-}
-BACKWARD(Multiply) {
-  ADD(0, *x[1] * gy);
-  ADD(1, *x[0] * gy);
-}
-BACKWARD(Divide) {
-  const Tensor a = gy / *x[1];
-  ADD(0, a);
-  ADD(1, -a * y);
-}
-
-BACKWARD(Transpose) { gy.device()->transpose_bw(gy, *gx[0]); }
-BACKWARD(MatrixMultiply) {
-  gy.device()->matmul_bw(*x[0], *x[1], gy, *gx[0], *gx[1]);
-}
+BACKWARD(Add) { gy.device()->add_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
+BACKWARD(Subtract) { gy.device()->subtract_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
+BACKWARD(Multiply) { gy.device()->multiply_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
+BACKWARD(Divide) { gy.device()->divide_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
+BACKWARD(MatrixMultiply) { gy.device()->matmul_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
 
 BACKWARD(Sum) { ADD(0, T::broadcast(gy, dim_, x[0]->shape()[dim_])); }
 BACKWARD(LogSumExp) {

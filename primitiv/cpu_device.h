@@ -63,6 +63,7 @@ private:
   void sin_fw_impl(const Tensor &x, Tensor &y) override;
   void cos_fw_impl(const Tensor &x, Tensor &y) override;
   void tan_fw_impl(const Tensor &x, Tensor &y) override;
+  void transpose_fw_impl(const Tensor &x, Tensor &y) override;
 
   void negate_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void sqrt_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
@@ -72,6 +73,7 @@ private:
   void sin_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void cos_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void tan_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
+  void transpose_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
 
   void add_const_fw_impl(const Tensor &x, float k, Tensor &y) override;
   void subtract_const_r_fw_impl(const Tensor &x, float k, Tensor &y) override;
@@ -100,12 +102,23 @@ private:
   void subtract_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override;
   void multiply_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override;
   void divide_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override;
-
-  void transpose_fw_impl(const Tensor &x, Tensor &y) override;
   void matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override;
 
-  void transpose_bw_impl(const Tensor &gy, Tensor &gx) override;
-  void matmul_bw_impl(const Tensor &a, const Tensor &b, const Tensor &gy, Tensor &ga, Tensor &gb) override;
+  void add_bw_impl(
+      const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+      Tensor &ga, Tensor &gb) override;
+  void subtract_bw_impl(
+      const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+      Tensor &ga, Tensor &gb) override;
+  void multiply_bw_impl(
+      const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+      Tensor &ga, Tensor &gb) override;
+  void divide_bw_impl(
+      const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+      Tensor &ga, Tensor &gb) override;
+  void matmul_bw_impl(
+      const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+      Tensor &ga, Tensor &gb) override;
 
   void sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) override;
   void logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) override;

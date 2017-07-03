@@ -101,6 +101,7 @@ public:
   Tensor sin_fw(const Tensor &x);
   Tensor cos_fw(const Tensor &x);
   Tensor tan_fw(const Tensor &x);
+  Tensor transpose_fw(const Tensor &x);
 
   void negate_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void sqrt_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
@@ -110,6 +111,7 @@ public:
   void sin_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void cos_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void tan_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
+  void transpose_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
 
   // Tensor-constant operations.
   Tensor add_const_fw(const Tensor &x, float k);
@@ -141,13 +143,23 @@ public:
   Tensor subtract_fw(const Tensor &a, const Tensor &b);
   Tensor multiply_fw(const Tensor &a, const Tensor &b);
   Tensor divide_fw(const Tensor &a, const Tensor &b);
-
-  // Matrix operations.
-  Tensor transpose_fw(const Tensor &x);
   Tensor matmul_fw(const Tensor &a, const Tensor &b);
 
-  void transpose_bw(const Tensor &gy, Tensor &gx);
-  void matmul_bw(const Tensor &a, const Tensor &b, const Tensor &gy, Tensor &ga, Tensor &gb);
+  void add_bw(
+      const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+      Tensor &ga, Tensor &gb);
+  void subtract_bw(
+      const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+      Tensor &ga, Tensor &gb);
+  void multiply_bw(
+      const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+      Tensor &ga, Tensor &gb);
+  void divide_bw(
+      const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+      Tensor &ga, Tensor &gb);
+  void matmul_bw(
+      const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+      Tensor &ga, Tensor &gb);
 
   // Dimension operations.
   Tensor sum_fw(const Tensor &x, unsigned dim);
@@ -238,6 +250,7 @@ private:
   virtual void sin_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void cos_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void tan_fw_impl(const Tensor &x, Tensor &y) = 0;
+  virtual void transpose_fw_impl(const Tensor &x, Tensor &y) = 0;
 
   virtual void negate_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void sqrt_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
@@ -247,6 +260,7 @@ private:
   virtual void sin_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void cos_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void tan_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
+  virtual void transpose_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
 
   virtual void add_const_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
   virtual void subtract_const_r_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
@@ -275,12 +289,23 @@ private:
   virtual void subtract_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) = 0;
   virtual void multiply_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) = 0;
   virtual void divide_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) = 0;
-
-  virtual void transpose_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) = 0;
 
-  virtual void transpose_bw_impl(const Tensor &gy, Tensor &gx) = 0;
-  virtual void matmul_bw_impl(const Tensor &a, const Tensor &b, const Tensor &gy, Tensor &ga, Tensor &gb) = 0;
+  virtual void add_bw_impl(
+      const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+      Tensor &ga, Tensor &gb) = 0;
+  virtual void subtract_bw_impl(
+      const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+      Tensor &ga, Tensor &gb) = 0;
+  virtual void multiply_bw_impl(
+      const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+      Tensor &ga, Tensor &gb) = 0;
+  virtual void divide_bw_impl(
+      const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+      Tensor &ga, Tensor &gb) = 0;
+  virtual void matmul_bw_impl(
+      const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+      Tensor &ga, Tensor &gb) = 0;
 
   virtual void sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) = 0;
   virtual void logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) = 0;

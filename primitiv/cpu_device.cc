@@ -262,8 +262,8 @@ void CPUDevice::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
   const float *src_b = CDATA(b); \
   for (unsigned batch = 0; batch < bs; ++batch) { \
     REPEAT_OP(i, size, dest[i] = (op)); \
-    dest += size, \
-    src_a += skip_a, \
+    dest += size; \
+    src_a += skip_a; \
     src_b += skip_b; \
   } \
 }
@@ -317,8 +317,105 @@ CPUDEV_FW_AB(divide, src_a[i] / src_b[i]);
 #undef CPUDEV_FW_X
 #undef CPUDEV_BW_X
 #undef CPUDEV_FW_X_CONST
+#undef CPUDEV_BW_X_CONST
 #undef CPUDEV_FW_X_SCALAR
 #undef CPUDEV_FW_AB
+
+void CPUDevice::add_bw_impl(
+    const Tensor &, const Tensor &, const Tensor &, const Tensor &gy,
+    Tensor &ga, Tensor &gb) {
+  const unsigned size = gy.shape().volume();
+  const unsigned bs = gy.shape().batch();
+  const unsigned skip_a = ga.shape().has_batch() * size;
+  const unsigned skip_b = gb.shape().has_batch() * size;
+  const float *pgy = CDATA(gy);
+  float *pga = DATA(ga);
+  float *pgb = DATA(gb);
+  for (unsigned batch = 0; batch < bs; ++batch) {
+    for (unsigned i = 0; i < size; ++i) {
+      const float k = pgy[i];
+      pga[i] += k;
+      pgb[i] += k;
+    }
+    pgy += size;
+    pga += skip_a;
+    pgb += skip_b;
+  }
+}
+
+void CPUDevice::subtract_bw_impl(
+    const Tensor &, const Tensor &, const Tensor &, const Tensor &gy,
+    Tensor &ga, Tensor &gb) {
+  const unsigned size = gy.shape().volume();
+  const unsigned bs = gy.shape().batch();
+  const unsigned skip_a = ga.shape().has_batch() * size;
+  const unsigned skip_b = gb.shape().has_batch() * size;
+  const float *pgy = CDATA(gy);
+  float *pga = DATA(ga);
+  float *pgb = DATA(gb);
+  for (unsigned batch = 0; batch < bs; ++batch) {
+    for (unsigned i = 0; i < size; ++i) {
+      const float k = pgy[i];
+      pga[i] += k;
+      pgb[i] -= k;
+    }
+    pgy += size;
+    pga += skip_a;
+    pgb += skip_b;
+  }
+}
+
+void CPUDevice::multiply_bw_impl(
+    const Tensor &a, const Tensor &b, const Tensor &, const Tensor &gy,
+    Tensor &ga, Tensor &gb) {
+  const unsigned size = gy.shape().volume();
+  const unsigned bs = gy.shape().batch();
+  const unsigned skip_a = ga.shape().has_batch() * size;
+  const unsigned skip_b = gb.shape().has_batch() * size;
+  const float *pa = CDATA(a);
+  const float *pb = CDATA(b);
+  const float *pgy = CDATA(gy);
+  float *pga = DATA(ga);
+  float *pgb = DATA(gb);
+  for (unsigned batch = 0; batch < bs; ++batch) {
+    for (unsigned i = 0; i < size; ++i) {
+      const float k = pgy[i];
+      pga[i] += k * pb[i];
+      pgb[i] += k * pa[i];
+    }
+    pa += skip_a;
+    pb += skip_b;
+    pgy += size;
+    pga += skip_a;
+    pgb += skip_b;
+  }
+}
+
+void CPUDevice::divide_bw_impl(
+    const Tensor &, const Tensor &b, const Tensor &y, const Tensor &gy,
+    Tensor &ga, Tensor &gb) {
+  const unsigned size = gy.shape().volume();
+  const unsigned bs = gy.shape().batch();
+  const unsigned skip_a = ga.shape().has_batch() * size;
+  const unsigned skip_b = gb.shape().has_batch() * size;
+  const float *pb = CDATA(b);
+  const float *py = CDATA(y);
+  const float *pgy = CDATA(gy);
+  float *pga = DATA(ga);
+  float *pgb = DATA(gb);
+  for (unsigned batch = 0; batch < bs; ++batch) {
+    for (unsigned i = 0; i < size; ++i) {
+      const float k = pgy[i] / pb[i];
+      pga[i] += k;
+      pgb[i] -= k * py[i];
+    }
+    pb += skip_b;
+    py += size;
+    pgy += size;
+    pga += skip_a;
+    pgb += skip_b;
+  }
+}
 
 void CPUDevice::transpose_fw_impl(const Tensor &x, Tensor &y) {
   const unsigned d1 = x.shape()[0];
@@ -370,13 +467,14 @@ void CPUDevice::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   }
 }
 
-void CPUDevice::transpose_bw_impl(const Tensor &gy, Tensor &gx) {
+void CPUDevice::transpose_bw_impl(
+    const Tensor &, const Tensor &, const Tensor &gy, Tensor &gx) {
   // TODO(odashi): This code could be slow and requires memory. Fix this.
   add_gradient_impl(transpose_fw(gy), gx);
 }
 
 void CPUDevice::matmul_bw_impl(
-    const Tensor &a, const Tensor &b, const Tensor &gy,
+    const Tensor &a, const Tensor &b, const Tensor &, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
   // TODO(odashi): This code could be slow and requires memory. Fix this.
   add_gradient_impl(matmul_fw(gy, transpose_fw(b)), ga);

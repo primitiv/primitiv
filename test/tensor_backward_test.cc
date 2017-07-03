@@ -637,13 +637,15 @@ TEST_F(TensorBackwardTest, CheckPReLU) {
 
 TEST_F(TensorBackwardTest, CheckTranspose) {
   for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor(Shape({3, 4}, 2));
+    const Tensor y = dev->transpose_fw(x);
     const Tensor gy = dev->new_tensor_by_vector(
         Shape({4, 3}, 2), {
           0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
           12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
         });
     Tensor gx = dev->new_tensor(Shape({3, 4}, 2), 0);
-    dev->transpose_bw(gy, gx);
+    dev->transpose_bw(x, y, gy, gx);
     const vector<float> gx_val {
       0, 4, 8, 1, 5, 9, 2, 6, 10, 3, 7, 11,
       12, 16, 20, 13, 17, 21, 14, 18, 22, 15, 19, 23,
@@ -652,14 +654,271 @@ TEST_F(TensorBackwardTest, CheckTranspose) {
   }
 }
 
+TEST_F(TensorBackwardTest, CheckAdd11) {
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor({2});
+    const Tensor b = dev->new_tensor({2});
+    const Tensor y = dev->add_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_vector({2}, {1, -1});
+    Tensor ga = dev->new_tensor(a.shape(), 0);
+    Tensor gb = dev->new_tensor(b.shape(), 0);
+    dev->add_bw(a, b, y, gy, ga, gb);
+    const vector<float> ga_val {1, -1};
+    const vector<float> gb_val {1, -1};
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckAddNN) {
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor(Shape({2}, 2));
+    const Tensor b = dev->new_tensor(Shape({2}, 2));
+    const Tensor y = dev->add_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
+    Tensor ga = dev->new_tensor(a.shape(), 0);
+    Tensor gb = dev->new_tensor(b.shape(), 0);
+    dev->add_bw(a, b, y, gy, ga, gb);
+    const vector<float> ga_val {1, -1, 2, -2};
+    const vector<float> gb_val {1, -1, 2, -2};
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckAdd1N) {
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor({2});
+    const Tensor b = dev->new_tensor(Shape({2}, 2));
+    const Tensor y = dev->add_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
+    Tensor ga = dev->new_tensor(a.shape(), 0);
+    Tensor gb = dev->new_tensor(b.shape(), 0);
+    dev->add_bw(a, b, y, gy, ga, gb);
+    const vector<float> ga_val {3, -3};
+    const vector<float> gb_val {1, -1, 2, -2};
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckAddN1) {
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor(Shape({2}, 2));
+    const Tensor b = dev->new_tensor({2});
+    const Tensor y = dev->add_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
+    Tensor ga = dev->new_tensor(a.shape(), 0);
+    Tensor gb = dev->new_tensor(b.shape(), 0);
+    dev->add_bw(a, b, y, gy, ga, gb);
+    const vector<float> ga_val {1, -1, 2, -2};
+    const vector<float> gb_val {3, -3};
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckSubtract11) {
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor({2});
+    const Tensor b = dev->new_tensor({2});
+    const Tensor y = dev->subtract_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_vector({2}, {1, -1});
+    Tensor ga = dev->new_tensor(a.shape(), 0);
+    Tensor gb = dev->new_tensor(b.shape(), 0);
+    dev->subtract_bw(a, b, y, gy, ga, gb);
+    const vector<float> ga_val {1, -1};
+    const vector<float> gb_val {-1, 1};
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckSubtractNN) {
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor(Shape({2}, 2));
+    const Tensor b = dev->new_tensor(Shape({2}, 2));
+    const Tensor y = dev->subtract_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
+    Tensor ga = dev->new_tensor(a.shape(), 0);
+    Tensor gb = dev->new_tensor(b.shape(), 0);
+    dev->subtract_bw(a, b, y, gy, ga, gb);
+    const vector<float> ga_val {1, -1, 2, -2};
+    const vector<float> gb_val {-1, 1, -2, 2};
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckSubtract1N) {
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor({2});
+    const Tensor b = dev->new_tensor(Shape({2}, 2));
+    const Tensor y = dev->subtract_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
+    Tensor ga = dev->new_tensor(a.shape(), 0);
+    Tensor gb = dev->new_tensor(b.shape(), 0);
+    dev->subtract_bw(a, b, y, gy, ga, gb);
+    const vector<float> ga_val {3, -3};
+    const vector<float> gb_val {-1, 1, -2, 2};
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckSubtractN1) {
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor(Shape({2}, 2));
+    const Tensor b = dev->new_tensor({2});
+    const Tensor y = dev->subtract_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
+    Tensor ga = dev->new_tensor(a.shape(), 0);
+    Tensor gb = dev->new_tensor(b.shape(), 0);
+    dev->subtract_bw(a, b, y, gy, ga, gb);
+    const vector<float> ga_val {1, -1, 2, -2};
+    const vector<float> gb_val {-3, 3};
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckMultiply11) {
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector({2}, {1, 10});
+    const Tensor b = dev->new_tensor_by_vector({2}, {10, 1});
+    const Tensor y = dev->multiply_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_vector({2}, {1, -1});
+    Tensor ga = dev->new_tensor(a.shape(), 0);
+    Tensor gb = dev->new_tensor(b.shape(), 0);
+    dev->multiply_bw(a, b, y, gy, ga, gb);
+    const vector<float> ga_val {10, -1};
+    const vector<float> gb_val {1, -10};
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckMultiplyNN) {
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector(Shape({2}, 2), {1, 10, -1, -10});
+    const Tensor b = dev->new_tensor_by_vector(Shape({2}, 2), {10, 1, -10, -1});
+    const Tensor y = dev->multiply_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
+    Tensor ga = dev->new_tensor(a.shape(), 0);
+    Tensor gb = dev->new_tensor(b.shape(), 0);
+    dev->multiply_bw(a, b, y, gy, ga, gb);
+    const vector<float> ga_val {10, -1, -20, 2};
+    const vector<float> gb_val {1, -10, -2, 20};
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckMultiply1N) {
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector({2}, {1, 10});
+    const Tensor b = dev->new_tensor_by_vector(Shape({2}, 2), {10, 1, -10, -1});
+    const Tensor y = dev->multiply_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
+    Tensor ga = dev->new_tensor(a.shape(), 0);
+    Tensor gb = dev->new_tensor(b.shape(), 0);
+    dev->multiply_bw(a, b, y, gy, ga, gb);
+    const vector<float> ga_val {-10, 1};
+    const vector<float> gb_val {1, -10, 2, -20};
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckMultiplyN1) {
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector(Shape({2}, 2), {1, 10, -1, -10});
+    const Tensor b = dev->new_tensor_by_vector({2}, {10, 1});
+    const Tensor y = dev->multiply_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
+    Tensor ga = dev->new_tensor(a.shape(), 0);
+    Tensor gb = dev->new_tensor(b.shape(), 0);
+    dev->multiply_bw(a, b, y, gy, ga, gb);
+    const vector<float> ga_val {10, -1, 20, -2};
+    const vector<float> gb_val {-1, 10};
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckDivide11) {
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector({2}, {1, 10});
+    const Tensor b = dev->new_tensor_by_vector({2}, {10, 1});
+    const Tensor y = dev->divide_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_vector({2}, {1, -1});
+    Tensor ga = dev->new_tensor(a.shape(), 0);
+    Tensor gb = dev->new_tensor(b.shape(), 0);
+    dev->divide_bw(a, b, y, gy, ga, gb);
+    const vector<float> ga_val {.1, -1};
+    const vector<float> gb_val {-.01, 10};
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckDivideNN) {
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector(Shape({2}, 2), {1, 10, -1, -10});
+    const Tensor b = dev->new_tensor_by_vector(Shape({2}, 2), {10, 1, -10, -1});
+    const Tensor y = dev->divide_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
+    Tensor ga = dev->new_tensor(a.shape(), 0);
+    Tensor gb = dev->new_tensor(b.shape(), 0);
+    dev->divide_bw(a, b, y, gy, ga, gb);
+    const vector<float> ga_val {.1, -1, -.2, 2};
+    const vector<float> gb_val {-.01, 10, .02, -20};
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckDivide1N) {
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector({2}, {1, 10});
+    const Tensor b = dev->new_tensor_by_vector(Shape({2}, 2), {10, 1, -10, -1});
+    const Tensor y = dev->divide_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
+    Tensor ga = dev->new_tensor(a.shape(), 0);
+    Tensor gb = dev->new_tensor(b.shape(), 0);
+    dev->divide_bw(a, b, y, gy, ga, gb);
+    const vector<float> ga_val {-.1, 1};
+    const vector<float> gb_val {-.01, 10, -.02, 20};
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckDivideN1) {
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector(Shape({2}, 2), {1, 10, -1, -10});
+    const Tensor b = dev->new_tensor_by_vector({2}, {10, 1});
+    const Tensor y = dev->divide_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
+    Tensor ga = dev->new_tensor(a.shape(), 0);
+    Tensor gb = dev->new_tensor(b.shape(), 0);
+    dev->divide_bw(a, b, y, gy, ga, gb);
+    const vector<float> ga_val {.1, -1, .2, -2};
+    const vector<float> gb_val {.01, -10};
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
 TEST_F(TensorBackwardTest, CheckMatMul11) {
   for (Device *dev : devices) {
     const Tensor a = dev->new_tensor_by_vector({2, 2}, {1, 2, 3, 4});
     const Tensor b = dev->new_tensor_by_vector({2, 2}, {1, 0, 0, 2});
+    const Tensor y = dev->matmul_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector({2, 2}, {1, -1, 2, -2});
     Tensor ga = dev->new_tensor(a.shape(), 0);
     Tensor gb = dev->new_tensor(b.shape(), 0);
-    dev->matmul_bw(a, b, gy, ga, gb);
+    dev->matmul_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {1, -1, 4, -4};
     const vector<float> gb_val {-1, -1, -2, -2};
     EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
@@ -673,11 +932,12 @@ TEST_F(TensorBackwardTest, CheckMatMulNN) {
         Shape({2, 2}, 2), {1, 2, 3, 4, -1, -2, -3, -4});
     const Tensor b = dev->new_tensor_by_vector(
         Shape({2, 2}, 2), {1, 0, 0, 2, 0, 1, 2, 0});
+    const Tensor y = dev->matmul_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector(
         Shape({2, 2}, 2), {1, -1, 2, -2, 2, -2, 1, -1});
     Tensor ga = dev->new_tensor(a.shape(), 0);
     Tensor gb = dev->new_tensor(b.shape(), 0);
-    dev->matmul_bw(a, b, gy, ga, gb);
+    dev->matmul_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {1, -1, 4, -4, 2, -2, 2, -2};
     const vector<float> gb_val {-1, -1, -2, -2, 2, 2, 1, 1};
     EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
@@ -690,11 +950,12 @@ TEST_F(TensorBackwardTest, CheckMatMul1N) {
     const Tensor a = dev->new_tensor_by_vector({2, 2}, {1, 2, 3, 4});
     const Tensor b = dev->new_tensor_by_vector(
         Shape({2, 2}, 2), {1, 0, 0, 2, 0, 1, 2, 0});
+    const Tensor y = dev->matmul_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector(
         Shape({2, 2}, 2), {1, -1, 2, -2, 2, -2, 1, -1});
     Tensor ga = dev->new_tensor(a.shape(), 0);
     Tensor gb = dev->new_tensor(b.shape(), 0);
-    dev->matmul_bw(a, b, gy, ga, gb);
+    dev->matmul_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {3, -3, 6, -6};
     const vector<float> gb_val {-1, -1, -2, -2, -2, -2, -1, -1};
     EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
@@ -707,11 +968,12 @@ TEST_F(TensorBackwardTest, CheckMatMulN1) {
     const Tensor a = dev->new_tensor_by_vector(
         Shape({2, 2}, 2), {1, 2, 3, 4, -1, -2, -3, -4});
     const Tensor b = dev->new_tensor_by_vector({2, 2}, {1, 0, 0, 2});
+    const Tensor y = dev->matmul_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector(
         Shape({2, 2}, 2), {1, -1, 2, -2, 2, -2, 1, -1});
     Tensor ga = dev->new_tensor(a.shape(), 0);
     Tensor gb = dev->new_tensor(b.shape(), 0);
-    dev->matmul_bw(a, b, gy, ga, gb);
+    dev->matmul_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {1, -1, 4, -4, 2, -2, 2, -2};
     const vector<float> gb_val {1, 1, -1, -1};
     EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));

@@ -173,9 +173,64 @@ CUDADEV_KERNEL_FW_AB(multiply, ::__fmul_rn);
 CUDADEV_KERNEL_FW_AB(divide, ::__fdiv_rn);
 
 #undef CUDADEV_KERNEL_FW_X
+#undef CUDADEV_KERNEL_BW_X
 #undef CUDADEV_KERNEL_FW_X_CONST
+#undef CUDADEV_KERNEL_BW_X_CONST
 #undef CUDADEV_KERNEL_FW_X_SCALAR_R
 #undef CUDADEV_KERNEL_FW_X_SCALAR_L
+#undef CUDADEV_KERNEL_FW_AB
+
+__global__ void add_bw_dev(
+    const float *, const float *, const float *, const float *pgy,
+    unsigned size, unsigned mba, unsigned mbb, float *pga, float *pgb) {
+  const unsigned i = IDX;
+  const unsigned shift = blockIdx.y * size;
+  if (i < size) {
+    const float gy = pgy[i + shift];
+    ::atomicAdd(pga + i + mba * shift, gy);
+    ::atomicAdd(pgb + i + mbb * shift, gy);
+  }
+}
+
+__global__ void subtract_bw_dev(
+    const float *, const float *, const float *, const float *pgy,
+    unsigned size, unsigned mba, unsigned mbb, float *pga, float *pgb) {
+  const unsigned i = IDX;
+  const unsigned shift = blockIdx.y * size;
+  if (i < size) {
+    const float gy = pgy[i + shift];
+    ::atomicAdd(pga + i + mba * shift, gy);
+    ::atomicAdd(pgb + i + mbb * shift, -gy);
+  }
+}
+
+__global__ void multiply_bw_dev(
+    const float *pa, const float *pb, const float *, const float *pgy,
+    unsigned size, unsigned mba, unsigned mbb, float *pga, float *pgb) {
+  const unsigned i = IDX;
+  const unsigned shift = blockIdx.y * size;
+  if (i < size) {
+    const float gy = pgy[i + shift];
+    const unsigned a_ofs = i + mba * shift;
+    const unsigned b_ofs = i + mbb * shift;
+    ::atomicAdd(pga + a_ofs, gy * pb[b_ofs]);
+    ::atomicAdd(pgb + b_ofs, gy * pa[a_ofs]);
+  }
+}
+
+__global__ void divide_bw_dev(
+    const float *, const float *pb, const float *py, const float *pgy,
+    unsigned size, unsigned mba, unsigned mbb, float *pga, float *pgb) {
+  const unsigned i = IDX;
+  const unsigned shift = blockIdx.y * size;
+  if (i < size) {
+    const unsigned b_ofs = i + mbb * shift;
+    const unsigned y_ofs = i + shift;
+    const float k = pgy[y_ofs] / pb[b_ofs];
+    ::atomicAdd(pga + i + mba * shift, k);
+    ::atomicAdd(pgb + b_ofs, -k * py[y_ofs]);
+  }
+}
 
 __global__ void transpose_fw_dev(
     const float *px, unsigned rows, unsigned cols, float *py) {
@@ -603,6 +658,19 @@ void CUDADevice::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
       a.shape().has_batch(), b.shape().has_batch(), DATA(y)); \
 }
 
+#define CUDADEV_BW_AB(name) \
+void CUDADevice::name##_bw_impl( \
+    const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy, \
+    Tensor &ga, Tensor &gb) { \
+  const unsigned size = y.shape().volume(); \
+  const unsigned g1 = GRID_SIZE(size, dim1_x_); \
+  const unsigned g2 = y.shape().batch(); \
+  CUDA_CALL(::cudaSetDevice(dev_id_)); \
+  ::name##_bw_dev<<<dim3(g1, g2, 1), dim1_x_>>>( \
+      CDATA(a), CDATA(b), CDATA(y), CDATA(gy), size, \
+      a.shape().has_batch(), b.shape().has_batch(), DATA(ga), DATA(gb)); \
+}
+
 CUDADEV_FW_X(negate);
 CUDADEV_FW_X(sqrt);
 CUDADEV_FW_X(exp);
@@ -649,10 +717,18 @@ CUDADEV_FW_AB(subtract);
 CUDADEV_FW_AB(multiply);
 CUDADEV_FW_AB(divide);
 
+CUDADEV_BW_AB(add);
+CUDADEV_BW_AB(subtract);
+CUDADEV_BW_AB(multiply);
+CUDADEV_BW_AB(divide);
+
 #undef CUDADEV_FW_X
+#undef CUDADEV_BW_X
 #undef CUDADEV_FW_X_CONST
+#undef CUDADEV_BW_X_CONST
 #undef CUDADEV_FW_X_SCALAR
 #undef CUDADEV_FW_AB
+#undef CUDADEV_BW_AB
 
 void CUDADevice::transpose_fw_impl(const Tensor &x, Tensor &y) {
   const unsigned rows = x.shape()[0];
@@ -695,7 +771,8 @@ void CUDADevice::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   }
 }
 
-void CUDADevice::transpose_bw_impl(const Tensor &gy, Tensor &gx) {
+void CUDADevice::transpose_bw_impl(
+    const Tensor &, const Tensor &, const Tensor &gy, Tensor &gx) {
   const unsigned rows = gx.shape()[0];
   const unsigned cols = gx.shape()[1];
   const unsigned bs = gx.shape().batch();
@@ -707,7 +784,7 @@ void CUDADevice::transpose_bw_impl(const Tensor &gy, Tensor &gx) {
 }
 
 void CUDADevice::matmul_bw_impl(
-    const Tensor &a, const Tensor &b, const Tensor &gy,
+    const Tensor &a, const Tensor &b, const Tensor &, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
   // ga += gy . b^T
   // gb += a^T . gy

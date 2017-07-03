@@ -179,26 +179,27 @@ void Device::slice_bw(
   else slice_bw_impl(gy, dim, offset, gx);
 }
 
-#define DEV_FW_X(name) \
+#define DEV_FW_X(name, sop) \
 Tensor Device::name##_fw(const Tensor &x) { \
   CHECK_DEVICE(x); \
-  Tensor y = new_tensor(x.shape()); \
+  Tensor y = new_tensor(sop(x.shape())); \
   name##_fw_impl(x, y); \
   return y; \
 }
 
-#define DEV_BW_X(name) \
+#define DEV_BW_X(name, sop) \
 void Device::name##_bw( \
     const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) { \
   CHECK_DEVICE(x); \
   CHECK_DEVICE(y); \
   CHECK_DEVICE(gy); \
   CHECK_DEVICE(gx); \
-  const Shape &s = x.shape(); \
-  if (y.shape() != s || gy.shape() != s || gx.shape() != s) { \
+  if (x.shape() != gx.shape() || \
+      y.shape() != gy.shape() || \
+      y.shape() != sop(x.shape())) { \
     THROW_ERROR( \
         "Shape mismatched at " #name "_bw" \
-        << ". x.shape: " << s.to_string() \
+        << ". x.shape: " << x.shape().to_string() \
         << ", y.shape: " << y.shape().to_string() \
         << ", gy.shape: " << gy.shape().to_string() \
         << ", gx.shape: " << gx.shape().to_string()); \
@@ -237,28 +238,56 @@ void Device::name##_bw( \
 Tensor Device::name##_fw(const Tensor &a, const Tensor &b) { \
   CHECK_DEVICE(a); \
   CHECK_DEVICE(b); \
-  Tensor y = new_tensor(shape_ops::sop(a.shape(), b.shape())); \
+  Tensor y = new_tensor(sop(a.shape(), b.shape())); \
   name##_fw_impl(a, b, y); \
   return y; \
 }
 
-DEV_FW_X(negate);
-DEV_FW_X(sqrt);
-DEV_FW_X(exp);
-DEV_FW_X(tanh);
-DEV_FW_X(sigmoid);
-DEV_FW_X(sin);
-DEV_FW_X(cos);
-DEV_FW_X(tan);
+#define DEV_BW_AB(name, sop) \
+void Device::name##_bw( \
+    const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy, \
+    Tensor &ga, Tensor &gb) { \
+  CHECK_DEVICE(a); \
+  CHECK_DEVICE(b); \
+  CHECK_DEVICE(y); \
+  CHECK_DEVICE(gy); \
+  CHECK_DEVICE(ga); \
+  CHECK_DEVICE(gb); \
+  if (a.shape() != ga.shape() || \
+      b.shape() != gb.shape() || \
+      y.shape() != gy.shape() || \
+      y.shape() != sop(a.shape(), b.shape())) { \
+    THROW_ERROR( \
+        "Shape mismatched at " #name "_bw" \
+        << ". a.shape: " << a.shape().to_string() \
+        << ", b.shape: " << b.shape().to_string() \
+        << ", y.shape: " << y.shape().to_string() \
+        << ", gy.shape: " << gy.shape().to_string() \
+        << ", ga.shape: " << ga.shape().to_string() \
+        << ", gb.shape: " << gb.shape().to_string()); \
+  } \
+  name##_bw_impl(a, b, y, gy, ga, gb); \
+}
 
-DEV_BW_X(negate);
-DEV_BW_X(sqrt);
-DEV_BW_X(exp);
-DEV_BW_X(tanh);
-DEV_BW_X(sigmoid);
-DEV_BW_X(sin);
-DEV_BW_X(cos);
-DEV_BW_X(tan);
+DEV_FW_X(negate, static_cast<const Shape &>);
+DEV_FW_X(sqrt, static_cast<const Shape &>);
+DEV_FW_X(exp, static_cast<const Shape &>);
+DEV_FW_X(tanh, static_cast<const Shape &>);
+DEV_FW_X(sigmoid, static_cast<const Shape &>);
+DEV_FW_X(sin, static_cast<const Shape &>);
+DEV_FW_X(cos, static_cast<const Shape &>);
+DEV_FW_X(tan, static_cast<const Shape &>);
+DEV_FW_X(transpose, shape_ops::transpose);
+
+DEV_BW_X(negate, static_cast<const Shape &>);
+DEV_BW_X(sqrt, static_cast<const Shape &>);
+DEV_BW_X(exp, static_cast<const Shape &>);
+DEV_BW_X(tanh, static_cast<const Shape &>);
+DEV_BW_X(sigmoid, static_cast<const Shape &>);
+DEV_BW_X(sin, static_cast<const Shape &>);
+DEV_BW_X(cos, static_cast<const Shape &>);
+DEV_BW_X(tan, static_cast<const Shape &>);
+DEV_BW_X(transpose, shape_ops::transpose);
 
 DEV_FW_X_CONST(add_const);
 DEV_FW_X_CONST(subtract_const_r);
@@ -276,63 +305,31 @@ DEV_BW_X_CONST(divide_const_r);
 DEV_BW_X_CONST(divide_const_l);
 DEV_BW_X_CONST(prelu);
 
-DEV_FW_AB(add_scalar, scalar_op);
-DEV_FW_AB(subtract_scalar_r, scalar_op);
-DEV_FW_AB(subtract_scalar_l, scalar_op);
-DEV_FW_AB(multiply_scalar, scalar_op);
-DEV_FW_AB(divide_scalar_r, scalar_op);
-DEV_FW_AB(divide_scalar_l, scalar_op);
+DEV_FW_AB(add_scalar, shape_ops::scalar_op);
+DEV_FW_AB(subtract_scalar_r, shape_ops::scalar_op);
+DEV_FW_AB(subtract_scalar_l, shape_ops::scalar_op);
+DEV_FW_AB(multiply_scalar, shape_ops::scalar_op);
+DEV_FW_AB(divide_scalar_r, shape_ops::scalar_op);
+DEV_FW_AB(divide_scalar_l, shape_ops::scalar_op);
 
-DEV_FW_AB(add, elementwise);
-DEV_FW_AB(subtract, elementwise);
-DEV_FW_AB(multiply, elementwise);
-DEV_FW_AB(divide, elementwise);
+DEV_FW_AB(add, shape_ops::elementwise);
+DEV_FW_AB(subtract, shape_ops::elementwise);
+DEV_FW_AB(multiply, shape_ops::elementwise);
+DEV_FW_AB(divide, shape_ops::elementwise);
+DEV_FW_AB(matmul, shape_ops::matmul);
 
-DEV_FW_AB(matmul, matmul);
+DEV_BW_AB(add, shape_ops::elementwise);
+DEV_BW_AB(subtract, shape_ops::elementwise);
+DEV_BW_AB(multiply, shape_ops::elementwise);
+DEV_BW_AB(divide, shape_ops::elementwise);
+DEV_BW_AB(matmul, shape_ops::matmul);
 
 #undef DEV_FW_X
+#undef DEV_BW_X
 #undef DEV_FW_X_CONST
+#undef DEV_BW_X_CONST
 #undef DEV_FW_AB
-
-Tensor Device::transpose_fw(const Tensor &x) {
-  CHECK_DEVICE(x);
-  Tensor y = new_tensor(shape_ops::transpose(x.shape()));
-  transpose_fw_impl(x, y);
-  return y;
-}
-
-void Device::transpose_bw(const Tensor &gy, Tensor &gx) {
-  CHECK_DEVICE(gy);
-  CHECK_DEVICE(gx);
-  if (gy.shape() != shape_ops::transpose(gx.shape())) {
-    THROW_ERROR(
-        "Shape mismatched at transpose_bw"
-        << ". gy.shape: " << gy.shape().to_string()
-        << ", gx.shape: " << gx.shape().to_string());
-  }
-  transpose_bw_impl(gy, gx);
-}
-
-void Device::matmul_bw(
-    const Tensor &a, const Tensor &b, const Tensor &gy,
-    Tensor &ga, Tensor &gb) {
-  CHECK_DEVICE(a);
-  CHECK_DEVICE(b);
-  CHECK_DEVICE(gy);
-  CHECK_DEVICE(ga);
-  CHECK_DEVICE(gb);
-  if (a.shape() != ga.shape() || b.shape() != gb.shape() ||
-      gy.shape() != shape_ops::matmul(a.shape(), b.shape())) {
-    THROW_ERROR(
-        "Shape mismatched at matmul_bw"
-        << ". a.shape: " << a.shape().to_string()
-        << ", b.shape: " << b.shape().to_string()
-        << ", gy.shape: " << gy.shape().to_string()
-        << ", ga.shape: " << ga.shape().to_string()
-        << ", gb.shape: " << gb.shape().to_string());
-  }
-  matmul_bw_impl(a, b, gy, ga, gb);
-}
+#undef DEV_BW_AB
 
 Tensor Device::sum_fw(const Tensor &x, unsigned dim) {
   CHECK_DEVICE(x);
