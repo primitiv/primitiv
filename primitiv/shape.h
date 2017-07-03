@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_SHAPE_H_
 #define PRIMITIV_SHAPE_H_
 
+#include <array>
 #include <initializer_list>
 #include <string>
 #include <vector>
@@ -19,6 +20,8 @@ namespace primitiv {
  */
 class Shape {
 public:
+  static const unsigned MAX_DEPTH = 8;
+
   Shape(const Shape &) = default;
   Shape(Shape &&) = default;
   Shape &operator=(const Shape &) = default;
@@ -27,52 +30,40 @@ public:
   /**
    * Creates a new scalar Shape object.
    */
-  Shape() : dims_(), k_(1) { adjust(); }
+  Shape() : depth_(0), batch_(1), volume_(1) {}
 
   /**
    * Creates a new Shape object.
    * @param dims List of the dimension sizes.
-   * @param k Batch size.
+   * @param batch Batch size.
    */
-  Shape(std::initializer_list<unsigned> dims, const unsigned k = 1)
-    : dims_(dims), k_(k) { adjust(); }
+  Shape(std::initializer_list<unsigned> dims, unsigned batch = 1);
 
   /**
    * Creates a new Shape object.
    * @param dims List of the dimension sizes.
-   * @param k Batch size.
+   * @param batch Batch size.
    */
-  Shape(const std::vector<unsigned> &dims, const unsigned k = 1)
-    : dims_(dims), k_(k) { adjust(); }
-
-  /**
-   * Creates a new Shape object.
-   * @param dims List of the dimension sizes.
-   * @param k Batch size.
-   */
-  Shape(std::vector<unsigned> &&dims, const unsigned k = 1)
-    : dims_(std::move(dims)), k_(k) { adjust(); }
+  Shape(const std::vector<unsigned> &dims, unsigned batch = 1);
 
   /**
    * Returns the size of the i-th dimension.
    * @param i Dimension number to check.
    * @return Size of the i-th dimension.
    */
-  unsigned operator[](const unsigned i) const {
-    return i < depth() ? dims_[i] : 1;
-  }
+  unsigned operator[](unsigned i) const { return i < depth_ ? dims_[i] : 1; }
 
   /**
    * Returns the depth (length of non-1 dimensions) of the shape.
    * @return The depth of the shape.
    */
-  unsigned depth() const { return dims_.size(); }
+  unsigned depth() const { return depth_; }
 
   /**
    * Returns the batch size.
    * @return Batch size.
    */
-  unsigned batch() const { return k_; }
+  unsigned batch() const { return batch_; }
 
   /**
    * Returns the number of elements in each sample.
@@ -83,17 +74,21 @@ public:
 
   /**
    * Returns the number of elements in 1 to specified dim.
-   * @param rank Upper bound of the dimension.
-   * @return `dim[0] * dim[1] * ... * dim[dim-1]`
+   * @param dim Upper bound of the dimension.
+   * @return `dims[0] * dims[1] * ... * dims[dim-1]`
    */
-  unsigned lower_volume(unsigned dim) const;
+  unsigned lower_volume(unsigned dim) const {
+    unsigned ret = 1, lim = std::min(dim, depth_);
+    for (unsigned i = 0; i < lim; ++i) ret *= dims_[i];
+    return ret;
+  }
 
   /**
    * Returns the number of elements in all samples of the mini-batch.
    * This value is equal to `batch() * volume()`.
    * @return Number of elements.
    */
-  unsigned size() const { return k_ * volume_; }
+  unsigned size() const { return batch_ * volume_; }
 
   /**
    * Returns a string representation of the shape.
@@ -108,7 +103,7 @@ public:
    * @return true if this and rhs are same, false otherwise.
    */
   bool operator==(const Shape &rhs) const {
-    return has_same_dims(rhs) && k_ == rhs.k_;
+    return has_same_dims(rhs) && batch_ == rhs.batch_;
   }
 
   /**
@@ -122,7 +117,7 @@ public:
    * Checks whether the shape has minibatch or not.
    * @return true if the shape has minibatch, false otherwise.
    */
-  bool has_batch() const { return k_ > 1; }
+  bool has_batch() const { return batch_ > 1; }
 
   /**
    * Checks whether two batch size is compatible (broadcastable) or not.
@@ -130,7 +125,7 @@ public:
    * @return true if both batch size is compatible, false otherwise.
    */
   bool has_compatible_batch(const Shape &rhs) const {
-    return k_ == rhs.k_ || k_ == 1 || rhs.k_ == 1;
+    return batch_ == rhs.batch_ || batch_ == 1 || rhs.batch_ == 1;
   }
 
   /**
@@ -156,7 +151,11 @@ public:
    * @param rhs Shape object to compare.
    * @return true if both shape have same dimensions, false otherwise.
    */
-  bool has_same_dims(const Shape &rhs) const { return dims_ == rhs.dims_; }
+  bool has_same_dims(const Shape &rhs) const {
+    bool ok = true;
+    for (unsigned i = 0; i < depth_; ++i) ok = ok && dims_[i] == rhs.dims_[i];
+    return ok && depth_ == rhs.depth_;
+  }
 
   /**
    * Checks whether two shapes have same dimensions without an axis.
@@ -178,10 +177,10 @@ public:
 
   /**
    * Creates a new shape which have specified batch size.
-   * @param k New batch size.
+   * @param batch New batch size.
    * @return New shape.
    */
-  Shape resize_batch(unsigned k) const;
+  Shape resize_batch(unsigned batch) const;
 
   /**
    * Directly updates a specified dimension.
@@ -192,19 +191,15 @@ public:
 
   /**
    * Directly updates the batch size.
-   * @param k New batch size.
+   * @param batch New batch size.
    */
-  void update_batch(unsigned k);
+  void update_batch(unsigned batch);
 
 private:
-  std::vector<unsigned> dims_;
-  unsigned k_;
+  std::array<unsigned, MAX_DEPTH> dims_;
+  unsigned depth_;
+  unsigned batch_;
   unsigned volume_;
-
-  /**
-   * Check internal values and adjust them.
-   */
-  void adjust();
 };
 
 }  // namespace primitiv

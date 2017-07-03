@@ -85,6 +85,10 @@ TEST_F(ShapeTest, CheckInvalidNew) {
   EXPECT_THROW(Shape({2, 0}, 0), Error);
   EXPECT_THROW(Shape({2, 3, 0}, 0), Error);
   EXPECT_THROW(Shape({}, 0), Error);
+  EXPECT_NO_THROW(Shape({1, 2, 3, 4, 5, 6, 7, 8}, 10));
+  EXPECT_THROW(Shape({1, 2, 3, 4, 5, 6, 7, 8, 9}, 10), Error);
+  EXPECT_NO_THROW(Shape(vector<unsigned> {1, 2, 3, 4, 5, 6, 7, 8}, 10));
+  EXPECT_THROW(Shape(vector<unsigned> {1, 2, 3, 4, 5, 6, 7, 8, 9}, 10), Error);
 }
 
 TEST_F(ShapeTest, CheckNumElementsUnderRank) {
@@ -343,6 +347,8 @@ TEST_F(ShapeTest, CheckResizeDim) {
   EXPECT_EQ(2100u, src.resize_dim(4, 10).size());
 
   EXPECT_THROW(src.resize_dim(0, 0), Error);
+  EXPECT_NO_THROW(src.resize_dim(Shape::MAX_DEPTH - 1, 1));
+  EXPECT_THROW(src.resize_dim(Shape::MAX_DEPTH, 1), Error);
 }
 
 TEST_F(ShapeTest, CheckResizeBatch) {
@@ -410,8 +416,13 @@ TEST_F(ShapeTest, CheckUpdateDim) {
     EXPECT_EQ(2100u, src.size());
   }
   {
-    Shape src({2, 3, 5},7);
+    Shape src({2, 3, 5}, 7);
     EXPECT_THROW(src.update_dim(0, 0), Error);
+  }
+  {
+    Shape src({2, 3, 5}, 7);
+    EXPECT_NO_THROW(src.update_dim(Shape::MAX_DEPTH - 1, 1));
+    EXPECT_THROW(src.update_dim(Shape::MAX_DEPTH, 1), Error);
   }
 }
 
