@@ -35,6 +35,16 @@ __global__ void rand_affine_dev(
   if (i < size) py[i] = py[i] * scale + shift;
 }
 
+__global__ void pick_fw_dev(
+    const float *px, const unsigned *pi,
+    unsigned wx, unsigned wy, unsigned sx, unsigned si, unsigned sy,
+    float *py) {
+  const unsigned t = IDX;
+  const unsigned ox = blockIdx.y * sx + pi[blockIdx.y * si] * wy;
+  const unsigned oy = blockIdx.y * sy;
+  if (t < sy) py[oy + t] = px[ox + (t / wy) * wx + (t % wy)];
+}
+
 __global__ void slice_fw_dev(
     const float *px, unsigned span, unsigned skip, unsigned size, float *py) {
   const unsigned i = IDX;
@@ -402,15 +412,22 @@ void CUDADevice::initialize() {
     dim2_x_ <<= 1;
     dim2_y_ >>= 1;
   }
-  cerr << "Block configuration:" << endl;
-  cerr << "  1 dim .... " << dim1_x_ << " threads" << endl;
-  cerr << "  2 dims ... " << dim2_x_ << "x" << dim2_y_ << " threads" << endl;
+  max_batch_ = prop.maxGridSize[1];
+
+  cerr << "Configurations:" << endl;
+  cerr << "  1 dim ........... " << dim1_x_ << " threads" << endl;
+  cerr << "  2 dims .......... " << dim2_x_ << "x"
+                                 << dim2_y_ << " threads" << endl;
+  cerr << "  Maximum batch ... " << max_batch_ <<endl;
 
   // Initializes additional libraries
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CUBLAS_CALL(::cublasCreate(&cublas_));
   CURAND_CALL(::curandCreateGenerator(&curand_, CURAND_RNG_PSEUDO_DEFAULT));
   CURAND_CALL(::curandSetPseudoRandomGeneratorSeed(curand_, rng_seed_));
+
+  // Initializes the device pointer for integer IDs.
+  ids_ptr_ = pool_.allocate(sizeof(unsigned) * max_batch_);
 }
 
 CUDADevice::CUDADevice(unsigned device_id)
@@ -513,19 +530,20 @@ void CUDADevice::random_log_normal_impl(float mean, float sd, Tensor &y) {
 void CUDADevice::pick_fw_impl(
     const Tensor &x, unsigned dim,
     const std::vector<unsigned> &ids, Tensor &y) {
-  const unsigned base = y.shape().lower_volume(dim);
-  const unsigned skip = base * x.shape()[dim];
-  const unsigned size = y.shape().volume();
-  const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
-  const unsigned skip_x = x.shape().has_batch() * x.shape().volume();
-  const unsigned skip_i = ids.size() > 1;
+  const unsigned wy = y.shape().lower_volume(dim);
+  const unsigned sy = y.shape().volume();
+  const unsigned g1 = GRID_SIZE(sy, dim1_x_);
   const unsigned bs = y.shape().batch();
+
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  for (unsigned b = 0; b < bs; ++b) {
-    ::slice_fw_dev<<<num_blocks, dim1_x_>>>(
-        CDATA(x) + b * skip_x + base * ids[b * skip_i],
-        base, skip, size, DATA(y) + b * size);
-  }
+  ::cudaMemcpy(
+      ids_ptr_.get(), ids.data(), sizeof(unsigned) * ids.size(),
+      cudaMemcpyHostToDevice);
+  ::pick_fw_dev<<<dim3(g1, bs), dim1_x_>>>(
+      CDATA(x), static_cast<const unsigned *>(ids_ptr_.get()),
+      wy * x.shape()[dim], wy,
+      x.shape().has_batch() * x.shape().volume(), ids.size() > 1, sy,
+      DATA(y));
 }
 
 void CUDADevice::slice_fw_impl(

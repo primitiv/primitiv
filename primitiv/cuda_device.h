@@ -144,9 +144,15 @@ private:
   unsigned dim1_x_;
   unsigned dim2_x_;
   unsigned dim2_y_;
+  unsigned max_batch_;
   CUDAMemoryPool pool_;
   ::cublasHandle_t cublas_;
   ::curandGenerator_t curand_;
+
+  // Reserved pointer to store integer IDs.
+  // This member holds a pointer provided from `pool_`, and should be declared
+  // after `pool_` due to the order of member destruction.
+  std::shared_ptr<void> ids_ptr_;
 
   /**
    * Internal method to initialize the object.

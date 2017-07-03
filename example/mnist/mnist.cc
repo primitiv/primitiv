@@ -88,8 +88,8 @@ int main() {
   Parameter pb2("b2", {NUM_OUTPUT_UNITS}, Constant(0), &dev);
 
   // Parameters for batch normalization.
-  Parameter pbeta("beta", {NUM_HIDDEN_UNITS}, Constant(0), &dev);
-  Parameter pgamma("gamma", {NUM_HIDDEN_UNITS}, Constant(1), &dev);
+  //Parameter pbeta("beta", {NUM_HIDDEN_UNITS}, Constant(0), &dev);
+  //Parameter pgamma("gamma", {NUM_HIDDEN_UNITS}, Constant(1), &dev);
 
   // Trainer
   SGD trainer(.5);
@@ -97,8 +97,8 @@ int main() {
   trainer.add_parameter(&pb1);
   trainer.add_parameter(&pw2);
   trainer.add_parameter(&pb2);
-  trainer.add_parameter(&pbeta);
-  trainer.add_parameter(&pgamma);
+  //trainer.add_parameter(&pbeta);
+  //trainer.add_parameter(&pgamma);
 
   // Helper lambda to construct the predictor network.
   auto make_graph = [&](const vector<float> &inputs, bool train, Graph &g) {
@@ -109,11 +109,11 @@ int main() {
     Node b1 = F::input(&pb1, &g);
     Node h = F::relu(F::matmul(w1, x) + b1);
     // Batch normalization
-    Node beta = F::input(&pbeta, &g);
-    Node gamma = F::input(&pgamma, &g);
-    h = F::batch::normalize(h) * gamma + beta;
+    //Node beta = F::input(&pbeta, &g);
+    //Node gamma = F::input(&pgamma, &g);
+    //h = F::batch::normalize(h) * gamma + beta;
     // Dropout
-    //h = F::dropout(h, .5, train);
+    h = F::dropout(h, .5, train);
     // Calculates the output layer.
     Node w2 = F::input(&pw2, &g);
     Node b2 = F::input(&pb2, &g);
@@ -142,19 +142,21 @@ int main() {
         labels[i] = train_labels[id];
       }
 
-      // Constructs the graph.
-      Graph g;
-      Node y = make_graph(inputs, true, g);
-      Node loss = F::softmax_cross_entropy(y, 0, labels);
-      Node avg_loss = F::batch::mean(loss);
-
-      // Dump computation graph at the first time.
-      if (epoch == 0 && batch == 0) g.dump();
-
-      // Forward, backward, and updates parameters.
       trainer.reset_gradients();
-      g.forward(avg_loss);
-      g.backward(avg_loss);
+      {
+        // Constructs the graph.
+        Graph g;
+        Node y = make_graph(inputs, true, g);
+        Node loss = F::softmax_cross_entropy(y, 0, labels);
+        Node avg_loss = F::batch::mean(loss);
+
+        // Dump computation graph at the first time.
+        //if (epoch == 0 && batch == 0) g.dump();
+
+        // Forward, backward, and updates parameters.
+        g.forward(avg_loss);
+        g.backward(avg_loss);
+      }
       trainer.update(1);
     }
 
@@ -187,13 +189,13 @@ int main() {
 
     const float accuracy = 100.0 * match / NUM_TEST_SAMPLES;
     printf("epoch %d: accuracy: %.2f%%\n", epoch, accuracy);
-    pw1.save("mnist-params-w1.yaml");
-    pb1.save("mnist-params-b1.yaml");
-    pw2.save("mnist-params-w2.yaml");
-    pb2.save("mnist-params-b2.yaml");
-    pbeta.save("mnist-params-beta.yaml");
-    pgamma.save("mnist-params-gamma.yaml");
-    cout << "epoch " << epoch << ": saved parameters." << endl;
+    //pw1.save("mnist-params-w1.yaml");
+    //pb1.save("mnist-params-b1.yaml");
+    //pw2.save("mnist-params-w2.yaml");
+    //pb2.save("mnist-params-b2.yaml");
+    //pbeta.save("mnist-params-beta.yaml");
+    //pgamma.save("mnist-params-gamma.yaml");
+    //cout << "epoch " << epoch << ": saved parameters." << endl;
   }
 
   return 0;
