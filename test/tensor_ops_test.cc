@@ -46,10 +46,16 @@ protected:
 };
 
 TEST_F(TensorOpsTest, CheckCopy) {
-  const vector<float> data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  vector<float> data(12);
+  unsigned i = 0;
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), data);
     for (Device *dev2 : devices) {
+      // Sets different (count-up) data to be copied every time.
+      std::generate(data.begin(), data.end(), [&]() { i += 1; return i; });
+      for (float x : data) std::cout << x << ' ';
+      std::cout << std::endl;
+
+      const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), data);
       const Tensor y = copy(x, dev2);
       EXPECT_EQ(Shape({2, 2}, 3), y.shape());
       EXPECT_TRUE(y.device() != x.device() || y.data() != x.data());

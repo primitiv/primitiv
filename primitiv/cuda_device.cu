@@ -488,6 +488,9 @@ void CUDADevice::copy_tensor_impl(const Tensor &x, Tensor &y) {
       break;
     case Device::DEVICE_TYPE_CUDA:
       CUDA_CALL(::cudaSetDevice(dev_id_));
+      // NOTE(odashi):
+      // If source/destination devices use the unified memory space on the 64
+      // bits machine, we can perform ::cudaMemcpy to copy data beyond devices.
       CUDA_CALL(::cudaMemcpyAsync(
             DATA(y), CDATA(x),
             sizeof(float) * x.shape().size(),
