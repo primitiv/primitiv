@@ -59,11 +59,13 @@ __global__ void concat_fw_dev(
 }
 
 __global__ void pick_bw_dev(
-    const float *pgy, unsigned wx, unsigned wy, unsigned repeat, float *pgx) {
-  const unsigned i = IDX;
-  if (i < wy * repeat) {
-    ::atomicAdd(pgx + (i / wy) * wx + (i % wy), pgy[i]);
-  }
+    const float *pgy, const unsigned *pi,
+    unsigned wx, unsigned wy, unsigned sx, unsigned si, unsigned sy,
+    float *pgx) {
+  const unsigned t = IDX;
+  const unsigned ox = blockIdx.y * sx + pi[blockIdx.y * si] * wy;
+  const unsigned oy = blockIdx.y * sy;
+  if (t < sy) ::atomicAdd(pgx + ox + (t / wy) * wx + (t % wy), pgy[oy + t]);
 }
 
 __global__ void slice_bw_dev(
@@ -531,17 +533,17 @@ void CUDADevice::random_log_normal_impl(float mean, float sd, Tensor &y) {
 }
 
 void CUDADevice::pick_fw_impl(
-    const Tensor &x, unsigned dim,
-    const std::vector<unsigned> &ids, Tensor &y) {
+    const Tensor &x, unsigned dim, const std::vector<unsigned> &ids,
+    Tensor &y) {
   const unsigned wy = y.shape().lower_volume(dim);
   const unsigned sy = y.shape().volume();
   const unsigned g1 = GRID_SIZE(sy, dim1_x_);
   const unsigned bs = y.shape().batch();
 
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  ::cudaMemcpy(
-      ids_ptr_.get(), ids.data(), sizeof(unsigned) * ids.size(),
-      cudaMemcpyHostToDevice);
+  CUDA_CALL(::cudaMemcpy(
+        ids_ptr_.get(), ids.data(), sizeof(unsigned) * ids.size(),
+        cudaMemcpyHostToDevice));
   ::pick_fw_dev<<<dim3(g1, bs), dim1_x_>>>(
       CDATA(x), static_cast<const unsigned *>(ids_ptr_.get()),
       wy * x.shape()[dim], wy,
@@ -583,26 +585,20 @@ void CUDADevice::concat_fw_impl(
 void CUDADevice::pick_bw_impl(
     const Tensor &gy, unsigned dim, const std::vector<unsigned>& ids,
     Tensor &gx) {
-  const Shape &sx = gx.shape();
-  const Shape &sy = gy.shape();
-  const unsigned size = sy.volume();
-  const unsigned base = sy.lower_volume(dim);
-  const unsigned repeat = size / base;
-  const unsigned wx = base * sx[dim];
-  const unsigned g1 = GRID_SIZE(size, dim1_x_);
-  const unsigned bs = sy.batch();
-  const unsigned skip_a = (sx.has_batch()) * sx.volume();
-  const unsigned skip_i = ids.size() > 1;
-  float *dest = DATA(gx);
-  const float *src = CDATA(gy);
+  const unsigned wy = gy.shape().lower_volume(dim);
+  const unsigned sy = gy.shape().volume();
+  const unsigned g1 = GRID_SIZE(sy, dim1_x_);
+  const unsigned bs = gy.shape().batch();
 
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  for (unsigned batch = 0; batch < bs; ++batch) {
-    ::pick_bw_dev<<<g1, dim1_x_>>>(
-        src + batch * size,
-        wx, base, repeat,
-        dest + batch * skip_a + base * ids[batch * skip_i]);
-  }
+  CUDA_CALL(::cudaMemcpy(
+        ids_ptr_.get(), ids.data(), sizeof(unsigned) * ids.size(),
+        cudaMemcpyHostToDevice));
+  ::pick_bw_dev<<<dim3(g1, bs), dim1_x_>>>(
+      CDATA(gy), static_cast<const unsigned *>(ids_ptr_.get()),
+      wy *gx.shape()[dim], wy,
+      gx.shape().has_batch() * gx.shape().volume(), ids.size() > 1, sy,
+      DATA(gx));
 }
 
 void CUDADevice::slice_bw_impl(
