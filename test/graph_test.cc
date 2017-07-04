@@ -58,11 +58,10 @@ TEST_F(GraphTest, CheckInvalidMultipleDevices) {
 TEST_F(GraphTest, CheckForwardBackward) {
   Graph g;
   const vector<float> data1 {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4};
-  const vector<float> data2 {1, 1, 1, 1};
   const vector<float> data3 {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
   vector<Node> nodes;
   nodes.emplace_back(node_ops::input(Shape({2, 2}, 3), data1, &dev, &g));
-  nodes.emplace_back(node_ops::input({2, 2}, data2, &dev, &g));
+  nodes.emplace_back(node_ops::ones({2, 2}, &dev, &g));
   nodes.emplace_back(node_ops::input(Shape({2, 2}, 3), data3, &dev, &g));
   nodes.emplace_back(nodes[0] + nodes[1]);
   nodes.emplace_back(nodes[1] - nodes[2]);
@@ -242,10 +241,11 @@ TEST_F(GraphTest, CheckLSTM) {
   using node_ops::input;
   using node_ops::sigmoid;
   using node_ops::tanh;
+  using node_ops::zeros;
 
   const Node x = input(Shape({2}, 2), {2, -2, 0.5, -0.5}, &dev, &g);
   const Node h = input(Shape({2}, 2), {-1, 1, -0.5, 0.5}, &dev, &g);
-  const Node c = input({2}, {0, 0}, &dev, &g);
+  const Node c = zeros({2}, &dev, &g);
   const Node Wix = input(&pWix, &g);
   const Node Wfx = input(&pWfx, &g);
   const Node Wox = input(&pWox, &g);
@@ -266,7 +266,7 @@ TEST_F(GraphTest, CheckLSTM) {
   const Node cc = f * c + i * j;
   const Node hh = o * tanh(cc);
 
-  const Node t = input({2}, {0, 0}, &dev, &g);
+  const Node t = zeros({2}, &dev, &g);
   const Node diff = hh - t;
   const Node loss = diff * diff;
 
@@ -274,6 +274,11 @@ TEST_F(GraphTest, CheckLSTM) {
 
   g.forward(loss);
   g.backward(loss);
+
+  const vector<float> expected_losses {
+    5.7667205e-03, 2.8605087e-02, 1.4819370e-03, 3.0073307e-03
+  };
+  EXPECT_TRUE(vector_match(expected_losses, loss.value().to_vector()));
 
   auto print = [](const std::string &name, const Tensor &value) {
     std::cout << name << ": shape=" << value.shape().to_string()
@@ -326,10 +331,11 @@ TEST_F(GraphTest, CheckConcatLSTM) {
   using node_ops::sigmoid;
   using node_ops::slice;
   using node_ops::tanh;
+  using node_ops::zeros;
 
   const Node x = input(Shape({2}, 2), {2, -2, 0.5, -0.5}, &dev, &g);
   const Node h = input(Shape({2}, 2), {-1, 1, -0.5, 0.5}, &dev, &g);
-  const Node c = input({2}, {0, 0}, &dev, &g);
+  const Node c = zeros({2}, &dev, &g);
   const Node Wx = input(&pWx, &g);
   const Node Wh = input(&pWh, &g);
   const Node b = input(&pb, &g);
@@ -342,7 +348,7 @@ TEST_F(GraphTest, CheckConcatLSTM) {
   const Node cc = f * c + i * j;
   const Node hh = o * tanh(cc);
 
-  const Node t = input({2}, {0, 0}, &dev, &g);
+  const Node t = zeros({2}, &dev, &g);
   const Node diff = hh - t;
   const Node loss = diff * diff;
 
@@ -350,6 +356,11 @@ TEST_F(GraphTest, CheckConcatLSTM) {
 
   g.forward(loss);
   g.backward(loss);
+
+  const vector<float> expected_losses {
+    5.7667205e-03, 2.8605087e-02, 1.4819370e-03, 3.0073307e-03
+  };
+  EXPECT_TRUE(vector_match(expected_losses, loss.value().to_vector()));
 
   auto print = [](const std::string &name, const Tensor &value) {
     std::cout << name << ": shape=" << value.shape().to_string()

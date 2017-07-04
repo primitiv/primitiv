@@ -83,6 +83,22 @@ void Copy::backward(
   gx[0]->device()->add_gradient(T::copy(gy, gx[0]->device()), *gx[0]);
 }
 
+Shape Constant::forward_shape(const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 0);
+  return shape_;
+}
+
+Tensor Constant::forward(const vector<const Tensor *> &args) const {
+  CHECK_ARGNUM(args, 0);
+  return device_->new_tensor(shape_, k_);
+}
+
+void Constant::backward(
+    const Tensor &, const Tensor &cur_grad,
+    const vector<const Tensor *> &, const vector<Tensor *> &) const {
+  // Nothing to do.
+}
+
 Shape RandomBernoulli::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 0);
   return shape_;

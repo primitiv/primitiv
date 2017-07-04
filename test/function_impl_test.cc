@@ -214,6 +214,33 @@ TEST_F(FunctionImplTest, CheckCopy) {
   EXPECT_TRUE(vector_match(arg_grads[0]->to_vector(), cur_grad.to_vector()));
 }
 
+TEST_F(FunctionImplTest, CheckConstant) {
+  struct TestCase {
+    Shape shape;
+    float k;
+  };
+  const vector<TestCase> test_cases {
+    {Shape({}), 0},
+    {Shape({2}, 2), 1},
+    {Shape({2, 3}, 3), -1},
+    {Shape({2, 3, 5}, 4), 42},
+    {Shape({2, 3, 5, 7}, 5), -123},
+  };
+  for (const TestCase &tc : test_cases) {
+    const Constant node(tc.shape, tc.k, dev);
+    const Shape cur_shape = node.forward_shape(arg_shapes);
+    const Tensor cur_value = node.forward(arg_values);
+    const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
+    // backward() has no effect.
+    EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
+    EXPECT_EQ("Constant(" + std::to_string(tc.k) + ')', node.name());
+    EXPECT_EQ(tc.shape, cur_shape);
+    EXPECT_EQ(dev, node.get_device());
+    EXPECT_TRUE(vector_match(
+          vector<float>(tc.shape.size(), tc.k), cur_value.to_vector()));
+  }
+}
+
 TEST_F(FunctionImplTest, CheckRandomBernoulli) {
   struct TestCase {
     Shape shape;
@@ -233,7 +260,7 @@ TEST_F(FunctionImplTest, CheckRandomBernoulli) {
     // backward() has no effect.
     EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
     EXPECT_EQ("RandomBernoulli(" + std::to_string(tc.p) + ')', node.name());
-    EXPECT_EQ(cur_shape, tc.shape);
+    EXPECT_EQ(tc.shape, cur_shape);
     EXPECT_EQ(dev, node.get_device());
     EXPECT_TRUE(vector_match(tc.data, cur_value.to_vector()));
   }
@@ -269,7 +296,7 @@ TEST_F(FunctionImplTest, CheckRandomUniform) {
     EXPECT_EQ(
         "RandomUniform(" + std::to_string(tc.lower) + ',' +
         std::to_string(tc.upper) + ')', node.name());
-    EXPECT_EQ(cur_shape, tc.shape);
+    EXPECT_EQ(tc.shape, cur_shape);
     EXPECT_EQ(dev, node.get_device());
     EXPECT_TRUE(vector_match(tc.data, cur_value.to_vector()));
   }
@@ -305,7 +332,7 @@ TEST_F(FunctionImplTest, CheckRandomNormal) {
     EXPECT_EQ(
         "RandomNormal(" + std::to_string(tc.mean) + ',' +
         std::to_string(tc.sd) + ')', node.name());
-    EXPECT_EQ(cur_shape, tc.shape);
+    EXPECT_EQ(tc.shape, cur_shape);
     EXPECT_EQ(dev, node.get_device());
     EXPECT_TRUE(vector_match(tc.data, cur_value.to_vector()));
   }
@@ -341,7 +368,7 @@ TEST_F(FunctionImplTest, CheckRandomLogNormal) {
     EXPECT_EQ(
         "RandomLogNormal(" + std::to_string(tc.mean) + ',' +
         std::to_string(tc.sd) + ')', node.name());
-    EXPECT_EQ(cur_shape, tc.shape);
+    EXPECT_EQ(tc.shape, cur_shape);
     EXPECT_EQ(dev, node.get_device());
     EXPECT_TRUE(vector_match(tc.data, cur_value.to_vector()));
   }

@@ -197,6 +197,18 @@ Node normalize(const Node &x) {
 
 }  // namespace batch
 
+Node zeros(const Shape &shape, Device *dev, Graph *g) {
+  return g->add_function(new F::Constant(shape, 0, dev), {});
+}
+
+Node ones(const Shape &shape, Device *dev, Graph *g) {
+  return g->add_function(new F::Constant(shape, 1, dev), {});
+}
+
+Node constant(const Shape &shape, float k, Device *dev, Graph *g) {
+  return g->add_function(new F::Constant(shape, k, dev), {});
+}
+
 namespace random {
 
 Node bernoulli(const Shape &shape, float p, Device *dev, Graph *g) {

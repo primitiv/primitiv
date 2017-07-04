@@ -70,6 +70,10 @@ Node mean(const Node &x);
 Node normalize(const Node &x);
 }  // namespace batch
 
+Node zeros(const Shape &shape, Device *dev, Graph *g);
+Node ones(const Shape &shape, Device *dev, Graph *g);
+Node constant(const Shape &shape, float k, Device *dev, Graph *g);
+
 namespace random {
 Node bernoulli(const Shape &shape, float p, Device *dev, Graph *g);
 Node uniform(const Shape &shape, float lower, float upper, Device *dev, Graph *g);

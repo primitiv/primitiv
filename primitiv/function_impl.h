@@ -63,6 +63,21 @@ private:
   Device *device_;
 };
 
+class Constant : public primitiv::Function {
+  NO_CTOR_CLASS_DECL(Constant);
+public:
+  Constant(const Shape &shape, float k, Device *device)
+    : shape_(shape), k_(k), device_(device) {}
+  Device *get_device() const override { return device_; }
+  std::string name() const override {
+    return "Constant(" + std::to_string(k_) + ')';
+  }
+private:
+  Shape shape_;
+  float k_;
+  Device *device_;
+};
+
 class RandomBernoulli : public primitiv::Function {
   NO_CTOR_CLASS_DECL(RandomBernoulli);
 public:
