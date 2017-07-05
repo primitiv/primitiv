@@ -208,6 +208,7 @@ int main() {
 
   // Train/valid loop.
   for (unsigned epoch = 0; epoch < MAX_EPOCH; ++epoch) {
+    cout << "epoch " << (epoch + 1) << '/' << MAX_EPOCH << ':' << endl;
     // Shuffles train sentence IDs.
     shuffle(begin(train_ids), end(train_ids), rng);
 
@@ -231,7 +232,7 @@ int main() {
       cout << ofs << '\r' << flush;
     }
     const float train_ppl = std::exp(train_loss / num_train_labels);
-    cout << "epoch " << epoch << ": train ppl = " << train_ppl << endl;
+    cout << "  train ppl = " << train_ppl << endl;
 
     // Validation.
     float valid_loss = 0;
@@ -248,7 +249,7 @@ int main() {
       cout << ofs << '\r' << flush;
     }
     const float valid_ppl = std::exp(valid_loss / num_valid_labels);
-    cout << "epoch " << epoch << ": valid ppl = " << valid_ppl << endl;
+    cout << "  valid ppl = " << valid_ppl << endl;
   }
 
   return 0;
