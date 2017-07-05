@@ -1,5 +1,4 @@
 build
-example/a.out
 example/*/a.out
-example/mnist/*.yaml
-example/mnist/data
+example/*/*.yaml
+example/*/data

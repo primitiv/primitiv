@@ -3,6 +3,15 @@
 //
 // The model consists of a full-connected 2-layer (input/hidden/output)
 // perceptron with the softmax cross entropy loss.
+//
+// Usage:
+//   Run 'download_mnist.sh' in the same directory before using this code.
+//   g++ -std=c++11 \
+//       -I/path/to/primitiv/include \
+//       -I/path/to/cuda/include \
+//       -L/path/to/primitiv/lib \
+//       mnist.sh \
+//       -lprimitiv
 
 #include <algorithm>
 #include <cmath>
