@@ -4,6 +4,7 @@ set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
 project(primitiv VERSION 0.1.0 LANGUAGES CXX)
 
 option(PRIMITIV_USE_CUDA "ON if CUDA library is available." OFF)
+option(PRIMITIV_BUILD_STATIC_LIBRARY "ON if you need static library." OFF)
 
 # compiler requirements and settings
 set(CMAKE_CXX_STANDARD 11)

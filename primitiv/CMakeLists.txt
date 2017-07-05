@@ -78,7 +78,11 @@ if(PRIMITIV_USE_CUDA)
   list(APPEND primitiv_HDRS ${primitiv_cuda_HDRS})
 endif()
 
-add_library(primitiv SHARED ${primitiv_OBJS})
+if(PRIMITIV_BUILD_STATIC_LIBRARY)
+  add_library(primitiv STATIC ${primitiv_OBJS})
+else()
+  add_library(primitiv SHARED ${primitiv_OBJS})
+endif()
 target_link_libraries(primitiv ${primitiv_DEPS})
 
 install(TARGETS primitiv DESTINATION lib)

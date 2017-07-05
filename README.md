@@ -28,7 +28,9 @@ Build
     git submodule update
     mkdir build
     cd build
-    cmake .. [-DPRIMITIV_USE_CUDA=ON]
+    cmake ..
+      [-DPRIMITIV_USE_CUDA=ON]
+      [-DPRIMITIV_BUILD_STATIC_LIBRARY=ON]
     make [-j <threads>]
     make test
 
