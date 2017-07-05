@@ -1513,5 +1513,88 @@ TEST_F(TensorOpsTest, CheckSoftmaxCrossEntropyBatchBroadcast) {
   }
 }
 
+TEST_F(TensorOpsTest, CheckInvalidSoftmaxCrossEntropy) {
+  for (Device *dev : devices) {
+    {
+      const Tensor x = dev->new_tensor({2, 2}, .5);
+      const Tensor t = dev->new_tensor({2, 3}, .5);
+      EXPECT_THROW(softmax_cross_entropy(x, t, 0), Error);
+      EXPECT_THROW(softmax_cross_entropy(x, t, 1), Error);
+      EXPECT_THROW(softmax_cross_entropy(x, t, 2), Error);
+    }
+    {
+      const Tensor x = dev->new_tensor(Shape({2, 2}, 2), .5);
+      const Tensor t = dev->new_tensor(Shape({2, 3}, 3), .5);
+      EXPECT_THROW(softmax_cross_entropy(x, t, 0), Error);
+      EXPECT_THROW(softmax_cross_entropy(x, t, 1), Error);
+      EXPECT_THROW(softmax_cross_entropy(x, t, 2), Error);
+    }
+  }
+}
+
+TEST_F(TensorOpsTest, CheckSparseSoftmaxCrossEntropy) {
+  struct TestCase {
+    vector<float> x_data;
+    unsigned dim;
+    vector<unsigned> ids;
+    Shape x_shape, y_shape;
+    vector<float> y_data;
+  };
+  const vector<TestCase> test_cases {
+    // Testing 1-1 operations with 0/1/2 dimensions.
+    {{-1, 0, 1, 1, -1, 0, 0, 1, -1},
+      0, {0}, {3, 3}, {1, 3},
+      {2.40760596, 0.40760596, 1.40760596}},
+    {{-1, 0, 1, 1, -1, 0, 0, 1, -1},
+      1, {1}, {3, 3}, {3},
+      {0.40760596, 2.40760596, 1.40760596}},
+    {{-1, 0, 1, 1, -1, 0, 0, 1, -1},
+      2, {0}, {3, 3}, {3, 3},
+      {0, 0, 0, 0, 0, 0, 0, 0, 0}},
+    // Testing N-N operation.
+    {{-1, 0, 1, 1, -1, 0, 0, 1, -1, -2, 0, 2, 2, -2, 0, 0, 2, -2},
+      0, {0, 1}, Shape({3, 3}, 2), Shape({1, 3}, 2),
+      {2.40760596, 0.40760596, 1.40760596,
+        2.14293163, 4.14293163, 0.14293163}},
+    // Testing N-1 operation.
+    {{-1, 0, 1, 1, -1, 0, 0, 1, -1, -2, 0, 2, 2, -2, 0, 0, 2, -2},
+      0, {0}, Shape({3, 3}, 2), Shape({1, 3}, 2),
+      {2.40760596, 0.40760596, 1.40760596,
+        4.14293163, 0.14293163, 2.14293163}},
+    // Testing 1-N operation.
+    {{-1, 0, 1, 1, -1, 0, 0, 1, -1},
+      0, {0, 1}, {3, 3}, Shape({1, 3}, 2),
+      {2.40760596, 0.40760596, 1.40760596,
+        1.40760596, 2.40760596, 0.40760596}},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      const Tensor x = dev->new_tensor_by_vector(tc.x_shape, tc.x_data);
+      const Tensor y = softmax_cross_entropy(x, tc.dim, tc.ids);
+      EXPECT_EQ(tc.y_shape, y.shape());
+      EXPECT_TRUE(vector_near(tc.y_data, y.to_vector(), 1e-6));
+    }
+  }
+}
+
+TEST_F(TensorOpsTest, CheckInvalidSparseSoftmaxCrossEntropy) {
+  for (Device *dev : devices) {
+    {
+      const Tensor x = dev->new_tensor({2, 2}, .5);
+      const vector<unsigned> t {2};
+      EXPECT_THROW(softmax_cross_entropy(x, 0, t), Error);
+      EXPECT_THROW(softmax_cross_entropy(x, 1, t), Error);
+      EXPECT_THROW(softmax_cross_entropy(x, 2, t), Error);
+    }
+    {
+      const Tensor x = dev->new_tensor(Shape({2, 2}, 2), .5);
+      const vector<unsigned> t {0, 0, 0};
+      EXPECT_THROW(softmax_cross_entropy(x, 0, t), Error);
+      EXPECT_THROW(softmax_cross_entropy(x, 1, t), Error);
+      EXPECT_THROW(softmax_cross_entropy(x, 2, t), Error);
+    }
+  }
+}
+
 }  // namespace tensor_ops
 }  // namespace primitiv
