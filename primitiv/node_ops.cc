@@ -141,8 +141,19 @@ Node sum(const Node &x, unsigned dim) {
   return REG(x)(new F::Sum(dim), {x});
 }
 
+Node sum(const std::vector<Node> &xs) {
+  if (xs.empty()) THROW_ERROR("No nodes to sum.");
+  Node ret = xs[0];
+  for (unsigned i = 1; i < xs.size(); ++i) ret = ret + xs[i];
+  return ret;
+}
+
 Node mean(const Node &x, unsigned dim) {
   return (1. / x.shape()[dim]) * sum(x, dim);
+}
+
+Node mean(const std::vector<Node> &xs) {
+  return sum(xs) / xs.size();
 }
 
 Node logsumexp(const Node &x, unsigned dim) {

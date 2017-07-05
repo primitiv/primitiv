@@ -53,7 +53,9 @@ Node lrelu(const Node &x);
 Node prelu(const Node &x, float a);
 
 Node sum(const Node &x, unsigned dim);
+Node sum(const std::vector<Node> &xs);
 Node mean(const Node &x, unsigned dim);
+Node mean(const std::vector<Node> &xs);
 Node logsumexp(const Node &x, unsigned dim);
 Node log_softmax(const Node &x, unsigned dim);
 Node softmax(const Node &x, unsigned dim);
