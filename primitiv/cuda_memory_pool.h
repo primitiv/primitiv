@@ -45,6 +45,11 @@ private:
    */
   void free(void *ptr);
 
+  /**
+   * Releases all reserved memory blocks.
+   */
+  void release_reserved_blocks();
+
   unsigned dev_id_;
   std::vector<std::vector<void *>> reserved_;
   std::unordered_map<void *, unsigned> supplied_;

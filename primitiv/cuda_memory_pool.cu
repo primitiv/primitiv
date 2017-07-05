@@ -34,10 +34,14 @@ CUDAMemoryPool::~CUDAMemoryPool() {
     }
     std::abort();
   }
+  release_reserved_blocks();
+}
 
+void CUDAMemoryPool::release_reserved_blocks() {
   for (auto &ptrs : reserved_) {
-    for (void *ptr : ptrs) {
-      CUDA_CALL(::cudaFree(ptr));
+    while (!ptrs.empty()) {
+      CUDA_CALL(::cudaFree(ptrs.back()));
+      ptrs.pop_back();
     }
   }
 }
@@ -57,7 +61,12 @@ std::shared_ptr<void> CUDAMemoryPool::allocate(std::uint64_t size) {
   if (reserved_[scale].empty()) {
     // Allocates a new block.
     CUDA_CALL(::cudaSetDevice(dev_id_));
-    CUDA_CALL(::cudaMalloc(&ptr, 1ull << scale));
+    if (::cudaMalloc(&ptr, 1ull << scale) != ::cudaSuccess) {
+      // Maybe out-of-memory.
+      // Release other blocks and try allocation again.
+      release_reserved_blocks();
+      CUDA_CALL(::cudaMalloc(&ptr, 1ull << scale));
+    }
     supplied_.insert(make_pair(ptr, scale));
   } else {
     // Returns an existing block.

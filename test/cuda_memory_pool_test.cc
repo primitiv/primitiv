@@ -69,6 +69,8 @@ TEST_F(CUDAMemoryPoolTest, CheckInvalidAllocate) {
 
   ::cudaDeviceProp prop;
   CUDA_CALL(::cudaGetDeviceProperties(&prop, 0));
+
+  // Calculates the half or more size of the whole memory.
   std::uint64_t size = 1llu;
   while (size < prop.totalGlobalMem >> 1) size <<= 1;
 
@@ -84,6 +86,30 @@ TEST_F(CUDAMemoryPoolTest, CheckInvalidAllocate) {
   std::shared_ptr<void> sp;
   ASSERT_NO_THROW(sp = pool.allocate(size));
   EXPECT_THROW(pool.allocate(size), Error);  // Out of memory
+}
+
+TEST_F(CUDAMemoryPoolTest, CheckReleaseReservedBlocks) {
+  CUDAMemoryPool pool(0);
+
+  ::cudaDeviceProp prop;
+  CUDA_CALL(::cudaGetDeviceProperties(&prop, 0));
+
+  // Calculates the quater size of the whole memory.
+  std::uint64_t size = 1llu;
+  while (size < prop.totalGlobalMem >> 2) size <<= 1;
+
+  std::shared_ptr<void> p1 = pool.allocate(size);  // 1/4 of all
+  {
+    std::shared_ptr<void> p2;
+    EXPECT_NO_THROW(p2 = pool.allocate(size));  // 2/4 of all
+    EXPECT_THROW(pool.allocate(size << 1), Error);  // 4/4 of all (OOM)
+  }
+  {
+    std::shared_ptr<void> p2;
+    EXPECT_NO_THROW(p2 = pool.allocate(size << 1)); // 3/4 of all
+    EXPECT_THROW(pool.allocate(size), Error);  // 4/4 of all (OOM)
+  }
+  EXPECT_NO_THROW(pool.allocate(size));  // 2/4 of all
 }
 
 }  // namespace primitiv
