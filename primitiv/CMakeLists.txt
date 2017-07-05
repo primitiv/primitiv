@@ -43,7 +43,7 @@ set(primitiv_OBJS $<TARGET_OBJECTS:primitiv_base>)
 set(primitiv_DEPS yaml-cpp)
 set(primitiv_HDRS ${primitiv_base_HDRS})
 
-if(USE_CUDA)
+if(PRIMITIV_USE_CUDA)
   set(primitiv_cuda_HDRS
     cuda_device.h
     cuda_memory_pool.h

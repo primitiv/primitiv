@@ -28,7 +28,7 @@ Build
     git submodule update
     mkdir build
     cd build
-    cmake .. [-DUSE_CUDA=ON]
+    cmake .. [-DPRIMITIV_USE_CUDA=ON]
     make [-j <threads>]
     make test
 

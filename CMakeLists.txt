@@ -3,6 +3,8 @@ set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
 
 project(primitiv VERSION 0.1.0 LANGUAGES CXX)
 
+option(PRIMITIV_USE_CUDA "ON if CUDA library is available." OFF)
+
 # compiler requirements and settings
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -21,7 +23,7 @@ configure_file(
 include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
 link_directories()
 
-if(USE_CUDA)
+if(PRIMITIV_USE_CUDA)
   find_package(CUDA REQUIRED)
   include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
   link_directories(${CUDA_LIBRARIES})

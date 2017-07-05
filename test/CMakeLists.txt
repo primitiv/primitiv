@@ -28,7 +28,7 @@ primitiv_test(tensor_ops)
 primitiv_test(trainer)
 primitiv_test(trainer_impl)
 
-if(USE_CUDA)
+if(PRIMITIV_USE_CUDA)
   primitiv_test(cuda_device)
   primitiv_test(cuda_memory_pool)
 endif()

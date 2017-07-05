@@ -7,9 +7,9 @@
 #include <primitiv/tensor.h>
 #include <test_utils.h>
 
-#ifdef USE_CUDA
+#ifdef PRIMITIV_USE_CUDA
 #include <primitiv/cuda_device.h>
-#endif  // USE_CUDA
+#endif  // PRIMITIV_USE_CUDA
 
 using std::vector;
 using test_utils::vector_match;
@@ -24,13 +24,13 @@ protected:
   void SetUp() override {
     devices.emplace_back(new CPUDevice());
     devices.emplace_back(new CPUDevice()); // other device on the same hardware
-#ifdef USE_CUDA
+#ifdef PRIMITIV_USE_CUDA
     devices.emplace_back(new CUDADevice(0));
     devices.emplace_back(new CUDADevice(0)); // other device on the same hardware
     if (CUDADevice::num_devices() > 2) {
       devices.emplace_back(new CUDADevice(1));
     }
-#endif  // USE_CUDA
+#endif  // PRIMITIV_USE_CUDA
   }
 
   void TearDown() override {
