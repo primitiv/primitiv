@@ -40,7 +40,7 @@ Shape Input::forward_shape(const vector<const Shape *> &args) const {
   return shape_;
 }
 
-Tensor Input::forward(const vector<const Tensor *> &args) const {
+Tensor Input::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 0);
   return device_->new_tensor_by_vector(shape_, data_);
 }
@@ -56,7 +56,7 @@ Shape ParameterInput::forward_shape(const vector<const Shape *> &args) const {
   return param_->shape();
 }
 
-Tensor ParameterInput::forward(const vector<const Tensor *> &args) const {
+Tensor ParameterInput::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 0);
   return param_->value();
 }
@@ -72,7 +72,7 @@ Shape Copy::forward_shape(const vector<const Shape *> &args) const {
   return *args[0];
 }
 
-Tensor Copy::forward(const vector<const Tensor *> &args) const {
+Tensor Copy::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 1);
   return T::copy(*args[0], device_);
 }
@@ -88,7 +88,7 @@ Shape Constant::forward_shape(const vector<const Shape *> &args) const {
   return shape_;
 }
 
-Tensor Constant::forward(const vector<const Tensor *> &args) const {
+Tensor Constant::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 0);
   return device_->new_tensor(shape_, k_);
 }
@@ -104,7 +104,7 @@ Shape RandomBernoulli::forward_shape(const vector<const Shape *> &args) const {
   return shape_;
 }
 
-Tensor RandomBernoulli::forward(const vector<const Tensor *> &args) const {
+Tensor RandomBernoulli::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 0);
   return device_->random_bernoulli(shape_, p_);
 }
@@ -120,7 +120,7 @@ Shape RandomUniform::forward_shape(const vector<const Shape *> &args) const {
   return shape_;
 }
 
-Tensor RandomUniform::forward(const vector<const Tensor *> &args) const {
+Tensor RandomUniform::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 0);
   return device_->random_uniform(shape_, lower_, upper_);
 }
@@ -136,7 +136,7 @@ Shape RandomNormal::forward_shape(const vector<const Shape *> &args) const {
   return shape_;
 }
 
-Tensor RandomNormal::forward(const vector<const Tensor *> &args) const {
+Tensor RandomNormal::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 0);
   return device_->random_normal(shape_, mean_, sd_);
 }
@@ -152,7 +152,7 @@ Shape RandomLogNormal::forward_shape(const vector<const Shape *> &args) const {
   return shape_;
 }
 
-Tensor RandomLogNormal::forward(const vector<const Tensor *> &args) const {
+Tensor RandomLogNormal::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 0);
   return device_->random_log_normal(shape_, mean_, sd_);
 }
@@ -168,7 +168,7 @@ Shape Pick::forward_shape(const vector<const Shape *> &args) const {
   return shape_ops::pick(*args[0], dim_, ids_);
 }
 
-Tensor Pick::forward(const vector<const Tensor *> &args) const {
+Tensor Pick::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 1);
   return tensor_ops::pick(*args[0], dim_, ids_);
 }
@@ -184,7 +184,7 @@ Shape Slice::forward_shape(const vector<const Shape *> &args) const {
   return shape_ops::slice(*args[0], dim_, lower_, upper_);
 }
 
-Tensor Slice::forward(const std::vector<const Tensor *> &args) const {
+Tensor Slice::forward(const std::vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 1);
   return T::slice(*args[0], dim_, lower_, upper_);
 }
@@ -199,7 +199,7 @@ Shape Concat::forward_shape(const vector<const Shape *> &args) const {
   return shape_ops::concat(args, dim_);
 }
 
-Tensor Concat::forward(const std::vector<const Tensor *> &args) const {
+Tensor Concat::forward(const std::vector<const Tensor *> &args) {
   return T::concat(args, dim_);
 }
 
@@ -313,8 +313,14 @@ Shape SoftmaxCrossEntropy::forward_shape(
   return y;
 }
 
+Shape SparseSoftmaxCrossEntropy::forward_shape(
+    const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 1);
+  return shape_ops::pick(*args[0], dim_, ids_);
+}
+
 #define FORWARD(name) \
-    Tensor name::forward(const vector<const Tensor *> &x) const
+    Tensor name::forward(const vector<const Tensor *> &x)
 
 FORWARD(Reshape) { return T::reshape(*x[0], shape_); }
 FORWARD(Flatten) { return T::flatten(*x[0]); }
@@ -362,6 +368,14 @@ FORWARD(BatchSum) { return T::batch_sum(*x[0]); }
 
 FORWARD(SoftmaxCrossEntropy) {
   return T::softmax_cross_entropy(*x[0], *x[1], dim_);
+}
+FORWARD(SparseSoftmaxCrossEntropy) {
+#ifdef PRIMITIV_USE_CACHE
+  log_softmax_x_ = T::log_softmax(*x[0], dim_);
+  return T::pick(-log_softmax_x_, dim_, ids_);
+#else
+  return T::softmax_cross_entropy(*x[0], dim_, ids_);
+#endif  // PRIMITIV_USE_CACHE
 }
 
 #undef FORWARD
@@ -447,6 +461,17 @@ BACKWARD(SoftmaxCrossEntropy) {
   const Tensor bcast_gy = T::broadcast(gy, dim_, x[0]->shape()[dim_]);
   ADD(0, (T::exp(log_softmax_x) - *x[1]) * bcast_gy);
   ADD(1, -log_softmax_x * bcast_gy);
+}
+
+BACKWARD(SparseSoftmaxCrossEntropy) {
+  // dE/dx = gy * (softmax(x) - delta(x, i))
+  //       = gy * softmax(x) - gy * delta(x, i)
+#ifdef PRIMITIV_USE_CACHE
+  ADD(0, T::exp(log_softmax_x_) * T::broadcast(gy, dim_, x[0]->shape()[dim_]));
+#else
+  ADD(0, T::softmax(*x[0], dim_) * T::broadcast(gy, dim_, x[0]->shape()[dim_]));
+#endif  // PRIMITIV_USE_CACHE
+  gy.device()->pick_bw(-gy, dim_, ids_, *gx[0]);
 }
 
 #undef BACKWARD

@@ -105,7 +105,7 @@ protected:
 };
 
 #define TEST_1ARG(name_) { \
-  const name_ node; \
+  name_ node; \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
   const Tensor cur_grad = dev->new_tensor(ret_shape, 1); \
@@ -118,7 +118,7 @@ protected:
 }
 
 #define TEST_1ARG_K(name_, k_) { \
-  const name_ node(k_); \
+  name_ node(k_); \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
   const Tensor cur_grad = dev->new_tensor(ret_shape, 1); \
@@ -133,7 +133,7 @@ protected:
 }
 
 #define TEST_1ARG_NEAR(name_, err) { \
-  const name_ node; \
+  name_ node; \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
   const Tensor cur_grad = dev->new_tensor(ret_shape, 1); \
@@ -146,7 +146,7 @@ protected:
 }
 
 #define TEST_2ARGS(name_) { \
-  const name_ node; \
+  name_ node; \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
   const Tensor cur_grad = dev->new_tensor(ret_shape, 1); \
@@ -162,7 +162,7 @@ protected:
 TEST_F(FunctionImplTest, CheckInput) {
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4};
-  const Input node(ret_shape, ret_data, dev);
+  Input node(ret_shape, ret_data, dev);
   const Shape cur_shape = node.forward_shape(arg_shapes);
   const Tensor cur_value = node.forward(arg_values);
   const Tensor cur_grad = dev->new_tensor(ret_shape, 1);
@@ -183,7 +183,7 @@ TEST_F(FunctionImplTest, CheckParameterInput) {
   ASSERT_TRUE(vector_match(vector<float>(4, 42), param.value().to_vector()));
   ASSERT_TRUE(vector_match(vector<float>(4, 0), param.gradient().to_vector()));
 
-  const ParameterInput node(&param);
+  ParameterInput node(&param);
   const Shape cur_shape = node.forward_shape(arg_shapes);
   const Tensor cur_value = node.forward(arg_values);
   const Tensor cur_grad = dev->new_tensor(ret_shape, 1);
@@ -201,7 +201,7 @@ TEST_F(FunctionImplTest, CheckCopy) {
   CPUDevice dev2;
   const Shape ret_shape({2, 2}, 3);
   setup_1arg();
-  const Copy node(&dev2);
+  Copy node(&dev2);
   const Shape cur_shape = node.forward_shape(arg_shapes);
   const Tensor cur_value = node.forward(arg_values);
   const Tensor cur_grad = dev2.new_tensor_by_vector(
@@ -227,7 +227,7 @@ TEST_F(FunctionImplTest, CheckConstant) {
     {Shape({2, 3, 5, 7}, 5), -123},
   };
   for (const TestCase &tc : test_cases) {
-    const Constant node(tc.shape, tc.k, dev);
+    Constant node(tc.shape, tc.k, dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
@@ -253,7 +253,7 @@ TEST_F(FunctionImplTest, CheckRandomBernoulli) {
     {Shape({2, 2}, 3), 1, {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
   };
   for (const TestCase &tc : test_cases) {
-    const RandomBernoulli node(tc.shape, tc.p, dev);
+    RandomBernoulli node(tc.shape, tc.p, dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
@@ -287,7 +287,7 @@ TEST_F(FunctionImplTest, CheckRandomUniform) {
         1.80981255, 1.90792489, 1.87217593, 1.55639732}},
   };
   for (const TestCase &tc : test_cases) {
-    const RandomUniform node(tc.shape, tc.lower, tc.upper, dev);
+    RandomUniform node(tc.shape, tc.lower, tc.upper, dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
@@ -323,7 +323,7 @@ TEST_F(FunctionImplTest, CheckRandomNormal) {
         2.59950328, 1.45240283, 1.47200286, 1.91403091}},
   };
   for (const TestCase &tc : test_cases) {
-    const RandomNormal node(tc.shape, tc.mean, tc.sd, dev);
+    RandomNormal node(tc.shape, tc.mean, tc.sd, dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
@@ -359,7 +359,7 @@ TEST_F(FunctionImplTest, CheckRandomLogNormal) {
         13.45705223, 4.27337027, 4.35795498, 6.78036499}},
   };
   for (const TestCase &tc : test_cases) {
-    const RandomLogNormal node(tc.shape, tc.mean, tc.sd, dev);
+    RandomLogNormal node(tc.shape, tc.mean, tc.sd, dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
@@ -401,7 +401,7 @@ TEST_F(FunctionImplTest, CheckPick) {
   };
   setup_1arg();
   for (const TestCase &tc : test_cases) {
-    const Pick node(tc.dim, tc.ids);
+    Pick node(tc.dim, tc.ids);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor(tc.ret_shape, 1);
@@ -450,7 +450,7 @@ TEST_F(FunctionImplTest, CheckSlice) {
   };
   setup_1arg();
   for (const TestCase &tc : test_cases) {
-    const Slice node(tc.dim, tc.lower, tc.upper);
+    Slice node(tc.dim, tc.lower, tc.upper);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor(tc.ret_shape, 1);
@@ -490,7 +490,7 @@ TEST_F(FunctionImplTest, CheckConcat) {
   };
   setup_2args();
   for (const TestCase &tc : test_cases) {
-    const Concat node(tc.dim);
+    Concat node(tc.dim);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor_by_vector(tc.ret_shape, tc.cur_grad_data);
@@ -518,7 +518,7 @@ TEST_F(FunctionImplTest, CheckReshape) {
   const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4};
   const vector<float> bw_grad(arg_shapes[0]->size(), 1);
   for (const Shape ret_shape : shapes) {
-    const Reshape node(ret_shape);
+    Reshape node(ret_shape);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor(ret_shape.resize_batch(3), 1);
@@ -981,7 +981,7 @@ TEST_F(FunctionImplTest, CheckSum) {
     {2, Shape({2, 2}, 3), {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4}},
   };
   for (const TestCase &tc : test_cases) {
-    const Sum node(tc.dim);
+    Sum node(tc.dim);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor(tc.ret_shape, 1);
@@ -1025,7 +1025,7 @@ TEST_F(FunctionImplTest, CheckLogSumExp) {
       {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
   };
   for (const TestCase &tc : test_cases) {
-    const LogSumExp node(tc.dim);
+    LogSumExp node(tc.dim);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor(tc.ret_shape, 1);
@@ -1063,7 +1063,7 @@ TEST_F(FunctionImplTest, CheckBroadcast) {
         -1, -2, -3, -4, -1, -2 ,-3, -4, -1, -2, -3, -4}},
   };
   for (const TestCase tc : test_cases) {
-    const Broadcast node(tc.dim, tc.size);
+    Broadcast node(tc.dim, tc.size);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor(tc.ret_shape, 1);
@@ -1107,7 +1107,7 @@ TEST_F(FunctionImplTest, CheckSoftmaxCrossEntropy) {
       0.69314718, 0.69314718, 0.69314718, 0.69314718,
       0.31326169, 1.31326169, 0.31326169, 1.31326169},
   };
-  const SoftmaxCrossEntropy node(0);
+  SoftmaxCrossEntropy node(0);
   const Shape cur_shape = node.forward_shape(arg_shapes);
   const Tensor cur_value = node.forward(arg_values);
   const Tensor cur_grad = dev->new_tensor(ret_shape, 1);
@@ -1118,6 +1118,57 @@ TEST_F(FunctionImplTest, CheckSoftmaxCrossEntropy) {
   EXPECT_TRUE(vector_near(ret_data, cur_value.to_vector(), 1e-6));
   EXPECT_TRUE(vector_near(bw_grads[0], arg_grads[0]->to_vector(), 1e-6));
   EXPECT_TRUE(vector_near(bw_grads[1], arg_grads[1]->to_vector(), 1e-6));
+}
+
+TEST_F(FunctionImplTest, CheckSparseSoftmaxCrossEntropy) {
+  struct TestCase {
+    unsigned dim;
+    vector<unsigned> ids;
+    Shape ret_shape;
+    vector<float> ret_data;
+    vector<float> bw_grad;
+  };
+  const vector<TestCase> test_cases {
+    {0, {0}, Shape({1, 2}, 3),
+      {1.31326169, 1.31326169, 0.69314718, 0.69314718, 0.31326169, 0.31326169},
+      {-0.73105858, 0.73105858, -0.73105858, 0.73105858,
+        -0.5, 0.5, -0.5, 0.5,
+        -0.26894142, 0.26894142, -0.26894142, 0.26894142}},
+    {0, {0, 0, 0}, Shape({1, 2}, 3),
+      {1.31326169, 1.31326169, 0.69314718, 0.69314718, 0.31326169, 0.31326169},
+      {-0.73105858, 0.73105858, -0.73105858, 0.73105858,
+        -0.5, 0.5, -0.5, 0.5,
+        -0.26894142, 0.26894142, -0.26894142, 0.26894142}},
+    {0, {1, 1, 1}, Shape({1, 2}, 3),
+      {0.31326169, 0.31326169, 0.69314718, 0.69314718, 1.31326169, 1.31326169},
+      {0.26894142, -0.26894142, 0.26894142, -0.26894142,
+        0.5, -0.5, 0.5, -0.5,
+        0.73105858, -0.73105858, 0.73105858, -0.73105858}},
+    {1, {0, 0, 1}, Shape({2}, 3),
+      {2.12692801, 2.12692801, 0.69314718, 0.69314718, 2.12692801, 2.12692801},
+      {-0.88079708, -0.88079708, 0.88079708, 0.88079708,
+        -0.5, -0.5, 0.5, 0.5,
+        0.88079708, 0.88079708, -0.88079708, -0.88079708}},
+    {2, {0}, Shape({2, 2}, 3),
+      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+  };
+  setup_1arg();
+  for (const TestCase &tc : test_cases) {
+    SparseSoftmaxCrossEntropy node(tc.dim, tc.ids);
+    const Shape cur_shape = node.forward_shape(arg_shapes);
+    const Tensor cur_value = node.forward(arg_values);
+    const Tensor cur_grad = dev->new_tensor(tc.ret_shape, 1);
+    reset_gradients();
+    node.backward(cur_value, cur_grad, arg_values, arg_grads);
+    EXPECT_EQ(
+        "SparseSoftmaxCrossEntropy(" + std::to_string(tc.dim) + ')',
+        node.name());
+    EXPECT_EQ(tc.ret_shape, cur_shape);
+    EXPECT_EQ(nullptr, node.get_device());
+    EXPECT_TRUE(vector_near(tc.ret_data, cur_value.to_vector(), 1e-6));
+    EXPECT_TRUE(vector_near(tc.bw_grad, arg_grads[0]->to_vector(), 1e-6));
+  }
 }
 
 }  // namespace functions

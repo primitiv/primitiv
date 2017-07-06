@@ -19,7 +19,7 @@ private: \
   name_ &operator=(name_ &&) = delete; \
 public: \
   Shape forward_shape(const std::vector<const Shape *> &args) const override; \
-  Tensor forward(const std::vector<const Tensor *> &args) const override; \
+  Tensor forward(const std::vector<const Tensor *> &args) override; \
   void backward( \
       const Tensor &cur_value, \
       const Tensor &cur_grad, \
@@ -241,6 +241,20 @@ public:
   }
 private:
   unsigned dim_;
+};
+
+class SparseSoftmaxCrossEntropy : public Function {
+  NO_CTOR_CLASS_DECL(SparseSoftmaxCrossEntropy);
+public:
+  explicit SparseSoftmaxCrossEntropy(
+      unsigned dim, const std::vector<unsigned> ids) : dim_(dim), ids_(ids) {}
+  std::string name() const override {
+    return "SparseSoftmaxCrossEntropy(" + std::to_string(dim_) + ')';
+  }
+private:
+  unsigned dim_;
+  std::vector<unsigned> ids_;
+  Tensor log_softmax_x_;  // Only used when PRIMITIV_USE_CACHE=ON
 };
 
 // Function with no parameter.

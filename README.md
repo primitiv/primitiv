@@ -29,8 +29,9 @@ Build
     mkdir build
     cd build
     cmake ..
-      [-DPRIMITIV_USE_CUDA=ON]
       [-DPRIMITIV_BUILD_STATIC_LIBRARY=ON]
+      [-DPRIMITIV_USE_CACHE=ON]
+      [-DPRIMITIV_USE_CUDA=ON]
     make [-j <threads>]
     make test
 

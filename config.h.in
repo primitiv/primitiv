@@ -1,1 +1,3 @@
+#cmakedefine PRIMITIV_BUILD_STATIC_LIBRARY
+#cmakedefine PRIMITIV_USE_CACHE
 #cmakedefine PRIMITIV_USE_CUDA

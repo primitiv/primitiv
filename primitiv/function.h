@@ -42,8 +42,10 @@ public:
    * Calculates the forward path.
    * @param args argument tensors.
    * @return Resulting tensors.
+   * @remarks This function is not const-qualified because some function
+   *          implementations may hold the cache of intermediate results.
    */
-  virtual Tensor forward(const std::vector<const Tensor *> &args) const = 0;
+  virtual Tensor forward(const std::vector<const Tensor *> &args) = 0;
 
   /**
    * Calculates the backward path.
