@@ -34,10 +34,11 @@ using namespace std;
 
 namespace {
 
-static const unsigned NUM_EMBED_UNITS = 256;
-static const unsigned NUM_HIDDEN_UNITS = 256;
+static const unsigned NUM_EMBED_UNITS = 512;
+static const unsigned NUM_HIDDEN_UNITS = 512;
 static const unsigned BATCH_SIZE = 64;
 static const unsigned MAX_EPOCH = 100;
+static const float DROPOUT_RATE = 0.5;
 
 // Gathers the set of words from space-separated corpus.
 unordered_map<string, unsigned> make_vocab(const string &filename) {
@@ -181,7 +182,8 @@ public:
   //   ...,
   //   {sent1_wordM, sent2_wordM, ..., sentN_wordM},  // last output (<s>)
   // };
-  vector<Node> forward(const vector<vector<unsigned>> &inputs, Graph &g) {
+  vector<Node> forward(
+      const vector<vector<unsigned>> &inputs, Graph &g, bool train) {
     const unsigned batch_size = inputs[0].size();
     Node lookup = F::input(&plookup_, &g);
     Node why = F::input(&pwhy_, &g);
@@ -191,7 +193,9 @@ public:
     vector<Node> outputs;
     for (unsigned i = 0; i < inputs.size() - 1; ++i) {
       Node x = F::pick(lookup, 1, inputs[i]);
+      x = F::dropout(x, DROPOUT_RATE, train);
       Node h = lstm_.forward(x);
+      h = F::dropout(h, DROPOUT_RATE, train);
       outputs.emplace_back(F::matmul(why, h) + by);
     }
     return outputs;
@@ -271,7 +275,7 @@ int main() {
       trainer.reset_gradients();
       {
         Graph g;
-        const auto outputs = lm.forward(batch, g);
+        const auto outputs = lm.forward(batch, g, true);
         const auto loss = lm.forward_loss(outputs, batch);
         train_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
         g.backward(loss);
@@ -291,7 +295,7 @@ int main() {
             ofs + BATCH_SIZE, num_valid_sents));
       const auto batch = ::make_batch(valid_corpus, batch_ids, eos_id);
       Graph g;
-      const auto outputs = lm.forward(batch, g);
+      const auto outputs = lm.forward(batch, g, false);
       const auto loss = lm.forward_loss(outputs, batch);
       valid_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
       cout << ofs << '\r' << flush;
