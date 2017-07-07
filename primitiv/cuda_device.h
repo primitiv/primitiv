@@ -136,7 +136,7 @@ private:
   void broadcast_fw_impl(const Tensor &x, unsigned dim, unsigned size, Tensor &y) override;
   void batch_sum_fw_impl(const Tensor &x, Tensor &y) override;
 
-  void add_gradient_impl(const Tensor &b, Tensor &a) override;
+  void inplace_add_impl(const Tensor &b, Tensor &a) override;
 
 private:
   unsigned dev_id_;

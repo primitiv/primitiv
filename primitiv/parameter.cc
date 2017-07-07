@@ -156,11 +156,11 @@ void Parameter::reset_gradient() {
 }
 
 void Parameter::add_value(const Tensor &diff) {
-  value_.device()->add_gradient(diff, value_);
+  value_.device()->inplace_add(diff, value_);
 }
 
 void Parameter::add_gradient(const Tensor &diff) {
-  grad_.device()->add_gradient(diff, grad_);
+  grad_.device()->inplace_add(diff, grad_);
 }
 
 void Parameter::save(const string &path) const  {

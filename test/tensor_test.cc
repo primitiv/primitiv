@@ -475,43 +475,43 @@ TEST_F(TensorTest, CheckResetValuesByVector) {
   }
 }
 
-TEST_F(TensorTest, CheckAddGradientNN) {
+TEST_F(TensorTest, CheckInplaceAddNN) {
   for (Device *dev : devices) {
     const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     const vector<float> b_data {0, -1, -2, -3, -3, -4, -5, -6, -6, -7, -8, -9};
     const vector<float> y_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
     Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
     const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
-    dev->add_gradient(b, a);
+    dev->inplace_add(b, a);
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
   }
 }
 
-TEST_F(TensorTest, CheckAddGradient1N) {
+TEST_F(TensorTest, CheckInplaceAdd1N) {
   for (Device *dev : devices) {
     const vector<float> a_data {1, 2, 3, 4};
     const vector<float> b_data {0, -1, -2, -3, -3, -4, -5, -6, -6, -7, -8, -9};
     const vector<float> y_data {-8, -10, -12, -14};
     Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
     const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
-    dev->add_gradient(b, a);
+    dev->inplace_add(b, a);
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
   }
 }
 
-TEST_F(TensorTest, CheckAddGradientN1) {
+TEST_F(TensorTest, CheckInplaceAddN1) {
   for (Device *dev : devices) {
     const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     const vector<float> b_data {0, -1, -2, -3};
     const vector<float> y_data {1, 1, 1, 1, 5, 5, 5, 5, 9, 9, 9, 9};
     Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
     const Tensor b = dev->new_tensor_by_vector({2, 2}, b_data);
-    dev->add_gradient(b, a);
+    dev->inplace_add(b, a);
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
   }
 }
 
-TEST_F(TensorTest, CheckInvalidAddGradient) {
+TEST_F(TensorTest, CheckInvalidInplaceAdd) {
   for (Device *dev : devices) {
     vector<Shape> shapes {
       Shape(),
@@ -522,12 +522,12 @@ TEST_F(TensorTest, CheckInvalidAddGradient) {
 
     for (const Shape &shape : shapes) {
       Tensor b = dev->new_tensor(shape);
-      EXPECT_THROW(dev->add_gradient(b, a), Error);
+      EXPECT_THROW(dev->inplace_add(b, a), Error);
     }
   }
 }
 
-TEST_F(TensorTest, CheckCopyAndAddGradient) {
+TEST_F(TensorTest, CheckCopyAndInplaceAdd) {
   for (Device *dev : devices) {
     const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     const vector<float> b_data {0, -1, -2, -3, -3, -4, -5, -6, -6, -7, -8, -9};
@@ -538,7 +538,7 @@ TEST_F(TensorTest, CheckCopyAndAddGradient) {
     const Tensor copied = a;
     EXPECT_EQ(static_cast<const Tensor>(a).data(), copied.data());
 
-    dev->add_gradient(b, a);
+    dev->inplace_add(b, a);
     EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
     EXPECT_TRUE(vector_match(a_data, copied.to_vector()));

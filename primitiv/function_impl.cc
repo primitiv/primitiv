@@ -80,7 +80,7 @@ Tensor Copy::forward(const vector<const Tensor *> &args) {
 void Copy::backward(
     const Tensor &y, const Tensor &gy,
     const vector<const Tensor *> &x, const vector<Tensor *> &gx) const {
-  gx[0]->device()->add_gradient(T::copy(gy, gx[0]->device()), *gx[0]);
+  gx[0]->device()->inplace_add(T::copy(gy, gx[0]->device()), *gx[0]);
 }
 
 Shape Constant::forward_shape(const vector<const Shape *> &args) const {
@@ -209,8 +209,7 @@ void Concat::backward(
   unsigned offset = 0;
   for (Tensor *gxi : gx) {
     const unsigned span = gxi->shape()[dim_];
-    gxi->device()->add_gradient(
-        T::slice(gy, dim_, offset, offset + span), *gxi);
+    gxi->device()->inplace_add(T::slice(gy, dim_, offset, offset + span), *gxi);
     offset += span;
   }
 }
@@ -387,7 +386,7 @@ FORWARD(SparseSoftmaxCrossEntropy) {
       const vector<const Tensor *> &x, \
       const vector<Tensor *> &gx) const
 
-#define ADD(n, op) gx[n]->device()->add_gradient(op, *gx[n])
+#define ADD(n, op) gx[n]->device()->inplace_add(op, *gx[n])
 
 BACKWARD(Reshape) { ADD(0, gy.reshape(x[0]->shape())); }
 BACKWARD(Flatten) { ADD(0, gy.reshape(x[0]->shape())); }

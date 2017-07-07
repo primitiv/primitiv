@@ -175,7 +175,7 @@ void Device::slice_bw(
         << sy.to_string() << ", dim " << dim << ", offset " << offset
         << " to shape" << sx.to_string() << '.');
   }
-  if (dim >= sx.depth()) add_gradient_impl(gy, gx);
+  if (dim >= sx.depth()) inplace_add_impl(gy, gx);
   else slice_bw_impl(gy, dim, offset, gx);
 }
 
@@ -359,17 +359,17 @@ Tensor Device::batch_sum_fw(const Tensor &x) {
   return y;
 }
 
-void Device::add_gradient(const Tensor &gy, Tensor &gx) {
+void Device::inplace_add(const Tensor &gy, Tensor &gx) {
   CHECK_DEVICE(gy);
   CHECK_DEVICE(gx);
   const Shape &sy = gy.shape();
   const Shape &sx = gx.shape();
   if (!sy.has_same_dims(sx) || !sy.has_compatible_batch(sx)) {
     THROW_ERROR(
-        "Attempted to add gradients with shape "
+        "Attempted to add values of shape "
         << sy.to_string() << " to " << sx.to_string() << '.');
   }
-  add_gradient_impl(gy, gx);
+  inplace_add_impl(gy, gx);
 }
 
 }  // namespace primitiv

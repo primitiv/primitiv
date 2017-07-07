@@ -470,15 +470,15 @@ void CPUDevice::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
 void CPUDevice::transpose_bw_impl(
     const Tensor &, const Tensor &, const Tensor &gy, Tensor &gx) {
   // TODO(odashi): This code could be slow and requires memory. Fix this.
-  add_gradient_impl(transpose_fw(gy), gx);
+  inplace_add_impl(transpose_fw(gy), gx);
 }
 
 void CPUDevice::matmul_bw_impl(
     const Tensor &a, const Tensor &b, const Tensor &, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
   // TODO(odashi): This code could be slow and requires memory. Fix this.
-  add_gradient_impl(matmul_fw(gy, transpose_fw(b)), ga);
-  add_gradient_impl(matmul_fw(transpose_fw(a), gy), gb);
+  inplace_add_impl(matmul_fw(gy, transpose_fw(b)), ga);
+  inplace_add_impl(matmul_fw(transpose_fw(a), gy), gb);
 }
 
 void CPUDevice::sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
@@ -552,7 +552,7 @@ void CPUDevice::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   }
 }
 
-void CPUDevice::add_gradient_impl(const Tensor &gy, Tensor &gx) {
+void CPUDevice::inplace_add_impl(const Tensor &gy, Tensor &gx) {
   const Shape &sy = gy.shape();
   const Shape &sx = gx.shape();
   const unsigned size = sx.volume();

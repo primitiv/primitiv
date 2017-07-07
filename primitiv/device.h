@@ -178,7 +178,7 @@ public:
    *              gy.shape == 1:        gx += batch_broadcast(gy)
    *              otherwise: error.
    */
-  void add_gradient(const Tensor &gy, Tensor &gx);
+  void inplace_add(const Tensor &gy, Tensor &gx);
 
 private:
   /**
@@ -312,7 +312,7 @@ private:
   virtual void broadcast_fw_impl(const Tensor &x, unsigned dim, unsigned size, Tensor &y) = 0;
   virtual void batch_sum_fw_impl(const Tensor &x, Tensor &y) = 0;
 
-  virtual void add_gradient_impl(const Tensor &gy, Tensor &gx) = 0;
+  virtual void inplace_add_impl(const Tensor &gy, Tensor &gx) = 0;
 };
 
 }  // namespace primitiv
