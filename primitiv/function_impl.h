@@ -291,6 +291,7 @@ DECL_FUNC_K(MultiplyConst);
 DECL_FUNC_K(DivideConstR);
 DECL_FUNC_K(DivideConstL);
 DECL_FUNC_K(PReLU);
+DECL_FUNC_K(ELU);
 
 DECL_FUNC(AddScalar);
 DECL_FUNC(SubtractScalarR);

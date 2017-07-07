@@ -145,6 +145,21 @@ protected:
   EXPECT_TRUE(vector_near(bw_grad, arg_grads[0]->to_vector(), err)); \
 }
 
+#define TEST_1ARG_K_NEAR(name_, k_, err) { \
+  name_ node(k_); \
+  const Shape cur_shape = node.forward_shape(arg_shapes); \
+  const Tensor cur_value = node.forward(arg_values); \
+  const Tensor cur_grad = dev->new_tensor(ret_shape, 1); \
+  node.backward(cur_value, cur_grad, arg_values, arg_grads); \
+  EXPECT_EQ( \
+      std::string(#name_) + '(' + \
+      std::to_string(static_cast<float>(k_)) + ')', node.name()); \
+  EXPECT_EQ(ret_shape, cur_shape); \
+  EXPECT_EQ(nullptr, node.get_device()); \
+  EXPECT_TRUE(vector_near(ret_data, cur_value.to_vector(), err)); \
+  EXPECT_TRUE(vector_near(bw_grad, arg_grads[0]->to_vector(), err)); \
+}
+
 #define TEST_2ARGS(name_) { \
   name_ node; \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
@@ -964,6 +979,24 @@ TEST_F(FunctionImplTest, CheckPReLU) {
     .1, .1, .1, .1,
   };
   TEST_1ARG_K(PReLU, .1);
+}
+
+TEST_F(FunctionImplTest, CheckELU) {
+  // y = x > 0 ? x : a * (exp(x) - 1)
+  // dy/dx = x > 0 ? 1 : y + a
+  setup_1arg();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    1, 2, 3, 4,
+    0, 0, 0, 0,
+    -.6321206, -.8646647, -.9502129, -.9816844,
+  };
+  const vector<float> bw_grad {
+    1, 1, 1, 1,
+    1, 1, 1, 1,
+    3.6787944e-01, 1.3533528e-01, 4.9787068e-02, 1.8315639e-02,
+  };
+  TEST_1ARG_K_NEAR(ELU, 1, 1e-6);
 }
 
 TEST_F(FunctionImplTest, CheckSum) {

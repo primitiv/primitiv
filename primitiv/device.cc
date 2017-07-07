@@ -296,6 +296,7 @@ DEV_FW_X_CONST(multiply_const);
 DEV_FW_X_CONST(divide_const_r);
 DEV_FW_X_CONST(divide_const_l);
 DEV_FW_X_CONST(prelu);
+DEV_FW_X_CONST(elu);
 
 DEV_BW_X_CONST(add_const);
 DEV_BW_X_CONST(subtract_const_r);
@@ -304,6 +305,7 @@ DEV_BW_X_CONST(multiply_const);
 DEV_BW_X_CONST(divide_const_r);
 DEV_BW_X_CONST(divide_const_l);
 DEV_BW_X_CONST(prelu);
+DEV_BW_X_CONST(elu);
 
 DEV_FW_AB(add_scalar, shape_ops::scalar_op);
 DEV_FW_AB(subtract_scalar_r, shape_ops::scalar_op);

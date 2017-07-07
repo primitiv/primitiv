@@ -635,6 +635,26 @@ TEST_F(TensorBackwardTest, CheckPReLU) {
   }
 }
 
+TEST_F(TensorBackwardTest, CheckELU) {
+  const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
+  for (Device *dev : devices) {
+    for (const float k : ks) {
+      const Tensor x = dev->new_tensor_by_vector(
+          Shape({2, 2}, 2), {0, 1, 2, 3, 0, -1, -2, -3});
+      const Tensor y = dev->elu_fw(x, k);
+      const Tensor gy = dev->new_tensor_by_vector(
+          y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
+      Tensor gx = dev->new_tensor(x.shape(), 0);
+      dev->elu_bw(x, y, gy, k, gx);
+      const vector<float> gx_val {
+        k, -1, 2, -2,
+        2 * k, -7.3575888e-01f * k, 1.3533528e-01f * k, -4.9787068e-02f * k,
+      };
+      EXPECT_TRUE(vector_near(gx_val, gx.to_vector(), 1e-5));
+    }
+  }
+}
+
 TEST_F(TensorBackwardTest, CheckTranspose) {
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor(Shape({3, 4}, 2));

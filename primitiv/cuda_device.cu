@@ -163,6 +163,8 @@ CUDADEV_KERNEL_FW_X_CONST(multiply_const, px[i] * k);
 CUDADEV_KERNEL_FW_X_CONST(divide_const_r, px[i] / k);
 CUDADEV_KERNEL_FW_X_CONST(divide_const_l, k / px[i]);
 CUDADEV_KERNEL_FW_X_CONST(prelu, ::fmaxf(px[i], .0f) + k * ::fminf(px[i], .0f));
+CUDADEV_KERNEL_FW_X_CONST(
+    elu, ::fmaxf(px[i], .0f) + k * (::expf(::fminf(px[i], .0f)) - 1.0f));
 
 CUDADEV_KERNEL_BW_X_CONST(add_const, pgy[i]);
 CUDADEV_KERNEL_BW_X_CONST(subtract_const_r, pgy[i]);
@@ -171,6 +173,8 @@ CUDADEV_KERNEL_BW_X_CONST(multiply_const, k * pgy[i]);
 CUDADEV_KERNEL_BW_X_CONST(divide_const_r, pgy[i] / k);
 CUDADEV_KERNEL_BW_X_CONST(divide_const_l, -py[i] * pgy[i] / px[i]);
 CUDADEV_KERNEL_BW_X_CONST(prelu, pgy[i] * ((px[i] > .0f) + k * (px[i] <= .0f)));
+CUDADEV_KERNEL_BW_X_CONST(
+    elu, pgy[i] * ((px[i] > .0f) + (py[i] + k) * (px[i] <= .0f)));
 
 CUDADEV_KERNEL_FW_X_SCALAR_R(add_scalar, ::__fadd_rn);
 CUDADEV_KERNEL_FW_X_SCALAR_R(subtract_scalar_r, ::__fsub_rn);
@@ -713,6 +717,7 @@ CUDADEV_FW_X_CONST(multiply_const);
 CUDADEV_FW_X_CONST(divide_const_r);
 CUDADEV_FW_X_CONST(divide_const_l);
 CUDADEV_FW_X_CONST(prelu);
+CUDADEV_FW_X_CONST(elu);
 
 CUDADEV_BW_X_CONST(add_const);
 CUDADEV_BW_X_CONST(subtract_const_r);
@@ -721,6 +726,7 @@ CUDADEV_BW_X_CONST(multiply_const);
 CUDADEV_BW_X_CONST(divide_const_r);
 CUDADEV_BW_X_CONST(divide_const_l);
 CUDADEV_BW_X_CONST(prelu);
+CUDADEV_BW_X_CONST(elu);
 
 CUDADEV_FW_X_SCALAR(add_scalar);
 CUDADEV_FW_X_SCALAR(subtract_scalar_r);

@@ -293,6 +293,8 @@ CPUDEV_FW_X_CONST(multiply_const, src[i] * k);
 CPUDEV_FW_X_CONST(divide_const_r, src[i] / k);
 CPUDEV_FW_X_CONST(divide_const_l, k / src[i]);
 CPUDEV_FW_X_CONST(prelu, src[i] * ((src[i] > 0) + k * (src[i] <= 0)));
+CPUDEV_FW_X_CONST(
+    elu, src[i] * (src[i] > 0) + k * (std::exp(src[i] * (src[i] <= 0)) - 1));
 
 CPUDEV_BW_X_CONST(add_const, pgy[i]);
 CPUDEV_BW_X_CONST(subtract_const_r, pgy[i]);
@@ -301,6 +303,7 @@ CPUDEV_BW_X_CONST(multiply_const, k * pgy[i]);
 CPUDEV_BW_X_CONST(divide_const_r, pgy[i] / k);
 CPUDEV_BW_X_CONST(divide_const_l, -py[i] * pgy[i] / px[i]);
 CPUDEV_BW_X_CONST(prelu, pgy[i] * ((px[i] > 0) + k * (px[i] <= 0)));
+CPUDEV_BW_X_CONST(elu, pgy[i] * ((px[i] > 0) + (py[i] + k) * (px[i] <= 0)));
 
 CPUDEV_FW_X_SCALAR(add_scalar, src_x[i] + *src_k);
 CPUDEV_FW_X_SCALAR(subtract_scalar_r, src_x[i] - *src_k);

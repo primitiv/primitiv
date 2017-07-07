@@ -144,6 +144,14 @@ Tensor prelu(const Tensor &x, float a) {
   return x.device()->prelu_fw(x, a);
 }
 
+Tensor elu(const Tensor &x, float a) {
+  return x.device()->elu_fw(x, a);
+}
+
+Tensor selu(const Tensor &x, float a, float s) {
+  return s * elu(x, a);
+}
+
 Tensor sum(const Tensor &x, unsigned dim) {
   return x.device()->sum_fw(x, dim);
 }

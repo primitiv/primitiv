@@ -260,6 +260,7 @@ FWD_SHAPE_UNARY(Tan);
 FWD_SHAPE_UNARY(ReLU);
 FWD_SHAPE_UNARY(LReLU);
 FWD_SHAPE_UNARY(PReLU);
+FWD_SHAPE_UNARY(ELU);
 FWD_SHAPE_SCALAR(AddScalar);
 FWD_SHAPE_SCALAR(SubtractScalarR);
 FWD_SHAPE_SCALAR(SubtractScalarL);
@@ -343,6 +344,7 @@ FORWARD(MultiplyConst) { return *x[0] * k_; }
 FORWARD(DivideConstR) { return *x[0] / k_; }
 FORWARD(DivideConstL) { return k_ / *x[0]; }
 FORWARD(PReLU) { return T::prelu(*x[0], k_); }
+FORWARD(ELU) { return T::elu(*x[0], k_); }
 
 FORWARD(AddScalar) { return *x[0] + *x[1]; }
 FORWARD(SubtractScalarR) { return *x[0] - *x[1]; }
@@ -411,6 +413,7 @@ BACKWARD(MultiplyConst) { gy.device()->multiply_const_bw(*x[0], y, gy, k_, *gx[0
 BACKWARD(DivideConstR) { gy.device()->divide_const_r_bw(*x[0], y, gy, k_, *gx[0]); }
 BACKWARD(DivideConstL) { gy.device()->divide_const_l_bw(*x[0], y, gy, k_, *gx[0]); }
 BACKWARD(PReLU) { gy.device()->prelu_bw(*x[0], y, gy, k_, *gx[0]); }
+BACKWARD(ELU) { gy.device()->elu_bw(*x[0], y, gy, k_, *gx[0]); }
 
 BACKWARD(AddScalar) {
   ADD(0, gy);

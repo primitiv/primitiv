@@ -137,6 +137,14 @@ Node prelu(const Node &x, float a) {
   return REG(x)(new F::PReLU(a), {x});
 }
 
+Node elu(const Node &x, float a) {
+  return REG(x)(new F::ELU(a), {x});
+}
+
+Node selu(const Node &x, float a, float s) {
+  return s * elu(x, a);
+}
+
 Node sum(const Node &x, unsigned dim) {
   return REG(x)(new F::Sum(dim), {x});
 }

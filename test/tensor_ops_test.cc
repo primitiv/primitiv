@@ -1179,6 +1179,27 @@ TEST_F(TensorOpsTest, CheckPReLU) {
   }
 }
 
+TEST_F(TensorOpsTest, CheckELU) {
+  const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
+  for (Device *dev : devices) {
+    for (const float k : ks) {
+      const vector<float> x_data {
+        0, .5, 1, 2, 4, 8,
+        0, -.5, -1, -2, -4, -8,
+      };
+      const vector<float> y_data {
+        0, .5, 1, 2, 4, 8,
+        0, -.39346934f * k, -.63212056f * k,
+        -.86466472f * k, -.98168436f * k, -.99966454f * k,
+      };
+      const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
+      const Tensor y = elu(x, k);
+      EXPECT_EQ(Shape({2, 3}, 2), y.shape());
+      EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+    }
+  }
+}
+
 TEST_F(TensorOpsTest, CheckSum) {
   const vector<float> x_data {
     1, 2, 3, 4, 5, 6, 7, 8, -1, -2, -3, -4, -5, -6, -7, -8,

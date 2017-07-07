@@ -46,6 +46,11 @@ Tensor tan(const Tensor &x);
 Tensor relu(const Tensor &x);
 Tensor lrelu(const Tensor &x);
 Tensor prelu(const Tensor &x, float a);
+Tensor elu(const Tensor &x, float a);
+Tensor selu(
+    const Tensor &x,
+    float a = 1.6732632423543772848170429916717,
+    float s = 1.0507009873554804934193349852946);
 
 Tensor sum(const Tensor &x, unsigned dim);
 Tensor logsumexp(const Tensor &x, unsigned dim);

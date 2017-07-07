@@ -51,6 +51,11 @@ Node tan(const Node &x);
 Node relu(const Node &x);
 Node lrelu(const Node &x);
 Node prelu(const Node &x, float a);
+Node elu(const Node &x, float a);
+Node selu(
+    const Node &x,
+    float a = 1.6732632423543772848170429916717,
+    float s = 1.0507009873554804934193349852946);
 
 Node sum(const Node &x, unsigned dim);
 Node sum(const std::vector<Node> &xs);
