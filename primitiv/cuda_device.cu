@@ -162,7 +162,7 @@ CUDADEV_KERNEL_FW_X_CONST(subtract_const_l, k - px[i]);
 CUDADEV_KERNEL_FW_X_CONST(multiply_const, px[i] * k);
 CUDADEV_KERNEL_FW_X_CONST(divide_const_r, px[i] / k);
 CUDADEV_KERNEL_FW_X_CONST(divide_const_l, k / px[i]);
-CUDADEV_KERNEL_FW_X_CONST(prelu, px[i] * ((px[i] > .0f) + k * (px[i] <= .0f)));
+CUDADEV_KERNEL_FW_X_CONST(prelu, ::fmaxf(px[i], .0f) + k * ::fminf(px[i], .0f));
 
 CUDADEV_KERNEL_BW_X_CONST(add_const, pgy[i]);
 CUDADEV_KERNEL_BW_X_CONST(subtract_const_r, pgy[i]);
