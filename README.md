@@ -15,9 +15,9 @@ Features
 Prerequisites
 -------------
 
-- CMake 3.1.0
-- GCC 4.9
-- (optional) CUDA 8.0
+- CMake 3.1.0 or later
+- GCC 4.9 or later (maybe 4.8 is OK)
+- (optional) CUDA 8.0 or later
 
 Build
 -----

@@ -8,7 +8,7 @@
 //       -I/path/to/primitiv/include \
 //       -I/path/to/cuda/include \
 //       -L/path/to/primitiv/lib \
-//       ptb_rnnlm_lstm.sh \
+//       ptb_rnnlm_lstm.cc \
 //       -lprimitiv
 
 #include <algorithm>

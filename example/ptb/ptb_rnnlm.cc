@@ -11,7 +11,7 @@
 //       -I/path/to/primitiv/include \
 //       -I/path/to/cuda/include \
 //       -L/path/to/primitiv/lib \
-//       ptb_rnnlm.sh \
+//       ptb_rnnlm.cc \
 //       -lprimitiv
 
 #include <algorithm>
