@@ -173,16 +173,16 @@ public:
 
   /**
    * Directly adds the second tensor to the first tensor.
-   * @param gy A source tensor.
-   * @param gx A tensor to be udpated.
-   * @remarks This method keeps the shape of `gx`, and the behavior is
-   *          conditioned according to the batch size of `gx` and `gy`:
-   *              gx.shape == gy.shape: gx += gy
-   *              gx.shape == 1:        gx += batch_sum(gy)
-   *              gy.shape == 1:        gx += batch_broadcast(gy)
+   * @param x A source tensor.
+   * @param y A tensor to be udpated.
+   * @remarks This method keeps the shape of `y`, and the behavior is
+   *          conditioned according to the batch size of `y` and `x`:
+   *              y.shape == x.shape: y += x
+   *              y.shape == 1:       y += batch_sum(x)
+   *              x.shape == 1:       y += batch_broadcast(x)
    *              otherwise: error.
    */
-  void inplace_add(const Tensor &gy, Tensor &gx);
+  void inplace_add(const Tensor &x, Tensor &y);
 
 private:
   /**
@@ -320,7 +320,7 @@ private:
   virtual void broadcast_fw_impl(const Tensor &x, unsigned dim, unsigned size, Tensor &y) = 0;
   virtual void batch_sum_fw_impl(const Tensor &x, Tensor &y) = 0;
 
-  virtual void inplace_add_impl(const Tensor &gy, Tensor &gx) = 0;
+  virtual void inplace_add_impl(const Tensor &x, Tensor &y) = 0;
 };
 
 }  // namespace primitiv

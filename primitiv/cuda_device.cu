@@ -353,9 +353,9 @@ __global__ void batch_sum_fw_dev(
 }
 
 __global__ void inplace_add_dev(
-    const float *pgy, unsigned nx, unsigned ny, float *pgx) {
+    const float *px, unsigned nx, unsigned ny, float *py) {
   const unsigned i = IDX;
-  if (i < ::max(nx, ny)) ::atomicAdd(pgx + i % nx, pgy[i % ny]);
+  if (i < ::max(nx, ny)) ::atomicAdd(py + i % ny, px[i % nx]);
 }
 
 #undef IDX
@@ -923,12 +923,12 @@ void CUDADevice::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
       CDATA(x), size, x.shape().batch(), DATA(y));
 }
 
-void CUDADevice::inplace_add_impl(const Tensor &gy, Tensor &gx) {
-  const unsigned nx = gx.shape().size();
-  const unsigned ny = gy.shape().size();
+void CUDADevice::inplace_add_impl(const Tensor &x, Tensor &y) {
+  const unsigned nx = x.shape().size();
+  const unsigned ny = y.shape().size();
   const unsigned g1 = GRID_SIZE(std::max(nx, ny), dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  ::inplace_add_dev<<<g1, dim1_x_>>>(CDATA(gy), nx, ny, DATA(gx));
+  ::inplace_add_dev<<<g1, dim1_x_>>>(CDATA(x), nx, ny, DATA(y));
 }
 
 }  // namespace primitiv

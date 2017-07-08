@@ -560,15 +560,15 @@ void CPUDevice::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   }
 }
 
-void CPUDevice::inplace_add_impl(const Tensor &gy, Tensor &gx) {
-  const Shape &sy = gy.shape();
-  const Shape &sx = gx.shape();
-  const unsigned size = sx.volume();
+void CPUDevice::inplace_add_impl(const Tensor &x, Tensor &y) {
+  const Shape &sx = x.shape();
+  const Shape &sy = y.shape();
+  const unsigned size = sy.volume();
   const unsigned bs = std::max(sx.batch(), sy.batch());
-  const unsigned b_skip_d = sx.has_batch() * size;
-  const unsigned b_skip_s = sy.has_batch() * size;
-  float *dest = DATA(gx);
-  const float *src = CDATA(gy);
+  const unsigned b_skip_d = sy.has_batch() * size;
+  const unsigned b_skip_s = sx.has_batch() * size;
+  float *dest = DATA(y);
+  const float *src = CDATA(x);
   for (unsigned batch = 0; batch < bs; ++batch) {
     REPEAT_OP(i, size, dest[i] += src[i]);
     dest += b_skip_d;

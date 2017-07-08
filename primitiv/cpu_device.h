@@ -129,7 +129,7 @@ private:
   void broadcast_fw_impl(const Tensor &x, unsigned dim, unsigned size, Tensor &y) override;
   void batch_sum_fw_impl(const Tensor &x, Tensor &y) override;
 
-  void inplace_add_impl(const Tensor &gy, Tensor &gx) override;
+  void inplace_add_impl(const Tensor &x, Tensor &y) override;
 
 private:
   std::mt19937 rng_;

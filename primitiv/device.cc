@@ -363,17 +363,17 @@ Tensor Device::batch_sum_fw(const Tensor &x) {
   return y;
 }
 
-void Device::inplace_add(const Tensor &gy, Tensor &gx) {
-  CHECK_DEVICE(gy);
-  CHECK_DEVICE(gx);
-  const Shape &sy = gy.shape();
-  const Shape &sx = gx.shape();
-  if (!sy.has_same_dims(sx) || !sy.has_compatible_batch(sx)) {
+void Device::inplace_add(const Tensor &x, Tensor &y) {
+  CHECK_DEVICE(x);
+  CHECK_DEVICE(y);
+  const Shape &sx = x.shape();
+  const Shape &sy = y.shape();
+  if (!sx.has_same_dims(sy) || !sx.has_compatible_batch(sy)) {
     THROW_ERROR(
         "Attempted to add values of shape "
-        << sy.to_string() << " to " << sx.to_string() << '.');
+        << sx.to_string() << " to " << sy.to_string() << '.');
   }
-  inplace_add_impl(gy, gx);
+  inplace_add_impl(x, y);
 }
 
 }  // namespace primitiv
