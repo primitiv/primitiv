@@ -52,4 +52,9 @@ Tensor Tensor::flatten() const {
   return Tensor(shape_ops::flatten(shape_), device_, data_);
 }
 
+Tensor &Tensor::operator+=(const Tensor &x) {
+  device_->inplace_add(x, *this);
+  return *this;
+}
+
 }  // namepsace primitiv

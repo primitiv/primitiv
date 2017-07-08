@@ -155,14 +155,6 @@ void Parameter::reset_gradient() {
   grad_.reset(0);
 }
 
-void Parameter::add_value(const Tensor &diff) {
-  value_.device()->inplace_add(diff, value_);
-}
-
-void Parameter::add_gradient(const Tensor &diff) {
-  grad_.device()->inplace_add(diff, grad_);
-}
-
 void Parameter::save(const string &path) const  {
   std::ofstream ofs(path);
   if (!ofs.is_open()) {

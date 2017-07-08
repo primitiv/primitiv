@@ -103,6 +103,13 @@ public:
    */
   Tensor flatten() const;
 
+  /**
+   * Directly adds a value.
+   * @param x A tensor to add.
+   * @return `*this`
+   */
+  Tensor &operator+=(const Tensor &x);
+
 private:
   /**
    * Creates a new uninitialized Tensor.

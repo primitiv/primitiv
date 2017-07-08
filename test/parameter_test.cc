@@ -119,9 +119,9 @@ TEST_F(ParameterTest, CheckAddValue) {
   const Tensor diff = dev.new_tensor_by_vector(shape, diff_values1);
   Parameter p("test", shape, &dev);
   p.reset_value(init);
-  p.add_value(diff);
+  p.value() += diff;
   EXPECT_TRUE(vector_match(diff_values1, p.value().to_vector()));
-  p.add_value(diff);
+  p.value() += diff;
   EXPECT_TRUE(vector_match(diff_values2, p.value().to_vector()));
 }
 
@@ -132,9 +132,9 @@ TEST_F(ParameterTest, CheckAddGradient) {
   const Tensor diff = dev.new_tensor_by_vector(shape, diff_values1);
   Parameter p("test", shape, &dev);
   p.reset_gradient();
-  p.add_gradient(diff);
+  p.gradient() += diff;
   EXPECT_TRUE(vector_match(diff_values1, p.gradient().to_vector()));
-  p.add_gradient(diff);
+  p.gradient() += diff;
   EXPECT_TRUE(vector_match(diff_values2, p.gradient().to_vector()));
 }
 

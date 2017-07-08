@@ -64,7 +64,7 @@ Tensor ParameterInput::forward(const vector<const Tensor *> &args) {
 void ParameterInput::backward(
     const Tensor &, const Tensor &cur_grad,
     const vector<const Tensor *> &, const vector<Tensor *> &) const {
-  param_->add_gradient(cur_grad);
+  param_->gradient() += cur_grad;
 }
 
 Shape Copy::forward_shape(const vector<const Shape *> &args) const {
@@ -80,7 +80,7 @@ Tensor Copy::forward(const vector<const Tensor *> &args) {
 void Copy::backward(
     const Tensor &y, const Tensor &gy,
     const vector<const Tensor *> &x, const vector<Tensor *> &gx) const {
-  gx[0]->device()->inplace_add(T::copy(gy, gx[0]->device()), *gx[0]);
+  *gx[0] += T::copy(gy, gx[0]->device());
 }
 
 Shape Constant::forward_shape(const vector<const Shape *> &args) const {
@@ -209,7 +209,7 @@ void Concat::backward(
   unsigned offset = 0;
   for (Tensor *gxi : gx) {
     const unsigned span = gxi->shape()[dim_];
-    gxi->device()->inplace_add(T::slice(gy, dim_, offset, offset + span), *gxi);
+    *gxi += T::slice(gy, dim_, offset, offset + span);
     offset += span;
   }
 }
@@ -390,12 +390,11 @@ FORWARD(SparseSoftmaxCrossEntropy) {
       const vector<const Tensor *> &x, \
       const vector<Tensor *> &gx) const
 
-#define ADD(n, op) gx[n]->device()->inplace_add(op, *gx[n])
 
-BACKWARD(Reshape) { ADD(0, gy.reshape(x[0]->shape())); }
-BACKWARD(Flatten) { ADD(0, gy.reshape(x[0]->shape())); }
+BACKWARD(Reshape) { *gx[0] += gy.reshape(x[0]->shape()); }
+BACKWARD(Flatten) { *gx[0] += gy.reshape(x[0]->shape()); }
 
-BACKWARD(Positive) { ADD(0, gy); }
+BACKWARD(Positive) { *gx[0] += gy; }
 BACKWARD(Negative) { gy.device()->negate_bw(*x[0], y, gy, *gx[0]); }
 BACKWARD(Sqrt) { gy.device()->sqrt_bw(*x[0], y, gy, *gx[0]); }
 BACKWARD(Exp) {  gy.device()->exp_bw(*x[0], y, gy, *gx[0]);}
@@ -419,30 +418,30 @@ BACKWARD(PReLU) { gy.device()->prelu_bw(*x[0], y, gy, k_, *gx[0]); }
 BACKWARD(ELU) { gy.device()->elu_bw(*x[0], y, gy, k_, *gx[0]); }
 
 BACKWARD(AddScalar) {
-  ADD(0, gy);
-  ADD(1, T::sum(gy.flatten(), 0));
+  *gx[0] += gy;
+  *gx[1] += T::sum(gy.flatten(), 0);
 }
 BACKWARD(SubtractScalarR) {
-  ADD(0, gy);
-  ADD(1, -T::sum(gy.flatten(), 0));
+  *gx[0] += gy;
+  *gx[1] += -T::sum(gy.flatten(), 0);
 }
 BACKWARD(SubtractScalarL) {
-  ADD(0, -gy);
-  ADD(1, T::sum(gy.flatten(), 0));
+  *gx[0] += -gy;
+  *gx[1] += T::sum(gy.flatten(), 0);
 }
 BACKWARD(MultiplyScalar) {
-  ADD(0, *x[1] * gy);
-  ADD(1, T::sum((*x[0] * gy).flatten(), 0));
+  *gx[0] += *x[1] * gy;
+  *gx[1] += T::sum((*x[0] * gy).flatten(), 0);
 }
 BACKWARD(DivideScalarR) {
   const Tensor a = gy / *x[1];
-  ADD(0, a);
-  ADD(1, T::sum((-a * y).flatten(), 0));
+  *gx[0] += a;
+  *gx[1] += T::sum((-a * y).flatten(), 0);
 }
 BACKWARD(DivideScalarL) {
   const Tensor a = gy / *x[0];
-  ADD(0, -a * y);
-  ADD(1, T::sum(a.flatten(), 0));
+  *gx[0] += -a * y;
+  *gx[1] += T::sum(a.flatten(), 0);
 }
 
 BACKWARD(Add) { gy.device()->add_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
@@ -451,36 +450,38 @@ BACKWARD(Multiply) { gy.device()->multiply_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1
 BACKWARD(Divide) { gy.device()->divide_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
 BACKWARD(MatrixMultiply) { gy.device()->matmul_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
 
-BACKWARD(Sum) { ADD(0, T::broadcast(gy, dim_, x[0]->shape()[dim_])); }
+BACKWARD(Sum) { *gx[0] += T::broadcast(gy, dim_, x[0]->shape()[dim_]); }
 BACKWARD(LogSumExp) {
   // NOTE(odashi): dy/dx = softmax(x) = exp(x - y)
   const unsigned n = x[0]->shape()[dim_];
-  ADD(0, T::exp(*x[0] - T::broadcast(y, dim_, n)) * T::broadcast(gy, dim_, n));
+  *gx[0] +=
+    T::exp(*x[0] - T::broadcast(y, dim_, n)) * T::broadcast(gy, dim_, n);
 }
-BACKWARD(Broadcast) { ADD(0, T::sum(gy, dim_)); }
+BACKWARD(Broadcast) { *gx[0] += T::sum(gy, dim_); }
 
-BACKWARD(BatchSum) { ADD(0, gy); }
+BACKWARD(BatchSum) { *gx[0] += gy; }
 
 BACKWARD(SoftmaxCrossEntropy) {
   const Tensor log_softmax_x = T::log_softmax(*x[0], dim_);
   const Tensor bcast_gy = T::broadcast(gy, dim_, x[0]->shape()[dim_]);
-  ADD(0, (T::exp(log_softmax_x) - *x[1]) * bcast_gy);
-  ADD(1, -log_softmax_x * bcast_gy);
+  *gx[0] += (T::exp(log_softmax_x) - *x[1]) * bcast_gy;
+  *gx[1] += -log_softmax_x * bcast_gy;
 }
 
 BACKWARD(SparseSoftmaxCrossEntropy) {
   // dE/dx = gy * (softmax(x) - delta(x, i))
   //       = gy * softmax(x) - gy * delta(x, i)
 #ifdef PRIMITIV_USE_CACHE
-  ADD(0, T::exp(log_softmax_x_) * T::broadcast(gy, dim_, x[0]->shape()[dim_]));
+  *gx[0] +=
+    T::exp(log_softmax_x_) * T::broadcast(gy, dim_, x[0]->shape()[dim_]);
 #else
-  ADD(0, T::softmax(*x[0], dim_) * T::broadcast(gy, dim_, x[0]->shape()[dim_]));
+  *gx[0] +=
+    T::softmax(*x[0], dim_) * T::broadcast(gy, dim_, x[0]->shape()[dim_]);
 #endif  // PRIMITIV_USE_CACHE
   gy.device()->pick_bw(-gy, dim_, ids_, *gx[0]);
 }
 
 #undef BACKWARD
-#undef ADD
 
 }  // namespace functions
 }  // namespace primitive

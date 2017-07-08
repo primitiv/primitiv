@@ -29,7 +29,7 @@ TEST_F(TraingerImplTest, CheckSGDUpdate) {
   EXPECT_TRUE(vector_match(
         vector<float>(4, 0), param.gradient().to_vector()));
 
-  param.add_gradient(dev.new_tensor_by_vector({2, 2}, {1, 1, 1, 1}));
+  param.gradient() += dev.new_tensor_by_vector({2, 2}, {1, 1, 1, 1});
   trainer.update(1);
 
   EXPECT_TRUE(vector_match(

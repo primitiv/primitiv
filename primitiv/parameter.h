@@ -78,20 +78,6 @@ public:
   void reset_gradient();
 
   /**
-   * Updates the value of the parameter.
-   * @param diff A tensor representing the difference of each element.
-   * @remarks This method performs: `value \gets value + diff`.
-   */
-  void add_value(const Tensor &diff);
-
-  /**
-   * Updates the gradient of the parameter.
-   * @param diff A tensor representing the difference of each element.
-   * @remarks This method performs: `grad \gets grad + diff`.
-   */
-  void add_gradient(const Tensor &diff);
-
-  /**
    * Returns the name of the parameter.
    * @return Name of the parameter.
    */
@@ -116,10 +102,22 @@ public:
   const Tensor &value() const { return value_; }
 
   /**
+   * Returns the values of the parameter.
+   * @return A tensor representing the parameter tensor.
+   */
+  Tensor &value() { return value_; }
+
+  /**
    * Returns the current gradient of the parameter.
    * @return A tensor representing the gradient of the value.
    */
   const Tensor &gradient() const { return grad_; }
+
+  /**
+   * Returns the current gradient of the parameter.
+   * @return A tensor representing the gradient of the value.
+   */
+  Tensor &gradient() { return grad_; }
 
   /**
    * Loads parameters and returns a new Parameter object.
