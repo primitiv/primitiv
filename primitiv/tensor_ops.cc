@@ -120,6 +120,10 @@ Tensor sigmoid(const Tensor &x) {
   return x.device()->sigmoid_fw(x);
 }
 
+Tensor softplus(const Tensor &x) {
+  return x.device()->softplus_fw(x);
+}
+
 Tensor sin(const Tensor &x) {
   return x.device()->sin_fw(x);
 }

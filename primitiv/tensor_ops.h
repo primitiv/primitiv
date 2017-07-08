@@ -40,6 +40,7 @@ Tensor sqrt(const Tensor &x);
 Tensor exp(const Tensor &x);
 Tensor tanh(const Tensor &x);
 Tensor sigmoid(const Tensor &x);
+Tensor softplus(const Tensor &x);
 Tensor sin(const Tensor &x);
 Tensor cos(const Tensor &x);
 Tensor tan(const Tensor &x);

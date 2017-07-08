@@ -273,6 +273,10 @@ CPUDEV_FW_X(sqrt, std::sqrt(src[i]));
 CPUDEV_FW_X(exp, std::exp(src[i]));
 CPUDEV_FW_X(tanh, std::tanh(src[i]));
 CPUDEV_FW_X(sigmoid, .5 + .5 * std::tanh(.5 * src[i]));
+CPUDEV_FW_X(
+    softplus, src[i] > 0
+      ? src[i] + std::log(1 + std::exp(-src[i]))
+      : std::log(1 + std::exp(src[i])));
 CPUDEV_FW_X(sin, std::sin(src[i]));
 CPUDEV_FW_X(cos, std::cos(src[i]));
 CPUDEV_FW_X(tan, std::tan(src[i]));
@@ -282,6 +286,7 @@ CPUDEV_BW_X(sqrt, .5 * pgy[i] / py[i]);
 CPUDEV_BW_X(exp, py[i] * pgy[i]);
 CPUDEV_BW_X(tanh, (1. - py[i] * py[i]) * pgy[i]);
 CPUDEV_BW_X(sigmoid, py[i] * (1. - py[i]) * pgy[i]);
+CPUDEV_BW_X(softplus, (.5 + .5 * std::tanh(.5 * px[i])) * pgy[i]);
 CPUDEV_BW_X(sin, std::cos(px[i]) * pgy[i]);
 CPUDEV_BW_X(cos, -std::sin(px[i]) * pgy[i]);
 CPUDEV_BW_X(tan, (1 + py[i] * py[i]) * pgy[i]);

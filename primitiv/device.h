@@ -98,6 +98,7 @@ public:
   Tensor exp_fw(const Tensor &x);
   Tensor tanh_fw(const Tensor &x);
   Tensor sigmoid_fw(const Tensor &x);
+  Tensor softplus_fw(const Tensor &x);
   Tensor sin_fw(const Tensor &x);
   Tensor cos_fw(const Tensor &x);
   Tensor tan_fw(const Tensor &x);
@@ -108,6 +109,7 @@ public:
   void exp_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void tanh_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void sigmoid_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
+  void softplus_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void sin_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void cos_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void tan_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
@@ -249,6 +251,7 @@ private:
   virtual void exp_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void tanh_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void sigmoid_fw_impl(const Tensor &x, Tensor &y) = 0;
+  virtual void softplus_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void sin_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void cos_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void tan_fw_impl(const Tensor &x, Tensor &y) = 0;
@@ -259,6 +262,7 @@ private:
   virtual void exp_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void tanh_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void sigmoid_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
+  virtual void softplus_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void sin_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void cos_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void tan_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;

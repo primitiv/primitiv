@@ -927,6 +927,24 @@ TEST_F(FunctionImplTest, CheckSigmoid) {
   TEST_1ARG_NEAR(Sigmoid, 1e-6);
 }
 
+TEST_F(FunctionImplTest, CheckSoftplus) {
+  // y = sigmoid(x)
+  // dy/dx = y * (1 - y)
+  setup_1arg();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    1.3132617, 2.1269280, 3.0485874, 4.0181499,
+    .69314718, .69314718, .69314718, .69314718,
+    .31326169, .12692801, .048587352, .018149928,
+  };
+  const vector<float> bw_grad {
+    .73105858, .88079708, .95257413, .98201379,
+    .5, .5, .5, .5,
+    .26894142, .11920292, .047425873, .017986210,
+  };
+  TEST_1ARG_NEAR(Softplus, 1e-6);
+}
+
 TEST_F(FunctionImplTest, CheckReLU) {
   // y = x > 0 ? x : 0
   // dy/dx = x > 0 ? 1 : 0

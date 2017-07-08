@@ -60,6 +60,7 @@ private:
   void exp_fw_impl(const Tensor &x, Tensor &y) override;
   void tanh_fw_impl(const Tensor &x, Tensor &y) override;
   void sigmoid_fw_impl(const Tensor &x, Tensor &y) override;
+  void softplus_fw_impl(const Tensor &x, Tensor &y) override;
   void sin_fw_impl(const Tensor &x, Tensor &y) override;
   void cos_fw_impl(const Tensor &x, Tensor &y) override;
   void tan_fw_impl(const Tensor &x, Tensor &y) override;
@@ -70,6 +71,7 @@ private:
   void exp_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void tanh_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void sigmoid_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
+  void softplus_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void sin_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void cos_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void tan_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;

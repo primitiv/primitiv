@@ -451,6 +451,23 @@ TEST_F(TensorBackwardTest, CheckSigmoid) {
   }
 }
 
+TEST_F(TensorBackwardTest, CheckSoftplus) {
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector(
+        Shape({2, 2}, 2), {0, 1, 2, 3, 0, -1, -2, -3});
+    const Tensor y = dev->softplus_fw(x);
+    const Tensor gy = dev->new_tensor_by_vector(
+        y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
+    Tensor gx = dev->new_tensor(x.shape(), 0);
+    dev->softplus_bw(x, y, gy, gx);
+    const vector<float> gx_val {
+      .5, -.73105858, 1.7615942, -1.9051483,
+      1, -.53788284, .11920292, -.047425873,
+    };
+    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+  }
+}
+
 TEST_F(TensorBackwardTest, CheckSin) {
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(

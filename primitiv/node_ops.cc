@@ -113,6 +113,10 @@ Node sigmoid(const Node &x) {
   return REG(x)(new F::Sigmoid(), {x});
 }
 
+Node softplus(const Node &x) {
+  return REG(x)(new F::Softplus(), {x});
+}
+
 Node sin(const Node &x) {
   return REG(x)(new F::Sin(), {x});
 }

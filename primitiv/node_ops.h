@@ -45,6 +45,7 @@ Node sqrt(const Node &x);
 Node exp(const Node &x);
 Node tanh(const Node &x);
 Node sigmoid(const Node &x);
+Node softplus(const Node &x);
 Node sin(const Node &x);
 Node cos(const Node &x);
 Node tan(const Node &x);

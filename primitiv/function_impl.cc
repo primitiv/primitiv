@@ -254,6 +254,7 @@ FWD_SHAPE_UNARY(Sqrt);
 FWD_SHAPE_UNARY(Exp);
 FWD_SHAPE_UNARY(Tanh);
 FWD_SHAPE_UNARY(Sigmoid);
+FWD_SHAPE_UNARY(Softplus);
 FWD_SHAPE_UNARY(Sin);
 FWD_SHAPE_UNARY(Cos);
 FWD_SHAPE_UNARY(Tan);
@@ -331,6 +332,7 @@ FORWARD(Sqrt) { return T::sqrt(*x[0]); }
 FORWARD(Exp) { return T::exp(*x[0]); }
 FORWARD(Tanh) { return T::tanh(*x[0]); }
 FORWARD(Sigmoid) { return T::sigmoid(*x[0]); }
+FORWARD(Softplus) { return T::softplus(*x[0]); }
 FORWARD(Sin) { return T::sin(*x[0]); }
 FORWARD(Cos) { return T::cos(*x[0]); }
 FORWARD(Tan) { return T::tan(*x[0]); }
@@ -399,6 +401,7 @@ BACKWARD(Sqrt) { gy.device()->sqrt_bw(*x[0], y, gy, *gx[0]); }
 BACKWARD(Exp) {  gy.device()->exp_bw(*x[0], y, gy, *gx[0]);}
 BACKWARD(Tanh) {  gy.device()->tanh_bw(*x[0], y, gy, *gx[0]);}
 BACKWARD(Sigmoid) {  gy.device()->sigmoid_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(Softplus) {  gy.device()->softplus_bw(*x[0], y, gy, *gx[0]);}
 BACKWARD(Sin) {  gy.device()->sin_bw(*x[0], y, gy, *gx[0]);}
 BACKWARD(Cos) {  gy.device()->cos_bw(*x[0], y, gy, *gx[0]);}
 BACKWARD(Tan) {  gy.device()->tan_bw(*x[0], y, gy, *gx[0]);}
