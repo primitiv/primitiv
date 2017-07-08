@@ -372,20 +372,6 @@ TEST_F(TensorBackwardTest, CheckCopyAndPick) {
   }
 }
 
-TEST_F(TensorBackwardTest, CheckNegate) {
-  for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor_by_vector(
-        Shape({2, 2}, 2), {0, 1, 2, 3, 0, -1, -2, -3});
-    const Tensor y = dev->negate_fw(x);
-    const Tensor gy = dev->new_tensor_by_vector(
-        y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
-    Tensor gx = dev->new_tensor(x.shape(), 0);
-    dev->negate_bw(x, y, gy, gx);
-    const vector<float> gx_val {-1, 1, -2, 2, -2, 2, -1, 1};
-    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
-  }
-}
-
 TEST_F(TensorBackwardTest, CheckSqrt) {
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(

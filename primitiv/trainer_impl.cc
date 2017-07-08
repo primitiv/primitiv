@@ -15,9 +15,9 @@ void SGD::reset_gradients() {
 }
 
 void SGD::update(const float scale) {
-  const float factor = -eta_ * scale;
+  const float factor = eta_ * scale;
   for (const auto &kv : params()) {
-    kv.second->value() += factor * kv.second->gradient();
+    kv.second->value() -= factor * kv.second->gradient();
   }
 }
 

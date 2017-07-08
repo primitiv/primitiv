@@ -57,4 +57,9 @@ Tensor &Tensor::operator+=(const Tensor &x) {
   return *this;
 }
 
+Tensor &Tensor::operator-=(const Tensor &x) {
+  device_->inplace_subtract(x, *this);
+  return *this;
+}
+
 }  // namepsace primitiv

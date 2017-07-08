@@ -280,7 +280,6 @@ DEV_FW_X(cos, static_cast<const Shape &>);
 DEV_FW_X(tan, static_cast<const Shape &>);
 DEV_FW_X(transpose, shape_ops::transpose);
 
-DEV_BW_X(negate, static_cast<const Shape &>);
 DEV_BW_X(sqrt, static_cast<const Shape &>);
 DEV_BW_X(exp, static_cast<const Shape &>);
 DEV_BW_X(tanh, static_cast<const Shape &>);
@@ -374,6 +373,19 @@ void Device::inplace_add(const Tensor &x, Tensor &y) {
         << sx.to_string() << " to " << sy.to_string() << '.');
   }
   inplace_add_impl(x, y);
+}
+
+void Device::inplace_subtract(const Tensor &x, Tensor &y) {
+  CHECK_DEVICE(x);
+  CHECK_DEVICE(y);
+  const Shape &sx = x.shape();
+  const Shape &sy = y.shape();
+  if (!sx.has_same_dims(sy) || !sx.has_compatible_batch(sy)) {
+    THROW_ERROR(
+        "Attempted to subtract values of shape "
+        << sx.to_string() << " from " << sy.to_string() << '.');
+  }
+  inplace_subtract_impl(x, y);
 }
 
 }  // namespace primitiv

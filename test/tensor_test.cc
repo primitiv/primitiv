@@ -511,22 +511,6 @@ TEST_F(TensorTest, CheckInplaceAddN1) {
   }
 }
 
-TEST_F(TensorTest, CheckInvalidInplaceAdd) {
-  for (Device *dev : devices) {
-    vector<Shape> shapes {
-      Shape(),
-      Shape({}, 3),
-      Shape({2, 2}, 2),
-    };
-    Tensor a = dev->new_tensor(Shape({2, 2}, 3));
-
-    for (const Shape &shape : shapes) {
-      Tensor b = dev->new_tensor(shape);
-      EXPECT_THROW(a += b, Error);
-    }
-  }
-}
-
 TEST_F(TensorTest, CheckCopyAndInplaceAdd) {
   for (Device *dev : devices) {
     const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
@@ -542,6 +526,77 @@ TEST_F(TensorTest, CheckCopyAndInplaceAdd) {
     EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
     EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
+  }
+}
+
+TEST_F(TensorTest, CheckInplaceSubtractNN) {
+  for (Device *dev : devices) {
+    const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    const vector<float> b_data {0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9};
+    const vector<float> y_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
+    Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+    a -= b;
+    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+  }
+}
+
+TEST_F(TensorTest, CheckInplaceSubtract1N) {
+  for (Device *dev : devices) {
+    const vector<float> a_data {1, 2, 3, 4};
+    const vector<float> b_data {0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9};
+    const vector<float> y_data {-8, -10, -12, -14};
+    Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+    a -= b;
+    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+  }
+}
+
+TEST_F(TensorTest, CheckInplaceSubtractN1) {
+  for (Device *dev : devices) {
+    const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    const vector<float> b_data {0, 1, 2, 3};
+    const vector<float> y_data {1, 1, 1, 1, 5, 5, 5, 5, 9, 9, 9, 9};
+    Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+    const Tensor b = dev->new_tensor_by_vector({2, 2}, b_data);
+    a -= b;
+    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+  }
+}
+
+TEST_F(TensorTest, CheckCopyAndInplaceSubtract) {
+  for (Device *dev : devices) {
+    const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    const vector<float> b_data {0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9};
+    const vector<float> y_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
+    Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+
+    const Tensor copied = a;
+    EXPECT_EQ(static_cast<const Tensor>(a).data(), copied.data());
+
+    a -= b;
+    EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
+    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
+  }
+}
+
+TEST_F(TensorTest, CheckInvalidInplaceOps) {
+  for (Device *dev : devices) {
+    vector<Shape> shapes {
+      Shape(),
+      Shape({}, 3),
+      Shape({2, 2}, 2),
+    };
+    Tensor a = dev->new_tensor(Shape({2, 2}, 3));
+
+    for (const Shape &shape : shapes) {
+      Tensor b = dev->new_tensor(shape);
+      EXPECT_THROW(a += b, Error);
+      EXPECT_THROW(a -= b, Error);
+    }
   }
 }
 

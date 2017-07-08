@@ -395,7 +395,7 @@ BACKWARD(Reshape) { *gx[0] += gy.reshape(x[0]->shape()); }
 BACKWARD(Flatten) { *gx[0] += gy.reshape(x[0]->shape()); }
 
 BACKWARD(Positive) { *gx[0] += gy; }
-BACKWARD(Negative) { gy.device()->negate_bw(*x[0], y, gy, *gx[0]); }
+BACKWARD(Negative) { *gx[0] -= gy; }
 BACKWARD(Sqrt) { gy.device()->sqrt_bw(*x[0], y, gy, *gx[0]); }
 BACKWARD(Exp) {  gy.device()->exp_bw(*x[0], y, gy, *gx[0]);}
 BACKWARD(Tanh) {  gy.device()->tanh_bw(*x[0], y, gy, *gx[0]);}
@@ -423,10 +423,10 @@ BACKWARD(AddScalar) {
 }
 BACKWARD(SubtractScalarR) {
   *gx[0] += gy;
-  *gx[1] += -T::sum(gy.flatten(), 0);
+  *gx[1] -= T::sum(gy.flatten(), 0);
 }
 BACKWARD(SubtractScalarL) {
-  *gx[0] += -gy;
+  *gx[0] -= gy;
   *gx[1] += T::sum(gy.flatten(), 0);
 }
 BACKWARD(MultiplyScalar) {
@@ -436,11 +436,11 @@ BACKWARD(MultiplyScalar) {
 BACKWARD(DivideScalarR) {
   const Tensor a = gy / *x[1];
   *gx[0] += a;
-  *gx[1] += T::sum((-a * y).flatten(), 0);
+  *gx[1] -= T::sum((a * y).flatten(), 0);
 }
 BACKWARD(DivideScalarL) {
   const Tensor a = gy / *x[0];
-  *gx[0] += -a * y;
+  *gx[0] -= a * y;
   *gx[1] += T::sum(a.flatten(), 0);
 }
 
@@ -465,7 +465,7 @@ BACKWARD(SoftmaxCrossEntropy) {
   const Tensor log_softmax_x = T::log_softmax(*x[0], dim_);
   const Tensor bcast_gy = T::broadcast(gy, dim_, x[0]->shape()[dim_]);
   *gx[0] += (T::exp(log_softmax_x) - *x[1]) * bcast_gy;
-  *gx[1] += -log_softmax_x * bcast_gy;
+  *gx[1] -= log_softmax_x * bcast_gy;
 }
 
 BACKWARD(SparseSoftmaxCrossEntropy) {

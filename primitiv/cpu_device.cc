@@ -281,7 +281,6 @@ CPUDEV_FW_X(sin, std::sin(src[i]));
 CPUDEV_FW_X(cos, std::cos(src[i]));
 CPUDEV_FW_X(tan, std::tan(src[i]));
 
-CPUDEV_BW_X(negate, -pgy[i]);
 CPUDEV_BW_X(sqrt, .5 * pgy[i] / py[i]);
 CPUDEV_BW_X(exp, py[i] * pgy[i]);
 CPUDEV_BW_X(tanh, (1. - py[i] * py[i]) * pgy[i]);
@@ -571,6 +570,22 @@ void CPUDevice::inplace_add_impl(const Tensor &x, Tensor &y) {
   const float *src = CDATA(x);
   for (unsigned batch = 0; batch < bs; ++batch) {
     REPEAT_OP(i, size, dest[i] += src[i]);
+    dest += b_skip_d;
+    src += b_skip_s;
+  }
+}
+
+void CPUDevice::inplace_subtract_impl(const Tensor &x, Tensor &y) {
+  const Shape &sx = x.shape();
+  const Shape &sy = y.shape();
+  const unsigned size = sy.volume();
+  const unsigned bs = std::max(sx.batch(), sy.batch());
+  const unsigned b_skip_d = sy.has_batch() * size;
+  const unsigned b_skip_s = sx.has_batch() * size;
+  float *dest = DATA(y);
+  const float *src = CDATA(x);
+  for (unsigned batch = 0; batch < bs; ++batch) {
+    REPEAT_OP(i, size, dest[i] -= src[i]);
     dest += b_skip_d;
     src += b_skip_s;
   }

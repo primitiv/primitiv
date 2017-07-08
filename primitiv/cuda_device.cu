@@ -149,7 +149,6 @@ CUDADEV_KERNEL_FW_X(sin, ::sinf(px[i]));
 CUDADEV_KERNEL_FW_X(cos, ::cosf(px[i]));
 CUDADEV_KERNEL_FW_X(tan, ::tanf(px[i]));
 
-CUDADEV_KERNEL_BW_X(negate, -pgy[i]);
 CUDADEV_KERNEL_BW_X(sqrt, .5f * pgy[i] / py[i]);
 CUDADEV_KERNEL_BW_X(exp, py[i] * pgy[i]);
 CUDADEV_KERNEL_BW_X(tanh, (1.f - py[i] * py[i]) * pgy[i]);
@@ -358,6 +357,11 @@ __global__ void inplace_add_dev(
   if (i < ::max(nx, ny)) ::atomicAdd(py + i % ny, px[i % nx]);
 }
 
+__global__ void inplace_subtract_dev(
+    const float *px, unsigned nx, unsigned ny, float *py) {
+  const unsigned i = IDX;
+  if (i < ::max(nx, ny)) ::atomicAdd(py + i % ny, -px[i % nx]);
+}
 #undef IDX
 #undef IDY
 
@@ -705,7 +709,6 @@ CUDADEV_FW_X(sin);
 CUDADEV_FW_X(cos);
 CUDADEV_FW_X(tan);
 
-CUDADEV_BW_X(negate);
 CUDADEV_BW_X(sqrt);
 CUDADEV_BW_X(exp);
 CUDADEV_BW_X(tanh);
@@ -929,6 +932,14 @@ void CUDADevice::inplace_add_impl(const Tensor &x, Tensor &y) {
   const unsigned g1 = GRID_SIZE(std::max(nx, ny), dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::inplace_add_dev<<<g1, dim1_x_>>>(CDATA(x), nx, ny, DATA(y));
+}
+
+void CUDADevice::inplace_subtract_impl(const Tensor &x, Tensor &y) {
+  const unsigned nx = x.shape().size();
+  const unsigned ny = y.shape().size();
+  const unsigned g1 = GRID_SIZE(std::max(nx, ny), dim1_x_);
+  CUDA_CALL(::cudaSetDevice(dev_id_));
+  ::inplace_subtract_dev<<<g1, dim1_x_>>>(CDATA(x), nx, ny, DATA(y));
 }
 
 }  // namespace primitiv

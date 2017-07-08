@@ -104,7 +104,6 @@ public:
   Tensor tan_fw(const Tensor &x);
   Tensor transpose_fw(const Tensor &x);
 
-  void negate_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void sqrt_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void exp_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void tanh_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
@@ -172,8 +171,8 @@ public:
   Tensor batch_sum_fw(const Tensor &x);
 
   /**
-   * Directly adds the second tensor to the first tensor.
-   * @param x A source tensor.
+   * Directly adds the first tensor to the second tensor.
+   * @param x A tensor to add.
    * @param y A tensor to be udpated.
    * @remarks This method keeps the shape of `y`, and the behavior is
    *          conditioned according to the batch size of `y` and `x`:
@@ -183,6 +182,15 @@ public:
    *              otherwise: error.
    */
   void inplace_add(const Tensor &x, Tensor &y);
+
+  /**
+   * Directly subtracts the first tensor from the second tensor.
+   * @param x A tensor to subtract.
+   * @param y A tensor to be updated.
+   * @remarks The batch broadcasting behavior of this method is same as that of
+   *          `inplace_add`.
+   */
+  void inplace_subtract(const Tensor &x, Tensor &y);
 
 private:
   /**
@@ -257,7 +265,6 @@ private:
   virtual void tan_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void transpose_fw_impl(const Tensor &x, Tensor &y) = 0;
 
-  virtual void negate_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void sqrt_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void exp_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void tanh_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
@@ -321,6 +328,7 @@ private:
   virtual void batch_sum_fw_impl(const Tensor &x, Tensor &y) = 0;
 
   virtual void inplace_add_impl(const Tensor &x, Tensor &y) = 0;
+  virtual void inplace_subtract_impl(const Tensor &x, Tensor &y) = 0;
 };
 
 }  // namespace primitiv

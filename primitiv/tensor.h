@@ -110,6 +110,13 @@ public:
    */
   Tensor &operator+=(const Tensor &x);
 
+  /**
+   * Directly subtracts a value.
+   * @param x A tensor to subtract.
+   * @return `*this`
+   */
+  Tensor &operator-=(const Tensor &x);
+
 private:
   /**
    * Creates a new uninitialized Tensor.

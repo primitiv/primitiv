@@ -77,7 +77,6 @@ private:
   void tan_fw_impl(const Tensor &x, Tensor &y) override;
   void transpose_fw_impl(const Tensor &x, Tensor &y) override;
 
-  void negate_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void sqrt_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void exp_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void tanh_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
@@ -141,6 +140,7 @@ private:
   void batch_sum_fw_impl(const Tensor &x, Tensor &y) override;
 
   void inplace_add_impl(const Tensor &x, Tensor &y) override;
+  void inplace_subtract_impl(const Tensor &x, Tensor &y) override;
 
 private:
   unsigned dev_id_;
