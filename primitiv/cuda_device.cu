@@ -352,16 +352,19 @@ __global__ void batch_sum_fw_dev(
 }
 
 __global__ void inplace_add_dev(
-    const float *px, unsigned nx, unsigned ny, float *py) {
+    const float *px, unsigned size, unsigned mbx, unsigned mby, float *py) {
   const unsigned i = IDX;
-  if (i < ::max(nx, ny)) ::atomicAdd(py + i % ny, px[i % nx]);
+  const unsigned shift = blockIdx.y * size;
+  if (i < size) ::atomicAdd(py + i + mby * shift, px[i + mbx * shift]);
 }
 
 __global__ void inplace_subtract_dev(
-    const float *px, unsigned nx, unsigned ny, float *py) {
+    const float *px, unsigned size, unsigned mbx, unsigned mby, float *py) {
   const unsigned i = IDX;
-  if (i < ::max(nx, ny)) ::atomicAdd(py + i % ny, -px[i % nx]);
+  const unsigned shift = blockIdx.y * size;
+  if (i < size) ::atomicAdd(py + i + mby * shift, -px[i + mbx * shift]);
 }
+
 #undef IDX
 #undef IDY
 
@@ -927,19 +930,21 @@ void CUDADevice::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
 }
 
 void CUDADevice::inplace_add_impl(const Tensor &x, Tensor &y) {
-  const unsigned nx = x.shape().size();
-  const unsigned ny = y.shape().size();
-  const unsigned g1 = GRID_SIZE(std::max(nx, ny), dim1_x_);
+  const unsigned size = y.shape().volume();
+  const unsigned g1 = GRID_SIZE(size, dim1_x_);
+  const unsigned bs = std::max(x.shape().batch(), y.shape().batch());
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  ::inplace_add_dev<<<g1, dim1_x_>>>(CDATA(x), nx, ny, DATA(y));
+  ::inplace_add_dev<<<dim3(g1, bs, 1), dim1_x_>>>(
+      CDATA(x), size, x.shape().has_batch(), y.shape().has_batch(), DATA(y));
 }
 
 void CUDADevice::inplace_subtract_impl(const Tensor &x, Tensor &y) {
-  const unsigned nx = x.shape().size();
-  const unsigned ny = y.shape().size();
-  const unsigned g1 = GRID_SIZE(std::max(nx, ny), dim1_x_);
+  const unsigned size = y.shape().volume();
+  const unsigned g1 = GRID_SIZE(size, dim1_x_);
+  const unsigned bs = std::max(x.shape().batch(), y.shape().batch());
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  ::inplace_subtract_dev<<<g1, dim1_x_>>>(CDATA(x), nx, ny, DATA(y));
+  ::inplace_subtract_dev<<<dim3(g1, bs, 1), dim1_x_>>>(
+      CDATA(x), size, x.shape().has_batch(), y.shape().has_batch(), DATA(y));
 }
 
 }  // namespace primitiv
