@@ -60,6 +60,42 @@ TEST_F(ParameterTest, CheckNewWithInitializer) {
   EXPECT_TRUE(vector_match({42, 42, 42, 42}, p.value().to_vector()));
 }
 
+TEST_F(ParameterTest, CheckAddStats) {
+  Parameter p("test", {}, &dev);
+  EXPECT_FALSE(p.has_stats("a"));
+  EXPECT_FALSE(p.has_stats("b"));
+  EXPECT_THROW(p.stats("a"), std::out_of_range);
+  EXPECT_THROW(p.stats("b"), std::out_of_range);
+
+  p.add_stats("a", {2, 2});
+  EXPECT_TRUE(p.has_stats("a"));
+  EXPECT_FALSE(p.has_stats("b"));
+  EXPECT_THROW(p.stats("b"), std::out_of_range);
+
+  Tensor &a = p.stats("a");
+  EXPECT_EQ(Shape({2, 2}), a.shape());
+  a.reset_by_vector({1, 2, 3, 4});
+
+  p.add_stats("b", {3, 3});
+  EXPECT_TRUE(p.has_stats("a"));
+  EXPECT_TRUE(p.has_stats("b"));
+
+  Tensor &a2 = p.stats("a");
+  Tensor &b2 = p.stats("b");
+  EXPECT_EQ(&a, &a2);
+  EXPECT_EQ(Shape({2, 2}), a2.shape());
+  EXPECT_EQ(Shape({3, 3}), b2.shape());
+  EXPECT_TRUE(vector_match({1, 2, 3, 4}, a2.to_vector()));
+
+  EXPECT_THROW(p.add_stats("a", {}), Error);
+  EXPECT_THROW(p.add_stats("b", {}), Error);
+}
+
+TEST_F(ParameterTest, CheckInvalidAddStats) {
+  Parameter p;
+  EXPECT_THROW(p.add_stats("a", {}), Error);
+}
+
 TEST_F(ParameterTest, CheckMove) {
   const Shape shape {2, 2};
   Parameter p1("test", shape, {1, 2, 3, 4}, &dev);
@@ -143,11 +179,31 @@ TEST_F(ParameterTest, CheckSaveLoad) {
   const vector<float> values {1, 2, 3, 4};
   const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveLoad_p.yaml";
   const Parameter p1("test", shape, values, &dev);
+
   p1.save(path);
+
   const Parameter p2 = Parameter::load(path, &dev);
   EXPECT_EQ("test", p2.name());
   EXPECT_EQ(shape, p2.shape());
   EXPECT_TRUE(vector_match(values, p2.value().to_vector()));
+}
+
+TEST_F(ParameterTest, CheckSaveLoadWithStats) {
+  const Shape shape {2, 2};
+  const vector<float> values {1, 2, 3, 4};
+  const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveLoad_p.yaml";
+  Parameter p1("test", shape, values, &dev);
+  p1.add_stats("a", {2, 2});
+  p1.stats("a").reset_by_vector(values);
+
+  p1.save(path);
+
+  const Parameter p2 = Parameter::load(path, &dev);
+  EXPECT_EQ("test", p2.name());
+  EXPECT_EQ(shape, p2.shape());
+  EXPECT_TRUE(vector_match(values, p2.value().to_vector()));
+  ASSERT_TRUE(p2.has_stats("a"));
+  EXPECT_TRUE(vector_match(values, p2.stats("a").to_vector()));
 }
 
 }  // namespace primitiv

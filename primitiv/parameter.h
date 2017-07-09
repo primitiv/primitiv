@@ -2,6 +2,7 @@
 #define PRIMITIV_PARAMETER_H_
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
@@ -78,6 +79,22 @@ public:
   void reset_gradient();
 
   /**
+   * Adds a new optional statistics tensor.
+   * @param name Name of the statistics.
+   * @param shape Shape of the tensor.
+   */
+  void add_stats(const std::string &name, const Shape &shape);
+
+  /**
+   * Checks whether the statistics with name `name` exists or not.
+   * @param name Name of the statistics.
+   * @return true if the entry exists, false otherwise.
+   */
+  bool has_stats(const std::string &name) const {
+    return stats_.find(name) != stats_.end();
+  }
+
+  /**
    * Returns the name of the parameter.
    * @return Name of the parameter.
    */
@@ -120,6 +137,20 @@ public:
   Tensor &gradient() { return grad_; }
 
   /**
+   * Returns the current opotional statistics tensor specified by given name.
+   * @param name Name of the statistics.
+   * @return A tensor.
+   */
+  const Tensor &stats(const std::string &name) const { return stats_.at(name); }
+
+  /**
+   * Returns the current opotional statistics tensor specified by given name.
+   * @param name Name of the statistics.
+   * @return A tensor.
+   */
+  Tensor &stats(const std::string &name) { return stats_.at(name); }
+
+  /**
    * Loads parameters and returns a new Parameter object.
    * @param path File path to load parameters.
    * @param device Device object to manage internal memories.
@@ -138,8 +169,11 @@ private:
    * Makes a Parameter object directly from its values.
    * @param name Name of the parameter.
    * @param value Value of the parameter.
+   * @param stats Map of optional statistics.
    */
-  Parameter(const std::string &name, Tensor &&value);
+  Parameter(
+      std::string &&name, Tensor &&value,
+      std::unordered_map<std::string, Tensor> &&stats);
 
   /**
    * Checks the shape of the parameter.
@@ -151,6 +185,7 @@ private:
   Device *device_;
   Tensor value_;
   Tensor grad_;
+  std::unordered_map<std::string, Tensor> stats_;
 };
 
 }  // namespace primitiv

@@ -28,16 +28,35 @@ YAML::Emitter &operator<<(YAML::Emitter &em, const primitiv::Shape &shape) {
 }
 
 // Operator to emit Tensor object to YAML.
-YAML::Emitter &operator<<(YAML::Emitter&em, const primitiv::Tensor &tensor) {
+YAML::Emitter &operator<<(YAML::Emitter &em, const primitiv::Tensor &tensor) {
   em << YAML::BeginMap;
 
-  em << YAML::Key << "shape";
-  em << YAML::Value << tensor.shape();
-  em << YAML::Key << "value";
-  const vector<float> v = tensor.to_vector();
-  const unsigned s = sizeof(float) * tensor.shape().size();
-  em << YAML::Value;
-  em << YAML::Binary(reinterpret_cast<const unsigned char *>(&v[0]), s);
+  em << YAML::Key << "valid";
+  em << YAML::Value << tensor.valid();
+
+  if (tensor.valid()) {
+    em << YAML::Key << "shape";
+    em << YAML::Value << tensor.shape();
+    em << YAML::Key << "value";
+    const vector<float> v = tensor.to_vector();
+    const unsigned s = sizeof(float) * tensor.shape().size();
+    em << YAML::Value;
+    em << YAML::Binary(reinterpret_cast<const unsigned char *>(&v[0]), s);
+  }
+
+  em << YAML::EndMap;
+  return em;
+}
+
+// Operator to emit map of Tensors to YAML.
+YAML::Emitter &operator<<(
+    YAML::Emitter &em,
+    const std::unordered_map<std::string, primitiv::Tensor> &tensors) {
+  em << YAML::BeginMap;
+
+  for (const auto &kv : tensors) {
+    em << YAML::Key << kv.first << YAML::Value << kv.second;
+  }
 
   em << YAML::EndMap;
   return em;
@@ -61,15 +80,21 @@ primitiv::Shape parse_shape(const YAML::Node &node) {
 // Function to load Tensor object from YAML::Node.
 primitiv::Tensor parse_tensor(
     const YAML::Node &node, primitiv::Device *device) {
+  // NOTE(odashi):
+  // The default value `true` maintains the backward compatibility.
+  bool valid = true;
   primitiv::Shape shape;
   YAML::Binary data;
 
   for (const auto &kv : node) {
     const string key = kv.first.as<string>();
-    if (key == "shape") shape = ::parse_shape(kv.second);
+    if (key == "valid") valid = kv.second.as<bool>();
+    else if (key == "shape") shape = ::parse_shape(kv.second);
     else if (key == "value") data = kv.second.as<YAML::Binary>();
     else THROW_ERROR("Unknown YAML key: " << key);
   }
+
+  if (!valid) return primitiv::Tensor();  // Returns invalid (empty) tensor.
 
   const unsigned size = sizeof(float) * shape.size();
 
@@ -82,8 +107,18 @@ primitiv::Tensor parse_tensor(
 
   return device->new_tensor_by_array(
       shape, reinterpret_cast<const float *>(data.data()));
+}
 
-  THROW_ERROR("not implemented");
+// Function to load map of Tensors from YAML::Node.
+std::unordered_map<std::string, primitiv::Tensor> parse_tensor_map(
+    const YAML::Node &node, primitiv::Device *device) {
+  std::unordered_map<std::string, primitiv::Tensor> tensors;
+
+  for (const auto &kv : node) {
+    tensors.emplace(kv.first.as<string>(), ::parse_tensor(kv.second, device));
+  }
+
+  return tensors;
 }
 
 }  // namespace
@@ -95,6 +130,18 @@ void Parameter::check_shape() {
     THROW_ERROR(
         "The batch size of the parameter shape should be 1. Given shape: "
         << shape_.to_string());
+  }
+  if (value_.shape() != shape_) {
+    THROW_ERROR(
+        "Shape mismatched at Parameter::check_shape()."
+        << " value_.shape: " << value_.shape().to_string()
+        << " != expected: " << shape_.to_string());
+  }
+  if (grad_.shape() != shape_) {
+    THROW_ERROR(
+        "Shape mismatched at Parameter::check_shape()."
+        << " grad_.shape: " << grad_.shape().to_string()
+        << " != expected: " << shape_.to_string());
   }
 }
 
@@ -134,11 +181,14 @@ Parameter::Parameter(
   reset_value(init);
 }
 
-Parameter::Parameter(const string &name, Tensor &&value)
-: name_(name)
+Parameter::Parameter(
+    string &&name, Tensor &&value,
+    std::unordered_map<std::string, Tensor> &&stats)
+: name_(std::move(name))
 , shape_(value.shape())
 , device_(value.device())
-, grad_(value.device()->new_tensor(value.shape())) {
+, grad_(value.device()->new_tensor(value.shape()))
+, stats_(std::move(stats)) {
   value_ = std::move(value);
   check_shape();
 }
@@ -155,6 +205,16 @@ void Parameter::reset_gradient() {
   grad_.reset(0);
 }
 
+void Parameter::add_stats(const std::string &name, const Shape &shape) {
+  if (!device_) {
+    THROW_ERROR("Attempted to add statistics to an invalid Parameter object.");
+  }
+  if (has_stats(name)) {
+    THROW_ERROR("Statistics with name `" << name << "` already exists.");
+  }
+  stats_.emplace(std::make_pair(name, device_->new_tensor(shape)));
+}
+
 void Parameter::save(const string &path) const  {
   std::ofstream ofs(path);
   if (!ofs.is_open()) {
@@ -165,6 +225,7 @@ void Parameter::save(const string &path) const  {
   em << YAML::BeginMap;
   em << YAML::Key << "name" << YAML::Value << name_;
   em << YAML::Key << "value" << YAML::Value << value_;
+  em << YAML::Key << "stats" << YAML::Value << stats_;
   em << YAML::EndMap;
 }
 
@@ -184,15 +245,17 @@ Parameter Parameter::load(const string &path, Device *device) {
   YAML::Node node = YAML::Load(data.get());
   string name;
   Tensor value;
+  std::unordered_map<std::string, Tensor> stats;
 
   for (const auto &kv : node) {
     const string key = kv.first.as<string>();
     if (key == "name") name = kv.second.as<string>();
     else if (key == "value") value = ::parse_tensor(kv.second, device);
+    else if (key == "stats") stats = ::parse_tensor_map(kv.second, device);
     else THROW_ERROR("Unknown YAML key: " << key);
   }
 
-  return Parameter(name, std::move(value));
+  return Parameter(std::move(name), std::move(value), std::move(stats));
 }
 
 }  // namespace primitiv
