@@ -559,6 +559,12 @@ void CPUDevice::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   }
 }
 
+void CPUDevice::inplace_multiply_const_impl(float k, Tensor &x) {
+  const unsigned size = x.shape().size();
+  float *dest = DATA(x);
+  REPEAT_OP(i, size, dest[i] *= k);
+}
+
 void CPUDevice::inplace_add_impl(const Tensor &x, Tensor &y) {
   const Shape &sx = x.shape();
   const Shape &sy = y.shape();

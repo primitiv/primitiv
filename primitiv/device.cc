@@ -362,6 +362,11 @@ Tensor Device::batch_sum_fw(const Tensor &x) {
   return y;
 }
 
+void Device::inplace_multiply_const(float k, Tensor &x) {
+  CHECK_DEVICE(x);
+  inplace_multiply_const_impl(k, x);
+}
+
 void Device::inplace_add(const Tensor &x, Tensor &y) {
   CHECK_DEVICE(x);
   CHECK_DEVICE(y);

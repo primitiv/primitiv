@@ -351,6 +351,12 @@ __global__ void batch_sum_fw_dev(
   }
 }
 
+__global__ void inplace_multiply_const_dev(
+    unsigned k, unsigned size, float *px) {
+  const unsigned i = IDX;
+  if (i < size) px[i] *= k;
+}
+
 __global__ void inplace_add_dev(
     const float *px, unsigned size, unsigned mbx, unsigned mby, float *py) {
   const unsigned i = IDX;
@@ -927,6 +933,13 @@ void CUDADevice::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::batch_sum_fw_dev<<<g1, dim1_x_>>>(
       CDATA(x), size, x.shape().batch(), DATA(y));
+}
+
+void CUDADevice::inplace_multiply_const_impl(float k, Tensor &x) {
+  const unsigned size = x.shape().size();
+  const unsigned g1 = GRID_SIZE(size, dim1_x_);
+  CUDA_CALL(::cudaSetDevice(dev_id_));
+  ::inplace_multiply_const_dev<<<g1, dim1_x_>>>(k, size, DATA(x));
 }
 
 void CUDADevice::inplace_add_impl(const Tensor &x, Tensor &y) {

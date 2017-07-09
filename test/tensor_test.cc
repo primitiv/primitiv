@@ -475,6 +475,16 @@ TEST_F(TensorTest, CheckResetValuesByVector) {
   }
 }
 
+TEST_F(TensorTest, CheckInplaceMultiplyConst) {
+  for (Device *dev : devices) {
+    const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    const vector<float> y_data {2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24};
+    Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
+    x *= 2;
+    EXPECT_TRUE(vector_match(y_data, x.to_vector()));
+  }
+}
+
 TEST_F(TensorTest, CheckInplaceAddNN) {
   for (Device *dev : devices) {
     const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};

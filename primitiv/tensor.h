@@ -104,6 +104,13 @@ public:
   Tensor flatten() const;
 
   /**
+   * Directly multiplies a constant.
+   * @param k A constant to multiply.
+   * @return `*this`
+   */
+  Tensor &operator*=(float k);
+
+  /**
    * Directly adds a value.
    * @param x A tensor to add.
    * @return `*this`

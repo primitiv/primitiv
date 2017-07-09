@@ -171,6 +171,13 @@ public:
   Tensor batch_sum_fw(const Tensor &x);
 
   /**
+   * Directly multiplies all elements by a constant.
+   * @param k A constant to multiply.
+   * @param x A tensor to be updated.
+   */
+  void inplace_multiply_const(float k, Tensor &x);
+
+  /**
    * Directly adds the first tensor to the second tensor.
    * @param x A tensor to add.
    * @param y A tensor to be udpated.
@@ -326,6 +333,8 @@ private:
   virtual void logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) = 0;
   virtual void broadcast_fw_impl(const Tensor &x, unsigned dim, unsigned size, Tensor &y) = 0;
   virtual void batch_sum_fw_impl(const Tensor &x, Tensor &y) = 0;
+
+  virtual void inplace_multiply_const_impl(float k, Tensor &x) = 0;
 
   virtual void inplace_add_impl(const Tensor &x, Tensor &y) = 0;
   virtual void inplace_subtract_impl(const Tensor &x, Tensor &y) = 0;
