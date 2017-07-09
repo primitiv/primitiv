@@ -20,6 +20,8 @@ protected:
 
 TEST_F(TraingerImplTest, CheckSGDUpdate) {
   SGD trainer(.1);
+  EXPECT_FLOAT_EQ(.1, trainer.eta());
+
   Parameter param("param", {2, 2}, {1, 2, 3, 4}, &dev);
   trainer.add_parameter(&param);
   trainer.reset_gradients();

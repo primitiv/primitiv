@@ -29,24 +29,34 @@ public:
   /**
    * Resets all gradients of registered parameters.
    */
-  virtual void reset_gradients() = 0;
+  void reset_gradients();
 
   /**
    * Updates parameter values.
    * @param scale Additional learning rate scaling factor.
    */
-  virtual void update(float scale) = 0;
-
-protected:
-  /**
-   * Returns the list of the parameters.
-   */
-  const std::unordered_map<std::string, Parameter *> &params() {
-    return params_;
-  }
+  void update(float scale);
 
 private:
   std::unordered_map<std::string, Parameter *> params_;
+
+  /**
+   * Event handler on adding a new parameter.
+   * @param param New Parameter object that is added to the parameter list.
+   */
+  virtual void configure_parameter(Parameter &param) = 0;
+
+  /**
+   * Updates a parameter.
+   * @param param Parameter to be updated.
+   * @param scale Additional learning rate scaling factor.
+   */
+  virtual void update_parameter(float scale, Parameter &param) = 0;
+
+  /**
+   * Updates internal states of the trainer.
+   */
+  virtual void update_epoch() = 0;
 };
 
 }  // namespace primitiv

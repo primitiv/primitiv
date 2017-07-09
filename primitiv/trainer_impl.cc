@@ -8,18 +8,13 @@
 namespace primitiv {
 namespace trainers {
 
-void SGD::reset_gradients() {
-  for (const auto &kv : params()) {
-    kv.second->reset_gradient();
-  }
+void SGD::configure_parameter(Parameter &param) {}
+
+void SGD::update_parameter(float scale, Parameter &param) {
+  param.value() -= (scale * eta_) * param.gradient();
 }
 
-void SGD::update(const float scale) {
-  const float factor = eta_ * scale;
-  for (const auto &kv : params()) {
-    kv.second->value() -= factor * kv.second->gradient();
-  }
-}
+void SGD::update_epoch() {}
 
 }  // namespace trainers
 }  // namespace primitiv

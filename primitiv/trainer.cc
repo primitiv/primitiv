@@ -13,4 +13,17 @@ void Trainer::add_parameter(Parameter *param) {
   params_.insert(std::make_pair(param->name(), param));
 }
 
+void Trainer::reset_gradients() {
+  for (const auto &kv : params_) {
+    kv.second->reset_gradient();
+  }
+}
+
+void Trainer::update(float scale) {
+  for (const auto &kv : params_) {
+    update_parameter(scale, *kv.second);
+  }
+  update_epoch();
+}
+
 }  // namespace primitiv
