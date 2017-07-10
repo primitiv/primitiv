@@ -27,7 +27,7 @@ void Adam::configure_parameter(Parameter &param) {
 }
 
 void Adam::update_parameter(float scale, Parameter &param) {
-  Tensor &g = param.gradient();
+  const Tensor &g = param.gradient();
   Tensor &m1 = param.stats("adam-m1");
   Tensor &m2 = param.stats("adam-m2");
   m1 = beta1_ * m1 + (1 - beta1_) * g;
