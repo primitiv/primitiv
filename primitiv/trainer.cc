@@ -11,6 +11,7 @@ void Trainer::add_parameter(Parameter *param) {
     THROW_ERROR("Parameter '" << param->name() << "' is already registered.");
   }
   params_.insert(std::make_pair(param->name(), param));
+  configure_parameter(*param);
 }
 
 void Trainer::reset_gradients() {

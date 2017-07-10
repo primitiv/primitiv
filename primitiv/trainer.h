@@ -11,13 +11,12 @@ class Parameter;
  * Abstract class for parameter optimizers.
  */
 class Trainer {
-  Trainer(const Trainer &) = delete;
-  Trainer(Trainer &&) = delete;
-  Trainer &operator=(const Trainer &) = delete;
-  Trainer &operator=(Trainer &&) = delete;
-
 public:
   Trainer() = default;
+  Trainer(const Trainer &) = default;
+  Trainer(Trainer &&) = default;
+  Trainer &operator=(const Trainer &) = default;
+  Trainer &operator=(Trainer &&) = default;
   virtual ~Trainer() = default;
 
   /**
