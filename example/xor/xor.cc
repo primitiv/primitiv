@@ -97,7 +97,7 @@ int main() {
     const float loss_val = g.forward(loss).to_vector()[0];
     cout << "  loss: " << loss_val << endl;
 
-    // Resets cumulative losses of parameters.
+    // Resets cumulative gradients of all registered parameters.
     trainer.reset_gradients();
 
     // Backpropagation
