@@ -5,6 +5,14 @@
 // perceptron with the softmax cross entropy loss.
 // In addition, his example calculates hidden/output layers using 2 different
 // GPUs.
+//
+// Usage:
+//   Run 'download_mnist.sh' in the same directory before using this code.
+// g++
+//   -std=c++11
+//   -I/path/to/primitiv/includes (typically -I../..)
+//   -L/path/to/primitiv/libs     (typically -L../../build/primitiv)
+//   mnist_multi_gpu.cc -lprimitiv
 
 #include <algorithm>
 #include <cmath>

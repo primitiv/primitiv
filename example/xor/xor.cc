@@ -4,9 +4,8 @@
 // Compile:
 // g++
 //   -std=c++11
-//   -I/path/to/primitiv
-//   -I/path/to/cuda/include
-//   -L/path/to/primitiv/build/primitiv
+//   -I/path/to/primitiv/includes (typically -I../..)
+//   -L/path/to/primitiv/libs     (typically -L../../build/primitiv)
 //   xor.cc -lprimitiv
 
 #include <iostream>
