@@ -1,13 +1,14 @@
 #ifndef PRIMITIV_CUDA_DEVICE_H_
 #define PRIMITIV_CUDA_DEVICE_H_
 
-#include <cublas_v2.h>
-#include <curand.h>
 #include <map>
+#include <memory>
 #include <primitiv/cuda_memory_pool.h>
 #include <primitiv/device.h>
 
 namespace primitiv {
+
+struct CUDAInternalState;
 
 /**
  * Device class for CUDA.
@@ -152,8 +153,7 @@ private:
   unsigned dim2_y_;
   unsigned max_batch_;
   CUDAMemoryPool pool_;
-  ::cublasHandle_t cublas_;
-  ::curandGenerator_t curand_;
+  std::unique_ptr<CUDAInternalState> state_;
 
   // Reserved pointer to store integer IDs.
   // This member holds a pointer provided from `pool_`, and should be declared

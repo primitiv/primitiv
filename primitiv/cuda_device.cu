@@ -1,6 +1,8 @@
 #include <config.h>
 
+#include <cublas_v2.h>
 #include <cuda_runtime_api.h>
+#include <curand.h>
 #include <iostream>
 #include <random>
 #include <primitiv/cuda_device.h>
@@ -374,17 +376,80 @@ __global__ void inplace_subtract_dev(
 #undef IDX
 #undef IDY
 
-}  // namespace
-
-namespace {
-
 // Minimum requirements of the compute capability.
 static const int MIN_CC_MAJOR = 3;
 static const int MIN_CC_MINOR = 0;
 
-}
+/*
+ * CUBLAS initializer/finalizer.
+ */
+class CUBLASHandle {
+private:
+  CUBLASHandle(const CUBLASHandle &) = delete;
+  CUBLASHandle(CUBLASHandle &&) = delete;
+  CUBLASHandle &operator=(const CUBLASHandle &) = delete;
+  CUBLASHandle &operator=(CUBLASHandle &&) = delete;
+
+public:
+  explicit CUBLASHandle(unsigned dev_id) {
+    CUDA_CALL(::cudaSetDevice(dev_id));
+    CUBLAS_CALL(::cublasCreate(&handle_));
+    //cerr << "CUBLAS initialized at device " << dev_id << '.' << endl;
+  }
+
+  ~CUBLASHandle() {
+    CUBLAS_CALL(::cublasDestroy(handle_));
+    //cerr << "CUBLAS finalized." << endl;
+  }
+
+  ::cublasHandle_t get() const { return handle_; }
+
+private:
+  ::cublasHandle_t handle_;
+};
+
+/*
+ * CURAND initializer/finalizer.
+ */
+class CURANDHandle {
+private:
+  CURANDHandle(const CURANDHandle &) = delete;
+  CURANDHandle(CURANDHandle &&) = delete;
+  CURANDHandle &operator=(const CURANDHandle &) = delete;
+  CURANDHandle &operator=(CURANDHandle &&) = delete;
+
+public:
+  CURANDHandle(unsigned dev_id, unsigned rng_seed) {
+    CUDA_CALL(::cudaSetDevice(dev_id));
+    CURAND_CALL(::curandCreateGenerator(&handle_, CURAND_RNG_PSEUDO_DEFAULT));
+    CURAND_CALL(::curandSetPseudoRandomGeneratorSeed(handle_, rng_seed));
+    //cerr << "CURAND initialized at device " << dev_id << '.' << endl;
+  }
+
+  ~CURANDHandle() {
+    CURAND_CALL(::curandDestroyGenerator(handle_));
+    //cerr << "CURAND finalized." << endl;
+  }
+
+  ::curandGenerator_t get() const { return handle_; }
+
+private:
+  ::curandGenerator_t handle_;
+};
+
+}  // namespace
 
 namespace primitiv {
+
+/*
+ * Hidden objects of CUDADevice.
+ */
+struct CUDAInternalState {
+  CUDAInternalState(unsigned dev_id, unsigned rng_seed)
+    : cublas(dev_id) , curand(dev_id, rng_seed) {}
+  ::CUBLASHandle cublas;
+  ::CURANDHandle curand;
+};
 
 unsigned CUDADevice::num_devices() {
   int ret;
@@ -443,10 +508,7 @@ void CUDADevice::initialize() {
   cerr << "  Maximum batch ... " << max_batch_ <<endl;
 
   // Initializes additional libraries
-  CUDA_CALL(::cudaSetDevice(dev_id_));
-  CUBLAS_CALL(::cublasCreate(&cublas_));
-  CURAND_CALL(::curandCreateGenerator(&curand_, CURAND_RNG_PSEUDO_DEFAULT));
-  CURAND_CALL(::curandSetPseudoRandomGeneratorSeed(curand_, rng_seed_));
+  state_.reset(new CUDAInternalState(dev_id_, rng_seed_));
 
   // Initializes the device pointer for integer IDs.
   ids_ptr_ = pool_.allocate(sizeof(unsigned) * max_batch_);
@@ -467,9 +529,7 @@ CUDADevice::CUDADevice(unsigned device_id, unsigned rng_seed)
 }
 
 CUDADevice::~CUDADevice() {
-  // Finalizes additional libraries
-  CUBLAS_CALL(::cublasDestroy(cublas_));
-  CURAND_CALL(::curandDestroyGenerator(curand_));
+  // Nothing to do for now.
 }
 
 std::shared_ptr<void> CUDADevice::new_handle(const Shape &shape) {
@@ -527,7 +587,7 @@ void CUDADevice::random_bernoulli_impl(float p, Tensor &y) {
   const unsigned size = y.shape().size();
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  CURAND_CALL(::curandGenerateUniform(curand_, DATA(y), size));
+  CURAND_CALL(::curandGenerateUniform(state_->curand.get(), DATA(y), size));
   ::rand_bernoulli_dev<<<num_blocks, dim1_x_>>>(p, size, DATA(y));
 }
 
@@ -536,20 +596,20 @@ void CUDADevice::random_uniform_impl(float lower, float upper, Tensor &y) {
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
   const float scale = upper - lower;
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  CURAND_CALL(::curandGenerateUniform(curand_, DATA(y), size));
+  CURAND_CALL(::curandGenerateUniform(state_->curand.get(), DATA(y), size));
   ::rand_affine_dev<<<num_blocks, dim1_x_>>>(lower, scale, size, DATA(y));
 }
 
 void CUDADevice::random_normal_impl(float mean, float sd, Tensor &y) {
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CURAND_CALL(::curandGenerateNormal(
-        curand_, DATA(y), y.shape().size(), mean, sd));
+        state_->curand.get(), DATA(y), y.shape().size(), mean, sd));
 }
 
 void CUDADevice::random_log_normal_impl(float mean, float sd, Tensor &y) {
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CURAND_CALL(::curandGenerateLogNormal(
-        curand_, DATA(y), y.shape().size(), mean, sd));
+        state_->curand.get(), DATA(y), y.shape().size(), mean, sd));
 }
 
 void CUDADevice::pick_fw_impl(
@@ -796,7 +856,7 @@ void CUDADevice::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
     const unsigned bs = a.shape().batch();
     for (unsigned n = 0; n < bs; ++n) {
       CUBLAS_CALL(::cublasSgemm(
-            cublas_, ::CUBLAS_OP_N, ::CUBLAS_OP_N,
+            state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_N,
             di, dk, dj,
             &alpha, CDATA(a) + n * a_skip, di, CDATA(b) + n * b_skip, dj,
             &beta, DATA(y) + n * y_skip, di));
@@ -804,7 +864,7 @@ void CUDADevice::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
     CUBLAS_CALL(::cublasSgemm(
-          cublas_, ::CUBLAS_OP_N, ::CUBLAS_OP_N,
+          state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_N,
           di, dk * b.shape().batch(), dj,
           &alpha, CDATA(a), di, CDATA(b), dj,
           &beta, DATA(y), di));
@@ -842,12 +902,12 @@ void CUDADevice::matmul_bw_impl(
     const unsigned bs = a.shape().batch();
     for (unsigned n = 0; n < bs; ++n) {
       CUBLAS_CALL(::cublasSgemm(
-            cublas_, ::CUBLAS_OP_N, ::CUBLAS_OP_T,
+            state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_T,
             di, dj, dk,
             &alpha, CDATA(gy) + n * y_skip, di, CDATA(b) + n * b_skip, dj,
             &beta, DATA(ga) + n * a_skip, di));
       CUBLAS_CALL(::cublasSgemm(
-            cublas_, ::CUBLAS_OP_T, ::CUBLAS_OP_N,
+            state_->cublas.get(), ::CUBLAS_OP_T, ::CUBLAS_OP_N,
             dj, dk, di,
             &alpha, CDATA(a) + n * a_skip, di, CDATA(gy) + n * y_skip, di,
             &beta, DATA(gb) + n * b_skip, dj));
@@ -855,12 +915,12 @@ void CUDADevice::matmul_bw_impl(
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
     CUBLAS_CALL(::cublasSgemm(
-          cublas_, ::CUBLAS_OP_N, ::CUBLAS_OP_T,
+          state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_T,
           di, dj, dk * b.shape().batch(),
           &alpha, CDATA(gy), di, CDATA(b), dj,
           &beta, DATA(ga), di));
     CUBLAS_CALL(::cublasSgemm(
-          cublas_, ::CUBLAS_OP_T, ::CUBLAS_OP_N,
+          state_->cublas.get(), ::CUBLAS_OP_T, ::CUBLAS_OP_N,
           dj, dk * b.shape().batch(), di,
           &alpha, CDATA(a), di, CDATA(gy), di,
           &beta, DATA(gb), dj));
