@@ -4,6 +4,7 @@ set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
 project(primitiv VERSION 0.1.0 LANGUAGES CXX)
 
 option(PRIMITIV_BUILD_STATIC_LIBRARY "Builds static library." OFF)
+option(PRIMITIV_BUILD_TESTS "Builds test binaries." OFF)
 option(PRIMITIV_USE_CACHE "Enables cached values in some functions but needs more memory." OFF)
 option(PRIMITIV_USE_CUDA "Finds CUDA library ant use it." OFF)
 
@@ -31,10 +32,11 @@ if(PRIMITIV_USE_CUDA)
   link_directories(${CUDA_LIBRARIES})
 endif()
 
-enable_testing()
-
 # sources
-add_subdirectory(submodules/googletest)
 add_subdirectory(submodules/yaml-cpp)
 add_subdirectory(primitiv)
-add_subdirectory(test)
+if(PRIMITIV_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(submodules/googletest)
+  add_subdirectory(test)
+endif()
