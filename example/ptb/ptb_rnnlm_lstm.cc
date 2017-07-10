@@ -27,7 +27,7 @@
 
 using primitiv::initializers::Constant;
 using primitiv::initializers::XavierUniform;
-using primitiv::trainers::SGD;
+using primitiv::trainers::Adam;
 namespace F = primitiv::node_ops;
 using namespace primitiv;
 using namespace std;
@@ -243,7 +243,7 @@ int main() {
   CUDADevice dev(0);
 
   // Trainer.
-  SGD trainer(.1);
+  Adam trainer;
 
   // Our LM.
   ::RNNLM lm(vocab.size(), eos_id, dev, trainer);

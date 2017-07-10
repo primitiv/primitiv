@@ -16,7 +16,7 @@
 #include <primitiv/primitiv.h>
 
 // "primitiv_cuda.h" is required to use CUDA backend.
-#include <primitiv/primitiv_cuda.h>
+//#include <primitiv/primitiv_cuda.h>
 
 // shortcuts
 using std::cout;
@@ -24,7 +24,8 @@ using std::endl;
 using std::vector;
 using primitiv::initializers::Constant;
 using primitiv::initializers::XavierUniform;
-using primitiv::CUDADevice;
+using primitiv::CPUDevice;
+//using primitiv::CUDADevice;
 using primitiv::Graph;
 using primitiv::Node;
 using primitiv::Parameter;
@@ -36,7 +37,11 @@ int main() {
   // Setups a computation backend.
   // The device object manages device-specific memories, and must be destroyed
   // after all other objects were gone.
-  CUDADevice dev(0);
+  CPUDevice dev;
+
+  // If you want to use CUDA, uncomment below line (and comment out above) with
+  // a specific device (GPU) ID.
+  //CUDADevice dev(0);
 
   // Parameters
   Parameter pw1("w1", {8, 2}, XavierUniform(), &dev);
