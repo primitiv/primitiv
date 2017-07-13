@@ -55,7 +55,7 @@ TEST_F(TrainerTest, CheckWeightDecay) {
         vector<float> {.1, .2, .3, .4}, param.gradient().to_vector()));
 }
 
-TEST_F(TrainerTest, CheckGradkentClipping) {
+TEST_F(TrainerTest, CheckGradientClipping) {
   trainers::SGD trainer;
   trainer.set_gradient_clipping(4);
 
