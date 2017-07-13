@@ -483,6 +483,13 @@ TEST_F(TensorTest, CheckInplaceMultiplyConst) {
     x *= 2;
     EXPECT_TRUE(vector_match(y_data, x.to_vector()));
   }
+  for (Device *dev : devices) {
+    const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    const vector<float> y_data {.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6};
+    Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
+    x *= .5;
+    EXPECT_TRUE(vector_match(y_data, x.to_vector()));
+  }
 }
 
 TEST_F(TensorTest, CheckInplaceAddNN) {

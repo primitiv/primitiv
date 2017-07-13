@@ -354,7 +354,7 @@ __global__ void batch_sum_fw_dev(
 }
 
 __global__ void inplace_multiply_const_dev(
-    unsigned k, unsigned size, float *px) {
+    float k, unsigned size, float *px) {
   const unsigned i = IDX;
   if (i < size) px[i] *= k;
 }
