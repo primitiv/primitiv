@@ -31,6 +31,11 @@ public:
   virtual ~Device() = default;
 
   /**
+   * Prints device description to stderr.
+   */
+  virtual void dump_description() const = 0;
+
+  /**
    * Retrieves the type of the device.
    * @return A DeviceType value.
    */

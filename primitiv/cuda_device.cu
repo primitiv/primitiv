@@ -449,6 +449,7 @@ struct CUDAInternalState {
     : cublas(dev_id) , curand(dev_id, rng_seed) {}
   ::CUBLASHandle cublas;
   ::CURANDHandle curand;
+  ::cudaDeviceProp prop;
 };
 
 unsigned CUDADevice::num_devices() {
@@ -461,21 +462,6 @@ void CUDADevice::initialize() {
   // Retrieves device properties.
   ::cudaDeviceProp prop;
   CUDA_CALL(::cudaGetDeviceProperties(&prop, dev_id_));
-
-  // Dump device properties.
-  cerr << "Selected CUDA Device " << dev_id_ << ':' << endl;
-  cerr << "  Name ................. " << prop.name << endl;
-  cerr << "  Global Memory ........ " << prop.totalGlobalMem << endl;
-  cerr << "  Shared Memory ........ " << prop.sharedMemPerBlock << endl;
-  cerr << "  Threads/block ........ " << prop.maxThreadsPerBlock << endl;
-  cerr << "  Threads dim .......... " << prop.maxThreadsDim[0] << ','
-                                      << prop.maxThreadsDim[1] << ','
-                                      << prop.maxThreadsDim[2] << endl;
-  cerr << "  Grid size ............ " << prop.maxGridSize[0] << ','
-                                      << prop.maxGridSize[1] << ','
-                                      << prop.maxGridSize[2] << endl;
-  cerr << "  Compute Capability ... " << prop.major << '.'
-                                      << prop.minor << endl;
 
   // Check compute capability requirements.
   if (prop.major < ::MIN_CC_MAJOR ||
@@ -501,14 +487,9 @@ void CUDADevice::initialize() {
   }
   max_batch_ = prop.maxGridSize[1];
 
-  cerr << "Configurations:" << endl;
-  cerr << "  1 dim ........... " << dim1_x_ << " threads" << endl;
-  cerr << "  2 dims .......... " << dim2_x_ << "x"
-                                 << dim2_y_ << " threads" << endl;
-  cerr << "  Maximum batch ... " << max_batch_ <<endl;
-
   // Initializes additional libraries
   state_.reset(new CUDAInternalState(dev_id_, rng_seed_));
+  state_->prop = prop;
 
   // Initializes the device pointer for integer IDs.
   ids_ptr_ = pool_.allocate(sizeof(unsigned) * max_batch_);
@@ -530,6 +511,33 @@ CUDADevice::CUDADevice(unsigned device_id, unsigned rng_seed)
 
 CUDADevice::~CUDADevice() {
   // Nothing to do for now.
+}
+
+void CUDADevice::dump_description() const {
+  cerr << "Device " << this << ':' << endl;
+  cerr << "  Type: CUDADevice" << endl;
+
+  const ::cudaDeviceProp &prop = state_->prop;
+  cerr << "  Physical Device: " << dev_id_ << ':' << endl;
+  cerr << "    Name ................. " << prop.name << endl;
+  cerr << "    Global Memory ........ " << prop.totalGlobalMem << endl;
+  cerr << "    Shared Memory ........ " << prop.sharedMemPerBlock << endl;
+  cerr << "    Threads/block ........ " << prop.maxThreadsPerBlock << endl;
+  cerr << "    Threads dim .......... " << prop.maxThreadsDim[0] << ','
+                                      << prop.maxThreadsDim[1] << ','
+                                      << prop.maxThreadsDim[2] << endl;
+  cerr << "    Grid size ............ " << prop.maxGridSize[0] << ','
+                                      << prop.maxGridSize[1] << ','
+                                      << prop.maxGridSize[2] << endl;
+  cerr << "    Compute Capability ... " << prop.major << '.'
+                                      << prop.minor << endl;
+  /*
+  cerr << "  Configurations:" << endl;
+  cerr << "    1 dim ........... " << dim1_x_ << " threads" << endl;
+  cerr << "    2 dims .......... " << dim2_x_ << "x"
+                                 << dim2_y_ << " threads" << endl;
+  cerr << "    Maximum batch ... " << max_batch_ <<endl;
+  */
 }
 
 std::shared_ptr<void> CUDADevice::new_handle(const Shape &shape) {

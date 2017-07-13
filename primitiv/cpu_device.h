@@ -31,6 +31,7 @@ public:
 
   ~CPUDevice() override = default;
 
+  void dump_description() const override;
   Device::DeviceType type() const override { return Device::DEVICE_TYPE_CPU; }
 
 private:

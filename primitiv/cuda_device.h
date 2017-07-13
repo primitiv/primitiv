@@ -43,6 +43,7 @@ public:
 
   ~CUDADevice() override;
 
+  void dump_description() const override;
   Device::DeviceType type() const override { return Device::DEVICE_TYPE_CUDA; }
 
 private:

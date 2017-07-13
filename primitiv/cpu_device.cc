@@ -13,6 +13,11 @@ using std::endl;
 
 namespace primitiv {
 
+void CPUDevice::dump_description() const {
+  cerr << "Device " << this << ':' << endl;
+  cerr << "  Type: CPUDevice" << endl;
+}
+
 std::shared_ptr<void> CPUDevice::new_handle(const Shape &shape) {
   const unsigned mem_size = sizeof(float) * shape.size();
   void *data = std::malloc(mem_size);
