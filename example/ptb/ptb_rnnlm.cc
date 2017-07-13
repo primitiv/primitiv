@@ -191,6 +191,8 @@ int main() {
 
   // Trainer.
   Adam trainer;
+  trainer.set_weight_decay(1e-6);
+  trainer.set_gradient_clipping(5);
 
   // Our LM.
   ::RNNLM lm(vocab.size(), eos_id, dev, trainer);
