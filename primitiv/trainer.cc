@@ -1,7 +1,9 @@
 #include <config.h>
 
+#include <cmath>
 #include <primitiv/error.h>
 #include <primitiv/parameter.h>
+#include <primitiv/tensor_ops.h>
 #include <primitiv/trainer.h>
 
 namespace primitiv {
@@ -21,6 +23,28 @@ void Trainer::reset_gradients() {
 }
 
 void Trainer::update(float scale) {
+  if (l2_strength_ > 0) {
+    // Weight decay
+    for (const auto &kv : params_) {
+      kv.second->gradient() += l2_strength_ * kv.second->value();
+    }
+  }
+
+  if (clip_threshold_ > 0) {
+    // Gradient clipping
+    float sq_norm = 0;
+    for (const auto &kv : params_) {
+      const Tensor &g = kv.second->gradient();
+      sq_norm += tensor_ops::sum(tensor_ops::flatten(g * g), 0).to_vector()[0];
+    }
+    if (sq_norm > clip_threshold_ * clip_threshold_) {
+      float scale = clip_threshold_ / std::sqrt(sq_norm);
+      for (const auto &kv : params_) {
+        kv.second->gradient() *= scale;
+      }
+    }
+  }
+
   for (const auto &kv : params_) {
     update_parameter(scale, *kv.second);
   }

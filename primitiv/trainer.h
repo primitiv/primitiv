@@ -12,12 +12,23 @@ class Parameter;
  */
 class Trainer {
 public:
-  Trainer() = default;
   Trainer(const Trainer &) = default;
   Trainer(Trainer &&) = default;
   Trainer &operator=(const Trainer &) = default;
   Trainer &operator=(Trainer &&) = default;
   virtual ~Trainer() = default;
+
+  Trainer() : l2_strength_(0), clip_threshold_(0) {}
+
+  /**
+   * Sets L2 decay strength.
+   */
+  void set_weight_decay(float strength) { l2_strength_ = strength; }
+
+  /**
+   * Sets gradient clipping threshold.
+   */
+  void set_gradient_clipping(float threshold) { clip_threshold_ = threshold; }
 
   /**
    * Registers a parameter.
@@ -37,6 +48,8 @@ public:
   void update(float scale);
 
 private:
+  float l2_strength_;
+  float clip_threshold_;
   std::unordered_map<std::string, Parameter *> params_;
 
   /**
