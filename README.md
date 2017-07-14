@@ -29,6 +29,7 @@ Following libraries will be included into the build tree by running
 `git submodule init/update`.
 
 - [Google Test](https://github.com/google/googletest)
+  - Required only when `-DPRIMITIV_BUILD_TESTS=ON`.
 - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 
 *Attention*: `make install` will attempt to install also above libraries into
@@ -43,11 +44,26 @@ Build
     git submodule update
     mkdir build
     cd build
-    cmake .. [-DPRIMITIV_USE_CUDA=ON] [(Other options if necessary)]
+    cmake .. [-DPRIMITIV_USE_CUDA=ON] [(Other options listed below if necessary)]
     make [-j <threads>]
     [make test]
     [make install]
 
+Building Options
+----------------
+
+- `PRIMITIV_BUILD_STATIC_LIBRARY` (default=`OFF`)
+  - Builds a static library instead of a shared object.
+- `PRIMITIV_BUILD_TESTS` (default=`ON`)
+  - Builds test binaries and generates `make test` command.
+- `PRIMITIV_USE_CACHE` (default=`OFF`)
+  - Whether or not to use cached values to prevent increasing computation amount.
+  - Libraries built with this flag will tend to consume more memory.
+- `PRIMITIV_USE_CUDA` (default=`OFF`)
+  - Enables CUDA backend (`CUDADevice` class).
+- `GOOGLETEST_INCLUDE_DIR`, `GOOGLETEST_LIBRARY_DIR`
+  - Optional directories which stores [Google Test](https://github.com/google/googletest) include files & libraries.
+- Other CMake standard options and [FindCUDA](https://cmake.org/cmake/help/v3.0/module/FindCUDA.html) options are available.
 
 Usage
 -----
