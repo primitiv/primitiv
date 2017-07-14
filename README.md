@@ -20,14 +20,8 @@ Prerequisites
 - CMake 3.1.0 or later
 - GCC 4.9 or later (maybe 4.8 is OK)
 - (optional) CUDA 8.0 or later
-
-
-Dependencies
-------------
-
-- Need to be pre-installed:
-  - [Google Test](https://github.com/google/googletest)
-    - Required only when `-DPRIMITIV_BUILD_TESTS=ON`.
+- [Google Test](https://github.com/google/googletest)
+  - Required only when `-DPRIMITIV_BUILD_TESTS=ON`.
 - Bundled by `git submodule`:
   - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 
