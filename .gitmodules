@@ -1,6 +1,3 @@
-[submodule "submodules/googletest"]
-	path = submodules/googletest
-	url = https://github.com/google/googletest.git
 [submodule "submodules/yaml-cpp"]
 	path = submodules/yaml-cpp
 	url = https://github.com/jbeder/yaml-cpp
