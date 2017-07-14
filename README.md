@@ -62,7 +62,7 @@ Building Options
 - `PRIMITIV_USE_CUDA` (default=`OFF`)
   - Enables CUDA backend (`CUDADevice` class).
 - `GOOGLETEST_INCLUDE_DIR`, `GOOGLETEST_LIBRARY_DIR`
-  - Optional directories which stores [Google Test](https://github.com/google/googletest) include files & libraries.
+  - Optional directories which store [Google Test](https://github.com/google/googletest) include files & libraries.
 - Other CMake standard options and [FindCUDA](https://cmake.org/cmake/help/v3.0/module/FindCUDA.html) options are available.
 
 Usage
