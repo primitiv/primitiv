@@ -2,12 +2,12 @@
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
-  ${GOOGLETEST_INCLUDE_DIR}
+  ${GTEST_INCLUDE_DIRS}
 )
 
 function(primitiv_test name)
   add_executable(${name}_test test_utils.h ${name}_test.cc)
-  target_link_libraries(${name}_test primitiv ${GOOGLETEST_LIBRARIES} pthread)
+  target_link_libraries(${name}_test primitiv ${GTEST_BOTH_LIBRARIES} pthread)
   add_test(
     NAME ${name}_test
     COMMAND ${name}_test
