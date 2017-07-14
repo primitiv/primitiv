@@ -24,9 +24,7 @@ Prerequisites
   - Required only when `-DPRIMITIV_BUILD_TESTS=ON`.
 - Bundled by `git submodule`:
   - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
-
-*Attention*: `make install` will attempt to install also above libraries into
-your install prefix.
+  - *Attention*: `make install` will attempt to install also above libraries into your install prefix.
 
 Build
 -----
@@ -54,9 +52,7 @@ Building Options
   - Libraries built with this flag will tend to consume more memory.
 - `PRIMITIV_USE_CUDA` (default=`OFF`)
   - Enables CUDA backend (`CUDADevice` class).
-- `GOOGLETEST_INCLUDE_DIR`, `GOOGLETEST_LIBRARY_DIR`
-  - Optional directories which store [Google Test](https://github.com/google/googletest) include files & libraries.
-- Other CMake standard options and [FindCUDA](https://cmake.org/cmake/help/v3.0/module/FindCUDA.html) options are available.
+- Other CMake standard options and [FindCUDA](https://cmake.org/cmake/help/v3.0/module/FindCUDA.html), [FindGTest](https://cmake.org/cmake/help/v3.0/module/FindGTest.html) options are available.
 
 Usage
 -----
