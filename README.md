@@ -25,12 +25,11 @@ Prerequisites
 Dependencies
 ------------
 
-Following libraries will be included into the build tree by running
-`git submodule init/update`.
-
-- [Google Test](https://github.com/google/googletest)
-  - Required only when `-DPRIMITIV_BUILD_TESTS=ON`.
-- [yaml-cpp](https://github.com/jbeder/yaml-cpp)
+- Need to be pre-installed:
+  - [Google Test](https://github.com/google/googletest)
+    - Required only when `-DPRIMITIV_BUILD_TESTS=ON`.
+- Bundled by `git submodule`:
+  - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 
 *Attention*: `make install` will attempt to install also above libraries into
 your install prefix.
