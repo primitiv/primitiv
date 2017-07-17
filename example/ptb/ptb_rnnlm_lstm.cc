@@ -121,23 +121,22 @@ vector<vector<unsigned>> make_batch(
 //   h[t] = o * tanh(c[t])
 class LSTM {
   public:
-    LSTM(unsigned in_size, unsigned out_size, Device &dev, Trainer &trainer)
+    LSTM(unsigned in_size, unsigned out_size, Trainer &trainer)
       : out_size_(out_size)
-      , dev_(dev)
-      , pwxh_("wxh", {4 * out_size, in_size}, XavierUniform(), dev)
-      , pwhh_("whh", {4 * out_size, out_size}, XavierUniform(), dev)
-      , pbh_("bh", {4 * out_size}, Constant(0), dev) {
+      , pwxh_("wxh", {4 * out_size, in_size}, XavierUniform())
+      , pwhh_("whh", {4 * out_size, out_size}, XavierUniform())
+      , pbh_("bh", {4 * out_size}, Constant(0)) {
         trainer.add_parameter(pwxh_);
         trainer.add_parameter(pwhh_);
         trainer.add_parameter(pbh_);
       }
 
     // Initializes internal values.
-    void init(Graph &g) {
-      wxh_ = F::input(pwxh_, g);
-      whh_ = F::input(pwhh_, g);
-      bh_ = F::input(pbh_, g);
-      h_ = c_ = F::zeros({out_size_}, dev_, g);
+    void init() {
+      wxh_ = F::input(pwxh_);
+      whh_ = F::input(pwhh_);
+      bh_ = F::input(pbh_);
+      h_ = c_ = F::zeros({out_size_});
     }
 
     // Forward one step.
@@ -154,7 +153,6 @@ class LSTM {
 
   private:
     unsigned out_size_;
-    Device &dev_;
     Parameter pwxh_, pwhh_, pbh_;
     Node wxh_, whh_, bh_, h_, c_;
 };
@@ -162,13 +160,12 @@ class LSTM {
 // Language model using above LSTM.
 class RNNLM {
 public:
-  RNNLM(unsigned vocab_size, unsigned eos_id, Device &dev, Trainer &trainer)
-    : dev_(dev)
-    , eos_id_(eos_id)
-    , plookup_("lookup", {NUM_EMBED_UNITS, vocab_size}, XavierUniform(), dev)
-    , pwhy_("why", {vocab_size, NUM_HIDDEN_UNITS}, XavierUniform(), dev)
-    , pby_("by", {vocab_size}, Constant(0), dev)
-    , lstm_(NUM_EMBED_UNITS, NUM_HIDDEN_UNITS, dev, trainer) {
+  RNNLM(unsigned vocab_size, unsigned eos_id, Trainer &trainer)
+    : eos_id_(eos_id)
+    , plookup_("lookup", {NUM_EMBED_UNITS, vocab_size}, XavierUniform())
+    , pwhy_("why", {vocab_size, NUM_HIDDEN_UNITS}, XavierUniform())
+    , pby_("by", {vocab_size}, Constant(0))
+    , lstm_(NUM_EMBED_UNITS, NUM_HIDDEN_UNITS, trainer) {
       trainer.add_parameter(plookup_);
       trainer.add_parameter(pwhy_);
       trainer.add_parameter(pby_);
@@ -182,12 +179,12 @@ public:
   //   {sent1_wordM, sent2_wordM, ..., sentN_wordM},  // last output (<s>)
   // };
   vector<Node> forward(
-      const vector<vector<unsigned>> &inputs, Graph &g, bool train) {
+      const vector<vector<unsigned>> &inputs, bool train) {
     const unsigned batch_size = inputs[0].size();
-    Node lookup = F::input(plookup_, g);
-    Node why = F::input(pwhy_, g);
-    Node by = F::input(pby_, g);
-    lstm_.init(g);
+    Node lookup = F::input(plookup_);
+    Node why = F::input(pwhy_);
+    Node by = F::input(pby_);
+    lstm_.init();
 
     vector<Node> outputs;
     for (unsigned i = 0; i < inputs.size() - 1; ++i) {
@@ -212,7 +209,6 @@ public:
   }
 
 private:
-  Device &dev_;
   unsigned eos_id_;
   Parameter plookup_, pwhy_, pby_;
   LSTM lstm_;
@@ -240,6 +236,7 @@ int main() {
 
   // Uses GPU.
   CUDADevice dev(0);
+  Device::set_default_device(dev);
 
   // Trainer.
   Adam trainer;
@@ -247,7 +244,7 @@ int main() {
   trainer.set_gradient_clipping(5);
 
   // Our LM.
-  ::RNNLM lm(vocab.size(), eos_id, dev, trainer);
+  ::RNNLM lm(vocab.size(), eos_id, trainer);
 
   // Batch randomizer.
   random_device rd;
@@ -276,7 +273,8 @@ int main() {
       trainer.reset_gradients();
       {
         Graph g;
-        const auto outputs = lm.forward(batch, g, true);
+        Graph::set_default_graph(g);
+        const auto outputs = lm.forward(batch, true);
         const auto loss = lm.forward_loss(outputs, batch);
         train_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
         g.backward(loss);
@@ -296,7 +294,8 @@ int main() {
             ofs + BATCH_SIZE, num_valid_sents));
       const auto batch = ::make_batch(valid_corpus, batch_ids, eos_id);
       Graph g;
-      const auto outputs = lm.forward(batch, g, false);
+      Graph::set_default_graph(g);
+      const auto outputs = lm.forward(batch, false);
       const auto loss = lm.forward_loss(outputs, batch);
       valid_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
       cout << ofs << '\r' << flush;

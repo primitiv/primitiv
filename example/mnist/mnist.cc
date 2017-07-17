@@ -23,6 +23,7 @@
 #include <primitiv/primitiv.h>
 #include <primitiv/primitiv_cuda.h>
 
+using primitiv::Device;
 using primitiv::CUDADevice;
 using primitiv::Graph;
 using primitiv::Node;
@@ -88,16 +89,17 @@ int main() {
 
   // Uses GPU.
   CUDADevice dev(0);
+  Device::set_default_device(dev);
 
   // Parameters for the multilayer perceptron.
-  Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, XavierUniform(), dev);
-  Parameter pb1("b1", {NUM_HIDDEN_UNITS}, Constant(0), dev);
-  Parameter pw2("w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, XavierUniform(), dev);
-  Parameter pb2("b2", {NUM_OUTPUT_UNITS}, Constant(0), dev);
+  Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, XavierUniform());
+  Parameter pb1("b1", {NUM_HIDDEN_UNITS}, Constant(0));
+  Parameter pw2("w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, XavierUniform());
+  Parameter pb2("b2", {NUM_OUTPUT_UNITS}, Constant(0));
 
   // Parameters for batch normalization.
-  //Parameter pbeta("beta", {NUM_HIDDEN_UNITS}, Constant(0), dev);
-  //Parameter pgamma("gamma", {NUM_HIDDEN_UNITS}, Constant(1), dev);
+  //Parameter pbeta("beta", {NUM_HIDDEN_UNITS}, Constant(0));
+  //Parameter pgamma("gamma", {NUM_HIDDEN_UNITS}, Constant(1));
 
   // Trainer
   SGD trainer(.5);
@@ -109,22 +111,22 @@ int main() {
   //trainer.add_parameter(&pgamma);
 
   // Helper lambda to construct the predictor network.
-  auto make_graph = [&](const vector<float> &inputs, bool train, Graph &g) {
+  auto make_graph = [&](const vector<float> &inputs, bool train) {
     // Stores input values.
-    Node x = F::input(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs, dev, g);
+    Node x = F::input(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs);
     // Calculates the hidden layer.
-    Node w1 = F::input(pw1, g);
-    Node b1 = F::input(pb1, g);
+    Node w1 = F::input(pw1);
+    Node b1 = F::input(pb1);
     Node h = F::relu(F::matmul(w1, x) + b1);
     // Batch normalization
-    //Node beta = F::input(pbeta, g);
-    //Node gamma = F::input(pgamma, g);
+    //Node beta = F::input(pbeta);
+    //Node gamma = F::input(pgamma);
     //h = F::batch::normalize(h) * gamma + beta;
     // Dropout
     h = F::dropout(h, .5, train);
     // Calculates the output layer.
-    Node w2 = F::input(pw2, g);
-    Node b2 = F::input(pb2, g);
+    Node w2 = F::input(pw2);
+    Node b2 = F::input(pb2);
     return F::matmul(w2, h) + b2;
   };
 
@@ -154,7 +156,8 @@ int main() {
       {
         // Constructs the graph.
         Graph g;
-        Node y = make_graph(inputs, true, g);
+        Graph::set_default_graph(g);
+        Node y = make_graph(inputs, true);
         Node loss = F::softmax_cross_entropy(y, 0, labels);
         Node avg_loss = F::batch::mean(loss);
 
@@ -180,7 +183,8 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      Node y = make_graph(inputs, false, g);
+      Graph::set_default_graph(g);
+      Node y = make_graph(inputs, false);
 
       // Gets outputs, argmax, and compares them with the label.
       vector<float> y_val = g.forward(y).to_vector();

@@ -108,13 +108,13 @@ int main() {
   trainer.add_parameter(pb2);
 
   // Helper lambda to construct the predictor network.
-  auto make_graph = [&](const vector<float> &inputs, Graph &g) {
+  auto make_graph = [&](const vector<float> &inputs) {
     // We first store input values on GPU 0.
-    Node x = F::input(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs, dev0, g);
-    Node w1 = F::input(pw1, g);
-    Node b1 = F::input(pb1, g);
-    Node w2 = F::input(pw2, g);
-    Node b2 = F::input(pb2, g);
+    Node x = F::input(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs, dev0);
+    Node w1 = F::input(pw1);
+    Node b1 = F::input(pb1);
+    Node w2 = F::input(pw2);
+    Node b2 = F::input(pb2);
     // The hidden layer is calculated and implicitly stored on GPU 0.
     Node h_on_gpu0 = F::relu(F::matmul(w1, x) + b1);
     // `copy()` transfers the hiddne layer to GPU 1.
@@ -150,7 +150,8 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      Node y = make_graph(inputs, g);
+      Graph::set_default_graph(g);
+      Node y = make_graph(inputs);
       Node loss = F::softmax_cross_entropy(y, 0, labels);
       Node avg_loss = F::batch::mean(loss);
 
@@ -173,7 +174,8 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      Node y = make_graph(inputs, g);
+      Graph::set_default_graph(g);
+      Node y = make_graph(inputs);
 
       // Gets outputs, argmax, and compares them with the label.
       vector<float> y_val = g.forward(y).to_vector();

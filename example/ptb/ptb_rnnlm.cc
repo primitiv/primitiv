@@ -113,12 +113,11 @@ vector<vector<unsigned>> make_batch(
 
 class RNNLM {
 public:
-  RNNLM(unsigned vocab_size, unsigned eos_id, Device &dev, Trainer &trainer)
-    : dev_(dev)
-    , eos_id_(eos_id)
-    , pwlookup_("Lookup", {NUM_HIDDEN_UNITS, vocab_size}, XavierUniform(), dev)
-    , pwxs_("Wxs", {NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS}, XavierUniform(), dev)
-    , pwsy_("Wsy", {vocab_size, NUM_HIDDEN_UNITS}, XavierUniform(), dev) {
+  RNNLM(unsigned vocab_size, unsigned eos_id, Trainer &trainer)
+    : eos_id_(eos_id)
+    , pwlookup_("Lookup", {NUM_HIDDEN_UNITS, vocab_size}, XavierUniform())
+    , pwxs_("Wxs", {NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS}, XavierUniform())
+    , pwsy_("Wsy", {vocab_size, NUM_HIDDEN_UNITS}, XavierUniform()) {
       trainer.add_parameter(pwlookup_);
       trainer.add_parameter(pwxs_);
       trainer.add_parameter(pwsy_);
@@ -131,12 +130,12 @@ public:
   //   ...,
   //   {sent1_wordM, sent2_wordM, ..., sentN_wordM},  // last output (<s>)
   // };
-  vector<Node> forward(const vector<vector<unsigned>> &inputs, Graph &g) {
+  vector<Node> forward(const vector<vector<unsigned>> &inputs) {
     const unsigned batch_size = inputs[0].size();
-    Node wlookup = F::input(pwlookup_, g);
-    Node wxs = F::input(pwxs_, g);
-    Node wsy = F::input(pwsy_, g);
-    Node s = F::zeros(Shape({NUM_HIDDEN_UNITS}, batch_size), dev_, g);
+    Node wlookup = F::input(pwlookup_);
+    Node wxs = F::input(pwxs_);
+    Node wsy = F::input(pwsy_);
+    Node s = F::zeros(Shape({NUM_HIDDEN_UNITS}, batch_size));
     vector<Node> outputs;
     for (unsigned i = 0; i < inputs.size() - 1; ++i) {
       Node w = F::pick(wlookup, 1, inputs[i]);
@@ -159,7 +158,6 @@ public:
   }
 
 private:
-  Device &dev_;
   unsigned eos_id_;
   Parameter pwlookup_;
   Parameter pwxs_;
@@ -188,6 +186,7 @@ int main() {
 
   // Uses GPU.
   CUDADevice dev(0);
+  Device::set_default_device(dev);
 
   // Trainer.
   Adam trainer;
@@ -195,7 +194,7 @@ int main() {
   trainer.set_gradient_clipping(5);
 
   // Our LM.
-  ::RNNLM lm(vocab.size(), eos_id, dev, trainer);
+  ::RNNLM lm(vocab.size(), eos_id, trainer);
 
   // Batch randomizer.
   random_device rd;
@@ -224,7 +223,8 @@ int main() {
       trainer.reset_gradients();
       {
         Graph g;
-        const auto outputs = lm.forward(batch, g);
+        Graph::set_default_graph(g);
+        const auto outputs = lm.forward(batch);
         const auto loss = lm.forward_loss(outputs, batch);
         train_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
         g.backward(loss);
@@ -244,7 +244,8 @@ int main() {
             ofs + BATCH_SIZE, num_valid_sents));
       const auto batch = ::make_batch(valid_corpus, batch_ids, eos_id);
       Graph g;
-      const auto outputs = lm.forward(batch, g);
+      Graph::set_default_graph(g);
+      const auto outputs = lm.forward(batch);
       const auto loss = lm.forward_loss(outputs, batch);
       valid_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
       cout << ofs << '\r' << flush;
