@@ -116,12 +116,12 @@ public:
   RNNLM(unsigned vocab_size, unsigned eos_id, Device &dev, Trainer &trainer)
     : dev_(dev)
     , eos_id_(eos_id)
-    , pwlookup_("Lookup", {NUM_HIDDEN_UNITS, vocab_size}, XavierUniform(), &dev)
-    , pwxs_("Wxs", {NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS}, XavierUniform(), &dev)
-    , pwsy_("Wsy", {vocab_size, NUM_HIDDEN_UNITS}, XavierUniform(), &dev) {
-      trainer.add_parameter(&pwlookup_);
-      trainer.add_parameter(&pwxs_);
-      trainer.add_parameter(&pwsy_);
+    , pwlookup_("Lookup", {NUM_HIDDEN_UNITS, vocab_size}, XavierUniform(), dev)
+    , pwxs_("Wxs", {NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS}, XavierUniform(), dev)
+    , pwsy_("Wsy", {vocab_size, NUM_HIDDEN_UNITS}, XavierUniform(), dev) {
+      trainer.add_parameter(pwlookup_);
+      trainer.add_parameter(pwxs_);
+      trainer.add_parameter(pwsy_);
     }
 
   // Forward function of RNNLM. Input data should be arranged below:
@@ -133,10 +133,10 @@ public:
   // };
   vector<Node> forward(const vector<vector<unsigned>> &inputs, Graph &g) {
     const unsigned batch_size = inputs[0].size();
-    Node wlookup = F::input(&pwlookup_, &g);
-    Node wxs = F::input(&pwxs_, &g);
-    Node wsy = F::input(&pwsy_, &g);
-    Node s = F::zeros(Shape({NUM_HIDDEN_UNITS}, batch_size), &dev_, &g);
+    Node wlookup = F::input(pwlookup_, g);
+    Node wxs = F::input(pwxs_, g);
+    Node wsy = F::input(pwsy_, g);
+    Node s = F::zeros(Shape({NUM_HIDDEN_UNITS}, batch_size), dev_, g);
     vector<Node> outputs;
     for (unsigned i = 0; i < inputs.size() - 1; ++i) {
       Node w = F::pick(wlookup, 1, inputs[i]);

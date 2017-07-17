@@ -124,20 +124,20 @@ class LSTM {
     LSTM(unsigned in_size, unsigned out_size, Device &dev, Trainer &trainer)
       : out_size_(out_size)
       , dev_(dev)
-      , pwxh_("wxh", {4 * out_size, in_size}, XavierUniform(), &dev)
-      , pwhh_("whh", {4 * out_size, out_size}, XavierUniform(), &dev)
-      , pbh_("bh", {4 * out_size}, Constant(0), &dev) {
-        trainer.add_parameter(&pwxh_);
-        trainer.add_parameter(&pwhh_);
-        trainer.add_parameter(&pbh_);
+      , pwxh_("wxh", {4 * out_size, in_size}, XavierUniform(), dev)
+      , pwhh_("whh", {4 * out_size, out_size}, XavierUniform(), dev)
+      , pbh_("bh", {4 * out_size}, Constant(0), dev) {
+        trainer.add_parameter(pwxh_);
+        trainer.add_parameter(pwhh_);
+        trainer.add_parameter(pbh_);
       }
 
     // Initializes internal values.
     void init(Graph &g) {
-      wxh_ = F::input(&pwxh_, &g);
-      whh_ = F::input(&pwhh_, &g);
-      bh_ = F::input(&pbh_, &g);
-      h_ = c_ = F::zeros({out_size_}, &dev_, &g);
+      wxh_ = F::input(pwxh_, g);
+      whh_ = F::input(pwhh_, g);
+      bh_ = F::input(pbh_, g);
+      h_ = c_ = F::zeros({out_size_}, dev_, g);
     }
 
     // Forward one step.
@@ -165,13 +165,13 @@ public:
   RNNLM(unsigned vocab_size, unsigned eos_id, Device &dev, Trainer &trainer)
     : dev_(dev)
     , eos_id_(eos_id)
-    , plookup_("lookup", {NUM_EMBED_UNITS, vocab_size}, XavierUniform(), &dev)
-    , pwhy_("why", {vocab_size, NUM_HIDDEN_UNITS}, XavierUniform(), &dev)
-    , pby_("by", {vocab_size}, Constant(0), &dev)
+    , plookup_("lookup", {NUM_EMBED_UNITS, vocab_size}, XavierUniform(), dev)
+    , pwhy_("why", {vocab_size, NUM_HIDDEN_UNITS}, XavierUniform(), dev)
+    , pby_("by", {vocab_size}, Constant(0), dev)
     , lstm_(NUM_EMBED_UNITS, NUM_HIDDEN_UNITS, dev, trainer) {
-      trainer.add_parameter(&plookup_);
-      trainer.add_parameter(&pwhy_);
-      trainer.add_parameter(&pby_);
+      trainer.add_parameter(plookup_);
+      trainer.add_parameter(pwhy_);
+      trainer.add_parameter(pby_);
     }
 
   // Forward function of RNNLM. Input data should be arranged below:
@@ -184,9 +184,9 @@ public:
   vector<Node> forward(
       const vector<vector<unsigned>> &inputs, Graph &g, bool train) {
     const unsigned batch_size = inputs[0].size();
-    Node lookup = F::input(&plookup_, &g);
-    Node why = F::input(&pwhy_, &g);
-    Node by = F::input(&pby_, &g);
+    Node lookup = F::input(plookup_, g);
+    Node why = F::input(pwhy_, g);
+    Node by = F::input(pby_, g);
     lstm_.init(g);
 
     vector<Node> outputs;

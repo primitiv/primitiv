@@ -93,32 +93,32 @@ int main() {
   CUDADevice dev1(1);  // GPU 1
 
   // Parameters managed by GPU 0.
-  Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, XavierUniform(), &dev0);
-  Parameter pb1("b1", {NUM_HIDDEN_UNITS}, Constant(0), &dev0);
+  Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, XavierUniform(), dev0);
+  Parameter pb1("b1", {NUM_HIDDEN_UNITS}, Constant(0), dev0);
   
   // Parameters managed by GPU 1.
-  Parameter pw2("w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, XavierUniform(), &dev1);
-  Parameter pb2("b2", {NUM_OUTPUT_UNITS}, Constant(0), &dev1);
+  Parameter pw2("w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, XavierUniform(), dev1);
+  Parameter pb2("b2", {NUM_OUTPUT_UNITS}, Constant(0), dev1);
 
   // Trainer
   SGD trainer(.1);
-  trainer.add_parameter(&pw1);
-  trainer.add_parameter(&pb1);
-  trainer.add_parameter(&pw2);
-  trainer.add_parameter(&pb2);
+  trainer.add_parameter(pw1);
+  trainer.add_parameter(pb1);
+  trainer.add_parameter(pw2);
+  trainer.add_parameter(pb2);
 
   // Helper lambda to construct the predictor network.
   auto make_graph = [&](const vector<float> &inputs, Graph &g) {
     // We first store input values on GPU 0.
-    Node x = F::input(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs, &dev0, &g);
-    Node w1 = F::input(&pw1, &g);
-    Node b1 = F::input(&pb1, &g);
-    Node w2 = F::input(&pw2, &g);
-    Node b2 = F::input(&pb2, &g);
+    Node x = F::input(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs, dev0, g);
+    Node w1 = F::input(pw1, g);
+    Node b1 = F::input(pb1, g);
+    Node w2 = F::input(pw2, g);
+    Node b2 = F::input(pb2, g);
     // The hidden layer is calculated and implicitly stored on GPU 0.
     Node h_on_gpu0 = F::relu(F::matmul(w1, x) + b1);
     // `copy()` transfers the hiddne layer to GPU 1.
-    Node h_on_gpu1 = F::copy(h_on_gpu0, &dev1);
+    Node h_on_gpu1 = F::copy(h_on_gpu0, dev1);
     // The output layer is calculated and implicitly stored on GPU 1.
     return F::matmul(w2, h_on_gpu1) + b2;
     // Below line attempts to calculate values beyond multiple devices and

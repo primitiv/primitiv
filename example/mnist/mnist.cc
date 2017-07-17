@@ -90,41 +90,41 @@ int main() {
   CUDADevice dev(0);
 
   // Parameters for the multilayer perceptron.
-  Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, XavierUniform(), &dev);
-  Parameter pb1("b1", {NUM_HIDDEN_UNITS}, Constant(0), &dev);
-  Parameter pw2("w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, XavierUniform(), &dev);
-  Parameter pb2("b2", {NUM_OUTPUT_UNITS}, Constant(0), &dev);
+  Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, XavierUniform(), dev);
+  Parameter pb1("b1", {NUM_HIDDEN_UNITS}, Constant(0), dev);
+  Parameter pw2("w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, XavierUniform(), dev);
+  Parameter pb2("b2", {NUM_OUTPUT_UNITS}, Constant(0), dev);
 
   // Parameters for batch normalization.
-  //Parameter pbeta("beta", {NUM_HIDDEN_UNITS}, Constant(0), &dev);
-  //Parameter pgamma("gamma", {NUM_HIDDEN_UNITS}, Constant(1), &dev);
+  //Parameter pbeta("beta", {NUM_HIDDEN_UNITS}, Constant(0), dev);
+  //Parameter pgamma("gamma", {NUM_HIDDEN_UNITS}, Constant(1), dev);
 
   // Trainer
   SGD trainer(.5);
-  trainer.add_parameter(&pw1);
-  trainer.add_parameter(&pb1);
-  trainer.add_parameter(&pw2);
-  trainer.add_parameter(&pb2);
+  trainer.add_parameter(pw1);
+  trainer.add_parameter(pb1);
+  trainer.add_parameter(pw2);
+  trainer.add_parameter(pb2);
   //trainer.add_parameter(&pbeta);
   //trainer.add_parameter(&pgamma);
 
   // Helper lambda to construct the predictor network.
   auto make_graph = [&](const vector<float> &inputs, bool train, Graph &g) {
     // Stores input values.
-    Node x = F::input(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs, &dev, &g);
+    Node x = F::input(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs, dev, g);
     // Calculates the hidden layer.
-    Node w1 = F::input(&pw1, &g);
-    Node b1 = F::input(&pb1, &g);
+    Node w1 = F::input(pw1, g);
+    Node b1 = F::input(pb1, g);
     Node h = F::relu(F::matmul(w1, x) + b1);
     // Batch normalization
-    //Node beta = F::input(&pbeta, &g);
-    //Node gamma = F::input(&pgamma, &g);
+    //Node beta = F::input(pbeta, g);
+    //Node gamma = F::input(pgamma, g);
     //h = F::batch::normalize(h) * gamma + beta;
     // Dropout
     h = F::dropout(h, .5, train);
     // Calculates the output layer.
-    Node w2 = F::input(&pw2, &g);
-    Node b2 = F::input(&pb2, &g);
+    Node w2 = F::input(pw2, g);
+    Node b2 = F::input(pb2, g);
     return F::matmul(w2, h) + b2;
   };
 

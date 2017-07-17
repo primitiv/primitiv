@@ -43,17 +43,17 @@ int main() {
   //CUDADevice dev(0);
 
   // Parameters
-  Parameter pw1("w1", {8, 2}, XavierUniform(), &dev);
-  Parameter pb1("b1", {8}, Constant(0.0f), &dev);
-  Parameter pw2("w2", {1, 8}, XavierUniform(), &dev);
-  Parameter pb2("b2", {}, Constant(0.0f), &dev);
+  Parameter pw1("w1", {8, 2}, XavierUniform(), dev);
+  Parameter pb1("b1", {8}, Constant(0.0f), dev);
+  Parameter pw2("w2", {1, 8}, XavierUniform(), dev);
+  Parameter pb2("b2", {}, Constant(0.0f), dev);
 
   // Trainer
   SGD trainer(0.1f);
-  trainer.add_parameter(&pw1);
-  trainer.add_parameter(&pb1);
-  trainer.add_parameter(&pw2);
-  trainer.add_parameter(&pb2);
+  trainer.add_parameter(pw1);
+  trainer.add_parameter(pb1);
+  trainer.add_parameter(pw2);
+  trainer.add_parameter(pb2);
 
   // Fixed input data
   const vector<float> input_data {
@@ -71,11 +71,11 @@ int main() {
     Graph g;
     
     // Builds a computation graph.
-    Node x = F::input(Shape({2}, 4), input_data, &dev, &g);
-    Node w1 = F::input(&pw1, &g);
-    Node b1 = F::input(&pb1, &g);
-    Node w2 = F::input(&pw2, &g);
-    Node b2 = F::input(&pb2, &g);
+    Node x = F::input(Shape({2}, 4), input_data, dev, g);
+    Node w1 = F::input(pw1, g);
+    Node b1 = F::input(pb1, g);
+    Node w2 = F::input(pw2, g);
+    Node b2 = F::input(pb2, g);
     Node h = F::tanh(F::matmul(w1, x) + b1);
     Node y = F::matmul(w2, h) + b2;
 
@@ -87,7 +87,7 @@ int main() {
     }
 
     // Builds an additional computation graph for the mean squared loss.
-    Node t = F::input(Shape({}, 4), output_data, &dev, &g);
+    Node t = F::input(Shape({}, 4), output_data, dev, g);
     Node diff = t - y;
     Node loss = F::batch::mean(diff * diff);
     
