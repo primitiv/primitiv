@@ -7,6 +7,7 @@
 namespace primitiv {
 
 class Device;
+class Function;
 class Graph;
 class Node;
 
