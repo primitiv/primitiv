@@ -24,6 +24,19 @@ public:
   ~Graph();
 
   /**
+   * Obtains the default graph.
+   * @return Reference to the default graph.
+   * @throws primitiv::Error The default graph is null.
+   */
+  static Graph &get_default_graph();
+
+  /**
+   * Sets the default graph.
+   * @param graph reference to the default graph.
+   */
+  static void set_default_graph(Graph &g);
+
+  /**
    * Adds a function subgraph.
    * @param func Interface of the new function.
    * @param args List of arguments. Each node should point a node in the same
@@ -125,6 +138,8 @@ private:
     std::vector<Address> args;
     std::vector<NodeInfo> rets;
   };
+
+  static Graph *default_graph_;
 
   std::vector<FunctionInfo> funcs_;
 };

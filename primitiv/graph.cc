@@ -16,7 +16,22 @@ using std::vector;
 
 namespace primitiv {
 
+Graph *Graph::default_graph_ = nullptr;
+
+Graph &Graph::get_default_graph() {
+  if (!default_graph_) THROW_ERROR("Default graph is null.");
+  return *default_graph_;
+}
+
+void Graph::set_default_graph(Graph &g) {
+  default_graph_ = &g;
+}
+
 Graph::~Graph() {
+  if (default_graph_ == this) {
+    default_graph_ = nullptr;
+  }
+
   // Removes all allocated objects.
   for (FunctionInfo &f : funcs_) {
     delete f.func;

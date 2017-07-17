@@ -23,6 +23,25 @@ protected:
   CPUDevice dev2;
 };
 
+TEST_F(GraphTest, CheckDefaultGraph) {
+  EXPECT_THROW(Graph::get_default_graph(), Error);
+  {
+    Graph g;
+    Graph::set_default_graph(g);
+    EXPECT_EQ(&g, &Graph::get_default_graph());
+  }
+  EXPECT_THROW(Graph::get_default_graph(), Error);
+  {
+    Graph g1;
+    Graph::set_default_graph(g1);
+    EXPECT_EQ(&g1, &Graph::get_default_graph());
+    Graph g2;
+    Graph::set_default_graph(g2);
+    EXPECT_EQ(&g2, &Graph::get_default_graph());
+  }
+  EXPECT_THROW(Graph::get_default_graph(), Error);
+}
+
 TEST_F(GraphTest, CheckMultipleDevices) {
   Graph g;
   const vector<float> data1 {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4};
