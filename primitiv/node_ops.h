@@ -2,11 +2,11 @@
 #define PRIMITIV_NODE_OPS_H_
 
 #include <vector>
+#include <primitiv/device.h>
+#include <primitiv/graph.h>
 
 namespace primitiv {
 
-class Device;
-class Graph;
 class Node;
 class Parameter;
 
@@ -27,10 +27,13 @@ Node operator/(const Node &a, const Node &b);
 
 namespace node_ops {
 
-Node input(const Shape &shape, const std::vector<float> &data, Device &dev, Graph &g);
-Node input(Parameter &param, Graph &g);
+Node input(
+    const Shape &shape, const std::vector<float> &data,
+    Device &dev = Device::get_default_device(),
+    Graph &g = Graph::get_default_graph());
+Node input(Parameter &param, Graph &g = Graph::get_default_graph());
 
-Node copy(const Node &x, Device &dev);
+Node copy(const Node &x, Device &dev = Device::get_default_device());
 Node pick(const Node &x, unsigned dim, const std::vector<unsigned> &ids);
 Node slice(const Node &x, unsigned dim, unsigned lower, unsigned upper);
 Node concat(const std::vector<Node> &xs, unsigned dim);
@@ -78,15 +81,36 @@ Node mean(const Node &x);
 Node normalize(const Node &x);
 }  // namespace batch
 
-Node zeros(const Shape &shape, Device &dev, Graph &g);
-Node ones(const Shape &shape, Device &dev, Graph &g);
-Node constant(const Shape &shape, float k, Device &dev, Graph &g);
+Node zeros(
+    const Shape &shape,
+    Device &dev = Device::get_default_device(),
+    Graph &g = Graph::get_default_graph());
+Node ones(
+    const Shape &shape,
+    Device &dev = Device::get_default_device(),
+    Graph &g = Graph::get_default_graph());
+Node constant(
+    const Shape &shape, float k,
+    Device &dev = Device::get_default_device(),
+    Graph &g = Graph::get_default_graph());
 
 namespace random {
-Node bernoulli(const Shape &shape, float p, Device &dev, Graph &g);
-Node uniform(const Shape &shape, float lower, float upper, Device &dev, Graph &g);
-Node normal(const Shape &shape, float mean, float sd, Device &dev, Graph &g);
-Node log_normal(const Shape &shape, float mean, float sd, Device &dev, Graph &g);
+Node bernoulli(
+    const Shape &shape, float p,
+    Device &dev = Device::get_default_device(),
+    Graph &g = Graph::get_default_graph());
+Node uniform(
+    const Shape &shape, float lower, float upper,
+    Device &dev = Device::get_default_device(),
+    Graph &g = Graph::get_default_graph());
+Node normal(
+    const Shape &shape, float mean, float sd,
+    Device &dev = Device::get_default_device(),
+    Graph &g = Graph::get_default_graph());
+Node log_normal(
+    const Shape &shape, float mean, float sd,
+    Device &dev = Device::get_default_device(),
+    Graph &g = Graph::get_default_graph());
 } // namespace random
 
 }  // namespace node_ops

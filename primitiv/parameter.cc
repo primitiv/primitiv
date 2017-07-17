@@ -181,15 +181,15 @@ Parameter::Parameter(
   reset_value(init);
 }
 
-Parameter::Parameter(
+void Parameter::initialize_by_data(
     string &&name, Tensor &&value,
-    std::unordered_map<std::string, Tensor> &&stats)
-: name_(std::move(name))
-, shape_(value.shape())
-, device_(&value.device())
-, grad_(value.device().new_tensor(value.shape()))
-, stats_(std::move(stats)) {
-  value_ = std::move(value);
+    std::unordered_map<std::string, Tensor> &&stats) {
+  value_ = std::move(value);  // Initializes at first.
+  name_ = std::move(name);
+  shape_ = value_.shape();
+  device_ = &value_.device();
+  grad_ = value_.device().new_tensor(value_.shape());
+  stats_ = std::move(stats);
   check_shape();
 }
 
@@ -259,9 +259,12 @@ Parameter Parameter::load(const string &path, Device &device) {
     else THROW_ERROR("Unknown YAML key: " << key);
   }
 
-  return valid
-    ? Parameter(std::move(name), std::move(value), std::move(stats))
-    : Parameter();
+  Parameter param;
+  if (valid) {
+    param.initialize_by_data(
+        std::move(name), std::move(value), std::move(stats));
+  }
+  return param;
 }
 
 }  // namespace primitiv

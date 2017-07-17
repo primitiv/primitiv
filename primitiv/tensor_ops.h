@@ -25,7 +25,7 @@ Tensor operator/(const Tensor &a, const Tensor &b);
 
 namespace tensor_ops {
 
-Tensor copy(const Tensor &x, Device &dev);
+Tensor copy(const Tensor &x, Device &dev = Device::get_default_device());
 
 Tensor pick(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids);
 Tensor slice(const Tensor &x, unsigned dim, unsigned lower, unsigned upper);

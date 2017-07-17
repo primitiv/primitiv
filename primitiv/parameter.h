@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
@@ -54,7 +55,10 @@ public:
    * @param shape The shape of the parameter. The batch size should be 1.
    * @param device The device object to manage internal memory.
    */
-  Parameter(const std::string &name, const Shape &shape, Device &device);
+  Parameter(
+      const std::string &name,
+      const Shape &shape,
+      Device &device = Device::get_default_device());
 
   /**
    * Creates a new Parameter object.
@@ -67,7 +71,7 @@ public:
   Parameter(
       const std::string &name, const Shape &shape,
       const std::vector<float> &value,
-      Device &device);
+      Device &device = Device::get_default_device());
 
   /**
    * Creates a new Parameter object.
@@ -79,7 +83,7 @@ public:
   Parameter(
       const std::string &name, const Shape &shape,
       const Initializer &init,
-      Device &device);
+      Device &device = Device::get_default_device());
 
   /**
    * Returns whether the parameter is valid or not.
@@ -225,7 +229,7 @@ private:
    * @param value Value of the parameter.
    * @param stats Map of optional statistics.
    */
-  Parameter(
+  void initialize_by_data(
       std::string &&name, Tensor &&value,
       std::unordered_map<std::string, Tensor> &&stats);
 

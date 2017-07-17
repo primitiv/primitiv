@@ -37,8 +37,12 @@ TEST_F(GraphTest, CheckInvalidNode) {
 }
 
 TEST_F(GraphTest, CheckMoveNode) {
+  Device::set_default_device(dev);
+
   Graph g;
-  Node x1 = node_ops::zeros({2, 2}, dev, g);
+  Graph::set_default_graph(g);
+
+  Node x1 = node_ops::zeros({2, 2});
   ASSERT_TRUE(x1.valid());
   const unsigned fid = x1.function_id();
   const unsigned vid = x1.value_id();
@@ -79,13 +83,17 @@ TEST_F(GraphTest, CheckDefaultGraph) {
 }
 
 TEST_F(GraphTest, CheckMultipleDevices) {
+  Device::set_default_device(dev);
+
   Graph g;
+  Graph::set_default_graph(g);
+
   const vector<float> data1 {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4};
   const vector<float> data2 {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
   const vector<float> data3 {1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6};
   const vector<float> grad(12, 1);
-  const Node x1 = node_ops::input(Shape({2, 2}, 3), data1, dev, g);
-  const Node x2 = node_ops::input(Shape({2, 2}, 3), data2, dev2, g);
+  const Node x1 = node_ops::input(Shape({2, 2}, 3), data1);
+  const Node x2 = node_ops::input(Shape({2, 2}, 3), data2, dev2);
   const Node x3 = node_ops::copy(x1, dev2) + x2;
   EXPECT_EQ(Shape({2, 2}, 3), x3.shape());
   EXPECT_EQ(&dev, &x1.device());
@@ -102,22 +110,30 @@ TEST_F(GraphTest, CheckMultipleDevices) {
 }
 
 TEST_F(GraphTest, CheckInvalidMultipleDevices) {
+  Device::set_default_device(dev);
+
   Graph g;
+  Graph::set_default_graph(g);
+
   const vector<float> dummy(12);
-  const Node x1 = node_ops::input(Shape({2, 2}, 3), dummy, dev, g);
-  const Node x2 = node_ops::input(Shape({2, 2}, 3), dummy, dev2, g);
+  const Node x1 = node_ops::input(Shape({2, 2}, 3), dummy);
+  const Node x2 = node_ops::input(Shape({2, 2}, 3), dummy, dev2);
   const Node x3 = x1 + x2;
   EXPECT_THROW(g.forward(x3), Error);
 }
 
 TEST_F(GraphTest, CheckForwardBackward) {
+  Device::set_default_device(dev);
+
   Graph g;
+  Graph::set_default_graph(g);
+
   const vector<float> data1 {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4};
   const vector<float> data3 {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
   vector<Node> nodes;
-  nodes.emplace_back(node_ops::input(Shape({2, 2}, 3), data1, dev, g));
-  nodes.emplace_back(node_ops::ones({2, 2}, dev, g));
-  nodes.emplace_back(node_ops::input(Shape({2, 2}, 3), data3, dev, g));
+  nodes.emplace_back(node_ops::input(Shape({2, 2}, 3), data1));
+  nodes.emplace_back(node_ops::ones({2, 2}));
+  nodes.emplace_back(node_ops::input(Shape({2, 2}, 3), data3));
   nodes.emplace_back(nodes[0] + nodes[1]);
   nodes.emplace_back(nodes[1] - nodes[2]);
   nodes.emplace_back(nodes[3] * nodes[4]);
@@ -201,25 +217,29 @@ TEST_F(GraphTest, CheckForwardBackward) {
 }
 
 TEST_F(GraphTest, CheckXor) {
+  Device::set_default_device(dev);
+
   // Solves a 2-dimension XOR problem with 3-layer perceptron.
   // h = tanh(W1.x + b1)
   // y = W2.h + b2
-  Parameter w1("w1", {2, 2}, {1, -1, 1, -1}, dev);
-  Parameter b1("b1", {2}, {-1, -1}, dev);
-  Parameter w2("w2", {1, 2}, {1, 1}, dev);
-  Parameter b2("b2", {}, {1}, dev);
+  Parameter w1("w1", {2, 2}, {1, -1, 1, -1});
+  Parameter b1("b1", {2}, {-1, -1});
+  Parameter w2("w2", {1, 2}, {1, 1});
+  Parameter b2("b2", {}, {1});
 
   const vector<float> inputs {1, 1, 1, -1, -1, 1, -1, -1};
   const vector<float> outputs {1, -1, -1, 1};
 
   Graph g;
+  Graph::set_default_graph(g);
+
   vector<Node> nodes;
   // sources
-  nodes.emplace_back(node_ops::input(Shape({2}, 4), inputs, dev, g));
-  nodes.emplace_back(node_ops::input(w1, g));
-  nodes.emplace_back(node_ops::input(b1, g));
-  nodes.emplace_back(node_ops::input(w2, g));
-  nodes.emplace_back(node_ops::input(b2, g));
+  nodes.emplace_back(node_ops::input(Shape({2}, 4), inputs));
+  nodes.emplace_back(node_ops::input(w1));
+  nodes.emplace_back(node_ops::input(b1));
+  nodes.emplace_back(node_ops::input(w2));
+  nodes.emplace_back(node_ops::input(b2));
   // calculation
   nodes.emplace_back(node_ops::matmul(nodes[1], nodes[0]));
   nodes.emplace_back(nodes[5] + nodes[2]);
@@ -227,7 +247,7 @@ TEST_F(GraphTest, CheckXor) {
   nodes.emplace_back(node_ops::matmul(nodes[3], nodes[7]));
   nodes.emplace_back(nodes[8] + nodes[4]);
   // losses
-  nodes.emplace_back(node_ops::input(Shape({}, 4), outputs, dev, g));
+  nodes.emplace_back(node_ops::input(Shape({}, 4), outputs));
   nodes.emplace_back(nodes[9] - nodes[10]);
   nodes.emplace_back(nodes[11] * nodes[11]);
   nodes.emplace_back(node_ops::batch::sum(nodes[12]));
@@ -271,6 +291,8 @@ TEST_F(GraphTest, CheckXor) {
 }
 
 TEST_F(GraphTest, CheckLSTM) {
+  Device::set_default_device(dev);
+
   // Software-based LSTM implementation with input/forget/output-gates.
   // i = sigmoid(Wix . x + Wih . h + bi)
   // f = sigmoid(Wfx . x + Wfh . h + bf)
@@ -278,41 +300,43 @@ TEST_F(GraphTest, CheckLSTM) {
   // j = tanh(Wjx . x + Wjh . h + bj)
   // cc = f * c + i * j
   // hh = o * tanh(cc)
-  Parameter pWix("Wix", {2, 2}, {.3, .1, .5, .3}, dev);
-  Parameter pWfx("Wfx", {2, 2}, {.4, .1, .5, .8}, dev);
-  Parameter pWox("Wox", {2, 2}, {.5, .9, .9, .7}, dev);
-  Parameter pWjx("Wjx", {2, 2}, {.2, .6, .9, .3}, dev);
-  Parameter pWih("Wih", {2, 2}, {.2, .3, .3, .3}, dev);
-  Parameter pWfh("Wfh", {2, 2}, {.8, .4, .8, .3}, dev);
-  Parameter pWoh("Woh", {2, 2}, {.6, .2, .2, .7}, dev);
-  Parameter pWjh("Wjh", {2, 2}, {.6, .4, .9, .5}, dev);
-  Parameter pbi("bi", {2}, initializers::Constant(0), dev);
-  Parameter pbf("bf", {2}, initializers::Constant(0), dev);
-  Parameter pbo("bo", {2}, initializers::Constant(0), dev);
-  Parameter pbj("bj", {2}, initializers::Constant(0), dev);
+  Parameter pWix("Wix", {2, 2}, {.3, .1, .5, .3});
+  Parameter pWfx("Wfx", {2, 2}, {.4, .1, .5, .8});
+  Parameter pWox("Wox", {2, 2}, {.5, .9, .9, .7});
+  Parameter pWjx("Wjx", {2, 2}, {.2, .6, .9, .3});
+  Parameter pWih("Wih", {2, 2}, {.2, .3, .3, .3});
+  Parameter pWfh("Wfh", {2, 2}, {.8, .4, .8, .3});
+  Parameter pWoh("Woh", {2, 2}, {.6, .2, .2, .7});
+  Parameter pWjh("Wjh", {2, 2}, {.6, .4, .9, .5});
+  Parameter pbi("bi", {2}, initializers::Constant(0));
+  Parameter pbf("bf", {2}, initializers::Constant(0));
+  Parameter pbo("bo", {2}, initializers::Constant(0));
+  Parameter pbj("bj", {2}, initializers::Constant(0));
 
   Graph g;
+  Graph::set_default_graph(g);
+
   using node_ops::matmul;
   using node_ops::input;
   using node_ops::sigmoid;
   using node_ops::tanh;
   using node_ops::zeros;
 
-  const Node x = input(Shape({2}, 2), {2, -2, 0.5, -0.5}, dev, g);
-  const Node h = input(Shape({2}, 2), {-1, 1, -0.5, 0.5}, dev, g);
-  const Node c = zeros({2}, dev, g);
-  const Node Wix = input(pWix, g);
-  const Node Wfx = input(pWfx, g);
-  const Node Wox = input(pWox, g);
-  const Node Wjx = input(pWjx, g);
-  const Node Wih = input(pWih, g);
-  const Node Wfh = input(pWfh, g);
-  const Node Woh = input(pWoh, g);
-  const Node Wjh = input(pWjh, g);
-  const Node bi = input(pbi, g);
-  const Node bf = input(pbf, g);
-  const Node bo = input(pbo, g);
-  const Node bj = input(pbj, g);
+  const Node x = input(Shape({2}, 2), {2, -2, 0.5, -0.5});
+  const Node h = input(Shape({2}, 2), {-1, 1, -0.5, 0.5});
+  const Node c = zeros({2});
+  const Node Wix = input(pWix);
+  const Node Wfx = input(pWfx);
+  const Node Wox = input(pWox);
+  const Node Wjx = input(pWjx);
+  const Node Wih = input(pWih);
+  const Node Wfh = input(pWfh);
+  const Node Woh = input(pWoh);
+  const Node Wjh = input(pWjh);
+  const Node bi = input(pbi);
+  const Node bf = input(pbf);
+  const Node bo = input(pbo);
+  const Node bj = input(pbj);
 
   const Node i = sigmoid(matmul(Wix, x) + matmul(Wih, h) + bi);
   const Node f = sigmoid(matmul(Wfx, x) + matmul(Wfh, h) + bf);
@@ -321,7 +345,7 @@ TEST_F(GraphTest, CheckLSTM) {
   const Node cc = f * c + i * j;
   const Node hh = o * tanh(cc);
 
-  const Node t = zeros({2}, dev, g);
+  const Node t = zeros({2});
   const Node diff = hh - t;
   const Node loss = diff * diff;
 
@@ -370,17 +394,20 @@ TEST_F(GraphTest, CheckLSTM) {
 }
 
 TEST_F(GraphTest, CheckConcatLSTM) {
+  Device::set_default_device(dev);
+
   // Another implementation of LSTM that concatenates all gates and inputs.
   // All values and gradients should be same as that of "CheckLSTM".
   Parameter pWx("Wx", {8, 2}, {
       .3, .1, .4, .1, .5, .9, .2, .6,
-      .5, .3, .5, .8, .9, .7, .9, .3}, dev);
+      .5, .3, .5, .8, .9, .7, .9, .3});
   Parameter pWh("Wh", {8, 2}, {
       .2, .3, .8, .4, .6, .2, .6, .4,
-      .3, .3, .8, .3, .2, .7, .9, .5}, dev);
-  Parameter pb("b", {8}, initializers::Constant(0), dev);
+      .3, .3, .8, .3, .2, .7, .9, .5});
+  Parameter pb("b", {8}, initializers::Constant(0));
 
   Graph g;
+  Graph::set_default_graph(g);
   using node_ops::matmul;
   using node_ops::input;
   using node_ops::sigmoid;
@@ -388,12 +415,12 @@ TEST_F(GraphTest, CheckConcatLSTM) {
   using node_ops::tanh;
   using node_ops::zeros;
 
-  const Node x = input(Shape({2}, 2), {2, -2, 0.5, -0.5}, dev, g);
-  const Node h = input(Shape({2}, 2), {-1, 1, -0.5, 0.5}, dev, g);
-  const Node c = zeros({2}, dev, g);
-  const Node Wx = input(pWx, g);
-  const Node Wh = input(pWh, g);
-  const Node b = input(pb, g);
+  const Node x = input(Shape({2}, 2), {2, -2, 0.5, -0.5});
+  const Node h = input(Shape({2}, 2), {-1, 1, -0.5, 0.5});
+  const Node c = zeros({2});
+  const Node Wx = input(pWx);
+  const Node Wh = input(pWh);
+  const Node b = input(pb);
 
   const Node u = matmul(Wx, x) + matmul(Wh, h) + b;
   const Node i = sigmoid(slice(u, 0, 0, 2));
@@ -403,7 +430,7 @@ TEST_F(GraphTest, CheckConcatLSTM) {
   const Node cc = f * c + i * j;
   const Node hh = o * tanh(cc);
 
-  const Node t = zeros({2}, dev, g);
+  const Node t = zeros({2});
   const Node diff = hh - t;
   const Node loss = diff * diff;
 
