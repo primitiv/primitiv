@@ -23,21 +23,21 @@ TEST_F(TrainerTest, CheckAddParameter) {
   Parameter param2("param2", {2, 2}, dev);
   Parameter param3("param3", {2, 2}, dev);
 
-  EXPECT_NO_THROW(trainer.add_parameter(&param1));
-  EXPECT_THROW(trainer.add_parameter(&param1), Error);
+  EXPECT_NO_THROW(trainer.add_parameter(param1));
+  EXPECT_THROW(trainer.add_parameter(param1), Error);
 
-  EXPECT_NO_THROW(trainer.add_parameter(&param2));
-  EXPECT_THROW(trainer.add_parameter(&param1), Error);
-  EXPECT_THROW(trainer.add_parameter(&param2), Error);
+  EXPECT_NO_THROW(trainer.add_parameter(param2));
+  EXPECT_THROW(trainer.add_parameter(param1), Error);
+  EXPECT_THROW(trainer.add_parameter(param2), Error);
 
-  EXPECT_NO_THROW(trainer.add_parameter(&param3));
-  EXPECT_THROW(trainer.add_parameter(&param1), Error);
-  EXPECT_THROW(trainer.add_parameter(&param2), Error);
-  EXPECT_THROW(trainer.add_parameter(&param3), Error);
+  EXPECT_NO_THROW(trainer.add_parameter(param3));
+  EXPECT_THROW(trainer.add_parameter(param1), Error);
+  EXPECT_THROW(trainer.add_parameter(param2), Error);
+  EXPECT_THROW(trainer.add_parameter(param3), Error);
 
   // Different object but same name
   Parameter param4("param1", {}, dev);
-  EXPECT_THROW(trainer.add_parameter(&param4), Error);
+  EXPECT_THROW(trainer.add_parameter(param4), Error);
 }
 
 TEST_F(TrainerTest, CheckWeightDecay) {
@@ -45,7 +45,7 @@ TEST_F(TrainerTest, CheckWeightDecay) {
   trainer.set_weight_decay(.1);
 
   Parameter param("param1", {2, 2}, {1, 2, 3, 4}, dev);
-  trainer.add_parameter(&param);
+  trainer.add_parameter(param);
 
   trainer.reset_gradients();
   trainer.update(1);
@@ -60,7 +60,7 @@ TEST_F(TrainerTest, CheckGradientClipping) {
   trainer.set_gradient_clipping(4);
 
   Parameter param("param1", {2, 2}, dev);
-  trainer.add_parameter(&param);
+  trainer.add_parameter(param);
 
   // Norm: 2 = sqrt(4*1^2) ... no clipping
   param.value().reset_by_vector({1, 2, 3, 4});

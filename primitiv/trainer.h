@@ -34,7 +34,7 @@ public:
    * Registers a parameter.
    * @param param Parameter to be optimized.
    */
-  void add_parameter(Parameter *param);
+  void add_parameter(Parameter &param);
 
   /**
    * Resets all gradients of registered parameters.

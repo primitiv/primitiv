@@ -49,7 +49,7 @@ TEST_F(TrainerImplTest, CheckSGD) {
         vector<float> {1, 2, 3, 4}, param.value().to_vector()));
 
   SGD trainer;
-  trainer.add_parameter(&param);
+  trainer.add_parameter(param);
 
   vector<vector<float>> expected_v {
     {9.9000000e-01, 1.9800000e+00, 2.9700000e+00, 3.9600000e+00},
@@ -76,7 +76,7 @@ TEST_F(TrainerImplTest, CheckAdam) {
         vector<float> {1, 2, 3, 4}, param.value().to_vector()));
 
   Adam trainer;
-  trainer.add_parameter(&param);
+  trainer.add_parameter(param);
   ASSERT_TRUE(param.has_stats("adam-m1"));
   ASSERT_TRUE(param.has_stats("adam-m2"));
   EXPECT_TRUE(vector_match(
