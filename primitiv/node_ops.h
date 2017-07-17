@@ -27,10 +27,10 @@ Node operator/(const Node &a, const Node &b);
 
 namespace node_ops {
 
-Node input(const Shape &shape, const std::vector<float> &data, Device *dev, Graph *g);
-Node input(Parameter *param, Graph *g);
+Node input(const Shape &shape, const std::vector<float> &data, Device &dev, Graph &g);
+Node input(Parameter &param, Graph &g);
 
-Node copy(const Node &x, Device *dev);
+Node copy(const Node &x, Device &dev);
 Node pick(const Node &x, unsigned dim, const std::vector<unsigned> &ids);
 Node slice(const Node &x, unsigned dim, unsigned lower, unsigned upper);
 Node concat(const std::vector<Node> &xs, unsigned dim);
@@ -78,15 +78,15 @@ Node mean(const Node &x);
 Node normalize(const Node &x);
 }  // namespace batch
 
-Node zeros(const Shape &shape, Device *dev, Graph *g);
-Node ones(const Shape &shape, Device *dev, Graph *g);
-Node constant(const Shape &shape, float k, Device *dev, Graph *g);
+Node zeros(const Shape &shape, Device &dev, Graph &g);
+Node ones(const Shape &shape, Device &dev, Graph &g);
+Node constant(const Shape &shape, float k, Device &dev, Graph &g);
 
 namespace random {
-Node bernoulli(const Shape &shape, float p, Device *dev, Graph *g);
-Node uniform(const Shape &shape, float lower, float upper, Device *dev, Graph *g);
-Node normal(const Shape &shape, float mean, float sd, Device *dev, Graph *g);
-Node log_normal(const Shape &shape, float mean, float sd, Device *dev, Graph *g);
+Node bernoulli(const Shape &shape, float p, Device &dev, Graph &g);
+Node uniform(const Shape &shape, float lower, float upper, Device &dev, Graph &g);
+Node normal(const Shape &shape, float mean, float sd, Device &dev, Graph &g);
+Node log_normal(const Shape &shape, float mean, float sd, Device &dev, Graph &g);
 } // namespace random
 
 }  // namespace node_ops

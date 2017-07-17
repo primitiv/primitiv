@@ -7,7 +7,6 @@
 #include <primitiv/error.h>
 #include <primitiv/graph.h>
 #include <primitiv/initializer_impl.h>
-#include <primitiv/node.h>
 #include <primitiv/node_ops.h>
 #include <primitiv/parameter.h>
 #include <primitiv/shape.h>

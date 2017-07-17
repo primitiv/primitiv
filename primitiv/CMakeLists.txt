@@ -7,7 +7,6 @@ set(primitiv_base_HDRS
   graph.h
   initializer.h
   initializer_impl.h
-  node.h
   node_ops.h
   parameter.h
   primitiv.h
@@ -25,7 +24,6 @@ set(primitiv_base_SRCS
   function_impl.cc
   graph.cc
   initializer_impl.cc
-  node.cc
   node_ops.cc
   parameter.cc
   shape.cc

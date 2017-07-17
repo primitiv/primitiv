@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <primitiv/error.h>
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
 
@@ -19,8 +20,28 @@ class Parameter {
   Parameter &operator=(const Parameter &) = delete;
 
 public:
-  Parameter(Parameter &&) = default;
-  Parameter &operator=(Parameter &&) = default;
+  Parameter(Parameter &&src)
+    : name_(std::move(src.name_))
+    , shape_(std::move(src.shape_))
+    , device_(src.device_)
+    , value_(std::move(src.value_))
+    , grad_(std::move(src.grad_))
+    , stats_(std::move(src.stats_)) {
+      src.device_ = nullptr;
+    }
+
+  Parameter &operator=(Parameter &&src) {
+    if (&src != this) {
+      name_ = std::move(src.name_);
+      shape_ = std::move(src.shape_);
+      device_ = src.device_;
+      value_ = std::move(src.value_);
+      grad_ = std::move(src.grad_);
+      stats_ = std::move(src.stats_);
+      src.device_ = nullptr;
+    }
+    return *this;
+  }
 
   /**
    * Creates an invalid parameter object.
@@ -33,7 +54,7 @@ public:
    * @param shape The shape of the parameter. The batch size should be 1.
    * @param device The device object to manage internal memory.
    */
-  Parameter(const std::string &name, const Shape &shape, Device *device);
+  Parameter(const std::string &name, const Shape &shape, Device &device);
 
   /**
    * Creates a new Parameter object.
@@ -46,7 +67,7 @@ public:
   Parameter(
       const std::string &name, const Shape &shape,
       const std::vector<float> &value,
-      Device *device);
+      Device &device);
 
   /**
    * Creates a new Parameter object.
@@ -58,7 +79,13 @@ public:
   Parameter(
       const std::string &name, const Shape &shape,
       const Initializer &init,
-      Device *device);
+      Device &device);
+
+  /**
+   * Returns whether the parameter is valid or not.
+   * @return true or false w.r.t. the parameter is valid or not.
+   */
+  bool valid() const { return !!device_; }
 
   /**
    * Set all values.
@@ -91,6 +118,7 @@ public:
    * @return true if the entry exists, false otherwise.
    */
   bool has_stats(const std::string &name) const {
+    if (!valid()) THROW_ERROR("Invalid parameter.");
     return stats_.find(name) != stats_.end();
   }
 
@@ -98,57 +126,83 @@ public:
    * Returns the name of the parameter.
    * @return Name of the parameter.
    */
-  const std::string &name() const { return name_; }
+  const std::string &name() const {
+    if (!valid()) THROW_ERROR("Invalid parameter.");
+    return name_;
+  }
 
   /**
    * Returns the shape of the parameter.
    * @return Shape object.
    */
-  const Shape &shape() const { return shape_; }
+  const Shape &shape() const {
+    if (!valid()) THROW_ERROR("Invalid parameter.");
+    return shape_;
+  }
 
   /**
    * Returns the Device object to manage the internal memory.
    * @return Pointer of the Device object.
    */
-  Device *device() const { return device_; }
+  Device &device() const {
+    if (!valid()) THROW_ERROR("Invalid parameter.");
+    return *device_;
+  }
 
   /**
    * Returns the values of the parameter.
    * @return A tensor representing the parameter tensor.
    */
-  const Tensor &value() const { return value_; }
+  const Tensor &value() const {
+    if (!valid()) THROW_ERROR("Invalid parameter.");
+    return value_;
+  }
 
   /**
    * Returns the values of the parameter.
    * @return A tensor representing the parameter tensor.
    */
-  Tensor &value() { return value_; }
+  Tensor &value() {
+    if (!valid()) THROW_ERROR("Invalid parameter.");
+    return value_;
+  }
 
   /**
    * Returns the current gradient of the parameter.
    * @return A tensor representing the gradient of the value.
    */
-  const Tensor &gradient() const { return grad_; }
+  const Tensor &gradient() const {
+    if (!valid()) THROW_ERROR("Invalid parameter.");
+    return grad_;
+  }
 
   /**
    * Returns the current gradient of the parameter.
    * @return A tensor representing the gradient of the value.
    */
-  Tensor &gradient() { return grad_; }
+  Tensor &gradient() {
+    if (!valid()) THROW_ERROR("Invalid parameter.");
+    return grad_; }
 
   /**
    * Returns the current opotional statistics tensor specified by given name.
    * @param name Name of the statistics.
    * @return A tensor.
    */
-  const Tensor &stats(const std::string &name) const { return stats_.at(name); }
+  const Tensor &stats(const std::string &name) const {
+    if (!valid()) THROW_ERROR("Invalid parameter.");
+    return stats_.at(name);
+  }
 
   /**
    * Returns the current opotional statistics tensor specified by given name.
    * @param name Name of the statistics.
    * @return A tensor.
    */
-  Tensor &stats(const std::string &name) { return stats_.at(name); }
+  Tensor &stats(const std::string &name) {
+    if (!valid()) THROW_ERROR("Invalid parameter.");
+    return stats_.at(name);
+  }
 
   /**
    * Loads parameters and returns a new Parameter object.
@@ -156,7 +210,7 @@ public:
    * @param device Device object to manage internal memories.
    * @return A new Parameter object.
    */
-  static Parameter load(const std::string &path, Device *device);
+  static Parameter load(const std::string &path, Device &device);
 
   /**
    * Saves current parameters into specified file with YAML format.

@@ -19,9 +19,9 @@ protected:
 
 TEST_F(TrainerTest, CheckAddParameter) {
   trainers::SGD trainer;
-  Parameter param1("param1", {2, 2}, &dev);
-  Parameter param2("param2", {2, 2}, &dev);
-  Parameter param3("param3", {2, 2}, &dev);
+  Parameter param1("param1", {2, 2}, dev);
+  Parameter param2("param2", {2, 2}, dev);
+  Parameter param3("param3", {2, 2}, dev);
 
   EXPECT_NO_THROW(trainer.add_parameter(&param1));
   EXPECT_THROW(trainer.add_parameter(&param1), Error);
@@ -36,7 +36,7 @@ TEST_F(TrainerTest, CheckAddParameter) {
   EXPECT_THROW(trainer.add_parameter(&param3), Error);
 
   // Different object but same name
-  Parameter param4("param1", {}, &dev);
+  Parameter param4("param1", {}, dev);
   EXPECT_THROW(trainer.add_parameter(&param4), Error);
 }
 
@@ -44,7 +44,7 @@ TEST_F(TrainerTest, CheckWeightDecay) {
   trainers::SGD trainer;
   trainer.set_weight_decay(.1);
 
-  Parameter param("param1", {2, 2}, {1, 2, 3, 4}, &dev);
+  Parameter param("param1", {2, 2}, {1, 2, 3, 4}, dev);
   trainer.add_parameter(&param);
 
   trainer.reset_gradients();
@@ -59,7 +59,7 @@ TEST_F(TrainerTest, CheckGradientClipping) {
   trainers::SGD trainer;
   trainer.set_gradient_clipping(4);
 
-  Parameter param("param1", {2, 2}, &dev);
+  Parameter param("param1", {2, 2}, dev);
   trainer.add_parameter(&param);
 
   // Norm: 2 = sqrt(4*1^2) ... no clipping

@@ -2,13 +2,111 @@
 #define PRIMITIV_GRAPH_H_
 
 #include <vector>
-#include <primitiv/function.h>
-#include <primitiv/node.h>
 #include <primitiv/shape.h>
 
 namespace primitiv {
 
 class Device;
+class Graph;
+class Node;
+
+/**
+ * Pointer of a node in the computation graph.
+ */
+class Node {
+  friend Graph;
+
+public:
+  Node(const Node &) = default;
+
+  Node(Node &&src) : g_(src.g_), fid_(src.fid_), vid_(src.vid_) {
+    src.g_ = nullptr;
+  }
+
+  Node &operator=(const Node &) = default;
+
+  Node &operator=(Node &&src) {
+    if (&src != this) {
+      g_ = src.g_;
+      fid_ = src.fid_;
+      vid_ = src.vid_;
+      src.g_ = nullptr;
+    }
+    return *this;
+  }
+
+  Node() : g_(nullptr), fid_(), vid_() {}
+
+  /**
+   * Returns whether the node is valid or not.
+   * @return true or false w.r.t. the node is valid or not.
+   */
+  bool valid() const { return !!g_; }
+
+  /**
+   * Returns corresponding Graph object.
+   * @return Graph object.
+   */
+  Graph &graph() const {
+    if (!valid()) THROW_ERROR("Invalid node.");
+    return *g_;
+  }
+
+  /**
+   * Returns the function ID.
+   * @return Function ID.
+   */
+  unsigned function_id() const {
+    if (!valid()) THROW_ERROR("Invalid node.");
+    return fid_;
+  }
+
+  /**
+   * Returns the value ID of the function.
+   * @return Value ID.
+   */
+  unsigned value_id() const {
+    if (!valid()) THROW_ERROR("Invalid node.");
+    return vid_;
+  }
+
+  /**
+   * Returns shape of the node.
+   * @return A Shape object.
+   */
+  const Shape &shape() const;
+
+  /**
+   * Returns device of the node.
+   * @return Device object.
+   */
+  Device &device() const;
+
+  /**
+   * Returns the value of the node.
+   * @return A Tensor object if the node has been forwarded.
+   */
+  const Tensor &value() const;
+
+  /**
+   * Returns the gradient of the node.
+   * @return A Tensor object if the node has been backwarded.
+   */
+  const Tensor &gradient() const;
+
+private:
+  /**
+   * Creates a new node pointer.
+   * @param g Pointer of the computation graph.
+   * @param fid Function ID.
+   * @param vid Value ID.
+   */
+  Node(Graph &g, unsigned fid, unsigned vid) : g_(&g), fid_(fid), vid_(vid) {}
+
+  Graph *g_;
+  unsigned fid_;
+  unsigned vid_;
+};
 
 /**
  * Computation graph.
@@ -76,9 +174,9 @@ public:
   /**
    * Retrieves the device of the node.
    * @param node Node object specifying the target node.
-   * @return the device of the node.
+   * @return Device of the node.
    */
-  Device *get_device(const Node &node) const;
+  Device &get_device(const Node &node) const;
 
   /**
    * Retrieves the value of the node.
@@ -123,7 +221,7 @@ private:
    */
   struct NodeInfo {
     Shape shape;
-    Device *device;
+    Device &device;
     Tensor *value;
     Tensor *grad;
     std::vector<unsigned> sinks;
@@ -143,6 +241,26 @@ private:
 
   std::vector<FunctionInfo> funcs_;
 };
+
+inline const Shape &Node::shape() const {
+  if (!valid()) THROW_ERROR("Invalid node.");
+  return g_->get_shape(*this);
+}
+
+inline Device &Node::device() const {
+  if (!valid()) THROW_ERROR("Invalid node.");
+  return g_->get_device(*this);
+}
+
+inline const Tensor &Node::value() const {
+  if (!valid()) THROW_ERROR("Invalid node.");
+  return g_->get_value(*this);
+}
+
+inline const Tensor &Node::gradient() const {
+  if (!valid()) THROW_ERROR("Invalid node.");
+  return g_->get_gradient(*this);
+}
 
 }  // namespace primitiv
 

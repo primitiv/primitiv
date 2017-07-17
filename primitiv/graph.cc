@@ -6,6 +6,7 @@
 #include <utility>
 #include <primitiv/device.h>
 #include <primitiv/error.h>
+#include <primitiv/function.h>
 #include <primitiv/graph.h>
 
 using std::cerr;
@@ -82,7 +83,7 @@ Node Graph::add_function(Function *func, const std::vector<Node> &args) {
   Device *ret_device = func->get_device();
   if (!ret_device) {
     // If nullptr, the device object is inherited from `args[0]`.
-    ret_device = args.size() > 0 ? ACCESS(args[0]).device : nullptr;
+    ret_device = args.size() > 0 ? &ACCESS(args[0]).device : nullptr;
     if (!ret_device) {
       THROW_ERROR(
           "Bad device forwarding of function '" << func->name()
@@ -94,7 +95,7 @@ Node Graph::add_function(Function *func, const std::vector<Node> &args) {
   const unsigned NUM_NODES = 1;  // TODO(odashi): fix this
   vector<NodeInfo> rets(
       NUM_NODES,
-      NodeInfo { Shape(), ret_device, nullptr, nullptr, vector<unsigned>() });
+      NodeInfo { Shape(), *ret_device, nullptr, nullptr, vector<unsigned>() });
   for (unsigned i = 0; i < NUM_NODES; ++i) {
     rets[i].shape = move(ret_shapes[i]);
   }
@@ -106,7 +107,7 @@ Node Graph::add_function(Function *func, const std::vector<Node> &args) {
   }
   funcs_.emplace_back(FunctionInfo { func, move(arg_addrs), move(rets) });
 
-  return Node(this, ret_fid, 0);
+  return Node(*this, ret_fid, 0);
 }
 
 const Tensor &Graph::forward(const Node &node) {
@@ -133,7 +134,7 @@ const Tensor &Graph::forward(const Node &node) {
     for (unsigned i = 0; i < NUM_NODES; ++i) {
       f.rets[i].value = ret_values[i];
       f.rets[i].grad = new Tensor(
-          ret_values[i]->device()->new_tensor(ret_values[i]->shape(), 0));
+          ret_values[i]->device().new_tensor(ret_values[i]->shape(), 0));
     }
   };
 
@@ -186,7 +187,7 @@ const Shape &Graph::get_shape(const Node &node) const {
   return ACCESS(node).shape;
 }
 
-Device *Graph::get_device(const Node &node) const {
+Device &Graph::get_device(const Node &node) const {
   CHECK_NODE(node);
   return ACCESS(node).device;
 }

@@ -44,7 +44,7 @@ TEST_F(TrainerImplTest, CheckGivenHyperparameters) {
 }
 
 TEST_F(TrainerImplTest, CheckSGD) {
-  Parameter param("param", {2, 2}, {1, 2, 3, 4}, &dev);
+  Parameter param("param", {2, 2}, {1, 2, 3, 4}, dev);
   ASSERT_TRUE(vector_match(
         vector<float> {1, 2, 3, 4}, param.value().to_vector()));
 
@@ -71,7 +71,7 @@ TEST_F(TrainerImplTest, CheckSGD) {
 }
 
 TEST_F(TrainerImplTest, CheckAdam) {
-  Parameter param("param", {2, 2}, {1, 2, 3, 4}, &dev);
+  Parameter param("param", {2, 2}, {1, 2, 3, 4}, dev);
   ASSERT_TRUE(vector_match(
         vector<float> {1, 2, 3, 4}, param.value().to_vector()));
 

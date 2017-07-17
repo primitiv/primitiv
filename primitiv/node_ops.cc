@@ -4,14 +4,13 @@
 #include <primitiv/error.h>
 #include <primitiv/function_impl.h>
 #include <primitiv/graph.h>
-#include <primitiv/node.h>
 #include <primitiv/node_ops.h>
 #include <primitiv/shape.h>
 #include <primitiv/parameter.h>
 
 namespace F = primitiv::functions;
 
-#define REG(x) (x).graph()->add_function
+#define REG(x) (x).graph().add_function
 
 namespace primitiv {
 
@@ -56,15 +55,15 @@ Node operator/(const Node &a, const Node &b) {
 
 namespace node_ops {
 
-Node input(const Shape &shape, const std::vector<float> &data, Device *dev, Graph *g) {
-  return g->add_function(new F::Input(shape, data, dev), {});
+Node input(const Shape &shape, const std::vector<float> &data, Device &dev, Graph &g) {
+  return g.add_function(new F::Input(shape, data, dev), {});
 }
 
-Node input(Parameter *param, Graph *g) {
-  return g->add_function(new F::ParameterInput(param), {});
+Node input(Parameter &param, Graph &g) {
+  return g.add_function(new F::ParameterInput(param), {});
 }
 
-Node copy(const Node &x, Device *dev) {
+Node copy(const Node &x, Device &dev) {
   return REG(x)(new F::Copy(dev), {x});
 }
 
@@ -220,34 +219,34 @@ Node normalize(const Node &x) {
 
 }  // namespace batch
 
-Node zeros(const Shape &shape, Device *dev, Graph *g) {
-  return g->add_function(new F::Constant(shape, 0, dev), {});
+Node zeros(const Shape &shape, Device &dev, Graph &g) {
+  return g.add_function(new F::Constant(shape, 0, dev), {});
 }
 
-Node ones(const Shape &shape, Device *dev, Graph *g) {
-  return g->add_function(new F::Constant(shape, 1, dev), {});
+Node ones(const Shape &shape, Device &dev, Graph &g) {
+  return g.add_function(new F::Constant(shape, 1, dev), {});
 }
 
-Node constant(const Shape &shape, float k, Device *dev, Graph *g) {
-  return g->add_function(new F::Constant(shape, k, dev), {});
+Node constant(const Shape &shape, float k, Device &dev, Graph &g) {
+  return g.add_function(new F::Constant(shape, k, dev), {});
 }
 
 namespace random {
 
-Node bernoulli(const Shape &shape, float p, Device *dev, Graph *g) {
-  return g->add_function(new F::RandomBernoulli(shape, p, dev), {});
+Node bernoulli(const Shape &shape, float p, Device &dev, Graph &g) {
+  return g.add_function(new F::RandomBernoulli(shape, p, dev), {});
 }
 
-Node uniform(const Shape &shape, float lower, float upper, Device *dev, Graph *g) {
-  return g->add_function(new F::RandomUniform(shape, lower, upper, dev), {});
+Node uniform(const Shape &shape, float lower, float upper, Device &dev, Graph &g) {
+  return g.add_function(new F::RandomUniform(shape, lower, upper, dev), {});
 }
 
-Node normal(const Shape &shape, float mean, float sd, Device *dev, Graph *g) {
-  return g->add_function(new F::RandomNormal(shape, mean, sd, dev), {});
+Node normal(const Shape &shape, float mean, float sd, Device &dev, Graph &g) {
+  return g.add_function(new F::RandomNormal(shape, mean, sd, dev), {});
 }
 
-Node log_normal(const Shape &shape, float mean, float sd, Device *dev, Graph *g) {
-  return g->add_function(new F::RandomLogNormal(shape, mean, sd, dev), {});
+Node log_normal(const Shape &shape, float mean, float sd, Device &dev, Graph &g) {
+  return g.add_function(new F::RandomLogNormal(shape, mean, sd, dev), {});
 }
 
 }  // namespace random

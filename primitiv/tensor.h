@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include <primitiv/error.h>
 #include <primitiv/shape.h>
 
 namespace primitiv {
@@ -17,9 +18,25 @@ class Tensor {
 
 public:
   Tensor(const Tensor &) = default;
-  Tensor(Tensor &&) = default;
+
+  Tensor(Tensor &&src)
+    : shape_(std::move(src.shape_))
+    , device_(src.device_)
+    , data_(std::move(src.data_)) {
+      src.device_ = nullptr;
+    }
+
   Tensor &operator=(const Tensor &) = default;
-  Tensor &operator=(Tensor &&);
+
+  Tensor &operator=(Tensor &&src) {
+    if (&src != this) {
+      shape_ = std::move(src.shape_);
+      device_ = src.device_;
+      data_ = std::move(src.data_);
+      src.device_ = nullptr;
+    }
+    return *this;
+  }
 
   /**
    * Creates an invalid Tensor.
@@ -27,16 +44,30 @@ public:
   Tensor() : shape_(), device_(nullptr), data_() {}
 
   /**
+   * Check whether the object is valid or not.
+   * @return true if the object is valid, false otherwise.
+   * @remarks This returns false when the object is created through the default
+   *          constructor or the object had been moved.
+   */
+  bool valid() const { return !!device_; }
+
+  /**
    * Returns the shape of the Tensor.
    * @return Shape of the Tensor.
    */
-  const Shape &shape() const { return shape_; }
+  const Shape &shape() const {
+    if (!valid()) THROW_ERROR("Invalid tensor.");
+    return shape_;
+  }
 
   /**
    * Returns the Device object related to the internal memory.
    * @return Device object.
    */
-  Device *device() const { return device_; }
+  Device &device() const {
+    if (!valid()) THROW_ERROR("Invalid tensor.");
+    return *device_;
+  }
 
   /**
    * Returns the raw pointer of the internal memory.
@@ -48,7 +79,10 @@ public:
    * Returns the raw const-pointer of the internal memory.
    * @return Const-pointer of the internal memory.
    */
-  const void *data() const { return data_.get(); }
+  const void *data() const {
+    if (!valid()) THROW_ERROR("Invalid tensor.");
+    return data_.get();
+  }
 
   /**
    * Retrieves internal values of the tensor as a vector.
@@ -81,14 +115,6 @@ public:
    *          assumed as the last dimension.
    */
   void reset_by_vector(const std::vector<float> &values);
-
-  /**
-   * Check whether the object is valid or not.
-   * @return true if the object is valid, false otherwise.
-   * @remarks This returns false when the object is created through the default
-   *          constructor or the object had been moved.
-   */
-  bool valid() const { return static_cast<bool>(data_); }
 
   /**
    * Returns a tensor which have the same values and different shape.
@@ -132,9 +158,9 @@ private:
    * @param data Pointer of the device-specific object.
    */
   template <typename ShapeT, typename SharedPtrT>
-  Tensor(ShapeT &&shape, Device *device, SharedPtrT &&data)
+  Tensor(ShapeT &&shape, Device &device, SharedPtrT &&data)
     : shape_(std::forward<ShapeT>(shape))
-    , device_(device)
+    , device_(&device)
     , data_(std::forward<SharedPtrT>(data)) {}
 
   Shape shape_;

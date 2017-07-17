@@ -65,12 +65,12 @@ TEST_F(TensorTest, CheckInvalidNewDelete) {
 }
 #endif
 
-TEST_F(TensorTest, CheckNewDefault) {
+TEST_F(TensorTest, CheckInvalid) {
   const Tensor x;
   EXPECT_FALSE(x.valid());
-  EXPECT_EQ(Shape(), x.shape());
-  EXPECT_EQ(nullptr, x.device());
-  EXPECT_EQ(nullptr, x.data());
+  EXPECT_THROW(x.shape(), Error);
+  EXPECT_THROW(x.device(), Error);
+  EXPECT_THROW(x.data(), Error);
 }
 
 TEST_F(TensorTest, CheckNewScalar) {
@@ -81,7 +81,7 @@ TEST_F(TensorTest, CheckNewScalar) {
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     const vector<float> d = x.to_vector();
     EXPECT_EQ(1u, d.size());
-    EXPECT_EQ(dev, x.device());
+    EXPECT_EQ(dev, &x.device());
   }
 }
 
@@ -93,7 +93,7 @@ TEST_F(TensorTest, CheckNewMatrix) {
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     const vector<float> d = x.to_vector();
     EXPECT_EQ(6u, d.size());
-    EXPECT_EQ(dev, x.device());
+    EXPECT_EQ(dev, &x.device());
   }
 }
 
@@ -105,7 +105,7 @@ TEST_F(TensorTest, CheckNewMatrixMinibatch) {
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     const vector<float> d = x.to_vector();
     EXPECT_EQ(24u, d.size());
-    EXPECT_EQ(dev, x.device());
+    EXPECT_EQ(dev, &x.device());
   }
 }
 

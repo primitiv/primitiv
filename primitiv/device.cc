@@ -9,33 +9,33 @@ using std::vector;
 // NOTE(odashi): This source only checks shape prerequisites of each operation.
 
 #define CHECK_DEVICE(x) \
-  if ((x).device() != this) { \
+  if (&(x).device() != this) { \
     THROW_ERROR( \
-        "Device mismatched. (" #x ").device(): " << (x).device() \
+        "Device mismatched. &(" #x ").device(): " << &(x).device() \
         << " != this: " << this); \
   }
 
 namespace primitiv {
 
 Tensor Device::new_tensor(const Shape &shape) {
-  return Tensor(shape, this, new_handle(shape));
+  return Tensor(shape, *this, new_handle(shape));
 }
 
 Tensor Device::new_tensor(const Shape &shape, float k) {
-  Tensor ret(shape, this, new_handle(shape));
+  Tensor ret(shape, *this, new_handle(shape));
   reset_tensor(k, ret);
   return ret;
 }
 
 Tensor Device::new_tensor_by_array(const Shape &shape, const float values[]) {
-  Tensor ret(shape, this, new_handle(shape));
+  Tensor ret(shape, *this, new_handle(shape));
   reset_tensor_by_array(values, ret);
   return ret;
 }
 
 Tensor Device::new_tensor_by_vector(
     const Shape &shape, const vector<float> &values) {
-  Tensor ret(shape, this, new_handle(shape));
+  Tensor ret(shape, *this, new_handle(shape));
   reset_tensor_by_vector(values, ret);
   return ret;
 }

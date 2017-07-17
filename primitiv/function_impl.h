@@ -34,71 +34,71 @@ private: \
 class Input : public primitiv::Function {
   NO_CTOR_CLASS_DECL(Input);
 public:
-  Input(const Shape &shape, const std::vector<float> &data, Device *device);
-  Device *get_device() const override { return device_; }
+  Input(const Shape &shape, const std::vector<float> &data, Device &device);
+  Device *get_device() const override { return &device_; }
   std::string name() const override { return "Input"; }
 private:
   Shape shape_;
   std::vector<float> data_;
-  Device *device_;
+  Device &device_;
 };
 
 class ParameterInput : public primitiv::Function {
   NO_CTOR_CLASS_DECL(ParameterInput);
 public:
-  explicit ParameterInput(Parameter *param) : param_(param) {}
-  Device *get_device() const override { return param_->device(); }
+  explicit ParameterInput(Parameter &param) : param_(param) {}
+  Device *get_device() const override { return &param_.device(); }
   std::string name() const override { return "ParameterInput"; }
 private:
-  primitiv::Parameter *param_;
+  primitiv::Parameter &param_;
 };
 
 class Copy : public primitiv::Function {
   NO_CTOR_CLASS_DECL(Copy);
 public:
-  Copy(Device *device) : device_(device) {}
-  Device *get_device() const override { return device_; }
+  Copy(Device &device) : device_(device) {}
+  Device *get_device() const override { return &device_; }
   std::string name() const override { return "Copy"; }
 private:
-  Device *device_;
+  Device &device_;
 };
 
 class Constant : public primitiv::Function {
   NO_CTOR_CLASS_DECL(Constant);
 public:
-  Constant(const Shape &shape, float k, Device *device)
+  Constant(const Shape &shape, float k, Device &device)
     : shape_(shape), k_(k), device_(device) {}
-  Device *get_device() const override { return device_; }
+  Device *get_device() const override { return &device_; }
   std::string name() const override {
     return "Constant(" + std::to_string(k_) + ')';
   }
 private:
   Shape shape_;
   float k_;
-  Device *device_;
+  Device &device_;
 };
 
 class RandomBernoulli : public primitiv::Function {
   NO_CTOR_CLASS_DECL(RandomBernoulli);
 public:
-  RandomBernoulli(const Shape &shape, float p, Device *device)
+  RandomBernoulli(const Shape &shape, float p, Device &device)
     : shape_(shape), p_(p), device_(device) {}
-  Device *get_device() const override { return device_; }
+  Device *get_device() const override { return &device_; }
   std::string name() const override {
     return "RandomBernoulli(" + std::to_string(p_) + ')';
   }
 private:
   Shape shape_;
   float p_;
-  Device *device_;
+  Device &device_;
 };
 
 class RandomUniform : public primitiv::Function {
   NO_CTOR_CLASS_DECL(RandomUniform);
 public:
-  RandomUniform(const Shape &shape, float lower, float upper, Device *device)
+  RandomUniform(const Shape &shape, float lower, float upper, Device &device)
     : shape_(shape), lower_(lower), upper_(upper), device_(device) {}
-  Device *get_device() const override { return device_; }
+  Device *get_device() const override { return &device_; }
   std::string name() const override {
     return
       "RandomUniform(" + std::to_string(lower_) + ',' +
@@ -108,15 +108,15 @@ private:
   Shape shape_;
   float lower_;
   float upper_;
-  Device *device_;
+  Device &device_;
 };
 
 class RandomNormal : public primitiv::Function {
   NO_CTOR_CLASS_DECL(RandomNormal);
 public:
-  RandomNormal(const Shape &shape, float mean, float sd, Device *device)
+  RandomNormal(const Shape &shape, float mean, float sd, Device &device)
     : shape_(shape), mean_(mean), sd_(sd), device_(device) {}
-  Device *get_device() const override { return device_; }
+  Device *get_device() const override { return &device_; }
   std::string name() const override {
     return
       "RandomNormal(" + std::to_string(mean_) + ',' +
@@ -126,15 +126,15 @@ private:
   Shape shape_;
   float mean_;
   float sd_;
-  Device *device_;
+  Device &device_;
 };
 
 class RandomLogNormal : public primitiv::Function {
   NO_CTOR_CLASS_DECL(RandomLogNormal);
 public:
-  RandomLogNormal(const Shape &shape, float mean, float sd, Device *device)
+  RandomLogNormal(const Shape &shape, float mean, float sd, Device &device)
     : shape_(shape), mean_(mean), sd_(sd), device_(device) {}
-  Device *get_device() const override { return device_; }
+  Device *get_device() const override { return &device_; }
   std::string name() const override {
     return
       "RandomLogNormal(" + std::to_string(mean_) + ',' +
@@ -144,7 +144,7 @@ private:
   Shape shape_;
   float mean_;
   float sd_;
-  Device *device_;
+  Device &device_;
 };
 
 class Pick : public primitiv::Function {

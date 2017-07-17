@@ -177,7 +177,7 @@ protected:
 TEST_F(FunctionImplTest, CheckInput) {
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4};
-  Input node(ret_shape, ret_data, dev);
+  Input node(ret_shape, ret_data, *dev);
   const Shape cur_shape = node.forward_shape(arg_shapes);
   const Tensor cur_value = node.forward(arg_values);
   const Tensor cur_grad = dev->new_tensor(ret_shape, 1);
@@ -192,13 +192,13 @@ TEST_F(FunctionImplTest, CheckInput) {
 TEST_F(FunctionImplTest, CheckParameterInput) {
   const Shape ret_shape {2, 2};
   const initializers::Constant init(42);
-  Parameter param("param", ret_shape, dev);
+  Parameter param("param", ret_shape, *dev);
   param.reset_value(init);
   param.reset_gradient();
   ASSERT_TRUE(vector_match(vector<float>(4, 42), param.value().to_vector()));
   ASSERT_TRUE(vector_match(vector<float>(4, 0), param.gradient().to_vector()));
 
-  ParameterInput node(&param);
+  ParameterInput node(param);
   const Shape cur_shape = node.forward_shape(arg_shapes);
   const Tensor cur_value = node.forward(arg_values);
   const Tensor cur_grad = dev->new_tensor(ret_shape, 1);
@@ -216,7 +216,7 @@ TEST_F(FunctionImplTest, CheckCopy) {
   CPUDevice dev2;
   const Shape ret_shape({2, 2}, 3);
   setup_1arg();
-  Copy node(&dev2);
+  Copy node(dev2);
   const Shape cur_shape = node.forward_shape(arg_shapes);
   const Tensor cur_value = node.forward(arg_values);
   const Tensor cur_grad = dev2.new_tensor_by_vector(
@@ -242,7 +242,7 @@ TEST_F(FunctionImplTest, CheckConstant) {
     {Shape({2, 3, 5, 7}, 5), -123},
   };
   for (const TestCase &tc : test_cases) {
-    Constant node(tc.shape, tc.k, dev);
+    Constant node(tc.shape, tc.k, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
@@ -268,7 +268,7 @@ TEST_F(FunctionImplTest, CheckRandomBernoulli) {
     {Shape({2, 2}, 3), 1, {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
   };
   for (const TestCase &tc : test_cases) {
-    RandomBernoulli node(tc.shape, tc.p, dev);
+    RandomBernoulli node(tc.shape, tc.p, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
@@ -302,7 +302,7 @@ TEST_F(FunctionImplTest, CheckRandomUniform) {
         1.80981255, 1.90792489, 1.87217593, 1.55639732}},
   };
   for (const TestCase &tc : test_cases) {
-    RandomUniform node(tc.shape, tc.lower, tc.upper, dev);
+    RandomUniform node(tc.shape, tc.lower, tc.upper, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
@@ -338,7 +338,7 @@ TEST_F(FunctionImplTest, CheckRandomNormal) {
         2.59950328, 1.45240283, 1.47200286, 1.91403091}},
   };
   for (const TestCase &tc : test_cases) {
-    RandomNormal node(tc.shape, tc.mean, tc.sd, dev);
+    RandomNormal node(tc.shape, tc.mean, tc.sd, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
@@ -374,7 +374,7 @@ TEST_F(FunctionImplTest, CheckRandomLogNormal) {
         13.45705223, 4.27337027, 4.35795498, 6.78036499}},
   };
   for (const TestCase &tc : test_cases) {
-    RandomLogNormal node(tc.shape, tc.mean, tc.sd, dev);
+    RandomLogNormal node(tc.shape, tc.mean, tc.sd, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor(tc.shape, 1);

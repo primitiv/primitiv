@@ -572,7 +572,7 @@ void CUDADevice::reset_tensor_by_array_impl(const float values[], Tensor &x) {
 }
 
 void CUDADevice::copy_tensor_impl(const Tensor &x, Tensor &y) {
-  switch (x.device()->type()) {
+  switch (x.device().type()) {
     case Device::DEVICE_TYPE_CPU:
       reset_tensor_by_array(CDATA(x), y);
       break;

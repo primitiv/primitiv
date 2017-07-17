@@ -20,7 +20,7 @@ void XavierUniform::apply(Tensor &x) const {
         "XavierUniform initializer can be used to only matrices or vectors.");
   }
   const float scale = std::sqrt(6. / (s[0] + s[1]));
-  x = x.device()->random_uniform(s, -scale, scale);
+  x = x.device().random_uniform(s, -scale, scale);
 }
 
 }  // namespace initializers

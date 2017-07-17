@@ -79,7 +79,7 @@ primitiv::Shape parse_shape(const YAML::Node &node) {
 
 // Function to load Tensor object from YAML::Node.
 primitiv::Tensor parse_tensor(
-    const YAML::Node &node, primitiv::Device *device) {
+    const YAML::Node &node, primitiv::Device &device) {
   // NOTE(odashi):
   // The default value `true` maintains the backward compatibility.
   bool valid = true;
@@ -105,13 +105,13 @@ primitiv::Tensor parse_tensor(
         << " (size: " << std::to_string(size) << ')');
   }
 
-  return device->new_tensor_by_array(
+  return device.new_tensor_by_array(
       shape, reinterpret_cast<const float *>(data.data()));
 }
 
 // Function to load map of Tensors from YAML::Node.
 std::unordered_map<std::string, primitiv::Tensor> parse_tensor_map(
-    const YAML::Node &node, primitiv::Device *device) {
+    const YAML::Node &node, primitiv::Device &device) {
   std::unordered_map<std::string, primitiv::Tensor> tensors;
 
   for (const auto &kv : node) {
@@ -146,24 +146,24 @@ void Parameter::check_shape() {
 }
 
 Parameter::Parameter(
-    const string &name, const Shape &shape, Device *device)
+    const string &name, const Shape &shape, Device &device)
 : name_(name)
 , shape_(shape)
-, device_(device)
-, value_(device->new_tensor(shape))
-, grad_(device->new_tensor(shape)) {
+, device_(&device)
+, value_(device.new_tensor(shape))
+, grad_(device.new_tensor(shape)) {
   check_shape();
 }
 
 Parameter::Parameter(
     const string &name, const Shape &shape,
     const vector<float> & value,
-    Device *device)
+    Device &device)
 : name_(name)
 , shape_(shape)
-, device_(device)
-, value_(device->new_tensor(shape))
-, grad_(device->new_tensor(shape)) {
+, device_(&device)
+, value_(device.new_tensor(shape))
+, grad_(device.new_tensor(shape)) {
   check_shape();
   reset_value(value);
 }
@@ -171,12 +171,12 @@ Parameter::Parameter(
 Parameter::Parameter(
     const string &name, const Shape &shape,
     const Initializer &init,
-    Device *device)
+    Device &device)
 : name_(name)
 , shape_(shape)
-, device_(device)
-, value_(device->new_tensor(shape))
-, grad_(device->new_tensor(shape)) {
+, device_(&device)
+, value_(device.new_tensor(shape))
+, grad_(device.new_tensor(shape)) {
   check_shape();
   reset_value(init);
 }
@@ -186,29 +186,30 @@ Parameter::Parameter(
     std::unordered_map<std::string, Tensor> &&stats)
 : name_(std::move(name))
 , shape_(value.shape())
-, device_(value.device())
-, grad_(value.device()->new_tensor(value.shape()))
+, device_(&value.device())
+, grad_(value.device().new_tensor(value.shape()))
 , stats_(std::move(stats)) {
   value_ = std::move(value);
   check_shape();
 }
 
 void Parameter::reset_value(const vector<float> &value) {
+  if (!valid()) THROW_ERROR("Invalid parameter.");
   value_.reset_by_vector(value);
 }
 
 void Parameter::reset_value(const Initializer &init) {
+  if (!valid()) THROW_ERROR("Invalid parameter.");
   init.apply(value_);
 }
 
 void Parameter::reset_gradient() {
+  if (!valid()) THROW_ERROR("Invalid parameter.");
   grad_.reset(0);
 }
 
 void Parameter::add_stats(const std::string &name, const Shape &shape) {
-  if (!device_) {
-    THROW_ERROR("Attempted to add statistics to an invalid Parameter object.");
-  }
+  if (!valid()) THROW_ERROR("Invalid parameter.");
   if (has_stats(name)) {
     THROW_ERROR("Statistics with name `" << name << "` already exists.");
   }
@@ -223,13 +224,14 @@ void Parameter::save(const string &path) const  {
 
   YAML::Emitter em(ofs);
   em << YAML::BeginMap;
+  em << YAML::Key << "valid" << YAML::Value << valid();
   em << YAML::Key << "name" << YAML::Value << name_;
   em << YAML::Key << "value" << YAML::Value << value_;
   em << YAML::Key << "stats" << YAML::Value << stats_;
   em << YAML::EndMap;
 }
 
-Parameter Parameter::load(const string &path, Device *device) {
+Parameter Parameter::load(const string &path, Device &device) {
   std::ifstream ifs(path);
   if (!ifs.is_open()) {
     THROW_ERROR("Could not open file: " << path);
@@ -243,19 +245,23 @@ Parameter Parameter::load(const string &path, Device *device) {
   data[size] = '\0';
 
   YAML::Node node = YAML::Load(data.get());
+  bool valid = true;  // true for backward compatibility
   string name;
   Tensor value;
   std::unordered_map<std::string, Tensor> stats;
 
   for (const auto &kv : node) {
     const string key = kv.first.as<string>();
-    if (key == "name") name = kv.second.as<string>();
+    if (key == "valid") valid = kv.second.as<bool>();
+    else if (key == "name") name = kv.second.as<string>();
     else if (key == "value") value = ::parse_tensor(kv.second, device);
     else if (key == "stats") stats = ::parse_tensor_map(kv.second, device);
     else THROW_ERROR("Unknown YAML key: " << key);
   }
 
-  return Parameter(std::move(name), std::move(value), std::move(stats));
+  return valid
+    ? Parameter(std::move(name), std::move(value), std::move(stats))
+    : Parameter();
 }
 
 }  // namespace primitiv

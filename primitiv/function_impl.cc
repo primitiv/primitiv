@@ -22,7 +22,7 @@ namespace functions {
         << " != actual: " << args.size()); \
   }
 
-Input::Input(const Shape &shape, const vector<float> &data, Device *device)
+Input::Input(const Shape &shape, const vector<float> &data, Device &device)
 : shape_(shape)
 , data_(data)
 , device_(device) {
@@ -42,7 +42,7 @@ Shape Input::forward_shape(const vector<const Shape *> &args) const {
 
 Tensor Input::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 0);
-  return device_->new_tensor_by_vector(shape_, data_);
+  return device_.new_tensor_by_vector(shape_, data_);
 }
 
 void Input::backward(
@@ -53,18 +53,18 @@ void Input::backward(
 
 Shape ParameterInput::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 0);
-  return param_->shape();
+  return param_.shape();
 }
 
 Tensor ParameterInput::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 0);
-  return param_->value();
+  return param_.value();
 }
 
 void ParameterInput::backward(
     const Tensor &, const Tensor &cur_grad,
     const vector<const Tensor *> &, const vector<Tensor *> &) const {
-  param_->gradient() += cur_grad;
+  param_.gradient() += cur_grad;
 }
 
 Shape Copy::forward_shape(const vector<const Shape *> &args) const {
@@ -90,7 +90,7 @@ Shape Constant::forward_shape(const vector<const Shape *> &args) const {
 
 Tensor Constant::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 0);
-  return device_->new_tensor(shape_, k_);
+  return device_.new_tensor(shape_, k_);
 }
 
 void Constant::backward(
@@ -106,7 +106,7 @@ Shape RandomBernoulli::forward_shape(const vector<const Shape *> &args) const {
 
 Tensor RandomBernoulli::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 0);
-  return device_->random_bernoulli(shape_, p_);
+  return device_.random_bernoulli(shape_, p_);
 }
 
 void RandomBernoulli::backward(
@@ -122,7 +122,7 @@ Shape RandomUniform::forward_shape(const vector<const Shape *> &args) const {
 
 Tensor RandomUniform::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 0);
-  return device_->random_uniform(shape_, lower_, upper_);
+  return device_.random_uniform(shape_, lower_, upper_);
 }
 
 void RandomUniform::backward(
@@ -138,7 +138,7 @@ Shape RandomNormal::forward_shape(const vector<const Shape *> &args) const {
 
 Tensor RandomNormal::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 0);
-  return device_->random_normal(shape_, mean_, sd_);
+  return device_.random_normal(shape_, mean_, sd_);
 }
 
 void RandomNormal::backward(
@@ -154,7 +154,7 @@ Shape RandomLogNormal::forward_shape(const vector<const Shape *> &args) const {
 
 Tensor RandomLogNormal::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 0);
-  return device_->random_log_normal(shape_, mean_, sd_);
+  return device_.random_log_normal(shape_, mean_, sd_);
 }
 
 void RandomLogNormal::backward(
@@ -176,7 +176,7 @@ Tensor Pick::forward(const vector<const Tensor *> &args) {
 void Pick::backward(
     const Tensor &y, const Tensor &gy,
     const vector<const Tensor *> &x, const vector<Tensor *> &gx) const {
-  gy.device()->pick_bw(gy, dim_, ids_, *gx[0]);
+  gy.device().pick_bw(gy, dim_, ids_, *gx[0]);
 }
 
 Shape Slice::forward_shape(const vector<const Shape *> &args) const {
@@ -192,7 +192,7 @@ Tensor Slice::forward(const std::vector<const Tensor *> &args) {
 void Slice::backward(
     const Tensor &y, const Tensor &gy,
     const vector<const Tensor *> &x, const vector<Tensor *> &gx) const {
-  gy.device()->slice_bw(gy, dim_, lower_, *gx[0]);
+  gy.device().slice_bw(gy, dim_, lower_, *gx[0]);
 }
 
 Shape Concat::forward_shape(const vector<const Shape *> &args) const {
@@ -396,26 +396,26 @@ BACKWARD(Flatten) { *gx[0] += gy.reshape(x[0]->shape()); }
 
 BACKWARD(Positive) { *gx[0] += gy; }
 BACKWARD(Negative) { *gx[0] -= gy; }
-BACKWARD(Sqrt) { gy.device()->sqrt_bw(*x[0], y, gy, *gx[0]); }
-BACKWARD(Exp) {  gy.device()->exp_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(Tanh) {  gy.device()->tanh_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(Sigmoid) {  gy.device()->sigmoid_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(Softplus) {  gy.device()->softplus_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(Sin) {  gy.device()->sin_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(Cos) {  gy.device()->cos_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(Tan) {  gy.device()->tan_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(ReLU) { gy.device()->prelu_bw(*x[0], y, gy, 0, *gx[0]); }
-BACKWARD(LReLU) { gy.device()->prelu_bw(*x[0], y, gy, .01, *gx[0]); }
-BACKWARD(Transpose) { gy.device()->transpose_bw(*x[0], y, gy, *gx[0]); }
+BACKWARD(Sqrt) { gy.device().sqrt_bw(*x[0], y, gy, *gx[0]); }
+BACKWARD(Exp) {  gy.device().exp_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(Tanh) {  gy.device().tanh_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(Sigmoid) {  gy.device().sigmoid_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(Softplus) {  gy.device().softplus_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(Sin) {  gy.device().sin_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(Cos) {  gy.device().cos_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(Tan) {  gy.device().tan_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(ReLU) { gy.device().prelu_bw(*x[0], y, gy, 0, *gx[0]); }
+BACKWARD(LReLU) { gy.device().prelu_bw(*x[0], y, gy, .01, *gx[0]); }
+BACKWARD(Transpose) { gy.device().transpose_bw(*x[0], y, gy, *gx[0]); }
 
-BACKWARD(AddConst) { gy.device()->add_const_bw(*x[0], y, gy, k_, *gx[0]); }
-BACKWARD(SubtractConstR) { gy.device()->subtract_const_r_bw(*x[0], y, gy, k_, *gx[0]); }
-BACKWARD(SubtractConstL) { gy.device()->subtract_const_l_bw(*x[0], y, gy, k_, *gx[0]); }
-BACKWARD(MultiplyConst) { gy.device()->multiply_const_bw(*x[0], y, gy, k_, *gx[0]); }
-BACKWARD(DivideConstR) { gy.device()->divide_const_r_bw(*x[0], y, gy, k_, *gx[0]); }
-BACKWARD(DivideConstL) { gy.device()->divide_const_l_bw(*x[0], y, gy, k_, *gx[0]); }
-BACKWARD(PReLU) { gy.device()->prelu_bw(*x[0], y, gy, k_, *gx[0]); }
-BACKWARD(ELU) { gy.device()->elu_bw(*x[0], y, gy, k_, *gx[0]); }
+BACKWARD(AddConst) { gy.device().add_const_bw(*x[0], y, gy, k_, *gx[0]); }
+BACKWARD(SubtractConstR) { gy.device().subtract_const_r_bw(*x[0], y, gy, k_, *gx[0]); }
+BACKWARD(SubtractConstL) { gy.device().subtract_const_l_bw(*x[0], y, gy, k_, *gx[0]); }
+BACKWARD(MultiplyConst) { gy.device().multiply_const_bw(*x[0], y, gy, k_, *gx[0]); }
+BACKWARD(DivideConstR) { gy.device().divide_const_r_bw(*x[0], y, gy, k_, *gx[0]); }
+BACKWARD(DivideConstL) { gy.device().divide_const_l_bw(*x[0], y, gy, k_, *gx[0]); }
+BACKWARD(PReLU) { gy.device().prelu_bw(*x[0], y, gy, k_, *gx[0]); }
+BACKWARD(ELU) { gy.device().elu_bw(*x[0], y, gy, k_, *gx[0]); }
 
 BACKWARD(AddScalar) {
   *gx[0] += gy;
@@ -444,11 +444,11 @@ BACKWARD(DivideScalarL) {
   *gx[1] += T::sum(a.flatten(), 0);
 }
 
-BACKWARD(Add) { gy.device()->add_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
-BACKWARD(Subtract) { gy.device()->subtract_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
-BACKWARD(Multiply) { gy.device()->multiply_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
-BACKWARD(Divide) { gy.device()->divide_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
-BACKWARD(MatrixMultiply) { gy.device()->matmul_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
+BACKWARD(Add) { gy.device().add_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
+BACKWARD(Subtract) { gy.device().subtract_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
+BACKWARD(Multiply) { gy.device().multiply_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
+BACKWARD(Divide) { gy.device().divide_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
+BACKWARD(MatrixMultiply) { gy.device().matmul_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
 
 BACKWARD(Sum) { *gx[0] += T::broadcast(gy, dim_, x[0]->shape()[dim_]); }
 BACKWARD(LogSumExp) {
@@ -478,7 +478,7 @@ BACKWARD(SparseSoftmaxCrossEntropy) {
   *gx[0] +=
     T::softmax(*x[0], dim_) * T::broadcast(gy, dim_, x[0]->shape()[dim_]);
 #endif  // PRIMITIV_USE_CACHE
-  gy.device()->pick_bw(-gy, dim_, ids_, *gx[0]);
+  gy.device().pick_bw(-gy, dim_, ids_, *gx[0]);
 }
 
 #undef BACKWARD
