@@ -49,13 +49,15 @@ TEST_F(TrainerTest, CheckEpoch) {
   }
   trainer.set_epoch(0);
   EXPECT_EQ(0u, trainer.get_epoch());
+  trainer.set_epoch(100);
+  EXPECT_EQ(100u, trainer.get_epoch());
 }
 
 TEST_F(TrainerTest, CheckWeightDecay) {
   trainers::SGD trainer;
   ASSERT_EQ(.0f, trainer.get_weight_decay());
   trainer.set_weight_decay(.1);
-  EXPECT_EQ(.1f, trainer.get_weight_decay());
+  ASSERT_EQ(.1f, trainer.get_weight_decay());
 
   Parameter param("param1", {2, 2}, {1, 2, 3, 4}, dev);
   trainer.add_parameter(param);
