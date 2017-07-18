@@ -357,7 +357,7 @@ TEST_F(GraphTest, CheckLSTM) {
   const vector<float> expected_losses {
     5.7667205e-03, 2.8605087e-02, 1.4819370e-03, 3.0073307e-03
   };
-  EXPECT_TRUE(vector_match(expected_losses, loss.value().to_vector()));
+  EXPECT_TRUE(vector_near(expected_losses, loss.value().to_vector(), 1e-6));
 
   auto print = [](const std::string &name, const Tensor &value) {
     std::cout << name << ": shape=" << value.shape().to_string()
@@ -442,7 +442,7 @@ TEST_F(GraphTest, CheckConcatLSTM) {
   const vector<float> expected_losses {
     5.7667205e-03, 2.8605087e-02, 1.4819370e-03, 3.0073307e-03
   };
-  EXPECT_TRUE(vector_match(expected_losses, loss.value().to_vector()));
+  EXPECT_TRUE(vector_near(expected_losses, loss.value().to_vector(), 1e-6));
 
   auto print = [](const std::string &name, const Tensor &value) {
     std::cout << name << ": shape=" << value.shape().to_string()
