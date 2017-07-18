@@ -30,8 +30,9 @@ TEST_F(ParameterTest, CheckInvalid) {
 }
 
 TEST_F(ParameterTest, CheckNew) {
+  Device::set_default_device(dev);
   const Shape shape {2, 2};
-  Parameter p("test", shape, dev);
+  Parameter p("test", shape);
   EXPECT_TRUE(p.valid());
   EXPECT_EQ("test", p.name());
   EXPECT_EQ(shape, p.shape());
@@ -41,8 +42,9 @@ TEST_F(ParameterTest, CheckNew) {
 }
 
 TEST_F(ParameterTest, CheckNewWithValues) {
+  Device::set_default_device(dev);
   const Shape shape {2, 2};
-  Parameter p("test", shape, {1, 2, 3, 4}, dev);
+  Parameter p("test", shape, {1, 2, 3, 4});
   EXPECT_TRUE(p.valid());
   EXPECT_EQ("test", p.name());
   EXPECT_EQ(shape, p.shape());
@@ -53,9 +55,10 @@ TEST_F(ParameterTest, CheckNewWithValues) {
 }
 
 TEST_F(ParameterTest, CheckNewWithInitializer) {
+  Device::set_default_device(dev);
   const Shape shape {2, 2};
   const initializers::Constant init(42);
-  Parameter p("test", shape, init, dev);
+  Parameter p("test", shape, init);
   EXPECT_TRUE(p.valid());
   EXPECT_EQ("test", p.name());
   EXPECT_EQ(shape, p.shape());
@@ -66,7 +69,8 @@ TEST_F(ParameterTest, CheckNewWithInitializer) {
 }
 
 TEST_F(ParameterTest, CheckAddStats) {
-  Parameter p("test", {}, dev);
+  Device::set_default_device(dev);
+  Parameter p("test", {});
   EXPECT_FALSE(p.has_stats("a"));
   EXPECT_FALSE(p.has_stats("b"));
   EXPECT_THROW(p.stats("a"), std::out_of_range);
@@ -102,8 +106,9 @@ TEST_F(ParameterTest, CheckInvalidAddStats) {
 }
 
 TEST_F(ParameterTest, CheckMove) {
+  Device::set_default_device(dev);
   const Shape shape {2, 2};
-  Parameter p1("test", shape, {1, 2, 3, 4}, dev);
+  Parameter p1("test", shape, {1, 2, 3, 4});
   ASSERT_TRUE(p1.valid());
 
   Parameter p2 = std::move(p1);
@@ -129,41 +134,46 @@ TEST_F(ParameterTest, CheckMove) {
 }
 
 TEST_F(ParameterTest, CheckInvalidNew) {
-  EXPECT_THROW(Parameter("test", Shape({}, 3), dev), Error);
+  Device::set_default_device(dev);
+  EXPECT_THROW(Parameter("test", Shape({}, 3)), Error);
 }
 
 TEST_F(ParameterTest, CheckResetValueByVector) {
+  Device::set_default_device(dev);
   const Shape shape {2, 2};
   const vector<float> expected {1, 2, 3, 4};
-  Parameter p("test", shape, dev);
+  Parameter p("test", shape);
   p.reset_value(expected);
   EXPECT_TRUE(vector_match(expected, p.value().to_vector()));
 }
 
 TEST_F(ParameterTest, CheckResetValueByInitializer) {
+  Device::set_default_device(dev);
   const Shape shape {2, 2};
   const initializers::Constant init(0);
   const vector<float> expected {0, 0, 0, 0};
-  Parameter p("test", shape, dev);
+  Parameter p("test", shape);
   p.reset_value(init);
   EXPECT_TRUE(vector_match(expected, p.value().to_vector()));
 }
 
 TEST_F(ParameterTest, CheckResetGradient) {
+  Device::set_default_device(dev);
   const Shape shape {2, 2};
   const vector<float> expected {0, 0, 0, 0};
-  Parameter p("test", shape, dev);
+  Parameter p("test", shape);
   p.reset_gradient();
   EXPECT_TRUE(vector_match(expected, p.gradient().to_vector()));
 }
 
 TEST_F(ParameterTest, CheckAddValue) {
+  Device::set_default_device(dev);
   const Shape shape {2, 2};
   const initializers::Constant init(0);
   const vector<float> diff_values1 {1, 2, 3, 4};
   const vector<float> diff_values2 {2, 4, 6, 8};
   const Tensor diff = dev.new_tensor_by_vector(shape, diff_values1);
-  Parameter p("test", shape, dev);
+  Parameter p("test", shape);
   p.reset_value(init);
   p.value() += diff;
   EXPECT_TRUE(vector_match(diff_values1, p.value().to_vector()));
@@ -172,11 +182,12 @@ TEST_F(ParameterTest, CheckAddValue) {
 }
 
 TEST_F(ParameterTest, CheckAddGradient) {
+  Device::set_default_device(dev);
   const Shape shape {2, 2};
   const vector<float> diff_values1 {1, 2, 3, 4};
   const vector<float> diff_values2 {2, 4, 6, 8};
   const Tensor diff = dev.new_tensor_by_vector(shape, diff_values1);
-  Parameter p("test", shape, dev);
+  Parameter p("test", shape);
   p.reset_gradient();
   p.gradient() += diff;
   EXPECT_TRUE(vector_match(diff_values1, p.gradient().to_vector()));
@@ -185,35 +196,73 @@ TEST_F(ParameterTest, CheckAddGradient) {
 }
 
 TEST_F(ParameterTest, CheckSaveLoad) {
+  Device::set_default_device(dev);
   const Shape shape {2, 2};
   const vector<float> values {1, 2, 3, 4};
   const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveLoad_p.yaml";
-  const Parameter p1("test", shape, values, dev);
+  const Parameter p1("test", shape, values);
 
   p1.save(path);
 
-  const Parameter p2 = Parameter::load(path, dev);
+  const Parameter p2 = Parameter::load(path);
   EXPECT_EQ("test", p2.name());
   EXPECT_EQ(shape, p2.shape());
   EXPECT_TRUE(vector_match(values, p2.value().to_vector()));
 }
 
 TEST_F(ParameterTest, CheckSaveLoadWithStats) {
+  Device::set_default_device(dev);
   const Shape shape {2, 2};
   const vector<float> values {1, 2, 3, 4};
   const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveLoad_p.yaml";
-  Parameter p1("test", shape, values, dev);
+  Parameter p1("test", shape, values);
   p1.add_stats("a", {2, 2});
   p1.stats("a").reset_by_vector(values);
 
   p1.save(path);
 
-  const Parameter p2 = Parameter::load(path, dev);
+  const Parameter p2 = Parameter::load(path);
   EXPECT_EQ("test", p2.name());
   EXPECT_EQ(shape, p2.shape());
   EXPECT_TRUE(vector_match(values, p2.value().to_vector()));
   ASSERT_TRUE(p2.has_stats("a"));
   EXPECT_TRUE(vector_match(values, p2.stats("a").to_vector()));
+}
+
+TEST_F(ParameterTest, CheckSaveWithoutStats) {
+  Device::set_default_device(dev);
+  const Shape shape {2, 2};
+  const vector<float> values {1, 2, 3, 4};
+  const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveLoad_p.yaml";
+  Parameter p1("test", shape, values);
+  p1.add_stats("a", {2, 2});
+  p1.stats("a").reset_by_vector(values);
+
+  p1.save(path, false);
+
+  const Parameter p2 = Parameter::load(path);
+  EXPECT_EQ("test", p2.name());
+  EXPECT_EQ(shape, p2.shape());
+  EXPECT_TRUE(vector_match(values, p2.value().to_vector()));
+  ASSERT_FALSE(p2.has_stats("a"));
+}
+
+TEST_F(ParameterTest, CheckLoadWithoutStats) {
+  Device::set_default_device(dev);
+  const Shape shape {2, 2};
+  const vector<float> values {1, 2, 3, 4};
+  const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveLoad_p.yaml";
+  Parameter p1("test", shape, values);
+  p1.add_stats("a", {2, 2});
+  p1.stats("a").reset_by_vector(values);
+
+  p1.save(path);
+
+  const Parameter p2 = Parameter::load(path, false);
+  EXPECT_EQ("test", p2.name());
+  EXPECT_EQ(shape, p2.shape());
+  EXPECT_TRUE(vector_match(values, p2.value().to_vector()));
+  ASSERT_FALSE(p2.has_stats("a"));
 }
 
 }  // namespace primitiv

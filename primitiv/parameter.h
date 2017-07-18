@@ -209,18 +209,25 @@ public:
   }
 
   /**
+   * Saves current parameters into specified file with YAML format.
+   * @param path File path to write parameters.
+   * @param with_stats Whether or not to save all additional statistics as well
+   *                   as parameter values if the parameter object has them.
+   */
+  void save(const std::string &path, bool with_stats = true) const;
+
+  /**
    * Loads parameters and returns a new Parameter object.
    * @param path File path to load parameters.
+   * @param with_stats Whether or not to load all additional statistics as well
+   *                   as parameter values if the file contains them.
    * @param device Device object to manage internal memories.
    * @return A new Parameter object.
    */
-  static Parameter load(const std::string &path, Device &device);
-
-  /**
-   * Saves current parameters into specified file with YAML format.
-   * @param path File path to write parameters.
-   */
-  void save(const std::string &path) const;
+  static Parameter load(
+      const std::string &path,
+      bool with_stats = true,
+      Device &device = Device::get_default_device());
 
 private:
   /**

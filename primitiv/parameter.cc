@@ -216,7 +216,7 @@ void Parameter::add_stats(const std::string &name, const Shape &shape) {
   stats_.emplace(std::make_pair(name, device_->new_tensor(shape)));
 }
 
-void Parameter::save(const string &path) const  {
+void Parameter::save(const string &path, bool with_stats) const  {
   std::ofstream ofs(path);
   if (!ofs.is_open()) {
     THROW_ERROR("Could not open file: " << path);
@@ -227,11 +227,11 @@ void Parameter::save(const string &path) const  {
   em << YAML::Key << "valid" << YAML::Value << valid();
   em << YAML::Key << "name" << YAML::Value << name_;
   em << YAML::Key << "value" << YAML::Value << value_;
-  em << YAML::Key << "stats" << YAML::Value << stats_;
+  if (with_stats) em << YAML::Key << "stats" << YAML::Value << stats_;
   em << YAML::EndMap;
 }
 
-Parameter Parameter::load(const string &path, Device &device) {
+Parameter Parameter::load(const string &path, bool with_stats, Device &device) {
   std::ifstream ifs(path);
   if (!ifs.is_open()) {
     THROW_ERROR("Could not open file: " << path);
@@ -255,7 +255,9 @@ Parameter Parameter::load(const string &path, Device &device) {
     if (key == "valid") valid = kv.second.as<bool>();
     else if (key == "name") name = kv.second.as<string>();
     else if (key == "value") value = ::parse_tensor(kv.second, device);
-    else if (key == "stats") stats = ::parse_tensor_map(kv.second, device);
+    else if (key == "stats") {
+      if (with_stats) stats = ::parse_tensor_map(kv.second, device);
+    }
     else THROW_ERROR("Unknown YAML key: " << key);
   }
 
