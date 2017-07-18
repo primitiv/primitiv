@@ -93,12 +93,25 @@ TEST_F(CUDAMemoryPoolTest, CheckReleaseReservedBlocks) {
 
   ::cudaDeviceProp prop;
   CUDA_CALL(::cudaGetDeviceProperties(&prop, 0));
+  std::cerr << "Total size: " << prop.totalGlobalMem << std::endl;
 
-  // Calculates the quater size of the whole memory.
+  // Calculates chunk sizes and number of chunks.
   std::uint64_t size = 1llu;
-  while (size < prop.totalGlobalMem >> 2) size <<= 1;
+  while (size < prop.totalGlobalMem >> 3) size <<= 1;
+  unsigned n = 0;
+  while (n * size < prop.totalGlobalMem) ++n;
+  std::cerr << "Chunk size: " << size << std::endl;
+  std::cerr << "#Chunks: " << n << std::endl;
+  ASSERT_LE(4u, n);
 
-  std::shared_ptr<void> p1 = pool.allocate(size);  // 1/4 of all
+  // Reserves n-4 chunks.
+  std::vector<std::shared_ptr<void>> reserved;
+  for (unsigned i = 0; i < n - 4; ++i) {
+    EXPECT_NO_THROW(reserved.emplace_back(pool.allocate(size)));
+  }
+
+  std::shared_ptr<void> p1;
+  EXPECT_NO_THROW(p1 = pool.allocate(size));  // 1/4 of all
   {
     std::shared_ptr<void> p2;
     EXPECT_NO_THROW(p2 = pool.allocate(size));  // 2/4 of all
