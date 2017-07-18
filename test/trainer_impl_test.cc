@@ -28,7 +28,6 @@ TEST_F(TrainerImplTest, CheckDefaultHyperparameters) {
   EXPECT_FLOAT_EQ(.9, adam.beta1());
   EXPECT_FLOAT_EQ(.999, adam.beta2());
   EXPECT_FLOAT_EQ(1e-8, adam.eps());
-  EXPECT_EQ(1u, adam.epoch());
 }
 
 TEST_F(TrainerImplTest, CheckGivenHyperparameters) {
@@ -40,7 +39,6 @@ TEST_F(TrainerImplTest, CheckGivenHyperparameters) {
   EXPECT_FLOAT_EQ(2, adam.beta1());
   EXPECT_FLOAT_EQ(3, adam.beta2());
   EXPECT_FLOAT_EQ(4, adam.eps());
-  EXPECT_EQ(1u, adam.epoch());
 }
 
 TEST_F(TrainerImplTest, CheckSGD) {
@@ -119,7 +117,6 @@ TEST_F(TrainerImplTest, CheckAdam) {
           expected_m1[i], param.stats("adam-m1").to_vector(), 1e-5));
     EXPECT_TRUE(vector_near(
           expected_m2[i], param.stats("adam-m2").to_vector(), 1e-5));
-    EXPECT_EQ(i + 2u, trainer.epoch());
   }
 }
 

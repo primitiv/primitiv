@@ -48,7 +48,8 @@ void Trainer::update(float scale) {
   for (const auto &kv : params_) {
     update_parameter(scale, *kv.second);
   }
-  update_epoch();
+
+  ++epoch_;
 }
 
 }  // namespace primitiv

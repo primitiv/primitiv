@@ -18,15 +18,44 @@ public:
   Trainer &operator=(Trainer &&) = default;
   virtual ~Trainer() = default;
 
-  Trainer() : l2_strength_(0), clip_threshold_(0) {}
+  Trainer() : epoch_(0), l2_strength_(0), clip_threshold_(0) {}
+
+  /**
+   * Retrieves current epoch.
+   * @return Current epoch.
+   */
+  unsigned get_epoch() const { return epoch_; }
+
+  /**
+   * Sets current epoch.
+   * @param epoch New epoch.
+   */
+  void set_epoch(unsigned epoch) { epoch_ = epoch; }
+
+  /**
+   * Retrieves current L2 decay strength.
+   * @return Current L2 decay strength.
+   */
+  float get_weight_decay() const { return l2_strength_; }
 
   /**
    * Sets L2 decay strength.
+   * @param strength New L2 decay strength.
+   * @remarks L2 decay will be enabled only if the strength is greater than 0.
    */
   void set_weight_decay(float strength) { l2_strength_ = strength; }
 
   /**
+   * Retrieves current gradient clipping threshold.
+   * @return Current gradient clipping threshold.
+   */
+  float get_gradient_clipping() const { return clip_threshold_; }
+
+  /**
    * Sets gradient clipping threshold.
+   * @param threshold New clipping threshold.
+   * @remarks Gradient clipping will be enabled only if the threshold is greater
+   *          than 0.
    */
   void set_gradient_clipping(float threshold) { clip_threshold_ = threshold; }
 
@@ -48,6 +77,7 @@ public:
   void update(float scale);
 
 private:
+  unsigned epoch_;
   float l2_strength_;
   float clip_threshold_;
   std::unordered_map<std::string, Parameter *> params_;
@@ -64,11 +94,6 @@ private:
    * @param scale Additional learning rate scaling factor.
    */
   virtual void update_parameter(float scale, Parameter &param) = 0;
-
-  /**
-   * Updates internal states of the trainer.
-   */
-  virtual void update_epoch() = 0;
 };
 
 }  // namespace primitiv

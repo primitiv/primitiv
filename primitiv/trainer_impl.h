@@ -10,7 +10,6 @@ namespace trainers {
 private: \
   void configure_parameter(Parameter &param) override; \
   void update_parameter(float scale, Parameter &param) override; \
-  void update_epoch() override;
 
 /**
  * Simple stochastic gradient descent.
@@ -53,7 +52,7 @@ public:
   Adam(
       float alpha = 0.001, float beta1 = 0.9, float beta2 = 0.999,
       float eps = 1e-8)
-    : alpha_(alpha), beta1_(beta1), beta2_(beta2), eps_(eps), epoch_(1) {}
+    : alpha_(alpha), beta1_(beta1), beta2_(beta2), eps_(eps) {}
 
   /**
    * Returns the hyperparameter alpha.
@@ -79,18 +78,11 @@ public:
    */
   float eps() const { return eps_; }
 
-  /**
-   * Returns the current epoch.
-   * @return The value of epoch.
-   */
-  unsigned epoch() const { return epoch_; }
-
 private:
   float alpha_;
   float beta1_;
   float beta2_;
   float eps_;
-  unsigned epoch_;
 };
 
 #undef DECL_DEFAULTS

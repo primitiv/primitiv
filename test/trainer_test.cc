@@ -40,9 +40,22 @@ TEST_F(TrainerTest, CheckAddParameter) {
   EXPECT_THROW(trainer.add_parameter(param4), Error);
 }
 
+TEST_F(TrainerTest, CheckEpoch) {
+  trainers::SGD trainer;
+  ASSERT_EQ(0u, trainer.get_epoch());
+  for (unsigned i = 1; i < 10; ++i) {
+    trainer.update(1);
+    EXPECT_EQ(i, trainer.get_epoch());
+  }
+  trainer.set_epoch(0);
+  EXPECT_EQ(0u, trainer.get_epoch());
+}
+
 TEST_F(TrainerTest, CheckWeightDecay) {
   trainers::SGD trainer;
+  ASSERT_EQ(.0f, trainer.get_weight_decay());
   trainer.set_weight_decay(.1);
+  EXPECT_EQ(.1f, trainer.get_weight_decay());
 
   Parameter param("param1", {2, 2}, {1, 2, 3, 4}, dev);
   trainer.add_parameter(param);
@@ -57,7 +70,9 @@ TEST_F(TrainerTest, CheckWeightDecay) {
 
 TEST_F(TrainerTest, CheckGradientClipping) {
   trainers::SGD trainer;
+  ASSERT_EQ(.0f, trainer.get_gradient_clipping());
   trainer.set_gradient_clipping(4);
+  ASSERT_EQ(4.f, trainer.get_gradient_clipping());
 
   Parameter param("param1", {2, 2}, dev);
   trainer.add_parameter(param);
