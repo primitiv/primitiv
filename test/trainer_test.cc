@@ -18,10 +18,11 @@ protected:
 };
 
 TEST_F(TrainerTest, CheckAddParameter) {
+  Device::set_default_device(dev);
   trainers::SGD trainer;
-  Parameter param1("param1", {2, 2}, dev);
-  Parameter param2("param2", {2, 2}, dev);
-  Parameter param3("param3", {2, 2}, dev);
+  Parameter param1("param1", {2, 2});
+  Parameter param2("param2", {2, 2});
+  Parameter param3("param3", {2, 2});
 
   EXPECT_NO_THROW(trainer.add_parameter(param1));
   EXPECT_THROW(trainer.add_parameter(param1), Error);
@@ -36,7 +37,7 @@ TEST_F(TrainerTest, CheckAddParameter) {
   EXPECT_THROW(trainer.add_parameter(param3), Error);
 
   // Different object but same name
-  Parameter param4("param1", {}, dev);
+  Parameter param4("param1", {});
   EXPECT_THROW(trainer.add_parameter(param4), Error);
 }
 
@@ -54,57 +55,80 @@ TEST_F(TrainerTest, CheckEpoch) {
 }
 
 TEST_F(TrainerTest, CheckWeightDecay) {
+  Device::set_default_device(dev);
   trainers::SGD trainer;
   ASSERT_EQ(.0f, trainer.get_weight_decay());
-  trainer.set_weight_decay(.1);
-  ASSERT_EQ(.1f, trainer.get_weight_decay());
 
-  Parameter param("param1", {2, 2}, {1, 2, 3, 4}, dev);
+  Parameter param("param1", {2, 2});
   trainer.add_parameter(param);
 
-  trainer.reset_gradients();
-  trainer.update(1);
-  EXPECT_TRUE(vector_match(
-        vector<float> {.99, 1.98, 2.97, 3.96}, param.value().to_vector()));
-  EXPECT_TRUE(vector_match(
-        vector<float> {.1, .2, .3, .4}, param.gradient().to_vector()));
+  struct TestCase {
+    float strength;
+    vector<float> in_value;
+    vector<float> in_grad;
+    vector<float> out_value;
+    vector<float> out_grad;
+  };
+  const vector<TestCase> test_cases {
+    {1, {1, 2, 3, 4}, {0, 0, 0, 0}, {.9, 1.8, 2.7, 3.6}, {1, 2, 3, 4}},
+    {.1, {1, 2, 3, 4}, {0, 0, 0, 0}, {.99, 1.98, 2.97, 3.96}, {.1, .2, .3, .4}},
+    {0, {1, 2, 3, 4}, {0, 0, 0, 0}, {1, 2, 3, 4}, {0, 0, 0, 0}},
+    {-.1, {1, 2, 3, 4}, {0, 0, 0, 0}, {1, 2, 3, 4}, {0, 0, 0, 0}},
+    {-1, {1, 2, 3, 4}, {0, 0, 0, 0}, {1, 2, 3, 4}, {0, 0, 0, 0}},
+  };
+
+  for (const TestCase &tc : test_cases) {
+    trainer.set_weight_decay(tc.strength);
+    ASSERT_EQ(tc.strength, trainer.get_weight_decay());
+
+    param.value().reset_by_vector(tc.in_value);
+    param.gradient().reset_by_vector(tc.in_grad);
+    trainer.update(1);
+    EXPECT_TRUE(vector_match(tc.out_value, param.value().to_vector()));
+    EXPECT_TRUE(vector_match(tc.out_grad, param.gradient().to_vector()));
+  }
 }
 
 TEST_F(TrainerTest, CheckGradientClipping) {
+  Device::set_default_device(dev);
   trainers::SGD trainer;
   ASSERT_EQ(.0f, trainer.get_gradient_clipping());
-  trainer.set_gradient_clipping(4);
-  ASSERT_EQ(4.f, trainer.get_gradient_clipping());
 
-  Parameter param("param1", {2, 2}, dev);
+  Parameter param("param1", {2, 2});
   trainer.add_parameter(param);
 
-  // Norm: 2 = sqrt(4*1^2) ... no clipping
-  param.value().reset_by_vector({1, 2, 3, 4});
-  param.gradient().reset_by_vector({1, 1, -1, -1});
-  trainer.update(1);
-  EXPECT_TRUE(vector_match(
-        vector<float> {.9, 1.9, 3.1, 4.1}, param.value().to_vector()));
-  EXPECT_TRUE(vector_match(
-        vector<float> {1, 1, -1, -1}, param.gradient().to_vector()));
+  struct TestCase {
+    float threshold;
+    vector<float> in_value;
+    vector<float> in_grad;
+    vector<float> out_value;
+    vector<float> out_grad;
+  };
+  const vector<TestCase> test_cases {
+    {4, {1, 2, 3, 4}, {1, 1, -1, -1}, {.9, 1.9, 3.1, 4.1}, {1, 1, -1, -1}},
+    {4, {1, 2, 3, 4}, {2, 2, -2, -2}, {.8, 1.8, 3.2, 4.2}, {2, 2, -2, -2}},
+    {4, {1, 2, 3, 4}, {3, 3, -3, -3}, {.8, 1.8, 3.2, 4.2}, {2, 2, -2, -2}},
+    {2, {1, 2, 3, 4}, {1, 1, -1, -1}, {.9, 1.9, 3.1, 4.1}, {1, 1, -1, -1}},
+    {2, {1, 2, 3, 4}, {2, 2, -2, -2}, {.9, 1.9, 3.1, 4.1}, {1, 1, -1, -1}},
+    {2, {1, 2, 3, 4}, {3, 3, -3, -3}, {.9, 1.9, 3.1, 4.1}, {1, 1, -1, -1}},
+    {0, {1, 2, 3, 4}, {1, 1, -1, -1}, {.9, 1.9, 3.1, 4.1}, {1, 1, -1, -1}},
+    {0, {1, 2, 3, 4}, {2, 2, -2, -2}, {.8, 1.8, 3.2, 4.2}, {2, 2, -2, -2}},
+    {0, {1, 2, 3, 4}, {3, 3, -3, -3}, {.7, 1.7, 3.3, 4.3}, {3, 3, -3, -3}},
+    {-1, {1, 2, 3, 4}, {1, 1, -1, -1}, {.9, 1.9, 3.1, 4.1}, {1, 1, -1, -1}},
+    {-1, {1, 2, 3, 4}, {2, 2, -2, -2}, {.8, 1.8, 3.2, 4.2}, {2, 2, -2, -2}},
+    {-1, {1, 2, 3, 4}, {3, 3, -3, -3}, {.7, 1.7, 3.3, 4.3}, {3, 3, -3, -3}},
+  };
 
-  // Norm: 4 = sqrt(4*2^2) ... threshold
-  param.value().reset_by_vector({1, 2, 3, 4});
-  param.gradient().reset_by_vector({2, 2, -2, -2});
-  trainer.update(1);
-  EXPECT_TRUE(vector_match(
-        vector<float> {.8, 1.8, 3.2, 4.2}, param.value().to_vector()));
-  EXPECT_TRUE(vector_match(
-        vector<float> {2, 2, -2, -2}, param.gradient().to_vector()));
+  for (const TestCase &tc : test_cases) {
+    trainer.set_gradient_clipping(tc.threshold);
+    ASSERT_EQ(tc.threshold, trainer.get_gradient_clipping());
 
-  // Norm: 6 = sqrt(4*3^2) ... clipping
-  param.value().reset_by_vector({1, 2, 3, 4});
-  param.gradient().reset_by_vector({3, 3, -3, -3});
-  trainer.update(1);
-  EXPECT_TRUE(vector_match(
-        vector<float> {.8, 1.8, 3.2, 4.2}, param.value().to_vector()));
-  EXPECT_TRUE(vector_match(
-        vector<float> {2, 2, -2, -2}, param.gradient().to_vector()));
+    param.value().reset_by_vector(tc.in_value);
+    param.gradient().reset_by_vector(tc.in_grad);
+    trainer.update(1);
+    EXPECT_TRUE(vector_match(tc.out_value, param.value().to_vector()));
+    EXPECT_TRUE(vector_match(tc.out_grad, param.gradient().to_vector()));
+  }
 }
 
 }  // namespace primitiv
