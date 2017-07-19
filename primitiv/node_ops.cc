@@ -98,7 +98,7 @@ Node transpose(const Node &x) {
 }
 
 Node matmul(const Node &a, const Node &b) {
-  return REGX(a, MatrixMultiply(), {a, b});
+  return REGX(a, MatrixMultiply(), a, b);
 }
 
 Node sqrt(const Node &x) {
@@ -189,7 +189,7 @@ Node broadcast(const Node &x, unsigned dim, unsigned size) {
 }
 
 Node softmax_cross_entropy(const Node &x, const Node &t, unsigned dim) {
-  return REGX(x, SoftmaxCrossEntropy(dim), {x, t});
+  return REGX(x, SoftmaxCrossEntropy(dim), x, t);
 }
 
 Node softmax_cross_entropy(const Node &x, unsigned dim, const std::vector<unsigned> &ids) {
