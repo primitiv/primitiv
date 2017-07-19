@@ -39,14 +39,6 @@ Graph::~Graph() {
   if (default_graph_ == this) {
     default_graph_ = nullptr;
   }
-
-  // Removes all allocated objects.
-  for (FunctionInfo &f : funcs_) {
-    for (NodeInfo &n : f.rets) {
-      delete n.value;
-      delete n.grad;
-    }
-  }
 }
 
 #define CHECK_NODE(n) { \
@@ -98,9 +90,11 @@ Node Graph::add_function(
   }
 
   // Make nodes of return values.
-  vector<NodeInfo> rets {
-      { move(ret_shape), *ret_device, nullptr, nullptr, vector<unsigned>() },
-  };
+  vector<NodeInfo> rets;
+  rets.emplace_back(NodeInfo {
+      move(ret_shape), *ret_device,
+      std::unique_ptr<Tensor>(), std::unique_ptr<Tensor>(),
+      vector<unsigned>() });
 
   // Updates the graph.
   const unsigned ret_fid = funcs_.size();
@@ -126,13 +120,13 @@ const Tensor &Graph::forward(const Node &node) {
     for (unsigned i = 0; i < f.args.size(); ++i) {
       const Address &arg = f.args[i];
       forward_recursive(arg.fid);
-      arg_values[i] = funcs_[arg.fid].rets[arg.vid].value;
+      arg_values[i] = funcs_[arg.fid].rets[arg.vid].value.get();
     }
 
     // Calculates results.
-    Tensor *v = new Tensor(f.func->forward(arg_values));
-    f.rets[0].value = v;
-    f.rets[0].grad = new Tensor(v->device().new_tensor(v->shape(), 0));
+    std::unique_ptr<Tensor> v(new Tensor(f.func->forward(arg_values)));
+    f.rets[0].grad.reset(new Tensor(v->device().new_tensor(v->shape(), 0)));
+    f.rets[0].value = std::move(v);
   };
 
   forward_recursive(node.fid_);
@@ -168,8 +162,8 @@ void Graph::backward(const Node &node) {
     for (unsigned i = 0; i < arg_size; ++i) {
       const Address &arg = cur_f.args[i];
       NodeInfo &arg_n = funcs_[arg.fid].rets[arg.vid];
-      arg_values[i] = arg_n.value;
-      arg_grads[i] = arg_n.grad;
+      arg_values[i] = arg_n.value.get();
+      arg_grads[i] = arg_n.grad.get();
     }
 
     // Propagetes the gradient from this node.
@@ -190,14 +184,14 @@ Device &Graph::get_device(const Node &node) const {
 
 const Tensor &Graph::get_value(const Node &node) const {
   CHECK_NODE(node);
-  const Tensor *ret = ACCESS(node).value;
+  const std::unique_ptr<Tensor> &ret = ACCESS(node).value;
   if (!ret) THROW_ERROR("Node is still not calculated.");
   return *ret;
 }
 
 const Tensor &Graph::get_gradient(const Node &node) const {
   CHECK_NODE(node);
-  const Tensor *ret = ACCESS(node).grad;
+  const std::unique_ptr<Tensor> &ret = ACCESS(node).grad;
   if (!ret) THROW_ERROR("Node is still not calculated.");
   return *ret;
 }

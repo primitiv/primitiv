@@ -225,8 +225,8 @@ private:
   struct NodeInfo {
     Shape shape;
     Device &device;
-    Tensor *value;
-    Tensor *grad;
+    std::unique_ptr<Tensor> value;
+    std::unique_ptr<Tensor> grad;
     std::vector<unsigned> sinks;
   };
 
