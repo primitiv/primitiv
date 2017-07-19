@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_GRAPH_H_
 #define PRIMITIV_GRAPH_H_
 
+#include <memory>
 #include <vector>
 #include <primitiv/shape.h>
 
@@ -142,7 +143,8 @@ public:
    *        computation graph.
    * @return A new Node object of the resulting value.
    */
-  Node add_function(Function *func, const std::vector<Node> &args);
+  Node add_function(
+      std::unique_ptr<Function> &&func, const std::vector<Node> &args);
 
   /**
    * Calculates the value of given node.
@@ -233,7 +235,7 @@ private:
    * function, its arguments, and its return values.
    */
   struct FunctionInfo {
-    Function *func;
+    std::unique_ptr<Function> func;
     std::vector<Address> args;
     std::vector<NodeInfo> rets;
   };

@@ -5,6 +5,7 @@
 // the primitiv library.
 #include <primitiv/cpu_device.h>
 #include <primitiv/error.h>
+#include <primitiv/function.h>
 #include <primitiv/graph.h>
 #include <primitiv/initializer_impl.h>
 #include <primitiv/node_ops.h>

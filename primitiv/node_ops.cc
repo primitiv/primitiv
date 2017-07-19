@@ -10,138 +10,143 @@
 
 namespace F = primitiv::functions;
 
-#define REG(x) (x).graph().add_function
+#define REG(g, f, ...) \
+  g.add_function(std::unique_ptr<Function>(new F::f), {__VA_ARGS__})
+
+#define REGX(x, f, ...) REG((x).graph(), f, __VA_ARGS__)
 
 namespace primitiv {
 
-Node operator+(const Node &x) { return REG(x)(new F::Positive(), {x}); }
-Node operator-(const Node &x) { return REG(x)(new F::Negative(), {x}); }
-Node operator+(const Node &x, float k) { return REG(x)(new F::AddConst(k), {x}); }
-Node operator+(float k, const Node &x) { return REG(x)(new F::AddConst(k), {x}); }
+Node operator+(const Node &x) { return REGX(x, Positive(), x); }
+Node operator-(const Node &x) { return REGX(x, Negative(), x); }
+
+Node operator+(const Node &x, float k) { return REGX(x, AddConst(k), x); }
+Node operator+(float k, const Node &x) { return REGX(x, AddConst(k), x); }
 
 Node operator+(const Node &a, const Node &b) {
-  if (a.shape().is_scalar()) return REG(a)(new F::AddScalar(), {b, a});
-  else if (b.shape().is_scalar()) return REG(a)(new F::AddScalar(), {a, b});
-  else return REG(a)(new F::Add(), {a, b});
+  if (a.shape().is_scalar()) return REGX(a, AddScalar(), b, a);
+  else if (b.shape().is_scalar()) return REGX(a, AddScalar(), a, b);
+  else return REGX(a, Add(), a, b);
 }
 
-Node operator-(const Node &x, float k) { return REG(x)(new F::SubtractConstR(k), {x}); }
-Node operator-(float k, const Node &x) { return REG(x)(new F::SubtractConstL(k), {x}); }
+Node operator-(const Node &x, float k) { return REGX(x, SubtractConstR(k), x); }
+Node operator-(float k, const Node &x) { return REGX(x, SubtractConstL(k), x); }
 
 Node operator-(const Node &a, const Node &b) {
-  if (a.shape().is_scalar()) return REG(a)(new F::SubtractScalarL(), {b, a});
-  else if (b.shape().is_scalar()) return REG(a)(new F::SubtractScalarR(), {a, b});
-  else return REG(a)(new F::Subtract(), {a, b});
+  if (a.shape().is_scalar()) return REGX(a, SubtractScalarL(), b, a);
+  else if (b.shape().is_scalar()) return REGX(a, SubtractScalarR(), a, b);
+  else return REGX(a, Subtract(), a, b);
 }
 
-Node operator*(const Node &x, float k) { return REG(x)(new F::MultiplyConst(k), {x}); }
-Node operator*(float k, const Node &x) { return REG(x)(new F::MultiplyConst(k), {x}); }
+Node operator*(const Node &x, float k) { return REGX(x, MultiplyConst(k), x); }
+Node operator*(float k, const Node &x) { return REGX(x, MultiplyConst(k), x); }
 
 Node operator*(const Node &a, const Node &b) {
-  if (a.shape().is_scalar()) return REG(a)(new F::MultiplyScalar(), {b, a});
-  else if (b.shape().is_scalar()) return REG(a)(new F::MultiplyScalar(), {a, b});
-  else return REG(a)(new F::Multiply(), {a, b});
+  if (a.shape().is_scalar()) return REGX(a, MultiplyScalar(), b, a);
+  else if (b.shape().is_scalar()) return REGX(a, MultiplyScalar(), a, b);
+  else return REGX(a, Multiply(), a, b);
 }
 
 
-Node operator/(const Node &x, float k) { return REG(x)(new F::DivideConstR(k), {x}); }
-Node operator/(float k, const Node &x) { return REG(x)(new F::DivideConstL(k), {x}); }
+Node operator/(const Node &x, float k) { return REGX(x, DivideConstR(k), x); }
+Node operator/(float k, const Node &x) { return REGX(x, DivideConstL(k), x); }
 
 Node operator/(const Node &a, const Node &b) {
-  if (a.shape().is_scalar()) return REG(a)(new F::DivideScalarL(), {b, a});
-  else if (b.shape().is_scalar()) return REG(a)(new F::DivideScalarR(), {a, b});
-  else return REG(a)(new F::Divide(), {a, b});
+  if (a.shape().is_scalar()) return REGX(a, DivideScalarL(), b, a);
+  else if (b.shape().is_scalar()) return REGX(a, DivideScalarR(), a, b);
+  else return REGX(a, Divide(), a, b);
 }
 
 namespace node_ops {
 
 Node input(const Shape &shape, const std::vector<float> &data, Device &dev, Graph &g) {
-  return g.add_function(new F::Input(shape, data, dev), {});
+  return REG(g, Input(shape, data, dev));
 }
 
 Node input(Parameter &param, Graph &g) {
-  return g.add_function(new F::ParameterInput(param), {});
+  return REG(g, ParameterInput(param));
 }
 
 Node copy(const Node &x, Device &dev) {
-  return REG(x)(new F::Copy(dev), {x});
+  return REGX(x, Copy(dev), x);
 }
 
 Node pick(const Node &x, unsigned dim, const std::vector<unsigned> &ids) {
-  return REG(x)(new F::Pick(dim, ids), {x});
+  return REGX(x, Pick(dim, ids), x);
 }
 
 Node slice(const Node &x, unsigned dim, unsigned lower, unsigned upper) {
-  return REG(x)(new F::Slice(dim, lower, upper), {x});
+  return REGX(x, Slice(dim, lower, upper), x);
 }
 
 Node concat(const std::vector<Node> &xs, unsigned dim) {
   if (xs.empty()) THROW_ERROR("No nodes to concat.");
-  return REG(xs[0])(new F::Concat(dim), xs);
+  return xs[0].graph().add_function(
+      std::unique_ptr<Function>(new F::Concat(dim)), xs);
 }
 
 Node reshape(const Node &x, const Shape &shape) {
-  return REG(x)(new F::Reshape(shape), {x});
+  return REGX(x, Reshape(shape), x);
 }
 
 Node flatten(const Node &x) {
-  return REG(x)(new F::Flatten(), {x});
+  return REGX(x, Flatten(), x);
 }
 
 Node transpose(const Node &x) {
-  return REG(x)(new F::Transpose(), {x});
+  return REGX(x, Transpose(), x);
 }
 
 Node matmul(const Node &a, const Node &b) {
-  return REG(a)(new F::MatrixMultiply(), {a, b});
+  return REGX(a, MatrixMultiply(), {a, b});
 }
 
 Node sqrt(const Node &x) {
-  return REG(x)(new F::Sqrt(), {x});
+  return REGX(x, Sqrt(), x);
 }
 
 Node exp(const Node &x) {
-  return REG(x)(new F::Exp(), {x});
+  return REGX(x, Exp(), x);
 }
 
 Node tanh(const Node &x) {
-  return REG(x)(new F::Tanh(), {x});
+  return REGX(x, Tanh(), x);
 }
 
 Node sigmoid(const Node &x) {
-  return REG(x)(new F::Sigmoid(), {x});
+  return REGX(x, Sigmoid(), x);
 }
 
 Node softplus(const Node &x) {
-  return REG(x)(new F::Softplus(), {x});
+  return REGX(x, Softplus(), x);
 }
 
 Node sin(const Node &x) {
-  return REG(x)(new F::Sin(), {x});
+  return REGX(x, Sin(), x);
 }
 
 Node cos(const Node &x) {
-  return REG(x)(new F::Cos(), {x});
+  return REGX(x, Cos(), x);
 }
 
 Node tan(const Node &x) {
-  return REG(x)(new F::Tan(), {x});
+  return REGX(x, Tan(), x);
 }
 
 Node relu(const Node &x) {
-  return REG(x)(new F::ReLU(), {x});
+  return REGX(x, ReLU(), x);
 }
 
 Node lrelu(const Node &x) {
-  return REG(x)(new F::LReLU(), {x});
+  return REGX(x, LReLU(), x);
 }
 
 Node prelu(const Node &x, float a) {
-  return REG(x)(new F::PReLU(a), {x});
+  return REGX(x, PReLU(a), x);
 }
 
 Node elu(const Node &x, float a) {
-  return REG(x)(new F::ELU(a), {x});
+  return REGX(x, ELU(a), x);
 }
 
 Node selu(const Node &x, float a, float s) {
@@ -149,7 +154,7 @@ Node selu(const Node &x, float a, float s) {
 }
 
 Node sum(const Node &x, unsigned dim) {
-  return REG(x)(new F::Sum(dim), {x});
+  return REGX(x, Sum(dim), x);
 }
 
 Node sum(const std::vector<Node> &xs) {
@@ -168,7 +173,7 @@ Node mean(const std::vector<Node> &xs) {
 }
 
 Node logsumexp(const Node &x, unsigned dim) {
-  return REG(x)(new F::LogSumExp(dim), {x});
+  return REGX(x, LogSumExp(dim), x);
 }
 
 Node log_softmax(const Node &x, unsigned dim) {
@@ -180,15 +185,15 @@ Node softmax(const Node &x, unsigned dim) {
 }
 
 Node broadcast(const Node &x, unsigned dim, unsigned size) {
-  return REG(x)(new F::Broadcast(dim, size), {x});
+  return REGX(x, Broadcast(dim, size), x);
 }
 
 Node softmax_cross_entropy(const Node &x, const Node &t, unsigned dim) {
-  return REG(x)(new F::SoftmaxCrossEntropy(dim), {x, t});
+  return REGX(x, SoftmaxCrossEntropy(dim), {x, t});
 }
 
 Node softmax_cross_entropy(const Node &x, unsigned dim, const std::vector<unsigned> &ids) {
-  return REG(x)(new F::SparseSoftmaxCrossEntropy(dim, ids), {x});
+  return REGX(x, SparseSoftmaxCrossEntropy(dim, ids), x);
 }
 
 Node dropout(const Node &x, float rate, bool enabled) {
@@ -201,7 +206,7 @@ Node dropout(const Node &x, float rate, bool enabled) {
 namespace batch {
 
 Node sum(const Node &x) {
-  return REG(x)(new F::BatchSum(), {x});
+  return REGX(x, BatchSum(), x);
 }
 
 Node mean(const Node &x) {
@@ -220,33 +225,33 @@ Node normalize(const Node &x) {
 }  // namespace batch
 
 Node zeros(const Shape &shape, Device &dev, Graph &g) {
-  return g.add_function(new F::Constant(shape, 0, dev), {});
+  return REG(g, Constant(shape, 0, dev));
 }
 
 Node ones(const Shape &shape, Device &dev, Graph &g) {
-  return g.add_function(new F::Constant(shape, 1, dev), {});
+  return REG(g, Constant(shape, 1, dev));
 }
 
 Node constant(const Shape &shape, float k, Device &dev, Graph &g) {
-  return g.add_function(new F::Constant(shape, k, dev), {});
+  return REG(g, Constant(shape, k, dev));
 }
 
 namespace random {
 
 Node bernoulli(const Shape &shape, float p, Device &dev, Graph &g) {
-  return g.add_function(new F::RandomBernoulli(shape, p, dev), {});
+  return REG(g, RandomBernoulli(shape, p, dev));
 }
 
 Node uniform(const Shape &shape, float lower, float upper, Device &dev, Graph &g) {
-  return g.add_function(new F::RandomUniform(shape, lower, upper, dev), {});
+  return REG(g, RandomUniform(shape, lower, upper, dev));
 }
 
 Node normal(const Shape &shape, float mean, float sd, Device &dev, Graph &g) {
-  return g.add_function(new F::RandomNormal(shape, mean, sd, dev), {});
+  return REG(g, RandomNormal(shape, mean, sd, dev));
 }
 
 Node log_normal(const Shape &shape, float mean, float sd, Device &dev, Graph &g) {
-  return g.add_function(new F::RandomLogNormal(shape, mean, sd, dev), {});
+  return REG(g, RandomLogNormal(shape, mean, sd, dev));
 }
 
 }  // namespace random

@@ -35,7 +35,6 @@ Graph::~Graph() {
 
   // Removes all allocated objects.
   for (FunctionInfo &f : funcs_) {
-    delete f.func;
     for (NodeInfo &n : f.rets) {
       delete n.value;
       delete n.grad;
@@ -63,7 +62,8 @@ Graph::~Graph() {
 
 #define ACCESS(n) (funcs_[n.fid_].rets[n.vid_])
 
-Node Graph::add_function(Function *func, const std::vector<Node> &args) {
+Node Graph::add_function(
+    std::unique_ptr<Function> &&func, const std::vector<Node> &args) {
   // Gathers information of args.
   vector<Address> arg_addrs(args.size());
   vector<const Shape *> arg_shapes(args.size());
@@ -105,7 +105,8 @@ Node Graph::add_function(Function *func, const std::vector<Node> &args) {
   for (const Address &arg_addr : arg_addrs) {
     funcs_[arg_addr.fid].rets[arg_addr.vid].sinks.emplace_back(ret_fid);
   }
-  funcs_.emplace_back(FunctionInfo { func, move(arg_addrs), move(rets) });
+  funcs_.emplace_back(FunctionInfo {
+      move(func), move(arg_addrs), move(rets) });
 
   return Node(*this, ret_fid, 0);
 }
