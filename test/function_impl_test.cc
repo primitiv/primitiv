@@ -200,16 +200,19 @@ TEST_F(FunctionImplTest, CheckParameterInput) {
 
   ParameterInput node(param);
   const Shape cur_shape = node.forward_shape(arg_shapes);
-  const Tensor cur_value = node.forward(arg_values);
+  // ParameterInput could not return values from forward().
+  EXPECT_THROW(node.forward(arg_values), Error);
+  const Tensor *cur_value = node.get_inner_value();
   const Tensor cur_grad = dev->new_tensor(ret_shape, 1);
   // backward() updates the gradient of `param`.
-  EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
+  EXPECT_NO_THROW(node.backward(*cur_value, cur_grad, arg_values, arg_grads));
   EXPECT_EQ("ParameterInput", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
   EXPECT_EQ(dev, node.get_device());
-  EXPECT_TRUE(vector_match(vector<float>(4, 42), cur_value.to_vector()));
+  EXPECT_TRUE(vector_match(vector<float>(4, 42), cur_value->to_vector()));
   EXPECT_TRUE(vector_match(vector<float>(4, 42), param.value().to_vector()));
   EXPECT_TRUE(vector_match(vector<float>(4, 1), param.gradient().to_vector()));
+  EXPECT_EQ(&param.value(), cur_value);
 }
 
 TEST_F(FunctionImplTest, CheckCopy) {

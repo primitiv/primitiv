@@ -39,6 +39,15 @@ public:
   virtual Device *get_device() const { return nullptr; }
 
   /**
+   * Returns the pre-calculated return value of the function if they have it.
+   * @return A pointer of the Tensor which represents the return value, or
+   *         nullptr if the function does not have such data.
+   * @remarks If this function returns nullptr, the return values of the
+   *          function could be obtained through forward().
+   */
+  virtual const Tensor *get_inner_value() const { return nullptr; }
+
+  /**
    * Calculates the forward path.
    * @param args argument tensors.
    * @return Resulting tensors.

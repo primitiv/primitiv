@@ -48,6 +48,7 @@ class ParameterInput : public primitiv::Function {
 public:
   explicit ParameterInput(Parameter &param) : param_(param) {}
   Device *get_device() const override { return &param_.device(); }
+  const Tensor *get_inner_value() const override { return &param_.value(); }
   std::string name() const override { return "ParameterInput"; }
 private:
   primitiv::Parameter &param_;

@@ -109,35 +109,47 @@ Node Graph::add_function(
 const Tensor &Graph::forward(const Node &node) {
   CHECK_NODE(node);
 
-  std::function<void(unsigned)> forward_recursive = [&](unsigned fid) {
+  std::function<const Tensor *(unsigned)> forward_recursive = [&](
+      unsigned fid) -> const Tensor * {
     FunctionInfo &f = funcs_[fid];
 
-    // Check whether the function is already calculated or not.
-    if (f.rets[0].value) return;
+    // Try to get the inner value of the function.
+    const Tensor *v = f.func->get_inner_value();
 
-    // Gathers arguments.
-    vector<const Tensor *> arg_values(f.args.size());
-    for (unsigned i = 0; i < f.args.size(); ++i) {
-      const Address &arg = f.args[i];
-      forward_recursive(arg.fid);
-      arg_values[i] = funcs_[arg.fid].rets[arg.vid].value.get();
+    // Check whether the function is already calculated or not.
+    // NOTE(odashi):
+    // Once the function is traversed, the gradient tensor becomes not nullptr.
+    if (f.rets[0].grad) return v ? v : f.rets[0].value.get();
+
+    if (!v) {
+      // The function does not have own values,
+      // but can calculate it via forward().
+
+      // Gathers arguments.
+      vector<const Tensor *> arg_values(f.args.size());
+      for (unsigned i = 0; i < f.args.size(); ++i) {
+        const Address &arg = f.args[i];
+        arg_values[i] = forward_recursive(arg.fid);
+      }
+
+      // Calculates the value.
+      f.rets[0].value.reset(new Tensor(f.func->forward(arg_values)));
+      v = f.rets[0].value.get();
     }
 
-    // Calculates results.
-    std::unique_ptr<Tensor> v(new Tensor(f.func->forward(arg_values)));
+    // Resets gradients.
     f.rets[0].grad.reset(new Tensor(v->device().new_tensor(v->shape(), 0)));
-    f.rets[0].value = std::move(v);
+    return v;
   };
 
-  forward_recursive(node.fid_);
-  return *ACCESS(node).value;
+  return *forward_recursive(node.fid_);
 }
 
 void Graph::backward(const Node &node) {
   CHECK_NODE(node);
 
   FunctionInfo &last_f = funcs_[node.fid_];
-  if (!last_f.rets[0].value) {
+  if (!last_f.rets[0].grad) {
     THROW_ERROR("Node is still not calculated in the forward path.");
   }
 
@@ -152,8 +164,8 @@ void Graph::backward(const Node &node) {
   for (int fid = node.fid_; fid >= 0; --fid) {
     const FunctionInfo &cur_f = funcs_[fid];
 
-    // If the value is nullptr, the function is out of the forward path.
-    if (!cur_f.rets[0].value) continue;
+    // If the gradient is nullptr, the function is out of the forward path.
+    if (!cur_f.rets[0].grad) continue;
 
     // Gather argument value/gradient tensors.
     const unsigned arg_size = cur_f.args.size();
@@ -162,7 +174,8 @@ void Graph::backward(const Node &node) {
     for (unsigned i = 0; i < arg_size; ++i) {
       const Address &arg = cur_f.args[i];
       NodeInfo &arg_n = funcs_[arg.fid].rets[arg.vid];
-      arg_values[i] = arg_n.value.get();
+      const Tensor *v = funcs_[arg.fid].func->get_inner_value();
+      arg_values[i] = v ? v : arg_n.value.get();
       arg_grads[i] = arg_n.grad.get();
     }
 
@@ -184,9 +197,14 @@ Device &Graph::get_device(const Node &node) const {
 
 const Tensor &Graph::get_value(const Node &node) const {
   CHECK_NODE(node);
-  const std::unique_ptr<Tensor> &ret = ACCESS(node).value;
-  if (!ret) THROW_ERROR("Node is still not calculated.");
-  return *ret;
+  const FunctionInfo &f = funcs_[node.fid_];
+  const NodeInfo &r = f.rets[node.vid_];
+
+  // Check gradient existence to check whether the value is calculated or not.
+  if (!r.grad) THROW_ERROR("Node is still not calculated.");
+
+  const Tensor *v = f.func->get_inner_value();
+  return v ? *v : *r.value;
 }
 
 const Tensor &Graph::get_gradient(const Node &node) const {

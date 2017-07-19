@@ -57,8 +57,8 @@ Shape ParameterInput::forward_shape(const vector<const Shape *> &args) const {
 }
 
 Tensor ParameterInput::forward(const vector<const Tensor *> &args) {
-  CHECK_ARGNUM(args, 0);
-  return param_.value();
+  THROW_ERROR(
+      "Attempted to get return values of ParameterInput via forward().");
 }
 
 void ParameterInput::backward(
