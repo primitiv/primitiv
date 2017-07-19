@@ -1,3 +1,10 @@
+/*
+ * NOTE(odashi):
+ * Inner structure of Graph is designed to handle multivalued functions for
+ * future extensions, but for now this code handels only one results of each
+ * function.
+ */
+
 #include <config.h>
 
 #include <cstdlib>
@@ -76,8 +83,7 @@ Node Graph::add_function(
 
   // Calculates the shape of the resulting value.
   // This may throw an exception when trying an invalid operation.
-  // TODO(odashi): fix this
-  vector<Shape> ret_shapes { func->forward_shape(arg_shapes) };
+  Shape ret_shape = func->forward_shape(arg_shapes);
 
   // Retrieves the device object which manages return values itself.
   Device *ret_device = func->get_device();
@@ -92,21 +98,16 @@ Node Graph::add_function(
   }
 
   // Make nodes of return values.
-  const unsigned NUM_NODES = 1;  // TODO(odashi): fix this
-  vector<NodeInfo> rets(
-      NUM_NODES,
-      NodeInfo { Shape(), *ret_device, nullptr, nullptr, vector<unsigned>() });
-  for (unsigned i = 0; i < NUM_NODES; ++i) {
-    rets[i].shape = move(ret_shapes[i]);
-  }
+  vector<NodeInfo> rets {
+      { move(ret_shape), *ret_device, nullptr, nullptr, vector<unsigned>() },
+  };
 
   // Updates the graph.
   const unsigned ret_fid = funcs_.size();
   for (const Address &arg_addr : arg_addrs) {
     funcs_[arg_addr.fid].rets[arg_addr.vid].sinks.emplace_back(ret_fid);
   }
-  funcs_.emplace_back(FunctionInfo {
-      move(func), move(arg_addrs), move(rets) });
+  funcs_.emplace_back(FunctionInfo { move(func), move(arg_addrs), move(rets) });
 
   return Node(*this, ret_fid, 0);
 }
@@ -129,14 +130,9 @@ const Tensor &Graph::forward(const Node &node) {
     }
 
     // Calculates results.
-    // TODO(odashi): fix this.
-    vector<Tensor *> ret_values { new Tensor(f.func->forward(arg_values)) };
-    const unsigned NUM_NODES = 1;
-    for (unsigned i = 0; i < NUM_NODES; ++i) {
-      f.rets[i].value = ret_values[i];
-      f.rets[i].grad = new Tensor(
-          ret_values[i]->device().new_tensor(ret_values[i]->shape(), 0));
-    }
+    Tensor *v = new Tensor(f.func->forward(arg_values));
+    f.rets[0].value = v;
+    f.rets[0].grad = new Tensor(v->device().new_tensor(v->shape(), 0));
   };
 
   forward_recursive(node.fid_);
@@ -177,7 +173,6 @@ void Graph::backward(const Node &node) {
     }
 
     // Propagetes the gradient from this node.
-    // TODO(odashi): fix this.
     const NodeInfo &cur_n = cur_f.rets[0];
     cur_f.func->backward(*cur_n.value, *cur_n.grad, arg_values, arg_grads);
   }
