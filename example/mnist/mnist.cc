@@ -153,21 +153,21 @@ int main() {
       }
 
       trainer.reset_gradients();
-      {
-        // Constructs the graph.
-        Graph g;
-        Graph::set_default_graph(g);
-        Node y = make_graph(inputs, true);
-        Node loss = F::softmax_cross_entropy(y, 0, labels);
-        Node avg_loss = F::batch::mean(loss);
 
-        // Dump computation graph at the first time.
-        //if (epoch == 0 && batch == 0) g.dump();
+      // Constructs the graph.
+      Graph g;
+      Graph::set_default_graph(g);
+      Node y = make_graph(inputs, true);
+      Node loss = F::softmax_cross_entropy(y, 0, labels);
+      Node avg_loss = F::batch::mean(loss);
 
-        // Forward, backward, and updates parameters.
-        g.forward(avg_loss);
-        g.backward(avg_loss);
-      }
+      // Dump computation graph at the first time.
+      //if (epoch == 0 && batch == 0) g.dump();
+
+      // Forward, backward, and updates parameters.
+      g.forward(avg_loss);
+      g.backward(avg_loss);
+
       trainer.update(1);
     }
 

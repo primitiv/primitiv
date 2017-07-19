@@ -271,14 +271,12 @@ int main() {
             ofs + BATCH_SIZE, num_train_sents));
       const auto batch = ::make_batch(train_corpus, batch_ids, eos_id);
       trainer.reset_gradients();
-      {
-        Graph g;
-        Graph::set_default_graph(g);
-        const auto outputs = lm.forward(batch, true);
-        const auto loss = lm.forward_loss(outputs, batch);
-        train_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
-        g.backward(loss);
-      }
+      Graph g;
+      Graph::set_default_graph(g);
+      const auto outputs = lm.forward(batch, true);
+      const auto loss = lm.forward_loss(outputs, batch);
+      train_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
+      g.backward(loss);
       trainer.update(1);
       cout << ofs << '\r' << flush;
     }
