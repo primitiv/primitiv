@@ -20,7 +20,9 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <queue>
 #include <random>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -43,25 +45,39 @@ static const unsigned MAX_EPOCH = 100;
 static const float DROPOUT_RATE = 0.5;
 
 // Gathers the set of words from space-separated corpus.
-unordered_map<string, unsigned> make_vocab(const string &filename) {
+unordered_map<string, unsigned> make_vocab(
+    const string &filename, unsigned size) {
+  if (size < 3) {
+    cerr << "vocab size should be equal-to or grater-than 3." << endl;
+    exit(1);
+  }
   ifstream ifs(filename);
   if (!ifs.is_open()) {
     cerr << "File could not be opened: " << filename << endl;
     exit(1);
   }
-  unordered_map<string, unsigned> vocab;
-  vocab.emplace(make_pair("<unk>", 0));
+  unordered_map<string, unsigned> freq;
   string line, word;
   while (getline(ifs, line)) {
-    line = "<s> " + line + " <s>";
     stringstream ss(line);
-    while (getline(ss, word, ' ')) {
-      if (vocab.find(word) == vocab.end()) {
-        const unsigned id = vocab.size();
-        vocab.emplace(make_pair(word, id));
-      }
-    }
+    while (getline(ss, word, ' ')) ++freq[word];
   }
+  using freq_t = pair<string, unsigned>;
+  auto cmp = [](const freq_t &a, const freq_t &b) {
+    return a.second < b.second;
+  };
+  priority_queue<freq_t, vector<freq_t>, decltype(cmp)> q(cmp);
+  for (const auto &x : freq) q.push(x);
+
+  unordered_map<string, unsigned> vocab;
+  vocab.insert(make_pair("<unk>", 0));
+  vocab.insert(make_pair("<bos>", 1));
+  vocab.insert(make_pair("<eos>", 2));
+  for (unsigned i = 3; i < size; ++i) {
+    vocab.insert(make_pair(q.top().first, i));
+    q.pop();
+  }
+
   return vocab;
 }
 
@@ -76,7 +92,7 @@ vector<vector<unsigned>> load_corpus(
   vector<vector<unsigned>> corpus;
   string line, word;
   while (getline(ifs, line)) {
-    line = "<s> " + line + " <s>";
+    line = "<bos> " + line + " <eos>";
     stringstream ss (line);
     vector<unsigned> sentence;
     while (getline(ss, word, ' ')) {
@@ -92,7 +108,7 @@ vector<vector<unsigned>> load_corpus(
 // Counts output labels in the corpus.
 unsigned count_labels(const vector<vector<unsigned>> &corpus) {
   unsigned ret = 0;
-  for (const auto &sent :corpus) ret += sent.size() - 1;
+  for (const auto &sent :corpus) ret += sent.size() - 1;  // w/o <bos>
   return ret;
 }
 
@@ -193,10 +209,10 @@ public:
   // Forward function for training encoder-decoder. Both source and target data
   // should be arranged as:
   // src_tokens, trg_tokens = {
-  //   {sent1_word1, sent2_word1, ..., sentN_word1},  // 1st token (<s>)
+  //   {sent1_word1, sent2_word1, ..., sentN_word1},  // 1st token (<bos>)
   //   {sent1_word2, sent2_word2, ..., sentN_word2},  // 2nd token (first word)
   //   ...,
-  //   {sent1_wordM, sent2_wordM, ..., sentN_wordM},  // last token (<s>)
+  //   {sent1_wordM, sent2_wordM, ..., sentN_wordM},  // last token (<eos>)
   // };
   Node forward_loss(
       const vector<vector<unsigned>> &src_tokens,
@@ -207,9 +223,9 @@ public:
     Node why = F::input(pwhy_);
     Node by = F::input(pby_);
 
-    // Reversed encoding (w/o first <s>)
+    // Reversed encoding
     src_lstm_.init();
-    for (unsigned i = src_tokens.size(); i > 1; --i) {
+    for (unsigned i = src_tokens.size(); i > 0; --i) {
       Node x = F::pick(src_lookup, 1, src_tokens[i - 1]);
       x = F::dropout(x, DROPOUT_RATE, train);
       src_lstm_.forward(x);
@@ -239,12 +255,12 @@ private:
 
 int main() {
   // Loads vocab.
-  const auto src_vocab = ::make_vocab("data/train.en");
-  const auto trg_vocab = ::make_vocab("data/train.ja");
+  const auto src_vocab = ::make_vocab("data/train.en", 4000);
+  const auto trg_vocab = ::make_vocab("data/train.ja", 5000);
   cout << "#src_vocab: " << src_vocab.size() << endl;
   cout << "#trg_vocab: " << trg_vocab.size() << endl;
-  const unsigned src_eos_id = src_vocab.at("<s>");
-  const unsigned trg_eos_id = trg_vocab.at("<s>");
+  const unsigned src_eos_id = src_vocab.at("<eos>");
+  const unsigned trg_eos_id = trg_vocab.at("<eos>");
 
   // Loads all corpus.
   const auto train_src_corpus = ::load_corpus("data/train.en", src_vocab);
