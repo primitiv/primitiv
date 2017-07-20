@@ -48,7 +48,6 @@ unordered_map<string, unsigned> make_vocab(const string &filename) {
   }
   unordered_map<string, unsigned> vocab;
   string line, word;
-  unsigned lno = 0;
   while (getline(ifs, line)) {
     line = "<s>" + line + "<s>";
     stringstream ss(line);
