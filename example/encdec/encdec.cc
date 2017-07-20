@@ -30,7 +30,6 @@
 #include <primitiv/primitiv.h>
 #include <primitiv/primitiv_cuda.h>
 
-using primitiv::trainers::Adam;
 namespace F = primitiv::node_ops;
 namespace I = primitiv::initializers;
 using namespace primitiv;
@@ -44,11 +43,11 @@ static const unsigned BATCH_SIZE = 64;
 static const unsigned MAX_EPOCH = 100;
 static const float DROPOUT_RATE = 0.5;
 
-// Gathers the set of words from space-separated corpus.
+// Gathers the set of words from space-separated corpus and makes a vocabulary.
 unordered_map<string, unsigned> make_vocab(
     const string &filename, unsigned size) {
   if (size < 3) {
-    cerr << "vocab size should be equal-to or grater-than 3." << endl;
+    cerr << "vocab size should be equal-to or greater-than 3." << endl;
     exit(1);
   }
   ifstream ifs(filename);
@@ -56,12 +55,16 @@ unordered_map<string, unsigned> make_vocab(
     cerr << "File could not be opened: " << filename << endl;
     exit(1);
   }
+
+  // Counts all word existences.
   unordered_map<string, unsigned> freq;
   string line, word;
   while (getline(ifs, line)) {
     stringstream ss(line);
     while (getline(ss, word, ' ')) ++freq[word];
   }
+
+  // Sorting.
   using freq_t = pair<string, unsigned>;
   auto cmp = [](const freq_t &a, const freq_t &b) {
     return a.second < b.second;
@@ -69,6 +72,7 @@ unordered_map<string, unsigned> make_vocab(
   priority_queue<freq_t, vector<freq_t>, decltype(cmp)> q(cmp);
   for (const auto &x : freq) q.push(x);
 
+  // Chooses top size-3 frequent words to make the vocabulary.
   unordered_map<string, unsigned> vocab;
   vocab.insert(make_pair("<unk>", 0));
   vocab.insert(make_pair("<bos>", 1));
@@ -81,9 +85,11 @@ unordered_map<string, unsigned> make_vocab(
   return vocab;
 }
 
-// Generates word ID list using corpus and vocab.
+// Generates word ID list using a corpus and a vocab.
+// All out-of-vocab words are replaced to <unk>.
 vector<vector<unsigned>> load_corpus(
     const string &filename, const unordered_map<string, unsigned> &vocab) {
+  const unsigned unk_id = vocab.at("<unk>");
   ifstream ifs(filename);
   if (!ifs.is_open()) {
     cerr << "File could not be opened: " << filename << endl;
@@ -98,7 +104,7 @@ vector<vector<unsigned>> load_corpus(
     while (getline(ss, word, ' ')) {
       const auto it = vocab.find(word);
       if (it != vocab.end()) sentence.emplace_back(it->second);
-      else sentence.emplace_back(0);  // <unk>
+      else sentence.emplace_back(unk_id);
     }
     corpus.emplace_back(move(sentence));
   }
@@ -113,6 +119,23 @@ unsigned count_labels(const vector<vector<unsigned>> &corpus) {
 }
 
 // Extracts a minibatch from loaded corpus
+// NOTE(odashi):
+// Lengths of all sentences are adjusted to the maximum one in the minibatch.
+// All additional subsequences are filled by <eos>. E.g.,
+//   input: {
+//     {<bos>, w1, <eos>},
+//     {<bos>, w1, w2, w3, w4, <eos>},
+//     {<bos>, w1, w2, <eos>},
+//     {<bos>, w1, w2, w3, <eos>},
+//   }
+//   output: {
+//     {<bos>, <bos>, <bos>, <bos>},
+//     {   w1,    w1,    w1,    w1},
+//     {<eos>,    w2,    w2,    w2},
+//     {<eos>,    w3, <eos>,    w3},
+//     {<eos>,    w4, <eos>, <eos>},
+//     {<eos>, <eos>, <eos>, <eos>},
+//   }
 vector<vector<unsigned>> make_batch(
     const vector<vector<unsigned>> &corpus,
     const vector<unsigned> &sent_ids,
@@ -141,114 +164,118 @@ vector<vector<unsigned>> make_batch(
 //   c[t] = i * j + f * c[t-1]
 //   h[t] = o * tanh(c[t])
 class LSTM {
-  public:
-    LSTM(const string &name,
-        unsigned in_size, unsigned out_size, Trainer &trainer)
-      : out_size_(out_size)
-      , pwxh_(name + "_wxh", {4 * out_size, in_size}, I::XavierUniform())
-      , pwhh_(name + "_whh", {4 * out_size, out_size}, I::XavierUniform())
-      , pbh_(name + "_bh", {4 * out_size}, I::Constant(0)) {
-        trainer.add_parameter(pwxh_);
-        trainer.add_parameter(pwhh_);
-        trainer.add_parameter(pbh_);
-      }
+public:
+  LSTM(const string &name, unsigned in_size, unsigned out_size)
+    : name_(name)
+    , out_size_(out_size)
+    , pwxh_(name + "_wxh", {4 * out_size, in_size}, I::XavierUniform())
+    , pwhh_(name + "_whh", {4 * out_size, out_size}, I::XavierUniform())
+    , pbh_(name + "_bh", {4 * out_size}, I::Constant(0)) {}
 
-    // Initializes internal values.
-    void init(const Node &init_c = Node()) {
-      wxh_ = F::input(pwxh_);
-      whh_ = F::input(pwhh_);
-      bh_ = F::input(pbh_);
-      if (!init_c.valid()) {
-        h_ = c_ = F::zeros({out_size_});
-      } else {
-        c_ = init_c;
-        h_ = F::tanh(c_);
-      }
-    }
+  // Adds parameters to the trainer.
+  void register_training(Trainer &trainer) {
+    trainer.add_parameter(pwxh_);
+    trainer.add_parameter(pwhh_);
+    trainer.add_parameter(pbh_);
+  }
 
-    // Forward one step.
-    Node forward(const Node &x) {
-      const Node u = F::matmul(wxh_, x) + F::matmul(whh_, h_) + bh_;
-      const Node i = F::sigmoid(F::slice(u, 0, 0, out_size_));
-      const Node f = F::sigmoid(F::slice(u, 0, out_size_, 2 * out_size_));
-      const Node o = F::sigmoid(F::slice(u, 0, 2 * out_size_, 3 * out_size_));
-      const Node j = F::tanh(F::slice(u, 0, 3 * out_size_, 4 * out_size_));
-      c_ = i * j + f * c_;
-      h_ = o * F::tanh(c_);
-      return h_;
-    }
+  // Initializes internal values.
+  void init(const Node &init_c = Node(), const Node &init_h = Node()) {
+    wxh_ = F::input(pwxh_);
+    whh_ = F::input(pwhh_);
+    bh_ = F::input(pbh_);
+    c_ = init_c.valid() ? init_c : F::zeros({out_size_});
+    h_ = init_h.valid() ? init_h : F::zeros({out_size_});
+  }
 
-    // Retrieves current cell.
-    Node get_cell() const { return c_; }
+  // One step forwarding.
+  Node forward(const Node &x) {
+    const Node u = F::matmul(wxh_, x) + F::matmul(whh_, h_) + bh_;
+    const Node i = F::sigmoid(F::slice(u, 0, 0, out_size_));
+    const Node f = F::sigmoid(F::slice(u, 0, out_size_, 2 * out_size_));
+    const Node o = F::sigmoid(F::slice(u, 0, 2 * out_size_, 3 * out_size_));
+    const Node j = F::tanh(F::slice(u, 0, 3 * out_size_, 4 * out_size_));
+    c_ = i * j + f * c_;
+    h_ = o * F::tanh(c_);
+    return h_;
+  }
 
-  private:
-    unsigned out_size_;
-    Parameter pwxh_, pwhh_, pbh_;
-    Node wxh_, whh_, bh_, h_, c_;
+  // Retrieves current states.
+  Node get_c() const { return c_; }
+  Node get_h() const { return h_; }
+
+private:
+  string name_;
+  unsigned out_size_;
+  Parameter pwxh_, pwhh_, pbh_;
+  Node wxh_, whh_, bh_, h_, c_;
 };
 
 // Encoder-decoder translation model.
 class EncoderDecoder {
 public:
   EncoderDecoder(unsigned src_vocab_size, unsigned trg_vocab_size,
-      unsigned embed_size, unsigned hidden_size, Trainer &trainer)
-    : psrc_lookup_(
-        "src_lookup", {embed_size, src_vocab_size}, I::XavierUniform())
-    , ptrg_lookup_(
-        "trg_lookup", {embed_size, trg_vocab_size}, I::XavierUniform())
+      unsigned embed_size, unsigned hidden_size, float dropout_rate)
+    : dropout_rate_(dropout_rate)
+    , psrc_lookup_("src_lookup", {embed_size, src_vocab_size}, I::XavierUniform())
+    , ptrg_lookup_("trg_lookup", {embed_size, trg_vocab_size}, I::XavierUniform())
     , pwhy_("why", {trg_vocab_size, hidden_size}, I::XavierUniform())
     , pby_("by", {trg_vocab_size}, I::Constant(0))
-    , src_lstm_("src_lstm", embed_size, hidden_size, trainer)
-    , trg_lstm_("trg_lstm", embed_size, hidden_size, trainer) {
-      trainer.add_parameter(psrc_lookup_);
-      trainer.add_parameter(ptrg_lookup_);
-      trainer.add_parameter(pwhy_);
-      trainer.add_parameter(pby_);
-    }
+    , src_lstm_("src_lstm", embed_size, hidden_size)
+    , trg_lstm_("trg_lstm", embed_size, hidden_size) {}
 
-  // Forward function for training encoder-decoder. Both source and target data
-  // should be arranged as:
-  // src_tokens, trg_tokens = {
-  //   {sent1_word1, sent2_word1, ..., sentN_word1},  // 1st token (<bos>)
-  //   {sent1_word2, sent2_word2, ..., sentN_word2},  // 2nd token (first word)
-  //   ...,
-  //   {sent1_wordM, sent2_wordM, ..., sentN_wordM},  // last token (<eos>)
-  // };
-  Node forward_loss(
-      const vector<vector<unsigned>> &src_tokens,
-      const vector<vector<unsigned>> &trg_tokens,
-      bool train) {
+  // Adds parameters to the trainer.
+  void register_training(Trainer &trainer) {
+    trainer.add_parameter(psrc_lookup_);
+    trainer.add_parameter(ptrg_lookup_);
+    trainer.add_parameter(pwhy_);
+    trainer.add_parameter(pby_);
+    src_lstm_.register_training(trainer);
+    trg_lstm_.register_training(trainer);
+  }
+
+  // Encodes source sentences and prepare internal states.
+  void encode(const vector<vector<unsigned>> &src_sents, bool train) {
+    // Reversed encoding.
     Node src_lookup = F::input(psrc_lookup_);
-    Node trg_lookup = F::input(ptrg_lookup_);
-    Node why = F::input(pwhy_);
-    Node by = F::input(pby_);
-
-    // Reversed encoding
     src_lstm_.init();
-    for (unsigned i = src_tokens.size(); i > 0; --i) {
-      Node x = F::pick(src_lookup, 1, src_tokens[i - 1]);
-      x = F::dropout(x, DROPOUT_RATE, train);
+    for (unsigned i = src_sents.size(); i > 0; --i) {
+      Node x = F::pick(src_lookup, 1, src_sents[i - 1]);
+      x = F::dropout(x, dropout_rate_, train);
       src_lstm_.forward(x);
     }
 
-    // Decoding
-    vector<Node> losses;
-    trg_lstm_.init(src_lstm_.get_cell());
-    for (unsigned i = 0; i < trg_tokens.size() - 1; ++i) {
-      Node x = F::pick(trg_lookup, 1, trg_tokens[i]);
-      x = F::dropout(x, DROPOUT_RATE, train);
-      Node h = trg_lstm_.forward(x);
-      h = F::dropout(h, DROPOUT_RATE, train);
-      Node y = F::matmul(why, h) + by;
-      losses.emplace_back(F::softmax_cross_entropy(y, 0, trg_tokens[i + 1]));
-    }
+    // Initializes decoder states.
+    trg_lookup_ = F::input(ptrg_lookup_);
+    why_ = F::input(pwhy_);
+    by_ = F::input(pby_);
+    trg_lstm_.init(src_lstm_.get_c(), src_lstm_.get_h());
+  }
 
+  // One step decoding.
+  Node decode_step(const vector<unsigned> &trg_words, bool train) {
+    Node x = F::pick(trg_lookup_, 1, trg_words);
+    x = F::dropout(x, dropout_rate_, train);
+    Node h = trg_lstm_.forward(x);
+    h = F::dropout(h, dropout_rate_, train);
+    return F::matmul(why_, h) + by_;
+  }
+
+  // Calculates the loss function over given target sentences.
+  Node loss(const vector<vector<unsigned>> &trg_sents, bool train) {
+    vector<Node> losses;
+    for (unsigned i = 0; i < trg_sents.size() - 1; ++i) {
+      Node y = decode_step(trg_sents[i], train);
+      losses.emplace_back(F::softmax_cross_entropy(y, 0, trg_sents[i + 1]));
+    }
     return F::batch::mean(F::sum(losses));
   }
 
 private:
+  float dropout_rate_;
   Parameter psrc_lookup_, ptrg_lookup_, pwhy_, pby_;
   ::LSTM src_lstm_, trg_lstm_;
+  Node trg_lookup_, why_, by_;
 };
 
 }  // namespace
@@ -281,14 +308,15 @@ int main() {
   Device::set_default_device(dev);
 
   // Trainer.
-  Adam trainer;
+  primitiv::trainers::Adam trainer;
   trainer.set_weight_decay(1e-6);
   trainer.set_gradient_clipping(5);
 
   // Our translation model.
   ::EncoderDecoder encdec(
       src_vocab.size(), trg_vocab.size(),
-      NUM_EMBED_UNITS, NUM_HIDDEN_UNITS, trainer);
+      NUM_EMBED_UNITS, NUM_HIDDEN_UNITS, DROPOUT_RATE);
+  encdec.register_training(trainer);
 
   // Batch randomizer.
   random_device rd;
@@ -320,7 +348,8 @@ int main() {
       trainer.reset_gradients();
       Graph g;
       Graph::set_default_graph(g);
-      const auto loss = encdec.forward_loss(src_batch, trg_batch, true);
+      encdec.encode(src_batch, true);
+      const auto loss = encdec.loss(trg_batch, true);
       train_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
       g.backward(loss);
       trainer.update(1);
@@ -342,7 +371,8 @@ int main() {
           valid_trg_corpus, batch_ids, trg_eos_id);
       Graph g;
       Graph::set_default_graph(g);
-      const auto loss = encdec.forward_loss(src_batch, trg_batch, false);
+      encdec.encode(src_batch, false);
+      const auto loss = encdec.loss(trg_batch, false);
       valid_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
       cout << ofs << '\r' << flush;
     }
