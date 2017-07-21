@@ -1,10 +1,14 @@
-// Sample code to train the encoder-decoder model using small English-Japanese
-// parallel corpora.
+// Sample code to train the encoder-decoder model with dot-attention mechanism.
 //
-// Model detail:
-//   Sutskever et al., 2014.
-//   Sequence to Sequence Learning with Neural Networks.
-//   https://arxiv.org/abs/1409.3215
+// Model details:
+//   Bidirectional encoder and basics of attention mechanism:
+//     Bahdanau et al., 2015.
+//     Neural Machine Translation by Jointly Learning to Align and Translate.
+//     https://arxiv.org/abs/1409.0473
+//   Decoder design and dot-attention:
+//     Luong et al., 2015.
+//     Effective Approaches to Attention-based Neural Machine Translation
+//     https://arxiv.org/abs/1508.04025
 //
 // Corpora detail:
 //   https://github.com/odashi/small_parallel_enja
@@ -17,7 +21,7 @@
 //     -std=c++11 \
 //     -I/path/to/primitiv/includes \ (typically -I../..)
 //     -L/path/to/primitiv/libs \     (typically -L../../build/primitiv)
-//     encdec.cc -lprimitiv
+//     encdec_attention.cc -lprimitiv
 //
 // [Training]
 //   $ ./a.out train <model_prefix>
@@ -321,30 +325,38 @@ private:
   Node wxh_, whh_, bh_, h_, c_;
 };
 
-// Encoder-decoder translation model.
+// Encoder-decoder translation model with dot-attention.
 class EncoderDecoder {
 public:
   EncoderDecoder(const string &name,
       unsigned src_vocab_size, unsigned trg_vocab_size,
       unsigned embed_size, unsigned hidden_size, float dropout_rate)
     : name_(name)
+    , embed_size_(embed_size)
     , dropout_rate_(dropout_rate)
     , psrc_lookup_(name_ + "_src_lookup", {embed_size, src_vocab_size}, I::XavierUniform())
     , ptrg_lookup_(name_ + "_trg_lookup", {embed_size, trg_vocab_size}, I::XavierUniform())
-    , pwhy_(name_ + "_why", {trg_vocab_size, hidden_size}, I::XavierUniform())
+    , pwhj_(name_ + "_whj", {embed_size, 2 * hidden_size}, I::XavierUniform())
+    , pbj_(name_ + "_bj", {embed_size}, I::Constant(0))
+    , pwjy_(name_ + "_wjy", {trg_vocab_size, embed_size}, I::XavierUniform())
     , pby_(name_ + "_by", {trg_vocab_size}, I::Constant(0))
-    , src_lstm_(name_ + "_src_lstm", embed_size, hidden_size)
-    , trg_lstm_(name + "_trg_lstm", embed_size, hidden_size) {}
+    , src_fw_lstm_(name_ + "_src_fw_lstm", embed_size, hidden_size)
+    , src_bw_lstm_(name_ + "_src_bw_lstm", embed_size, hidden_size)
+    , trg_lstm_(name + "_trg_lstm", 2 * embed_size, hidden_size) {}
 
   // Loads all parameters.
   EncoderDecoder(const string &name, const string &prefix)
     : name_(name)
     , psrc_lookup_(Parameter::load(prefix + name_ + "_src_lookup.yaml"))
     , ptrg_lookup_(Parameter::load(prefix + name_ + "_trg_lookup.yaml"))
-    , pwhy_(Parameter::load(prefix + name_ + "_why.yaml"))
+    , pwhj_(Parameter::load(prefix + name_ + "_whj.yaml"))
+    , pbj_(Parameter::load(prefix + name_ + "_bj.yaml"))
+    , pwjy_(Parameter::load(prefix + name_ + "_wjy.yaml"))
     , pby_(Parameter::load(prefix + name_ + "_by.yaml"))
-    , src_lstm_(name_ + "_src_lstm", prefix)
+    , src_fw_lstm_(name_ + "_src_fw_lstm", prefix)
+    , src_bw_lstm_(name_ + "_src_bw_lstm", prefix)
     , trg_lstm_(name_ + "_trg_lstm", prefix) {
+      embed_size_ = pbj_.shape()[0];
       ifstream ifs;
       ::open_file(prefix + name_ + "_config.txt", ifs);
       ifs >> dropout_rate_;
@@ -354,9 +366,12 @@ public:
   void save(const string &prefix) const {
     psrc_lookup_.save(prefix + name_ + "_src_lookup.yaml");
     ptrg_lookup_.save(prefix + name_ + "_trg_lookup.yaml");
-    pwhy_.save(prefix + name_ + "_why.yaml");
+    pwhj_.save(prefix + name_ + "_whj.yaml");
+    pbj_.save(prefix + name_ + "_bj.yaml");
+    pwjy_.save(prefix + name_ + "_wjy.yaml");
     pby_.save(prefix + name_ + "_by.yaml");
-    src_lstm_.save(prefix);
+    src_fw_lstm_.save(prefix);
+    src_bw_lstm_.save(prefix);
     trg_lstm_.save(prefix);
     ofstream ofs;
     ::open_file(prefix + name_ + "_config.txt", ofs);
@@ -367,37 +382,72 @@ public:
   void register_training(Trainer &trainer) {
     trainer.add_parameter(psrc_lookup_);
     trainer.add_parameter(ptrg_lookup_);
-    trainer.add_parameter(pwhy_);
+    trainer.add_parameter(pwhj_);
+    trainer.add_parameter(pbj_);
+    trainer.add_parameter(pwjy_);
     trainer.add_parameter(pby_);
-    src_lstm_.register_training(trainer);
+    src_fw_lstm_.register_training(trainer);
+    src_bw_lstm_.register_training(trainer);
     trg_lstm_.register_training(trainer);
   }
 
   // Encodes source sentences and prepare internal states.
   void encode(const vector<vector<unsigned>> &src_batch, bool train) {
-    // Reversed encoding.
-    Node src_lookup = F::input(psrc_lookup_);
-    src_lstm_.init();
-    for (auto it = src_batch.rbegin(); it != src_batch.rend(); ++it) {
-      Node x = F::pick(src_lookup, 1, *it);
-      x = F::dropout(x, dropout_rate_, train);
-      src_lstm_.forward(x);
+    // Embedding lookup.
+    const Node src_lookup = F::input(psrc_lookup_);
+    vector<Node> e_list;
+    for (const auto &x : src_batch) {
+      e_list.emplace_back(
+          F::dropout(F::pick(src_lookup, 1, x), dropout_rate_, train));
     }
+
+    // Forward encoding.
+    src_fw_lstm_.init();
+    vector<Node> f_list;
+    for (const auto &e : e_list) {
+      f_list.emplace_back(
+          F::dropout(src_fw_lstm_.forward(e), dropout_rate_, train));
+    }
+
+    // Backward encoding.
+    src_bw_lstm_.init();
+    vector<Node> b_list;
+    for (auto it = e_list.rbegin(); it != e_list.rend(); ++it) {
+      b_list.emplace_back(
+          F::dropout(src_bw_lstm_.forward(*it), dropout_rate_, train));
+    }
+    reverse(begin(b_list), end(b_list));
+
+    // Concatenates RNN states.
+    vector<Node> fb_list;
+    for (unsigned i = 0; i < src_batch.size(); ++i) {
+      fb_list.emplace_back(f_list[i] + b_list[i]);
+    }
+    concat_fb_ = F::concat(fb_list, 1);
+    t_concat_fb_ = F::transpose(concat_fb_);
 
     // Initializes decoder states.
     trg_lookup_ = F::input(ptrg_lookup_);
-    why_ = F::input(pwhy_);
+    whj_ = F::input(pwhj_);
+    bj_ = F::input(pbj_);
+    wjy_ = F::input(pwjy_);
     by_ = F::input(pby_);
-    trg_lstm_.init(src_lstm_.get_c(), src_lstm_.get_h());
+    feed_ = F::zeros({embed_size_});
+    trg_lstm_.init(
+        src_fw_lstm_.get_c() + src_bw_lstm_.get_c(),
+        src_fw_lstm_.get_h() + src_bw_lstm_.get_h());
   }
 
   // One step decoding.
   Node decode_step(const vector<unsigned> &trg_words, bool train) {
-    Node x = F::pick(trg_lookup_, 1, trg_words);
-    x = F::dropout(x, dropout_rate_, train);
-    Node h = trg_lstm_.forward(x);
+    Node e = F::pick(trg_lookup_, 1, trg_words);
+    e = F::dropout(e, dropout_rate_, train);
+    Node h = trg_lstm_.forward(F::concat({e, feed_}, 0));
     h = F::dropout(h, dropout_rate_, train);
-    return F::matmul(why_, h) + by_;
+    const Node atten_probs = F::softmax(F::matmul(t_concat_fb_, h), 0);
+    const Node c = F::matmul(concat_fb_, atten_probs);
+    feed_ = F::tanh(F::matmul(whj_, F::concat({h, c}, 0)) + bj_);
+    return F::matmul(wjy_, feed_) + by_;
   }
 
   // Calculates the loss function over given target sentences.
@@ -412,10 +462,11 @@ public:
 
 private:
   string name_;
+  unsigned embed_size_;
   float dropout_rate_;
-  Parameter psrc_lookup_, ptrg_lookup_, pwhy_, pby_;
-  ::LSTM src_lstm_, trg_lstm_;
-  Node trg_lookup_, why_, by_;
+  Parameter psrc_lookup_, ptrg_lookup_, pwhj_, pbj_, pwjy_, pby_;
+  ::LSTM src_fw_lstm_, src_bw_lstm_, trg_lstm_;
+  Node trg_lookup_, whj_, bj_, wjy_, by_, concat_fb_, t_concat_fb_, feed_;
 };
 
 // Training encoder decoder model.
@@ -455,9 +506,12 @@ void train(
   iota(begin(train_ids), end(train_ids), 0);
   iota(begin(valid_ids), end(valid_ids), 0);
 
+  float lr_scale = 1;
+
   // Train/valid loop.
   for (unsigned epoch = 0; epoch < MAX_EPOCH; ++epoch) {
-    cout << "epoch " << (epoch + 1) << '/' << MAX_EPOCH << ':' << endl;
+    cout << "epoch " << (epoch + 1) << '/' << MAX_EPOCH
+         << ", lr_scale = " << lr_scale << endl;
     // Shuffles train sentence IDs.
     shuffle(begin(train_ids), end(train_ids), rng);
 
@@ -476,7 +530,7 @@ void train(
       const auto loss = encdec.loss(trg_batch, true);
       train_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
       g.backward(loss);
-      trainer.update(1);
+      trainer.update(lr_scale);
       cout << ofs << '\r' << flush;
     }
     const float train_ppl = std::exp(train_loss / num_train_labels);
@@ -508,6 +562,8 @@ void train(
       ::save_trainer(prefix + ".trainer.txt", trainer);
       ::save_ppl(prefix + ".valid_ppl.txt", best_valid_ppl);
       cout << "done." << endl;
+    } else {
+      lr_scale *= .7071;  // Learning rate decay by 1/sqrt(2)
     }
   }
 }
