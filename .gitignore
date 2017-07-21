@@ -1,4 +1,5 @@
 build
 example/*/a.out
+example/*/*.txt
 example/*/*.yaml
 example/*/data

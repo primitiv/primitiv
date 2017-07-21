@@ -20,9 +20,11 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <queue>
 #include <random>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -30,6 +32,7 @@
 #include <primitiv/primitiv.h>
 #include <primitiv/primitiv_cuda.h>
 
+using primitiv::trainers::Adam;
 namespace F = primitiv::node_ops;
 namespace I = primitiv::initializers;
 using namespace primitiv;
@@ -43,18 +46,24 @@ static const unsigned BATCH_SIZE = 64;
 static const unsigned MAX_EPOCH = 100;
 static const float DROPOUT_RATE = 0.5;
 
+// Helper to open fstream
+template <class FStreamT>
+void open_file(const string &path, FStreamT &fs) {
+  fs.open(path);
+  if (!fs.is_open()) {
+    cerr << "File could not be opened: " + path << endl;
+    exit(1);
+  }
+}
+
 // Gathers the set of words from space-separated corpus and makes a vocabulary.
-unordered_map<string, unsigned> make_vocab(
-    const string &filename, unsigned size) {
+unordered_map<string, unsigned> make_vocab(const string &path, unsigned size) {
   if (size < 3) {
     cerr << "vocab size should be equal-to or greater-than 3." << endl;
     exit(1);
   }
-  ifstream ifs(filename);
-  if (!ifs.is_open()) {
-    cerr << "File could not be opened: " << filename << endl;
-    exit(1);
-  }
+  ifstream ifs;
+  ::open_file(path, ifs);
 
   // Counts all word existences.
   unordered_map<string, unsigned> freq;
@@ -88,13 +97,10 @@ unordered_map<string, unsigned> make_vocab(
 // Generates word ID list using a corpus and a vocab.
 // All out-of-vocab words are replaced to <unk>.
 vector<vector<unsigned>> load_corpus(
-    const string &filename, const unordered_map<string, unsigned> &vocab) {
+    const string &path, const unordered_map<string, unsigned> &vocab) {
   const unsigned unk_id = vocab.at("<unk>");
-  ifstream ifs(filename);
-  if (!ifs.is_open()) {
-    cerr << "File could not be opened: " << filename << endl;
-    exit(1);
-  }
+  ifstream ifs;
+  ::open_file(path, ifs);
   vector<vector<unsigned>> corpus;
   string line, word;
   while (getline(ifs, line)) {
@@ -155,6 +161,33 @@ vector<vector<unsigned>> make_batch(
   return batch;
 }
 
+// Helper to save trainer status.
+void save_trainer(const string &path, Adam &trainer) {
+  ofstream ofs;
+  ::open_file(path, ofs);
+  ofs << trainer.get_epoch() << endl;
+  ofs << trainer.get_weight_decay() << endl;
+  ofs << trainer.get_gradient_clipping() << endl;
+  ofs << trainer.alpha() << endl;
+  ofs << trainer.beta1() << endl;
+  ofs << trainer.beta2() << endl;
+  ofs << trainer.eps() << endl;
+}
+
+// Helper to load trainer status.
+Adam load_trainer(const string &path) {
+  ifstream ifs;
+  ::open_file(path, ifs);
+  unsigned epoch;
+  float wd, gc, a, b1, b2, eps;
+  ifs >> epoch >> wd >> gc >> a >> b1 >> b2 >> eps;
+  Adam trainer(a, b1, b2, eps);
+  trainer.set_epoch(epoch);
+  trainer.set_weight_decay(wd);
+  trainer.set_gradient_clipping(gc);
+  return trainer;
+}
+
 // Hand-written LSTM with input/forget/output gates and no peepholes.
 // Formulation:
 //   i = sigmoid(W_xi . x[t] + W_hi . h[t-1] + b_i)
@@ -168,9 +201,25 @@ public:
   LSTM(const string &name, unsigned in_size, unsigned out_size)
     : name_(name)
     , out_size_(out_size)
-    , pwxh_(name + "_wxh", {4 * out_size, in_size}, I::XavierUniform())
-    , pwhh_(name + "_whh", {4 * out_size, out_size}, I::XavierUniform())
-    , pbh_(name + "_bh", {4 * out_size}, I::Constant(0)) {}
+    , pwxh_(name_ + "_wxh", {4 * out_size, in_size}, I::XavierUniform())
+    , pwhh_(name_ + "_whh", {4 * out_size, out_size}, I::XavierUniform())
+    , pbh_(name_ + "_bh", {4 * out_size}, I::Constant(0)) {}
+
+  // Loads all parameters.
+  LSTM(const string &name, const string &prefix)
+    : name_(name)
+    , pwxh_(Parameter::load(prefix + name_ + "_wxh.yaml"))
+    , pwhh_(Parameter::load(prefix + name_ + "_whh.yaml"))
+    , pbh_(Parameter::load(prefix + name_ + "_bh.yaml")) {
+      out_size_ = pbh_.shape()[0] / 4;
+  }
+
+  // Saves all parameters.
+  void save(const string &prefix) const {
+    pwxh_.save(prefix + name_ + "_wxh.yaml");
+    pwhh_.save(prefix + name_ + "_whh.yaml");
+    pbh_.save(prefix + name_ + "_bh.yaml");
+  }
 
   // Adds parameters to the trainer.
   void register_training(Trainer &trainer) {
@@ -214,15 +263,44 @@ private:
 // Encoder-decoder translation model.
 class EncoderDecoder {
 public:
-  EncoderDecoder(unsigned src_vocab_size, unsigned trg_vocab_size,
+  EncoderDecoder(const string &name,
+      unsigned src_vocab_size, unsigned trg_vocab_size,
       unsigned embed_size, unsigned hidden_size, float dropout_rate)
-    : dropout_rate_(dropout_rate)
-    , psrc_lookup_("src_lookup", {embed_size, src_vocab_size}, I::XavierUniform())
-    , ptrg_lookup_("trg_lookup", {embed_size, trg_vocab_size}, I::XavierUniform())
-    , pwhy_("why", {trg_vocab_size, hidden_size}, I::XavierUniform())
-    , pby_("by", {trg_vocab_size}, I::Constant(0))
-    , src_lstm_("src_lstm", embed_size, hidden_size)
-    , trg_lstm_("trg_lstm", embed_size, hidden_size) {}
+    : name_(name)
+    , dropout_rate_(dropout_rate)
+    , psrc_lookup_(name_ + "_src_lookup", {embed_size, src_vocab_size}, I::XavierUniform())
+    , ptrg_lookup_(name_ + "_trg_lookup", {embed_size, trg_vocab_size}, I::XavierUniform())
+    , pwhy_(name_ + "_why", {trg_vocab_size, hidden_size}, I::XavierUniform())
+    , pby_(name_ + "_by", {trg_vocab_size}, I::Constant(0))
+    , src_lstm_(name_ + "_src_lstm", embed_size, hidden_size)
+    , trg_lstm_(name + "_trg_lstm", embed_size, hidden_size) {}
+
+  // Loads all parameters.
+  EncoderDecoder(const string &name, const string &prefix)
+    : name_(name)
+    , psrc_lookup_(Parameter::load(prefix + name_ + "_src_lookup.yaml"))
+    , ptrg_lookup_(Parameter::load(prefix + name_ + "_trg_lookup.yaml"))
+    , pwhy_(Parameter::load(prefix + name_ + "_why.yaml"))
+    , pby_(Parameter::load(prefix + name_ + "_by.yaml"))
+    , src_lstm_(name_ + "_src_lstm", prefix)
+    , trg_lstm_(name_ + "_trg_lstm", prefix) {
+      ifstream ifs;
+      ::open_file(prefix + name_ + "_config.txt", ifs);
+      ifs >> dropout_rate_;
+    }
+
+  // Saves all parameters.
+  void save(const string &prefix) const {
+    psrc_lookup_.save(prefix + name_ + "_src_lookup.yaml");
+    ptrg_lookup_.save(prefix + name_ + "_trg_lookup.yaml");
+    pwhy_.save(prefix + name_ + "_why.yaml");
+    pby_.save(prefix + name_ + "_by.yaml");
+    src_lstm_.save(prefix);
+    trg_lstm_.save(prefix);
+    ofstream ofs;
+    ::open_file(prefix + name_ + "_config.txt", ofs);
+    ofs << dropout_rate_ << endl;
+  }
 
   // Adds parameters to the trainer.
   void register_training(Trainer &trainer) {
@@ -272,6 +350,7 @@ public:
   }
 
 private:
+  string name_;
   float dropout_rate_;
   Parameter psrc_lookup_, ptrg_lookup_, pwhy_, pby_;
   ::LSTM src_lstm_, trg_lstm_;
@@ -280,7 +359,19 @@ private:
 
 }  // namespace
 
-int main() {
+int main(const int argc, const char *argv[]) {
+  if (argc != 3) {
+    cerr << "usage: " << argv[0] << " (train|resume) model_prefix" << endl;
+    exit(1);
+  }
+
+  const string mode = argv[1];
+  const string prefix = argv[2];
+  if (mode != "train" && mode != "resume") {
+    cerr << "unknown mode: " << mode << endl;
+    exit(1);
+  }
+
   // Loads vocab.
   const auto src_vocab = ::make_vocab("data/train.en", 4000);
   const auto trg_vocab = ::make_vocab("data/train.ja", 5000);
@@ -308,15 +399,29 @@ int main() {
   Device::set_default_device(dev);
 
   // Trainer.
-  primitiv::trainers::Adam trainer;
-  trainer.set_weight_decay(1e-6);
-  trainer.set_gradient_clipping(5);
+  unique_ptr<Adam> trainer;
+  if (mode == "train") {
+    trainer.reset(new Adam());
+    trainer->set_weight_decay(1e-6);
+    trainer->set_gradient_clipping(5);
+    cout << "Created a new trainer: " << prefix << endl;
+  } else if (mode == "resume") {
+    trainer.reset(new Adam(::load_trainer(prefix + ".trainer.txt")));
+    cout << "Loaded an existing trainer: " << prefix << endl;
+  }
 
   // Our translation model.
-  ::EncoderDecoder encdec(
-      src_vocab.size(), trg_vocab.size(),
-      NUM_EMBED_UNITS, NUM_HIDDEN_UNITS, DROPOUT_RATE);
-  encdec.register_training(trainer);
+  unique_ptr<EncoderDecoder> encdec;
+  if (mode == "train") {
+    encdec.reset(new EncoderDecoder("encdec",
+          src_vocab.size(), trg_vocab.size(),
+          NUM_EMBED_UNITS, NUM_HIDDEN_UNITS, DROPOUT_RATE));
+    cout << "Created a new EncoderDecoder model: " << prefix << endl;
+  } else if (mode == "resume") {
+    encdec.reset(new EncoderDecoder("encdec", prefix + '.'));
+    cout << "Loaded an existing EncoderDecoder model: " << prefix << endl;
+  }
+  encdec->register_training(*trainer);
 
   // Batch randomizer.
   random_device rd;
@@ -345,14 +450,14 @@ int main() {
           train_src_corpus, batch_ids, src_eos_id);
       const auto trg_batch = ::make_batch(
           train_trg_corpus, batch_ids, trg_eos_id);
-      trainer.reset_gradients();
+      trainer->reset_gradients();
       Graph g;
       Graph::set_default_graph(g);
-      encdec.encode(src_batch, true);
-      const auto loss = encdec.loss(trg_batch, true);
+      encdec->encode(src_batch, true);
+      const auto loss = encdec->loss(trg_batch, true);
       train_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
       g.backward(loss);
-      trainer.update(1);
+      trainer->update(1);
       cout << ofs << '\r' << flush;
     }
     const float train_ppl = std::exp(train_loss / num_train_labels);
@@ -371,13 +476,17 @@ int main() {
           valid_trg_corpus, batch_ids, trg_eos_id);
       Graph g;
       Graph::set_default_graph(g);
-      encdec.encode(src_batch, false);
-      const auto loss = encdec.loss(trg_batch, false);
+      encdec->encode(src_batch, false);
+      const auto loss = encdec->loss(trg_batch, false);
       valid_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
       cout << ofs << '\r' << flush;
     }
     const float valid_ppl = std::exp(valid_loss / num_valid_labels);
     cout << "  valid ppl = " << valid_ppl << endl;
+
+    encdec->save(prefix + '.');
+    ::save_trainer(prefix + ".trainer.txt", *trainer);
+    cout << "  saved parameters." << endl;
   }
 
   return 0;
