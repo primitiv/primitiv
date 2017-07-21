@@ -31,11 +31,9 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <memory>
 #include <queue>
 #include <random>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -109,7 +107,6 @@ unordered_map<string, unsigned> make_vocab(const string &path, unsigned size) {
     vocab.insert(make_pair(q.top().first, i));
     q.pop();
   }
-
   return vocab;
 }
 
@@ -503,10 +500,9 @@ void train(
     const float valid_ppl = std::exp(valid_loss / num_valid_labels);
     cout << "  valid ppl = " << valid_ppl << endl;
 
+    // Saves best model/trainer.
     if (valid_ppl < best_valid_ppl) {
       best_valid_ppl = valid_ppl;
-
-      // Saves current model/trainer.
       cout << "  saving model/trainer ... " << flush;
       encdec.save(prefix + '.');
       ::save_trainer(prefix + ".trainer.txt", trainer);
@@ -531,7 +527,7 @@ void test(EncoderDecoder &encdec) {
     Graph::set_default_graph(g);
     encdec.encode(src_batch, false);
 
-    // Generate target words one-by-one.
+    // Generates target words one-by-one.
     vector<unsigned> trg_ids {trg_vocab.at("<bos>")};
     const unsigned eos_id = trg_vocab.at("<eos>");
     while (trg_ids.back() != eos_id) {
@@ -546,7 +542,7 @@ void test(EncoderDecoder &encdec) {
       }
     }
 
-    // Prints result words.
+    // Prints the result.
     for (unsigned i = 1; i < trg_ids.size() - 1; ++i) {
       if (i > 1) cout << ' ';
       cout << inv_trg_vocab[trg_ids[i]];
@@ -573,14 +569,12 @@ int main(const int argc, const char *argv[]) {
     exit(1);
   }
 
-  // Uses GPU.
   cerr << "initializing device ... " << flush;
   CUDADevice dev(0);
   Device::set_default_device(dev);
   cerr << "done." << endl;
 
   if (mode == "train") {
-    // Starts new training.
     EncoderDecoder encdec("encdec",
         SRC_VOCAB_SIZE, TRG_VOCAB_SIZE,
         NUM_EMBED_UNITS, NUM_HIDDEN_UNITS, DROPOUT_RATE);
@@ -589,20 +583,17 @@ int main(const int argc, const char *argv[]) {
     trainer.set_gradient_clipping(5);
     ::train(encdec, trainer, prefix, 1e10);
   } else if (mode == "resume") {
-    // Resumes training with existing model and trainer.
     cerr << "loading model/trainer ... " << flush;
     EncoderDecoder encdec("encdec", prefix + '.');
     Adam trainer = ::load_trainer(prefix + ".trainer.txt");
     float valid_ppl = ::load_ppl(prefix + ".valid_ppl.txt");
     cerr << "done." << endl;
     ::train(encdec, trainer, prefix, valid_ppl);
-  } else {
-    // Test.
+  } else {  // mode == "test"
     cerr << "Loading model ... ";
     EncoderDecoder encdec("encdec", prefix + '.');
     cerr << "Done." << endl;
     ::test(encdec);
   }
-
   return 0;
 }
