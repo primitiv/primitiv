@@ -269,17 +269,17 @@ public:
   // Loads all parameters.
   LSTM(const string &name, const string &prefix)
     : name_(name)
-    , pwxh_(Parameter::load(prefix + name_ + "_wxh.yaml"))
-    , pwhh_(Parameter::load(prefix + name_ + "_whh.yaml"))
-    , pbh_(Parameter::load(prefix + name_ + "_bh.yaml")) {
+    , pwxh_(Parameter::load(prefix + name_ + "_wxh.param"))
+    , pwhh_(Parameter::load(prefix + name_ + "_whh.param"))
+    , pbh_(Parameter::load(prefix + name_ + "_bh.param")) {
       out_size_ = pbh_.shape()[0] / 4;
   }
 
   // Saves all parameters.
   void save(const string &prefix) const {
-    pwxh_.save(prefix + name_ + "_wxh.yaml");
-    pwhh_.save(prefix + name_ + "_whh.yaml");
-    pbh_.save(prefix + name_ + "_bh.yaml");
+    pwxh_.save(prefix + name_ + "_wxh.param");
+    pwhh_.save(prefix + name_ + "_whh.param");
+    pbh_.save(prefix + name_ + "_bh.param");
   }
 
   // Adds parameters to the trainer.
@@ -339,10 +339,10 @@ public:
   // Loads all parameters.
   EncoderDecoder(const string &name, const string &prefix)
     : name_(name)
-    , psrc_lookup_(Parameter::load(prefix + name_ + "_src_lookup.yaml"))
-    , ptrg_lookup_(Parameter::load(prefix + name_ + "_trg_lookup.yaml"))
-    , pwhy_(Parameter::load(prefix + name_ + "_why.yaml"))
-    , pby_(Parameter::load(prefix + name_ + "_by.yaml"))
+    , psrc_lookup_(Parameter::load(prefix + name_ + "_src_lookup.param"))
+    , ptrg_lookup_(Parameter::load(prefix + name_ + "_trg_lookup.param"))
+    , pwhy_(Parameter::load(prefix + name_ + "_why.param"))
+    , pby_(Parameter::load(prefix + name_ + "_by.param"))
     , src_lstm_(name_ + "_src_lstm", prefix)
     , trg_lstm_(name_ + "_trg_lstm", prefix) {
       ifstream ifs;
@@ -352,10 +352,10 @@ public:
 
   // Saves all parameters.
   void save(const string &prefix) const {
-    psrc_lookup_.save(prefix + name_ + "_src_lookup.yaml");
-    ptrg_lookup_.save(prefix + name_ + "_trg_lookup.yaml");
-    pwhy_.save(prefix + name_ + "_why.yaml");
-    pby_.save(prefix + name_ + "_by.yaml");
+    psrc_lookup_.save(prefix + name_ + "_src_lookup.param");
+    ptrg_lookup_.save(prefix + name_ + "_trg_lookup.param");
+    pwhy_.save(prefix + name_ + "_why.param");
+    pby_.save(prefix + name_ + "_by.param");
     src_lstm_.save(prefix);
     trg_lstm_.save(prefix);
     ofstream ofs;

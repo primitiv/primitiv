@@ -16,9 +16,6 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast -Wall -Werror -fPIC")
 endif()
 
-# subproject settings
-set(YAML_CPP_BUILD_TOOLS CACHE BOOL OFF)
-
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/config.h
@@ -27,6 +24,8 @@ configure_file(
 include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
 link_directories()
 
+find_package(Protobuf REQUIRED)
+
 if(PRIMITIV_USE_CUDA)
   find_package(CUDA REQUIRED)
   include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
@@ -34,7 +33,6 @@ if(PRIMITIV_USE_CUDA)
 endif()
 
 # sources
-add_subdirectory(submodules/yaml-cpp)
 add_subdirectory(primitiv)
 if(PRIMITIV_BUILD_TESTS)
   find_package(GTest REQUIRED)

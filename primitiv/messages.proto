@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package primitiv.messages;
+
+message Shape {
+  repeated uint32 dims = 1;
+  uint32 batch = 2;
+}
+
+message Tensor {
+  Shape shape = 1;
+  repeated float data = 2;
+}
+
+message Parameter {
+  string name = 1;
+  Tensor value = 2;
+  map<string, Tensor> stats = 3;
+}

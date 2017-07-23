@@ -201,12 +201,12 @@ int main() {
 
     const float accuracy = 100.0 * match / NUM_TEST_SAMPLES;
     printf("epoch %d: accuracy: %.2f%%\n", epoch, accuracy);
-    //pw1.save("mnist-params-w1.yaml");
-    //pb1.save("mnist-params-b1.yaml");
-    //pw2.save("mnist-params-w2.yaml");
-    //pb2.save("mnist-params-b2.yaml");
-    //pbeta.save("mnist-params-beta.yaml");
-    //pgamma.save("mnist-params-gamma.yaml");
+    //pw1.save("mnist-params-w1.param");
+    //pb1.save("mnist-params-b1.param");
+    //pw2.save("mnist-params-w2.param");
+    //pb2.save("mnist-params-b2.param");
+    //pbeta.save("mnist-params-beta.param");
+    //pgamma.save("mnist-params-gamma.param");
     //cout << "epoch " << epoch << ": saved parameters." << endl;
   }
 

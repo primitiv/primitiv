@@ -33,12 +33,16 @@ set(primitiv_base_SRCS
   trainer.cc
   trainer_impl.cc)
 
+protobuf_generate_cpp(primitiv_proto_SRCS primitiv_proto_HDRS messages.proto)
+
 include_directories(${PROJECT_SOURCE_DIR}/submodules/yaml-cpp/include)
 link_directories(${PROJECT_BINARY_DIR}/submodules/yaml-cpp)
 
-add_library(primitiv_base OBJECT ${primitiv_base_HDRS} ${primitiv_base_SRCS})
+add_library(primitiv_base OBJECT
+  ${primitiv_base_HDRS} ${primitiv_base_SRCS}
+  ${primitiv_proto_HDRS} ${primitiv_proto_SRCS})
 set(primitiv_OBJS $<TARGET_OBJECTS:primitiv_base>)
-set(primitiv_DEPS yaml-cpp)
+set(primitiv_DEPS protobuf)
 set(primitiv_HDRS ${primitiv_base_HDRS})
 
 if(PRIMITIV_USE_CUDA)

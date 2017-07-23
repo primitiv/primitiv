@@ -19,12 +19,11 @@ Prerequisites
 
 - CMake 3.1.0 or later
 - GCC 4.9 or later (maybe 4.8 is OK)
-- (optional) CUDA 8.0 or later
-- [Google Test](https://github.com/google/googletest)
+- [Protocol Buffers](https://github.com/google/protobuf)
+- (optional) [Google Test](https://github.com/google/googletest)
   - Required only when `-DPRIMITIV_BUILD_TESTS=ON`.
-- Bundled by `git submodule`:
-  - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
-  - *Attention*: `make install` will attempt to install also above libraries into your install prefix.
+- (optional) CUDA 8.0 or later
+  - Required only when `-DPRIMITIV_USE_CUDA=ON`
 
 Build
 -----
