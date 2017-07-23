@@ -217,7 +217,7 @@ Adam load_trainer(const string &path) {
   ::open_file(path, ifs);
   unsigned epoch;
   float lr_scale, wd, gc, a, b1, b2, eps;
-  ifs >> epoch >> lr_scale, wd >> gc >> a >> b1 >> b2 >> eps;
+  ifs >> epoch >> lr_scale >> wd >> gc >> a >> b1 >> b2 >> eps;
   Adam trainer(a, b1, b2, eps);
   trainer.set_epoch(epoch);
   trainer.set_learning_rate_scaling(lr_scale);
