@@ -276,7 +276,7 @@ int main() {
       const auto loss = lm.forward_loss(outputs, batch);
       train_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
       g.backward(loss);
-      trainer.update(1);
+      trainer.update();
       cout << ofs << '\r' << flush;
     }
     const float train_ppl = std::exp(train_loss / num_train_labels);

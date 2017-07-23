@@ -45,13 +45,26 @@ TEST_F(TrainerTest, CheckEpoch) {
   trainers::SGD trainer;
   ASSERT_EQ(0u, trainer.get_epoch());
   for (unsigned i = 1; i < 10; ++i) {
-    trainer.update(1);
+    trainer.update();
     EXPECT_EQ(i, trainer.get_epoch());
   }
   trainer.set_epoch(0);
   EXPECT_EQ(0u, trainer.get_epoch());
   trainer.set_epoch(100);
   EXPECT_EQ(100u, trainer.get_epoch());
+}
+
+TEST_F(TrainerTest, CheckLearningRateScaling) {
+  trainers::SGD trainer;
+  ASSERT_EQ(1.0f, trainer.get_learning_rate_scaling());
+
+  trainer.set_learning_rate_scaling(.1);
+  EXPECT_EQ(.1f, trainer.get_learning_rate_scaling());
+
+  trainer.set_learning_rate_scaling(0);
+  EXPECT_EQ(.0f, trainer.get_learning_rate_scaling());
+
+  EXPECT_THROW(trainer.set_learning_rate_scaling(-1), Error);
 }
 
 TEST_F(TrainerTest, CheckWeightDecay) {
@@ -73,8 +86,6 @@ TEST_F(TrainerTest, CheckWeightDecay) {
     {1, {1, 2, 3, 4}, {0, 0, 0, 0}, {.9, 1.8, 2.7, 3.6}, {1, 2, 3, 4}},
     {.1, {1, 2, 3, 4}, {0, 0, 0, 0}, {.99, 1.98, 2.97, 3.96}, {.1, .2, .3, .4}},
     {0, {1, 2, 3, 4}, {0, 0, 0, 0}, {1, 2, 3, 4}, {0, 0, 0, 0}},
-    {-.1, {1, 2, 3, 4}, {0, 0, 0, 0}, {1, 2, 3, 4}, {0, 0, 0, 0}},
-    {-1, {1, 2, 3, 4}, {0, 0, 0, 0}, {1, 2, 3, 4}, {0, 0, 0, 0}},
   };
 
   for (const TestCase &tc : test_cases) {
@@ -83,10 +94,12 @@ TEST_F(TrainerTest, CheckWeightDecay) {
 
     param.value().reset_by_vector(tc.in_value);
     param.gradient().reset_by_vector(tc.in_grad);
-    trainer.update(1);
+    trainer.update();
     EXPECT_TRUE(vector_match(tc.out_value, param.value().to_vector()));
     EXPECT_TRUE(vector_match(tc.out_grad, param.gradient().to_vector()));
   }
+
+  EXPECT_THROW(trainer.set_weight_decay(-1), Error);
 }
 
 TEST_F(TrainerTest, CheckGradientClipping) {
@@ -114,9 +127,6 @@ TEST_F(TrainerTest, CheckGradientClipping) {
     {0, {1, 2, 3, 4}, {1, 1, -1, -1}, {.9, 1.9, 3.1, 4.1}, {1, 1, -1, -1}},
     {0, {1, 2, 3, 4}, {2, 2, -2, -2}, {.8, 1.8, 3.2, 4.2}, {2, 2, -2, -2}},
     {0, {1, 2, 3, 4}, {3, 3, -3, -3}, {.7, 1.7, 3.3, 4.3}, {3, 3, -3, -3}},
-    {-1, {1, 2, 3, 4}, {1, 1, -1, -1}, {.9, 1.9, 3.1, 4.1}, {1, 1, -1, -1}},
-    {-1, {1, 2, 3, 4}, {2, 2, -2, -2}, {.8, 1.8, 3.2, 4.2}, {2, 2, -2, -2}},
-    {-1, {1, 2, 3, 4}, {3, 3, -3, -3}, {.7, 1.7, 3.3, 4.3}, {3, 3, -3, -3}},
   };
 
   for (const TestCase &tc : test_cases) {
@@ -125,10 +135,12 @@ TEST_F(TrainerTest, CheckGradientClipping) {
 
     param.value().reset_by_vector(tc.in_value);
     param.gradient().reset_by_vector(tc.in_grad);
-    trainer.update(1);
+    trainer.update();
     EXPECT_TRUE(vector_match(tc.out_value, param.value().to_vector()));
     EXPECT_TRUE(vector_match(tc.out_grad, param.gradient().to_vector()));
   }
+
+  EXPECT_THROW(trainer.set_gradient_clipping(-1), Error);
 }
 
 }  // namespace primitiv

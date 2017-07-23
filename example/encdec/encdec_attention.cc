@@ -202,6 +202,7 @@ void save_trainer(const string &path, Adam &trainer) {
   ofstream ofs;
   ::open_file(path, ofs);
   ofs << trainer.get_epoch() << endl;
+  ofs << trainer.get_learning_rate_scaling() << endl;
   ofs << trainer.get_weight_decay() << endl;
   ofs << trainer.get_gradient_clipping() << endl;
   ofs << trainer.alpha() << endl;
@@ -215,10 +216,11 @@ Adam load_trainer(const string &path) {
   ifstream ifs;
   ::open_file(path, ifs);
   unsigned epoch;
-  float wd, gc, a, b1, b2, eps;
-  ifs >> epoch >> wd >> gc >> a >> b1 >> b2 >> eps;
+  float lr_scale, wd, gc, a, b1, b2, eps;
+  ifs >> epoch >> lr_scale, wd >> gc >> a >> b1 >> b2 >> eps;
   Adam trainer(a, b1, b2, eps);
   trainer.set_epoch(epoch);
+  trainer.set_learning_rate_scaling(lr_scale);
   trainer.set_weight_decay(wd);
   trainer.set_gradient_clipping(gc);
   return trainer;
@@ -506,12 +508,10 @@ void train(
   iota(begin(train_ids), end(train_ids), 0);
   iota(begin(valid_ids), end(valid_ids), 0);
 
-  float lr_scale = 1;
-
   // Train/valid loop.
   for (unsigned epoch = 0; epoch < MAX_EPOCH; ++epoch) {
     cout << "epoch " << (epoch + 1) << '/' << MAX_EPOCH
-         << ", lr_scale = " << lr_scale << endl;
+         << ", lr_scale = " << trainer.get_learning_rate_scaling() << endl;
     // Shuffles train sentence IDs.
     shuffle(begin(train_ids), end(train_ids), rng);
 
@@ -530,7 +530,7 @@ void train(
       const auto loss = encdec.loss(trg_batch, true);
       train_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
       g.backward(loss);
-      trainer.update(lr_scale);
+      trainer.update();
       cout << ofs << '\r' << flush;
     }
     const float train_ppl = std::exp(train_loss / num_train_labels);
@@ -563,7 +563,9 @@ void train(
       ::save_ppl(prefix + ".valid_ppl.txt", best_valid_ppl);
       cout << "done." << endl;
     } else {
-      lr_scale *= .7071;  // Learning rate decay by 1/sqrt(2)
+      // Learning rate decay by 1/sqrt(2)
+      const float new_scale = .7071 * trainer.get_learning_rate_scaling();
+      trainer.set_learning_rate_scaling(new_scale);
     }
   }
 }

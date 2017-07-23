@@ -2,6 +2,7 @@
 #define PRIMITIV_TRAINER_H_
 
 #include <unordered_map>
+#include <primitiv/error.h>
 
 namespace primitiv {
 
@@ -18,7 +19,7 @@ public:
   Trainer &operator=(Trainer &&) = default;
   virtual ~Trainer() = default;
 
-  Trainer() : epoch_(0), l2_strength_(0), clip_threshold_(0) {}
+  Trainer() : epoch_(0), lr_scale_(1), l2_strength_(0), clip_threshold_(0) {}
 
   /**
    * Retrieves current epoch.
@@ -33,6 +34,23 @@ public:
   void set_epoch(unsigned epoch) { epoch_ = epoch; }
 
   /**
+   * Retrieves current learning rate scaling factor.
+   * @return The scaling factor.
+   */
+  float get_learning_rate_scaling() const { return lr_scale_; }
+
+  /**
+   * Sets learning rate scaling factor.
+   * @param scale New scaling factor.
+   * @remarks Could not set negative values.
+   */
+  void set_learning_rate_scaling(float scale) {
+    if (scale < 0) THROW_ERROR(
+        "Could not set negative value to learning_rate_scaling.");
+    lr_scale_ = scale;
+  }
+
+  /**
    * Retrieves current L2 decay strength.
    * @return Current L2 decay strength.
    */
@@ -40,10 +58,14 @@ public:
 
   /**
    * Sets L2 decay strength.
-   * @param strength New L2 decay strength.
-   * @remarks L2 decay will be enabled only if the strength is greater than 0.
+   * @param strength New L2 decay strength, or 0 to disable L2 decay.
+   * @remarks Could not set negative values.
    */
-  void set_weight_decay(float strength) { l2_strength_ = strength; }
+  void set_weight_decay(float strength) {
+    if (strength < 0) THROW_ERROR(
+        "Could not set negative value to weight_decay.");
+    l2_strength_ = strength;
+  }
 
   /**
    * Retrieves current gradient clipping threshold.
@@ -53,11 +75,14 @@ public:
 
   /**
    * Sets gradient clipping threshold.
-   * @param threshold New clipping threshold.
-   * @remarks Gradient clipping will be enabled only if the threshold is greater
-   *          than 0.
+   * @param threshold New clipping threshold, or 0 to disable gradient clipping.
+   * @remarks Could not set negative values.
    */
-  void set_gradient_clipping(float threshold) { clip_threshold_ = threshold; }
+  void set_gradient_clipping(float threshold) {
+    if (threshold < 0) THROW_ERROR(
+        "Could not set negative value to gradient_clipping.");
+    clip_threshold_ = threshold;
+  }
 
   /**
    * Registers a parameter.
@@ -72,12 +97,12 @@ public:
 
   /**
    * Updates parameter values.
-   * @param scale Additional learning rate scaling factor.
    */
-  void update(float scale);
+  void update();
 
 private:
   unsigned epoch_;
+  float lr_scale_;
   float l2_strength_;
   float clip_threshold_;
   std::unordered_map<std::string, Parameter *> params_;

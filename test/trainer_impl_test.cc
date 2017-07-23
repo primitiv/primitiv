@@ -47,6 +47,7 @@ TEST_F(TrainerImplTest, CheckSGD) {
         vector<float> {1, 2, 3, 4}, param.value().to_vector()));
 
   SGD trainer;
+  trainer.set_learning_rate_scaling(.1);
   trainer.add_parameter(param);
 
   vector<vector<float>> expected_v {
@@ -63,7 +64,7 @@ TEST_F(TrainerImplTest, CheckSGD) {
           vector<float>(4, 0), param.gradient().to_vector()));
 
     param.gradient() += param.value();  // Squared loss
-    trainer.update(.1);
+    trainer.update();
     EXPECT_TRUE(vector_match(expected_v[i], param.value().to_vector()));
   }
 }
@@ -74,6 +75,7 @@ TEST_F(TrainerImplTest, CheckAdam) {
         vector<float> {1, 2, 3, 4}, param.value().to_vector()));
 
   Adam trainer;
+  trainer.set_learning_rate_scaling(.1);
   trainer.add_parameter(param);
   ASSERT_TRUE(param.has_stats("adam-m1"));
   ASSERT_TRUE(param.has_stats("adam-m2"));
@@ -110,7 +112,7 @@ TEST_F(TrainerImplTest, CheckAdam) {
           vector<float>(4, 0), param.gradient().to_vector()));
 
     param.gradient() += param.value();  // Squared loss
-    trainer.update(.1);
+    trainer.update();
     EXPECT_TRUE(vector_near(
           expected_v[i], param.value().to_vector(), 1e-5));
     EXPECT_TRUE(vector_near(

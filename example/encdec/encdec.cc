@@ -476,7 +476,7 @@ void train(
       const auto loss = encdec.loss(trg_batch, true);
       train_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
       g.backward(loss);
-      trainer.update(1);
+      trainer.update();
       cout << ofs << '\r' << flush;
     }
     const float train_ppl = std::exp(train_loss / num_train_labels);

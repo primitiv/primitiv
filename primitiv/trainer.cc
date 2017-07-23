@@ -22,7 +22,7 @@ void Trainer::reset_gradients() {
   }
 }
 
-void Trainer::update(float scale) {
+void Trainer::update() {
   if (l2_strength_ > 0) {
     // Weight decay
     for (const auto &kv : params_) {
@@ -38,15 +38,15 @@ void Trainer::update(float scale) {
       sq_norm += tensor_ops::sum(tensor_ops::flatten(g * g), 0).to_vector()[0];
     }
     if (sq_norm > clip_threshold_ * clip_threshold_) {
-      float scale = clip_threshold_ / std::sqrt(sq_norm);
+      float clip_scale = clip_threshold_ / std::sqrt(sq_norm);
       for (const auto &kv : params_) {
-        kv.second->gradient() *= scale;
+        kv.second->gradient() *= clip_scale;
       }
     }
   }
 
   for (const auto &kv : params_) {
-    update_parameter(scale, *kv.second);
+    update_parameter(lr_scale_, *kv.second);
   }
 
   ++epoch_;

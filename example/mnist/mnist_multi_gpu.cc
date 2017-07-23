@@ -159,7 +159,7 @@ int main() {
       trainer.reset_gradients();
       g.forward(avg_loss);
       g.backward(avg_loss);
-      trainer.update(1);
+      trainer.update();
     }
 
     unsigned match = 0;

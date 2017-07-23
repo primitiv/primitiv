@@ -106,7 +106,7 @@ int main() {
     g.backward(loss);
 
     // Updates parameters.
-    trainer.update(1);
+    trainer.update();
   }
 
   return 0;
