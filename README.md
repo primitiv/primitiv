@@ -30,8 +30,6 @@ Build
 
     git clone <this repository>
     cd primitiv
-    git submodule init
-    git submodule update
     mkdir build
     cd build
     cmake .. [-DPRIMITIV_USE_CUDA=ON] [(Other options listed below if necessary)]
@@ -51,7 +49,11 @@ Building Options
   - Libraries built with this flag will tend to consume more memory.
 - `PRIMITIV_USE_CUDA` (default=`OFF`)
   - Enables CUDA backend (`CUDADevice` class).
-- Other CMake standard options and [FindCUDA](https://cmake.org/cmake/help/v3.0/module/FindCUDA.html), [FindGTest](https://cmake.org/cmake/help/v3.0/module/FindGTest.html) options are available.
+- Other available options:
+  - CMake standard options.
+  - [FindCUDA](https://cmake.org/cmake/help/v3.1/module/FindCUDA.html) options.
+  - [FindProtobuf](https://cmake.org/cmake/help/v3.1/module/FindProtobuf.html) options.
+  - [FindGTest](https://cmake.org/cmake/help/v3.1/module/FindGTest.html) options.
 
 Usage
 -----
