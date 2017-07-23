@@ -18,11 +18,11 @@ Prerequisites
 -------------
 
 - CMake 3.1.0 or later
-- GCC 4.9 or later (maybe 4.8 is OK)
+- GCC 4.8 or later
 - [Protocol Buffers](https://github.com/google/protobuf)
 - (optional) [Google Test](https://github.com/google/googletest)
   - Required only when `-DPRIMITIV_BUILD_TESTS=ON`.
-- (optional) CUDA 8.0 or later
+- (optional) CUDA 7.5 or later
   - Required only when `-DPRIMITIV_USE_CUDA=ON`
 
 Build
