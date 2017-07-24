@@ -2,6 +2,7 @@
 
 # External packages.
 find_package(Protobuf REQUIRED)
+link_directories(${PROTOBUF_LIBRARIES})
 if(PRIMITIV_USE_CUDA)
   find_package(CUDA REQUIRED)
 endif()
@@ -58,7 +59,7 @@ set(primitiv_base_SRCS
 add_library(primitiv_base OBJECT ${primitiv_base_HDRS} ${primitiv_base_SRCS})
 
 set(primitiv_OBJS $<TARGET_OBJECTS:primitiv_base>)
-set(primitiv_DEPS ${PROTOBUF_LIBRARIES})
+set(primitiv_DEPS primitiv)
 set(primitiv_HDRS ${primitiv_base_HDRS})
 
 # Build rules of the CUDA backend.
