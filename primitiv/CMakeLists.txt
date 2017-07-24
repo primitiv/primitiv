@@ -1,4 +1,23 @@
+# Build rules of the primitiv core library.
+
+# External packages.
+find_package(Protobuf REQUIRED)
+if(PRIMITIV_USE_CUDA)
+  find_package(CUDA REQUIRED)
+endif()
+
+# Include directories.
+include_directories(${PROTOBUF_INCLUDE_DIR})
+if(PRIMITIV_USE_CUDA)
+  include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
+endif()
+
+# Builds Protobuf messages.
+protobuf_generate_cpp(primitiv_proto_SRCS primitiv_proto_HDRS messages.proto)
+
+# Core headers.
 set(primitiv_base_HDRS
+  ${primitiv_proto_HDRS}
   cpu_device.h
   device.h
   error.h
@@ -18,7 +37,9 @@ set(primitiv_base_HDRS
   trainer.h
   trainer_impl.h)
 
+# Core sources.
 set(primitiv_base_SRCS
+  ${primitiv_proto_SRCS}
   cpu_device.cc
   device.cc
   function_impl.cc
@@ -33,18 +54,14 @@ set(primitiv_base_SRCS
   trainer.cc
   trainer_impl.cc)
 
-protobuf_generate_cpp(primitiv_proto_SRCS primitiv_proto_HDRS messages.proto)
+# Builds core library.
+add_library(primitiv_base OBJECT ${primitiv_base_HDRS} ${primitiv_base_SRCS})
 
-include_directories(${PROTOBUF_INCLUDE_DIR})
-link_directories(${PROTOBUF_LIBRARIES})
-
-add_library(primitiv_base OBJECT
-  ${primitiv_base_HDRS} ${primitiv_base_SRCS}
-  ${primitiv_proto_HDRS} ${primitiv_proto_SRCS})
 set(primitiv_OBJS $<TARGET_OBJECTS:primitiv_base>)
-set(primitiv_DEPS protobuf)
+set(primitiv_DEPS ${PROTOBUF_LIBRARIES})
 set(primitiv_HDRS ${primitiv_base_HDRS})
 
+# Build rules of the CUDA backend.
 if(PRIMITIV_USE_CUDA)
   set(primitiv_cuda_HDRS
     cuda_device.h
@@ -54,6 +71,7 @@ if(PRIMITIV_USE_CUDA)
     cuda_device.cu
     cuda_memory_pool.cu
     cuda_utils.cu)
+
   list(APPEND CUDA_NVCC_FLAGS "-std=c++11 -O3 -Xcompiler -fPIC")
 
   # Workaround for some systems.
@@ -68,11 +86,11 @@ if(PRIMITIV_USE_CUDA)
   list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=sm_52")
   list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=compute_52")
 
-  cuda_compile(primitiv_cuda_OBJ
+  cuda_compile(primitiv_cuda_OBJS
     ${primitiv_base_HDRS}
     ${primitiv_cuda_HDRS}
     ${primitiv_cuda_SRCS})
-  list(APPEND primitiv_OBJS ${primitiv_cuda_OBJ})
+  list(APPEND primitiv_OBJS ${primitiv_cuda_OBJS})
   list(APPEND primitiv_DEPS
     ${CUDA_LIBRARIES}
     ${CUDA_cublas_LIBRARY}
@@ -80,6 +98,7 @@ if(PRIMITIV_USE_CUDA)
   list(APPEND primitiv_HDRS ${primitiv_cuda_HDRS})
 endif()
 
+# Builds the integrated binary.
 if(PRIMITIV_BUILD_STATIC_LIBRARY)
   add_library(primitiv STATIC ${primitiv_OBJS})
 else()
@@ -87,5 +106,6 @@ else()
 endif()
 target_link_libraries(primitiv ${primitiv_DEPS})
 
+# Installs built files.
 install(TARGETS primitiv DESTINATION lib)
 install(FILES ${primitiv_HDRS} DESTINATION include/primitiv)

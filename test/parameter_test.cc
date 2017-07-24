@@ -265,4 +265,9 @@ TEST_F(ParameterTest, CheckLoadWithoutStats) {
   ASSERT_FALSE(p2.has_stats("a"));
 }
 
+TEST_F(ParameterTest, CheckInvalidSave) {
+  Parameter invalid;
+  EXPECT_THROW(invalid.save("/tmp/not_generated"), Error);
+}
+
 }  // namespace primitiv
