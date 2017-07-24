@@ -35,8 +35,8 @@ set(primitiv_base_SRCS
 
 protobuf_generate_cpp(primitiv_proto_SRCS primitiv_proto_HDRS messages.proto)
 
-include_directories(${PROJECT_SOURCE_DIR}/submodules/yaml-cpp/include)
-link_directories(${PROJECT_BINARY_DIR}/submodules/yaml-cpp)
+include_directories(${PROTOBUF_INCLUDE_DIR})
+link_directories(${PROTOBUF_LIBRARIES})
 
 add_library(primitiv_base OBJECT
   ${primitiv_base_HDRS} ${primitiv_base_SRCS}
