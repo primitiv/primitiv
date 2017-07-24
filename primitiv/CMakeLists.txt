@@ -59,7 +59,7 @@ set(primitiv_base_SRCS
 add_library(primitiv_base OBJECT ${primitiv_base_HDRS} ${primitiv_base_SRCS})
 
 set(primitiv_OBJS $<TARGET_OBJECTS:primitiv_base>)
-set(primitiv_DEPS primitiv)
+set(primitiv_DEPS protobuf)
 set(primitiv_HDRS ${primitiv_base_HDRS})
 
 # Build rules of the CUDA backend.
