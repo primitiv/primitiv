@@ -22,20 +22,12 @@ configure_file(
 )
 
 include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
-link_directories()
 
-find_package(Protobuf REQUIRED)
-
-if(PRIMITIV_USE_CUDA)
-  find_package(CUDA REQUIRED)
-  include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
-  link_directories(${CUDA_LIBRARIES})
-endif()
-
-# sources
+# core library
 add_subdirectory(primitiv)
+
+# tests
 if(PRIMITIV_BUILD_TESTS)
-  find_package(GTest REQUIRED)
   enable_testing()
   add_subdirectory(test)
 endif()
