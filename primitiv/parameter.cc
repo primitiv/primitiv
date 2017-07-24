@@ -15,6 +15,7 @@ namespace {
 // Stores Shape data to the proto message.
 void store_shape(const primitiv::Shape &src, primitiv::messages::Shape &dest) {
   dest.Clear();
+
   auto &dims = *dest.mutable_dims();
   const unsigned dims_size = src.depth();
   dims.Reserve(dims_size);
@@ -26,8 +27,9 @@ void store_shape(const primitiv::Shape &src, primitiv::messages::Shape &dest) {
 
 // Stores Tensor data to the proto message.
 void store_tensor(const primitiv::Tensor &src, primitiv::messages::Tensor &dest) {
+  if (!src.valid()) THROW_ERROR("Attempted to save an invalid Tensor object.");
+
   dest.Clear();
-  if (!src.valid()) return;
 
   ::store_shape(src.shape(), *dest.mutable_shape());
   auto &data = *dest.mutable_data();
@@ -48,12 +50,14 @@ primitiv::Shape parse_shape(const primitiv::messages::Shape &src) {
 
 // Parses Tensor data in the proto message.
 primitiv::Tensor parse_tensor(const primitiv::messages::Tensor &src, primitiv::Device &device) {
-  if (!src.has_shape()) return primitiv::Tensor();
+  if (!src.has_shape()) {
+    THROW_ERROR("Invalid Tensor message: message has no 'shape' member.");
+  }
 
   primitiv::Shape shape = ::parse_shape(src.shape());
   if (static_cast<unsigned>(src.data_size()) != shape.size()) {
     THROW_ERROR(
-        "Data sizes mismatched."
+        "Invalid Tensor message: data sizes mismatched."
         << " src.data_size(): " << std::to_string(src.data_size())
         << " != shape: " << shape.to_string()
         << " (size: " << std::to_string(shape.size()) << ')');
@@ -158,19 +162,17 @@ void Parameter::add_stats(const string &name, const Shape &shape) {
 }
 
 void Parameter::save(const string &path, bool with_stats) const  {
+  if (!valid()) THROW_ERROR("Attempted to save an invalid Parameter object.");
+
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   messages::Parameter dest;
-
-  if (valid()) {
-    dest.set_name(name_);
-    ::store_tensor(value_, *dest.mutable_value());
-
-    if (with_stats) {
-      auto &dest_stats = *dest.mutable_stats();
-      for (const auto &kv : stats_) {
-        ::store_tensor(kv.second, dest_stats[kv.first]);
-      }
+  dest.set_name(name_);
+  ::store_tensor(value_, *dest.mutable_value());
+  if (with_stats) {
+    auto &dest_stats = *dest.mutable_stats();
+    for (const auto &kv : stats_) {
+      ::store_tensor(kv.second, dest_stats[kv.first]);
     }
   }
 
@@ -195,24 +197,23 @@ Parameter Parameter::load(const string &path, bool with_stats, Device &device) {
   if (!src.ParseFromIstream(&ifs)) {
     THROW_ERROR("Failed to read Parameter message: " << path);
   }
+  if (!src.has_value()) {
+    THROW_ERROR("Invalid Parameter message: message has no 'value' member.");
+  }
+
+  std::unordered_map<string, Tensor> stats;
+  if (with_stats) {
+    for (const auto &kv : src.stats()) {
+      stats.emplace(std::make_pair(
+            kv.first, ::parse_tensor(kv.second, device)));
+    }
+  }
 
   Parameter param;
-
-  if (!src.name().empty()) {
-    std::unordered_map<string, Tensor> stats;
-
-    if (with_stats) {
-      for (const auto &kv : src.stats()) {
-        stats.emplace(std::make_pair(
-              kv.first, ::parse_tensor(kv.second, device)));
-      }
-    }
-
-    param.initialize_by_data(
-        string(src.name()),
-        ::parse_tensor(src.value(), device),
-        std::move(stats));
-  }
+  param.initialize_by_data(
+      string(src.name()),
+      ::parse_tensor(src.value(), device),
+      std::move(stats));
 
   return param;
 }
