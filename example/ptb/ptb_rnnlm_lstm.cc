@@ -187,7 +187,7 @@ public:
 
     vector<Node> outputs;
     for (unsigned i = 0; i < inputs.size() - 1; ++i) {
-      Node x = F::pick(lookup, 1, inputs[i]);
+      Node x = F::pick(lookup, inputs[i], 1);
       x = F::dropout(x, DROPOUT_RATE, train);
       Node h = lstm_.forward(x);
       h = F::dropout(h, DROPOUT_RATE, train);
@@ -202,7 +202,7 @@ public:
     vector<Node> losses;
     for (unsigned i = 0; i < outputs.size(); ++i) {
       losses.emplace_back(
-          F::softmax_cross_entropy(outputs[i], 0, inputs[i + 1]));
+          F::softmax_cross_entropy(outputs[i], inputs[i + 1], 0));
     }
     return F::batch::mean(F::sum(losses));
   }

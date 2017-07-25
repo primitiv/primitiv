@@ -152,7 +152,7 @@ int main() {
       Graph g;
       Graph::set_default_graph(g);
       Node y = make_graph(inputs);
-      Node loss = F::softmax_cross_entropy(y, 0, labels);
+      Node loss = F::softmax_cross_entropy(y, labels, 0);
       Node avg_loss = F::batch::mean(loss);
 
       // Forward, backward, and updates parameters.

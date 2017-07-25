@@ -400,7 +400,7 @@ public:
     vector<Node> e_list;
     for (const auto &x : src_batch) {
       e_list.emplace_back(
-          F::dropout(F::pick(src_lookup, 1, x), dropout_rate_, train));
+          F::dropout(F::pick(src_lookup, x, 1), dropout_rate_, train));
     }
 
     // Forward encoding.
@@ -442,7 +442,7 @@ public:
 
   // One step decoding.
   Node decode_step(const vector<unsigned> &trg_words, bool train) {
-    Node e = F::pick(trg_lookup_, 1, trg_words);
+    Node e = F::pick(trg_lookup_, trg_words, 1);
     e = F::dropout(e, dropout_rate_, train);
     Node h = trg_lstm_.forward(F::concat({e, feed_}, 0));
     h = F::dropout(h, dropout_rate_, train);
@@ -457,7 +457,7 @@ public:
     vector<Node> losses;
     for (unsigned i = 0; i < trg_batch.size() - 1; ++i) {
       Node y = decode_step(trg_batch[i], train);
-      losses.emplace_back(F::softmax_cross_entropy(y, 0, trg_batch[i + 1]));
+      losses.emplace_back(F::softmax_cross_entropy(y, trg_batch[i + 1], 0));
     }
     return F::batch::mean(F::sum(losses));
   }

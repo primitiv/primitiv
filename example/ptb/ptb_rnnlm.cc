@@ -137,7 +137,7 @@ public:
     Node s = F::zeros(Shape({NUM_HIDDEN_UNITS}, batch_size));
     vector<Node> outputs;
     for (unsigned i = 0; i < inputs.size() - 1; ++i) {
-      Node w = F::pick(wlookup, 1, inputs[i]);
+      Node w = F::pick(wlookup, inputs[i], 1);
       Node x = w + s;
       Node s = F::sigmoid(F::matmul(wxs, x));
       outputs.emplace_back(F::matmul(wsy, s));
@@ -151,7 +151,7 @@ public:
     vector<Node> losses;
     for (unsigned i = 0; i < outputs.size(); ++i) {
       losses.emplace_back(
-          F::softmax_cross_entropy(outputs[i], 0, inputs[i + 1]));
+          F::softmax_cross_entropy(outputs[i], inputs[i + 1], 0));
     }
     return F::batch::mean(F::sum(losses));
   }
