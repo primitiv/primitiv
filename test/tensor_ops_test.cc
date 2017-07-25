@@ -132,7 +132,7 @@ TEST_F(TensorOpsTest, CheckPickNN) {
       vector<float> x_data(tc.x_shape.size());
       iota(x_data.begin(), x_data.end(), 0);
       const Tensor x = dev->new_tensor_by_vector(tc.x_shape, x_data);
-      const Tensor y = pick(x, tc.dim, tc.ids);
+      const Tensor y = pick(x, tc.ids, tc.dim);
       EXPECT_EQ(tc.y_shape, y.shape());
       EXPECT_TRUE(vector_match(tc.values, y.to_vector()));
     }
@@ -156,7 +156,7 @@ TEST_F(TensorOpsTest, CheckInvalidPick) {
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor(Shape({2, 2, 2}, 3), 0);
     for (const TestCase &tc : test_cases) {
-      EXPECT_THROW(pick(x, tc.dim, tc.ids), Error);
+      EXPECT_THROW(pick(x, tc.ids, tc.dim), Error);
     }
   }
 }

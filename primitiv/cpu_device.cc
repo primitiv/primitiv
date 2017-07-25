@@ -92,8 +92,8 @@ void CPUDevice::random_log_normal_impl(float mean, float sd, Tensor &y) {
 }
 
 void CPUDevice::pick_fw_impl(
-    const Tensor &x, unsigned dim,
-    const std::vector<unsigned> &ids, Tensor &y) {
+    const Tensor &x, const std::vector<unsigned> &ids, unsigned dim,
+    Tensor &y) {
   const unsigned bs = y.shape().batch();
   const unsigned skip_x = x.shape().has_batch() * x.shape().volume();
   const unsigned skip_i = ids.size() > 1;
@@ -156,7 +156,7 @@ void CPUDevice::concat_fw_impl(
 }
 
 void CPUDevice::pick_bw_impl(
-    const Tensor &gy, unsigned dim, const std::vector<unsigned>& ids,
+    const Tensor &gy, const std::vector<unsigned>& ids, unsigned dim,
     Tensor &gx) {
   const unsigned bs = gy.shape().batch();
   const unsigned skip_x = gx.shape().has_batch() * gx.shape().volume();

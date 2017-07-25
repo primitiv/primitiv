@@ -87,8 +87,8 @@ Node copy(const Node &x, Device &dev) {
   return REGX(x, Copy(dev), x);
 }
 
-Node pick(const Node &x, unsigned dim, const std::vector<unsigned> &ids) {
-  return REGX(x, Pick(dim, ids), x);
+Node pick(const Node &x, const std::vector<unsigned> &ids, unsigned dim) {
+  return REGX(x, Pick(ids, dim), x);
 }
 
 Node slice(const Node &x, unsigned dim, unsigned lower, unsigned upper) {

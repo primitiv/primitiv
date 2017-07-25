@@ -165,18 +165,18 @@ void RandomLogNormal::backward(
 
 Shape Pick::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 1);
-  return shape_ops::pick(*args[0], dim_, ids_);
+  return shape_ops::pick(*args[0], ids_, dim_);
 }
 
 Tensor Pick::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 1);
-  return tensor_ops::pick(*args[0], dim_, ids_);
+  return tensor_ops::pick(*args[0], ids_, dim_);
 }
 
 void Pick::backward(
     const Tensor &y, const Tensor &gy,
     const vector<const Tensor *> &x, const vector<Tensor *> &gx) const {
-  gy.device().pick_bw(gy, dim_, ids_, *gx[0]);
+  gy.device().pick_bw(gy, ids_, dim_, *gx[0]);
 }
 
 Shape Slice::forward_shape(const vector<const Shape *> &args) const {
@@ -317,7 +317,7 @@ Shape SoftmaxCrossEntropy::forward_shape(
 Shape SparseSoftmaxCrossEntropy::forward_shape(
     const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 1);
-  return shape_ops::pick(*args[0], dim_, ids_);
+  return shape_ops::pick(*args[0], ids_, dim_);
 }
 
 #define FORWARD(name) \
@@ -478,7 +478,7 @@ BACKWARD(SparseSoftmaxCrossEntropy) {
   *gx[0] +=
     T::softmax(*x[0], dim_) * T::broadcast(gy, dim_, x[0]->shape()[dim_]);
 #endif  // PRIMITIV_USE_CACHE
-  gy.device().pick_bw(-gy, dim_, ids_, *gx[0]);
+  gy.device().pick_bw(-gy, ids_, dim_, *gx[0]);
 }
 
 #undef BACKWARD

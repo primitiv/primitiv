@@ -151,14 +151,14 @@ private:
 class Pick : public primitiv::Function {
   NO_CTOR_CLASS_DECL(Pick);
 public:
-  Pick(unsigned dim, const std::vector<unsigned> &ids)
-    : dim_(dim), ids_(ids) {}
+  Pick(const std::vector<unsigned> &ids, unsigned dim)
+    : ids_(ids), dim_(dim) {}
   std::string name() const override {
     return "Pick(" + std::to_string(dim_) + ')';
   };
 private:
-  unsigned dim_;
   std::vector<unsigned> ids_;
+  unsigned dim_;
 };
 
 class Slice : public primitiv::Function {

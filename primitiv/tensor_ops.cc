@@ -98,8 +98,8 @@ Tensor copy(const Tensor &x, Device &dev) {
   return dev.copy_tensor(x);
 }
 
-Tensor pick(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids) {
-  return x.device().pick_fw(x, dim, ids);
+Tensor pick(const Tensor &x, const std::vector<unsigned> &ids, unsigned dim) {
+  return x.device().pick_fw(x, ids, dim);
 }
 
 Tensor slice(const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
@@ -212,7 +212,7 @@ Tensor softmax_cross_entropy(const Tensor &x, const Tensor &t, unsigned dim) {
 }
 
 Tensor softmax_cross_entropy(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids) {
-  return pick(-log_softmax(x, dim), dim, ids);
+  return pick(-log_softmax(x, dim), ids, dim);
 }
 
 }  // namespace tensor_ops

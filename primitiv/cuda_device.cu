@@ -621,7 +621,7 @@ void CUDADevice::random_log_normal_impl(float mean, float sd, Tensor &y) {
 }
 
 void CUDADevice::pick_fw_impl(
-    const Tensor &x, unsigned dim, const std::vector<unsigned> &ids,
+    const Tensor &x, const std::vector<unsigned> &ids, unsigned dim,
     Tensor &y) {
   const unsigned wy = y.shape().lower_volume(dim);
   const unsigned sy = y.shape().volume();
@@ -671,7 +671,7 @@ void CUDADevice::concat_fw_impl(
 }
 
 void CUDADevice::pick_bw_impl(
-    const Tensor &gy, unsigned dim, const std::vector<unsigned>& ids,
+    const Tensor &gy, const std::vector<unsigned>& ids, unsigned dim,
     Tensor &gx) {
   const unsigned wy = gy.shape().lower_volume(dim);
   const unsigned sy = gy.shape().volume();

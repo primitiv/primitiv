@@ -245,7 +245,7 @@ TEST_F(ShapeOpsTest, CheckPick) {
     {Shape({2, 2, 2}, 3), 2, {0, 0, 0}, Shape({2, 2, 1}, 3)},
   };
   for (const TestCase &tc : test_cases) {
-    const Shape observed = pick(tc.input, tc.dim, tc.ids);
+    const Shape observed = pick(tc.input, tc.ids, tc.dim);
     EXPECT_EQ(tc.expected, observed);
   }
 }
@@ -266,7 +266,7 @@ TEST_F(ShapeOpsTest, CheckInvalidPick) {
      {Shape({2, 2, 2}, 3), 3, {1}},
   };
   for (const TestCase &tc : test_cases) {
-    EXPECT_THROW(pick(tc.input, tc.dim, tc.ids), Error);
+    EXPECT_THROW(pick(tc.input, tc.ids, tc.dim), Error);
   }
 }
 

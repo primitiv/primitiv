@@ -419,7 +419,7 @@ TEST_F(FunctionImplTest, CheckPick) {
   };
   setup_1arg();
   for (const TestCase &tc : test_cases) {
-    Pick node(tc.dim, tc.ids);
+    Pick node(tc.ids, tc.dim);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor(tc.ret_shape, 1);

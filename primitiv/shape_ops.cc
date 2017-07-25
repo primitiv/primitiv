@@ -83,7 +83,7 @@ Shape broadcast(const Shape &x, unsigned dim, unsigned size) {
   return x.resize_dim(dim, size);
 }
 
-Shape pick(const Shape &x, unsigned dim, const std::vector<unsigned> &ids) {
+Shape pick(const Shape &x, const std::vector<unsigned> &ids, unsigned dim) {
   const unsigned n = x[dim];
   const unsigned bi = ids.size();
   if (bi == 0 || (x.batch() != bi && x.has_batch() && bi > 1)) {

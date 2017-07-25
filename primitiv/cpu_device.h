@@ -49,11 +49,11 @@ private:
   void random_normal_impl(float mean, float sd, Tensor &y) override;
   void random_log_normal_impl(float mean, float sd, Tensor &y) override;
 
-  void pick_fw_impl(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids, Tensor &y) override;
+  void pick_fw_impl(const Tensor &x, const std::vector<unsigned> &ids, unsigned dim, Tensor &y) override;
   void slice_fw_impl(const Tensor &x, unsigned dim, unsigned offset, Tensor &y) override;
   void concat_fw_impl(const std::vector<const Tensor *> &xs, unsigned dim, Tensor &y) override;
 
-  void pick_bw_impl(const Tensor &gy, unsigned dim, const std::vector<unsigned> &ids, Tensor &gx) override;
+  void pick_bw_impl(const Tensor &gy, const std::vector<unsigned> &ids, unsigned dim, Tensor &gx) override;
   void slice_bw_impl(const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) override;
 
   void negate_fw_impl(const Tensor &x, Tensor &y) override;

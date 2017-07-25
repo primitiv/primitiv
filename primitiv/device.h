@@ -104,11 +104,11 @@ public:
   Tensor random_log_normal(const Shape &shape, float mean, float sd);
 
   // Tensor manipulations.
-  Tensor pick_fw(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids);
+  Tensor pick_fw(const Tensor &x, const std::vector<unsigned> &ids, unsigned dim);
   Tensor slice_fw(const Tensor &x, unsigned dim, unsigned lower, unsigned upper);
   Tensor concat_fw(const std::vector<const Tensor *> &xs, unsigned dim);
 
-  void pick_bw(const Tensor &gy, unsigned dim, const std::vector<unsigned> &ids, Tensor &gx);
+  void pick_bw(const Tensor &gy, const std::vector<unsigned> &ids, unsigned dim, Tensor &gx);
   void slice_bw(const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx);
 
   // Unary operations.
@@ -273,11 +273,11 @@ private:
   virtual void random_normal_impl(float mean, float sd, Tensor &y) = 0;
   virtual void random_log_normal_impl(float mean, float sd, Tensor &y) = 0;
 
-  virtual void pick_fw_impl(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids, Tensor &y) = 0;
+  virtual void pick_fw_impl(const Tensor &x, const std::vector<unsigned> &ids, unsigned dim, Tensor &y) = 0;
   virtual void slice_fw_impl(const Tensor &x, unsigned dim, unsigned offset, Tensor &y) = 0;
   virtual void concat_fw_impl(const std::vector<const Tensor *> &xs, unsigned dim, Tensor &y) = 0;
 
-  virtual void pick_bw_impl(const Tensor &gy, unsigned dim, const std::vector<unsigned> &ids, Tensor &gx) = 0;
+  virtual void pick_bw_impl(const Tensor &gy, const std::vector<unsigned> &ids, unsigned dim, Tensor &gx) = 0;
   virtual void slice_bw_impl(const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) = 0;
 
   virtual void negate_fw_impl(const Tensor &x, Tensor &y) = 0;

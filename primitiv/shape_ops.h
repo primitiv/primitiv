@@ -69,11 +69,11 @@ Shape broadcast(const Shape &x, unsigned dim, unsigned size);
 /**
  * Calculates the picked shape.
  * @param x A shape.
- * @param dim Dimension to pick.
  * @param ids Label IDs to be picked from the dimension `dim`.
+ * @param dim Dimension to pick.
  * @return A shape.
  */
-Shape pick(const Shape &x, unsigned dim, const std::vector<unsigned> &ids);
+Shape pick(const Shape &x, const std::vector<unsigned> &ids, unsigned dim);
 
 /**
  * Calculates the transposed shape.

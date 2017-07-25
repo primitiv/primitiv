@@ -246,7 +246,7 @@ TEST_F(TensorBackwardTest, CheckPickNN) {
     for (const TestCase &tc : test_cases) {
       Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
       const Tensor b = dev->new_tensor_by_vector(tc.b_shape, tc.b_data);
-      dev->pick_bw(b, tc.dim, tc.ids, a);
+      dev->pick_bw(b, tc.ids, tc.dim, a);
       EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
     }
   }
@@ -277,7 +277,7 @@ TEST_F(TensorBackwardTest, CheckPickN1) {
     for (const TestCase &tc : test_cases) {
       Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
       const Tensor b = dev->new_tensor_by_vector(tc.b_shape, tc.b_data);
-      dev->pick_bw(b, tc.dim, tc.ids, a);
+      dev->pick_bw(b, tc.ids, tc.dim, a);
       EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
     }
   }
@@ -316,7 +316,7 @@ TEST_F(TensorBackwardTest, CheckPick1N) {
     for (const TestCase &tc : test_cases) {
       Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
       const Tensor b = dev->new_tensor_by_vector(tc.b_shape, tc.b_data);
-      dev->pick_bw(b, tc.dim, tc.ids, a);
+      dev->pick_bw(b, tc.ids, tc.dim, a);
       EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
     }
   }
@@ -349,7 +349,7 @@ TEST_F(TensorBackwardTest, CheckInvalidPick) {
     for (const TestCase &tc : test_cases) {
       Tensor a = dev->new_tensor(tc.a_shape, 0);
       const Tensor b = dev->new_tensor(tc.b_shape, 0);
-      EXPECT_THROW(dev->pick_bw(b, tc.dim, tc.ids, a), Error);
+      EXPECT_THROW(dev->pick_bw(b, tc.ids, tc.dim, a), Error);
     }
   }
 }
@@ -365,7 +365,7 @@ TEST_F(TensorBackwardTest, CheckCopyAndPick) {
     const Tensor copied = a;
     EXPECT_EQ(static_cast<const Tensor>(a).data(), copied.data());
 
-    dev->pick_bw(b, 2, {0, 0, 0}, a);
+    dev->pick_bw(b, {0, 0, 0}, 2, a);
     EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
     EXPECT_TRUE(vector_match(a_data, copied.to_vector()));

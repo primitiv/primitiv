@@ -138,10 +138,10 @@ Tensor Device::random_log_normal(const Shape &shape, float mean, float sd) {
 }
 
 Tensor Device::pick_fw(
-    const Tensor &x, unsigned dim, const vector<unsigned> &ids) {
+    const Tensor &x, const vector<unsigned> &ids, unsigned dim) {
   CHECK_DEVICE(x);
-  Tensor y = new_tensor(shape_ops::pick(x.shape(), dim, ids));
-  pick_fw_impl(x, dim, ids, y);
+  Tensor y = new_tensor(shape_ops::pick(x.shape(), ids, dim));
+  pick_fw_impl(x, ids, dim, y);
   return y;
 }
 
@@ -166,17 +166,17 @@ Tensor Device::concat_fw(const vector<const Tensor *> &xs, unsigned dim) {
 }
 
 void Device::pick_bw(
-    const Tensor &gy, unsigned dim, const std::vector<unsigned> &ids,
+    const Tensor &gy, const std::vector<unsigned> &ids, unsigned dim,
     Tensor &gx) {
   CHECK_DEVICE(gy);
   CHECK_DEVICE(gx);
-  const Shape sy = shape_ops::pick(gx.shape(), dim, ids);
+  const Shape sy = shape_ops::pick(gx.shape(), ids, dim);
   if (gy.shape() != sy) {
     THROW_ERROR(
         "Shape mismatched. gy.shape(): " << gy.shape().to_string()
         << " != expected shape: " << sy.to_string());
   }
-  pick_bw_impl(gy, dim, ids, gx);
+  pick_bw_impl(gy, ids, dim, gx);
 }
 
 void Device::slice_bw(
