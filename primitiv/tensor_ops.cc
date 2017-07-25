@@ -1,6 +1,7 @@
 #include <config.h>
 
 #include <primitiv/device.h>
+#include <primitiv/parameter.h>
 #include <primitiv/tensor_ops.h>
 
 namespace {
@@ -84,6 +85,14 @@ Tensor operator/(const Tensor &a, const Tensor &b) {
 }
 
 namespace tensor_ops {
+
+Tensor input(const Shape &shape, const std::vector<float> &data, Device &dev) {
+  return dev.new_tensor_by_vector(shape, data);
+}
+
+Tensor input(Parameter &param) {
+  return param.value();
+}
 
 Tensor copy(const Tensor &x, Device &dev) {
   return dev.copy_tensor(x);

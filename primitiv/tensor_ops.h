@@ -7,6 +7,7 @@
 namespace primitiv {
 
 class Tensor;
+class Parameter;
 
 Tensor operator+(const Tensor &x);
 Tensor operator-(const Tensor &x);
@@ -25,6 +26,11 @@ Tensor operator/(const Tensor &a, const Tensor &b);
 
 namespace tensor_ops {
 
+Tensor input(
+    const Shape &shape, const std::vector<float> &data,
+    Device &dev = Device::get_default_device());
+Tensor input(Parameter &param);
+
 Tensor copy(const Tensor &x, Device &dev = Device::get_default_device());
 
 Tensor pick(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids);
@@ -37,6 +43,7 @@ Tensor flatten(const Tensor &x);
 
 Tensor transpose(const Tensor &x);
 Tensor matmul(const Tensor &a, const Tensor &b);
+
 Tensor sqrt(const Tensor &x);
 Tensor exp(const Tensor &x);
 Tensor tanh(const Tensor &x);

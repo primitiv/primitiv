@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 #include <primitiv/cpu_device.h>
 #include <primitiv/error.h>
+#include <primitiv/parameter.h>
 #include <primitiv/tensor.h>
 #include <primitiv/tensor_ops.h>
 #include <test_utils.h>
@@ -44,6 +45,27 @@ protected:
     }
   }
 };
+
+TEST_F(TensorOpsTest, CheckInputByVector) {
+  vector<float> data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  for (Device *dev : devices) {
+    const Tensor y = input(Shape({2, 2}, 3), data, *dev);
+    EXPECT_EQ(Shape({2, 2}, 3), y.shape());
+    EXPECT_EQ(dev, &y.device());
+    EXPECT_TRUE(vector_match(data, y.to_vector()));
+  }
+}
+
+TEST_F(TensorOpsTest, CheckInputByParameter) {
+  vector<float> data {1, 2, 3, 4};
+  for (Device *dev : devices) {
+    Parameter param("test", {2, 2}, data, *dev);
+    const Tensor y = input(param);
+    EXPECT_EQ(Shape({2, 2}), y.shape());
+    EXPECT_EQ(dev, &y.device());
+    EXPECT_TRUE(vector_match(data, y.to_vector()));
+  }
+}
 
 TEST_F(TensorOpsTest, CheckCopy) {
   vector<float> data(12);
