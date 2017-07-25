@@ -1,3 +1,6 @@
+// TODO(odashi):
+// Write unit tests of node_ops.
+
 #include <config.h>
 
 #include <vector>
@@ -14,6 +17,20 @@ namespace F = primitiv::functions;
   g.add_function(std::unique_ptr<Function>(new F::f), {__VA_ARGS__})
 
 #define REGX(x, f, ...) REG((x).graph(), f, __VA_ARGS__)
+
+namespace {
+
+using primitiv::Node;
+
+// Helper to transform pointers to nodes.
+std::vector<Node> ptr_to_obj(const std::vector<const Node *> &xs) {
+  std::vector<Node> ret;
+  ret.reserve(xs.size());
+  for (const Node *x : xs) ret.emplace_back(*x);
+  return ret;
+}
+
+}  // namespace
 
 namespace primitiv {
 
@@ -46,7 +63,6 @@ Node operator*(const Node &a, const Node &b) {
   else if (b.shape().is_scalar()) return REGX(a, MultiplyScalar(), a, b);
   else return REGX(a, Multiply(), a, b);
 }
-
 
 Node operator/(const Node &x, float k) { return REGX(x, DivideConstR(k), x); }
 Node operator/(float k, const Node &x) { return REGX(x, DivideConstL(k), x); }
@@ -83,6 +99,10 @@ Node concat(const std::vector<Node> &xs, unsigned dim) {
   if (xs.empty()) THROW_ERROR("No nodes to concat.");
   return xs[0].graph().add_function(
       std::unique_ptr<Function>(new F::Concat(dim)), xs);
+}
+
+Node concat(const std::vector<const Node *> &xs, unsigned dim) {
+  return concat(::ptr_to_obj(xs), dim);
 }
 
 Node reshape(const Node &x, const Shape &shape) {
@@ -164,12 +184,20 @@ Node sum(const std::vector<Node> &xs) {
   return ret;
 }
 
+Node sum(const std::vector<const Node *> &xs) {
+  return sum(::ptr_to_obj(xs));
+}
+
 Node mean(const Node &x, unsigned dim) {
   return (1. / x.shape()[dim]) * sum(x, dim);
 }
 
 Node mean(const std::vector<Node> &xs) {
   return sum(xs) / xs.size();
+}
+
+Node mean(const std::vector<const Node *> &xs) {
+  return mean(::ptr_to_obj(xs));
 }
 
 Node logsumexp(const Node &x, unsigned dim) {
