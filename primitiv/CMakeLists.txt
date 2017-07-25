@@ -1,17 +1,5 @@
 # Build rules of the primitiv core library.
 
-# External packages.
-find_package(Protobuf REQUIRED)
-if(PRIMITIV_USE_CUDA)
-  find_package(CUDA REQUIRED)
-endif()
-
-# Include directories.
-include_directories(${PROTOBUF_INCLUDE_DIR})
-if(PRIMITIV_USE_CUDA)
-  include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
-endif()
-
 # Builds Protobuf messages.
 protobuf_generate_cpp(primitiv_proto_SRCS primitiv_proto_HDRS messages.proto)
 

@@ -21,7 +21,20 @@ configure_file(
   ${CMAKE_CURRENT_BINARY_DIR}/config.h
 )
 
-include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
+# External packages.
+find_package(Protobuf REQUIRED)
+if(PRIMITIV_USE_CUDA)
+  find_package(CUDA REQUIRED)
+endif()
+
+# Include directories.
+include_directories(
+  ${PROJECT_SOURCE_DIR}
+  ${PROJECT_BINARY_DIR}
+  ${PROTOBUF_INCLUDE_DIR})
+if(PRIMITIV_USE_CUDA)
+  include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
+endif()
 
 # core library
 add_subdirectory(primitiv)
