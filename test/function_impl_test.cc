@@ -1209,7 +1209,7 @@ TEST_F(FunctionImplTest, CheckSparseSoftmaxCrossEntropy) {
   };
   setup_1arg();
   for (const TestCase &tc : test_cases) {
-    SparseSoftmaxCrossEntropy node(tc.dim, tc.ids);
+    SparseSoftmaxCrossEntropy node(tc.ids, tc.dim);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
     const Tensor cur_grad = dev->new_tensor(tc.ret_shape, 1);

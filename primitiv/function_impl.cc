@@ -377,7 +377,7 @@ FORWARD(SparseSoftmaxCrossEntropy) {
   log_softmax_x_ = T::log_softmax(*x[0], dim_);
   return T::pick(-log_softmax_x_, dim_, ids_);
 #else
-  return T::softmax_cross_entropy(*x[0], dim_, ids_);
+  return T::softmax_cross_entropy(*x[0], ids_, dim_);
 #endif  // PRIMITIV_USE_CACHE
 }
 

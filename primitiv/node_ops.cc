@@ -220,8 +220,8 @@ Node softmax_cross_entropy(const Node &x, const Node &t, unsigned dim) {
   return REGX(x, SoftmaxCrossEntropy(dim), x, t);
 }
 
-Node softmax_cross_entropy(const Node &x, unsigned dim, const std::vector<unsigned> &ids) {
-  return REGX(x, SparseSoftmaxCrossEntropy(dim, ids), x);
+Node softmax_cross_entropy(const Node &x, const std::vector<unsigned> &ids, unsigned dim) {
+  return REGX(x, SparseSoftmaxCrossEntropy(ids, dim), x);
 }
 
 Node dropout(const Node &x, float rate, bool enabled) {

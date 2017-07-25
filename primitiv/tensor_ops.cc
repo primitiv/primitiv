@@ -211,7 +211,7 @@ Tensor softmax_cross_entropy(const Tensor &x, const Tensor &t, unsigned dim) {
   return -sum(t * log_softmax(x, dim), dim);
 }
 
-Tensor softmax_cross_entropy(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids) {
+Tensor softmax_cross_entropy(const Tensor &x, const std::vector<unsigned> &ids, unsigned dim) {
   return pick(-log_softmax(x, dim), ids, dim);
 }
 

@@ -1663,7 +1663,7 @@ TEST_F(TensorOpsTest, CheckSparseSoftmaxCrossEntropy) {
   for (Device *dev : devices) {
     for (const TestCase &tc : test_cases) {
       const Tensor x = dev->new_tensor_by_vector(tc.x_shape, tc.x_data);
-      const Tensor y = softmax_cross_entropy(x, tc.dim, tc.ids);
+      const Tensor y = softmax_cross_entropy(x, tc.ids, tc.dim);
       EXPECT_EQ(tc.y_shape, y.shape());
       EXPECT_TRUE(vector_near(tc.y_data, y.to_vector(), 1e-6));
     }
@@ -1675,16 +1675,16 @@ TEST_F(TensorOpsTest, CheckInvalidSparseSoftmaxCrossEntropy) {
     {
       const Tensor x = dev->new_tensor({2, 2}, .5);
       const vector<unsigned> t {2};
-      EXPECT_THROW(softmax_cross_entropy(x, 0, t), Error);
-      EXPECT_THROW(softmax_cross_entropy(x, 1, t), Error);
-      EXPECT_THROW(softmax_cross_entropy(x, 2, t), Error);
+      EXPECT_THROW(softmax_cross_entropy(x, t, 0), Error);
+      EXPECT_THROW(softmax_cross_entropy(x, t, 1), Error);
+      EXPECT_THROW(softmax_cross_entropy(x, t, 2), Error);
     }
     {
       const Tensor x = dev->new_tensor(Shape({2, 2}, 2), .5);
       const vector<unsigned> t {0, 0, 0};
-      EXPECT_THROW(softmax_cross_entropy(x, 0, t), Error);
-      EXPECT_THROW(softmax_cross_entropy(x, 1, t), Error);
-      EXPECT_THROW(softmax_cross_entropy(x, 2, t), Error);
+      EXPECT_THROW(softmax_cross_entropy(x, t, 0), Error);
+      EXPECT_THROW(softmax_cross_entropy(x, t, 1), Error);
+      EXPECT_THROW(softmax_cross_entropy(x, t, 2), Error);
     }
   }
 }

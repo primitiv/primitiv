@@ -248,13 +248,13 @@ class SparseSoftmaxCrossEntropy : public Function {
   NO_CTOR_CLASS_DECL(SparseSoftmaxCrossEntropy);
 public:
   explicit SparseSoftmaxCrossEntropy(
-      unsigned dim, const std::vector<unsigned> ids) : dim_(dim), ids_(ids) {}
+      const std::vector<unsigned> ids, unsigned dim) : ids_(ids), dim_(dim) {}
   std::string name() const override {
     return "SparseSoftmaxCrossEntropy(" + std::to_string(dim_) + ')';
   }
 private:
-  unsigned dim_;
   std::vector<unsigned> ids_;
+  unsigned dim_;
   Tensor log_softmax_x_;  // Only used when PRIMITIV_USE_CACHE=ON
 };
 

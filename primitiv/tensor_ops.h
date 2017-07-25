@@ -70,7 +70,7 @@ Tensor broadcast(const Tensor &x, unsigned dim, unsigned size);
 Tensor batch_sum(const Tensor &x);
 
 Tensor softmax_cross_entropy(const Tensor &x, const Tensor &t, unsigned dim);
-Tensor softmax_cross_entropy(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids);
+Tensor softmax_cross_entropy(const Tensor &x, const std::vector<unsigned> &ids, unsigned dim);
 
 }  // namespace tensor_ops
 }  // namespace primitiv

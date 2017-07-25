@@ -75,7 +75,7 @@ Node softmax(const Node &x, unsigned dim);
 Node broadcast(const Node &x, unsigned dim, unsigned size);
 
 Node softmax_cross_entropy(const Node &x, const Node &t, unsigned dim);
-Node softmax_cross_entropy(const Node &x, unsigned dim, const std::vector<unsigned> &ids);
+Node softmax_cross_entropy(const Node &x, const std::vector<unsigned> &ids, unsigned dim);
 
 Node dropout(const Node &x, float rate, bool enabled);
 
