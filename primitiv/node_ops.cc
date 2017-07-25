@@ -101,7 +101,7 @@ Node concat(const std::vector<Node> &xs, unsigned dim) {
       std::unique_ptr<Function>(new F::Concat(dim)), xs);
 }
 
-Node concat(const std::vector<const Node *> &xs, unsigned dim) {
+Node concat_ptr(const std::vector<const Node *> &xs, unsigned dim) {
   return concat(::ptr_to_obj(xs), dim);
 }
 
@@ -184,7 +184,7 @@ Node sum(const std::vector<Node> &xs) {
   return ret;
 }
 
-Node sum(const std::vector<const Node *> &xs) {
+Node sum_ptr(const std::vector<const Node *> &xs) {
   return sum(::ptr_to_obj(xs));
 }
 
@@ -196,7 +196,7 @@ Node mean(const std::vector<Node> &xs) {
   return sum(xs) / xs.size();
 }
 
-Node mean(const std::vector<const Node *> &xs) {
+Node mean_ptr(const std::vector<const Node *> &xs) {
   return mean(::ptr_to_obj(xs));
 }
 

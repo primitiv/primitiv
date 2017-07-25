@@ -37,7 +37,7 @@ Node copy(const Node &x, Device &dev = Device::get_default_device());
 Node pick(const Node &x, unsigned dim, const std::vector<unsigned> &ids);
 Node slice(const Node &x, unsigned dim, unsigned lower, unsigned upper);
 Node concat(const std::vector<Node> &xs, unsigned dim);
-Node concat(const std::vector<const Node *> &xs, unsigned dim);
+Node concat_ptr(const std::vector<const Node *> &xs, unsigned dim);
 
 Node reshape(const Node &x, const Shape &shape);
 Node flatten(const Node &x);
@@ -64,10 +64,10 @@ Node selu(
 
 Node sum(const Node &x, unsigned dim);
 Node sum(const std::vector<Node> &xs);
-Node sum(const std::vector<const Node *> &xs);
+Node sum_ptr(const std::vector<const Node *> &xs);
 Node mean(const Node &x, unsigned dim);
 Node mean(const std::vector<Node> &xs);
-Node mean(const std::vector<const Node *> &xs);
+Node mean_ptr(const std::vector<const Node *> &xs);
 Node logsumexp(const Node &x, unsigned dim);
 Node log_softmax(const Node &x, unsigned dim);
 Node softmax(const Node &x, unsigned dim);
