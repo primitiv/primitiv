@@ -3,10 +3,10 @@
 
 #include <vector>
 #include <primitiv/device.h>
-#include <primitiv/error.h>
-#include <primitiv/tensor.h>
 
 namespace primitiv {
+
+class Tensor;
 
 Tensor operator+(const Tensor &x);
 Tensor operator-(const Tensor &x);
@@ -29,7 +29,8 @@ Tensor copy(const Tensor &x, Device &dev = Device::get_default_device());
 
 Tensor pick(const Tensor &x, unsigned dim, const std::vector<unsigned> &ids);
 Tensor slice(const Tensor &x, unsigned dim, unsigned lower, unsigned upper);
-Tensor concat(const std::vector<const Tensor *> &xs, unsigned dim);
+Tensor concat(const std::vector<Tensor> &xs, unsigned dim);
+Tensor concat_ptr(const std::vector<const Tensor *> &xs, unsigned dim);
 
 Tensor reshape(const Tensor &x, const Shape &new_shape);
 Tensor flatten(const Tensor &x);

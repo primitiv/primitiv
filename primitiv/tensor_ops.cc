@@ -3,6 +3,20 @@
 #include <primitiv/device.h>
 #include <primitiv/tensor_ops.h>
 
+namespace {
+
+using primitiv::Tensor;
+
+// Helper to transform tensors to pointers.
+std::vector<const Tensor *> obj_to_ptr(const std::vector<Tensor> &xs) {
+  std::vector<const Tensor *> ret;
+  ret.reserve(xs.size());
+  for (const Tensor &x : xs) ret.emplace_back(&x);
+  return ret;
+}
+
+}  // namespace
+
 namespace primitiv {
 
 Tensor operator+(const Tensor &x) {
@@ -83,7 +97,11 @@ Tensor slice(const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
   return x.device().slice_fw(x, dim, lower, upper);
 }
 
-Tensor concat(const std::vector<const Tensor *> &xs, unsigned dim) {
+Tensor concat(const std::vector<Tensor> &xs, unsigned dim) {
+  return concat_ptr(::obj_to_ptr(xs), dim);
+}
+
+Tensor concat_ptr(const std::vector<const Tensor *> &xs, unsigned dim) {
   if (xs.empty()) THROW_ERROR("No tensors to be concatenated.");
   return xs[0]->device().concat_fw(xs, dim);
 }
