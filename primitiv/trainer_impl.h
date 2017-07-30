@@ -12,6 +12,12 @@ public: \
 private: \
   void configure_parameter(Parameter &param) override; \
   void update_parameter(float scale, Parameter &param) override; \
+  void get_configs( \
+      std::unordered_map<std::string, unsigned> &uint_configs, \
+      std::unordered_map<std::string, float> &float_configs) const override; \
+  void set_configs( \
+      const std::unordered_map<std::string, unsigned> &uint_configs, \
+      const std::unordered_map<std::string, float> &float_configs) override;
 
 /**
  * Simple stochastic gradient descent.

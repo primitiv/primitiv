@@ -1,5 +1,6 @@
 #include <config.h>
 
+#include <cstdio>
 #include <gtest/gtest.h>
 #include <primitiv/cpu_device.h>
 #include <primitiv/error.h>
@@ -48,7 +49,28 @@ TEST_F(TrainerImplTest, CheckGivenHyperparameters) {
   EXPECT_FLOAT_EQ(4, adam.eps());
 }
 
-TEST_F(TrainerImplTest, CheckSGD) {
+TEST_F(TrainerImplTest, CheckSGDSaveLoad) {
+  SGD sgd(1);
+  sgd.set_epoch(2);
+  sgd.set_weight_decay(3);
+  sgd.set_gradient_clipping(4);
+
+  const std::string path = "/tmp/primitiv_TrainerImplTest_CheckSGDSaveLoad.data";
+  sgd.save(path);
+
+  std::shared_ptr<Trainer> loaded = Trainer::load(path);
+  std::remove(path.c_str());
+
+  ASSERT_EQ("SGD", loaded->name());
+
+  std::shared_ptr<SGD> sgd2 = std::static_pointer_cast<SGD>(loaded);
+  EXPECT_EQ(1, sgd2->eta());
+  EXPECT_EQ(2, sgd2->get_epoch());
+  EXPECT_EQ(3, sgd2->get_weight_decay());
+  EXPECT_EQ(4, sgd2->get_gradient_clipping());
+}
+
+TEST_F(TrainerImplTest, CheckSGDUpdate) {
   Parameter param("param", {2, 2}, {1, 2, 3, 4}, dev);
   ASSERT_TRUE(vector_match(
         vector<float> {1, 2, 3, 4}, param.value().to_vector()));
@@ -76,7 +98,31 @@ TEST_F(TrainerImplTest, CheckSGD) {
   }
 }
 
-TEST_F(TrainerImplTest, CheckAdam) {
+TEST_F(TrainerImplTest, CheckAdamSaveLoad) {
+  Adam adam(1, 2, 3, 4);
+  adam.set_epoch(5);
+  adam.set_weight_decay(6);
+  adam.set_gradient_clipping(7);
+
+  const std::string path = "/tmp/primitiv_TrainerImplTest_CheckAdamSaveLoad.data";
+  adam.save(path);
+
+  std::shared_ptr<Trainer> loaded = Trainer::load(path);
+  std::remove(path.c_str());
+
+  ASSERT_EQ("Adam", loaded->name());
+
+  std::shared_ptr<Adam> adam2 = std::static_pointer_cast<Adam>(loaded);
+  EXPECT_EQ(1, adam2->alpha());
+  EXPECT_EQ(2, adam2->beta1());
+  EXPECT_EQ(3, adam2->beta2());
+  EXPECT_EQ(4, adam2->eps());
+  EXPECT_EQ(5, adam2->get_epoch());
+  EXPECT_EQ(6, adam2->get_weight_decay());
+  EXPECT_EQ(7, adam2->get_gradient_clipping());
+}
+
+TEST_F(TrainerImplTest, CheckAdamUpdate) {
   Parameter param("param", {2, 2}, {1, 2, 3, 4}, dev);
   ASSERT_TRUE(vector_match(
         vector<float> {1, 2, 3, 4}, param.value().to_vector()));

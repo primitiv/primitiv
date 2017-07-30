@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_TRAINER_H_
 #define PRIMITIV_TRAINER_H_
 
+#include <memory>
 #include <unordered_map>
 #include <primitiv/error.h>
 
@@ -20,6 +21,19 @@ public:
   virtual ~Trainer() = default;
 
   Trainer() : epoch_(0), lr_scale_(1), l2_strength_(0), clip_threshold_(0) {}
+
+  /**
+   * Loads a trainer from the file.
+   * @param path Path of the file that stores trainer parameters.
+   * @return A shared pointer of the Trainer object.
+   */
+  static std::shared_ptr<Trainer> load(const std::string &path);
+
+  /**
+   * Saves the parameters to a file.
+   * @param path Path of the file that will store trainer parameters.
+   */
+  void save(const std::string &path);
 
   /**
    * Retrieves the name of the trainer.
@@ -125,6 +139,24 @@ private:
    * @param scale Additional learning rate scaling factor.
    */
   virtual void update_parameter(float scale, Parameter &param) = 0;
+
+  /**
+   * Gathers additional configurations.
+   * @param uint_configs Configurations with unsigned type.
+   * @param float_configs Configurations with float type.
+   */
+  virtual void get_configs(
+      std::unordered_map<std::string, unsigned> &uint_configs,
+      std::unordered_map<std::string, float> &float_configs) const = 0;
+
+  /**
+   * Sets additional configurations.
+   * @param uint_configs Configurations with unsigned type.
+   * @param float_configs Configurations with float type.
+   */
+  virtual void set_configs(
+      const std::unordered_map<std::string, unsigned> &uint_configs,
+      const std::unordered_map<std::string, float> &float_configs) = 0;
 };
 
 }  // namespace primitiv
