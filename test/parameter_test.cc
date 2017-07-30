@@ -1,5 +1,6 @@
 #include <config.h>
 
+#include <cstdio>
 #include <vector>
 #include <gtest/gtest.h>
 #include <primitiv/cpu_device.h>
@@ -199,12 +200,14 @@ TEST_F(ParameterTest, CheckSaveLoad) {
   Device::set_default_device(dev);
   const Shape shape {2, 2};
   const vector<float> values {1, 2, 3, 4};
-  const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveLoad_p.yaml";
   const Parameter p1("test", shape, values);
 
+  const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveLoad.data";
   p1.save(path);
 
   const Parameter p2 = Parameter::load(path);
+  std::remove(path.c_str());
+
   EXPECT_EQ("test", p2.name());
   EXPECT_EQ(shape, p2.shape());
   EXPECT_TRUE(vector_match(values, p2.value().to_vector()));
@@ -214,14 +217,16 @@ TEST_F(ParameterTest, CheckSaveLoadWithStats) {
   Device::set_default_device(dev);
   const Shape shape {2, 2};
   const vector<float> values {1, 2, 3, 4};
-  const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveLoad_p.yaml";
   Parameter p1("test", shape, values);
   p1.add_stats("a", {2, 2});
   p1.stats("a").reset_by_vector(values);
 
+  const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveLoadWithStats.data";
   p1.save(path);
 
   const Parameter p2 = Parameter::load(path);
+  std::remove(path.c_str());
+
   EXPECT_EQ("test", p2.name());
   EXPECT_EQ(shape, p2.shape());
   EXPECT_TRUE(vector_match(values, p2.value().to_vector()));
@@ -233,14 +238,16 @@ TEST_F(ParameterTest, CheckSaveWithoutStats) {
   Device::set_default_device(dev);
   const Shape shape {2, 2};
   const vector<float> values {1, 2, 3, 4};
-  const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveLoad_p.yaml";
   Parameter p1("test", shape, values);
   p1.add_stats("a", {2, 2});
   p1.stats("a").reset_by_vector(values);
 
+  const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveWithoutStats.data";
   p1.save(path, false);
 
   const Parameter p2 = Parameter::load(path);
+  std::remove(path.c_str());
+
   EXPECT_EQ("test", p2.name());
   EXPECT_EQ(shape, p2.shape());
   EXPECT_TRUE(vector_match(values, p2.value().to_vector()));
@@ -251,14 +258,16 @@ TEST_F(ParameterTest, CheckLoadWithoutStats) {
   Device::set_default_device(dev);
   const Shape shape {2, 2};
   const vector<float> values {1, 2, 3, 4};
-  const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveLoad_p.yaml";
   Parameter p1("test", shape, values);
   p1.add_stats("a", {2, 2});
   p1.stats("a").reset_by_vector(values);
 
+  const std::string path = "/tmp/primitiv_ParameterTest_CheckLoadWithoutStats.data";
   p1.save(path);
 
   const Parameter p2 = Parameter::load(path, false);
+  std::remove(path.c_str());
+
   EXPECT_EQ("test", p2.name());
   EXPECT_EQ(shape, p2.shape());
   EXPECT_TRUE(vector_match(values, p2.value().to_vector()));
