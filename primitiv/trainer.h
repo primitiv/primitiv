@@ -22,6 +22,12 @@ public:
   Trainer() : epoch_(0), lr_scale_(1), l2_strength_(0), clip_threshold_(0) {}
 
   /**
+   * Retrieves the name of the trainer.
+   * @return Name of the trainer.
+   */
+  virtual std::string name() const = 0;
+
+  /**
    * Retrieves current epoch.
    * @return Current epoch.
    */

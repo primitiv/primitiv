@@ -6,7 +6,9 @@
 namespace primitiv {
 namespace trainers {
 
-#define DECL_DEFAULTS(name) \
+#define DECL_DEFAULTS(name_) \
+public: \
+  std::string name() const override { return #name_; } \
 private: \
   void configure_parameter(Parameter &param) override; \
   void update_parameter(float scale, Parameter &param) override; \

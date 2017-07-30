@@ -19,6 +19,13 @@ protected:
   CPUDevice dev;
 };
 
+TEST_F(TrainerImplTest, CheckNames) {
+  SGD sgd;
+  EXPECT_EQ("SGD", sgd.name());
+  Adam adam;
+  EXPECT_EQ("Adam", adam.name());
+}
+
 TEST_F(TrainerImplTest, CheckDefaultHyperparameters) {
   SGD sgd;
   EXPECT_FLOAT_EQ(.1, sgd.eta());
