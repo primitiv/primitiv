@@ -45,9 +45,10 @@
 #include <primitiv/primitiv.h>
 #include <primitiv/primitiv_cuda.h>
 
+#include "lstm.h"
+
 using namespace std;
 using namespace primitiv;
-using primitiv::trainers::Adam;
 namespace F = primitiv::node_ops;
 namespace I = primitiv::initializers;
 
@@ -197,35 +198,6 @@ vector<vector<unsigned>> make_batch(
   return batch;
 }
 
-// Helper to save trainer status.
-void save_trainer(const string &path, Adam &trainer) {
-  ofstream ofs;
-  ::open_file(path, ofs);
-  ofs << trainer.get_epoch() << endl;
-  ofs << trainer.get_learning_rate_scaling() << endl;
-  ofs << trainer.get_weight_decay() << endl;
-  ofs << trainer.get_gradient_clipping() << endl;
-  ofs << trainer.alpha() << endl;
-  ofs << trainer.beta1() << endl;
-  ofs << trainer.beta2() << endl;
-  ofs << trainer.eps() << endl;
-}
-
-// Helper to load trainer status.
-Adam load_trainer(const string &path) {
-  ifstream ifs;
-  ::open_file(path, ifs);
-  unsigned epoch;
-  float lr_scale, wd, gc, a, b1, b2, eps;
-  ifs >> epoch >> lr_scale >> wd >> gc >> a >> b1 >> b2 >> eps;
-  Adam trainer(a, b1, b2, eps);
-  trainer.set_epoch(epoch);
-  trainer.set_learning_rate_scaling(lr_scale);
-  trainer.set_weight_decay(wd);
-  trainer.set_gradient_clipping(gc);
-  return trainer;
-}
-
 // Helper to save current ppl.
 void save_ppl(const string &path, float ppl) {
   ofstream ofs;
@@ -254,78 +226,6 @@ unsigned argmax(const vector<float> &logits) {
   }
   return ret;
 }
-
-// Hand-written LSTM with input/forget/output gates and no peepholes.
-// Formulation:
-//   i = sigmoid(W_xi . x[t] + W_hi . h[t-1] + b_i)
-//   f = sigmoid(W_xf . x[t] + W_hf . h[t-1] + b_f)
-//   o = sigmoid(W_xo . x[t] + W_ho . h[t-1] + b_o)
-//   j = tanh   (W_xj . x[t] + W_hj . h[t-1] + b_j)
-//   c[t] = i * j + f * c[t-1]
-//   h[t] = o * tanh(c[t])
-class LSTM {
-public:
-  LSTM(const string &name, unsigned in_size, unsigned out_size)
-    : name_(name)
-    , out_size_(out_size)
-    , pwxh_(name_ + "_wxh", {4 * out_size, in_size}, I::XavierUniform())
-    , pwhh_(name_ + "_whh", {4 * out_size, out_size}, I::XavierUniform())
-    , pbh_(name_ + "_bh", {4 * out_size}, I::Constant(0)) {}
-
-  // Loads all parameters.
-  LSTM(const string &name, const string &prefix)
-    : name_(name)
-    , pwxh_(Parameter::load(prefix + name_ + "_wxh.param"))
-    , pwhh_(Parameter::load(prefix + name_ + "_whh.param"))
-    , pbh_(Parameter::load(prefix + name_ + "_bh.param")) {
-      out_size_ = pbh_.shape()[0] / 4;
-  }
-
-  // Saves all parameters.
-  void save(const string &prefix) const {
-    pwxh_.save(prefix + name_ + "_wxh.param");
-    pwhh_.save(prefix + name_ + "_whh.param");
-    pbh_.save(prefix + name_ + "_bh.param");
-  }
-
-  // Adds parameters to the trainer.
-  void register_training(Trainer &trainer) {
-    trainer.add_parameter(pwxh_);
-    trainer.add_parameter(pwhh_);
-    trainer.add_parameter(pbh_);
-  }
-
-  // Initializes internal values.
-  void init(const Node &init_c = Node(), const Node &init_h = Node()) {
-    wxh_ = F::input(pwxh_);
-    whh_ = F::input(pwhh_);
-    bh_ = F::input(pbh_);
-    c_ = init_c.valid() ? init_c : F::zeros({out_size_});
-    h_ = init_h.valid() ? init_h : F::zeros({out_size_});
-  }
-
-  // One step forwarding.
-  Node forward(const Node &x) {
-    const Node u = F::matmul(wxh_, x) + F::matmul(whh_, h_) + bh_;
-    const Node i = F::sigmoid(F::slice(u, 0, 0, out_size_));
-    const Node f = F::sigmoid(F::slice(u, 0, out_size_, 2 * out_size_));
-    const Node o = F::sigmoid(F::slice(u, 0, 2 * out_size_, 3 * out_size_));
-    const Node j = F::tanh(F::slice(u, 0, 3 * out_size_, 4 * out_size_));
-    c_ = i * j + f * c_;
-    h_ = o * F::tanh(c_);
-    return h_;
-  }
-
-  // Retrieves current states.
-  Node get_c() const { return c_; }
-  Node get_h() const { return h_; }
-
-private:
-  string name_;
-  unsigned out_size_;
-  Parameter pwxh_, pwhh_, pbh_;
-  Node wxh_, whh_, bh_, h_, c_;
-};
 
 // Encoder-decoder translation model with dot-attention.
 class EncoderDecoder {
@@ -360,7 +260,7 @@ public:
     , trg_lstm_(name_ + "_trg_lstm", prefix) {
       embed_size_ = pbj_.shape()[0];
       ifstream ifs;
-      ::open_file(prefix + name_ + "_config.txt", ifs);
+      ::open_file(prefix + name_ + "_config.config", ifs);
       ifs >> dropout_rate_;
     }
 
@@ -376,7 +276,7 @@ public:
     src_bw_lstm_.save(prefix);
     trg_lstm_.save(prefix);
     ofstream ofs;
-    ::open_file(prefix + name_ + "_config.txt", ofs);
+    ::open_file(prefix + name_ + "_config.config", ofs);
     ofs << dropout_rate_ << endl;
   }
 
@@ -473,7 +373,7 @@ private:
 
 // Training encoder decoder model.
 void train(
-    EncoderDecoder &encdec, Adam &trainer, const string &prefix,
+    EncoderDecoder &encdec, Trainer &trainer, const string &prefix,
     float best_valid_ppl) {
   // Registers all parameters to the trainer.
   encdec.register_training(trainer);
@@ -559,8 +459,8 @@ void train(
       best_valid_ppl = valid_ppl;
       cout << "  saving model/trainer ... " << flush;
       encdec.save(prefix + '.');
-      ::save_trainer(prefix + ".trainer.txt", trainer);
-      ::save_ppl(prefix + ".valid_ppl.txt", best_valid_ppl);
+      trainer.save(prefix + ".trainer.config");
+      ::save_ppl(prefix + ".valid_ppl.config", best_valid_ppl);
       cout << "done." << endl;
     } else {
       // Learning rate decay by 1/sqrt(2)
@@ -636,17 +536,17 @@ int main(const int argc, const char *argv[]) {
     EncoderDecoder encdec("encdec",
         SRC_VOCAB_SIZE, TRG_VOCAB_SIZE,
         NUM_EMBED_UNITS, NUM_HIDDEN_UNITS, DROPOUT_RATE);
-    Adam trainer;
+    trainers::Adam trainer;
     trainer.set_weight_decay(1e-6);
     trainer.set_gradient_clipping(5);
     ::train(encdec, trainer, prefix, 1e10);
   } else if (mode == "resume") {
     cerr << "loading model/trainer ... " << flush;
     EncoderDecoder encdec("encdec", prefix + '.');
-    Adam trainer = ::load_trainer(prefix + ".trainer.txt");
-    float valid_ppl = ::load_ppl(prefix + ".valid_ppl.txt");
+    shared_ptr<Trainer> trainer = Trainer::load(prefix + ".trainer.config");
+    float valid_ppl = ::load_ppl(prefix + ".valid_ppl.config");
     cerr << "done." << endl;
-    ::train(encdec, trainer, prefix, valid_ppl);
+    ::train(encdec, *trainer, prefix, valid_ppl);
   } else {  // mode == "test"
     cerr << "loading model ... ";
     EncoderDecoder encdec("encdec", prefix + '.');
