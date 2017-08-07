@@ -29,26 +29,18 @@
 //   $ ./a.out test <model_prefix> < data/test.en > test.hyp.ja
 
 #include <algorithm>
-#include <fstream>
-#include <iostream>
-#include <queue>
 #include <random>
-#include <sstream>
-#include <string>
-#include <utility>
-#include <vector>
 
 #include <primitiv/primitiv.h>
 #include <primitiv/primitiv_cuda.h>
 
 #include "lstm.h"
+#include "utils.h"
 
-using namespace std;
 using namespace primitiv;
+using namespace std;
 namespace F = primitiv::node_ops;
 namespace I = primitiv::initializers;
-
-namespace {
 
 static const unsigned SRC_VOCAB_SIZE = 4000;
 static const unsigned TRG_VOCAB_SIZE = 5000;
@@ -63,165 +55,6 @@ static const char *SRC_TRAIN_FILE = "data/train.en";
 static const char *TRG_TRAIN_FILE = "data/train.ja";
 static const char *SRC_VALID_FILE = "data/dev.en";
 static const char *TRG_VALID_FILE = "data/dev.ja";
-
-// Helper to open fstream
-template <class FStreamT>
-void open_file(const string &path, FStreamT &fs) {
-  fs.open(path);
-  if (!fs.is_open()) {
-    cerr << "File could not be opened: " + path << endl;
-    exit(1);
-  }
-}
-
-// Gathers the set of words from space-separated corpus and makes a vocabulary.
-unordered_map<string, unsigned> make_vocab(const string &path, unsigned size) {
-  if (size < 3) {
-    cerr << "vocab size should be equal-to or greater-than 3." << endl;
-    exit(1);
-  }
-  ifstream ifs;
-  ::open_file(path, ifs);
-
-  // Counts all word existences.
-  unordered_map<string, unsigned> freq;
-  string line, word;
-  while (getline(ifs, line)) {
-    stringstream ss(line);
-    while (getline(ss, word, ' ')) ++freq[word];
-  }
-
-  // Sorting.
-  using freq_t = pair<string, unsigned>;
-  auto cmp = [](const freq_t &a, const freq_t &b) {
-    return a.second < b.second;
-  };
-  priority_queue<freq_t, vector<freq_t>, decltype(cmp)> q(cmp);
-  for (const auto &x : freq) q.push(x);
-
-  // Chooses top size-3 frequent words to make the vocabulary.
-  unordered_map<string, unsigned> vocab;
-  vocab.insert(make_pair("<unk>", 0));
-  vocab.insert(make_pair("<bos>", 1));
-  vocab.insert(make_pair("<eos>", 2));
-  for (unsigned i = 3; i < size; ++i) {
-    vocab.insert(make_pair(q.top().first, i));
-    q.pop();
-  }
-  return vocab;
-}
-
-// Generates ID-to-word dictionary.
-vector<string> make_inv_vocab(const unordered_map<string, unsigned> &vocab) {
-  vector<string> ret(vocab.size());
-  for (const auto &kv : vocab) {
-    ret[kv.second] = kv.first;
-  }
-  return ret;
-}
-
-// Generates word ID list from a sentence.
-vector<unsigned> line_to_sent(
-    const string &line, const unordered_map<string, unsigned> &vocab) {
-  const unsigned unk_id = vocab.at("<unk>");
-  string converted = "<bos> " + line + " <eos>";
-  stringstream ss(converted);
-  vector<unsigned> sent;
-  string word;
-  while (getline(ss, word, ' ')) {
-    const auto it = vocab.find(word);
-    if (it != vocab.end()) sent.emplace_back(it->second);
-    else sent.emplace_back(unk_id);
-  }
-  return sent;
-}
-
-// Generates word ID list from a corpus.
-// All out-of-vocab words are replaced to <unk>.
-vector<vector<unsigned>> load_corpus(
-    const string &path, const unordered_map<string, unsigned> &vocab) {
-  const unsigned unk_id = vocab.at("<unk>");
-  ifstream ifs;
-  ::open_file(path, ifs);
-  vector<vector<unsigned>> corpus;
-  string line, word;
-  while (getline(ifs, line)) corpus.emplace_back(::line_to_sent(line, vocab));
-  return corpus;
-}
-
-// Counts output labels in the corpus.
-unsigned count_labels(const vector<vector<unsigned>> &corpus) {
-  unsigned ret = 0;
-  for (const auto &sent : corpus) ret += sent.size() - 1;  // w/o <bos>
-  return ret;
-}
-
-// Extracts a minibatch from loaded corpus
-// NOTE(odashi):
-// Lengths of all sentences are adjusted to the maximum one in the minibatch.
-// All additional subsequences are filled by <eos>. E.g.,
-//   input: {
-//     {<bos>, w1, <eos>},
-//     {<bos>, w1, w2, w3, w4, <eos>},
-//     {<bos>, w1, w2, <eos>},
-//     {<bos>, w1, w2, w3, <eos>},
-//   }
-//   output: {
-//     {<bos>, <bos>, <bos>, <bos>},
-//     {   w1,    w1,    w1,    w1},
-//     {<eos>,    w2,    w2,    w2},
-//     {<eos>,    w3, <eos>,    w3},
-//     {<eos>,    w4, <eos>, <eos>},
-//     {<eos>, <eos>, <eos>, <eos>},
-//   }
-vector<vector<unsigned>> make_batch(
-    const vector<vector<unsigned>> &corpus,
-    const vector<unsigned> &sent_ids,
-    const unordered_map<string, unsigned> &vocab) {
-  const unsigned batch_size = sent_ids.size();
-  const unsigned eos_id = vocab.at("<eos>");
-  unsigned max_len = 0;
-  for (const unsigned sid : sent_ids) {
-    max_len = std::max<unsigned>(max_len, corpus[sid].size());
-  }
-  vector<vector<unsigned>> batch(max_len, vector<unsigned>(batch_size, eos_id));
-  for (unsigned i = 0; i < batch_size; ++i) {
-    const auto &sent = corpus[sent_ids[i]];
-    for (unsigned j = 0; j < sent.size(); ++j) {
-      batch[j][i] = sent[j];
-    }
-  }
-  return batch;
-}
-
-// Helper to save current ppl.
-void save_ppl(const string &path, float ppl) {
-  ofstream ofs;
-  ::open_file(path, ofs);
-  ofs << ppl << endl;
-}
-
-// Helper to load last ppl.
-float load_ppl(const string &path) {
-  ifstream ifs;
-  ::open_file(path, ifs);
-  float ppl;
-  ifs >> ppl;
-  return ppl;
-}
-
-// Finds a word ID with the highest logit.
-unsigned argmax(const vector<float> &logits) {
-  unsigned ret = -1;
-  float best = -1e10;
-  for (unsigned i = 0; i < logits.size(); ++i) {
-    if (logits[i] > best) {
-      ret = i;
-      best = logits[i];
-    }
-  }
-  return ret;
-}
 
 // Encoder-decoder translation model.
 class EncoderDecoder {
@@ -453,8 +286,6 @@ void test(EncoderDecoder &encdec) {
   }
 }
 
-}  // namespace
-
 int main(const int argc, const char *argv[]) {
   if (argc != 3) {
     cerr << "usage: " << argv[0]
@@ -477,7 +308,7 @@ int main(const int argc, const char *argv[]) {
   cerr << "done." << endl;
 
   if (mode == "train") {
-    EncoderDecoder encdec("encdec",
+    ::EncoderDecoder encdec("encdec",
         SRC_VOCAB_SIZE, TRG_VOCAB_SIZE,
         NUM_EMBED_UNITS, NUM_HIDDEN_UNITS, DROPOUT_RATE);
     trainers::Adam trainer;
@@ -486,14 +317,14 @@ int main(const int argc, const char *argv[]) {
     ::train(encdec, trainer, prefix, 1e10);
   } else if (mode == "resume") {
     cerr << "loading model/trainer ... " << flush;
-    EncoderDecoder encdec("encdec", prefix + '.');
+    ::EncoderDecoder encdec("encdec", prefix + '.');
     shared_ptr<Trainer> trainer = Trainer::load(prefix + ".trainer.config");
     float valid_ppl = ::load_ppl(prefix + ".valid_ppl.config");
     cerr << "done." << endl;
     ::train(encdec, *trainer, prefix, valid_ppl);
   } else {  // mode == "test"
     cerr << "loading model ... ";
-    EncoderDecoder encdec("encdec", prefix + '.');
+    ::EncoderDecoder encdec("encdec", prefix + '.');
     cerr << "done." << endl;
     ::test(encdec);
   }

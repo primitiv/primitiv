@@ -1,5 +1,5 @@
-#ifndef LSTM_H_
-#define LSTM_H_
+#ifndef PRIMITIV_EXAMPLE_ENCDEC_LSTM_H_
+#define PRIMITIV_EXAMPLE_ENCDEC_LSTM_H_
 
 #include <string>
 
@@ -84,4 +84,4 @@ private:
   primitiv::Node wxh_, whh_, bh_, h_, c_;
 };
 
-#endif  // LSTM_H_
+#endif  // PRIMITIV_EXAMPLE_ENCDEC_LSTM_H_
