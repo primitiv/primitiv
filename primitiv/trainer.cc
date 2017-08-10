@@ -45,7 +45,7 @@ std::shared_ptr<Trainer> Trainer::load(const std::string &path) {
   return trainer;
 }
 
-void Trainer::save(const std::string &path) {
+void Trainer::save(const std::string &path) const {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   std::unordered_map<std::string, unsigned> uint_configs;

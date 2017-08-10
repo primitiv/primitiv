@@ -33,7 +33,7 @@ public:
    * Saves the parameters to a file.
    * @param path Path of the file that will store trainer parameters.
    */
-  void save(const std::string &path);
+  void save(const std::string &path) const;
 
   /**
    * Retrieves the name of the trainer.
