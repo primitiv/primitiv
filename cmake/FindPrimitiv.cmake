@@ -37,11 +37,11 @@ find_library(PRIMITIV_LIBRARIES NAMES primitiv
 )
 
 if (PRIMITIV_INCLUDE_DIR AND PRIMITIV_LIBRARIES)
-  message("-- Primitiv found.")
+  message("-- Found Primitiv: " ${PRIMITIV_LIBRARIES})
   #message("-- Primitiv include dir: " ${PRIMITIV_INCLUDE_DIR})
   #message("-- Primitiv libraries: " ${PRIMITIV_LIBRARIES})
   set(PRIMITIV_FOUND ON)
 else()
-  message(STATUS "Primitiv not found.")
+  message(STATUS "Primitiv is not installed.")
   set(PRIMITIV_FOUND OFF)
 endif()
