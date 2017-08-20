@@ -84,18 +84,6 @@ public:
    */
   Device &device() const;
 
-  /**
-   * Returns the value of the node.
-   * @return A Tensor object if the node has been forwarded.
-   */
-  const Tensor &value() const;
-
-  /**
-   * Returns the gradient of the node.
-   * @return A Tensor object if the node has been backwarded.
-   */
-  const Tensor &gradient() const;
-
 private:
   /**
    * Creates a new node pointer.
@@ -182,24 +170,6 @@ public:
   Device &get_device(const Node &node) const;
 
   /**
-   * Retrieves the value of the node.
-   * @param node Node object specifying the target node.
-   * @return Calculated value if it is already calculated, or an invalid tensor
-   *         otherwise.
-   * @remarks This method does not affect the internal information of the graph.
-   */
-  const Tensor &get_value(const Node &node) const;
-
-  /**
-   * Retrieves the gradient of the node.
-   * @param node Node object specifying the target node.
-   * @return Calculated value if it is already calculated, or an invalid tensor
-   *         otherwise.
-   * @remarks This method does not affect the internal information of the graph.
-   */
-  const Tensor &get_gradient(const Node &node) const;
-
-  /**
    * Dump internal graphs.
    */
   void dump() const;
@@ -225,8 +195,8 @@ private:
   struct NodeInfo {
     Shape shape;
     Device &device;
-    std::unique_ptr<Tensor> value;
-    std::unique_ptr<Tensor> grad;
+    Tensor value;
+    Tensor grad;
     std::vector<unsigned> sinks;
   };
 
@@ -253,16 +223,6 @@ inline const Shape &Node::shape() const {
 inline Device &Node::device() const {
   if (!valid()) THROW_ERROR("Invalid node.");
   return g_->get_device(*this);
-}
-
-inline const Tensor &Node::value() const {
-  if (!valid()) THROW_ERROR("Invalid node.");
-  return g_->get_value(*this);
-}
-
-inline const Tensor &Node::gradient() const {
-  if (!valid()) THROW_ERROR("Invalid node.");
-  return g_->get_gradient(*this);
 }
 
 }  // namespace primitiv
