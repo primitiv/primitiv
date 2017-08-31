@@ -14,11 +14,6 @@ namespace operators {
 
 Node dropout(const Node &x, float rate, bool enabled);
 
-namespace batch {
-Node mean(const Node &x);
-Node normalize(const Node &x);
-}  // namespace batch
-
 Node zeros(
     const Shape &shape,
     Device &dev = Device::get_default_device(),

@@ -151,7 +151,7 @@ public:
    * @param node Node object specifying the output node.
    * @remarks `node` should point to a node in the forward path, i.e., the same
    *          node used to call `forward()`, or an ancestor node of that.
-   *          Descendant nodes of `node` are removed from the backward path.
+   *          Descendant nodes of `node` will be pruned from the backward path.
    */
   void backward(const Node &node);
 
