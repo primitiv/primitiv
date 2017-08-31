@@ -41,7 +41,7 @@ TEST_F(GraphTest, CheckMoveNode) {
   Graph g;
   Graph::set_default_graph(g);
 
-  Node x1 = node_ops::zeros({2, 2});
+  Node x1 = operators::zeros({2, 2});
   ASSERT_TRUE(x1.valid());
   const unsigned fid = x1.function_id();
   const unsigned vid = x1.value_id();
@@ -91,9 +91,9 @@ TEST_F(GraphTest, CheckMultipleDevices) {
   const vector<float> data2 {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
   const vector<float> data3 {1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6};
   const vector<float> grad(12, 1);
-  const Node x1 = node_ops::input(Shape({2, 2}, 3), data1);
-  const Node x2 = node_ops::input(Shape({2, 2}, 3), data2, dev2);
-  const Node x3 = node_ops::copy(x1, dev2) + x2;
+  const Node x1 = operators::input<Node>(Shape({2, 2}, 3), data1);
+  const Node x2 = operators::input<Node>(Shape({2, 2}, 3), data2, dev2);
+  const Node x3 = operators::copy(x1, dev2) + x2;
   EXPECT_EQ(Shape({2, 2}, 3), x3.shape());
   EXPECT_EQ(&dev, &x1.device());
   EXPECT_EQ(&dev2, &x2.device());
@@ -117,8 +117,8 @@ TEST_F(GraphTest, CheckInvalidMultipleDevices) {
   Graph::set_default_graph(g);
 
   const vector<float> dummy(12);
-  const Node x1 = node_ops::input(Shape({2, 2}, 3), dummy);
-  const Node x2 = node_ops::input(Shape({2, 2}, 3), dummy, dev2);
+  const Node x1 = operators::input<Node>(Shape({2, 2}, 3), dummy);
+  const Node x2 = operators::input<Node>(Shape({2, 2}, 3), dummy, dev2);
   const Node x3 = x1 + x2;
   EXPECT_THROW(g.forward(x3), Error);
 }
@@ -132,16 +132,16 @@ TEST_F(GraphTest, CheckForwardBackward) {
   const vector<float> data1 {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4};
   const vector<float> data3 {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
   vector<Node> nodes;
-  nodes.emplace_back(node_ops::input(Shape({2, 2}, 3), data1));
-  nodes.emplace_back(node_ops::ones({2, 2}));
-  nodes.emplace_back(node_ops::input(Shape({2, 2}, 3), data3));
+  nodes.emplace_back(operators::input<Node>(Shape({2, 2}, 3), data1));
+  nodes.emplace_back(operators::ones({2, 2}));
+  nodes.emplace_back(operators::input<Node>(Shape({2, 2}, 3), data3));
   nodes.emplace_back(nodes[0] + nodes[1]);
   nodes.emplace_back(nodes[1] - nodes[2]);
   nodes.emplace_back(nodes[3] * nodes[4]);
   nodes.emplace_back(nodes[5] + 1);
-  nodes.emplace_back(node_ops::sum(nodes[6], 0));
-  nodes.emplace_back(node_ops::sum(nodes[7], 1));
-  nodes.emplace_back(node_ops::batch::sum(nodes[8]));
+  nodes.emplace_back(operators::sum(nodes[6], 0));
+  nodes.emplace_back(operators::sum(nodes[7], 1));
+  nodes.emplace_back(operators::batch::sum(nodes[8]));
 
   EXPECT_EQ(10u, nodes.size());
   EXPECT_EQ(10u, g.num_functions());
@@ -227,22 +227,22 @@ TEST_F(GraphTest, CheckXor) {
 
   vector<Node> nodes;
   // sources
-  nodes.emplace_back(node_ops::input(Shape({2}, 4), inputs));
-  nodes.emplace_back(node_ops::input(w1));
-  nodes.emplace_back(node_ops::input(b1));
-  nodes.emplace_back(node_ops::input(w2));
-  nodes.emplace_back(node_ops::input(b2));
+  nodes.emplace_back(operators::input<Node>(Shape({2}, 4), inputs));
+  nodes.emplace_back(operators::input<Node>(w1));
+  nodes.emplace_back(operators::input<Node>(b1));
+  nodes.emplace_back(operators::input<Node>(w2));
+  nodes.emplace_back(operators::input<Node>(b2));
   // calculation
-  nodes.emplace_back(node_ops::matmul(nodes[1], nodes[0]));
+  nodes.emplace_back(operators::matmul(nodes[1], nodes[0]));
   nodes.emplace_back(nodes[5] + nodes[2]);
-  nodes.emplace_back(node_ops::tanh(nodes[6]));
-  nodes.emplace_back(node_ops::matmul(nodes[3], nodes[7]));
+  nodes.emplace_back(operators::tanh(nodes[6]));
+  nodes.emplace_back(operators::matmul(nodes[3], nodes[7]));
   nodes.emplace_back(nodes[8] + nodes[4]);
   // losses
-  nodes.emplace_back(node_ops::input(Shape({}, 4), outputs));
+  nodes.emplace_back(operators::input<Node>(Shape({}, 4), outputs));
   nodes.emplace_back(nodes[9] - nodes[10]);
   nodes.emplace_back(nodes[11] * nodes[11]);
-  nodes.emplace_back(node_ops::batch::sum(nodes[12]));
+  nodes.emplace_back(operators::batch::sum(nodes[12]));
 
   EXPECT_EQ(nodes.size(), g.num_functions());
   g.dump();
@@ -308,27 +308,27 @@ TEST_F(GraphTest, CheckLSTM) {
   Graph g;
   Graph::set_default_graph(g);
 
-  using node_ops::matmul;
-  using node_ops::input;
-  using node_ops::sigmoid;
-  using node_ops::tanh;
-  using node_ops::zeros;
+  using operators::matmul;
+  using operators::input;
+  using operators::sigmoid;
+  using operators::tanh;
+  using operators::zeros;
 
-  const Node x = input(Shape({2}, 2), {2, -2, 0.5, -0.5});
-  const Node h = input(Shape({2}, 2), {-1, 1, -0.5, 0.5});
+  const Node x = input<Node>(Shape({2}, 2), {2, -2, 0.5, -0.5});
+  const Node h = input<Node>(Shape({2}, 2), {-1, 1, -0.5, 0.5});
   const Node c = zeros({2});
-  const Node Wix = input(pWix);
-  const Node Wfx = input(pWfx);
-  const Node Wox = input(pWox);
-  const Node Wjx = input(pWjx);
-  const Node Wih = input(pWih);
-  const Node Wfh = input(pWfh);
-  const Node Woh = input(pWoh);
-  const Node Wjh = input(pWjh);
-  const Node bi = input(pbi);
-  const Node bf = input(pbf);
-  const Node bo = input(pbo);
-  const Node bj = input(pbj);
+  const Node Wix = input<Node>(pWix);
+  const Node Wfx = input<Node>(pWfx);
+  const Node Wox = input<Node>(pWox);
+  const Node Wjx = input<Node>(pWjx);
+  const Node Wih = input<Node>(pWih);
+  const Node Wfh = input<Node>(pWfh);
+  const Node Woh = input<Node>(pWoh);
+  const Node Wjh = input<Node>(pWjh);
+  const Node bi = input<Node>(pbi);
+  const Node bf = input<Node>(pbf);
+  const Node bo = input<Node>(pbo);
+  const Node bj = input<Node>(pbj);
 
   const Node i = sigmoid(matmul(Wix, x) + matmul(Wih, h) + bi);
   const Node f = sigmoid(matmul(Wfx, x) + matmul(Wfh, h) + bf);
@@ -402,19 +402,19 @@ TEST_F(GraphTest, CheckConcatLSTM) {
 
   Graph g;
   Graph::set_default_graph(g);
-  using node_ops::matmul;
-  using node_ops::input;
-  using node_ops::sigmoid;
-  using node_ops::slice;
-  using node_ops::tanh;
-  using node_ops::zeros;
+  using operators::matmul;
+  using operators::input;
+  using operators::sigmoid;
+  using operators::slice;
+  using operators::tanh;
+  using operators::zeros;
 
-  const Node x = input(Shape({2}, 2), {2, -2, 0.5, -0.5});
-  const Node h = input(Shape({2}, 2), {-1, 1, -0.5, 0.5});
+  const Node x = input<Node>(Shape({2}, 2), {2, -2, 0.5, -0.5});
+  const Node h = input<Node>(Shape({2}, 2), {-1, 1, -0.5, 0.5});
   const Node c = zeros({2});
-  const Node Wx = input(pWx);
-  const Node Wh = input(pWh);
-  const Node b = input(pb);
+  const Node Wx = input<Node>(pWx);
+  const Node Wh = input<Node>(pWh);
+  const Node b = input<Node>(pb);
 
   const Node u = matmul(Wx, x) + matmul(Wh, h) + b;
   const Node i = sigmoid(slice(u, 0, 0, 2));

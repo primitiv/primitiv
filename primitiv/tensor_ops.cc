@@ -20,64 +20,78 @@ std::vector<const Tensor *> obj_to_ptr(const std::vector<Tensor> &xs) {
 
 namespace primitiv {
 
+template<>
 Tensor operator+(const Tensor &x) {
   return x;
 }
 
+template<>
 Tensor operator-(const Tensor &x) {
   return x.device().negate_fw(x);
 }
 
+template<>
 Tensor operator+(const Tensor &x, float k) {
   return x.device().add_const_fw(x, k);
 }
 
+template<>
 Tensor operator+(float k, const Tensor &x) {
   return x.device().add_const_fw(x, k);
 }
 
+template<>
 Tensor operator+(const Tensor &a, const Tensor &b) {
   if (a.shape().is_scalar()) return a.device().add_scalar_fw(b, a);
   else if (b.shape().is_scalar()) return a.device().add_scalar_fw(a, b);
   else return a.device().add_fw(a, b);
 }
 
+template<>
 Tensor operator-(const Tensor &x, float k) {
   return x.device().subtract_const_r_fw(x, k);
 }
 
+template<>
 Tensor operator-(float k, const Tensor &x) {
   return x.device().subtract_const_l_fw(x, k);
 }
 
+template<>
 Tensor operator-(const Tensor &a, const Tensor &b) {
   if (a.shape().is_scalar()) return a.device().subtract_scalar_l_fw(b, a);
   else if (b.shape().is_scalar()) return a.device().subtract_scalar_r_fw(a, b);
   else return a.device().subtract_fw(a, b);
 }
 
+template<>
 Tensor operator*(const Tensor &x, float k) {
   return x.device().multiply_const_fw(x, k);
 }
 
+template<>
 Tensor operator*(float k, const Tensor &x) {
   return x.device().multiply_const_fw(x, k);
 }
 
+template<>
 Tensor operator*(const Tensor &a, const Tensor &b) {
   if (a.shape().is_scalar()) return a.device().multiply_scalar_fw(b, a);
   else if (b.shape().is_scalar()) return a.device().multiply_scalar_fw(a, b);
   else return a.device().multiply_fw(a, b);
 }
 
+template<>
 Tensor operator/(const Tensor &x, float k) {
   return x.device().divide_const_r_fw(x, k);
 }
 
+template<>
 Tensor operator/(float k, const Tensor &x) {
   return x.device().divide_const_l_fw(x, k);
 }
 
+template<>
 Tensor operator/(const Tensor &a, const Tensor &b) {
   if (a.shape().is_scalar()) return a.device().divide_scalar_l_fw(b, a);
   else if (b.shape().is_scalar()) return a.device().divide_scalar_r_fw(a, b);
@@ -204,11 +218,6 @@ Tensor elu(const Tensor &x, float a) {
 }
 
 template<>
-Tensor selu(const Tensor &x, float a, float s) {
-  return s * elu(x, a);
-}
-
-template<>
 Tensor sum(const Tensor &x, unsigned dim) {
   return x.device().sum_fw(x, dim);
 }
@@ -239,7 +248,8 @@ Tensor softmax_cross_entropy(const Tensor &x, const Tensor &t, unsigned dim) {
 }
 
 template<>
-Tensor softmax_cross_entropy(const Tensor &x, const std::vector<unsigned> &ids, unsigned dim) {
+Tensor softmax_cross_entropy(
+    const Tensor &x, const std::vector<unsigned> &ids, unsigned dim) {
   return pick(-log_softmax(x, dim), ids, dim);
 }
 

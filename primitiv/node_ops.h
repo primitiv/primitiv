@@ -12,12 +12,6 @@ class Parameter;
 
 namespace operators {
 
-Node sum(const std::vector<Node> &xs);
-Node sum_ptr(const std::vector<const Node *> &xs);
-Node mean(const Node &x, unsigned dim);
-Node mean(const std::vector<Node> &xs);
-Node mean_ptr(const std::vector<const Node *> &xs);
-
 Node dropout(const Node &x, float rate, bool enabled);
 
 namespace batch {

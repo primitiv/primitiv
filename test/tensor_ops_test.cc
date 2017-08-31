@@ -381,7 +381,7 @@ TEST_F(TensorOpsTest, CheckInvalidConcat) {
     // NOTE(odashi): Now these lines generate compile errors.
     //EXPECT_THROW(concat({}, 0), Error);
     //EXPECT_THROW(concat_ptr({}, 0), Error);
-    
+
     EXPECT_NO_THROW(concat({a, b}, 0));
     EXPECT_THROW(concat({a, b}, 1), Error);
     EXPECT_THROW(concat({a, b}, 2), Error);

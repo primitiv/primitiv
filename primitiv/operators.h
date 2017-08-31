@@ -2,56 +2,91 @@
 #define PRIMITIV_OPERATORS_H_
 
 #include <initializer_list>
+#include <type_traits>
 #include <vector>
 
 #include <primitiv/device.h>
+#include <primitiv/error.h>
 #include <primitiv/graph.h>
 
 namespace primitiv {
 
+namespace type_traits {
+
+// NOTE(odashi):
+// The template variable `Var` could becomes only either `Tensor` or `Node`.
+
+template<typename Var> struct is_var : std::false_type {};
+template<> struct is_var<Tensor> : std::true_type {};
+template<> struct is_var<Node> : std::true_type {};
+
+template<typename Var>
+using Identity = typename std::enable_if<is_var<Var>::value, Var>::type;
+
+template<typename Container>
+using Reduce = typename std::enable_if<
+  is_var<typename Container::value_type>::value,
+  typename Container::value_type
+>::type;
+
+template<typename Container>
+using ReducePtr = typename std::enable_if<
+  std::is_pointer<typename Container::value_type>::value &&
+  is_var<
+    typename std::remove_const<
+      typename std::remove_pointer<typename Container::value_type>::type
+    >::type
+  >::value,
+  typename std::remove_const<
+    typename std::remove_pointer<typename Container::value_type>::type
+  >::type
+>::type;
+
+}  // namespace type_traits
+
 class Parameter;
 
-Tensor operator+(const Tensor &x);
-Node operator+(const Node &x);
+template<typename Var>
+type_traits::Identity<Var> operator+(const Var &x);
 
-Tensor operator-(const Tensor &x);
-Node operator-(const Node &x);
+template<typename Var>
+type_traits::Identity<Var> operator-(const Var &x);
 
-Tensor operator+(const Tensor &x, float k);
-Node operator+(const Node &x, float k);
+template<typename Var>
+type_traits::Identity<Var> operator+(const Var &x, float k);
 
-Tensor operator+(float k, const Tensor &x);
-Node operator+(float k, const Node &x);
+template<typename Var>
+type_traits::Identity<Var> operator+(float k, const Var &x);
 
-Tensor operator+(const Tensor &a, const Tensor &b);
-Node operator+(const Node &a, const Node &b);
+template<typename Var>
+type_traits::Identity<Var> operator+(const Var &a, const Var &b);
 
-Tensor operator-(const Tensor &x, float k);
-Node operator-(const Node &x, float k);
+template<typename Var>
+type_traits::Identity<Var> operator-(const Var &x, float k);
 
-Tensor operator-(float k, const Tensor &x);
-Node operator-(float k, const Node &x);
+template<typename Var>
+type_traits::Identity<Var> operator-(float k, const Var &x);
 
-Tensor operator-(const Tensor &a, const Tensor &b);
-Node operator-(const Node &a, const Node &b);
+template<typename Var>
+type_traits::Identity<Var> operator-(const Var &a, const Var &b);
 
-Tensor operator*(const Tensor &x, float k);
-Node operator*(const Node &x, float k);
+template<typename Var>
+type_traits::Identity<Var> operator*(const Var &x, float k);
 
-Tensor operator*(float k, const Tensor &x);
-Node operator*(float k, const Node &x);
+template<typename Var>
+type_traits::Identity<Var> operator*(float k, const Var &x);
 
-Tensor operator*(const Tensor &a, const Tensor &b);
-Node operator*(const Node &a, const Node &b);
+template<typename Var>
+type_traits::Identity<Var> operator*(const Var &a, const Var &b);
 
-Tensor operator/(const Tensor &x, float k);
-Node operator/(const Node &x, float k);
+template<typename Var>
+type_traits::Identity<Var> operator/(const Var &x, float k);
 
-Tensor operator/(float k, const Tensor &x);
-Node operator/(float k, const Node &x);
+template<typename Var>
+type_traits::Identity<Var> operator/(float k, const Var &x);
 
-Tensor operator/(const Tensor &a, const Tensor &b);
-Node operator/(const Node &a, const Node &b);
+template<typename Var>
+type_traits::Identity<Var> operator/(const Var &a, const Var &b);
 
 namespace operators {
 
@@ -59,20 +94,21 @@ Tensor input_tensor(
     const Shape &shape,
     const std::vector<float> &data,
     Device &dev = Device::get_default_device());
+
 Node input_node(
     const Shape &shape,
     const std::vector<float> &data,
     Device &dev = Device::get_default_device(),
     Graph &g = Graph::get_default_graph());
 
-template<class NodeT>
-NodeT input(
+template<typename Var>
+type_traits::Identity<Var> input(
     const Shape &shape,
     const std::vector<float> &data,
     Device &dev = Device::get_default_device());
 
 template<>
-inline Tensor input(
+inline Tensor input<Tensor>(
     const Shape &shape,
     const std::vector<float> &data,
     Device &dev) {
@@ -80,7 +116,7 @@ inline Tensor input(
 }
 
 template<>
-inline Node input(
+inline Node input<Node>(
     const Shape &shape,
     const std::vector<float> &data,
     Device &dev) {
@@ -88,118 +124,200 @@ inline Node input(
 }
 
 Tensor input_tensor(Parameter &param);
+
 Node input_node(Parameter &param, Graph &g = Graph::get_default_graph());
-template<class NodeT>
-NodeT input(Parameter &param);
 
-template<class NodeT>
-NodeT copy(const NodeT &x, Device &dev = Device::get_default_device());
+template<typename Var>
+type_traits::Identity<Var> input(Parameter &param);
 
-template<class NodeT>
-NodeT pick(const NodeT &x, const std::vector<unsigned> &ids, unsigned dim);
-
-template<class NodeT>
-NodeT slice(const NodeT &x, unsigned dim, unsigned lower, unsigned upper);
-
-template<class NodeT>
-NodeT concat(const std::vector<NodeT> &xs, unsigned dim);
-
-template<class NodeT>
-inline NodeT concat(const std::initializer_list<NodeT> &xs, unsigned dim) {
-  return concat(std::vector<NodeT>(xs), dim);
+template<>
+inline Tensor input<Tensor>(Parameter &param) {
+  return input_tensor(param);
 }
 
-template<class NodeT>
-NodeT concat_ptr(const std::vector<const NodeT *> &xs, unsigned dim);
-
-template<class NodeT>
-inline NodeT concat_ptr(
-    const std::initializer_list<const NodeT *> &xs, unsigned dim) {
-  return concat_ptr(std::vector<const NodeT *>(xs), dim);
+template<>
+inline Node input<Node>(Parameter &param) {
+  return input_node(param);
 }
 
-template<class NodeT>
-NodeT reshape(const NodeT &x, const Shape &new_shape);
+template<typename Var>
+type_traits::Identity<Var> copy(
+    const Var &x, Device &dev = Device::get_default_device());
 
-template<class NodeT>
-NodeT flatten(const NodeT &x);
+template<typename Var>
+type_traits::Identity<Var> pick(
+    const Var &x, const std::vector<unsigned> &ids, unsigned dim);
 
-template<class NodeT>
-NodeT transpose(const NodeT &x);
+template<typename Var>
+type_traits::Identity<Var> slice(
+    const Var &x, unsigned dim, unsigned lower, unsigned upper);
 
-template<class NodeT>
-NodeT matmul(const NodeT &a, const NodeT &b);
+template<typename Var>
+type_traits::Identity<Var> concat(const std::vector<Var> &xs, unsigned dim);
 
-template<class NodeT>
-NodeT sqrt(const NodeT &x);
+template<typename Var>
+type_traits::Identity<Var> concat(
+    const std::initializer_list<Var> xs, unsigned dim) {
+  return concat(std::vector<Var>(xs), dim);
+}
 
-template<class NodeT>
-NodeT exp(const NodeT &x);
+template<typename Container>
+inline type_traits::Reduce<Container> concat(
+    const Container &xs, unsigned dim) {
+  using Var = type_traits::Reduce<Container>;
+  return concat(std::vector<Var>(xs.begin(), xs.end()), dim);
+}
 
-template<class NodeT>
-NodeT tanh(const NodeT &x);
+template<typename Var>
+type_traits::Identity<Var> concat_ptr(
+    const std::vector<const Var *> &xs, unsigned dim);
 
-template<class NodeT>
-NodeT sigmoid(const NodeT &x);
+template<typename Var>
+type_traits::Identity<Var> concat_ptr(
+    const std::initializer_list<const Var *> xs, unsigned dim) {
+  return concat_ptr(std::vector<const Var *>(xs), dim);
+}
 
-template<class NodeT>
-NodeT softplus(const NodeT &x);
+template<typename Container>
+inline type_traits::ReducePtr<Container> concat_ptr(
+    const Container &xs, unsigned dim) {
+  using Var = type_traits::ReducePtr<Container>;
+  return concat_ptr(std::vector<const Var *>(xs.begin(), xs.end()), dim);
+}
 
-template<class NodeT>
-NodeT sin(const NodeT &x);
+template<typename Var>
+type_traits::Identity<Var> reshape(const Var &x, const Shape &new_shape);
 
-template<class NodeT>
-NodeT cos(const NodeT &x);
+template<typename Var>
+type_traits::Identity<Var> flatten(const Var &x);
 
-template<class NodeT>
-NodeT tan(const NodeT &x);
+template<typename Var>
+type_traits::Identity<Var> transpose(const Var &x);
 
-template<class NodeT>
-NodeT relu(const NodeT &x);
+template<typename Var>
+type_traits::Identity<Var> matmul(const Var &a, const Var &b);
 
-template<class NodeT>
-NodeT lrelu(const NodeT &x);
+template<typename Var>
+type_traits::Identity<Var> sqrt(const Var &x);
 
-template<class NodeT>
-NodeT prelu(const NodeT &x, float a);
+template<typename Var>
+type_traits::Identity<Var> exp(const Var &x);
 
-template<class NodeT>
-NodeT elu(const NodeT &x, float a);
+template<typename Var>
+type_traits::Identity<Var> tanh(const Var &x);
 
-template<class NodeT>
-NodeT selu(
-    const NodeT &x,
+template<typename Var>
+type_traits::Identity<Var> sigmoid(const Var &x);
+
+template<typename Var>
+type_traits::Identity<Var> softplus(const Var &x);
+
+template<typename Var>
+type_traits::Identity<Var> sin(const Var &x);
+
+template<typename Var>
+type_traits::Identity<Var> cos(const Var &x);
+
+template<typename Var>
+type_traits::Identity<Var> tan(const Var &x);
+
+template<typename Var>
+type_traits::Identity<Var> relu(const Var &x);
+
+template<typename Var>
+type_traits::Identity<Var> lrelu(const Var &x);
+
+template<typename Var>
+type_traits::Identity<Var> prelu(const Var &x, float a);
+
+template<typename Var>
+type_traits::Identity<Var> elu(const Var &x, float a);
+
+template<typename Var>
+inline Var selu(
+    const Var &x,
     float a = 1.6732632423543772848170429916717,
-    float s = 1.0507009873554804934193349852946);
+    float s = 1.0507009873554804934193349852946) {
+  return s * elu(x, a);
+}
 
-template<class NodeT>
-NodeT sum(const NodeT &x, unsigned dim);
+template<typename Var>
+type_traits::Identity<Var> sum(const Var &x, unsigned dim);
 
-template<class NodeT>
-NodeT broadcast(const NodeT &x, unsigned dim, unsigned size);
+template<typename Container>
+inline type_traits::Reduce<Container> sum(const Container &xs) {
+  using Var = type_traits::Reduce<Container>;
+  if (xs.empty()) THROW_ERROR("No nodes to sum.");
+  auto it = xs.begin();
+  Var ret = *it++;
+  while (it != xs.end()) ret += *it++;
+  return ret;
+}
 
-template<class NodeT>
-NodeT logsumexp(const NodeT &x, unsigned dim);
+template<typename Container>
+inline type_traits::ReducePtr<Container> sum_ptr(const Container &xs) {
+  using Var = type_traits::ReducePtr<Container>;
+  if (xs.empty()) THROW_ERROR("No nodes to sum.");
+  auto it = xs.begin();
+  Var ret = **it++;
+  while (it != xs.end()) ret += **it++;
+  return ret;
+}
 
-template<class NodeT>
-NodeT log_softmax(const NodeT &x, unsigned dim);
+template<typename Var>
+inline type_traits::Identity<Var> mean(const Var &x, unsigned dim) {
+  return sum(x, dim) / x.shape()[dim];
+}
 
-template<class NodeT>
-NodeT softmax(const NodeT &x, unsigned dim);
+template<typename Container>
+inline type_traits::Reduce<Container> mean(const Container &xs) {
+  return sum(xs) / xs.size();
+}
 
-template<class NodeT>
-NodeT softmax_cross_entropy(const NodeT &x, const NodeT &t, unsigned dim);
+template<typename Container>
+inline type_traits::ReducePtr<Container> mean_ptr(const Container &xs) {
+  return sum_ptr(xs) / xs.size();
+}
 
-template<class NodeT>
-NodeT softmax_cross_entropy(
-    const NodeT &x,
-    const std::vector<unsigned> &ids,
-    unsigned dim);
+template<typename Var>
+type_traits::Identity<Var> broadcast(const Var &x, unsigned dim, unsigned size);
+
+template<typename Var>
+type_traits::Identity<Var> logsumexp(const Var &x, unsigned dim);
+
+template<typename Var>
+type_traits::Identity<Var> log_softmax(const Var &x, unsigned dim);
+
+template<typename Var>
+type_traits::Identity<Var> softmax(const Var &x, unsigned dim);
+
+template<typename Var>
+type_traits::Identity<Var> softmax_cross_entropy(
+    const Var &x, const Var &t, unsigned dim);
+
+template<typename Var>
+type_traits::Identity<Var> softmax_cross_entropy(
+    const Var &x, const std::vector<unsigned> &ids, unsigned dim);
 
 namespace batch {
 
-template<class NodeT>
-NodeT sum(const NodeT &x);
+template<typename Var>
+type_traits::Identity<Var> sum(const Var &x);
+
+template<typename Var>
+inline type_traits::Identity<Var> mean(const Var &x) {
+  return sum(x) / x.shape().batch();
+}
+
+template <typename Var>
+inline type_traits::Identity<Var> normalize(const Var &x) {
+  if (!x.shape().has_batch()) return x;  // No meaning of normalization.
+  const unsigned b = x.shape().batch();
+  const float scale = b / (b - 1.);
+  const Var m = mean(x);
+  const Var v = scale * (mean(x * x) - m * m);
+  return (x - m) / sqrt(v + 1e-8);
+}
 
 }  // namespace batch
 
