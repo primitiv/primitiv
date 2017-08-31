@@ -4,8 +4,8 @@
 #include <fstream>
 #include <primitiv/error.h>
 #include <primitiv/messages.pb.h>
+#include <primitiv/operators.h>
 #include <primitiv/parameter.h>
-#include <primitiv/tensor_ops.h>
 #include <primitiv/trainer.h>
 #include <primitiv/trainer_impl.h>
 
@@ -99,7 +99,7 @@ void Trainer::update() {
     float sq_norm = 0;
     for (const auto &kv : params_) {
       const Tensor &g = kv.second->gradient();
-      sq_norm += tensor_ops::sum(tensor_ops::flatten(g * g), 0).to_vector()[0];
+      sq_norm += operators::sum(operators::flatten(g * g), 0).to_vector()[0];
     }
     if (sq_norm > clip_threshold_ * clip_threshold_) {
       float clip_scale = clip_threshold_ / std::sqrt(sq_norm);

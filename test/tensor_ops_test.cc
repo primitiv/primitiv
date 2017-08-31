@@ -7,9 +7,9 @@
 #include <gtest/gtest.h>
 #include <primitiv/cpu_device.h>
 #include <primitiv/error.h>
+#include <primitiv/operators.h>
 #include <primitiv/parameter.h>
 #include <primitiv/tensor.h>
-#include <primitiv/tensor_ops.h>
 #include <test_utils.h>
 
 #ifdef PRIMITIV_USE_CUDA
@@ -21,7 +21,7 @@ using test_utils::vector_match;
 using test_utils::vector_near;
 
 namespace primitiv {
-namespace tensor_ops {
+namespace operators {
 
 class TensorOpsTest : public testing::Test {
 protected:
@@ -49,7 +49,7 @@ protected:
 TEST_F(TensorOpsTest, CheckInputByVector) {
   vector<float> data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
   for (Device *dev : devices) {
-    const Tensor y = input(Shape({2, 2}, 3), data, *dev);
+    const Tensor y = input<Tensor>(Shape({2, 2}, 3), data, *dev);
     EXPECT_EQ(Shape({2, 2}, 3), y.shape());
     EXPECT_EQ(dev, &y.device());
     EXPECT_TRUE(vector_match(data, y.to_vector()));
@@ -60,7 +60,7 @@ TEST_F(TensorOpsTest, CheckInputByParameter) {
   vector<float> data {1, 2, 3, 4};
   for (Device *dev : devices) {
     Parameter param("test", {2, 2}, data, *dev);
-    const Tensor y = input(param);
+    const Tensor y = input<Tensor>(param);
     EXPECT_EQ(Shape({2, 2}), y.shape());
     EXPECT_EQ(dev, &y.device());
     EXPECT_TRUE(vector_match(data, y.to_vector()));
@@ -378,7 +378,10 @@ TEST_F(TensorOpsTest, CheckInvalidConcat) {
     const Tensor c = dev->new_tensor(Shape({1, 42}, 3), 0);
     const Tensor d = dev->new_tensor({2, 42}, 0);
 
-    EXPECT_THROW(concat({}, 0), Error);
+    // NOTE(odashi): Now these lines generate compile errors.
+    //EXPECT_THROW(concat({}, 0), Error);
+    //EXPECT_THROW(concat_ptr({}, 0), Error);
+    
     EXPECT_NO_THROW(concat({a, b}, 0));
     EXPECT_THROW(concat({a, b}, 1), Error);
     EXPECT_THROW(concat({a, b}, 2), Error);
@@ -392,7 +395,6 @@ TEST_F(TensorOpsTest, CheckInvalidConcat) {
     EXPECT_THROW(concat({a, d}, 1), Error);
     EXPECT_THROW(concat({a, d}, 2), Error);
 
-    EXPECT_THROW(concat_ptr({}, 0), Error);
     EXPECT_NO_THROW(concat_ptr({&a, &b}, 0));
     EXPECT_THROW(concat_ptr({&a, &b}, 1), Error);
     EXPECT_THROW(concat_ptr({&a, &b}, 2), Error);
@@ -1549,7 +1551,7 @@ TEST_F(TensorOpsTest, CheckBatchSum) {
   };
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 2, 2}, 2), x_data);
-    const Tensor y = batch_sum(x);
+    const Tensor y = batch::sum(x);
     EXPECT_EQ(Shape({2, 2, 2}), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
@@ -1689,5 +1691,5 @@ TEST_F(TensorOpsTest, CheckInvalidSparseSoftmaxCrossEntropy) {
   }
 }
 
-}  // namespace tensor_ops
+}  // namespace operators
 }  // namespace primitiv

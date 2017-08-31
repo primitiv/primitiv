@@ -2,8 +2,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <primitiv/operators.h>
 #include <primitiv/parameter.h>
-#include <primitiv/tensor_ops.h>
 #include <primitiv/trainer_impl.h>
 
 namespace primitiv {
@@ -45,7 +45,7 @@ void Adam::update_parameter(float scale, Parameter &param) {
   m2 = beta2_ * m2 + (1 - beta2_) * g * g;
   const Tensor mm1 = m1 / (1 - std::pow(beta1_, epoch));
   const Tensor mm2 = m2 / (1 - std::pow(beta2_, epoch));
-  param.value() -= (scale * alpha_) * mm1 / (tensor_ops::sqrt(mm2) + eps_);
+  param.value() -= (scale * alpha_) * mm1 / (operators::sqrt(mm2) + eps_);
 }
 
 void Adam::get_configs(

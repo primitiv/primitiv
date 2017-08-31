@@ -9,6 +9,7 @@
 #include <primitiv/graph.h>
 #include <primitiv/node_ops.h>
 #include <primitiv/shape.h>
+#include <primitiv/operators.h>
 #include <primitiv/parameter.h>
 
 namespace F = primitiv::functions;
@@ -35,9 +36,11 @@ std::vector<Node> ptr_to_obj(const std::vector<const Node *> &xs) {
 namespace primitiv {
 
 Node operator+(const Node &x) { return REGX(x, Positive(), x); }
+
 Node operator-(const Node &x) { return REGX(x, Negative(), x); }
 
 Node operator+(const Node &x, float k) { return REGX(x, AddConst(k), x); }
+
 Node operator+(float k, const Node &x) { return REGX(x, AddConst(k), x); }
 
 Node operator+(const Node &a, const Node &b) {
@@ -47,6 +50,7 @@ Node operator+(const Node &a, const Node &b) {
 }
 
 Node operator-(const Node &x, float k) { return REGX(x, SubtractConstR(k), x); }
+
 Node operator-(float k, const Node &x) { return REGX(x, SubtractConstL(k), x); }
 
 Node operator-(const Node &a, const Node &b) {
@@ -56,6 +60,7 @@ Node operator-(const Node &a, const Node &b) {
 }
 
 Node operator*(const Node &x, float k) { return REGX(x, MultiplyConst(k), x); }
+
 Node operator*(float k, const Node &x) { return REGX(x, MultiplyConst(k), x); }
 
 Node operator*(const Node &a, const Node &b) {
@@ -65,6 +70,7 @@ Node operator*(const Node &a, const Node &b) {
 }
 
 Node operator/(const Node &x, float k) { return REGX(x, DivideConstR(k), x); }
+
 Node operator/(float k, const Node &x) { return REGX(x, DivideConstL(k), x); }
 
 Node operator/(const Node &a, const Node &b) {
@@ -73,13 +79,14 @@ Node operator/(const Node &a, const Node &b) {
   else return REGX(a, Divide(), a, b);
 }
 
-namespace node_ops {
+namespace operators {
 
-Node input(const Shape &shape, const std::vector<float> &data, Device &dev, Graph &g) {
+Node input_node(
+    const Shape &shape, const std::vector<float> &data, Device &dev, Graph &g) {
   return REG(g, Input(shape, data, dev));
 }
 
-Node input(Parameter &param, Graph &g) {
+Node input_node(Parameter &param, Graph &g) {
   return REG(g, ParameterInput(param));
 }
 
@@ -188,6 +195,10 @@ Node sum_ptr(const std::vector<const Node *> &xs) {
   return sum(::ptr_to_obj(xs));
 }
 
+Node broadcast(const Node &x, unsigned dim, unsigned size) {
+  return REGX(x, Broadcast(dim, size), x);
+}
+
 Node mean(const Node &x, unsigned dim) {
   return (1. / x.shape()[dim]) * sum(x, dim);
 }
@@ -210,10 +221,6 @@ Node log_softmax(const Node &x, unsigned dim) {
 
 Node softmax(const Node &x, unsigned dim) {
   return exp(log_softmax(x, dim));
-}
-
-Node broadcast(const Node &x, unsigned dim, unsigned size) {
-  return REGX(x, Broadcast(dim, size), x);
 }
 
 Node softmax_cross_entropy(const Node &x, const Node &t, unsigned dim) {
@@ -284,5 +291,6 @@ Node log_normal(const Shape &shape, float mean, float sd, Device &dev, Graph &g)
 
 }  // namespace random
 
-}  // namespace node_ops
+}  // namespace operators
+
 }  // namespace primitiv

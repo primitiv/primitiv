@@ -15,13 +15,13 @@ set(primitiv_base_HDRS
   initializer.h
   initializer_impl.h
   node_ops.h
+  operators.h
   parameter.h
   primitiv.h
   primitiv_cuda.h
   shape.h
   shape_ops.h
   tensor.h
-  tensor_ops.h
   trainer.h
   trainer_impl.h)
 
