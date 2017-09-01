@@ -100,12 +100,14 @@ Tensor operator/(const Tensor &a, const Tensor &b) {
 
 namespace operators {
 
-Tensor input_tensor(
+template<>
+Tensor input<Tensor>(
     const Shape &shape, const std::vector<float> &data, Device &dev) {
   return dev.new_tensor_by_vector(shape, data);
 }
 
-Tensor input_tensor(Parameter &param) {
+template<>
+Tensor input<Tensor>(Parameter &param) {
   return param.value();
 }
 
@@ -260,7 +262,8 @@ Tensor sum(const Tensor &x) {
 
 }  // namespace batch
 
-Tensor constant_tensor(const Shape &shape, float k, Device &dev) {
+template<>
+Tensor constant<Tensor>(const Shape &shape, float k, Device &dev) {
   return dev.new_tensor(shape, k);
 }
 

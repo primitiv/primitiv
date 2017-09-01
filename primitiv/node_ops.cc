@@ -95,13 +95,24 @@ Node operator/(const Node &a, const Node &b) {
 
 namespace operators {
 
-Node input_node(
+Node input(
     const Shape &shape, const std::vector<float> &data, Device &dev, Graph &g) {
   return REG(g, Input(shape, data, dev));
 }
 
-Node input_node(Parameter &param, Graph &g) {
+template<>
+Node input<Node>(
+    const Shape &shape, const std::vector<float> &data, Device &dev) {
+  return input(shape, data, dev, Graph::get_default_graph());
+}
+
+Node input(Parameter &param, Graph &g) {
   return REG(g, ParameterInput(param));
+}
+
+template<>
+Node input<Node>(Parameter &param) {
+  return input(param, Graph::get_default_graph());
 }
 
 template<>
@@ -262,8 +273,13 @@ Node sum(const Node &x) {
 
 }  // namespace batch
 
-Node constant_node(const Shape &shape, float k, Device &dev, Graph &g) {
+Node constant(const Shape &shape, float k, Device &dev, Graph &g) {
   return REG(g, Constant(shape, k, dev));
+}
+
+template<>
+Node constant<Node>(const Shape &shape, float k, Device &dev) {
+  return constant(shape, k, dev, Graph::get_default_graph());
 }
 
 namespace random {

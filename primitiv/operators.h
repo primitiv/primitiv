@@ -90,16 +90,11 @@ type_traits::Identity<Var> operator/(const Var &a, const Var &b);
 
 namespace operators {
 
-Tensor input_tensor(
+Node input(
     const Shape &shape,
     const std::vector<float> &data,
-    Device &dev = Device::get_default_device());
-
-Node input_node(
-    const Shape &shape,
-    const std::vector<float> &data,
-    Device &dev = Device::get_default_device(),
-    Graph &g = Graph::get_default_graph());
+    Device &dev,
+    Graph &g);
 
 template<typename Var>
 type_traits::Identity<Var> input(
@@ -107,38 +102,10 @@ type_traits::Identity<Var> input(
     const std::vector<float> &data,
     Device &dev = Device::get_default_device());
 
-template<>
-inline Tensor input<Tensor>(
-    const Shape &shape,
-    const std::vector<float> &data,
-    Device &dev) {
-  return input_tensor(shape, data, dev);
-}
-
-template<>
-inline Node input<Node>(
-    const Shape &shape,
-    const std::vector<float> &data,
-    Device &dev) {
-  return input_node(shape, data, dev);
-}
-
-Tensor input_tensor(Parameter &param);
-
-Node input_node(Parameter &param, Graph &g = Graph::get_default_graph());
+Node input_node(Parameter &param, Graph &g);
 
 template<typename Var>
 type_traits::Identity<Var> input(Parameter &param);
-
-template<>
-inline Tensor input<Tensor>(Parameter &param) {
-  return input_tensor(param);
-}
-
-template<>
-inline Node input<Node>(Parameter &param) {
-  return input_node(param);
-}
 
 template<typename Var>
 type_traits::Identity<Var> copy(
@@ -321,41 +288,15 @@ inline type_traits::Identity<Var> normalize(const Var &x) {
 
 }  // namespace batch
 
-Tensor constant_tensor(
-    const Shape &shape, float k,
-    Device &dev = Device::get_default_device());
-
-Node constant_node(
-    const Shape &shape, float k,
-    Device &dev = Device::get_default_device(),
-    Graph &g = Graph::get_default_graph());
+Node constant(const Shape &shape, float k, Device &dev, Graph &g);
 
 template<typename Var>
 type_traits::Identity<Var> constant(
     const Shape &shape, float k,
     Device &dev = Device::get_default_device());
 
-template<>
-inline Tensor constant<Tensor>(const Shape &shape, float k, Device &dev) {
-  return constant_tensor(shape, k, dev);
-}
-
-template<>
-inline Node constant<Node>(const Shape &shape, float k, Device &dev) {
-  return constant_node(shape, k, dev);
-}
-
-inline Tensor zeros_tensor(
-    const Shape &shape,
-    Device &dev = Device::get_default_device()) {
-  return constant_tensor(shape, 0, dev);
-}
-
-inline Node zeros_node(
-    const Shape &shape,
-    Device &dev = Device::get_default_device(),
-    Graph &g = Graph::get_default_graph()) {
-  return constant_node(shape, 0, dev, g);
+inline Node zeros(const Shape &shape, Device &dev, Graph &g) {
+  return constant(shape, 0, dev, g);
 }
 
 template<typename Var>
@@ -365,17 +306,8 @@ inline type_traits::Identity<Var> zeros(
   return constant<Var>(shape, 0, dev);
 }
 
-inline Tensor ones_tensor(
-    const Shape &shape,
-    Device &dev = Device::get_default_device()) {
-  return constant_tensor(shape, 1, dev);
-}
-
-inline Node ones_node(
-    const Shape &shape,
-    Device &dev = Device::get_default_device(),
-    Graph &g = Graph::get_default_graph()) {
-  return constant_node(shape, 1, dev, g);
+inline Node ones(const Shape &shape, Device &dev, Graph &g) {
+  return constant(shape, 1, dev, g);
 }
 
 template<typename Var>
