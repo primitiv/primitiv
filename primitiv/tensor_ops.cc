@@ -267,6 +267,34 @@ Tensor constant<Tensor>(const Shape &shape, float k, Device &dev) {
   return dev.new_tensor(shape, k);
 }
 
+namespace random {
+
+template<>
+Tensor bernoulli<Tensor>(
+    const Shape &shape, float p, Device &dev) {
+  return dev.random_bernoulli(shape, p);
+}
+
+template<>
+Tensor uniform<Tensor>(
+    const Shape &shape, float lower, float upper, Device &dev) {
+  return dev.random_uniform(shape, lower, upper);
+}
+
+template<>
+Tensor normal<Tensor>(
+    const Shape &shape, float mean, float sd, Device &dev) {
+  return dev.random_normal(shape, mean, sd);
+}
+
+template<>
+Tensor log_normal<Tensor>(
+    const Shape &shape, float mean, float sd, Device &dev) {
+  return dev.random_log_normal(shape, mean, sd);
+}
+
+}  // namespace random
+
 }  // namespace operators
 
 }  // namespace primitiv

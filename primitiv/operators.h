@@ -96,13 +96,13 @@ Node input(
     Device &dev,
     Graph &g);
 
+Node input_node(Parameter &param, Graph &g);
+
 template<typename Var>
 type_traits::Identity<Var> input(
     const Shape &shape,
     const std::vector<float> &data,
     Device &dev = Device::get_default_device());
-
-Node input_node(Parameter &param, Graph &g);
 
 template<typename Var>
 type_traits::Identity<Var> input(Parameter &param);
@@ -290,14 +290,18 @@ inline type_traits::Identity<Var> normalize(const Var &x) {
 
 Node constant(const Shape &shape, float k, Device &dev, Graph &g);
 
+inline Node zeros(const Shape &shape, Device &dev, Graph &g) {
+  return constant(shape, 0, dev, g);
+}
+
+inline Node ones(const Shape &shape, Device &dev, Graph &g) {
+  return constant(shape, 1, dev, g);
+}
+
 template<typename Var>
 type_traits::Identity<Var> constant(
     const Shape &shape, float k,
     Device &dev = Device::get_default_device());
-
-inline Node zeros(const Shape &shape, Device &dev, Graph &g) {
-  return constant(shape, 0, dev, g);
-}
 
 template<typename Var>
 inline type_traits::Identity<Var> zeros(
@@ -306,15 +310,56 @@ inline type_traits::Identity<Var> zeros(
   return constant<Var>(shape, 0, dev);
 }
 
-inline Node ones(const Shape &shape, Device &dev, Graph &g) {
-  return constant(shape, 1, dev, g);
-}
-
 template<typename Var>
 inline type_traits::Identity<Var> ones(
     const Shape &shape,
     Device &dev = Device::get_default_device()) {
   return constant<Var>(shape, 1, dev);
+}
+
+namespace random {
+
+Node bernoulli(
+    const Shape &shape, float p, Device &dev, Graph &g);
+
+Node uniform(
+    const Shape &shape, float lower, float upper, Device &dev, Graph &g);
+
+Node normal(
+    const Shape &shape, float mean, float sd, Device &dev, Graph &g);
+
+Node log_normal(
+    const Shape &shape, float mean, float sd, Device &dev, Graph &g);
+
+template<typename Var>
+type_traits::Identity<Var> bernoulli(
+    const Shape &shape, float p,
+    Device &dev = Device::get_default_device());
+
+template<typename Var>
+type_traits::Identity<Var> uniform(
+    const Shape &shape, float lower, float upper,
+    Device &dev = Device::get_default_device());
+
+template<typename Var>
+type_traits::Identity<Var> normal(
+    const Shape &shape, float mean, float sd,
+    Device &dev = Device::get_default_device());
+
+template<typename Var>
+type_traits::Identity<Var> log_normal(
+    const Shape &shape, float mean, float sd,
+    Device &dev = Device::get_default_device());
+
+}  // namespace random
+
+template<typename Var>
+inline type_traits::Identity<Var> dropout(
+    const Var &x, float rate, bool enabled) {
+  if (!enabled) return x;
+  if (rate == 1.) return 0. * x;
+  const float p = 1. - rate;
+  return (1. / p) * x * random::bernoulli<Var>(x.shape(), p, x.device());
 }
 
 }  // namespace operators

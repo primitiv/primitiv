@@ -7,7 +7,6 @@
 #include <primitiv/error.h>
 #include <primitiv/function_impl.h>
 #include <primitiv/graph.h>
-#include <primitiv/node_ops.h>
 #include <primitiv/shape.h>
 #include <primitiv/operators.h>
 #include <primitiv/parameter.h>
@@ -100,14 +99,14 @@ Node input(
   return REG(g, Input(shape, data, dev));
 }
 
+Node input(Parameter &param, Graph &g) {
+  return REG(g, ParameterInput(param));
+}
+
 template<>
 Node input<Node>(
     const Shape &shape, const std::vector<float> &data, Device &dev) {
   return input(shape, data, dev, Graph::get_default_graph());
-}
-
-Node input(Parameter &param, Graph &g) {
-  return REG(g, ParameterInput(param));
 }
 
 template<>
@@ -257,13 +256,6 @@ Node softmax_cross_entropy(const Node &x, const std::vector<unsigned> &ids, unsi
   return REGX(x, SparseSoftmaxCrossEntropy(ids, dim), x);
 }
 
-Node dropout(const Node &x, float rate, bool enabled) {
-  if (!enabled) return x;
-  if (rate == 1.) return 0. * x;
-  const float p = 1. - rate;
-  return (1. / p) * x * random::bernoulli(x.shape(), p, x.device(), x.graph());
-}
-
 namespace batch {
 
 template<>
@@ -298,6 +290,26 @@ Node normal(const Shape &shape, float mean, float sd, Device &dev, Graph &g) {
 
 Node log_normal(const Shape &shape, float mean, float sd, Device &dev, Graph &g) {
   return REG(g, RandomLogNormal(shape, mean, sd, dev));
+}
+
+template<>
+Node bernoulli<Node>(const Shape &shape, float p, Device &dev) {
+  return bernoulli(shape, p, dev, Graph::get_default_graph());
+}
+
+template<>
+Node uniform<Node>(const Shape &shape, float lower, float upper, Device &dev) {
+  return uniform(shape, lower, upper, dev, Graph::get_default_graph());
+}
+
+template<>
+Node normal<Node>(const Shape &shape, float mean, float sd, Device &dev) {
+  return normal(shape, mean, sd, dev, Graph::get_default_graph());
+}
+
+template<>
+Node log_normal<Node>(const Shape &shape, float mean, float sd, Device &dev) {
+  return log_normal(shape, mean, sd, dev, Graph::get_default_graph());
 }
 
 }  // namespace random

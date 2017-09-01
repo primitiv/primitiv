@@ -8,7 +8,6 @@
 #include <primitiv/function_impl.h>
 #include <primitiv/graph.h>
 #include <primitiv/initializer_impl.h>
-#include <primitiv/node_ops.h>
 #include <primitiv/operators.h>
 #include <primitiv/parameter.h>
 #include <test_utils.h>

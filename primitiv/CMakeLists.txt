@@ -14,7 +14,6 @@ set(primitiv_base_HDRS
   graph.h
   initializer.h
   initializer_impl.h
-  node_ops.h
   operators.h
   parameter.h
   primitiv.h
