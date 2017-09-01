@@ -43,7 +43,7 @@
 
 using namespace primitiv;
 using namespace std;
-namespace F = primitiv::node_ops;
+namespace F = primitiv::operators;
 namespace I = primitiv::initializers;
 
 static const unsigned SRC_VOCAB_SIZE = 4000;
@@ -129,7 +129,7 @@ public:
   // Encodes source sentences and prepare internal states.
   void encode(const vector<vector<unsigned>> &src_batch, bool train) {
     // Embedding lookup.
-    const Node src_lookup = F::input(psrc_lookup_);
+    const Node src_lookup = F::input<Node>(psrc_lookup_);
     vector<Node> e_list;
     for (const auto &x : src_batch) {
       e_list.emplace_back(
@@ -162,12 +162,12 @@ public:
     t_concat_fb_ = F::transpose(concat_fb_);
 
     // Initializes decoder states.
-    trg_lookup_ = F::input(ptrg_lookup_);
-    whj_ = F::input(pwhj_);
-    bj_ = F::input(pbj_);
-    wjy_ = F::input(pwjy_);
-    by_ = F::input(pby_);
-    feed_ = F::zeros({embed_size_});
+    trg_lookup_ = F::input<Node>(ptrg_lookup_);
+    whj_ = F::input<Node>(pwhj_);
+    bj_ = F::input<Node>(pbj_);
+    wjy_ = F::input<Node>(pwjy_);
+    by_ = F::input<Node>(pby_);
+    feed_ = F::zeros<Node>({embed_size_});
     trg_lstm_.init(
         src_fw_lstm_.get_c() + src_bw_lstm_.get_c(),
         src_fw_lstm_.get_h() + src_bw_lstm_.get_h());

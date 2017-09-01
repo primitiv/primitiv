@@ -52,17 +52,18 @@ public:
   void init(
       const primitiv::Node &init_c = primitiv::Node(),
       const primitiv::Node &init_h = primitiv::Node()) {
-    namespace F = primitiv::node_ops;
-    wxh_ = F::input(pwxh_);
-    whh_ = F::input(pwhh_);
-    bh_ = F::input(pbh_);
-    c_ = init_c.valid() ? init_c : F::zeros({out_size_});
-    h_ = init_h.valid() ? init_h : F::zeros({out_size_});
+    namespace F = primitiv::operators;
+    using primitiv::Node;
+    wxh_ = F::input<Node>(pwxh_);
+    whh_ = F::input<Node>(pwhh_);
+    bh_ = F::input<Node>(pbh_);
+    c_ = init_c.valid() ? init_c : F::zeros<Node>({out_size_});
+    h_ = init_h.valid() ? init_h : F::zeros<Node>({out_size_});
   }
 
   // One step forwarding.
   primitiv::Node forward(const primitiv::Node &x) {
-    namespace F = primitiv::node_ops;
+    namespace F = primitiv::operators;
     const auto u = F::matmul(wxh_, x) + F::matmul(whh_, h_) + bh_;
     const auto i = F::sigmoid(F::slice(u, 0, 0, out_size_));
     const auto f = F::sigmoid(F::slice(u, 0, out_size_, 2 * out_size_));

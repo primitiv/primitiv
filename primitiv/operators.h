@@ -217,7 +217,7 @@ inline type_traits::Reduce<Container> sum(const Container &xs) {
   if (xs.empty()) THROW_ERROR("No nodes to sum.");
   auto it = xs.begin();
   Var ret = *it++;
-  while (it != xs.end()) ret += *it++;
+  while (it != xs.end()) ret = ret + *it++;
   return ret;
 }
 
@@ -227,7 +227,7 @@ inline type_traits::ReducePtr<Container> sum(const Container &xs) {
   if (xs.empty()) THROW_ERROR("No nodes to sum.");
   auto it = xs.begin();
   Var ret = **it++;
-  while (it != xs.end()) ret += **it++;
+  while (it != xs.end()) ret = ret + **it++;
   return ret;
 }
 

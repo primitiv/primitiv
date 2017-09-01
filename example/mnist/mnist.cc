@@ -32,7 +32,7 @@ using primitiv::trainers::SGD;
 using primitiv::Shape;
 using primitiv::initializers::Constant;
 using primitiv::initializers::XavierUniform;
-namespace F = primitiv::node_ops;
+namespace F = primitiv::operators;
 using namespace std;
 
 namespace {
@@ -113,10 +113,10 @@ int main() {
   // Helper lambda to construct the predictor network.
   auto make_graph = [&](const vector<float> &inputs, bool train) {
     // Stores input values.
-    Node x = F::input(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs);
+    Node x = F::input<Node>(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs);
     // Calculates the hidden layer.
-    Node w1 = F::input(pw1);
-    Node b1 = F::input(pb1);
+    Node w1 = F::input<Node>(pw1);
+    Node b1 = F::input<Node>(pb1);
     Node h = F::relu(F::matmul(w1, x) + b1);
     // Batch normalization
     //Node beta = F::input(pbeta);
@@ -125,8 +125,8 @@ int main() {
     // Dropout
     h = F::dropout(h, .5, train);
     // Calculates the output layer.
-    Node w2 = F::input(pw2);
-    Node b2 = F::input(pb2);
+    Node w2 = F::input<Node>(pw2);
+    Node b2 = F::input<Node>(pb2);
     return F::matmul(w2, h) + b2;
   };
 

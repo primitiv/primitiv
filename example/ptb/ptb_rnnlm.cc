@@ -29,7 +29,7 @@
 
 using primitiv::initializers::XavierUniform;
 using primitiv::trainers::Adam;
-namespace F = primitiv::node_ops;
+namespace F = primitiv::operators;
 using namespace primitiv;
 using namespace std;
 
@@ -131,10 +131,10 @@ public:
   // };
   vector<Node> forward(const vector<vector<unsigned>> &inputs) {
     const unsigned batch_size = inputs[0].size();
-    Node wlookup = F::input(pwlookup_);
-    Node wxs = F::input(pwxs_);
-    Node wsy = F::input(pwsy_);
-    Node s = F::zeros(Shape({NUM_HIDDEN_UNITS}, batch_size));
+    Node wlookup = F::input<Node>(pwlookup_);
+    Node wxs = F::input<Node>(pwxs_);
+    Node wsy = F::input<Node>(pwsy_);
+    Node s = F::zeros<Node>(Shape({NUM_HIDDEN_UNITS}, batch_size));
     vector<Node> outputs;
     for (unsigned i = 0; i < inputs.size() - 1; ++i) {
       Node w = F::pick(wlookup, inputs[i], 1);

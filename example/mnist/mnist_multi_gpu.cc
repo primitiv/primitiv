@@ -33,7 +33,7 @@ using primitiv::trainers::SGD;
 using primitiv::Shape;
 using primitiv::initializers::Constant;
 using primitiv::initializers::XavierUniform;
-namespace F = primitiv::node_ops;
+namespace F = primitiv::operators;
 using namespace std;
 
 namespace {
@@ -110,11 +110,11 @@ int main() {
   // Helper lambda to construct the predictor network.
   auto make_graph = [&](const vector<float> &inputs) {
     // We first store input values on GPU 0.
-    Node x = F::input(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs, dev0);
-    Node w1 = F::input(pw1);
-    Node b1 = F::input(pb1);
-    Node w2 = F::input(pw2);
-    Node b2 = F::input(pb2);
+    Node x = F::input<Node>(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs, dev0);
+    Node w1 = F::input<Node>(pw1);
+    Node b1 = F::input<Node>(pb1);
+    Node w2 = F::input<Node>(pw2);
+    Node b2 = F::input<Node>(pb2);
     // The hidden layer is calculated and implicitly stored on GPU 0.
     Node h_on_gpu0 = F::relu(F::matmul(w1, x) + b1);
     // `copy()` transfers the hiddne layer to GPU 1.

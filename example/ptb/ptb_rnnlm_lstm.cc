@@ -27,7 +27,7 @@
 using primitiv::initializers::Constant;
 using primitiv::initializers::XavierUniform;
 using primitiv::trainers::Adam;
-namespace F = primitiv::node_ops;
+namespace F = primitiv::operators;
 using namespace primitiv;
 using namespace std;
 
@@ -37,7 +37,7 @@ static const unsigned NUM_EMBED_UNITS = 512;
 static const unsigned NUM_HIDDEN_UNITS = 512;
 static const unsigned BATCH_SIZE = 64;
 static const unsigned MAX_EPOCH = 100;
-static const float DROPOUT_RATE = 0.5;
+static const float DROPOUT_RATE = 0.3;
 
 // Gathers the set of words from space-separated corpus.
 unordered_map<string, unsigned> make_vocab(const string &filename) {
@@ -132,10 +132,10 @@ class LSTM {
 
     // Initializes internal values.
     void init() {
-      wxh_ = F::input(pwxh_);
-      whh_ = F::input(pwhh_);
-      bh_ = F::input(pbh_);
-      h_ = c_ = F::zeros({out_size_});
+      wxh_ = F::input<Node>(pwxh_);
+      whh_ = F::input<Node>(pwhh_);
+      bh_ = F::input<Node>(pbh_);
+      h_ = c_ = F::zeros<Node>({out_size_});
     }
 
     // Forward one step.
@@ -180,9 +180,9 @@ public:
   vector<Node> forward(
       const vector<vector<unsigned>> &inputs, bool train) {
     const unsigned batch_size = inputs[0].size();
-    Node lookup = F::input(plookup_);
-    Node why = F::input(pwhy_);
-    Node by = F::input(pby_);
+    Node lookup = F::input<Node>(plookup_);
+    Node why = F::input<Node>(pwhy_);
+    Node by = F::input<Node>(pby_);
     lstm_.init();
 
     vector<Node> outputs;

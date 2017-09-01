@@ -39,7 +39,7 @@
 
 using namespace primitiv;
 using namespace std;
-namespace F = primitiv::node_ops;
+namespace F = primitiv::operators;
 namespace I = primitiv::initializers;
 
 static const unsigned SRC_VOCAB_SIZE = 4000;
@@ -111,7 +111,7 @@ public:
   // Encodes source sentences and prepare internal states.
   void encode(const vector<vector<unsigned>> &src_batch, bool train) {
     // Reversed encoding.
-    Node src_lookup = F::input(psrc_lookup_);
+    Node src_lookup = F::input<Node>(psrc_lookup_);
     src_lstm_.init();
     for (auto it = src_batch.rbegin(); it != src_batch.rend(); ++it) {
       Node x = F::pick(src_lookup, *it, 1);
@@ -120,9 +120,9 @@ public:
     }
 
     // Initializes decoder states.
-    trg_lookup_ = F::input(ptrg_lookup_);
-    why_ = F::input(pwhy_);
-    by_ = F::input(pby_);
+    trg_lookup_ = F::input<Node>(ptrg_lookup_);
+    why_ = F::input<Node>(pwhy_);
+    by_ = F::input<Node>(pby_);
     trg_lstm_.init(src_lstm_.get_c(), src_lstm_.get_h());
   }
 
