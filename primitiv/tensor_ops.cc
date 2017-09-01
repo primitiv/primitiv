@@ -125,16 +125,14 @@ Tensor slice(const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
 }
 
 template<>
-Tensor concat_ptr(const std::vector<const Tensor *> &xs, unsigned dim) {
+Tensor concat(const std::vector<const Tensor *> &xs, unsigned dim) {
   if (xs.empty()) THROW_ERROR("No tensors to be concatenated.");
   return xs[0]->device().concat_fw(xs, dim);
 }
 
-// NOTE(odashi):
-// This function should be implemented after concat_ptr().
 template<>
 Tensor concat(const std::vector<Tensor> &xs, unsigned dim) {
-  return concat_ptr(::obj_to_ptr(xs), dim);
+  return concat(::obj_to_ptr(xs), dim);
 }
 
 template<>

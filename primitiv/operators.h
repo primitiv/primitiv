@@ -157,8 +157,18 @@ type_traits::Identity<Var> concat(const std::vector<Var> &xs, unsigned dim);
 
 template<typename Var>
 type_traits::Identity<Var> concat(
+    const std::vector<const Var *> &xs, unsigned dim);
+
+template<typename Var>
+type_traits::Identity<Var> concat(
     const std::initializer_list<Var> xs, unsigned dim) {
   return concat(std::vector<Var>(xs), dim);
+}
+
+template<typename Var>
+type_traits::Identity<Var> concat(
+    const std::initializer_list<const Var *> xs, unsigned dim) {
+  return concat(std::vector<const Var *>(xs), dim);
 }
 
 template<typename Container>
@@ -168,21 +178,11 @@ inline type_traits::Reduce<Container> concat(
   return concat(std::vector<Var>(xs.begin(), xs.end()), dim);
 }
 
-template<typename Var>
-type_traits::Identity<Var> concat_ptr(
-    const std::vector<const Var *> &xs, unsigned dim);
-
-template<typename Var>
-type_traits::Identity<Var> concat_ptr(
-    const std::initializer_list<const Var *> xs, unsigned dim) {
-  return concat_ptr(std::vector<const Var *>(xs), dim);
-}
-
 template<typename Container>
-inline type_traits::ReducePtr<Container> concat_ptr(
+inline type_traits::ReducePtr<Container> concat(
     const Container &xs, unsigned dim) {
   using Var = type_traits::ReducePtr<Container>;
-  return concat_ptr(std::vector<const Var *>(xs.begin(), xs.end()), dim);
+  return concat(std::vector<const Var *>(xs.begin(), xs.end()), dim);
 }
 
 template<typename Var>
@@ -234,7 +234,7 @@ template<typename Var>
 type_traits::Identity<Var> elu(const Var &x, float a);
 
 template<typename Var>
-inline Var selu(
+inline type_traits::Identity<Var> selu(
     const Var &x,
     float a = 1.6732632423543772848170429916717,
     float s = 1.0507009873554804934193349852946) {
@@ -255,7 +255,7 @@ inline type_traits::Reduce<Container> sum(const Container &xs) {
 }
 
 template<typename Container>
-inline type_traits::ReducePtr<Container> sum_ptr(const Container &xs) {
+inline type_traits::ReducePtr<Container> sum(const Container &xs) {
   using Var = type_traits::ReducePtr<Container>;
   if (xs.empty()) THROW_ERROR("No nodes to sum.");
   auto it = xs.begin();
@@ -275,8 +275,8 @@ inline type_traits::Reduce<Container> mean(const Container &xs) {
 }
 
 template<typename Container>
-inline type_traits::ReducePtr<Container> mean_ptr(const Container &xs) {
-  return sum_ptr(xs) / xs.size();
+inline type_traits::ReducePtr<Container> mean(const Container &xs) {
+  return sum(xs) / xs.size();
 }
 
 template<typename Var>

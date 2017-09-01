@@ -199,7 +199,7 @@ Shape Concat::forward_shape(const vector<const Shape *> &args) const {
 }
 
 Tensor Concat::forward(const std::vector<const Tensor *> &args) {
-  return operators::concat_ptr(args, dim_);
+  return operators::concat(args, dim_);
 }
 
 void Concat::backward(

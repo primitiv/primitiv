@@ -127,7 +127,7 @@ Node concat(const std::vector<Node> &xs, unsigned dim) {
 }
 
 template<>
-Node concat_ptr(const std::vector<const Node *> &xs, unsigned dim) {
+Node concat(const std::vector<const Node *> &xs, unsigned dim) {
   return concat(::ptr_to_obj(xs), dim);
 }
 

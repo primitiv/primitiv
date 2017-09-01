@@ -252,7 +252,7 @@ TEST_F(TensorOpsTest, CheckConcatN_3x3) {
     const Tensor b = dev->new_tensor_by_vector({2, 3}, {2, 3, 2, 3, 2, 3});
     const Tensor c = dev->new_tensor_by_vector({3, 3}, {4, 5, 6, 4, 5, 6, 4, 5, 6});
     const Tensor y1 = concat({a, b, c}, 0);
-    const Tensor y2 = concat_ptr({&a, &b, &c}, 0);
+    const Tensor y2 = concat({&a, &b, &c}, 0);
     EXPECT_EQ(Shape({6, 3}), y1.shape());
     EXPECT_EQ(Shape({6, 3}), y2.shape());
     EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
@@ -276,7 +276,7 @@ TEST_F(TensorOpsTest, CheckConcat5x4) {
     const Tensor d = dev->new_tensor_by_vector({5}, {4, 4, 4, 4, 4});
     for (const unsigned i : {0, 1, 2}) {
       const Tensor y1 = concat({a, b, c, d}, i);
-      const Tensor y2 = concat_ptr({&a, &b, &c, &d}, i);
+      const Tensor y2 = concat({&a, &b, &c, &d}, i);
       EXPECT_EQ(shapes[i], y1.shape());
       EXPECT_EQ(shapes[i], y2.shape());
       EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
@@ -314,7 +314,7 @@ TEST_F(TensorOpsTest, CheckConcat2_2_2x2) {
     const Tensor b = dev->new_tensor_by_vector(Shape({2, 2, 2}, 2), b_data);
     for (const unsigned i : {0, 1, 2, 3, 4}) {
       const Tensor y1 = concat({a, b}, i);
-      const Tensor y2 = concat_ptr({&a, &b}, i);
+      const Tensor y2 = concat({&a, &b}, i);
       EXPECT_EQ(shapes[i], y1.shape());
       EXPECT_EQ(shapes[i], y2.shape());
       EXPECT_TRUE(vector_match(y_data[i < 2 ? i : 2], y1.to_vector()));
@@ -334,7 +334,7 @@ TEST_F(TensorOpsTest, CheckConcatBatchBroadcast) {
       const Tensor b = dev->new_tensor_by_vector({2, 2}, {2, 2, 2, 2});
       const Tensor c = dev->new_tensor_by_vector({2, 3}, {3, 3, 3, 3, 3, 3});
       const Tensor y1 = concat({a, b, c}, 1);
-      const Tensor y2 = concat_ptr({&a, &b, &c}, 1);
+      const Tensor y2 = concat({&a, &b, &c}, 1);
       EXPECT_EQ(Shape({2, 6}, 2), y1.shape());
       EXPECT_EQ(Shape({2, 6}, 2), y2.shape());
       EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
@@ -350,7 +350,7 @@ TEST_F(TensorOpsTest, CheckConcatBatchBroadcast) {
           Shape({2, 2}, 2), {2, 2, 2, 2, 22, 22, 22, 22});
       const Tensor c = dev->new_tensor_by_vector(Shape({1, 2}, 2), {3, 3, 33, 33});
       const Tensor y1 = concat({a, b, c}, 0);
-      const Tensor y2 = concat_ptr({&a, &b, &c}, 0);
+      const Tensor y2 = concat({&a, &b, &c}, 0);
       EXPECT_EQ(Shape({6, 2}, 2), y1.shape());
       EXPECT_EQ(Shape({6, 2}, 2), y2.shape());
       EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
@@ -362,7 +362,7 @@ TEST_F(TensorOpsTest, CheckConcatBatchBroadcast) {
       const Tensor b = dev->new_tensor_by_vector({}, {2});
       const Tensor c = dev->new_tensor_by_vector(Shape({}, 3), {3, 33, 333});
       const Tensor y1 = concat({a, b, c}, 0);
-      const Tensor y2 = concat_ptr({&a, &b, &c}, 0);
+      const Tensor y2 = concat({&a, &b, &c}, 0);
       EXPECT_EQ(Shape({3}, 3), y1.shape());
       EXPECT_EQ(Shape({3}, 3), y2.shape());
       EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
@@ -380,7 +380,6 @@ TEST_F(TensorOpsTest, CheckInvalidConcat) {
 
     // NOTE(odashi): Now these lines generate compile errors.
     //EXPECT_THROW(concat({}, 0), Error);
-    //EXPECT_THROW(concat_ptr({}, 0), Error);
 
     EXPECT_NO_THROW(concat({a, b}, 0));
     EXPECT_THROW(concat({a, b}, 1), Error);
@@ -395,18 +394,18 @@ TEST_F(TensorOpsTest, CheckInvalidConcat) {
     EXPECT_THROW(concat({a, d}, 1), Error);
     EXPECT_THROW(concat({a, d}, 2), Error);
 
-    EXPECT_NO_THROW(concat_ptr({&a, &b}, 0));
-    EXPECT_THROW(concat_ptr({&a, &b}, 1), Error);
-    EXPECT_THROW(concat_ptr({&a, &b}, 2), Error);
-    EXPECT_THROW(concat_ptr({&a, &c}, 0), Error);
-    EXPECT_THROW(concat_ptr({&a, &c}, 1), Error);
-    EXPECT_THROW(concat_ptr({&a, &c}, 2), Error);
-    EXPECT_THROW(concat_ptr({&b, &c}, 0), Error);
-    EXPECT_THROW(concat_ptr({&b, &c}, 1), Error);
-    EXPECT_THROW(concat_ptr({&b, &c}, 2), Error);
-    EXPECT_NO_THROW(concat_ptr({&a, &d}, 0));
-    EXPECT_THROW(concat_ptr({&a, &d}, 1), Error);
-    EXPECT_THROW(concat_ptr({&a, &d}, 2), Error);
+    EXPECT_NO_THROW(concat({&a, &b}, 0));
+    EXPECT_THROW(concat({&a, &b}, 1), Error);
+    EXPECT_THROW(concat({&a, &b}, 2), Error);
+    EXPECT_THROW(concat({&a, &c}, 0), Error);
+    EXPECT_THROW(concat({&a, &c}, 1), Error);
+    EXPECT_THROW(concat({&a, &c}, 2), Error);
+    EXPECT_THROW(concat({&b, &c}, 0), Error);
+    EXPECT_THROW(concat({&b, &c}, 1), Error);
+    EXPECT_THROW(concat({&b, &c}, 2), Error);
+    EXPECT_NO_THROW(concat({&a, &d}, 0));
+    EXPECT_THROW(concat({&a, &d}, 1), Error);
+    EXPECT_THROW(concat({&a, &d}, 2), Error);
   }
 }
 
