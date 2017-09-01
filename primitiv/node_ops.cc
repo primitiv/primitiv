@@ -262,15 +262,7 @@ Node sum(const Node &x) {
 
 }  // namespace batch
 
-Node zeros(const Shape &shape, Device &dev, Graph &g) {
-  return REG(g, Constant(shape, 0, dev));
-}
-
-Node ones(const Shape &shape, Device &dev, Graph &g) {
-  return REG(g, Constant(shape, 1, dev));
-}
-
-Node constant(const Shape &shape, float k, Device &dev, Graph &g) {
+Node constant_node(const Shape &shape, float k, Device &dev, Graph &g) {
   return REG(g, Constant(shape, k, dev));
 }
 

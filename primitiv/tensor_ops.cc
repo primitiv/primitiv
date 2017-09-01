@@ -260,6 +260,10 @@ Tensor sum(const Tensor &x) {
 
 }  // namespace batch
 
+Tensor constant_tensor(const Shape &shape, float k, Device &dev) {
+  return dev.new_tensor(shape, k);
+}
+
 }  // namespace operators
 
 }  // namespace primitiv

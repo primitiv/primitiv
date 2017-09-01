@@ -41,7 +41,7 @@ TEST_F(GraphTest, CheckMoveNode) {
   Graph g;
   Graph::set_default_graph(g);
 
-  Node x1 = operators::zeros({2, 2});
+  Node x1 = operators::zeros<Node>({2, 2});
   ASSERT_TRUE(x1.valid());
   const unsigned fid = x1.function_id();
   const unsigned vid = x1.value_id();
@@ -133,7 +133,7 @@ TEST_F(GraphTest, CheckForwardBackward) {
   const vector<float> data3 {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
   vector<Node> nodes;
   nodes.emplace_back(operators::input<Node>(Shape({2, 2}, 3), data1));
-  nodes.emplace_back(operators::ones({2, 2}));
+  nodes.emplace_back(operators::ones<Node>({2, 2}));
   nodes.emplace_back(operators::input<Node>(Shape({2, 2}, 3), data3));
   nodes.emplace_back(nodes[0] + nodes[1]);
   nodes.emplace_back(nodes[1] - nodes[2]);
@@ -316,7 +316,7 @@ TEST_F(GraphTest, CheckLSTM) {
 
   const Node x = input<Node>(Shape({2}, 2), {2, -2, 0.5, -0.5});
   const Node h = input<Node>(Shape({2}, 2), {-1, 1, -0.5, 0.5});
-  const Node c = zeros({2});
+  const Node c = zeros<Node>({2});
   const Node Wix = input<Node>(pWix);
   const Node Wfx = input<Node>(pWfx);
   const Node Wox = input<Node>(pWox);
@@ -337,7 +337,7 @@ TEST_F(GraphTest, CheckLSTM) {
   const Node cc = f * c + i * j;
   const Node hh = o * tanh(cc);
 
-  const Node t = zeros({2});
+  const Node t = zeros<Node>({2});
   const Node diff = hh - t;
   const Node loss = diff * diff;
 
@@ -411,7 +411,7 @@ TEST_F(GraphTest, CheckConcatLSTM) {
 
   const Node x = input<Node>(Shape({2}, 2), {2, -2, 0.5, -0.5});
   const Node h = input<Node>(Shape({2}, 2), {-1, 1, -0.5, 0.5});
-  const Node c = zeros({2});
+  const Node c = zeros<Node>({2});
   const Node Wx = input<Node>(pWx);
   const Node Wh = input<Node>(pWh);
   const Node b = input<Node>(pb);
@@ -424,7 +424,7 @@ TEST_F(GraphTest, CheckConcatLSTM) {
   const Node cc = f * c + i * j;
   const Node hh = o * tanh(cc);
 
-  const Node t = zeros({2});
+  const Node t = zeros<Node>({2});
   const Node diff = hh - t;
   const Node loss = diff * diff;
 

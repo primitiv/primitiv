@@ -309,7 +309,7 @@ inline type_traits::Identity<Var> mean(const Var &x) {
   return sum(x) / x.shape().batch();
 }
 
-template <typename Var>
+template<typename Var>
 inline type_traits::Identity<Var> normalize(const Var &x) {
   if (!x.shape().has_batch()) return x;  // No meaning of normalization.
   const unsigned b = x.shape().batch();
@@ -320,6 +320,70 @@ inline type_traits::Identity<Var> normalize(const Var &x) {
 }
 
 }  // namespace batch
+
+Tensor constant_tensor(
+    const Shape &shape, float k,
+    Device &dev = Device::get_default_device());
+
+Node constant_node(
+    const Shape &shape, float k,
+    Device &dev = Device::get_default_device(),
+    Graph &g = Graph::get_default_graph());
+
+template<typename Var>
+type_traits::Identity<Var> constant(
+    const Shape &shape, float k,
+    Device &dev = Device::get_default_device());
+
+template<>
+inline Tensor constant<Tensor>(const Shape &shape, float k, Device &dev) {
+  return constant_tensor(shape, k, dev);
+}
+
+template<>
+inline Node constant<Node>(const Shape &shape, float k, Device &dev) {
+  return constant_node(shape, k, dev);
+}
+
+inline Tensor zeros_tensor(
+    const Shape &shape,
+    Device &dev = Device::get_default_device()) {
+  return constant_tensor(shape, 0, dev);
+}
+
+inline Node zeros_node(
+    const Shape &shape,
+    Device &dev = Device::get_default_device(),
+    Graph &g = Graph::get_default_graph()) {
+  return constant_node(shape, 0, dev, g);
+}
+
+template<typename Var>
+inline type_traits::Identity<Var> zeros(
+    const Shape &shape,
+    Device &dev = Device::get_default_device()) {
+  return constant<Var>(shape, 0, dev);
+}
+
+inline Tensor ones_tensor(
+    const Shape &shape,
+    Device &dev = Device::get_default_device()) {
+  return constant_tensor(shape, 1, dev);
+}
+
+inline Node ones_node(
+    const Shape &shape,
+    Device &dev = Device::get_default_device(),
+    Graph &g = Graph::get_default_graph()) {
+  return constant_node(shape, 1, dev, g);
+}
+
+template<typename Var>
+inline type_traits::Identity<Var> ones(
+    const Shape &shape,
+    Device &dev = Device::get_default_device()) {
+  return constant<Var>(shape, 1, dev);
+}
 
 }  // namespace operators
 

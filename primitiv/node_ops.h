@@ -14,19 +14,6 @@ namespace operators {
 
 Node dropout(const Node &x, float rate, bool enabled);
 
-Node zeros(
-    const Shape &shape,
-    Device &dev = Device::get_default_device(),
-    Graph &g = Graph::get_default_graph());
-Node ones(
-    const Shape &shape,
-    Device &dev = Device::get_default_device(),
-    Graph &g = Graph::get_default_graph());
-Node constant(
-    const Shape &shape, float k,
-    Device &dev = Device::get_default_device(),
-    Graph &g = Graph::get_default_graph());
-
 namespace random {
 Node bernoulli(
     const Shape &shape, float p,
