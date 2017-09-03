@@ -57,7 +57,14 @@ static const char *SRC_VALID_FILE = "data/dev.en";
 static const char *TRG_VALID_FILE = "data/dev.ja";
 
 // Encoder-decoder translation model.
+template<typename Var>
 class EncoderDecoder {
+  string name_;
+  float dropout_rate_;
+  Parameter psrc_lookup_, ptrg_lookup_, pwhy_, pby_;
+  ::LSTM<Var> src_lstm_, trg_lstm_;
+  Var trg_lookup_, why_, by_;
+
 public:
   EncoderDecoder(const string &name,
       unsigned src_vocab_size, unsigned trg_vocab_size,
@@ -111,51 +118,44 @@ public:
   // Encodes source sentences and prepare internal states.
   void encode(const vector<vector<unsigned>> &src_batch, bool train) {
     // Reversed encoding.
-    Node src_lookup = F::input<Node>(psrc_lookup_);
+    Var src_lookup = F::input<Var>(psrc_lookup_);
     src_lstm_.init();
     for (auto it = src_batch.rbegin(); it != src_batch.rend(); ++it) {
-      Node x = F::pick(src_lookup, *it, 1);
+      Var x = F::pick(src_lookup, *it, 1);
       x = F::dropout(x, dropout_rate_, train);
       src_lstm_.forward(x);
     }
 
     // Initializes decoder states.
-    trg_lookup_ = F::input<Node>(ptrg_lookup_);
-    why_ = F::input<Node>(pwhy_);
-    by_ = F::input<Node>(pby_);
+    trg_lookup_ = F::input<Var>(ptrg_lookup_);
+    why_ = F::input<Var>(pwhy_);
+    by_ = F::input<Var>(pby_);
     trg_lstm_.init(src_lstm_.get_c(), src_lstm_.get_h());
   }
 
   // One step decoding.
-  Node decode_step(const vector<unsigned> &trg_words, bool train) {
-    Node x = F::pick(trg_lookup_, trg_words, 1);
+  Var decode_step(const vector<unsigned> &trg_words, bool train) {
+    Var x = F::pick(trg_lookup_, trg_words, 1);
     x = F::dropout(x, dropout_rate_, train);
-    Node h = trg_lstm_.forward(x);
+    Var h = trg_lstm_.forward(x);
     h = F::dropout(h, dropout_rate_, train);
     return F::matmul(why_, h) + by_;
   }
 
   // Calculates the loss function over given target sentences.
-  Node loss(const vector<vector<unsigned>> &trg_batch, bool train) {
-    vector<Node> losses;
+  Var loss(const vector<vector<unsigned>> &trg_batch, bool train) {
+    vector<Var> losses;
     for (unsigned i = 0; i < trg_batch.size() - 1; ++i) {
-      Node y = decode_step(trg_batch[i], train);
+      Var y = decode_step(trg_batch[i], train);
       losses.emplace_back(F::softmax_cross_entropy(y, trg_batch[i + 1], 0));
     }
     return F::batch::mean(F::sum(losses));
   }
-
-private:
-  string name_;
-  float dropout_rate_;
-  Parameter psrc_lookup_, ptrg_lookup_, pwhy_, pby_;
-  ::LSTM src_lstm_, trg_lstm_;
-  Node trg_lookup_, why_, by_;
 };
 
 // Training encoder decoder model.
 void train(
-    EncoderDecoder &encdec, Trainer &trainer, const string &prefix,
+    EncoderDecoder<Node> &encdec, Trainer &trainer, const string &prefix,
     float best_valid_ppl) {
   // Registers all parameters to the trainer.
   encdec.register_training(trainer);
@@ -248,7 +248,7 @@ void train(
 }
 
 // Generates translation by consuming stdin.
-void test(EncoderDecoder &encdec) {
+void test(EncoderDecoder<Tensor> &encdec) {
   // Loads vocab.
   const auto src_vocab = ::make_vocab(SRC_TRAIN_FILE, SRC_VOCAB_SIZE);
   const auto trg_vocab = ::make_vocab(TRG_TRAIN_FILE, TRG_VOCAB_SIZE);
@@ -258,8 +258,6 @@ void test(EncoderDecoder &encdec) {
   while (getline(cin, line)) {
     const vector<vector<unsigned>> src_corpus {::line_to_sent(line, src_vocab)};
     const auto src_batch = ::make_batch(src_corpus, {0}, src_vocab);
-    Graph g;
-    Graph::set_default_graph(g);
     encdec.encode(src_batch, false);
 
     // Generates target words one-by-one.
@@ -273,7 +271,7 @@ void test(EncoderDecoder &encdec) {
         break;
       }
       const auto y = encdec.decode_step({trg_ids.back()}, false);
-      const auto logits = g.forward(y).to_vector();
+      const auto logits = y.to_vector();
       trg_ids.emplace_back(::argmax(logits));
     }
 
@@ -308,7 +306,7 @@ int main(const int argc, const char *argv[]) {
   cerr << "done." << endl;
 
   if (mode == "train") {
-    ::EncoderDecoder encdec("encdec",
+    ::EncoderDecoder<Node> encdec("encdec",
         SRC_VOCAB_SIZE, TRG_VOCAB_SIZE,
         NUM_EMBED_UNITS, NUM_HIDDEN_UNITS, DROPOUT_RATE);
     trainers::Adam trainer;
@@ -317,14 +315,14 @@ int main(const int argc, const char *argv[]) {
     ::train(encdec, trainer, prefix, 1e10);
   } else if (mode == "resume") {
     cerr << "loading model/trainer ... " << flush;
-    ::EncoderDecoder encdec("encdec", prefix + '.');
+    ::EncoderDecoder<Node> encdec("encdec", prefix + '.');
     shared_ptr<Trainer> trainer = Trainer::load(prefix + ".trainer.config");
     float valid_ppl = ::load_ppl(prefix + ".valid_ppl.config");
     cerr << "done." << endl;
     ::train(encdec, *trainer, prefix, valid_ppl);
   } else {  // mode == "test"
     cerr << "loading model ... ";
-    ::EncoderDecoder encdec("encdec", prefix + '.');
+    ::EncoderDecoder<Tensor> encdec("encdec", prefix + '.');
     cerr << "done." << endl;
     ::test(encdec);
   }

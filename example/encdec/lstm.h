@@ -13,7 +13,13 @@
 //   j = tanh   (W_xj . x[t] + W_hj . h[t-1] + b_j)
 //   c[t] = i * j + f * c[t-1]
 //   h[t] = o * tanh(c[t])
+template<typename Var>
 class LSTM {
+  std::string name_;
+  unsigned out_size_;
+  primitiv::Parameter pwxh_, pwhh_, pbh_;
+  Var wxh_, whh_, bh_, h_, c_;
+
 public:
   LSTM(const std::string &name, unsigned in_size, unsigned out_size)
     : name_(name)
@@ -50,19 +56,18 @@ public:
 
   // Initializes internal values.
   void init(
-      const primitiv::Node &init_c = primitiv::Node(),
-      const primitiv::Node &init_h = primitiv::Node()) {
+      const Var &init_c = Var(),
+      const Var &init_h = Var()) {
     namespace F = primitiv::operators;
-    using primitiv::Node;
-    wxh_ = F::input<Node>(pwxh_);
-    whh_ = F::input<Node>(pwhh_);
-    bh_ = F::input<Node>(pbh_);
-    c_ = init_c.valid() ? init_c : F::zeros<Node>({out_size_});
-    h_ = init_h.valid() ? init_h : F::zeros<Node>({out_size_});
+    wxh_ = F::input<Var>(pwxh_);
+    whh_ = F::input<Var>(pwhh_);
+    bh_ = F::input<Var>(pbh_);
+    c_ = init_c.valid() ? init_c : F::zeros<Var>({out_size_});
+    h_ = init_h.valid() ? init_h : F::zeros<Var>({out_size_});
   }
 
   // One step forwarding.
-  primitiv::Node forward(const primitiv::Node &x) {
+  Var forward(const Var &x) {
     namespace F = primitiv::operators;
     const auto u = F::matmul(wxh_, x) + F::matmul(whh_, h_) + bh_;
     const auto i = F::sigmoid(F::slice(u, 0, 0, out_size_));
@@ -75,14 +80,8 @@ public:
   }
 
   // Retrieves current states.
-  primitiv::Node get_c() const { return c_; }
-  primitiv::Node get_h() const { return h_; }
-
-private:
-  std::string name_;
-  unsigned out_size_;
-  primitiv::Parameter pwxh_, pwhh_, pbh_;
-  primitiv::Node wxh_, whh_, bh_, h_, c_;
+  Var get_c() const { return c_; }
+  Var get_h() const { return h_; }
 };
 
 #endif  // PRIMITIV_EXAMPLE_ENCDEC_LSTM_H_

@@ -61,7 +61,15 @@ static const char *SRC_VALID_FILE = "data/dev.en";
 static const char *TRG_VALID_FILE = "data/dev.ja";
 
 // Encoder-decoder translation model with dot-attention.
+template<typename Var>
 class EncoderDecoder {
+  string name_;
+  unsigned embed_size_;
+  float dropout_rate_;
+  Parameter psrc_lookup_, ptrg_lookup_, pwhj_, pbj_, pwjy_, pby_;
+  ::LSTM<Var> src_fw_lstm_, src_bw_lstm_, trg_lstm_;
+  Var trg_lookup_, whj_, bj_, wjy_, by_, concat_fb_, t_concat_fb_, feed_;
+
 public:
   EncoderDecoder(const string &name,
       unsigned src_vocab_size, unsigned trg_vocab_size,
@@ -129,8 +137,8 @@ public:
   // Encodes source sentences and prepare internal states.
   void encode(const vector<vector<unsigned>> &src_batch, bool train) {
     // Embedding lookup.
-    const Node src_lookup = F::input<Node>(psrc_lookup_);
-    vector<Node> e_list;
+    const Var src_lookup = F::input<Var>(psrc_lookup_);
+    vector<Var> e_list;
     for (const auto &x : src_batch) {
       e_list.emplace_back(
           F::dropout(F::pick(src_lookup, x, 1), dropout_rate_, train));
@@ -138,7 +146,7 @@ public:
 
     // Forward encoding.
     src_fw_lstm_.init();
-    vector<Node> f_list;
+    vector<Var> f_list;
     for (const auto &e : e_list) {
       f_list.emplace_back(
           F::dropout(src_fw_lstm_.forward(e), dropout_rate_, train));
@@ -146,7 +154,7 @@ public:
 
     // Backward encoding.
     src_bw_lstm_.init();
-    vector<Node> b_list;
+    vector<Var> b_list;
     for (auto it = e_list.rbegin(); it != e_list.rend(); ++it) {
       b_list.emplace_back(
           F::dropout(src_bw_lstm_.forward(*it), dropout_rate_, train));
@@ -154,7 +162,7 @@ public:
     reverse(begin(b_list), end(b_list));
 
     // Concatenates RNN states.
-    vector<Node> fb_list;
+    vector<Var> fb_list;
     for (unsigned i = 0; i < src_batch.size(); ++i) {
       fb_list.emplace_back(f_list[i] + b_list[i]);
     }
@@ -162,51 +170,43 @@ public:
     t_concat_fb_ = F::transpose(concat_fb_);
 
     // Initializes decoder states.
-    trg_lookup_ = F::input<Node>(ptrg_lookup_);
-    whj_ = F::input<Node>(pwhj_);
-    bj_ = F::input<Node>(pbj_);
-    wjy_ = F::input<Node>(pwjy_);
-    by_ = F::input<Node>(pby_);
-    feed_ = F::zeros<Node>({embed_size_});
+    trg_lookup_ = F::input<Var>(ptrg_lookup_);
+    whj_ = F::input<Var>(pwhj_);
+    bj_ = F::input<Var>(pbj_);
+    wjy_ = F::input<Var>(pwjy_);
+    by_ = F::input<Var>(pby_);
+    feed_ = F::zeros<Var>({embed_size_});
     trg_lstm_.init(
         src_fw_lstm_.get_c() + src_bw_lstm_.get_c(),
         src_fw_lstm_.get_h() + src_bw_lstm_.get_h());
   }
 
   // One step decoding.
-  Node decode_step(const vector<unsigned> &trg_words, bool train) {
-    Node e = F::pick(trg_lookup_, trg_words, 1);
+  Var decode_step(const vector<unsigned> &trg_words, bool train) {
+    Var e = F::pick(trg_lookup_, trg_words, 1);
     e = F::dropout(e, dropout_rate_, train);
-    Node h = trg_lstm_.forward(F::concat({e, feed_}, 0));
+    Var h = trg_lstm_.forward(F::concat({e, feed_}, 0));
     h = F::dropout(h, dropout_rate_, train);
-    const Node atten_probs = F::softmax(F::matmul(t_concat_fb_, h), 0);
-    const Node c = F::matmul(concat_fb_, atten_probs);
+    const Var atten_probs = F::softmax(F::matmul(t_concat_fb_, h), 0);
+    const Var c = F::matmul(concat_fb_, atten_probs);
     feed_ = F::tanh(F::matmul(whj_, F::concat({h, c}, 0)) + bj_);
     return F::matmul(wjy_, feed_) + by_;
   }
 
   // Calculates the loss function over given target sentences.
-  Node loss(const vector<vector<unsigned>> &trg_batch, bool train) {
-    vector<Node> losses;
+  Var loss(const vector<vector<unsigned>> &trg_batch, bool train) {
+    vector<Var> losses;
     for (unsigned i = 0; i < trg_batch.size() - 1; ++i) {
-      Node y = decode_step(trg_batch[i], train);
+      Var y = decode_step(trg_batch[i], train);
       losses.emplace_back(F::softmax_cross_entropy(y, trg_batch[i + 1], 0));
     }
     return F::batch::mean(F::sum(losses));
   }
-
-private:
-  string name_;
-  unsigned embed_size_;
-  float dropout_rate_;
-  Parameter psrc_lookup_, ptrg_lookup_, pwhj_, pbj_, pwjy_, pby_;
-  ::LSTM src_fw_lstm_, src_bw_lstm_, trg_lstm_;
-  Node trg_lookup_, whj_, bj_, wjy_, by_, concat_fb_, t_concat_fb_, feed_;
 };
 
 // Training encoder decoder model.
 void train(
-    EncoderDecoder &encdec, Trainer &trainer, const string &prefix,
+    EncoderDecoder<Node> &encdec, Trainer &trainer, const string &prefix,
     float best_valid_ppl) {
   // Registers all parameters to the trainer.
   encdec.register_training(trainer);
@@ -304,7 +304,7 @@ void train(
 }
 
 // Generates translation by consuming stdin.
-void test(EncoderDecoder &encdec) {
+void test(EncoderDecoder<Tensor> &encdec) {
   // Loads vocab.
   const auto src_vocab = ::make_vocab(SRC_TRAIN_FILE, SRC_VOCAB_SIZE);
   const auto trg_vocab = ::make_vocab(TRG_TRAIN_FILE, TRG_VOCAB_SIZE);
@@ -314,8 +314,6 @@ void test(EncoderDecoder &encdec) {
   while (getline(cin, line)) {
     const vector<vector<unsigned>> src_corpus {::line_to_sent(line, src_vocab)};
     const auto src_batch = ::make_batch(src_corpus, {0}, src_vocab);
-    Graph g;
-    Graph::set_default_graph(g);
     encdec.encode(src_batch, false);
 
     // Generates target words one-by-one.
@@ -329,7 +327,7 @@ void test(EncoderDecoder &encdec) {
         break;
       }
       const auto y = encdec.decode_step({trg_ids.back()}, false);
-      const auto logits = g.forward(y).to_vector();
+      const auto logits = y.to_vector();
       trg_ids.emplace_back(::argmax(logits));
     }
 
@@ -364,7 +362,7 @@ int main(const int argc, const char *argv[]) {
   cerr << "done." << endl;
 
   if (mode == "train") {
-    ::EncoderDecoder encdec("encdec",
+    ::EncoderDecoder<Node> encdec("encdec",
         SRC_VOCAB_SIZE, TRG_VOCAB_SIZE,
         NUM_EMBED_UNITS, NUM_HIDDEN_UNITS, DROPOUT_RATE);
     trainers::Adam trainer;
@@ -373,14 +371,14 @@ int main(const int argc, const char *argv[]) {
     ::train(encdec, trainer, prefix, 1e10);
   } else if (mode == "resume") {
     cerr << "loading model/trainer ... " << flush;
-    ::EncoderDecoder encdec("encdec", prefix + '.');
+    ::EncoderDecoder<Node> encdec("encdec", prefix + '.');
     shared_ptr<Trainer> trainer = Trainer::load(prefix + ".trainer.config");
     float valid_ppl = ::load_ppl(prefix + ".valid_ppl.config");
     cerr << "done." << endl;
     ::train(encdec, *trainer, prefix, valid_ppl);
   } else {  // mode == "test"
     cerr << "loading model ... ";
-    ::EncoderDecoder encdec("encdec", prefix + '.');
+    ::EncoderDecoder<Tensor> encdec("encdec", prefix + '.');
     cerr << "done." << endl;
     ::test(encdec);
   }
