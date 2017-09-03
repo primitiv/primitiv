@@ -96,7 +96,7 @@ Node input(
     Device &dev,
     Graph &g);
 
-Node input_node(Parameter &param, Graph &g);
+Node input(Parameter &param, Graph &g);
 
 template<typename Var>
 type_traits::Identity<Var> input(
