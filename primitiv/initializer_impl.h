@@ -30,7 +30,7 @@ private:
 };
 
 /**
- * Initializing with the parameterized uniform distribution.
+ * Initializing with the parameterized uniform distribution (lower, upper].
  */
 class Uniform : public Initializer {
   Uniform(const Uniform &) = delete;

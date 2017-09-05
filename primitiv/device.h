@@ -99,7 +99,7 @@ public:
 
   // Random value generators.
   Tensor random_bernoulli(const Shape &shape, float p);
-  Tensor random_uniform(const Shape &shape, float lower, float upper);
+  Tensor random_uniform(const Shape &shape, float lower, float upper);  // (lower, upper]
   Tensor random_normal(const Shape &shape, float mean, float sd);
   Tensor random_log_normal(const Shape &shape, float mean, float sd);
 

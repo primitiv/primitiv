@@ -35,12 +35,12 @@ TEST_F(InitializerImplTest, CheckUniform) {
     float lower, upper, mean, variance;
   };
   const vector<TestCase> test_cases {
-    {0, 0, 0, 0},
+    {-.1, .1, 0, .04/12},
     {0, 1, .5, 1./12},
     {-1, 0, -.5, 1./12},
     {-.70710678, .70710678, 0, 2./12},
   };
-  const unsigned N = 1024;
+  const unsigned N = 256;
 
   for (const auto &tc : test_cases) {
     const Uniform init(tc.lower, tc.upper);
@@ -48,13 +48,15 @@ TEST_F(InitializerImplTest, CheckUniform) {
     init.apply(x);
     float m1 = 0, m2 = 0;
     for (const float v : x.to_vector()) {
+      EXPECT_LT(tc.lower, v);
+      EXPECT_GE(tc.upper, v);
       m1 += v;
       m2 += v * v;
     }
     const float mean = m1 / (N * N);
     const float variance = m2 / (N * N) - mean * mean;
-    EXPECT_NEAR(tc.mean, mean, 1e-3);
-    EXPECT_NEAR(tc.variance, variance, 1e-3);
+    EXPECT_NEAR(tc.mean, mean, 1e-2);
+    EXPECT_NEAR(tc.variance, variance, 1e-2);
   }
 }
 
