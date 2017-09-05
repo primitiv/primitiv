@@ -17,6 +17,10 @@ void Uniform::apply(Tensor &x) const {
   x = x.device().random_uniform(x.shape(), lower_, upper_);
 }
 
+void Normal::apply(Tensor &x) const {
+  x = x.device().random_normal(x.shape(), mean_, sd_);
+}
+
 void XavierUniform::apply(Tensor &x) const {
   const Shape s = x.shape();
   if (!s.is_matrix()) {

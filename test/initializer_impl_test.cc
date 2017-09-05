@@ -21,7 +21,7 @@ protected:
 
 TEST_F(InitializerImplTest, CheckConstant) {
   const Shape shape {3, 3, 3};
-  for (const float k : {1, 10, 100, 1000, 10000}) {
+  for (float k : {1, 10, 100, 1000, 10000}) {
     const vector<float> expected(shape.size(), k);
     const Constant init(k);
     Tensor x = dev.new_tensor(shape);
@@ -31,6 +31,7 @@ TEST_F(InitializerImplTest, CheckConstant) {
 }
 
 TEST_F(InitializerImplTest, CheckUniform) {
+  // NOTE(odashi): This test checks only range, mean and variance.
   struct TestCase {
     float lower, upper, mean, variance;
   };
@@ -40,14 +41,14 @@ TEST_F(InitializerImplTest, CheckUniform) {
     {-1, 0, -.5, 1./12},
     {-.70710678, .70710678, 0, 2./12},
   };
-  const unsigned N = 256;
+  const unsigned N = 768;
 
   for (const auto &tc : test_cases) {
     const Uniform init(tc.lower, tc.upper);
     Tensor x = dev.new_tensor({N, N});
     init.apply(x);
-    float m1 = 0, m2 = 0;
-    for (const float v : x.to_vector()) {
+    double m1 = 0, m2 = 0;
+    for (float v : x.to_vector()) {
       EXPECT_LT(tc.lower, v);
       EXPECT_GE(tc.upper, v);
       m1 += v;
@@ -60,12 +61,40 @@ TEST_F(InitializerImplTest, CheckUniform) {
   }
 }
 
+TEST_F(InitializerImplTest, CheckNormal) {
+  // NOTE(odashi): This test checks only mean and SD.
+  struct TestCase {
+    float mean, sd;
+  };
+  const vector<TestCase> test_cases {
+    {0, .1}, {0, 1}, {0, 3},
+    {3, 2}, {-3, 2},
+    {3, .5}, {-3, .5},
+  };
+  const unsigned N = 768;
+
+  for (const auto &tc : test_cases) {
+    const Normal init(tc.mean, tc.sd);
+    Tensor x = dev.new_tensor({N, N});
+    init.apply(x);
+    double m1 = 0, m2 = 0;
+    for (float v : x.to_vector()) {
+      m1 += v;
+      m2 += v * v;
+    }
+    const float mean = m1 / (N * N);
+    const float sd = std::sqrt(m2 / (N * N) - mean * mean);
+    EXPECT_NEAR(tc.mean, mean, 1e-2);
+    EXPECT_NEAR(tc.sd, sd, 1e-2);
+  }
+}
+
 TEST_F(InitializerImplTest, CheckXavierUniform) {
   const float scale = .0625 * std::sqrt(3);  // sqrt(6/(256+256))
   const XavierUniform init;
   Tensor x = dev.new_tensor({256, 256});
   init.apply(x);
-  for (const float observed : x.to_vector()) {
+  for (float observed : x.to_vector()) {
     EXPECT_GE(scale, std::abs(observed));
   }
 }

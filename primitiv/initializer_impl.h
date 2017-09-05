@@ -21,7 +21,7 @@ public:
    * Crates a new initializer object.
    * @param k Constant to provide.
    */
-  explicit Constant(const float k) : k_(k) {}
+  explicit Constant(float k) : k_(k) {}
 
   void apply(Tensor &x) const override;
 
@@ -39,13 +39,32 @@ class Uniform : public Initializer {
   Uniform &operator=(Uniform &&) = delete;
 
 public:
-  Uniform(const float lower, const float upper) : lower_(lower), upper_(upper) {}
+  Uniform(float lower, float upper) : lower_(lower), upper_(upper) {}
 
   void apply(Tensor &x) const override;
 
 private:
   float lower_;
   float upper_;
+};
+
+/**
+ * Initializing with the parameterized normal distribution N(mean, sd).
+ */
+class Normal : public Initializer {
+  Normal(const Normal &) = delete;
+  Normal(Normal &&) = delete;
+  Normal &operator=(const Normal &) = delete;
+  Normal &operator=(Normal &&) = delete;
+
+public:
+  Normal(float mean, float sd) : mean_(mean), sd_(sd) {}
+
+  void apply(Tensor &x) const override;
+
+private:
+  float mean_;
+  float sd_;
 };
 
 /**
