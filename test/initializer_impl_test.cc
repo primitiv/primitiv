@@ -30,6 +30,34 @@ TEST_F(InitializerImplTest, CheckConstant) {
   }
 }
 
+TEST_F(InitializerImplTest, CheckUniform) {
+  struct TestCase {
+    float lower, upper, mean, variance;
+  };
+  const vector<TestCase> test_cases {
+    {0, 0, 0, 0},
+    {0, 1, .5, 1./12},
+    {-1, 0, -.5, 1./12},
+    {-.70710678, .70710678, 0, 2./12},
+  };
+  const unsigned N = 1024;
+
+  for (const auto &tc : test_cases) {
+    const Uniform init(tc.lower, tc.upper);
+    Tensor x = dev.new_tensor({N, N});
+    init.apply(x);
+    float m1 = 0, m2 = 0;
+    for (const float v : x.to_vector()) {
+      m1 += v;
+      m2 += v * v;
+    }
+    const float mean = m1 / (N * N);
+    const float variance = m2 / (N * N) - mean * mean;
+    EXPECT_NEAR(tc.mean, mean, 1e-3);
+    EXPECT_NEAR(tc.variance, variance, 1e-3);
+  }
+}
+
 TEST_F(InitializerImplTest, CheckXavierUniform) {
   const float scale = .0625 * std::sqrt(3);  // sqrt(6/(256+256))
   const XavierUniform init;

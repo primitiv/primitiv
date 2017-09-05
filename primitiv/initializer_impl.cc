@@ -13,6 +13,10 @@ void Constant::apply(Tensor &x) const {
   x.reset(k_);
 }
 
+void Uniform::apply(Tensor &x) const {
+  x = x.device().random_uniform(x.shape(), lower_, upper_);
+}
+
 void XavierUniform::apply(Tensor &x) const {
   const Shape s = x.shape();
   if (!s.is_matrix()) {

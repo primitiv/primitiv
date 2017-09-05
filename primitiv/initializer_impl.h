@@ -30,6 +30,25 @@ private:
 };
 
 /**
+ * Initializing with the parameterized uniform distribution.
+ */
+class Uniform : public Initializer {
+  Uniform(const Uniform &) = delete;
+  Uniform(Uniform &&) = delete;
+  Uniform &operator=(const Uniform &) = delete;
+  Uniform &operator=(Uniform &&) = delete;
+
+public:
+  Uniform(const float lower, const float upper) : lower_(lower), upper_(upper) {}
+
+  void apply(Tensor &x) const override;
+
+private:
+  float lower_;
+  float upper_;
+};
+
+/**
  * The Xavier matrix initialization with the uniform distribution.
  */
 class XavierUniform : public Initializer {
