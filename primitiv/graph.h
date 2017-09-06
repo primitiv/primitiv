@@ -84,6 +84,13 @@ public:
    */
   Device &device() const;
 
+  /**
+   * Calculates the value of this node.
+   * @return A list of calculated values.
+   * @remarks This function calls Graph::forward() internally.
+   */
+  std::vector<float> to_vector() const;
+
 private:
   /**
    * Creates a new node pointer.
@@ -223,6 +230,11 @@ inline const Shape &Node::shape() const {
 inline Device &Node::device() const {
   if (!valid()) THROW_ERROR("Invalid node.");
   return g_->get_device(*this);
+}
+
+inline std::vector<float> Node::to_vector() const {
+  if (!valid()) THROW_ERROR("Invalid node.");
+  return g_->forward(*this).to_vector();
 }
 
 }  // namespace primitiv

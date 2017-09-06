@@ -32,6 +32,7 @@ TEST_F(GraphTest, CheckInvalidNode) {
   EXPECT_THROW(node.value_id(), Error);
   EXPECT_THROW(node.shape(), Error);
   EXPECT_THROW(node.device(), Error);
+  EXPECT_THROW(node.to_vector(), Error);
 }
 
 TEST_F(GraphTest, CheckMoveNode) {
@@ -99,8 +100,11 @@ TEST_F(GraphTest, CheckMultipleDevices) {
   EXPECT_EQ(&dev2, &x3.device());
   EXPECT_NO_THROW(g.forward(x3));
   EXPECT_TRUE(vector_match(data1, g.forward(x1).to_vector()));
+  EXPECT_TRUE(vector_match(data1, x1.to_vector()));
   EXPECT_TRUE(vector_match(data2, g.forward(x2).to_vector()));
+  EXPECT_TRUE(vector_match(data2, x2.to_vector()));
   EXPECT_TRUE(vector_match(data3, g.forward(x3).to_vector()));
+  EXPECT_TRUE(vector_match(data3, x3.to_vector()));
 #if 0
   EXPECT_NO_THROW(g.backward(x3));
   EXPECT_TRUE(vector_match(grad, g.get_gradient(x1).to_vector()));
@@ -181,6 +185,7 @@ TEST_F(GraphTest, CheckForwardBackward) {
     const Tensor &val = g.forward(nodes[i]);
     ASSERT_TRUE(val.valid());
     EXPECT_TRUE(vector_match(expected_values[i], val.to_vector()));
+    EXPECT_TRUE(vector_match(expected_values[i], nodes[i].to_vector()));
   }
 
 #if 0
@@ -276,6 +281,7 @@ TEST_F(GraphTest, CheckXor) {
     const Tensor &val = g.forward(nodes[i]);
     ASSERT_TRUE(val.valid());
     EXPECT_TRUE(vector_match(expected_values[i], val.to_vector()));
+    EXPECT_TRUE(vector_match(expected_values[i], nodes[i].to_vector()));
   }
 
   // TODO(odashi): add gradient checking.
@@ -342,13 +348,14 @@ TEST_F(GraphTest, CheckLSTM) {
 
   EXPECT_EQ(43u, g.num_functions());
 
-  const vector<float> loss_values = g.forward(loss).to_vector();
+  const Tensor loss_tensor = g.forward(loss);
   g.backward(loss);
 
   const vector<float> expected_losses {
     5.7667205e-03, 2.8605087e-02, 1.4819370e-03, 3.0073307e-03
   };
-  EXPECT_TRUE(vector_near(expected_losses, loss_values, 1e-6));
+  EXPECT_TRUE(vector_near(expected_losses, loss_tensor.to_vector(), 1e-6));
+  EXPECT_TRUE(vector_near(expected_losses, loss.to_vector(), 1e-6));
 
   auto print = [](const std::string &name, const Tensor &value) {
     std::cout << name << ": shape=" << value.shape().to_string()
@@ -429,13 +436,14 @@ TEST_F(GraphTest, CheckConcatLSTM) {
 
   EXPECT_EQ(26u, g.num_functions());
 
-  const vector<float> loss_values = g.forward(loss).to_vector();
+  const Tensor loss_tensor = g.forward(loss);
   g.backward(loss);
 
   const vector<float> expected_losses {
     5.7667205e-03, 2.8605087e-02, 1.4819370e-03, 3.0073307e-03
   };
-  EXPECT_TRUE(vector_near(expected_losses, loss_values, 1e-6));
+  EXPECT_TRUE(vector_near(expected_losses, loss_tensor.to_vector(), 1e-6));
+  EXPECT_TRUE(vector_near(expected_losses, loss.to_vector(), 1e-6));
 
   auto print = [](const std::string &name, const Tensor &value) {
     std::cout << name << ": shape=" << value.shape().to_string()
