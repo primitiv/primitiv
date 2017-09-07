@@ -27,8 +27,8 @@ void XavierUniform::apply(Tensor &x) const {
     THROW_ERROR(
         "XavierUniform initializer can be used to only matrices or vectors.");
   }
-  const float scale = std::sqrt(6. / (s[0] + s[1]));
-  x = x.device().random_uniform(s, -scale, scale);
+  const float bound = scale_ * std::sqrt(6. / (s[0] + s[1]));
+  x = x.device().random_uniform(s, -bound, bound);
 }
 
 void XavierNormal::apply(Tensor &x) const {
@@ -37,7 +37,7 @@ void XavierNormal::apply(Tensor &x) const {
     THROW_ERROR(
         "XavierNormal initializer can be used to only matrices or vectors.");
   }
-  const float sd = std::sqrt(2. / (s[0] + s[1]));
+  const float sd = scale_ * std::sqrt(2. / (s[0] + s[1]));
   x = x.device().random_normal(s, 0, sd);
 }
 

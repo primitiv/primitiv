@@ -91,21 +91,27 @@ TEST_F(InitializerImplTest, CheckNormal) {
 
 TEST_F(InitializerImplTest, CheckXavierUniform) {
   const unsigned N = 768;
-  const float scale = std::sqrt(6. / (N + N));
-  const XavierUniform init;
   Tensor x = dev.new_tensor({N, N});
-  init.apply(x);
-  double m1 = 0, m2 = 0;
-  for (float v : x.to_vector()) {
-    EXPECT_LT(-scale, v);
-    EXPECT_GE(scale, v);
-    m1 += v;
-    m2 += v * v;
+
+  for (float scale : {.5f, 1.f, 2.f}) {
+    const float bound = scale * std::sqrt(6. / (N + N));
+    const float expected_sd = scale * std::sqrt(2. / (N + N));
+
+    const XavierUniform init(scale);
+    init.apply(x);
+
+    double m1 = 0, m2 = 0;
+    for (float v : x.to_vector()) {
+      EXPECT_LT(-bound, v);
+      EXPECT_GE(bound, v);
+      m1 += v;
+      m2 += v * v;
+    }
+    const float mean = m1 / (N * N);
+    const float sd = std::sqrt(m2 / (N * N) - mean * mean);
+    EXPECT_NEAR(0., mean, 1e-3);
+    EXPECT_NEAR(expected_sd, sd, 1e-3);
   }
-  const float mean = m1 / (N * N);
-  const float variance = m2 / (N * N) - mean * mean;
-  EXPECT_NEAR(0., mean, 1e-4);
-  EXPECT_NEAR(2. / (N + N), variance, 1e-4);
 }
 
 TEST_F(InitializerImplTest, CheckInvalidXavierUniform) {
@@ -120,18 +126,24 @@ TEST_F(InitializerImplTest, CheckInvalidXavierUniform) {
 TEST_F(InitializerImplTest, CheckXavierNormal) {
   // NOTE(odashi): This test checks only mean and SD.
   const unsigned N = 768;
-  const XavierNormal init;
   Tensor x = dev.new_tensor({N, N});
-  init.apply(x);
-  double m1 = 0, m2 = 0;
-  for (float v : x.to_vector()) {
-    m1 += v;
-    m2 += v * v;
+
+  for (float scale : {.5f, 1.f, 2.f}) {
+    const float expected_sd = scale * std::sqrt(2. / (N + N));
+
+    const XavierNormal init(scale);
+    init.apply(x);
+
+    double m1 = 0, m2 = 0;
+    for (float v : x.to_vector()) {
+      m1 += v;
+      m2 += v * v;
+    }
+    const float mean = m1 / (N * N);
+    const float sd = std::sqrt(m2 / (N * N) - mean * mean);
+    EXPECT_NEAR(0., mean, 1e-3);
+    EXPECT_NEAR(expected_sd, sd, 1e-3);
   }
-  const float mean = m1 / (N * N);
-  const float variance = m2 / (N * N) - mean * mean;
-  EXPECT_NEAR(0., mean, 1e-4);
-  EXPECT_NEAR(2. / (N + N), variance, 1e-4);
 }
 
 TEST_F(InitializerImplTest, CheckInvalidXavierNormal) {

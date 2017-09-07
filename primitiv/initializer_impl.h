@@ -77,9 +77,12 @@ class XavierUniform : public Initializer {
   XavierUniform &operator=(XavierUniform &&) = delete;
 
 public:
-  XavierUniform() {}
+  XavierUniform(float scale = 1.0f) : scale_(scale) {}
 
   void apply(Tensor &x) const override;
+
+private:
+  float scale_;
 };
 
 /**
@@ -92,9 +95,12 @@ class XavierNormal : public Initializer {
   XavierNormal &operator=(XavierNormal &&) = delete;
 
 public:
-  XavierNormal() {}
+  XavierNormal(float scale = 1.0f) : scale_(scale) {}
 
   void apply(Tensor &x) const override;
+
+private:
+  float scale_;
 };
 
 }  // namespace initializers
