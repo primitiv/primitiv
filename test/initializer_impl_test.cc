@@ -90,19 +90,57 @@ TEST_F(InitializerImplTest, CheckNormal) {
 }
 
 TEST_F(InitializerImplTest, CheckXavierUniform) {
-  const float scale = .0625 * std::sqrt(3);  // sqrt(6/(256+256))
+  const unsigned N = 768;
+  const float scale = std::sqrt(6. / (N + N));
   const XavierUniform init;
-  Tensor x = dev.new_tensor({256, 256});
+  Tensor x = dev.new_tensor({N, N});
   init.apply(x);
-  for (float observed : x.to_vector()) {
-    EXPECT_GE(scale, std::abs(observed));
+  double m1 = 0, m2 = 0;
+  for (float v : x.to_vector()) {
+    EXPECT_LT(-scale, v);
+    EXPECT_GE(scale, v);
+    m1 += v;
+    m2 += v * v;
   }
+  const float mean = m1 / (N * N);
+  const float variance = m2 / (N * N) - mean * mean;
+  EXPECT_NEAR(0., mean, 1e-4);
+  EXPECT_NEAR(2. / (N + N), variance, 1e-4);
 }
 
 TEST_F(InitializerImplTest, CheckInvalidXavierUniform) {
   const XavierUniform init;
-  Tensor x = dev.new_tensor({2, 2, 2});
-  EXPECT_THROW(init.apply(x), Error);
+  const std::vector<Shape> shapes {{2, 3, 4}, {2, 3, 4, 5}};
+  for (const Shape &s : shapes) {
+    Tensor x = dev.new_tensor(s);
+    EXPECT_THROW(init.apply(x), Error);
+  }
+}
+
+TEST_F(InitializerImplTest, CheckXavierNormal) {
+  // NOTE(odashi): This test checks only mean and SD.
+  const unsigned N = 768;
+  const XavierNormal init;
+  Tensor x = dev.new_tensor({N, N});
+  init.apply(x);
+  double m1 = 0, m2 = 0;
+  for (float v : x.to_vector()) {
+    m1 += v;
+    m2 += v * v;
+  }
+  const float mean = m1 / (N * N);
+  const float variance = m2 / (N * N) - mean * mean;
+  EXPECT_NEAR(0., mean, 1e-4);
+  EXPECT_NEAR(2. / (N + N), variance, 1e-4);
+}
+
+TEST_F(InitializerImplTest, CheckInvalidXavierNormal) {
+  const XavierNormal init;
+  const std::vector<Shape> shapes {{2, 3, 4}, {2, 3, 4, 5}};
+  for (const Shape &s : shapes) {
+    Tensor x = dev.new_tensor(s);
+    EXPECT_THROW(init.apply(x), Error);
+  }
 }
 
 }  // namespace initializers

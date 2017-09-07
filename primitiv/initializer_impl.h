@@ -7,7 +7,7 @@ namespace primitiv {
 namespace initializers {
 
 /**
- * Initializer class to generate a same-value tensor.
+ * Initializer to generate a same-value tensor.
  */
 class Constant : public Initializer {
   Constant() = delete;
@@ -30,7 +30,7 @@ private:
 };
 
 /**
- * Initializing with the parameterized uniform distribution (lower, upper].
+ * Initializer using a parameterized uniform distribution (lower, upper].
  */
 class Uniform : public Initializer {
   Uniform(const Uniform &) = delete;
@@ -49,7 +49,7 @@ private:
 };
 
 /**
- * Initializing with the parameterized normal distribution N(mean, sd).
+ * Initializer using a parameterized normal distribution N(mean, sd).
  */
 class Normal : public Initializer {
   Normal(const Normal &) = delete;
@@ -78,6 +78,21 @@ class XavierUniform : public Initializer {
 
 public:
   XavierUniform() {}
+
+  void apply(Tensor &x) const override;
+};
+
+/**
+ * The Xavier matrix initialization with the normal distribution.
+ */
+class XavierNormal : public Initializer {
+  XavierNormal(const XavierNormal &) = delete;
+  XavierNormal(XavierNormal &&) = delete;
+  XavierNormal &operator=(const XavierNormal &) = delete;
+  XavierNormal &operator=(XavierNormal &&) = delete;
+
+public:
+  XavierNormal() {}
 
   void apply(Tensor &x) const override;
 };

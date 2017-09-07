@@ -31,5 +31,15 @@ void XavierUniform::apply(Tensor &x) const {
   x = x.device().random_uniform(s, -scale, scale);
 }
 
+void XavierNormal::apply(Tensor &x) const {
+  const Shape s = x.shape();
+  if (!s.is_matrix()) {
+    THROW_ERROR(
+        "XavierNormal initializer can be used to only matrices or vectors.");
+  }
+  const float sd = std::sqrt(2. / (s[0] + s[1]));
+  x = x.device().random_normal(s, 0, sd);
+}
+
 }  // namespace initializers
 }  // namespace primitiv
