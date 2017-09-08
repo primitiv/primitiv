@@ -403,6 +403,20 @@ TEST_F(TensorBackwardTest, CheckExp) {
   }
 }
 
+TEST_F(TensorBackwardTest, CheckLog) {
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector(
+        Shape({2, 2}, 2), {0.01, 1, 2, 3, 0.01, 1, 2, 3});
+    const Tensor y = dev->log_fw(x);
+    const Tensor gy = dev->new_tensor_by_vector(
+        y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
+    Tensor gx = dev->new_tensor(x.shape(), 0);
+    dev->log_bw(x, y, gy, gx);
+    const vector<float> gx_val { 100, -1, 1, -2./3, 200, -2, .5, -1./3 };
+    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+  }
+}
+
 TEST_F(TensorBackwardTest, CheckTanh) {
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(

@@ -251,6 +251,7 @@ FWD_SHAPE_UNARY(DivideConstR);
 FWD_SHAPE_UNARY(DivideConstL);
 FWD_SHAPE_UNARY(Sqrt);
 FWD_SHAPE_UNARY(Exp);
+FWD_SHAPE_UNARY(Log);
 FWD_SHAPE_UNARY(Tanh);
 FWD_SHAPE_UNARY(Sigmoid);
 FWD_SHAPE_UNARY(Softplus);
@@ -329,6 +330,7 @@ FORWARD(Positive) { return *x[0]; }
 FORWARD(Negative) { return -(*x[0]); }
 FORWARD(Sqrt) { return operators::sqrt(*x[0]); }
 FORWARD(Exp) { return operators::exp(*x[0]); }
+FORWARD(Log) { return operators::log(*x[0]); }
 FORWARD(Tanh) { return operators::tanh(*x[0]); }
 FORWARD(Sigmoid) { return operators::sigmoid(*x[0]); }
 FORWARD(Softplus) { return operators::softplus(*x[0]); }
@@ -397,6 +399,7 @@ BACKWARD(Positive) { *gx[0] += gy; }
 BACKWARD(Negative) { *gx[0] -= gy; }
 BACKWARD(Sqrt) { gy.device().sqrt_bw(*x[0], y, gy, *gx[0]); }
 BACKWARD(Exp) {  gy.device().exp_bw(*x[0], y, gy, *gx[0]);}
+BACKWARD(Log) {  gy.device().log_bw(*x[0], y, gy, *gx[0]);}
 BACKWARD(Tanh) {  gy.device().tanh_bw(*x[0], y, gy, *gx[0]);}
 BACKWARD(Sigmoid) {  gy.device().sigmoid_bw(*x[0], y, gy, *gx[0]);}
 BACKWARD(Softplus) {  gy.device().softplus_bw(*x[0], y, gy, *gx[0]);}

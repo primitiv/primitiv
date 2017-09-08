@@ -143,6 +143,7 @@ __global__ void name##_fw_dev( \
 CUDADEV_KERNEL_FW_X(negate, -px[i]);
 CUDADEV_KERNEL_FW_X(sqrt, ::__fsqrt_rn(px[i]));
 CUDADEV_KERNEL_FW_X(exp, ::expf(px[i]));
+CUDADEV_KERNEL_FW_X(log, ::logf(px[i]));
 CUDADEV_KERNEL_FW_X(tanh, ::tanhf(px[i]));
 CUDADEV_KERNEL_FW_X(sigmoid, .5f + .5f * ::tanhf(.5f * px[i]));
 CUDADEV_KERNEL_FW_X(
@@ -153,6 +154,7 @@ CUDADEV_KERNEL_FW_X(tan, ::tanf(px[i]));
 
 CUDADEV_KERNEL_BW_X(sqrt, .5f * pgy[i] / py[i]);
 CUDADEV_KERNEL_BW_X(exp, py[i] * pgy[i]);
+CUDADEV_KERNEL_BW_X(log, pgy[i] / px[i]);
 CUDADEV_KERNEL_BW_X(tanh, (1.f - py[i] * py[i]) * pgy[i]);
 CUDADEV_KERNEL_BW_X(sigmoid, py[i] * (1.f - py[i]) * pgy[i]);
 CUDADEV_KERNEL_BW_X(softplus, (.5f + .5f * ::tanhf(.5f * px[i])) * pgy[i]);
@@ -779,6 +781,7 @@ void CUDADevice::name##_bw_impl( \
 CUDADEV_FW_X(negate);
 CUDADEV_FW_X(sqrt);
 CUDADEV_FW_X(exp);
+CUDADEV_FW_X(log);
 CUDADEV_FW_X(tanh);
 CUDADEV_FW_X(sigmoid);
 CUDADEV_FW_X(softplus);
@@ -788,6 +791,7 @@ CUDADEV_FW_X(tan);
 
 CUDADEV_BW_X(sqrt);
 CUDADEV_BW_X(exp);
+CUDADEV_BW_X(log);
 CUDADEV_BW_X(tanh);
 CUDADEV_BW_X(sigmoid);
 CUDADEV_BW_X(softplus);

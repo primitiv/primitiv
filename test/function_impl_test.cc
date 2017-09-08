@@ -813,8 +813,8 @@ TEST_F(FunctionImplTest, CheckMatrixMultiply) {
 }
 
 TEST_F(FunctionImplTest, CheckSqrt) {
-  // y = exp(x)
-  // dy/dx = y
+  // y = sqrt(x)
+  // dy/dx = 1/(2y)
   setup_1arg_nonnegative();
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {
@@ -838,6 +838,24 @@ TEST_F(FunctionImplTest, CheckExp) {
   };
   const vector<float> bw_grad = ret_data;
   TEST_1ARG(Exp);
+}
+
+TEST_F(FunctionImplTest, CheckLog) {
+  // y = log(x)
+  // dy/dx = 1/x
+  setup_1arg_nonnegative();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    0, 0.6931472, 1.0986123, 1.3862944,
+    -4.6051702, -4.6051702, -4.6051702, -4.6051702,
+    0, 1.3862944, 2.1972246, 2.7725887,
+  };
+  const vector<float> bw_grad {
+    1, .5, 1./3, .25,
+    100, 100, 100, 100,
+    1, .25, 1./9, .0625,
+  };
+  TEST_1ARG(Log);
 }
 
 TEST_F(FunctionImplTest, CheckTanh) {

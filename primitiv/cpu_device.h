@@ -59,6 +59,7 @@ private:
   void negate_fw_impl(const Tensor &x, Tensor &y) override;
   void sqrt_fw_impl(const Tensor &x, Tensor &y) override;
   void exp_fw_impl(const Tensor &x, Tensor &y) override;
+  void log_fw_impl(const Tensor &x, Tensor &y) override;
   void tanh_fw_impl(const Tensor &x, Tensor &y) override;
   void sigmoid_fw_impl(const Tensor &x, Tensor &y) override;
   void softplus_fw_impl(const Tensor &x, Tensor &y) override;
@@ -69,6 +70,7 @@ private:
 
   void sqrt_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void exp_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
+  void log_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void tanh_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void sigmoid_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void softplus_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;

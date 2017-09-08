@@ -172,6 +172,11 @@ Node exp(const Node &x) {
 }
 
 template<>
+Node log(const Node &x) {
+  return REGX(x, Log(), x);
+}
+
+template<>
 Node tanh(const Node &x) {
   return REGX(x, Tanh(), x);
 }

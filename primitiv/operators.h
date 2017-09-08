@@ -171,6 +171,9 @@ template<typename Var>
 type_traits::Identity<Var> exp(const Var &x);
 
 template<typename Var>
+type_traits::Identity<Var> log(const Var &x);
+
+template<typename Var>
 type_traits::Identity<Var> tanh(const Var &x);
 
 template<typename Var>

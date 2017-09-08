@@ -1096,6 +1096,23 @@ TEST_F(TensorOpsTest, CheckExp) {
   }
 }
 
+TEST_F(TensorOpsTest, CheckLog) {
+  const vector<float> x_data {
+    0.01, .5, 1, 2, 4, 8,
+    0.01, .5, 1, 2, 4, 8,
+  };
+  const vector<float> y_data {
+    -4.60517019, -0.69314718, 0, 0.69314718, 1.38629436, 2.07944154,
+    -4.60517019, -0.69314718, 0, 0.69314718, 1.38629436, 2.07944154,
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
+    const Tensor y = log(x);
+    EXPECT_EQ(Shape({2, 3}, 2), y.shape());
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+  }
+}
+
 TEST_F(TensorOpsTest, CheckTanh) {
   const vector<float> x_data {
     0, .5, 1, 2, 4, 8,

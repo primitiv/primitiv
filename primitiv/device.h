@@ -115,6 +115,7 @@ public:
   Tensor negate_fw(const Tensor &x);
   Tensor sqrt_fw(const Tensor &x);
   Tensor exp_fw(const Tensor &x);
+  Tensor log_fw(const Tensor &x);
   Tensor tanh_fw(const Tensor &x);
   Tensor sigmoid_fw(const Tensor &x);
   Tensor softplus_fw(const Tensor &x);
@@ -125,6 +126,7 @@ public:
 
   void sqrt_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void exp_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
+  void log_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void tanh_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void sigmoid_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void softplus_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
@@ -283,6 +285,7 @@ private:
   virtual void negate_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void sqrt_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void exp_fw_impl(const Tensor &x, Tensor &y) = 0;
+  virtual void log_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void tanh_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void sigmoid_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void softplus_fw_impl(const Tensor &x, Tensor &y) = 0;
@@ -293,6 +296,7 @@ private:
 
   virtual void sqrt_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void exp_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
+  virtual void log_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void tanh_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void sigmoid_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void softplus_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;

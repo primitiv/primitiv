@@ -168,6 +168,11 @@ Tensor exp(const Tensor &x) {
 }
 
 template<>
+Tensor log(const Tensor &x) {
+  return x.device().log_fw(x);
+}
+
+template<>
 Tensor tanh(const Tensor &x) {
   return x.device().tanh_fw(x);
 }

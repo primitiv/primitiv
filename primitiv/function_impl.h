@@ -311,6 +311,7 @@ DECL_FUNC(MatrixMultiply);
 
 DECL_FUNC(Sqrt);
 DECL_FUNC(Exp);
+DECL_FUNC(Log);
 DECL_FUNC(Tanh);
 DECL_FUNC(Sigmoid);
 DECL_FUNC(Softplus);
