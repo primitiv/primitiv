@@ -334,6 +334,9 @@ Node normal(
 Node log_normal(
     const Shape &shape, float mean, float sd, Device &dev, Graph &g);
 
+Node gumbel(
+    const Shape &shape, float mu, float beta, Device &dev, Graph &g);
+
 template<typename Var>
 type_traits::Identity<Var> bernoulli(
     const Shape &shape, float p,
@@ -353,6 +356,13 @@ template<typename Var>
 type_traits::Identity<Var> log_normal(
     const Shape &shape, float mean, float sd,
     Device &dev = Device::get_default_device());
+
+template<typename Var>
+inline type_traits::Identity<Var> gumbel(
+    const Shape &shape, float mu, float beta,
+    Device &dev = Device::get_default_device()) {
+  return mu - beta * log(-log(uniform<Var>(shape, 0, .9999999, dev)));
+}
 
 }  // namespace random
 
