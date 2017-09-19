@@ -25,19 +25,18 @@
 #include <primitiv/primitiv_cuda.h>
 
 using primitiv::initializers::Constant;
-using primitiv::initializers::XavierUniform;
-using primitiv::trainers::Adam;
+using primitiv::initializers::Uniform;
+using primitiv::trainers::SGD;
 namespace F = primitiv::operators;
 using namespace primitiv;
 using namespace std;
 
 namespace {
 
-static const unsigned NUM_EMBED_UNITS = 512;
-static const unsigned NUM_HIDDEN_UNITS = 512;
-static const unsigned BATCH_SIZE = 64;
-static const unsigned MAX_EPOCH = 100;
-static const float DROPOUT_RATE = 0.3;
+static const unsigned NUM_HIDDEN_UNITS = 650;
+static const unsigned BATCH_SIZE = 32;
+static const unsigned MAX_EPOCH = 50;
+static const float DROPOUT_RATE = 0.5;
 
 // Gathers the set of words from space-separated corpus.
 unordered_map<string, unsigned> make_vocab(const string &filename) {
@@ -49,7 +48,7 @@ unordered_map<string, unsigned> make_vocab(const string &filename) {
   unordered_map<string, unsigned> vocab;
   string line, word;
   while (getline(ifs, line)) {
-    line = "<s>" + line + "<s>";
+    line = "<bos>" + line + "<eos>";
     stringstream ss(line);
     while (getline(ss, word, ' ')) {
       if (vocab.find(word) == vocab.end()) {
@@ -72,7 +71,7 @@ vector<vector<unsigned>> load_corpus(
   vector<vector<unsigned>> corpus;
   string line, word;
   while (getline(ifs, line)) {
-    line = "<s>" + line + "<s>";
+    line = "<bos>" + line + "<eos>";
     stringstream ss (line);
     vector<unsigned> sentence;
     while (getline(ss, word, ' ')) {
@@ -110,7 +109,34 @@ vector<vector<unsigned>> make_batch(
   return batch;
 }
 
-// Hand-written LSTM with input/forget/output gates and no peepholes.
+// Affine transform:
+//   y = W . x + b
+class Affine {
+  Parameter pw_, pb_;
+  Node w_, b_;
+
+public:
+  Affine(const string &name,
+      unsigned in_size, unsigned out_size, Trainer &trainer)
+    : pw_(name + ".w", {out_size, in_size}, Uniform(-0.1, 0.1))
+    , pb_(name + ".b", {out_size}, Constant(0)) {
+      trainer.add_parameter(pw_);
+      trainer.add_parameter(pb_);
+    }
+
+  // Initializes internal values.
+  void init() {
+    w_ = F::input<Node>(pw_);
+    b_ = F::input<Node>(pb_);
+  }
+
+  // Applies transform.
+  Node forward(const Node &x) {
+    return F::matmul(w_, x) + b_;
+  }
+};
+
+// LSTM with input/forget/output gates and no peepholes.
 // Formulation:
 //   i = sigmoid(W_xi . x[t] + W_hi . h[t-1] + b_i)
 //   f = sigmoid(W_xf . x[t] + W_hf . h[t-1] + b_f)
@@ -119,79 +145,84 @@ vector<vector<unsigned>> make_batch(
 //   c[t] = i * j + f * c[t-1]
 //   h[t] = o * tanh(c[t])
 class LSTM {
-  public:
-    LSTM(unsigned in_size, unsigned out_size, Trainer &trainer)
-      : out_size_(out_size)
-      , pwxh_("wxh", {4 * out_size, in_size}, XavierUniform())
-      , pwhh_("whh", {4 * out_size, out_size}, XavierUniform())
-      , pbh_("bh", {4 * out_size}, Constant(0)) {
-        trainer.add_parameter(pwxh_);
-        trainer.add_parameter(pwhh_);
-        trainer.add_parameter(pbh_);
-      }
+  unsigned out_size_;
+  Parameter pwxh_, pwhh_, pbh_;
+  Node wxh_, whh_, bh_, h_, c_;
 
-    // Initializes internal values.
-    void init() {
-      wxh_ = F::input<Node>(pwxh_);
-      whh_ = F::input<Node>(pwhh_);
-      bh_ = F::input<Node>(pbh_);
-      h_ = c_ = F::zeros<Node>({out_size_});
+public:
+  LSTM(const string &name,
+      unsigned in_size, unsigned out_size, Trainer &trainer)
+    : out_size_(out_size)
+    , pwxh_(name + ".wxh", {4 * out_size, in_size}, Uniform(-0.1, 0.1))
+    , pwhh_(name + ".whh", {4 * out_size, out_size}, Uniform(-0.1, 0.1))
+    , pbh_(name + ".bh", {4 * out_size}, Constant(0)) {
+      trainer.add_parameter(pwxh_);
+      trainer.add_parameter(pwhh_);
+      trainer.add_parameter(pbh_);
     }
 
-    // Forward one step.
-    Node forward(const Node &x) {
-      const Node u = F::matmul(wxh_, x) + F::matmul(whh_, h_) + bh_;
-      const Node i = F::sigmoid(F::slice(u, 0, 0, out_size_));
-      const Node f = F::sigmoid(F::slice(u, 0, out_size_, 2 * out_size_));
-      const Node o = F::sigmoid(F::slice(u, 0, 2 * out_size_, 3 * out_size_));
-      const Node j = F::tanh(F::slice(u, 0, 3 * out_size_, 4 * out_size_));
-      c_ = i * j + f * c_;
-      h_ = o * F::tanh(c_);
-      return h_;
-    }
+  // Initializes internal values.
+  void init() {
+    wxh_ = F::input<Node>(pwxh_);
+    whh_ = F::input<Node>(pwhh_);
+    bh_ = F::input<Node>(pbh_);
+    h_ = c_ = F::zeros<Node>({out_size_});
+  }
 
-  private:
-    unsigned out_size_;
-    Parameter pwxh_, pwhh_, pbh_;
-    Node wxh_, whh_, bh_, h_, c_;
+  // Forward one step.
+  Node forward(const Node &x) {
+    const Node u = F::matmul(wxh_, x) + F::matmul(whh_, h_) + bh_;
+    const Node i = F::sigmoid(F::slice(u, 0, 0, out_size_));
+    const Node f = F::sigmoid(F::slice(u, 0, out_size_, 2 * out_size_));
+    const Node o = F::sigmoid(F::slice(u, 0, 2 * out_size_, 3 * out_size_));
+    const Node j = F::tanh(F::slice(u, 0, 3 * out_size_, 4 * out_size_));
+    c_ = i * j + f * c_;
+    h_ = o * F::tanh(c_);
+    return h_;
+  }
 };
 
 // Language model using above LSTM.
 class RNNLM {
+  unsigned eos_id_;
+  Parameter plookup_;
+  LSTM rnn1_, rnn2_;
+  Affine hy_;
+
 public:
   RNNLM(unsigned vocab_size, unsigned eos_id, Trainer &trainer)
     : eos_id_(eos_id)
-    , plookup_("lookup", {NUM_EMBED_UNITS, vocab_size}, XavierUniform())
-    , pwhy_("why", {vocab_size, NUM_HIDDEN_UNITS}, XavierUniform())
-    , pby_("by", {vocab_size}, Constant(0))
-    , lstm_(NUM_EMBED_UNITS, NUM_HIDDEN_UNITS, trainer) {
+    , plookup_("lookup", {NUM_HIDDEN_UNITS, vocab_size}, Uniform(-0.1, 0.1))
+    , rnn1_("rnn1", NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS, trainer)
+    , rnn2_("rnn2", NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS, trainer)
+    , hy_("hy", NUM_HIDDEN_UNITS, vocab_size, trainer) {
       trainer.add_parameter(plookup_);
-      trainer.add_parameter(pwhy_);
-      trainer.add_parameter(pby_);
     }
 
   // Forward function of RNNLM. Input data should be arranged below:
   // inputs = {
-  //   {sent1_word1, sent2_word1, ..., sentN_word1},  // 1st input (<s>)
+  //   {sent1_word1, sent2_word1, ..., sentN_word1},  // 1st input (<bos>)
   //   {sent1_word2, sent2_word2, ..., sentN_word2},  // 2nd input/1st output
   //   ...,
-  //   {sent1_wordM, sent2_wordM, ..., sentN_wordM},  // last output (<s>)
+  //   {sent1_wordM, sent2_wordM, ..., sentN_wordM},  // last output (<eos>)
   // };
   vector<Node> forward(
       const vector<vector<unsigned>> &inputs, bool train) {
     const unsigned batch_size = inputs[0].size();
     Node lookup = F::input<Node>(plookup_);
-    Node why = F::input<Node>(pwhy_);
-    Node by = F::input<Node>(pby_);
-    lstm_.init();
+    rnn1_.init();
+    rnn2_.init();
+    hy_.init();
 
     vector<Node> outputs;
     for (unsigned i = 0; i < inputs.size() - 1; ++i) {
       Node x = F::pick(lookup, inputs[i], 1);
       x = F::dropout(x, DROPOUT_RATE, train);
-      Node h = lstm_.forward(x);
-      h = F::dropout(h, DROPOUT_RATE, train);
-      outputs.emplace_back(F::matmul(why, h) + by);
+      Node h1 = rnn1_.forward(x);
+      h1 = F::dropout(h1, DROPOUT_RATE, train);
+      Node h2 = rnn2_.forward(x);
+      h2 = F::dropout(h2, DROPOUT_RATE, train);
+      outputs.emplace_back(hy_.forward(h2));
     }
     return outputs;
   }
@@ -206,11 +237,6 @@ public:
     }
     return F::batch::mean(F::sum(losses));
   }
-
-private:
-  unsigned eos_id_;
-  Parameter plookup_, pwhy_, pby_;
-  LSTM lstm_;
 };
 
 }  // namespace
@@ -218,8 +244,8 @@ private:
 int main() {
   // Loads vocab.
   const auto vocab = ::make_vocab("data/ptb.train.txt");
-  cout << "#vocab: " << vocab.size() << endl;  // maybe 10000
-  const unsigned eos_id = vocab.at("<s>");
+  cout << "#vocab: " << vocab.size() << endl;  // maybe 10001
+  const unsigned eos_id = vocab.at("<eos>");
 
   // Loads all corpus.
   const auto train_corpus = ::load_corpus("data/ptb.train.txt", vocab);
@@ -238,8 +264,8 @@ int main() {
   Device::set_default_device(dev);
 
   // Trainer.
-  Adam trainer;
-  trainer.set_weight_decay(1e-6);
+  SGD trainer(1);
+  //trainer.set_weight_decay(1e-6);
   trainer.set_gradient_clipping(5);
 
   // Our LM.
@@ -254,6 +280,8 @@ int main() {
   vector<unsigned> valid_ids(num_valid_sents);
   iota(begin(train_ids), end(train_ids), 0);
   iota(begin(valid_ids), end(valid_ids), 0);
+
+  float best_valid_ppl = 1e10;
 
   // Train/valid loop.
   for (unsigned epoch = 0; epoch < MAX_EPOCH; ++epoch) {
@@ -299,6 +327,15 @@ int main() {
     }
     const float valid_ppl = std::exp(valid_loss / num_valid_labels);
     cout << "  valid ppl = " << valid_ppl << endl;
+
+    if (valid_ppl < best_valid_ppl) {
+      cout << "  BEST" << endl;
+    } else {
+      const float old_lr = trainer.get_learning_rate_scaling();
+      const float new_lr = 0.5 * old_lr;
+      trainer.set_learning_rate_scaling(new_lr);
+      cout << "  learning rate scaled: " << old_lr << " -> " << new_lr << endl;
+    }
   }
 
   return 0;
