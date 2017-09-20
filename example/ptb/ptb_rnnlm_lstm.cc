@@ -34,7 +34,7 @@ using namespace std;
 namespace {
 
 static const unsigned NUM_HIDDEN_UNITS = 650;
-static const unsigned BATCH_SIZE = 32;
+static const unsigned BATCH_SIZE = 20;
 static const unsigned MAX_EPOCH = 50;
 static const float DROPOUT_RATE = 0.5;
 
@@ -111,9 +111,10 @@ vector<vector<unsigned>> make_batch(
 
 // Affine transform:
 //   y = W . x + b
+template <typename Var>
 class Affine {
   Parameter pw_, pb_;
-  Node w_, b_;
+  Var w_, b_;
 
 public:
   Affine(const string &name,
@@ -126,12 +127,12 @@ public:
 
   // Initializes internal values.
   void init() {
-    w_ = F::input<Node>(pw_);
-    b_ = F::input<Node>(pb_);
+    w_ = F::input<Var>(pw_);
+    b_ = F::input<Var>(pb_);
   }
 
   // Applies transform.
-  Node forward(const Node &x) {
+  Var forward(const Var &x) {
     return F::matmul(w_, x) + b_;
   }
 };
@@ -144,10 +145,11 @@ public:
 //   j = tanh   (W_xj . x[t] + W_hj . h[t-1] + b_j)
 //   c[t] = i * j + f * c[t-1]
 //   h[t] = o * tanh(c[t])
+template <typename Var>
 class LSTM {
   unsigned out_size_;
   Parameter pwxh_, pwhh_, pbh_;
-  Node wxh_, whh_, bh_, h_, c_;
+  Var wxh_, whh_, bh_, h_, c_;
 
 public:
   LSTM(const string &name,
@@ -163,19 +165,19 @@ public:
 
   // Initializes internal values.
   void init() {
-    wxh_ = F::input<Node>(pwxh_);
-    whh_ = F::input<Node>(pwhh_);
-    bh_ = F::input<Node>(pbh_);
-    h_ = c_ = F::zeros<Node>({out_size_});
+    wxh_ = F::input<Var>(pwxh_);
+    whh_ = F::input<Var>(pwhh_);
+    bh_ = F::input<Var>(pbh_);
+    h_ = c_ = F::zeros<Var>({out_size_});
   }
 
   // Forward one step.
-  Node forward(const Node &x) {
-    const Node u = F::matmul(wxh_, x) + F::matmul(whh_, h_) + bh_;
-    const Node i = F::sigmoid(F::slice(u, 0, 0, out_size_));
-    const Node f = F::sigmoid(F::slice(u, 0, out_size_, 2 * out_size_));
-    const Node o = F::sigmoid(F::slice(u, 0, 2 * out_size_, 3 * out_size_));
-    const Node j = F::tanh(F::slice(u, 0, 3 * out_size_, 4 * out_size_));
+  Var forward(const Var &x) {
+    const Var u = F::matmul(wxh_, x) + F::matmul(whh_, h_) + bh_;
+    const Var i = F::sigmoid(F::slice(u, 0, 0, out_size_));
+    const Var f = F::sigmoid(F::slice(u, 0, out_size_, 2 * out_size_));
+    const Var o = F::sigmoid(F::slice(u, 0, 2 * out_size_, 3 * out_size_));
+    const Var j = F::tanh(F::slice(u, 0, 3 * out_size_, 4 * out_size_));
     c_ = i * j + f * c_;
     h_ = o * F::tanh(c_);
     return h_;
@@ -183,11 +185,12 @@ public:
 };
 
 // Language model using above LSTM.
+template <typename Var>
 class RNNLM {
   unsigned eos_id_;
   Parameter plookup_;
-  LSTM rnn1_, rnn2_;
-  Affine hy_;
+  LSTM<Var> rnn1_, rnn2_;
+  Affine<Var> hy_;
 
 public:
   RNNLM(unsigned vocab_size, unsigned eos_id, Trainer &trainer)
@@ -206,21 +209,21 @@ public:
   //   ...,
   //   {sent1_wordM, sent2_wordM, ..., sentN_wordM},  // last output (<eos>)
   // };
-  vector<Node> forward(
+  vector<Var> forward(
       const vector<vector<unsigned>> &inputs, bool train) {
     const unsigned batch_size = inputs[0].size();
-    Node lookup = F::input<Node>(plookup_);
+    Var lookup = F::input<Var>(plookup_);
     rnn1_.init();
     rnn2_.init();
     hy_.init();
 
-    vector<Node> outputs;
+    vector<Var> outputs;
     for (unsigned i = 0; i < inputs.size() - 1; ++i) {
-      Node x = F::pick(lookup, inputs[i], 1);
+      Var x = F::pick(lookup, inputs[i], 1);
       x = F::dropout(x, DROPOUT_RATE, train);
-      Node h1 = rnn1_.forward(x);
+      Var h1 = rnn1_.forward(x);
       h1 = F::dropout(h1, DROPOUT_RATE, train);
-      Node h2 = rnn2_.forward(x);
+      Var h2 = rnn2_.forward(h1);
       h2 = F::dropout(h2, DROPOUT_RATE, train);
       outputs.emplace_back(hy_.forward(h2));
     }
@@ -228,9 +231,9 @@ public:
   }
 
   // Loss function.
-  Node forward_loss(
-      const vector<Node> &outputs, const vector<vector<unsigned>> &inputs) {
-    vector<Node> losses;
+  Var loss(
+      const vector<Var> &outputs, const vector<vector<unsigned>> &inputs) {
+    vector<Var> losses;
     for (unsigned i = 0; i < outputs.size(); ++i) {
       losses.emplace_back(
           F::softmax_cross_entropy(outputs[i], inputs[i + 1], 0));
@@ -269,7 +272,7 @@ int main() {
   trainer.set_gradient_clipping(5);
 
   // Our LM.
-  ::RNNLM lm(vocab.size(), eos_id, trainer);
+  ::RNNLM<Node> lm(vocab.size(), eos_id, trainer);
 
   // Batch randomizer.
   random_device rd;
@@ -301,7 +304,7 @@ int main() {
       Graph g;
       Graph::set_default_graph(g);
       const auto outputs = lm.forward(batch, true);
-      const auto loss = lm.forward_loss(outputs, batch);
+      const auto loss = lm.loss(outputs, batch);
       train_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
       g.backward(loss);
       trainer.update();
@@ -321,7 +324,7 @@ int main() {
       Graph g;
       Graph::set_default_graph(g);
       const auto outputs = lm.forward(batch, false);
-      const auto loss = lm.forward_loss(outputs, batch);
+      const auto loss = lm.loss(outputs, batch);
       valid_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
       cout << ofs << '\r' << flush;
     }
@@ -329,6 +332,7 @@ int main() {
     cout << "  valid ppl = " << valid_ppl << endl;
 
     if (valid_ppl < best_valid_ppl) {
+      best_valid_ppl = valid_ppl;
       cout << "  BEST" << endl;
     } else {
       const float old_lr = trainer.get_learning_rate_scaling();
