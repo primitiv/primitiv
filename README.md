@@ -42,7 +42,7 @@ Building Options
 
 - `PRIMITIV_BUILD_STATIC_LIBRARY` (default=`OFF`)
   - Builds a static library instead of a shared object.
-- `PRIMITIV_BUILD_TESTS` (default=`ON`)
+- `PRIMITIV_BUILD_TESTS` (default=`OFF`)
   - Builds test binaries and generates `make test` command.
 - `PRIMITIV_USE_CACHE` (default=`OFF`)
   - Whether or not to use cached values to prevent increasing computation amount.

@@ -5,7 +5,7 @@ project(primitiv VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 option(PRIMITIV_BUILD_STATIC_LIBRARY "Builds static library." OFF)
-option(PRIMITIV_BUILD_TESTS "Builds test binaries." ON)
+option(PRIMITIV_BUILD_TESTS "Builds test binaries." OFF)
 option(PRIMITIV_USE_CACHE "Enables cached values in some functions but needs more memory." OFF)
 option(PRIMITIV_USE_CUDA "Finds CUDA library ant use it." OFF)
 
