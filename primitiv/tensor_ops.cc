@@ -272,6 +272,11 @@ Tensor constant<Tensor>(const Shape &shape, float k, Device &dev) {
   return dev.new_tensor(shape, k);
 }
 
+template<>
+Tensor identity<Tensor>(unsigned size, Device &dev) {
+  return dev.identity(size);
+}
+
 namespace random {
 
 template<>

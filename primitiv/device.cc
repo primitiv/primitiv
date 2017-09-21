@@ -94,6 +94,15 @@ Tensor Device::copy_tensor(const Tensor &x) {
   return y;
 }
 
+Tensor Device::identity(unsigned size) {
+  if (size == 0) {
+    THROW_ERROR("Invalid size of the identity matrix: " << size);
+  }
+  Tensor y = new_tensor({size, size});
+  identity_impl(y);
+  return y;
+}
+
 Tensor Device::random_bernoulli(const Shape &shape, float p) {
   if (p < 0 || p > 1) {
     THROW_ERROR("Invalid Bernoulli probability: " << p);

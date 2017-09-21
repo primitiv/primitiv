@@ -56,6 +56,8 @@ private:
 
   void copy_tensor_impl(const Tensor &x, Tensor &y) override;
 
+  void identity_impl(Tensor &y) override;
+
   void random_bernoulli_impl(float p, Tensor &y) override;
   void random_uniform_impl(float lower, float upper, Tensor &y) override;
   void random_normal_impl(float mean, float sd, Tensor &y) override;

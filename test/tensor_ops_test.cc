@@ -92,6 +92,35 @@ TEST_F(TensorOpsTest, CheckInvalidCopy) {
   }
 }
 
+TEST_F(TensorOpsTest, CheckIdentity) {
+  struct TestCase {
+    unsigned size;
+    Shape shape;
+    vector<float> values;
+  };
+  const vector<TestCase> test_cases {
+    {1, {}, {1}},
+    {2, {2, 2}, {1, 0, 0, 1}},
+    {3, {3, 3}, {1, 0, 0, 0, 1, 0, 0, 0, 1}},
+    {4, {4, 4}, {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}},
+  };
+  for (Device *dev : devices) {
+    Device::set_default_device(*dev);
+    for (const TestCase &tc : test_cases) {
+      const Tensor y = identity<Tensor>(tc.size);
+      EXPECT_EQ(tc.shape, y.shape());
+      EXPECT_TRUE(vector_match(tc.values, y.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorOpsTest, CheckInvalidIdentity) {
+  for (Device *dev : devices) {
+    Device::set_default_device(*dev);
+    EXPECT_THROW(identity<Tensor>(0), Error);
+  }
+}
+
 TEST_F(TensorOpsTest, CheckPickNN) {
   struct TestCase {
     Shape x_shape;

@@ -301,6 +301,8 @@ inline Node ones(const Shape &shape, Device &dev, Graph &g) {
   return constant(shape, 1, dev, g);
 }
 
+Node identity(unsigned size, Device &dev, Graph &g);
+
 template<typename Var>
 type_traits::Identity<Var> constant(
     const Shape &shape, float k,
@@ -319,6 +321,11 @@ inline type_traits::Identity<Var> ones(
     Device &dev = Device::get_default_device()) {
   return constant<Var>(shape, 1, dev);
 }
+
+template<typename Var>
+type_traits::Identity<Var> identity(
+    unsigned size,
+    Device &dev = Device::get_default_device());
 
 namespace random {
 

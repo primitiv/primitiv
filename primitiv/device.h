@@ -97,6 +97,9 @@ public:
    */
   Tensor copy_tensor(const Tensor &x);
 
+  // Provides an identity matrix.
+  Tensor identity(unsigned size);
+
   // Random value generators.
   Tensor random_bernoulli(const Shape &shape, float p);
   Tensor random_uniform(const Shape &shape, float lower, float upper);  // (lower, upper]
@@ -269,6 +272,8 @@ private:
   virtual void reset_tensor_by_array_impl(const float values[], Tensor &x) = 0;
 
   virtual void copy_tensor_impl(const Tensor &x, Tensor &y) = 0;
+
+  virtual void identity_impl(Tensor &y) = 0;
 
   virtual void random_bernoulli_impl(float p, Tensor &y) = 0;
   virtual void random_uniform_impl(float lower, float upper, Tensor &y) = 0;

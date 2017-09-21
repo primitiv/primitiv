@@ -60,6 +60,13 @@ void CPUDevice::copy_tensor_impl(const Tensor &x, Tensor &y) {
   }
 }
 
+void CPUDevice::identity_impl(Tensor &y) {
+  reset_tensor_impl(0, y);
+  float *dest = DATA(y);
+  const unsigned size = y.shape()[0];
+  REPEAT_OP(i, size, dest[i * (size + 1)] = 1);
+}
+
 void CPUDevice::random_bernoulli_impl(float p, Tensor &y) {
   std::bernoulli_distribution dist(p);
   float *dest = DATA(y);

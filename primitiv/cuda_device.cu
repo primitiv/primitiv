@@ -26,6 +26,11 @@ __global__ void set_const_dev(float k, unsigned size, float *py) {
   if (i < size) py[i] = k;
 }
 
+__global__ void set_identity_dev(unsigned size, unsigned skip, float *py) {
+  const unsigned i = IDX;
+  if (i < size) py[i] = !(i % skip);
+}
+
 __global__ void rand_bernoulli_dev(float p, float size, float *py) {
   const unsigned i = IDX;
   if (i < size) py[i] = (float)(py[i] <= p);
@@ -591,6 +596,14 @@ void CUDADevice::copy_tensor_impl(const Tensor &x, Tensor &y) {
     default:
       reset_tensor_by_vector(x.to_vector(), y);
   }
+}
+
+void CUDADevice::identity_impl(Tensor &y) {
+  const unsigned size = y.shape().size();
+  const unsigned skip = y.shape()[0] + 1;
+  const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
+  CUDA_CALL(::cudaSetDevice(dev_id_));
+  ::set_identity_dev<<<num_blocks, dim1_x_>>>(size, skip, DATA(y));
 }
 
 void CUDADevice::random_bernoulli_impl(float p, Tensor &y) {

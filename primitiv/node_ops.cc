@@ -274,9 +274,18 @@ Node constant(const Shape &shape, float k, Device &dev, Graph &g) {
   return REG(g, Constant(shape, k, dev));
 }
 
+Node identity(unsigned size, Device &dev, Graph &g) {
+  return REG(g, IdentityMatrix(size, dev));
+}
+
 template<>
 Node constant<Node>(const Shape &shape, float k, Device &dev) {
   return constant(shape, k, dev, Graph::get_default_graph());
+}
+
+template<>
+Node identity<Node>(unsigned size, Device &dev) {
+  return identity(size, dev, Graph::get_default_graph());
 }
 
 namespace random {

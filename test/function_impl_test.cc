@@ -259,6 +259,32 @@ TEST_F(FunctionImplTest, CheckConstant) {
   }
 }
 
+TEST_F(FunctionImplTest, CheckIdentity) {
+  struct TestCase {
+    unsigned size;
+    Shape shape;
+    vector<float> data;
+  };
+  const vector<TestCase> test_cases {
+    {1, {}, {1}},
+    {2, {2, 2}, {1, 0, 0, 1}},
+    {3, {3, 3}, {1, 0, 0, 0, 1, 0, 0, 0, 1}},
+    {4, {4, 4}, {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}},
+  };
+  for (const TestCase &tc : test_cases) {
+    IdentityMatrix node(tc.size, *dev);
+    const Shape cur_shape = node.forward_shape(arg_shapes);
+    const Tensor cur_value = node.forward(arg_values);
+    const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
+    // backward() has no effect.
+    EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
+    EXPECT_EQ("IdentityMatrix(" + std::to_string(tc.size) + ')', node.name());
+    EXPECT_EQ(tc.shape, cur_shape);
+    EXPECT_EQ(dev, node.get_device());
+    EXPECT_TRUE(vector_match(tc.data, cur_value.to_vector()));
+  }
+}
+
 TEST_F(FunctionImplTest, CheckRandomBernoulli) {
   struct TestCase {
     Shape shape;

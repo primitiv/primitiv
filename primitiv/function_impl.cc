@@ -98,6 +98,22 @@ void Constant::backward(
   // Nothing to do.
 }
 
+Shape IdentityMatrix::forward_shape(const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 0);
+  return Shape({size_, size_});
+}
+
+Tensor IdentityMatrix::forward(const vector<const Tensor *> &args) {
+  CHECK_ARGNUM(args, 0);
+  return device_.identity(size_);
+}
+
+void IdentityMatrix::backward(
+    const Tensor &, const Tensor &cur_grad,
+    const vector<const Tensor *> &, const vector<Tensor *> &) const {
+  // Nothing to do.
+}
+
 Shape RandomBernoulli::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 0);
   return shape_;

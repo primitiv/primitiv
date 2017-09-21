@@ -79,6 +79,20 @@ private:
   Device &device_;
 };
 
+class IdentityMatrix : public primitiv::Function {
+  NO_CTOR_CLASS_DECL(IdentityMatrix);
+public:
+  IdentityMatrix(unsigned size, Device &device)
+    : size_(size), device_(device) {}
+  Device *get_device() const override { return &device_; }
+  std::string name() const override {
+    return "IdentityMatrix(" + std::to_string(size_) + ')';
+  }
+private:
+  unsigned size_;
+  Device &device_;
+};
+
 class RandomBernoulli : public primitiv::Function {
   NO_CTOR_CLASS_DECL(RandomBernoulli);
 public:
