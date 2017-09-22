@@ -25,6 +25,21 @@ Prerequisites
 - (optional) CUDA 7.5 or later
   - Required only when `-DPRIMITIV_USE_CUDA=ON`
 
+Ubuntu Protocol Buffers Installation Guide
+------------------------------------------
+
+Install [Protocol Buffers](https://github.com/google/protobuf) first.
+
+    sudo apt install autoconf automake build-essential cmake libtool unzip
+    git clone https://github.com/google/protobuf
+    cd protobuf
+    ./autogen.sh
+    ./configure
+    make [-j <threads>]
+    make check
+    sudo make install
+    sudo ldconfig
+
 Build
 -----
 
