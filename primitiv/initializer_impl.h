@@ -68,6 +68,21 @@ private:
 };
 
 /**
+ * Identity matrix initializer.
+ */
+class Identity : public Initializer {
+  Identity(const Identity &) = delete;
+  Identity(Identity &&) = delete;
+  Identity &operator=(const Identity &) = delete;
+  Identity &operator=(Identity &&) = delete;
+
+public:
+  Identity() {}
+
+  void apply(Tensor &x) const override;
+};
+
+/**
  * The Xavier matrix initialization with the uniform distribution.
  */
 class XavierUniform : public Initializer {

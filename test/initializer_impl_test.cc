@@ -89,6 +89,26 @@ TEST_F(InitializerImplTest, CheckNormal) {
   }
 }
 
+TEST_F(InitializerImplTest, CheckIdentity) {
+  const unsigned N = 768;
+  Tensor x = dev.new_tensor({N, N});
+  const Identity init;
+  init.apply(x);
+  const std::vector<float> values = x.to_vector();
+  for (unsigned i = 0; i < N * N; ++i) {
+    EXPECT_EQ(!(i % (N + 1)), values[i]);
+  }
+}
+
+TEST_F(InitializerImplTest, CheckInvalidIdentity) {
+  const Identity init;
+  const std::vector<Shape> shapes {{2}, {2, 2, 2}, {2, 3}};
+  for (const Shape &s : shapes) {
+    Tensor x = dev.new_tensor(s);
+    EXPECT_THROW(init.apply(x), Error);
+  }
+}
+
 TEST_F(InitializerImplTest, CheckXavierUniform) {
   const unsigned N = 768;
   Tensor x = dev.new_tensor({N, N});

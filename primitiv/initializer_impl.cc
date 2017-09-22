@@ -21,6 +21,15 @@ void Normal::apply(Tensor &x) const {
   x = x.device().random_normal(x.shape(), mean_, sd_);
 }
 
+void Identity::apply(Tensor &x) const {
+  const Shape s = x.shape();
+  if (!s.is_matrix() || s[0] != s[1]) {
+    THROW_ERROR(
+        "Identity initializer can be used to only square matrices.");
+  }
+  x = x.device().identity(s[0]);
+}
+
 void XavierUniform::apply(Tensor &x) const {
   const Shape s = x.shape();
   if (!s.is_matrix()) {
