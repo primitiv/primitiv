@@ -25,16 +25,11 @@
 #include <primitiv/primitiv.h>
 #include <primitiv/primitiv_cuda.h>
 
-using primitiv::CUDADevice;
-using primitiv::Graph;
-using primitiv::Node;
-using primitiv::Parameter;
-using primitiv::trainers::SGD;
-using primitiv::Shape;
-using primitiv::initializers::Constant;
-using primitiv::initializers::XavierUniform;
-namespace F = primitiv::operators;
 using namespace std;
+using namespace primitiv;
+namespace F = primitiv::operators;
+namespace I = primitiv::initializers;
+namespace T = primitiv::trainers;
 
 namespace {
 
@@ -92,16 +87,16 @@ int main() {
   CUDADevice dev0(0);  // GPU 0
   CUDADevice dev1(1);  // GPU 1
 
-  // Parameters managed by GPU 0.
-  Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, XavierUniform(), dev0);
-  Parameter pb1("b1", {NUM_HIDDEN_UNITS}, Constant(0), dev0);
+  // Parameters on GPU 0.
+  Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, I::XavierUniform(), dev0);
+  Parameter pb1("b1", {NUM_HIDDEN_UNITS}, I::Constant(0), dev0);
   
-  // Parameters managed by GPU 1.
-  Parameter pw2("w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, XavierUniform(), dev1);
-  Parameter pb2("b2", {NUM_OUTPUT_UNITS}, Constant(0), dev1);
+  // Parameters on GPU 1.
+  Parameter pw2("w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, I::XavierUniform(), dev1);
+  Parameter pb2("b2", {NUM_OUTPUT_UNITS}, I::Constant(0), dev1);
 
   // Trainer
-  SGD trainer(.1);
+  T::SGD trainer(.1);
   trainer.add_parameter(pw1);
   trainer.add_parameter(pb1);
   trainer.add_parameter(pw2);
@@ -109,7 +104,7 @@ int main() {
 
   // Helper lambda to construct the predictor network.
   auto make_graph = [&](const vector<float> &inputs) {
-    // We first store input values on GPU 0.
+    // We first store input values explicitly on GPU 0.
     Node x = F::input<Node>(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs, dev0);
     Node w1 = F::input<Node>(pw1);
     Node b1 = F::input<Node>(pb1);
@@ -150,7 +145,7 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      Graph::set_default_graph(g);
+      DefaultScope<Graph> gs(g);
       Node y = make_graph(inputs);
       Node loss = F::softmax_cross_entropy(y, labels, 0);
       Node avg_loss = F::batch::mean(loss);
@@ -174,7 +169,7 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      Graph::set_default_graph(g);
+      DefaultScope<Graph> gs(g);
       Node y = make_graph(inputs);
 
       // Gets outputs, argmax, and compares them with the label.

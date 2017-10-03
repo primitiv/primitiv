@@ -185,7 +185,7 @@ int main() {
 
   // Uses GPU.
   CUDADevice dev(0);
-  Device::set_default_device(dev);
+  DefaultScope<Device> ds(dev);
 
   // Trainer.
   Adam trainer;
@@ -221,7 +221,7 @@ int main() {
       const auto batch = ::make_batch(train_corpus, batch_ids, eos_id);
       trainer.reset_gradients();
       Graph g;
-      Graph::set_default_graph(g);
+      DefaultScope<Graph> gs(g);
       const auto outputs = lm.forward(batch);
       const auto loss = lm.forward_loss(outputs, batch);
       train_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
@@ -241,7 +241,7 @@ int main() {
             ofs + BATCH_SIZE, num_valid_sents));
       const auto batch = ::make_batch(valid_corpus, batch_ids, eos_id);
       Graph g;
-      Graph::set_default_graph(g);
+      DefaultScope<Graph> gs(g);
       const auto outputs = lm.forward(batch);
       const auto loss = lm.forward_loss(outputs, batch);
       valid_loss += g.forward(loss).to_vector()[0] * batch_ids.size();

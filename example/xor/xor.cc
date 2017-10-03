@@ -29,7 +29,7 @@ int main() {
   // The device object manages device-specific memories, and must be destroyed
   // after all other objects were gone.
   CPUDevice dev;
-  Device::set_default_device(dev);
+  DefaultScope<Device> ds(dev);
 
   // If you want to use CUDA, uncomment below line (and comment out above) with
   // a specific device (GPU) ID.
@@ -67,7 +67,7 @@ int main() {
   // Training loop
   for (unsigned i = 0; i < 10; ++i) {
     Graph g;
-    Graph::set_default_graph(g);
+    DefaultScope<Graph> gs(g);
 
     // Builds a computation graph.
     const Node x = F::input<Node>(Shape({2}, 4), input_data);
