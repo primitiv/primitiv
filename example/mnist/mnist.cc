@@ -164,8 +164,7 @@ int main() {
       // Dump computation graph at the first time.
       //if (epoch == 0 && batch == 0) g.dump();
 
-      // Forward, backward, and updates parameters.
-      g.forward(avg_loss);
+      // Implicit forward, backward, and updates parameters.
       g.backward(avg_loss);
 
       trainer.update();

@@ -156,9 +156,8 @@ public:
   /**
    * Calculates the backpropagation.
    * @param node Node object specifying the output node.
-   * @remarks `node` should point to a node in the forward path, i.e., the same
-   *          node used to call `forward()`, or an ancestor node of that.
-   *          Descendant nodes of `node` will be pruned from the backward path.
+   * @remarks If `node` is not yet forwarded, this function implicitly calls
+   *          `forward(node)`.
    */
   void backward(const Node &node);
 

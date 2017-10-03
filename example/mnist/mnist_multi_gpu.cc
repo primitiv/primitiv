@@ -155,9 +155,8 @@ int main() {
       Node loss = F::softmax_cross_entropy(y, labels, 0);
       Node avg_loss = F::batch::mean(loss);
 
-      // Forward, backward, and updates parameters.
+      // Implicit forward, backward, and updates parameters.
       trainer.reset_gradients();
-      g.forward(avg_loss);
       g.backward(avg_loss);
       trainer.update();
     }
