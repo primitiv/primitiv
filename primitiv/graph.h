@@ -116,20 +116,6 @@ class Graph {
 
 public:
   Graph() = default;
-  ~Graph();
-
-  /**
-   * Obtains the default graph.
-   * @return Reference to the default graph.
-   * @throws primitiv::Error The default graph is null.
-   */
-  static Graph &get_default_graph();
-
-  /**
-   * Sets the default graph.
-   * @param graph reference to the default graph.
-   */
-  static void set_default_graph(Graph &g);
 
   /**
    * Adds a function subgraph.
@@ -216,8 +202,6 @@ private:
     std::vector<Address> args;
     std::vector<NodeInfo> rets;
   };
-
-  static Graph *default_graph_;
 
   std::vector<FunctionInfo> funcs_;
 };

@@ -27,22 +27,8 @@ public:
     DEVICE_TYPE_CUDA = 0x10000,
   };
 
-  /**
-   * Obtains the default device object.
-   * @return Device object.
-   * @throws primitiv::Error The default device is null.
-   */
-  static Device &get_default_device();
-
-  /**
-   * Sets the default device object.
-   * @param dev Device object.
-   */
-  static void set_default_device(Device &dev);
-
-
   Device() = default;
-  virtual ~Device();
+  virtual ~Device() = default;
 
   /**
    * Prints device description to stderr.
@@ -366,9 +352,6 @@ private:
 
   virtual void inplace_add_impl(const Tensor &x, Tensor &y) = 0;
   virtual void inplace_subtract_impl(const Tensor &x, Tensor &y) = 0;
-
-private:
-  static Device *default_device_;
 };
 
 }  // namespace primitiv
