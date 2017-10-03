@@ -22,7 +22,9 @@ set(primitiv_base_HDRS
   shape_ops.h
   tensor.h
   trainer.h
-  trainer_impl.h)
+  trainer_impl.h
+  type_traits.h
+)
 
 # Core sources.
 set(primitiv_base_SRCS
@@ -39,7 +41,8 @@ set(primitiv_base_SRCS
   tensor.cc
   tensor_ops.cc
   trainer.cc
-  trainer_impl.cc)
+  trainer_impl.cc
+)
 
 # Builds core library.
 add_library(primitiv_base OBJECT ${primitiv_base_HDRS} ${primitiv_base_SRCS})
