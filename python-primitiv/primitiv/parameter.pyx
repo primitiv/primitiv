@@ -98,6 +98,5 @@ cdef class _Parameter:
     @staticmethod
     def load(str path, bool with_stats = True, _Device device = None):
         if device == None:
-            return wrapParameter(Parameter_load(<string> path.encode("utf-8"), with_stats, DefaultScopeDevice_get()))
-        else:
-            return wrapParameter(Parameter_load(<string> path.encode("utf-8"), with_stats, device.wrapped[0]))
+            device = _DefaultScopeDevice.get()
+        return wrapParameter(Parameter_load(<string> path.encode("utf-8"), with_stats, device.wrapped[0]))
