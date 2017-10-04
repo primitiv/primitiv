@@ -115,18 +115,18 @@ int main() {
     // Stores input values.
     Node x = F::input<Node>(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs);
     // Calculates the hidden layer.
-    Node w1 = F::input<Node>(pw1);
-    Node b1 = F::input<Node>(pb1);
+    Node w1 = F::parameter<Node>(pw1);
+    Node b1 = F::parameter<Node>(pb1);
     Node h = F::relu(F::matmul(w1, x) + b1);
     // Batch normalization
-    //Node beta = F::input(pbeta);
-    //Node gamma = F::input(pgamma);
+    //Node beta = F::parameter(pbeta);
+    //Node gamma = F::parameter(pgamma);
     //h = F::batch::normalize(h) * gamma + beta;
     // Dropout
     h = F::dropout(h, .5, train);
     // Calculates the output layer.
-    Node w2 = F::input<Node>(pw2);
-    Node b2 = F::input<Node>(pb2);
+    Node w2 = F::parameter<Node>(pw2);
+    Node b2 = F::parameter<Node>(pb2);
     return F::matmul(w2, h) + b2;
   };
 

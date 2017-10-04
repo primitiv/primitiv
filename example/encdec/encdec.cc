@@ -118,7 +118,7 @@ public:
   // Encodes source sentences and prepare internal states.
   void encode(const vector<vector<unsigned>> &src_batch, bool train) {
     // Reversed encoding.
-    Var src_lookup = F::input<Var>(psrc_lookup_);
+    Var src_lookup = F::parameter<Var>(psrc_lookup_);
     src_lstm_.init();
     for (auto it = src_batch.rbegin(); it != src_batch.rend(); ++it) {
       Var x = F::pick(src_lookup, *it, 1);
@@ -127,9 +127,9 @@ public:
     }
 
     // Initializes decoder states.
-    trg_lookup_ = F::input<Var>(ptrg_lookup_);
-    why_ = F::input<Var>(pwhy_);
-    by_ = F::input<Var>(pby_);
+    trg_lookup_ = F::parameter<Var>(ptrg_lookup_);
+    why_ = F::parameter<Var>(pwhy_);
+    by_ = F::parameter<Var>(pby_);
     trg_lstm_.init(src_lstm_.get_c(), src_lstm_.get_h());
   }
 

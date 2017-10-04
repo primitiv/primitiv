@@ -127,8 +127,8 @@ public:
 
   // Initializes internal values.
   void init() {
-    w_ = F::input<Var>(pw_);
-    b_ = F::input<Var>(pb_);
+    w_ = F::parameter<Var>(pw_);
+    b_ = F::parameter<Var>(pb_);
   }
 
   // Applies transform.
@@ -164,9 +164,9 @@ public:
 
   // Initializes internal values.
   void init() {
-    w_ = F::input<Var>(pw_);
-    bf_ = F::input<Var>(pbf_);
-    br_ = F::input<Var>(pbr_);
+    w_ = F::parameter<Var>(pw_);
+    bf_ = F::parameter<Var>(pbf_);
+    br_ = F::parameter<Var>(pbr_);
   }
 
   // Forward.
@@ -221,7 +221,7 @@ public:
   vector<Var> forward(
       const vector<vector<unsigned>> &inputs, bool train) {
     const unsigned batch_size = inputs[0].size();
-    Var lookup = F::input<Var>(plookup_);
+    Var lookup = F::parameter<Var>(plookup_);
     rnn1_.init();
     rnn2_.init();
     hy_.init();

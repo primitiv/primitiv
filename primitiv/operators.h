@@ -96,16 +96,16 @@ Node input(
     Device &dev,
     Graph &g);
 
-Node input(Parameter &param, Graph &g);
-
 template<typename Var>
 type_traits::Identity<Var> input(
     const Shape &shape,
     const std::vector<float> &data,
     Device &dev = Device::get_default_device());
 
+Node parameter(Parameter &param, Graph &g);
+
 template<typename Var>
-type_traits::Identity<Var> input(Parameter &param);
+type_traits::Identity<Var> parameter(Parameter &param);
 
 template<typename Var>
 type_traits::Identity<Var> copy(

@@ -232,10 +232,10 @@ TEST_F(GraphTest, CheckXor) {
   vector<Node> nodes;
   // sources
   nodes.emplace_back(operators::input<Node>(Shape({2}, 4), inputs));
-  nodes.emplace_back(operators::input<Node>(w1));
-  nodes.emplace_back(operators::input<Node>(b1));
-  nodes.emplace_back(operators::input<Node>(w2));
-  nodes.emplace_back(operators::input<Node>(b2));
+  nodes.emplace_back(operators::parameter<Node>(w1));
+  nodes.emplace_back(operators::parameter<Node>(b1));
+  nodes.emplace_back(operators::parameter<Node>(w2));
+  nodes.emplace_back(operators::parameter<Node>(b2));
   // calculation
   nodes.emplace_back(operators::matmul(nodes[1], nodes[0]));
   nodes.emplace_back(nodes[5] + nodes[2]);
@@ -315,6 +315,7 @@ TEST_F(GraphTest, CheckLSTM) {
 
   using operators::matmul;
   using operators::input;
+  using operators::parameter;
   using operators::sigmoid;
   using operators::tanh;
   using operators::zeros;
@@ -322,18 +323,18 @@ TEST_F(GraphTest, CheckLSTM) {
   const Node x = input<Node>(Shape({2}, 2), {2, -2, 0.5, -0.5});
   const Node h = input<Node>(Shape({2}, 2), {-1, 1, -0.5, 0.5});
   const Node c = zeros<Node>({2});
-  const Node Wix = input<Node>(pWix);
-  const Node Wfx = input<Node>(pWfx);
-  const Node Wox = input<Node>(pWox);
-  const Node Wjx = input<Node>(pWjx);
-  const Node Wih = input<Node>(pWih);
-  const Node Wfh = input<Node>(pWfh);
-  const Node Woh = input<Node>(pWoh);
-  const Node Wjh = input<Node>(pWjh);
-  const Node bi = input<Node>(pbi);
-  const Node bf = input<Node>(pbf);
-  const Node bo = input<Node>(pbo);
-  const Node bj = input<Node>(pbj);
+  const Node Wix = parameter<Node>(pWix);
+  const Node Wfx = parameter<Node>(pWfx);
+  const Node Wox = parameter<Node>(pWox);
+  const Node Wjx = parameter<Node>(pWjx);
+  const Node Wih = parameter<Node>(pWih);
+  const Node Wfh = parameter<Node>(pWfh);
+  const Node Woh = parameter<Node>(pWoh);
+  const Node Wjh = parameter<Node>(pWjh);
+  const Node bi = parameter<Node>(pbi);
+  const Node bf = parameter<Node>(pbf);
+  const Node bo = parameter<Node>(pbo);
+  const Node bj = parameter<Node>(pbj);
 
   const Node i = sigmoid(matmul(Wix, x) + matmul(Wih, h) + bi);
   const Node f = sigmoid(matmul(Wfx, x) + matmul(Wfh, h) + bf);
@@ -410,6 +411,7 @@ TEST_F(GraphTest, CheckConcatLSTM) {
   Graph::set_default_graph(g);
   using operators::matmul;
   using operators::input;
+  using operators::parameter;
   using operators::sigmoid;
   using operators::slice;
   using operators::tanh;
@@ -418,9 +420,9 @@ TEST_F(GraphTest, CheckConcatLSTM) {
   const Node x = input<Node>(Shape({2}, 2), {2, -2, 0.5, -0.5});
   const Node h = input<Node>(Shape({2}, 2), {-1, 1, -0.5, 0.5});
   const Node c = zeros<Node>({2});
-  const Node Wx = input<Node>(pWx);
-  const Node Wh = input<Node>(pWh);
-  const Node b = input<Node>(pb);
+  const Node Wx = parameter<Node>(pWx);
+  const Node Wh = parameter<Node>(pWh);
+  const Node b = parameter<Node>(pb);
 
   const Node u = matmul(Wx, x) + matmul(Wh, h) + b;
   const Node i = sigmoid(slice(u, 0, 0, 2));
