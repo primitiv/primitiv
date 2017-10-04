@@ -68,3 +68,12 @@ cdef class _DefaultScopeGraph(object):
     @staticmethod
     def size():
         return DefaultScopeGraph_size()
+
+
+def _DefaultScope(x):
+    if isinstance(x, _Device):
+        return _DefaultScopeDevice(x)
+    elif isinstance(x, _Graph):
+        return _DefaultScopeGraph(x)
+    else:
+        raise TypeError("Invalid argument")

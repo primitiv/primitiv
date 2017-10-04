@@ -10,6 +10,7 @@ from primitiv.trainer import _Trainer as Trainer
 from primitiv.operator import _operators as operators
 from primitiv.default_scope import _DefaultScopeDevice as DefaultScopeDevice
 from primitiv.default_scope import _DefaultScopeGraph as DefaultScopeGraph
+from primitiv.default_scope import _DefaultScope as DefaultScope
 from primitiv import functions
 from primitiv import initializers
 from primitiv import trainers
@@ -34,4 +35,5 @@ __all__ = [
     "trainers",
     "DefaultScopeDevice",
     "DefaultScopeGraph",
+    "DefaultScope",
 ]
