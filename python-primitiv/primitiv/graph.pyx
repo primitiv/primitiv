@@ -41,10 +41,16 @@ cdef class _Node:
     def to_ndarray(self):
         cdef vector[float] vec = self.wrapped.to_vector()
         cdef Shape s = self.wrapped.shape()
-        cdef np.ndarray output = np.empty([s[i] for i in range(s.depth())] + [s.batch()], dtype=np.float32, order="F")
-        cdef np.float32_t *np_data = <np.float32_t*> output.data
-        for i in range(s.size()):
-            np_data[i] = vec[i]
+        cdef np.ndarray output_item
+        cdef np.float32_t *np_data
+        cdef unsigned size = s.size()
+        output = []
+        for j in range(s.batch()):
+            output_item = np.empty([s[i] for i in range(s.depth())], dtype=np.float32, order="F")
+            np_data = <np.float32_t*> output_item.data
+            for i in range(size):
+                np_data[i] = vec[i + j * size]
+            output.append(output_item)
         return output
 
     def __pos__(self):

@@ -7,7 +7,7 @@ from primitiv.graph cimport _Graph, wrapNode, Node, _Node
 from primitiv.parameter cimport _Parameter
 from primitiv.default_scope cimport _DefaultScopeDevice
 
-from utils cimport ndarray_to_vector, ndarray_to_vector_unsigned
+from utils cimport ndarrays_to_vector, ndarray_to_vector_unsigned
 
 cimport numpy as np
 import numpy as np
@@ -16,32 +16,36 @@ import numpy as np
 class _operators:
 
     @staticmethod
-    def input(shape = None, data = None, _Device device = None, _Parameter param = None, _Graph g = None):
-        if isinstance(data, np.ndarray) and param is None:
-            if device == None:
-                device = _DefaultScopeDevice.get()
-            if data.dtype != np.float32:
-                raise TypeError("numpy.ndarray must be constructed from float32 data")
-            if shape is None:
-                shape = _Shape(data.shape[:-1], data.shape[-1])
-            if g != None:
-                return wrapNode(Node_input_vector(normShape(shape).wrapped, ndarray_to_vector(data), device.wrapped[0], g.wrapped[0]))
-            else:
-                return wrapNode(Node_input_vector(normShape(shape).wrapped, ndarray_to_vector(data), device.wrapped[0]))
-        elif shape is not None and data is not None and param is None:
-            if device == None:
-                device = _DefaultScopeDevice.get()
-            if g != None:
-                return wrapNode(Node_input_vector(normShape(shape).wrapped, <vector[float]> data, device.wrapped[0], g.wrapped[0]))
-            else:
-                return wrapNode(Node_input_vector(normShape(shape).wrapped, <vector[float]> data, device.wrapped[0]))
-        elif shape is None and data is None and param is not None:
-            if g != None:
-                return wrapNode(Node_input_parameter(param.wrapped[0], g.wrapped[0]))
-            else:
-                return wrapNode(Node_input_parameter(param.wrapped[0]))
+    def input_list(shape, vector[float] data, _Device device = None, _Graph g = None):
+        if device == None:
+            device = _DefaultScopeDevice.get()
+        if g != None:
+            return wrapNode(Node_input_vector(normShape(shape).wrapped, data, device.wrapped[0], g.wrapped[0]))
         else:
-            raise ValueError("Invalid arguments")
+            return wrapNode(Node_input_vector(normShape(shape).wrapped, data, device.wrapped[0]))
+
+    @staticmethod
+    def input_ndarrays(list arrays, _Device device = None, _Graph g = None):
+        if len(arrays) == 0:
+            raise TypeError("arrays contains no item")
+        if device == None:
+            device = _DefaultScopeDevice.get()
+        if isinstance(arrays[0], np.ndarray):
+            data_shape = arrays[0].shape
+            shape = _Shape(data_shape, len(arrays))
+            if g != None:
+                return wrapNode(Node_input_vector(shape.wrapped, ndarrays_to_vector(arrays), device.wrapped[0], g.wrapped[0]))
+            else:
+                return wrapNode(Node_input_vector(shape.wrapped, ndarrays_to_vector(arrays), device.wrapped[0]))
+        else:
+            return _operators.input_list(_Shape([], len(arrays)), arrays, device, g)
+
+    @staticmethod
+    def input_parameter(_Parameter param, _Graph g = None):
+        if g != None:
+            return wrapNode(Node_input_parameter(param.wrapped[0], g.wrapped[0]))
+        else:
+            return wrapNode(Node_input_parameter(param.wrapped[0]))
 
     @staticmethod
     def pick(_Node x, vector[unsigned] ids, unsigned dim):

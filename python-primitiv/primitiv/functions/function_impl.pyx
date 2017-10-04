@@ -8,7 +8,7 @@ from primitiv.parameter cimport _Parameter
 
 import numpy as np
 
-from ..utils cimport ndarray_to_vector
+from ..utils cimport ndarrays_to_vector
 
 
 cdef class _Input(_Function):
@@ -16,6 +16,7 @@ cdef class _Input(_Function):
     Input(shape, data, device):
      or
     Input(data, device):
+    TODO
     """
     def __cinit__(self, *args):
         if len(args) == 3:
@@ -23,8 +24,12 @@ cdef class _Input(_Function):
             if self.wrapped is NULL:
                 raise MemoryError()
         elif len(args) == 2:
-            shape = _Shape(args[0].shape)
-            self.wrapped = new Input(shape.wrapped, ndarray_to_vector(args[0]), (<_Device> args[1]).wrapped[0])
+            if len(args[0]) == 0:
+                raise TypeError("arrays contains no item")
+            data_shape = args[0][0].shape
+            data_size = args[0][0].size
+            shape = _Shape(data_shape, len(args[0]))
+            self.wrapped = new Input(shape.wrapped, ndarrays_to_vector(args[0]), (<_Device> args[1]).wrapped[0])
             if self.wrapped is NULL:
                 raise MemoryError()
         else:
