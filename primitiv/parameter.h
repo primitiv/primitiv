@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <primitiv/default_scope.h>
 #include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/shape.h>
@@ -58,7 +59,7 @@ public:
   Parameter(
       const std::string &name,
       const Shape &shape,
-      Device &device = Device::get_default_device());
+      Device &device = DefaultScope<Device>::get());
 
   /**
    * Creates a new Parameter object.
@@ -71,7 +72,7 @@ public:
   Parameter(
       const std::string &name, const Shape &shape,
       const std::vector<float> &value,
-      Device &device = Device::get_default_device());
+      Device &device = DefaultScope<Device>::get());
 
   /**
    * Creates a new Parameter object.
@@ -83,7 +84,7 @@ public:
   Parameter(
       const std::string &name, const Shape &shape,
       const Initializer &init,
-      Device &device = Device::get_default_device());
+      Device &device = DefaultScope<Device>::get());
 
   /**
    * Returns whether the parameter is valid or not.
@@ -227,7 +228,7 @@ public:
   static Parameter load(
       const std::string &path,
       bool with_stats = true,
-      Device &device = Device::get_default_device());
+      Device &device = DefaultScope<Device>::get());
 
 private:
   /**

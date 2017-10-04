@@ -2,47 +2,15 @@
 #define PRIMITIV_OPERATORS_H_
 
 #include <initializer_list>
-#include <type_traits>
 #include <vector>
 
+#include <primitiv/default_scope.h>
 #include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/graph.h>
+#include <primitiv/type_traits.h>
 
 namespace primitiv {
-
-namespace type_traits {
-
-// NOTE(odashi):
-// The template variable `Var` could becomes only either `Tensor` or `Node`.
-
-template<typename Var> struct is_var : std::false_type {};
-template<> struct is_var<Tensor> : std::true_type {};
-template<> struct is_var<Node> : std::true_type {};
-
-template<typename Var>
-using Identity = typename std::enable_if<is_var<Var>::value, Var>::type;
-
-template<typename Container>
-using Reduce = typename std::enable_if<
-  is_var<typename Container::value_type>::value,
-  typename Container::value_type
->::type;
-
-template<typename Container>
-using ReducePtr = typename std::enable_if<
-  std::is_pointer<typename Container::value_type>::value &&
-  is_var<
-    typename std::remove_const<
-      typename std::remove_pointer<typename Container::value_type>::type
-    >::type
-  >::value,
-  typename std::remove_const<
-    typename std::remove_pointer<typename Container::value_type>::type
-  >::type
->::type;
-
-}  // namespace type_traits
 
 class Parameter;
 
@@ -100,7 +68,7 @@ template<typename Var>
 type_traits::Identity<Var> input(
     const Shape &shape,
     const std::vector<float> &data,
-    Device &dev = Device::get_default_device());
+    Device &dev = DefaultScope<Device>::get());
 
 Node parameter(Parameter &param, Graph &g);
 
@@ -109,7 +77,7 @@ type_traits::Identity<Var> parameter(Parameter &param);
 
 template<typename Var>
 type_traits::Identity<Var> copy(
-    const Var &x, Device &dev = Device::get_default_device());
+    const Var &x, Device &dev = DefaultScope<Device>::get());
 
 template<typename Var>
 type_traits::Identity<Var> pick(
@@ -306,26 +274,26 @@ Node identity(unsigned size, Device &dev, Graph &g);
 template<typename Var>
 type_traits::Identity<Var> constant(
     const Shape &shape, float k,
-    Device &dev = Device::get_default_device());
+    Device &dev = DefaultScope<Device>::get());
 
 template<typename Var>
 inline type_traits::Identity<Var> zeros(
     const Shape &shape,
-    Device &dev = Device::get_default_device()) {
+    Device &dev = DefaultScope<Device>::get()) {
   return constant<Var>(shape, 0, dev);
 }
 
 template<typename Var>
 inline type_traits::Identity<Var> ones(
     const Shape &shape,
-    Device &dev = Device::get_default_device()) {
+    Device &dev = DefaultScope<Device>::get()) {
   return constant<Var>(shape, 1, dev);
 }
 
 template<typename Var>
 type_traits::Identity<Var> identity(
     unsigned size,
-    Device &dev = Device::get_default_device());
+    Device &dev = DefaultScope<Device>::get());
 
 namespace random {
 
@@ -347,27 +315,27 @@ Node gumbel(
 template<typename Var>
 type_traits::Identity<Var> bernoulli(
     const Shape &shape, float p,
-    Device &dev = Device::get_default_device());
+    Device &dev = DefaultScope<Device>::get());
 
 template<typename Var>
 type_traits::Identity<Var> uniform(
     const Shape &shape, float lower, float upper,
-    Device &dev = Device::get_default_device());
+    Device &dev = DefaultScope<Device>::get());
 
 template<typename Var>
 type_traits::Identity<Var> normal(
     const Shape &shape, float mean, float sd,
-    Device &dev = Device::get_default_device());
+    Device &dev = DefaultScope<Device>::get());
 
 template<typename Var>
 type_traits::Identity<Var> log_normal(
     const Shape &shape, float mean, float sd,
-    Device &dev = Device::get_default_device());
+    Device &dev = DefaultScope<Device>::get());
 
 template<typename Var>
 inline type_traits::Identity<Var> gumbel(
     const Shape &shape, float mu, float beta,
-    Device &dev = Device::get_default_device()) {
+    Device &dev = DefaultScope<Device>::get()) {
   return mu - beta * log(-log(uniform<Var>(shape, 0, .9999999, dev)));
 }
 

@@ -258,7 +258,7 @@ void train(
       const auto trg_batch = ::make_batch(train_trg_corpus, batch_ids, trg_vocab);
       trainer.reset_gradients();
       Graph g;
-      Graph::set_default_graph(g);
+      DefaultScope<Graph> gs(g);
       encdec.encode(src_batch, true);
       const auto loss = encdec.loss(trg_batch, true);
       train_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
@@ -278,7 +278,7 @@ void train(
       const auto src_batch = ::make_batch(valid_src_corpus, batch_ids, src_vocab);
       const auto trg_batch = ::make_batch(valid_trg_corpus, batch_ids, trg_vocab);
       Graph g;
-      Graph::set_default_graph(g);
+      DefaultScope<Graph> gs(g);
       encdec.encode(src_batch, false);
       const auto loss = encdec.loss(trg_batch, false);
       valid_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
@@ -358,7 +358,7 @@ int main(const int argc, const char *argv[]) {
 
   cerr << "initializing device ... " << flush;
   CUDADevice dev(0);
-  Device::set_default_device(dev);
+  DefaultScope<Device> ds(dev);
   cerr << "done." << endl;
 
   if (mode == "train") {

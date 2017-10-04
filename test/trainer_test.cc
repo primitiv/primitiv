@@ -1,6 +1,7 @@
 #include <config.h>
 
 #include <gtest/gtest.h>
+#include <primitiv/default_scope.h>
 #include <primitiv/cpu_device.h>
 #include <primitiv/error.h>
 #include <primitiv/parameter.h>
@@ -18,7 +19,7 @@ protected:
 };
 
 TEST_F(TrainerTest, CheckAddParameter) {
-  Device::set_default_device(dev);
+  DefaultScope<Device> ds(dev);
   trainers::SGD trainer;
   Parameter param1("param1", {2, 2});
   Parameter param2("param2", {2, 2});
@@ -68,7 +69,7 @@ TEST_F(TrainerTest, CheckLearningRateScaling) {
 }
 
 TEST_F(TrainerTest, CheckWeightDecay) {
-  Device::set_default_device(dev);
+  DefaultScope<Device> ds(dev);
   trainers::SGD trainer;
   ASSERT_EQ(.0f, trainer.get_weight_decay());
 
@@ -103,7 +104,7 @@ TEST_F(TrainerTest, CheckWeightDecay) {
 }
 
 TEST_F(TrainerTest, CheckGradientClipping) {
-  Device::set_default_device(dev);
+  DefaultScope<Device> ds(dev);
   trainers::SGD trainer;
   ASSERT_EQ(.0f, trainer.get_gradient_clipping());
 

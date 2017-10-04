@@ -23,17 +23,11 @@
 #include <primitiv/primitiv.h>
 #include <primitiv/primitiv_cuda.h>
 
-using primitiv::Device;
-using primitiv::CUDADevice;
-using primitiv::Graph;
-using primitiv::Node;
-using primitiv::Parameter;
-using primitiv::trainers::SGD;
-using primitiv::Shape;
-using primitiv::initializers::Constant;
-using primitiv::initializers::XavierUniform;
-namespace F = primitiv::operators;
+using namespace primitiv;
 using namespace std;
+namespace F = primitiv::operators;
+namespace I = primitiv::initializers;
+namespace T = primitiv::trainers;
 
 namespace {
 
@@ -89,20 +83,20 @@ int main() {
 
   // Uses GPU.
   CUDADevice dev(0);
-  Device::set_default_device(dev);
+  DefaultScope<Device> ds(dev);
 
   // Parameters for the multilayer perceptron.
-  Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, XavierUniform());
-  Parameter pb1("b1", {NUM_HIDDEN_UNITS}, Constant(0));
-  Parameter pw2("w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, XavierUniform());
-  Parameter pb2("b2", {NUM_OUTPUT_UNITS}, Constant(0));
+  Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, I::XavierUniform());
+  Parameter pb1("b1", {NUM_HIDDEN_UNITS}, I::Constant(0));
+  Parameter pw2("w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, I::XavierUniform());
+  Parameter pb2("b2", {NUM_OUTPUT_UNITS}, I::Constant(0));
 
   // Parameters for batch normalization.
-  //Parameter pbeta("beta", {NUM_HIDDEN_UNITS}, Constant(0));
-  //Parameter pgamma("gamma", {NUM_HIDDEN_UNITS}, Constant(1));
+  //Parameter pbeta("beta", {NUM_HIDDEN_UNITS}, I::Constant(0));
+  //Parameter pgamma("gamma", {NUM_HIDDEN_UNITS}, I::Constant(1));
 
   // Trainer
-  SGD trainer(.5);
+  T::SGD trainer(.5);
   trainer.add_parameter(pw1);
   trainer.add_parameter(pb1);
   trainer.add_parameter(pw2);
@@ -156,7 +150,7 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      Graph::set_default_graph(g);
+      DefaultScope<Graph> gs(g);
       Node y = make_graph(inputs, true);
       Node loss = F::softmax_cross_entropy(y, labels, 0);
       Node avg_loss = F::batch::mean(loss);
@@ -182,7 +176,7 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      Graph::set_default_graph(g);
+      DefaultScope<Graph> gs(g);
       Node y = make_graph(inputs, false);
 
       // Gets outputs, argmax, and compares them with the label.
