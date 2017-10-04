@@ -12,10 +12,10 @@ import numpy as np
 def main():
 
     with DefaultScopeDevice(CPUDevice()):
-        pw1 = Parameter("w1", [8, 2], I.XavierUniform())
-        pb1 = Parameter("b1", [8], I.Constant(0))
-        pw2 = Parameter("w2", [1, 8], I.XavierUniform())
-        pb2 = Parameter("b2", [], I.Constant(0))
+        pw1 = Parameter.new_from_initializer("w1", [8, 2], I.XavierUniform())
+        pb1 = Parameter.new_from_initializer("b1", [8], I.Constant(0))
+        pw2 = Parameter.new_from_initializer("w2", [1, 8], I.XavierUniform())
+        pb2 = Parameter.new_from_initializer("b2", [], I.Constant(0))
 
         trainer = T.SGD(0.1)
 
