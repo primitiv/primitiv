@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from distutils.core import setup
+from setuptools import setup
 from distutils.extension import Extension
 from Cython.Build import cythonize
 
@@ -88,5 +88,6 @@ setup(
                 "primitiv.functions",
                 "primitiv.initializers",
                 "primitiv.trainers",
-    ]
+    ],
+    testsuite = "tests",
 )
