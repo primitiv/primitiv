@@ -13,43 +13,33 @@ from utils cimport ndarrays_to_vector
 
 cdef class _Parameter:
 
-    @staticmethod
-    def new_from_list(str name, _Shape shape, vector[float] init, _Device device = None):
-        cdef Parameter *param
+    def __cinit__(self, str name, shape = None, init = None, _Device device = None):
         if device == None:
             device = _DefaultScopeDevice.get()
-        param = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, init, device.wrapped[0])
-        if param is NULL:
-            raise MemoryError()
-        return wrapParameter(param)
 
-    @staticmethod
-    def new_from_ndarrays(str name, list init, _Device device = None):
-        cdef Parameter *param
-        if device == None:
-            device = _DefaultScopeDevice.get()
-        if len(init) == 0:
-            raise TypeError("init contains no item")
-        shape = _Shape(init[0].shape, len(init))
-        param = new Parameter(<string> name.encode("utf-8"), shape.wrapped, ndarrays_to_vector(init), device.wrapped[0])
-        if param is NULL:
-            raise MemoryError()
-        return wrapParameter(param)
+        # Parameter(name, shape, np.ndarray init, device) new from ndarray
+        if isinstance(init, np.ndarray):
+            if shape is None:
+                shape = _Shape(init.shape, 1)
+            self.wrapped = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, ndarrays_to_vector([init]), device.wrapped[0])
 
-    @staticmethod
-    def new_from_initializer(str name, shape, _Initializer init, _Device device = None):
-        cdef Parameter *param
-        if device == None:
-            device = _DefaultScopeDevice.get()
-        param = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, init.wrapped[0], device.wrapped[0])
-        if param is NULL:
-            raise MemoryError()
-        return wrapParameter(param)
+        # Parameter(name, shape, device)
+        elif shape is not None and init is None:
+            self.wrapped = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, device.wrapped[0])
 
-    def __init__(self, str name, shape, _Device device = None):
-        if device == None:
-            device = _DefaultScopeDevice.get()
-        self.wrapped = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, device.wrapped[0])
+        # Parameter(name, shape, Initializer init, device) new from Initializer
+        elif shape is not None and isinstance(init, _Initializer):
+            self.wrapped = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, (<_Initializer> init).wrapped[0], device.wrapped[0])
+
+        elif isinstance(init, list):
+            # Parameter(name, shape, vector<float> init, device) new from float list
+            if shape is None:
+                shape = _Shape([], len(init))
+            self.wrapped = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, <vector[float]> init, device.wrapped[0])
+
+        else:
+            raise TypeError("Argument 'init' has incorrect type (list, Initializer, or numpy.ndarray)")
+
         if self.wrapped is NULL:
             raise MemoryError()
 

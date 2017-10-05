@@ -16,29 +16,28 @@ import numpy as np
 class _operators:
 
     @staticmethod
-    def input_list(shape, vector[float] data, _Device device = None, _Graph g = None):
+    def input(data, shape = None, _Device device = None, _Graph g = None):
+        cdef vector[float] data_vector
         if device == None:
             device = _DefaultScopeDevice.get()
+        if isinstance(data, np.ndarray):
+            data = [data]
+        elif not isinstance(data, list):
+            raise TypeError("Argument 'data' has incorrect type (list or numpy.ndarray)")
+        if len(data) == 0:
+            raise TypeError("data is a list, but it contains no item")
+        if isinstance(data[0], (float, int)):
+            if shape is None:
+                shape = _Shape([], len(data))
+            data_vector = <vector[float]> data
+        else:
+            if shape is None:
+                shape = _Shape(data[0].shape, len(data))
+            data_vector = ndarrays_to_vector(data)
         if g != None:
-            return wrapNode(Node_input_vector(normShape(shape).wrapped, data, device.wrapped[0], g.wrapped[0]))
+            return wrapNode(Node_input_vector(normShape(shape).wrapped, data_vector, device.wrapped[0], g.wrapped[0]))
         else:
-            return wrapNode(Node_input_vector(normShape(shape).wrapped, data, device.wrapped[0]))
-
-    @staticmethod
-    def input_ndarrays(list arrays, _Device device = None, _Graph g = None):
-        if len(arrays) == 0:
-            raise TypeError("arrays contains no item")
-        if device == None:
-            device = _DefaultScopeDevice.get()
-        if isinstance(arrays[0], np.ndarray):
-            data_shape = arrays[0].shape
-            shape = _Shape(data_shape, len(arrays))
-            if g != None:
-                return wrapNode(Node_input_vector(shape.wrapped, ndarrays_to_vector(arrays), device.wrapped[0], g.wrapped[0]))
-            else:
-                return wrapNode(Node_input_vector(shape.wrapped, ndarrays_to_vector(arrays), device.wrapped[0]))
-        else:
-            return _operators.input_list(_Shape([], len(arrays)), arrays, device, g)
+            return wrapNode(Node_input_vector(normShape(shape).wrapped, data_vector, device.wrapped[0]))
 
     @staticmethod
     def parameter(_Parameter param, _Graph g = None):
