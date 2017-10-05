@@ -60,7 +60,7 @@ class _operators:
         cdef _Node x
         for x in xs:
             vec.push_back(x.wrapped)
-            return wrapNode(Node_concat(vec, dim))
+        return wrapNode(Node_concat(vec, dim))
 
     @staticmethod
     def reshape(_Node x, _Shape new_shape):
