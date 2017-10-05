@@ -18,6 +18,7 @@ function(primitiv_test name)
 endfunction()
 
 primitiv_test(cpu_device)
+primitiv_test(default_scope)
 primitiv_test(device)
 primitiv_test(function_impl)
 primitiv_test(graph)

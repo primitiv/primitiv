@@ -3,12 +3,12 @@
 
 #include <memory>
 #include <vector>
+#include <primitiv/function.h>
 #include <primitiv/shape.h>
 
 namespace primitiv {
 
 class Device;
-class Function;
 class Graph;
 class Node;
 
