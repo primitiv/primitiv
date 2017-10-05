@@ -1,13 +1,10 @@
 from primitiv import DefaultScope
-from primitiv import Device
 from primitiv import CPUDevice
 from primitiv import Graph
-from primitiv import Node
 from primitiv import Parameter
-from primitiv.trainers import SGD
-from primitiv import Shape
-from primitiv.initializers import Constant
-from primitiv.initializers import XavierUniform
+
+from primitiv import initializers as I
+from primitiv import trainers as T
 from primitiv import operators as F
 
 import random
@@ -57,28 +54,28 @@ def main():
 
     with DefaultScope(CPUDevice()):
 
-        pw1 = Parameter.new_from_initializer("w1", [NUM_HIDDEN_UNITS, NUM_INPUT_UNITS], XavierUniform())
-        pb1 = Parameter.new_from_initializer("b1", [NUM_HIDDEN_UNITS], Constant(0))
-        pw2 = Parameter.new_from_initializer("w2", [NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS], XavierUniform())
-        pb2 = Parameter.new_from_initializer("b2", [NUM_OUTPUT_UNITS], Constant(0))
+        pw1 = Parameter("w1", [NUM_HIDDEN_UNITS, NUM_INPUT_UNITS], I.XavierUniform())
+        pb1 = Parameter("b1", [NUM_HIDDEN_UNITS], I.Constant(0))
+        pw2 = Parameter("w2", [NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS], I.XavierUniform())
+        pb2 = Parameter("b2", [NUM_OUTPUT_UNITS], I.Constant(0))
 
-        trainer = SGD(.5)
+        trainer = T.SGD(.5)
         trainer.add_parameter(pw1)
         trainer.add_parameter(pb1)
         trainer.add_parameter(pw2)
         trainer.add_parameter(pb2)
 
         def make_graph(inputs, train):
-            x = F.input_ndarrays(inputs)
+            x = F.input(inputs)
 
-            w1 = F.input_parameter(pw1)
-            b1 = F.input_parameter(pb1)
+            w1 = F.parameter(pw1)
+            b1 = F.parameter(pb1)
             h = F.relu(F.matmul(w1, x) + b1)
 
             h = F.dropout(h, .5, train)
 
-            w2 = F.input_parameter(pw2)
-            b2 = F.input_parameter(pb2)
+            w2 = F.parameter(pw2)
+            b2 = F.parameter(pb2)
             return F.matmul(w2, h) + b2
 
         ids = list(range(NUM_TRAIN_SAMPLES))
@@ -100,7 +97,6 @@ def main():
                     loss = F.softmax_cross_entropy(y, labels, 0)
                     avg_loss = F.batch.mean(loss)
 
-                    g.forward(avg_loss)
                     g.backward(avg_loss)
 
                     trainer.update()
