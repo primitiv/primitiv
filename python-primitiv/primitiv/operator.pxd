@@ -13,9 +13,9 @@ cdef extern from "operator_template_wrapper.h" namespace "python_primitiv":
     Node Node_input_vector(const Shape &shape, const vector[float] &data, Device &dev, Graph &g) except +
     Node Node_input_vector(const Shape &shape, const vector[float] &data, Device &dev) except +
     Tensor Tensor_input_vector(const Shape &shape, const vector[float] &data, Device &dev) except +
-    Node Node_input_parameter(Parameter &param, Graph &g) except +
-    Node Node_input_parameter(Parameter &param) except +
-    Tensor Tensor_input_parameter(Parameter &param) except +
+    Node Node_parameter(Parameter &param, Graph &g) except +
+    Node Node_parameter(Parameter &param) except +
+    Tensor Tensor_parameter(Parameter &param) except +
     Node Node_copy(const Node &x, Device &dev) except +
     Tensor Tensor_copy(const Tensor &x, Device &dev) except +
     Node Node_pick(const Node &x, const vector[unsigned] &ids, unsigned dim) except +

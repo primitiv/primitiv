@@ -41,11 +41,11 @@ class _operators:
             return _operators.input_list(_Shape([], len(arrays)), arrays, device, g)
 
     @staticmethod
-    def input_parameter(_Parameter param, _Graph g = None):
+    def parameter(_Parameter param, _Graph g = None):
         if g != None:
-            return wrapNode(Node_input_parameter(param.wrapped[0], g.wrapped[0]))
+            return wrapNode(Node_parameter(param.wrapped[0], g.wrapped[0]))
         else:
-            return wrapNode(Node_input_parameter(param.wrapped[0]))
+            return wrapNode(Node_parameter(param.wrapped[0]))
 
     @staticmethod
     def pick(_Node x, vector[unsigned] ids, unsigned dim):

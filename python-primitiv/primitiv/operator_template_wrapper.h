@@ -23,16 +23,16 @@ inline Tensor Tensor_input_vector(const Shape &shape, const std::vector<float> &
     return operators::input<Tensor>(shape, data, dev);
 }
 
-inline Node Node_input_parameter(Parameter &param, Graph &g) {
-    return operators::input(param, g);
+inline Node Node_parameter(Parameter &param, Graph &g) {
+    return operators::parameter(param, g);
 }
 
-inline Node Node_input_parameter(Parameter &param) {
-    return operators::input<Node>(param);
+inline Node Node_parameter(Parameter &param) {
+    return operators::parameter<Node>(param);
 }
 
-inline Tensor Tensor_input_parameter(Parameter &param) {
-    return operators::input<Tensor>(param);
+inline Tensor Tensor_parameter(Parameter &param) {
+    return operators::parameter<Tensor>(param);
 }
 
 inline Node Node_copy(const Node &x, Device &dev) {
