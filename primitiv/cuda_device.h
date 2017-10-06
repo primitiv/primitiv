@@ -7,18 +7,19 @@
 #include <primitiv/device.h>
 
 namespace primitiv {
+namespace devices {
 
 struct CUDAInternalState;
 
 /**
  * Device class for CUDA.
  */
-class CUDADevice : public Device {
-  CUDADevice() = delete;
-  CUDADevice(const CUDADevice &) = delete;
-  CUDADevice(CUDADevice &&) = delete;
-  CUDADevice &operator=(const CUDADevice &) = delete;
-  CUDADevice &operator=(CUDADevice &&) = delete;
+class CUDA : public Device {
+  CUDA() = delete;
+  CUDA(const CUDA &) = delete;
+  CUDA(CUDA &&) = delete;
+  CUDA &operator=(const CUDA &) = delete;
+  CUDA &operator=(CUDA &&) = delete;
 
 public:
   /** Retrieves the number of active hardwares.
@@ -32,16 +33,16 @@ public:
    * @remarks The random number generator is initialized using
    *          `std::random_device`.
    */
-  explicit CUDADevice(unsigned device_id);
+  explicit CUDA(unsigned device_id);
 
   /**
    * Creates a new CUDA device.
    * @param device_id ID of the physical GPU.
    * @param rng_seed The seed value of the random number generator.
    */
-  CUDADevice(unsigned device_id, unsigned rng_seed);
+  CUDA(unsigned device_id, unsigned rng_seed);
 
-  ~CUDADevice() override;
+  ~CUDA() override;
 
   void dump_description() const override;
   Device::DeviceType type() const override { return Device::DEVICE_TYPE_CUDA; }
@@ -171,6 +172,7 @@ private:
   void initialize();
 };
 
+}  // namespace devices
 }  // namespace primitiv
 
 #endif  // PRIMITIV_CUDA_DEVICE_H_

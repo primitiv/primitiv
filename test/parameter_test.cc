@@ -3,10 +3,10 @@
 #include <cstdio>
 #include <vector>
 #include <gtest/gtest.h>
-#include <primitiv/cpu_device.h>
 #include <primitiv/default_scope.h>
 #include <primitiv/error.h>
 #include <primitiv/initializer_impl.h>
+#include <primitiv/naive_device.h>
 #include <primitiv/parameter.h>
 #include <test_utils.h>
 
@@ -17,7 +17,7 @@ namespace primitiv {
 
 class ParameterTest : public testing::Test {
 protected:
-  CPUDevice dev;
+  devices::Naive dev;
 };
 
 TEST_F(ParameterTest, CheckInvalid) {

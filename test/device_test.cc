@@ -1,7 +1,7 @@
 #include <config.h>
 
 #include <gtest/gtest.h>
-#include <primitiv/cpu_device.h>
+#include <primitiv/naive_device.h>
 
 namespace primitiv {
 

@@ -3,12 +3,12 @@
 #include <sstream>
 #include <vector>
 #include <gtest/gtest.h>
-#include <primitiv/cpu_device.h>
 #include <primitiv/default_scope.h>
 #include <primitiv/error.h>
 #include <primitiv/function_impl.h>
 #include <primitiv/graph.h>
 #include <primitiv/initializer_impl.h>
+#include <primitiv/naive_device.h>
 #include <primitiv/operators.h>
 #include <primitiv/parameter.h>
 #include <test_utils.h>
@@ -21,8 +21,8 @@ namespace primitiv {
 
 class GraphTest : public testing::Test {
 protected:
-  CPUDevice dev;
-  CPUDevice dev2;
+  devices::Naive dev;
+  devices::Naive dev2;
 };
 
 TEST_F(GraphTest, CheckInvalidNode) {

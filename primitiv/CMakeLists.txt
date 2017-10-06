@@ -6,7 +6,6 @@ protobuf_generate_cpp(primitiv_proto_SRCS primitiv_proto_HDRS messages.proto)
 # Core headers.
 set(primitiv_base_HDRS
   ${primitiv_proto_HDRS}
-  cpu_device.h
   default_scope.h
   device.h
   error.h
@@ -15,6 +14,7 @@ set(primitiv_base_HDRS
   graph.h
   initializer.h
   initializer_impl.h
+  naive_device.h
   operators.h
   parameter.h
   primitiv.h
@@ -30,11 +30,11 @@ set(primitiv_base_HDRS
 # Core sources.
 set(primitiv_base_SRCS
   ${primitiv_proto_SRCS}
-  cpu_device.cc
   device.cc
   function_impl.cc
   graph.cc
   initializer_impl.cc
+  naive_device.cc
   node_ops.cc
   parameter.cc
   shape.cc

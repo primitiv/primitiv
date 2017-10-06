@@ -2,8 +2,8 @@
 
 #include <cstdio>
 #include <gtest/gtest.h>
-#include <primitiv/cpu_device.h>
 #include <primitiv/error.h>
+#include <primitiv/naive_device.h>
 #include <primitiv/parameter.h>
 #include <primitiv/trainer_impl.h>
 #include <test_utils.h>
@@ -17,7 +17,7 @@ namespace trainers {
 
 class TrainerImplTest : public testing::Test {
 protected:
-  CPUDevice dev;
+  devices::Naive dev;
 };
 
 TEST_F(TrainerImplTest, CheckNames) {

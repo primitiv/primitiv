@@ -1,35 +1,36 @@
-#ifndef PRIMITIV_CPU_DEVICE_H_
-#define PRIMITIV_CPU_DEVICE_H_
+#ifndef PRIMITIV_NAIVE_DEVICE_H_
+#define PRIMITIV_NAIVE_DEVICE_H_
 
 #include <random>
 #include <primitiv/device.h>
 
 namespace primitiv {
+namespace devices {
 
 /**
- * Device class for the usual CPU.
+ * Device class for the naive function implementations on CPU.
  */
-class CPUDevice : public Device {
-  CPUDevice(const CPUDevice &) = delete;
-  CPUDevice(CPUDevice &&) = delete;
-  CPUDevice &operator=(const CPUDevice &) = delete;
-  CPUDevice &operator=(CPUDevice &&) = delete;
+class Naive : public Device {
+  Naive(const Naive &) = delete;
+  Naive(Naive &&) = delete;
+  Naive &operator=(const Naive &) = delete;
+  Naive &operator=(Naive &&) = delete;
 
 public:
   /**
-   * Creates a CPUDevice object.
+   * Creates a Naive object.
    * @remarks The internal random number generator is initialized by
    *          `std::random_device`.
    */
-  CPUDevice() : rng_(std::random_device()()) {}
+  Naive() : rng_(std::random_device()()) {}
 
   /**
-   * Creates a CPUDevice object.
+   * Creates a Naive object.
    * @param rng_seed The seed value of internal random number generator.
    */
-  explicit CPUDevice(unsigned rng_seed) : rng_(rng_seed) {}
+  explicit Naive(unsigned rng_seed) : rng_(rng_seed) {}
 
-  ~CPUDevice() override = default;
+  ~Naive() override = default;
 
   void dump_description() const override;
   Device::DeviceType type() const override { return Device::DEVICE_TYPE_CPU; }
@@ -142,6 +143,7 @@ private:
   std::mt19937 rng_;
 };
 
+}  // namespace devices
 }  // namespace primitiv
 
-#endif  // PRIMITIV_CPU_DEVICE_H_
+#endif  // PRIMITIV_NAIVE_DEVICE_H_
