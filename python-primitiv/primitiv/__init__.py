@@ -1,7 +1,6 @@
 from primitiv.tensor import _Tensor as Tensor
 from primitiv.shape import _Shape as Shape
 from primitiv.device import _Device as Device
-from primitiv.cpu_device import _CPUDevice as CPUDevice
 from primitiv.function import _Function as Function
 from primitiv.parameter import _Parameter as Parameter
 from primitiv.graph import _Node as Node
@@ -11,16 +10,15 @@ from primitiv.operator import _operators as operators
 from primitiv.default_scope import _DefaultScopeDevice as DefaultScopeDevice
 from primitiv.default_scope import _DefaultScopeGraph as DefaultScopeGraph
 from primitiv.default_scope import _DefaultScope as DefaultScope
+from primitiv import devices
 from primitiv import functions
 from primitiv import initializers
 from primitiv import trainers
 
 
 __all__ = [
-    "CPUDevice",
-    #"CUDADevice",
-    #"CUDAMemoryPool",
     "Device",
+    "devices"
     "Function",
     "functions",
     "Node",

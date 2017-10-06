@@ -1,18 +1,19 @@
-from primitiv import DefaultScopeDevice
-from primitiv import DefaultScopeGraph
-from primitiv import Parameter, Graph
-from primitiv import CPUDevice
+#!/usr/bin/env python3
 
-from primitiv import operators as F
+from primitiv import DefaultScope
+from primitiv import Graph
+from primitiv import Parameter
 from primitiv import initializers as I
+from primitiv import operators as F
 from primitiv import trainers as T
+from primitiv.devices import Naive
 
 import numpy as np
 
 
 def main():
 
-    with DefaultScopeDevice(CPUDevice()):
+    with DefaultScope(Naive()):
         pw1 = Parameter("w1", [8, 2], I.XavierUniform())
         pb1 = Parameter("b1", [8], I.Constant(0))
         pw2 = Parameter("w2", [1, 8], I.XavierUniform())
@@ -41,7 +42,7 @@ def main():
 
         for i in range(100):
             g = Graph()
-            with DefaultScopeGraph(g):
+            with DefaultScope(g):
                 # Builds a computation graph.
                 x = F.input(input_data)
                 w1 = F.parameter(pw1)

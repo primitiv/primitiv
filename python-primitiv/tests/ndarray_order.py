@@ -1,11 +1,9 @@
 from primitiv import DefaultScope
-
-from primitiv import CPUDevice
 from primitiv import Graph
 from primitiv import operators as F
+from primitiv.devices import Naive
 
 import numpy as np
-
 import unittest
 
 
@@ -20,7 +18,7 @@ class ArrayOrderingTest(unittest.TestCase):
         pass
 
     def setUp(self):
-        self.device = CPUDevice()
+        self.device = Naive()
         self.graph = Graph()
         self.input_data = [
             np.array([

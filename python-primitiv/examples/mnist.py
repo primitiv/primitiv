@@ -1,7 +1,9 @@
+#!/usr/bin/env python3
+
 from primitiv import DefaultScope
-from primitiv import CPUDevice
 from primitiv import Graph
 from primitiv import Parameter
+from primitiv.devices import Naive
 
 from primitiv import initializers as I
 from primitiv import trainers as T
@@ -52,7 +54,7 @@ def main():
     test_inputs = load_images("data/t10k-images-idx3-ubyte", NUM_TEST_SAMPLES)
     test_labels = load_labels("data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES)
 
-    with DefaultScope(CPUDevice()):
+    with DefaultScope(Naive()):
 
         pw1 = Parameter("w1", [NUM_HIDDEN_UNITS, NUM_INPUT_UNITS], I.XavierUniform())
         pb1 = Parameter("b1", [NUM_HIDDEN_UNITS], I.Constant(0))

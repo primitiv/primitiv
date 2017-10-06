@@ -1,15 +1,12 @@
 from primitiv import DefaultScope
-
-from primitiv import CPUDevice
 from primitiv import Graph
-from primitiv import Shape
 from primitiv import Parameter
-
-from primitiv import operators as F
+from primitiv import Shape
 from primitiv import initializers as I
+from primitiv import operators as F
+from primitiv.devices import Naive
 
 import numpy as np
-
 import unittest
 
 
@@ -24,7 +21,7 @@ class ArgumentTest(unittest.TestCase):
         pass
 
     def setUp(self):
-        self.device = CPUDevice()
+        self.device = Naive()
         self.graph = Graph()
         self.ndarray_data = [
             np.array([

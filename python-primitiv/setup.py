@@ -20,13 +20,13 @@ ext_modules=[
               language="c++",
               libraries=["primitiv"]
     ),
-    Extension("primitiv.cpu_device",
-              sources=["primitiv/cpu_device.pyx"],
+    Extension("primitiv.devices.naive_device",
+              sources=["primitiv/devices/naive_device.pyx"],
               language="c++",
               libraries=["primitiv"]
     ),
-    #Extension("primitiv.cuda_device",
-              #sources=["primitiv/cuda_device.pyx"],
+    #Extension("primitiv.devices.cuda_device",
+    #sources=["primitiv/devices/cuda_device.pyx"],
               #language="c++",
               #libraries=["primitiv"]
     #),
@@ -85,9 +85,9 @@ ext_modules=[
 setup(
     ext_modules = cythonize(ext_modules),
     packages = ["primitiv",
+                "primitiv.devices",
                 "primitiv.functions",
                 "primitiv.initializers",
                 "primitiv.trainers",
     ],
-    testsuite = "tests",
 )
