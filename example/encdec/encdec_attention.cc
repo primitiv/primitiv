@@ -137,7 +137,7 @@ public:
   // Encodes source sentences and prepare internal states.
   void encode(const vector<vector<unsigned>> &src_batch, bool train) {
     // Embedding lookup.
-    const Var src_lookup = F::input<Var>(psrc_lookup_);
+    const Var src_lookup = F::parameter<Var>(psrc_lookup_);
     vector<Var> e_list;
     for (const auto &x : src_batch) {
       e_list.emplace_back(
@@ -170,11 +170,11 @@ public:
     t_concat_fb_ = F::transpose(concat_fb_);
 
     // Initializes decoder states.
-    trg_lookup_ = F::input<Var>(ptrg_lookup_);
-    whj_ = F::input<Var>(pwhj_);
-    bj_ = F::input<Var>(pbj_);
-    wjy_ = F::input<Var>(pwjy_);
-    by_ = F::input<Var>(pby_);
+    trg_lookup_ = F::parameter<Var>(ptrg_lookup_);
+    whj_ = F::parameter<Var>(pwhj_);
+    bj_ = F::parameter<Var>(pbj_);
+    wjy_ = F::parameter<Var>(pwjy_);
+    by_ = F::parameter<Var>(pby_);
     feed_ = F::zeros<Var>({embed_size_});
     trg_lstm_.init(
         src_fw_lstm_.get_c() + src_bw_lstm_.get_c(),

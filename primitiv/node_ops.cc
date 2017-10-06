@@ -99,19 +99,19 @@ Node input(
   return REG(g, Input(shape, data, dev));
 }
 
-Node input(Parameter &param, Graph &g) {
-  return REG(g, ParameterInput(param));
-}
-
 template<>
 Node input<Node>(
     const Shape &shape, const std::vector<float> &data, Device &dev) {
   return input(shape, data, dev, DefaultScope<Graph>::get());
 }
 
+Node parameter(Parameter &param, Graph &g) {
+  return REG(g, ParameterInput(param));
+}
+
 template<>
-Node input<Node>(Parameter &param) {
-  return input(param, DefaultScope<Graph>::get());
+Node parameter<Node>(Parameter &param) {
+  return parameter(param, DefaultScope<Graph>::get());
 }
 
 template<>

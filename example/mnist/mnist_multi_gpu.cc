@@ -106,10 +106,10 @@ int main() {
   auto make_graph = [&](const vector<float> &inputs) {
     // We first store input values explicitly on GPU 0.
     Node x = F::input<Node>(Shape({NUM_INPUT_UNITS}, BATCH_SIZE), inputs, dev0);
-    Node w1 = F::input<Node>(pw1);
-    Node b1 = F::input<Node>(pb1);
-    Node w2 = F::input<Node>(pw2);
-    Node b2 = F::input<Node>(pb2);
+    Node w1 = F::parameter<Node>(pw1);
+    Node b1 = F::parameter<Node>(pb1);
+    Node w2 = F::parameter<Node>(pw2);
+    Node b2 = F::parameter<Node>(pb2);
     // The hidden layer is calculated and implicitly stored on GPU 0.
     Node h_on_gpu0 = F::relu(F::matmul(w1, x) + b1);
     // `copy()` transfers the hiddne layer to GPU 1.
@@ -150,9 +150,8 @@ int main() {
       Node loss = F::softmax_cross_entropy(y, labels, 0);
       Node avg_loss = F::batch::mean(loss);
 
-      // Forward, backward, and updates parameters.
+      // Implicit forward, backward, and updates parameters.
       trainer.reset_gradients();
-      g.forward(avg_loss);
       g.backward(avg_loss);
       trainer.update();
     }

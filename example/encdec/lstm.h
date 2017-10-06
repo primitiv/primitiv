@@ -59,9 +59,9 @@ public:
       const Var &init_c = Var(),
       const Var &init_h = Var()) {
     namespace F = primitiv::operators;
-    wxh_ = F::input<Var>(pwxh_);
-    whh_ = F::input<Var>(pwhh_);
-    bh_ = F::input<Var>(pbh_);
+    wxh_ = F::parameter<Var>(pwxh_);
+    whh_ = F::parameter<Var>(pwhh_);
+    bh_ = F::parameter<Var>(pbh_);
     c_ = init_c.valid() ? init_c : F::zeros<Var>({out_size_});
     h_ = init_h.valid() ? init_h : F::zeros<Var>({out_size_});
   }

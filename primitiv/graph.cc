@@ -129,9 +129,14 @@ void Graph::backward(const Node &node) {
     ? &last_n.value
     : last_f.func->get_inner_value();
   if (!last_v) {
-    THROW_ERROR(
-        "The node [fid=" << node.fid_ << ", vid=" << node.vid_
-        << "] is not yet forwarded.");
+    forward(node);
+    last_v = &last_n.value;
+    if (!last_v) {
+      // NOTE(ocashi): Should never arrive here.
+      THROW_ERROR(
+          "The node [fid=" << node.fid_ << ", vid=" << node.vid_
+          << "] is not yet forwarded.");
+    }
   }
 
   // Makes the identity gradient (dx/dx = 1) at the last node.

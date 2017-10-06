@@ -61,7 +61,7 @@ TEST_F(TensorOpsTest, CheckInputByParameter) {
   vector<float> data {1, 2, 3, 4};
   for (Device *dev : devices) {
     Parameter param("test", {2, 2}, data, *dev);
-    const Tensor y = input<Tensor>(param);
+    const Tensor y = parameter<Tensor>(param);
     EXPECT_EQ(Shape({2, 2}), y.shape());
     EXPECT_EQ(dev, &y.device());
     EXPECT_TRUE(vector_match(data, y.to_vector()));

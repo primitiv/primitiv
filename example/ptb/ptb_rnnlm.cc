@@ -131,9 +131,9 @@ public:
   // };
   vector<Node> forward(const vector<vector<unsigned>> &inputs) {
     const unsigned batch_size = inputs[0].size();
-    Node wlookup = F::input<Node>(pwlookup_);
-    Node wxs = F::input<Node>(pwxs_);
-    Node wsy = F::input<Node>(pwsy_);
+    Node wlookup = F::parameter<Node>(pwlookup_);
+    Node wxs = F::parameter<Node>(pwxs_);
+    Node wsy = F::parameter<Node>(pwsy_);
     Node s = F::zeros<Node>(Shape({NUM_HIDDEN_UNITS}, batch_size));
     vector<Node> outputs;
     for (unsigned i = 0; i < inputs.size() - 1; ++i) {

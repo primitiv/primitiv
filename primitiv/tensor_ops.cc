@@ -107,7 +107,7 @@ Tensor input<Tensor>(
 }
 
 template<>
-Tensor input<Tensor>(Parameter &param) {
+Tensor parameter<Tensor>(Parameter &param) {
   return param.value();
 }
 

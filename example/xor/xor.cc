@@ -71,10 +71,10 @@ int main() {
 
     // Builds a computation graph.
     const Node x = F::input<Node>(Shape({2}, 4), input_data);
-    const Node w1 = F::input<Node>(pw1);
-    const Node b1 = F::input<Node>(pb1);
-    const Node w2 = F::input<Node>(pw2);
-    const Node b2 = F::input<Node>(pb2);
+    const Node w1 = F::parameter<Node>(pw1);
+    const Node b1 = F::parameter<Node>(pb1);
+    const Node w2 = F::parameter<Node>(pw2);
+    const Node b2 = F::parameter<Node>(pb2);
     const Node h = F::tanh(F::matmul(w1, x) + b1);
     const Node y = F::matmul(w2, h) + b2;
 
