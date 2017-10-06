@@ -84,8 +84,8 @@ int main() {
   vector<char> test_labels = ::load_labels("data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES);
 
   // Initializes 2 device objects which manage different GPUs.
-  CUDADevice dev0(0);  // GPU 0
-  CUDADevice dev1(1);  // GPU 1
+  devices::CUDA dev0(0);  // GPU 0
+  devices::CUDA dev1(1);  // GPU 1
 
   // Parameters on GPU 0.
   Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, I::XavierUniform(), dev0);

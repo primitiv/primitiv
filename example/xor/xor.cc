@@ -28,12 +28,12 @@ int main() {
   // Setups a computation backend.
   // The device object manages device-specific memories, and must be destroyed
   // after all other objects were gone.
-  CPUDevice dev;
+  devices::Naive dev;
   DefaultScope<Device> ds(dev);
 
   // If you want to use CUDA, uncomment below line (and comment out above) with
   // a specific device (GPU) ID.
-  //CUDADevice dev(0);
+  //devices::CUDA dev(0);
 
   // Parameters
   Parameter pw1("w1", {8, 2}, I::XavierUniform());

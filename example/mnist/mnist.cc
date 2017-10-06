@@ -82,7 +82,7 @@ int main() {
   vector<char> test_labels = ::load_labels("data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES);
 
   // Uses GPU.
-  CUDADevice dev(0);
+  devices::CUDA dev(0);
   DefaultScope<Device> ds(dev);
 
   // Parameters for the multilayer perceptron.

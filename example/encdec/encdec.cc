@@ -301,7 +301,7 @@ int main(const int argc, const char *argv[]) {
   }
 
   cerr << "initializing device ... " << flush;
-  CUDADevice dev(0);
+  devices::CUDA dev(0);
   DefaultScope<Device> ds(dev);
   cerr << "done." << endl;
 
