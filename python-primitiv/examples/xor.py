@@ -34,10 +34,10 @@ def main():
         ]
 
         output_data = [
-             1,  # Label 1
-            -1,  # Label 2
-            -1,  # Label 3
-             1,  # Label 4
+            np.array([ 1], dtype=np.float32),  # Label 1
+            np.array([-1], dtype=np.float32),  # Label 2
+            np.array([-1], dtype=np.float32),  # Label 3
+            np.array([ 1], dtype=np.float32),  # Label 4
         ]
 
         for i in range(100):

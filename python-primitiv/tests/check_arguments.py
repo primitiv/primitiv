@@ -69,9 +69,7 @@ class ArgumentTest(unittest.TestCase):
                 self.assertEqual(x.shape(), Shape([2, 3], 2))
 
                 # list[float] w/o shape
-                x = F.input(self.list_data)
-                self.assertEqual(x.to_list(), self.list_data)
-                self.assertEqual(x.shape(), Shape([], 24))
+                self.assertRaises(TypeError, lambda: F.input(self.list_data))
 
                 # list[float] w/ shape
                 x = F.input(self.list_data, shape=Shape([4, 3], 2))
@@ -104,3 +102,6 @@ class ArgumentTest(unittest.TestCase):
                 p = Parameter("test5", Shape([2, 6]), init=self.ndarray_data[0])
                 self.assertEqual(p.shape(), Shape([2, 6]))
                 self.assertEqual(p.value().to_list(), self.list_data[:12])
+
+                # list[float] w/o shape
+                self.assertRaises(TypeError, lambda: Parameter("test6", init=self.list_data[:12]))

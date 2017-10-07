@@ -28,7 +28,7 @@ class _operators:
             raise TypeError("data is a list, but it contains no item")
         if isinstance(data[0], (float, int)):
             if shape is None:
-                shape = _Shape([], len(data))
+                raise TypeError("shape is required when data contains scalars")
             data_vector = <vector[float]> data
         else:
             if shape is None:

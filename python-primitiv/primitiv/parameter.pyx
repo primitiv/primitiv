@@ -34,7 +34,7 @@ cdef class _Parameter:
         elif isinstance(init, list):
             # Parameter(name, shape, vector<float> init, device) new from float list
             if shape is None:
-                shape = _Shape([], len(init))
+                raise TypeError("shape is required when init is a list")
             self.wrapped = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, <vector[float]> init, device.wrapped[0])
 
         else:
