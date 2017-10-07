@@ -30,16 +30,6 @@ ext_modules=[
               #language="c++",
               #libraries=["primitiv"]
     #),
-    Extension("primitiv.function",
-              sources=["primitiv/function.pyx"],
-              language="c++",
-              libraries=["primitiv"]
-    ),
-    Extension("primitiv.functions.function_impl",
-              sources=["primitiv/functions/function_impl.pyx"],
-              language="c++",
-              libraries=["primitiv"]
-    ),
     Extension("primitiv.parameter",
               sources=["primitiv/parameter.pyx"],
               language="c++",
@@ -86,7 +76,6 @@ setup(
     ext_modules = cythonize(ext_modules),
     packages = ["primitiv",
                 "primitiv.devices",
-                "primitiv.functions",
                 "primitiv.initializers",
                 "primitiv.trainers",
     ],

@@ -3,7 +3,6 @@ from libcpp.vector cimport vector
 from primitiv.device cimport wrapDevice
 from primitiv.shape cimport wrapShape
 from primitiv.tensor cimport wrapTensor
-from primitiv.function cimport _Function
 
 cimport numpy as np
 import numpy as np
@@ -127,13 +126,6 @@ cdef class _Graph:
         if self.wrapped is not NULL:
             del self.wrapped
             self.wrapped = NULL
-
-    def add_function(self, _Function func, args):
-        cdef vector[Node] vec
-        cdef _Node x
-        for x in args:
-            vec.push_back(x.wrapped)
-        return wrapNode(self.wrapped.add_function(unique_ptr[Function](func.wrapped), vec))
 
     def forward(self, _Node node):
         return wrapTensor(self.wrapped.forward(node.wrapped))

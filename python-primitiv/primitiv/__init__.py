@@ -1,7 +1,6 @@
 from primitiv.tensor import _Tensor as Tensor
 from primitiv.shape import _Shape as Shape
 from primitiv.device import _Device as Device
-from primitiv.function import _Function as Function
 from primitiv.parameter import _Parameter as Parameter
 from primitiv.graph import _Node as Node
 from primitiv.graph import _Graph as Graph
@@ -11,7 +10,6 @@ from primitiv.default_scope import _DefaultScopeDevice as DefaultScopeDevice
 from primitiv.default_scope import _DefaultScopeGraph as DefaultScopeGraph
 from primitiv.default_scope import _DefaultScope as DefaultScope
 from primitiv import devices
-from primitiv import functions
 from primitiv import initializers
 from primitiv import trainers
 
@@ -19,8 +17,8 @@ from primitiv import trainers
 __all__ = [
     "Device",
     "devices"
-    "Function",
-    "functions",
+    #"Function", # Removed in python-primitiv
+    #"functions",
     "Node",
     "Graph",
     "Initializer",

@@ -4,7 +4,6 @@ from libcpp cimport bool
 from primitiv.device cimport Device
 from primitiv.shape cimport Shape
 from primitiv.tensor cimport Tensor
-from primitiv.function cimport Function
 
 
 cdef extern from "primitiv/graph.h" namespace "primitiv":
@@ -40,7 +39,6 @@ cdef extern from "node_op.h" namespace "python_primitiv_node":
 cdef extern from "primitiv/graph.h" namespace "primitiv":
     cdef cppclass Graph:
         Graph() except +
-        Node add_function(unique_ptr[Function] &&func, vector[Node] &args) except +
         const Tensor &forward(const Node &node) except +
         void backward(const Node &node) except +
         const Shape &get_shape(const Node &node) except +
