@@ -116,7 +116,7 @@ def main():
                 with DefaultScope(g):
                     y = make_graph(inputs, False)
 
-                    y_val = g.forward(y).to_list()
+                    y_val = y.to_list()
                     for i in range(BATCH_SIZE):
                         maxval = -1e10
                         argmax = -1
