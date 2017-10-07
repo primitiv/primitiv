@@ -73,10 +73,27 @@ ext_modules=[
 ]
 
 setup(
+    name = "primitiv",
+    version = "0.0.1",
+    description = "primitiv: A Neural Network Toolkit. (Python frontend)",
+    url = "https://github.com/odashi/primitiv",
+    author = "Koichi Akabe",
+    author_email = "vbkaisetsu at gmail.com",
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: Apache Software License",
+        "Operating System :: POSIX",
+        "Programming Language :: C++",
+        "Programming Language :: Python :: 3",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    ],
     ext_modules = cythonize(ext_modules),
-    packages = ["primitiv",
-                "primitiv.devices",
-                "primitiv.initializers",
-                "primitiv.trainers",
+    packages = [
+        "primitiv",
+        "primitiv.devices",
+        "primitiv.initializers",
+        "primitiv.trainers",
     ],
 )
