@@ -34,3 +34,6 @@ $ python3 ./setup.py build
 $ python3 ./setup.py test  # (optional)
 $ sudo python3 ./setup.py install
 ```
+
+CUDA is not available in the default settings. Please add `--enable-cuda`  option
+to all commands above if you want to enable CUDA.

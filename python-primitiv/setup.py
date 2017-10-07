@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
 
+import sys
+
 from setuptools import setup
 from distutils.extension import Extension
 from Cython.Build import cythonize
 
-ext_modules=[
+enable_cuda = False
+if "--enable-cuda" in sys.argv:
+    enable_cuda = True
+    sys.argv.remove("--enable-cuda")
+
+ext_modules = [
     Extension("primitiv.shape",
               sources=["primitiv/shape.pyx"],
               language="c++",
@@ -25,11 +32,6 @@ ext_modules=[
               language="c++",
               libraries=["primitiv"]
     ),
-    #Extension("primitiv.devices.cuda_device",
-    #sources=["primitiv/devices/cuda_device.pyx"],
-              #language="c++",
-              #libraries=["primitiv"]
-    #),
     Extension("primitiv.parameter",
               sources=["primitiv/parameter.pyx"],
               language="c++",
@@ -71,6 +73,15 @@ ext_modules=[
               libraries=["primitiv"]
     ),
 ]
+
+if enable_cuda:
+    ext_modules.append(
+        Extension("primitiv.devices.cuda_device",
+                    sources=["primitiv/devices/cuda_device.pyx"],
+                    language="c++",
+                    libraries=["primitiv"]
+        )
+    )
 
 setup(
     name = "primitiv",

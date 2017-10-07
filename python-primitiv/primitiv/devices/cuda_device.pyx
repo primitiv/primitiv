@@ -1,14 +1,14 @@
 from primitiv.device cimport _Device
-from primitiv.cuda_device cimport num_devices as CUDA_num_devices
+from primitiv.devices.cuda_device cimport num_devices as CUDA_num_devices
 
 
 cdef class _CUDA(_Device):
 
-    def __cinit__(self, rng_seed = None):
+    def __cinit__(self, unsigned device_id, rng_seed = None):
         if rng_seed == None:
-            self.wrapped = new CUDA()
+            self.wrapped = new CUDA(device_id)
         else:
-            self.wrapped = new CUDA(<unsigned> rng_seed)
+            self.wrapped = new CUDA(device_id, <unsigned> rng_seed)
         if self.wrapped is NULL:
             raise MemoryError()
 
@@ -24,8 +24,8 @@ cdef class _CUDA(_Device):
         return CUDA_num_devices()
 
     def dump_description(self):
-        (<CUDADevice*> self.wrapped).dump_description()
+        (<CUDA*> self.wrapped).dump_description()
         return
 
     def type(self):
-        return (<CUDADevice*> self.wrapped).type()
+        return (<CUDA*> self.wrapped).type()
