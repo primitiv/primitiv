@@ -9,6 +9,9 @@ cdef class _DefaultScopeDevice(object):
         self.obj = obj
 
     def __enter__(self):
+        # WARNING: DO NOT OVERWRITE self.obj
+        # A wrapped object is used in C++.
+        # If you overwrite it, the object will be deleted.
         if self.obj is None:
             self.wrapped = new DefaultScope[Device]()
         else:
@@ -43,6 +46,9 @@ cdef class _DefaultScopeGraph(object):
         self.obj = obj
 
     def __enter__(self):
+        # WARNING: DO NOT OVERWRITE self.obj
+        # A wrapped object is used in C++.
+        # If you overwrite it, the object will be deleted.
         if self.obj is None:
             self.wrapped = new DefaultScope[Graph]()
         else:
