@@ -13,7 +13,7 @@ from utils cimport ndarrays_to_vector
 
 cdef class _Parameter:
 
-    def __cinit__(self, str name, shape = None, init = None, _Device device = None):
+    def __init__(self, str name, shape = None, init = None, _Device device = None):
         if device == None:
             device = _DefaultScopeDevice.get()
 
