@@ -15,12 +15,14 @@ ext_modules = [
     Extension("primitiv.shape",
               sources=["primitiv/shape.pyx"],
               language="c++",
-              libraries=["primitiv"]
+              libraries=["primitiv"],
+              extra_compile_args=["-std=c++11"],
     ),
     Extension("primitiv.tensor",
               sources=["primitiv/tensor.pyx"],
               language="c++",
-              libraries=["primitiv"]
+              libraries=["primitiv"],
+              extra_compile_args=["-std=c++11"],
     ),
     Extension("primitiv.device",
               sources=["primitiv/device.pyx"],
@@ -30,56 +32,66 @@ ext_modules = [
     Extension("primitiv.devices.naive_device",
               sources=["primitiv/devices/naive_device.pyx"],
               language="c++",
-              libraries=["primitiv"]
+              libraries=["primitiv"],
+              extra_compile_args=["-std=c++11"],
     ),
     Extension("primitiv.parameter",
               sources=["primitiv/parameter.pyx"],
               language="c++",
-              libraries=["primitiv"]
+              libraries=["primitiv"],
+              extra_compile_args=["-std=c++11"],
     ),
     Extension("primitiv.initializer",
               sources=["primitiv/initializer.pyx"],
               language="c++",
-              libraries=["primitiv"]
+              libraries=["primitiv"],
+              extra_compile_args=["-std=c++11"],
     ),
     Extension("primitiv.initializers.initializer_impl",
               sources=["primitiv/initializers/initializer_impl.pyx"],
               language="c++",
-              libraries=["primitiv"]
+              libraries=["primitiv"],
+              extra_compile_args=["-std=c++11"],
     ),
     Extension("primitiv.graph",
               sources=["primitiv/graph.pyx"],
               language="c++",
-              libraries=["primitiv"]
+              libraries=["primitiv"],
+              extra_compile_args=["-std=c++11"],
     ),
     Extension("primitiv.trainer",
               sources=["primitiv/trainer.pyx"],
               language="c++",
-              libraries=["primitiv"]
+              libraries=["primitiv"],
+              extra_compile_args=["-std=c++11"],
     ),
     Extension("primitiv.trainers.trainer_impl",
               sources=["primitiv/trainers/trainer_impl.pyx"],
               language="c++",
-              libraries=["primitiv"]
+              libraries=["primitiv"],
+              extra_compile_args=["-std=c++11"],
     ),
     Extension("primitiv.operator",
               sources=["primitiv/operator.pyx"],
               language="c++",
-              libraries=["primitiv"]
+              libraries=["primitiv"],
+              extra_compile_args=["-std=c++11"],
     ),
     Extension("primitiv.default_scope",
               sources=["primitiv/default_scope.pyx"],
               language="c++",
-              libraries=["primitiv"]
+              libraries=["primitiv"],
+              extra_compile_args=["-std=c++11"],
     ),
 ]
 
 if enable_cuda:
     ext_modules.append(
         Extension("primitiv.devices.cuda_device",
-                    sources=["primitiv/devices/cuda_device.pyx"],
-                    language="c++",
-                    libraries=["primitiv"]
+                  sources=["primitiv/devices/cuda_device.pyx"],
+                  language="c++",
+                  libraries=["primitiv"],
+                  extra_compile_args=["-std=c++11"],
         )
     )
 
