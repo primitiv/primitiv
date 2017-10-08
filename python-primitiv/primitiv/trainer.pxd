@@ -33,6 +33,7 @@ cdef extern from "primitiv/trainer.h" namespace "primitiv::Trainer":
 
 cdef class _Trainer:
     cdef Trainer *wrapped
+    cdef Trainer *wrapped_newed
 
 
 cdef inline _Trainer wrapTrainer(Trainer *wrapped) except +:

@@ -9,6 +9,7 @@ cdef extern from "primitiv/initializer.h" namespace "primitiv":
 
 cdef class _Initializer:
     cdef Initializer *wrapped
+    cdef Initializer *wrapped_newed
 
 
 cdef inline _Initializer wrapInitializer(Initializer *wrapped) except +:

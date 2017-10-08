@@ -14,6 +14,9 @@ from utils cimport ndarrays_to_vector
 cdef class _Parameter:
 
     def __init__(self, str name, shape = None, init = None, _Device device = None):
+        if self.wrapped_newed is not NULL:
+            raise MemoryError()
+
         if device == None:
             device = _DefaultScopeDevice.get()
 
@@ -21,32 +24,34 @@ cdef class _Parameter:
         if isinstance(init, np.ndarray):
             if shape is None:
                 shape = _Shape(init.shape, 1)
-            self.wrapped = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, ndarrays_to_vector([init]), device.wrapped[0])
+            self.wrapped_newed = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, ndarrays_to_vector([init]), device.wrapped[0])
 
         # Parameter(name, shape, device)
         elif shape is not None and init is None:
-            self.wrapped = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, device.wrapped[0])
+            self.wrapped_newed = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, device.wrapped[0])
 
         # Parameter(name, shape, Initializer init, device) new from Initializer
         elif shape is not None and isinstance(init, _Initializer):
-            self.wrapped = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, (<_Initializer> init).wrapped[0], device.wrapped[0])
+            self.wrapped_newed = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, (<_Initializer> init).wrapped[0], device.wrapped[0])
 
         elif isinstance(init, list):
             # Parameter(name, shape, vector<float> init, device) new from float list
             if shape is None:
                 raise TypeError("shape is required when init is a list")
-            self.wrapped = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, <vector[float]> init, device.wrapped[0])
+            self.wrapped_newed = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, <vector[float]> init, device.wrapped[0])
 
         else:
             raise TypeError("Argument 'init' has incorrect type (list, Initializer, or numpy.ndarray)")
 
-        if self.wrapped is NULL:
+        if self.wrapped_newed is NULL:
             raise MemoryError()
 
+        self.wrapped = self.wrapped_newed
+
     def __dealloc__(self):
-        if self.wrapped is not NULL:
-            del self.wrapped
-            self.wrapped = NULL
+        if self.wrapped_newed is not NULL:
+            del self.wrapped_newed
+            self.wrapped_newed = NULL
 
     #def copy(self):
         #return wrapParameter(new Parameter(self.wrapped[0]))
@@ -99,4 +104,4 @@ cdef class _Parameter:
     def load(str path, bool with_stats = True, _Device device = None):
         if device == None:
             device = _DefaultScopeDevice.get()
-        return wrapParameter(Parameter_load(<string> path.encode("utf-8"), with_stats, device.wrapped[0]))
+        return wrapParameterWithNew(Parameter_load(<string> path.encode("utf-8"), with_stats, device.wrapped[0]))

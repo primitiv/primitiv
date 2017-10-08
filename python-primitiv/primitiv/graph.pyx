@@ -117,15 +117,18 @@ cdef class _Node:
 
 cdef class _Graph:
 
-    def __cinit__(self):
-        self.wrapped = new Graph()
-        if self.wrapped is NULL:
+    def __init__(self):
+        if self.wrapped_newed is not NULL:
             raise MemoryError()
+        self.wrapped_newed = new Graph()
+        if self.wrapped_newed is NULL:
+            raise MemoryError()
+        self.wrapped = self.wrapped_newed
 
     def __dealloc__(self):
-        if self.wrapped is not NULL:
-            del self.wrapped
-            self.wrapped = NULL
+        if self.wrapped_newed is not NULL:
+            del self.wrapped_newed
+            self.wrapped_newed = NULL
 
     def forward(self, _Node node):
         return wrapTensor(self.wrapped.forward(node.wrapped))

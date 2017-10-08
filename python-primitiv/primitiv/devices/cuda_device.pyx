@@ -4,20 +4,23 @@ from primitiv.devices.cuda_device cimport num_devices as CUDA_num_devices
 
 cdef class _CUDA(_Device):
 
-    def __cinit__(self, unsigned device_id, rng_seed = None):
-        if rng_seed == None:
-            self.wrapped = new CUDA(device_id)
-        else:
-            self.wrapped = new CUDA(device_id, <unsigned> rng_seed)
-        if self.wrapped is NULL:
+    def __init__(self, unsigned device_id, rng_seed = None):
+        if self.wrapped_newed is not NULL:
             raise MemoryError()
+        if rng_seed == None:
+            self.wrapped_newed = new CUDA(device_id)
+        else:
+            self.wrapped_newed = new CUDA(device_id, <unsigned> rng_seed)
+        if self.wrapped_newed is NULL:
+            raise MemoryError()
+        self.wrapped = self.wrapped_newed
 
     def __dealloc__(self):
         cdef CUDA *temp
-        if self.wrapped is not NULL:
-            temp = <CUDA*> self.wrapped
+        if self.wrapped_newed is not NULL:
+            temp = <CUDA*> self.wrapped_newed
             del temp
-            self.wrapped = NULL
+            self.wrapped_newed = NULL
 
     @staticmethod
     def num_devices():

@@ -17,9 +17,11 @@ cdef extern from "default_scope_wrapper.h" namespace "python_primitiv":
 
 cdef class _DefaultScopeDevice:
     cdef DefaultScope[Device] *wrapped
+    cdef DefaultScope[Device] *wrapped_newed
     cdef _Device obj
 
 
 cdef class _DefaultScopeGraph:
     cdef DefaultScope[Graph] *wrapped
+    cdef DefaultScope[Graph] *wrapped_newed
     cdef _Graph obj
