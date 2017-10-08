@@ -24,6 +24,16 @@ cdef class _SGD(_Trainer):
     def eta(self):
         return (<SGD*> self.wrapped).eta()
 
+    def get_configs(self):
+        cdef unordered_map[string, unsigned] uint_configs
+        cdef unordered_map[string, float] float_configs
+        (<SGD*> self.wrapped).get_configs(uint_configs, float_configs)
+        return (uint_configs, float_configs)
+
+    def set_configs(self, const unordered_map[string, unsigned] uint_configs, const unordered_map[string, float] float_configs):
+        (<SGD*> self.wrapped).set_configs(uint_configs, float_configs)
+        return
+
 
 cdef class _Adam(_Trainer):
 
@@ -56,3 +66,13 @@ cdef class _Adam(_Trainer):
 
     def eps(self):
         return (<Adam*> self.wrapped).eps()
+
+    def get_configs(self):
+        cdef unordered_map[string, unsigned] uint_configs
+        cdef unordered_map[string, float] float_configs
+        (<SGD*> self.wrapped).get_configs(uint_configs, float_configs)
+        return (uint_configs, float_configs)
+
+    def set_configs(self, unordered_map[string, unsigned] uint_configs, unordered_map[string, float] float_configs):
+        (<SGD*> self.wrapped).set_configs(uint_configs, float_configs)
+        return

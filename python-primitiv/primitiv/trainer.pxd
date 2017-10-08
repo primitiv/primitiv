@@ -1,5 +1,6 @@
 from libcpp.vector cimport vector
 from libcpp.string cimport string
+from libcpp.unordered_map cimport unordered_map
 from libcpp cimport bool
 from libcpp.memory cimport shared_ptr
 
@@ -25,10 +26,11 @@ cdef extern from "primitiv/trainer.h" namespace "primitiv":
         void add_parameter(Parameter &param) except +
         void reset_gradients() except +
         void update() except +
+        void set_configs_by_file(const string &path) except +
 
 
 cdef extern from "primitiv/trainer.h" namespace "primitiv::Trainer":
-    shared_ptr[Trainer] load(const string &path) except +
+    string detect_name(const string &path) except +
 
 
 cdef class _Trainer:

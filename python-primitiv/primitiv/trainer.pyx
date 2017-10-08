@@ -1,10 +1,22 @@
-from trainer cimport load as Trainer_load
-
+from primitiv import trainers as T
 
 cdef class _Trainer:
 
-    def load(self, str path):
-        return wrapTrainer(Trainer_load(path.encode("utf-8")).get())
+    @staticmethod
+    def load(str path):
+        name = _Trainer.detect_name(path);
+        if name == "SGD":
+            trainer = T.SGD()
+        elif name == "Adam":
+            trainer = T.Adam()
+        else:
+            raise IOError("Unknown trainer name:", name)
+        trainer.set_configs_by_file(path)
+        return trainer
+
+    @staticmethod
+    def detect_name(str path):
+        return detect_name(path.encode("utf-8")).decode("utf-8")
 
     def save(self, str path):
         self.wrapped.save(path.encode("utf-8"))
@@ -51,4 +63,8 @@ cdef class _Trainer:
 
     def update(self):
         self.wrapped.update()
+        return
+
+    def set_configs_by_file(self, str path):
+        self.wrapped.set_configs_by_file(path.encode("utf-8"))
         return
