@@ -27,7 +27,8 @@ ext_modules = [
     Extension("primitiv.device",
               sources=["primitiv/device.pyx"],
               language="c++",
-              libraries=["primitiv"]
+              libraries=["primitiv"],
+              extra_compile_args=["-std=c++11"],
     ),
     Extension("primitiv.devices.naive_device",
               sources=["primitiv/devices/naive_device.pyx"],
