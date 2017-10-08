@@ -2,8 +2,8 @@
 
 #include <vector>
 #include <gtest/gtest.h>
-#include <primitiv/cpu_device.h>
 #include <primitiv/error.h>
+#include <primitiv/naive_device.h>
 #include <primitiv/tensor.h>
 #include <test_utils.h>
 
@@ -22,13 +22,13 @@ protected:
   vector<Device *> devices;
 
   void SetUp() override {
-    devices.emplace_back(new CPUDevice());
-    devices.emplace_back(new CPUDevice()); // other device on the same hardware
+    devices.emplace_back(new devices::Naive());
+    devices.emplace_back(new devices::Naive()); // other device on the same hardware
 #ifdef PRIMITIV_USE_CUDA
-    devices.emplace_back(new CUDADevice(0));
-    devices.emplace_back(new CUDADevice(0)); // other device on the same hardware
-    if (CUDADevice::num_devices() > 2) {
-      devices.emplace_back(new CUDADevice(1));
+    devices.emplace_back(new devices::CUDA(0));
+    devices.emplace_back(new devices::CUDA(0)); // other device on the same hardware
+    if (devices::CUDA::num_devices() > 2) {
+      devices.emplace_back(new devices::CUDA(1));
     }
 #endif  // PRIMITIV_USE_CUDA
   }

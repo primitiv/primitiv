@@ -2,8 +2,8 @@
 
 #include <cstdio>
 #include <gtest/gtest.h>
-#include <primitiv/cpu_device.h>
 #include <primitiv/error.h>
+#include <primitiv/naive_device.h>
 #include <primitiv/parameter.h>
 #include <primitiv/trainer_impl.h>
 #include <test_utils.h>
@@ -17,7 +17,7 @@ namespace trainers {
 
 class TrainerImplTest : public testing::Test {
 protected:
-  CPUDevice dev;
+  devices::Naive dev;
 };
 
 TEST_F(TrainerImplTest, CheckNames) {
@@ -49,14 +49,27 @@ TEST_F(TrainerImplTest, CheckGivenHyperparameters) {
   EXPECT_FLOAT_EQ(4, adam.eps());
 }
 
+TEST_F(TrainerImplTest, CheckInvalidSetConfigsByFile) {
+  SGD sgd;
+
+  const std::string path = "/tmp/primitiv_TrainerImplTest_CheckInvalidSetConfigsByFile.data";
+  sgd.save(path);
+
+  Adam adam;
+  EXPECT_THROW(adam.set_configs_by_file(path), Error);
+}
+
 TEST_F(TrainerImplTest, CheckSGDSaveLoad) {
   SGD sgd(1);
   sgd.set_epoch(2);
-  sgd.set_weight_decay(3);
-  sgd.set_gradient_clipping(4);
+  sgd.set_learning_rate_scaling(3);
+  sgd.set_weight_decay(4);
+  sgd.set_gradient_clipping(5);
 
   const std::string path = "/tmp/primitiv_TrainerImplTest_CheckSGDSaveLoad.data";
   sgd.save(path);
+
+  EXPECT_EQ("SGD", Trainer::detect_name(path));
 
   std::shared_ptr<Trainer> loaded = Trainer::load(path);
   std::remove(path.c_str());
@@ -66,8 +79,79 @@ TEST_F(TrainerImplTest, CheckSGDSaveLoad) {
   std::shared_ptr<SGD> sgd2 = std::static_pointer_cast<SGD>(loaded);
   EXPECT_EQ(1, sgd2->eta());
   EXPECT_EQ(2, sgd2->get_epoch());
-  EXPECT_EQ(3, sgd2->get_weight_decay());
-  EXPECT_EQ(4, sgd2->get_gradient_clipping());
+  EXPECT_EQ(3, sgd2->get_learning_rate_scaling());
+  EXPECT_EQ(4, sgd2->get_weight_decay());
+  EXPECT_EQ(5, sgd2->get_gradient_clipping());
+}
+
+TEST_F(TrainerImplTest, CheckSGDGetConfigs) {
+  SGD sgd(1);
+  sgd.set_epoch(2);
+  sgd.set_learning_rate_scaling(3);
+  sgd.set_weight_decay(4);
+  sgd.set_gradient_clipping(5);
+
+  std::unordered_map<std::string, unsigned> uint_configs;
+  std::unordered_map<std::string, float> float_configs;
+  sgd.get_configs(uint_configs, float_configs);
+
+  EXPECT_EQ(1u, uint_configs.size());
+  EXPECT_EQ(4u, float_configs.size());
+  EXPECT_EQ(1, float_configs.at("SGD.eta"));
+  EXPECT_EQ(2, uint_configs.at("Trainer.epoch"));
+  EXPECT_EQ(3, float_configs.at("Trainer.lr_scale"));
+  EXPECT_EQ(4, float_configs.at("Trainer.l2_strength"));
+  EXPECT_EQ(5, float_configs.at("Trainer.clip_threshold"));
+}
+
+TEST_F(TrainerImplTest, CheckSGDSetConfigs) {
+  SGD sgd(0);
+  sgd.set_epoch(0);
+  sgd.set_learning_rate_scaling(0);
+  sgd.set_weight_decay(0);
+  sgd.set_gradient_clipping(0);
+
+  std::unordered_map<std::string, unsigned> uint_configs {
+    std::make_pair("Trainer.epoch", 2),
+  };
+  std::unordered_map<std::string, float> float_configs {
+    std::make_pair("SGD.eta", 1),
+    std::make_pair("Trainer.lr_scale", 3),
+    std::make_pair("Trainer.l2_strength", 4),
+    std::make_pair("Trainer.clip_threshold", 5),
+  };
+  sgd.set_configs(uint_configs, float_configs);
+
+  EXPECT_EQ(1, sgd.eta());
+  EXPECT_EQ(2, sgd.get_epoch());
+  EXPECT_EQ(3, sgd.get_learning_rate_scaling());
+  EXPECT_EQ(4, sgd.get_weight_decay());
+  EXPECT_EQ(5, sgd.get_gradient_clipping());
+}
+
+TEST_F(TrainerImplTest, CheckSGDSetConfigsByFile) {
+  SGD sgd(1);
+  sgd.set_epoch(2);
+  sgd.set_learning_rate_scaling(3);
+  sgd.set_weight_decay(4);
+  sgd.set_gradient_clipping(5);
+
+  const std::string path = "/tmp/primitiv_TrainerImplTest_CheckSGDSetConfigsFromFile.data";
+  sgd.save(path);
+
+  SGD sgd2(0);
+  sgd2.set_epoch(0);
+  sgd2.set_learning_rate_scaling(0);
+  sgd2.set_weight_decay(0);
+  sgd2.set_gradient_clipping(0);
+
+  sgd2.set_configs_by_file(path);
+
+  EXPECT_EQ(1, sgd2.eta());
+  EXPECT_EQ(2, sgd2.get_epoch());
+  EXPECT_EQ(3, sgd2.get_learning_rate_scaling());
+  EXPECT_EQ(4, sgd2.get_weight_decay());
+  EXPECT_EQ(5, sgd2.get_gradient_clipping());
 }
 
 TEST_F(TrainerImplTest, CheckSGDUpdate) {
@@ -101,11 +185,14 @@ TEST_F(TrainerImplTest, CheckSGDUpdate) {
 TEST_F(TrainerImplTest, CheckAdamSaveLoad) {
   Adam adam(1, 2, 3, 4);
   adam.set_epoch(5);
-  adam.set_weight_decay(6);
-  adam.set_gradient_clipping(7);
+  adam.set_learning_rate_scaling(6);
+  adam.set_weight_decay(7);
+  adam.set_gradient_clipping(8);
 
   const std::string path = "/tmp/primitiv_TrainerImplTest_CheckAdamSaveLoad.data";
   adam.save(path);
+
+  EXPECT_EQ("Adam", Trainer::detect_name(path));
 
   std::shared_ptr<Trainer> loaded = Trainer::load(path);
   std::remove(path.c_str());
@@ -118,8 +205,91 @@ TEST_F(TrainerImplTest, CheckAdamSaveLoad) {
   EXPECT_EQ(3, adam2->beta2());
   EXPECT_EQ(4, adam2->eps());
   EXPECT_EQ(5, adam2->get_epoch());
-  EXPECT_EQ(6, adam2->get_weight_decay());
-  EXPECT_EQ(7, adam2->get_gradient_clipping());
+  EXPECT_EQ(6, adam2->get_learning_rate_scaling());
+  EXPECT_EQ(7, adam2->get_weight_decay());
+  EXPECT_EQ(8, adam2->get_gradient_clipping());
+}
+
+TEST_F(TrainerImplTest, CheckAdamGetConfigs) {
+  Adam adam(1, 2, 3, 4);
+  adam.set_epoch(5);
+  adam.set_learning_rate_scaling(6);
+  adam.set_weight_decay(7);
+  adam.set_gradient_clipping(8);
+
+  std::unordered_map<std::string, unsigned> uint_configs;
+  std::unordered_map<std::string, float> float_configs;
+  adam.get_configs(uint_configs, float_configs);
+
+  EXPECT_EQ(1u, uint_configs.size());
+  EXPECT_EQ(7u, float_configs.size());
+  EXPECT_EQ(1, float_configs.at("Adam.alpha"));
+  EXPECT_EQ(2, float_configs.at("Adam.beta1"));
+  EXPECT_EQ(3, float_configs.at("Adam.beta2"));
+  EXPECT_EQ(4, float_configs.at("Adam.eps"));
+  EXPECT_EQ(5, uint_configs.at("Trainer.epoch"));
+  EXPECT_EQ(6, float_configs.at("Trainer.lr_scale"));
+  EXPECT_EQ(7, float_configs.at("Trainer.l2_strength"));
+  EXPECT_EQ(8, float_configs.at("Trainer.clip_threshold"));
+}
+
+TEST_F(TrainerImplTest, CheckAdamSetConfigs) {
+  Adam adam(0, 0, 0, 0);
+  adam.set_epoch(0);
+  adam.set_learning_rate_scaling(0);
+  adam.set_weight_decay(0);
+  adam.set_gradient_clipping(0);
+
+  std::unordered_map<std::string, unsigned> uint_configs {
+    std::make_pair("Trainer.epoch", 5),
+  };
+  std::unordered_map<std::string, float> float_configs {
+    std::make_pair("Adam.alpha", 1),
+    std::make_pair("Adam.beta1", 2),
+    std::make_pair("Adam.beta2", 3),
+    std::make_pair("Adam.eps", 4),
+    std::make_pair("Trainer.lr_scale", 6),
+    std::make_pair("Trainer.l2_strength", 7),
+    std::make_pair("Trainer.clip_threshold", 8),
+  };
+  adam.set_configs(uint_configs, float_configs);
+
+  EXPECT_EQ(1, adam.alpha());
+  EXPECT_EQ(2, adam.beta1());
+  EXPECT_EQ(3, adam.beta2());
+  EXPECT_EQ(4, adam.eps());
+  EXPECT_EQ(5, adam.get_epoch());
+  EXPECT_EQ(6, adam.get_learning_rate_scaling());
+  EXPECT_EQ(7, adam.get_weight_decay());
+  EXPECT_EQ(8, adam.get_gradient_clipping());
+}
+
+TEST_F(TrainerImplTest, CheckAdamSetConfigsByFile) {
+  Adam adam(1, 2, 3, 4);
+  adam.set_epoch(5);
+  adam.set_learning_rate_scaling(6);
+  adam.set_weight_decay(7);
+  adam.set_gradient_clipping(8);
+
+  const std::string path = "/tmp/primitiv_TrainerImplTest_CheckAdamSetConfigsFromFile.data";
+  adam.save(path);
+
+  Adam adam2(0, 0, 0, 0);
+  adam2.set_epoch(0);
+  adam2.set_learning_rate_scaling(0);
+  adam2.set_weight_decay(0);
+  adam2.set_gradient_clipping(0);
+
+  adam2.set_configs_by_file(path);
+
+  EXPECT_EQ(1, adam2.alpha());
+  EXPECT_EQ(2, adam2.beta1());
+  EXPECT_EQ(3, adam2.beta2());
+  EXPECT_EQ(4, adam2.eps());
+  EXPECT_EQ(5, adam2.get_epoch());
+  EXPECT_EQ(6, adam2.get_learning_rate_scaling());
+  EXPECT_EQ(7, adam2.get_weight_decay());
+  EXPECT_EQ(8, adam2.get_gradient_clipping());
 }
 
 TEST_F(TrainerImplTest, CheckAdamUpdate) {

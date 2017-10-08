@@ -18,12 +18,14 @@ void SGD::update_parameter(float scale, Parameter &param) {
 void SGD::get_configs(
     std::unordered_map<std::string, unsigned> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
+  Trainer::get_configs(uint_configs, float_configs);
   float_configs.insert(std::make_pair("SGD.eta", eta_));
 }
 
 void SGD::set_configs(
     const std::unordered_map<std::string, unsigned> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
+  Trainer::set_configs(uint_configs, float_configs);
   eta_ = float_configs.at("SGD.eta");
 }
 
@@ -51,6 +53,7 @@ void Adam::update_parameter(float scale, Parameter &param) {
 void Adam::get_configs(
     std::unordered_map<std::string, unsigned> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
+  Trainer::get_configs(uint_configs, float_configs);
   float_configs.insert(std::make_pair("Adam.alpha", alpha_));
   float_configs.insert(std::make_pair("Adam.beta1", beta1_));
   float_configs.insert(std::make_pair("Adam.beta2", beta2_));
@@ -60,6 +63,7 @@ void Adam::get_configs(
 void Adam::set_configs(
     const std::unordered_map<std::string, unsigned> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
+  Trainer::set_configs(uint_configs, float_configs);
   alpha_ = float_configs.at("Adam.alpha");
   beta1_ = float_configs.at("Adam.beta1");
   beta2_ = float_configs.at("Adam.beta2");

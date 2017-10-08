@@ -263,7 +263,7 @@ int main() {
                     << num_valid_labels << " labels" << endl;
 
   // Uses GPU.
-  CUDADevice dev(0);
+  devices::CUDA dev(0);
   DefaultScope<Device> ds(dev);
 
   // Trainer.

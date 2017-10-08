@@ -1,17 +1,17 @@
 #include <config.h>
 
 #include <gtest/gtest.h>
-#include <primitiv/cpu_device.h>
 #include <primitiv/default_scope.h>
 #include <primitiv/error.h>
 #include <primitiv/graph.h>
+#include <primitiv/naive_device.h>
 
 namespace primitiv {
 
 class DefaultScopeTest : public testing::Test {};
 
 TEST_F(DefaultScopeTest, CheckDifferentClasses) {
-  CPUDevice dev;
+  devices::Naive dev;
   Graph g;
 
   EXPECT_EQ(0u, DefaultScope<Device>::size());
@@ -31,7 +31,7 @@ TEST_F(DefaultScopeTest, CheckDifferentClasses) {
 }
 
 TEST_F(DefaultScopeTest, CheckHierarchy) {
-  CPUDevice dev1, dev2;
+  devices::Naive dev1, dev2;
 
   EXPECT_EQ(0u, DefaultScope<Device>::size());
   EXPECT_THROW(DefaultScope<Device>::get(), Error);

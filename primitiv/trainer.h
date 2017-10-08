@@ -23,8 +23,15 @@ public:
   Trainer() : epoch_(0), lr_scale_(1), l2_strength_(0), clip_threshold_(0) {}
 
   /**
-   * Loads a trainer from the file.
+   * Retrieves a trainer name from a file.
    * @param path Path of the file that stores trainer parameters.
+   * @return Corresponding trainer name.
+   */
+  static std::string detect_name(const std::string &path);
+
+  /**
+   * Loads a trainer from a file.
+   * @param path Path of the trainer parameter file.
    * @return A shared pointer of the Trainer object.
    */
   static std::shared_ptr<Trainer> load(const std::string &path);
@@ -120,6 +127,30 @@ public:
    */
   void update();
 
+  /**
+   * Gathers configuration values.
+   * @param uint_configs Configurations with unsigned type.
+   * @param float_configs Configurations with float type.
+   */
+  virtual void get_configs(
+      std::unordered_map<std::string, unsigned> &uint_configs,
+      std::unordered_map<std::string, float> &float_configs) const;
+
+  /**
+   * Sets configuration values.
+   * @param uint_configs Configurations with unsigned type.
+   * @param float_configs Configurations with float type.
+   */
+  virtual void set_configs(
+      const std::unordered_map<std::string, unsigned> &uint_configs,
+      const std::unordered_map<std::string, float> &float_configs);
+
+  /**
+   * Sets configuration values using a file.
+   * @param path Path of the trainer parameter file.
+   */
+  void set_configs_by_file(const std::string &path);
+
 private:
   unsigned epoch_;
   float lr_scale_;
@@ -139,24 +170,6 @@ private:
    * @param scale Additional learning rate scaling factor.
    */
   virtual void update_parameter(float scale, Parameter &param) = 0;
-
-  /**
-   * Gathers additional configurations.
-   * @param uint_configs Configurations with unsigned type.
-   * @param float_configs Configurations with float type.
-   */
-  virtual void get_configs(
-      std::unordered_map<std::string, unsigned> &uint_configs,
-      std::unordered_map<std::string, float> &float_configs) const = 0;
-
-  /**
-   * Sets additional configurations.
-   * @param uint_configs Configurations with unsigned type.
-   * @param float_configs Configurations with float type.
-   */
-  virtual void set_configs(
-      const std::unordered_map<std::string, unsigned> &uint_configs,
-      const std::unordered_map<std::string, float> &float_configs) = 0;
 };
 
 }  // namespace primitiv

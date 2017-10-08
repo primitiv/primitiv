@@ -48,7 +48,7 @@ Building Options
   - Whether or not to use cached values to prevent increasing computation amount.
   - Libraries built with this flag will tend to consume more memory.
 - `PRIMITIV_USE_CUDA` (default=`OFF`)
-  - Enables CUDA backend (`CUDADevice` class).
+  - Enables CUDA backend (`devices::CUDA` class).
 - Other available options:
   - CMake standard options.
   - [FindCUDA](https://cmake.org/cmake/help/v3.1/module/FindCUDA.html) options.

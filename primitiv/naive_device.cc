@@ -5,20 +5,21 @@
 #include <cstring>
 #include <cmath>
 #include <iostream>
-#include <primitiv/cpu_device.h>
+#include <primitiv/naive_device.h>
 #include <primitiv/error.h>
 
 using std::cerr;
 using std::endl;
 
 namespace primitiv {
+namespace devices {
 
-void CPUDevice::dump_description() const {
+void Naive::dump_description() const {
   cerr << "Device " << this << ':' << endl;
-  cerr << "  Type: CPUDevice" << endl;
+  cerr << "  Type: Naive" << endl;
 }
 
-std::shared_ptr<void> CPUDevice::new_handle(const Shape &shape) {
+std::shared_ptr<void> Naive::new_handle(const Shape &shape) {
   const unsigned mem_size = sizeof(float) * shape.size();
   void *data = std::malloc(mem_size);
   if (!data) {
@@ -33,24 +34,24 @@ std::shared_ptr<void> CPUDevice::new_handle(const Shape &shape) {
 #define REPEAT_OP(i, n, op) \
   for (unsigned (i) = 0; (i) < (n); ++(i)) { (op); }
 
-std::vector<float> CPUDevice::tensor_to_vector_impl(const Tensor &x) {
+std::vector<float> Naive::tensor_to_vector_impl(const Tensor &x) {
   const unsigned num_elements = x.shape().size();
   std::vector<float> ret(num_elements);
   std::memcpy(&ret[0], x.data(), sizeof(float) * num_elements);
   return ret;
 }
 
-void CPUDevice::reset_tensor_impl(float k, Tensor &x) {
+void Naive::reset_tensor_impl(float k, Tensor &x) {
   float *dest = DATA(x);
   const unsigned size = x.shape().size();
   REPEAT_OP(i, size, dest[i] = k);
 }
 
-void CPUDevice::reset_tensor_by_array_impl(const float values[], Tensor &x) {
+void Naive::reset_tensor_by_array_impl(const float values[], Tensor &x) {
   std::memcpy(x.data(), values, sizeof(float) * x.shape().size());
 }
 
-void CPUDevice::copy_tensor_impl(const Tensor &x, Tensor &y) {
+void Naive::copy_tensor_impl(const Tensor &x, Tensor &y) {
   switch (x.device().type()) {
     case Device::DEVICE_TYPE_CPU:
       reset_tensor_by_array(CDATA(x), y);
@@ -60,21 +61,21 @@ void CPUDevice::copy_tensor_impl(const Tensor &x, Tensor &y) {
   }
 }
 
-void CPUDevice::identity_impl(Tensor &y) {
+void Naive::identity_impl(Tensor &y) {
   reset_tensor_impl(0, y);
   float *dest = DATA(y);
   const unsigned size = y.shape()[0];
   REPEAT_OP(i, size, dest[i * (size + 1)] = 1);
 }
 
-void CPUDevice::random_bernoulli_impl(float p, Tensor &y) {
+void Naive::random_bernoulli_impl(float p, Tensor &y) {
   std::bernoulli_distribution dist(p);
   float *dest = DATA(y);
   const unsigned size = y.shape().size();
   REPEAT_OP(i, size, dest[i] = dist(rng_));
 }
 
-void CPUDevice::random_uniform_impl(float lower, float upper, Tensor &y) {
+void Naive::random_uniform_impl(float lower, float upper, Tensor &y) {
   std::uniform_real_distribution<float> dist(lower, upper);
   float *dest = DATA(y);
   const unsigned size = y.shape().size();
@@ -84,21 +85,21 @@ void CPUDevice::random_uniform_impl(float lower, float upper, Tensor &y) {
   }
 }
 
-void CPUDevice::random_normal_impl(float mean, float sd, Tensor &y) {
+void Naive::random_normal_impl(float mean, float sd, Tensor &y) {
   std::normal_distribution<float> dist(mean, sd);
   float *dest = DATA(y);
   const unsigned size = y.shape().size();
   REPEAT_OP(i, size, dest[i] = dist(rng_));
 }
 
-void CPUDevice::random_log_normal_impl(float mean, float sd, Tensor &y) {
+void Naive::random_log_normal_impl(float mean, float sd, Tensor &y) {
   std::lognormal_distribution<float> dist(mean, sd);
   float *dest = DATA(y);
   const unsigned size = y.shape().size();
   REPEAT_OP(i, size, dest[i] = dist(rng_));
 }
 
-void CPUDevice::pick_fw_impl(
+void Naive::pick_fw_impl(
     const Tensor &x, const std::vector<unsigned> &ids, unsigned dim,
     Tensor &y) {
   const unsigned bs = y.shape().batch();
@@ -119,7 +120,7 @@ void CPUDevice::pick_fw_impl(
   }
 }
 
-void CPUDevice::slice_fw_impl(
+void Naive::slice_fw_impl(
     const Tensor &x, unsigned dim, unsigned offset, Tensor &y) {
   const unsigned base = y.shape().lower_volume(dim);
   const unsigned span = base * y.shape()[dim];
@@ -135,7 +136,7 @@ void CPUDevice::slice_fw_impl(
   }
 }
 
-void CPUDevice::concat_fw_impl(
+void Naive::concat_fw_impl(
     const std::vector<const Tensor *> &xs, unsigned dim, Tensor &y) {
   const unsigned new_bs = y.shape().batch();
   const unsigned base = y.shape().lower_volume(dim);
@@ -162,7 +163,7 @@ void CPUDevice::concat_fw_impl(
   }
 }
 
-void CPUDevice::pick_bw_impl(
+void Naive::pick_bw_impl(
     const Tensor &gy, const std::vector<unsigned>& ids, unsigned dim,
     Tensor &gx) {
   const unsigned bs = gy.shape().batch();
@@ -182,7 +183,7 @@ void CPUDevice::pick_bw_impl(
   }
 }
 
-void CPUDevice::slice_bw_impl(
+void Naive::slice_bw_impl(
     const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) {
   const Shape &sy = gy.shape();
   const Shape &sx = gx.shape();
@@ -209,7 +210,7 @@ void CPUDevice::slice_bw_impl(
 }
 
 #define CPUDEV_FW_X(name, op) \
-void CPUDevice::name##_fw_impl(const Tensor &x, Tensor &y) { \
+void Naive::name##_fw_impl(const Tensor &x, Tensor &y) { \
   float *dest = DATA(y); \
   const float *src = CDATA(x); \
   const unsigned size = x.shape().size(); \
@@ -217,7 +218,7 @@ void CPUDevice::name##_fw_impl(const Tensor &x, Tensor &y) { \
 }
 
 #define CPUDEV_BW_X(name, op) \
-void CPUDevice::name##_bw_impl( \
+void Naive::name##_bw_impl( \
     const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) { \
   const float *px = CDATA(x); static_cast<void>(px); \
   const float *py = CDATA(y); static_cast<void>(py); \
@@ -228,7 +229,7 @@ void CPUDevice::name##_bw_impl( \
 }
 
 #define CPUDEV_FW_X_CONST(name, op) \
-void CPUDevice::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
+void Naive::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
   float *dest = DATA(y); \
   const float *src = CDATA(x); \
   const unsigned size = x.shape().size(); \
@@ -236,7 +237,7 @@ void CPUDevice::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
 }
 
 #define CPUDEV_BW_X_CONST(name, op) \
-void CPUDevice::name##_bw_impl( \
+void Naive::name##_bw_impl( \
     const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) { \
   const float *px = CDATA(x); static_cast<void>(px); \
   const float *py = CDATA(y); static_cast<void>(py); \
@@ -247,7 +248,7 @@ void CPUDevice::name##_bw_impl( \
 }
 
 #define CPUDEV_FW_X_SCALAR(name, op) \
-void CPUDevice::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
+void Naive::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
   const unsigned size = y.shape().volume(); \
   const unsigned bs = y.shape().batch(); \
   const unsigned skip_x = x.shape().has_batch() * size; \
@@ -264,7 +265,7 @@ void CPUDevice::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
 }
 
 #define CPUDEV_FW_AB(name, op) \
-void CPUDevice::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
+void Naive::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
   const unsigned size = y.shape().volume(); \
   const unsigned bs = y.shape().batch(); \
   const unsigned skip_a = a.shape().has_batch() * size; \
@@ -342,7 +343,7 @@ CPUDEV_FW_AB(divide, src_a[i] / src_b[i]);
 #undef CPUDEV_FW_X_SCALAR
 #undef CPUDEV_FW_AB
 
-void CPUDevice::add_bw_impl(
+void Naive::add_bw_impl(
     const Tensor &, const Tensor &, const Tensor &, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
   const unsigned size = gy.shape().volume();
@@ -364,7 +365,7 @@ void CPUDevice::add_bw_impl(
   }
 }
 
-void CPUDevice::subtract_bw_impl(
+void Naive::subtract_bw_impl(
     const Tensor &, const Tensor &, const Tensor &, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
   const unsigned size = gy.shape().volume();
@@ -386,7 +387,7 @@ void CPUDevice::subtract_bw_impl(
   }
 }
 
-void CPUDevice::multiply_bw_impl(
+void Naive::multiply_bw_impl(
     const Tensor &a, const Tensor &b, const Tensor &, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
   const unsigned size = gy.shape().volume();
@@ -412,7 +413,7 @@ void CPUDevice::multiply_bw_impl(
   }
 }
 
-void CPUDevice::divide_bw_impl(
+void Naive::divide_bw_impl(
     const Tensor &, const Tensor &b, const Tensor &y, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
   const unsigned size = gy.shape().volume();
@@ -438,7 +439,7 @@ void CPUDevice::divide_bw_impl(
   }
 }
 
-void CPUDevice::transpose_fw_impl(const Tensor &x, Tensor &y) {
+void Naive::transpose_fw_impl(const Tensor &x, Tensor &y) {
   const unsigned d1 = x.shape()[0];
   const unsigned d2 = x.shape()[1];
   const unsigned ms = d1 * d2;
@@ -460,7 +461,7 @@ void CPUDevice::transpose_fw_impl(const Tensor &x, Tensor &y) {
   }
 }
 
-void CPUDevice::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
+void Naive::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   const unsigned d1 = a.shape()[0];
   const unsigned d2 = a.shape()[1];
   const unsigned d3 = b.shape()[1];
@@ -488,13 +489,13 @@ void CPUDevice::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   }
 }
 
-void CPUDevice::transpose_bw_impl(
+void Naive::transpose_bw_impl(
     const Tensor &, const Tensor &, const Tensor &gy, Tensor &gx) {
   // TODO(odashi): This code could be slow and requires memory. Fix this.
   inplace_add_impl(transpose_fw(gy), gx);
 }
 
-void CPUDevice::matmul_bw_impl(
+void Naive::matmul_bw_impl(
     const Tensor &a, const Tensor &b, const Tensor &, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
   // TODO(odashi): This code could be slow and requires memory. Fix this.
@@ -502,7 +503,7 @@ void CPUDevice::matmul_bw_impl(
   inplace_add_impl(matmul_fw(transpose_fw(a), gy), gb);
 }
 
-void CPUDevice::sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
+void Naive::sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
   const unsigned n = x.shape()[dim];
   const unsigned repeat = y.shape().size();
   const unsigned skip1 = y.shape().lower_volume(dim);
@@ -520,7 +521,7 @@ void CPUDevice::sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
   }
 }
 
-void CPUDevice::logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
+void Naive::logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
   const unsigned n = x.shape()[dim];
   const unsigned repeat = y.shape().size();
   const unsigned skip1 = y.shape().lower_volume(dim);
@@ -542,7 +543,7 @@ void CPUDevice::logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
   }
 }
 
-void CPUDevice::broadcast_fw_impl(
+void Naive::broadcast_fw_impl(
     const Tensor &x, unsigned dim, unsigned size, Tensor &y) {
   const unsigned repeat = x.shape().size();
   const unsigned skip1 = y.shape().lower_volume(dim);
@@ -559,7 +560,7 @@ void CPUDevice::broadcast_fw_impl(
   }
 }
 
-void CPUDevice::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
+void Naive::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   float *dest = DATA(y);
   const float *src = CDATA(x);
   const unsigned bs = x.shape().batch();
@@ -573,13 +574,13 @@ void CPUDevice::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   }
 }
 
-void CPUDevice::inplace_multiply_const_impl(float k, Tensor &x) {
+void Naive::inplace_multiply_const_impl(float k, Tensor &x) {
   const unsigned size = x.shape().size();
   float *dest = DATA(x);
   REPEAT_OP(i, size, dest[i] *= k);
 }
 
-void CPUDevice::inplace_add_impl(const Tensor &x, Tensor &y) {
+void Naive::inplace_add_impl(const Tensor &x, Tensor &y) {
   const Shape &sx = x.shape();
   const Shape &sy = y.shape();
   const unsigned size = sy.volume();
@@ -595,7 +596,7 @@ void CPUDevice::inplace_add_impl(const Tensor &x, Tensor &y) {
   }
 }
 
-void CPUDevice::inplace_subtract_impl(const Tensor &x, Tensor &y) {
+void Naive::inplace_subtract_impl(const Tensor &x, Tensor &y) {
   const Shape &sx = x.shape();
   const Shape &sy = y.shape();
   const unsigned size = sy.volume();
@@ -611,4 +612,5 @@ void CPUDevice::inplace_subtract_impl(const Tensor &x, Tensor &y) {
   }
 }
 
+}  // namespace devices
 }  // namespace primitiv

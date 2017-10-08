@@ -2,9 +2,9 @@
 
 #include <vector>
 #include <gtest/gtest.h>
-#include <primitiv/cpu_device.h>
 #include <primitiv/function_impl.h>
 #include <primitiv/initializer_impl.h>
+#include <primitiv/naive_device.h>
 #include <primitiv/parameter.h>
 #include <test_utils.h>
 
@@ -88,7 +88,7 @@ public:
 
 protected:
   void SetUp() override {
-    dev = new CPUDevice(12345);
+    dev = new devices::Naive(12345);
   }
 
   void TearDown() override {
@@ -216,7 +216,7 @@ TEST_F(FunctionImplTest, CheckParameterInput) {
 }
 
 TEST_F(FunctionImplTest, CheckCopy) {
-  CPUDevice dev2;
+  devices::Naive dev2;
   const Shape ret_shape({2, 2}, 3);
   setup_1arg();
   Copy node(dev2);

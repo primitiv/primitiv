@@ -9,38 +9,57 @@
 #include <primitiv/trainer.h>
 #include <primitiv/trainer_impl.h>
 
-namespace primitiv {
+namespace {
 
-std::shared_ptr<Trainer> Trainer::load(const std::string &path) {
+void read_proto(
+    const std::string &path,
+    primitiv::messages::TrainerConfigs &msg) {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  messages::TrainerConfigs msg;
 
   std::ifstream ifs(path);
   if (!ifs.is_open()) {
     THROW_ERROR("Could not open file: " << path);
   }
+
   if (!msg.ParseFromIstream(&ifs)) {
-    THROW_ERROR("Failed to read Trainer message: " << path);
+    THROW_ERROR("Failed to read TrainerConfigs message: " << path);
+  }
+}
+
+void write_proto(
+    const std::string &path,
+    const primitiv::messages::TrainerConfigs &msg) {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  std::ofstream ofs(path);
+  if (!ofs.is_open()) {
+    THROW_ERROR("Could not open file: " << path);
   }
 
-  const std::string name = msg.name();
+  if (!msg.SerializeToOstream(&ofs)) {
+    THROW_ERROR("Failed to write TrainerConfigs message: " << path);
+  }
+}
+
+}  // namespace
+
+namespace primitiv {
+
+std::string Trainer::detect_name(const std::string &path) {
+  messages::TrainerConfigs msg;
+  ::read_proto(path, msg);
+  return msg.name();
+}
+
+std::shared_ptr<Trainer> Trainer::load(const std::string &path) {
+  const std::string name = detect_name(path);
+
   std::shared_ptr<Trainer> trainer;
   if (name == "SGD") trainer.reset(new trainers::SGD());
   else if (name == "Adam") trainer.reset(new trainers::Adam());
   else THROW_ERROR("Unknown trainer name: " << name);
 
-  std::unordered_map<std::string, unsigned> uint_configs(
-      msg.uint_configs().begin(), msg.uint_configs().end());
-  std::unordered_map<std::string, float> float_configs(
-      msg.float_configs().begin(), msg.float_configs().end());
-
-  trainer->epoch_ = uint_configs.at("Trainer.epoch");
-  trainer->lr_scale_ = float_configs.at("Trainer.lr_scale");
-  trainer->l2_strength_ = float_configs.at("Trainer.l2_strength");
-  trainer->clip_threshold_ = float_configs.at("Trainer.clip_threshold");
-
-  trainer->set_configs(uint_configs, float_configs);
+  trainer->set_configs_by_file(path);
 
   return trainer;
 }
@@ -50,26 +69,13 @@ void Trainer::save(const std::string &path) const {
 
   std::unordered_map<std::string, unsigned> uint_configs;
   std::unordered_map<std::string, float> float_configs;
-
-  uint_configs.insert(std::make_pair("Trainer.epoch", epoch_));
-  float_configs.insert(std::make_pair("Trainer.lr_scale", lr_scale_));
-  float_configs.insert(std::make_pair("Trainer.l2_strength", l2_strength_));
-  float_configs.insert(std::make_pair("Trainer.clip_threshold", clip_threshold_));
-
   get_configs(uint_configs, float_configs);
 
   messages::TrainerConfigs msg;
   msg.set_name(name());
   msg.mutable_uint_configs()->insert(uint_configs.begin(), uint_configs.end());
   msg.mutable_float_configs()->insert(float_configs.begin(), float_configs.end());
-
-  std::ofstream ofs(path);
-  if (!ofs.is_open()) {
-    THROW_ERROR("Could not open file: " << path);
-  }
-  if (!msg.SerializeToOstream(&ofs)) {
-    THROW_ERROR("Failed to write Trainer message: " << path);
-  }
+  ::write_proto(path, msg);
 }
 
 void Trainer::add_parameter(Parameter &param) {
@@ -114,6 +120,40 @@ void Trainer::update() {
   }
 
   ++epoch_;
+}
+
+void Trainer::get_configs(
+    std::unordered_map<std::string, unsigned> &uint_configs,
+    std::unordered_map<std::string, float> &float_configs) const {
+  uint_configs.insert(std::make_pair("Trainer.epoch", epoch_));
+  float_configs.insert(std::make_pair("Trainer.lr_scale", lr_scale_));
+  float_configs.insert(std::make_pair("Trainer.l2_strength", l2_strength_));
+  float_configs.insert(std::make_pair("Trainer.clip_threshold", clip_threshold_));
+}
+
+void Trainer::set_configs(
+    const std::unordered_map<std::string, unsigned> &uint_configs,
+    const std::unordered_map<std::string, float> &float_configs) {
+  epoch_ = uint_configs.at("Trainer.epoch");
+  lr_scale_ = float_configs.at("Trainer.lr_scale");
+  l2_strength_ = float_configs.at("Trainer.l2_strength");
+  clip_threshold_ = float_configs.at("Trainer.clip_threshold");
+}
+
+void Trainer::set_configs_by_file(const std::string &path) {
+  messages::TrainerConfigs msg;
+  ::read_proto(path, msg);
+  if (msg.name() != name()) {
+    THROW_ERROR(
+        "Trainer name mismatched. expected: "
+        << name() << ", actual: " << msg.name());
+  }
+
+  std::unordered_map<std::string, unsigned> uint_configs(
+      msg.uint_configs().begin(), msg.uint_configs().end());
+  std::unordered_map<std::string, float> float_configs(
+      msg.float_configs().begin(), msg.float_configs().end());
+  set_configs(uint_configs, float_configs);
 }
 
 }  // namespace primitiv

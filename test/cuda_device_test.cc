@@ -18,19 +18,19 @@ namespace primitiv {
 class CUDADeviceTest : public testing::Test {};
 
 TEST_F(CUDADeviceTest, CheckDeviceType) {
-  CUDADevice dev(0);
+  devices::CUDA dev(0);
   EXPECT_EQ(Device::DEVICE_TYPE_CUDA, dev.type());
 }
 
 TEST_F(CUDADeviceTest, CheckInvalidInit) {
   // We might not have millions of GPUs in one host.
-  EXPECT_THROW(CUDADevice dev(12345678), Error);
+  EXPECT_THROW(devices::CUDA dev(12345678), Error);
 }
 
 TEST_F(CUDADeviceTest, CheckRandomBernoulli) {
   vector<vector<float>> history;
   for (unsigned i = 0; i < 10; ++i) {
-    CUDADevice dev(0);
+    devices::CUDA dev(0);
     const Tensor x = dev.random_bernoulli(Shape({3, 3}, 3), 0.3);
     const vector<float> x_val = x.to_vector();
 
@@ -57,7 +57,7 @@ TEST_F(CUDADeviceTest, CheckRandomBernoulliWithSeed) {
     1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,
     0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1,
   };
-  CUDADevice dev(0, 12345);
+  devices::CUDA dev(0, 12345);
   const Tensor x = dev.random_bernoulli(Shape({4, 4}, 4), 0.3);
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
 }
@@ -65,7 +65,7 @@ TEST_F(CUDADeviceTest, CheckRandomBernoulliWithSeed) {
 TEST_F(CUDADeviceTest, CheckRandomUniform) {
   vector<vector<float>> history;
   for (unsigned i = 0; i < 10; ++i) {
-    CUDADevice dev(0);
+    devices::CUDA dev(0);
     const Tensor x = dev.random_uniform(Shape({2, 2}, 2), -9, 9);
     const vector<float> x_val = x.to_vector();
 
@@ -90,7 +90,7 @@ TEST_F(CUDADeviceTest, CheckRandomUniformWithSeed) {
     -3.6198268e+00, 4.1064610e+00, -6.9007745e+00, 8.5519943e+00,
     -7.7016129e+00, -4.6067810e+00, 8.7706423e+00, -4.9437490e+00,
   };
-  CUDADevice dev(0, 12345);
+  devices::CUDA dev(0, 12345);
   const Tensor x = dev.random_uniform(Shape({2, 2}, 2), -9, 9);
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
 }
@@ -98,7 +98,7 @@ TEST_F(CUDADeviceTest, CheckRandomUniformWithSeed) {
 TEST_F(CUDADeviceTest, CheckRandomNormal) {
   vector<vector<float>> history;
   for (unsigned i = 0; i < 10; ++i) {
-    CUDADevice dev(0);
+    devices::CUDA dev(0);
     const Tensor x = dev.random_normal(Shape({2, 2}, 2), 1, 3);
     const vector<float> x_val = x.to_vector();
 
@@ -123,7 +123,7 @@ TEST_F(CUDADeviceTest, CheckRandomNormalWithSeed) {
     4.1702256e+00, -2.4186814e+00, 1.5060894e+00, -1.3355234e+00,
     -5.0218196e+00, -5.5439359e-01, 5.8913720e-01, 1.5337296e+00,
   };
-  CUDADevice dev(0, 12345);
+  devices::CUDA dev(0, 12345);
   const Tensor x = dev.random_normal(Shape({2, 2}, 2), 1, 3);
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
 }
@@ -131,7 +131,7 @@ TEST_F(CUDADeviceTest, CheckRandomNormalWithSeed) {
 TEST_F(CUDADeviceTest, CheckRandomLogNormal) {
   vector<vector<float>> history;
   for (unsigned i = 0; i < 10; ++i) {
-    CUDADevice dev(0);
+    devices::CUDA dev(0);
     const Tensor x = dev.random_log_normal(Shape({2, 2}, 2), 1, 3);
     const vector<float> x_val = x.to_vector();
 
@@ -156,7 +156,7 @@ TEST_F(CUDADeviceTest, CheckRandomLogNormalWithSeed) {
     6.4730049e+01, 8.9038946e-02, 4.5090632e+00, 2.6302049e-01,
     6.5925200e-03, 5.7442045e-01, 1.8024327e+00, 4.6354327e+00,
   };
-  CUDADevice dev(0, 12345);
+  devices::CUDA dev(0, 12345);
   const Tensor x = dev.random_log_normal(Shape({2, 2}, 2), 1, 3);
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
 }

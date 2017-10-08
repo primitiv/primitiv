@@ -447,9 +447,10 @@ private:
 }  // namespace
 
 namespace primitiv {
+namespace devices {
 
 /*
- * Hidden objects of CUDADevice.
+ * Hidden objects of CUDA device.
  */
 struct CUDAInternalState {
   CUDAInternalState(unsigned dev_id, unsigned rng_seed)
@@ -459,13 +460,13 @@ struct CUDAInternalState {
   ::cudaDeviceProp prop;
 };
 
-unsigned CUDADevice::num_devices() {
+unsigned CUDA::num_devices() {
   int ret;
   CUDA_CALL(::cudaGetDeviceCount(&ret));
   return ret;
 }
 
-void CUDADevice::initialize() {
+void CUDA::initialize() {
   // Retrieves device properties.
   ::cudaDeviceProp prop;
   CUDA_CALL(::cudaGetDeviceProperties(&prop, dev_id_));
@@ -502,27 +503,27 @@ void CUDADevice::initialize() {
   ids_ptr_ = pool_.allocate(sizeof(unsigned) * max_batch_);
 }
 
-CUDADevice::CUDADevice(unsigned device_id)
+CUDA::CUDA(unsigned device_id)
 : dev_id_(device_id)
 , rng_seed_(std::random_device()())
 , pool_(device_id) {
   initialize();
 }
 
-CUDADevice::CUDADevice(unsigned device_id, unsigned rng_seed)
+CUDA::CUDA(unsigned device_id, unsigned rng_seed)
 : dev_id_(device_id)
 , rng_seed_(rng_seed)
 , pool_(device_id) {
   initialize();
 }
 
-CUDADevice::~CUDADevice() {
+CUDA::~CUDA() {
   // Nothing to do for now.
 }
 
-void CUDADevice::dump_description() const {
+void CUDA::dump_description() const {
   cerr << "Device " << this << ':' << endl;
-  cerr << "  Type: CUDADevice" << endl;
+  cerr << "  Type: CUDA" << endl;
 
   const ::cudaDeviceProp &prop = state_->prop;
   cerr << "  Physical Device: " << dev_id_ << ':' << endl;
@@ -547,7 +548,7 @@ void CUDADevice::dump_description() const {
   */
 }
 
-std::shared_ptr<void> CUDADevice::new_handle(const Shape &shape) {
+std::shared_ptr<void> CUDA::new_handle(const Shape &shape) {
   return pool_.allocate(sizeof(float) * shape.size());
 }
 
@@ -555,7 +556,7 @@ std::shared_ptr<void> CUDADevice::new_handle(const Shape &shape) {
 #define DATA(x) static_cast<float *>((x).data())
 #define CDATA(x) static_cast<const float *>((x).data())
 
-std::vector<float> CUDADevice::tensor_to_vector_impl(const Tensor &x) {
+std::vector<float> CUDA::tensor_to_vector_impl(const Tensor &x) {
   const unsigned size = x.shape().size();
   std::vector<float> ret(size);
   CUDA_CALL(::cudaSetDevice(dev_id_));
@@ -564,21 +565,21 @@ std::vector<float> CUDADevice::tensor_to_vector_impl(const Tensor &x) {
   return ret;
 }
 
-void CUDADevice::reset_tensor_impl(float k, Tensor &x) {
+void CUDA::reset_tensor_impl(float k, Tensor &x) {
   const unsigned size = x.shape().size();
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::set_const_dev<<<num_blocks, dim1_x_>>>(k, size, DATA(x));
 }
 
-void CUDADevice::reset_tensor_by_array_impl(const float values[], Tensor &x) {
+void CUDA::reset_tensor_by_array_impl(const float values[], Tensor &x) {
   const unsigned size = x.shape().size();
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CUDA_CALL(::cudaMemcpy(
         x.data(), values, sizeof(float) * size, cudaMemcpyHostToDevice));
 }
 
-void CUDADevice::copy_tensor_impl(const Tensor &x, Tensor &y) {
+void CUDA::copy_tensor_impl(const Tensor &x, Tensor &y) {
   switch (x.device().type()) {
     case Device::DEVICE_TYPE_CPU:
       reset_tensor_by_array(CDATA(x), y);
@@ -598,7 +599,7 @@ void CUDADevice::copy_tensor_impl(const Tensor &x, Tensor &y) {
   }
 }
 
-void CUDADevice::identity_impl(Tensor &y) {
+void CUDA::identity_impl(Tensor &y) {
   const unsigned size = y.shape().size();
   const unsigned skip = y.shape()[0] + 1;
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
@@ -606,7 +607,7 @@ void CUDADevice::identity_impl(Tensor &y) {
   ::set_identity_dev<<<num_blocks, dim1_x_>>>(size, skip, DATA(y));
 }
 
-void CUDADevice::random_bernoulli_impl(float p, Tensor &y) {
+void CUDA::random_bernoulli_impl(float p, Tensor &y) {
   const unsigned size = y.shape().size();
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
@@ -614,7 +615,7 @@ void CUDADevice::random_bernoulli_impl(float p, Tensor &y) {
   ::rand_bernoulli_dev<<<num_blocks, dim1_x_>>>(p, size, DATA(y));
 }
 
-void CUDADevice::random_uniform_impl(float lower, float upper, Tensor &y) {
+void CUDA::random_uniform_impl(float lower, float upper, Tensor &y) {
   const unsigned size = y.shape().size();
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
   const float scale = upper - lower;
@@ -623,19 +624,19 @@ void CUDADevice::random_uniform_impl(float lower, float upper, Tensor &y) {
   ::rand_affine_dev<<<num_blocks, dim1_x_>>>(lower, scale, size, DATA(y));
 }
 
-void CUDADevice::random_normal_impl(float mean, float sd, Tensor &y) {
+void CUDA::random_normal_impl(float mean, float sd, Tensor &y) {
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CURAND_CALL(::curandGenerateNormal(
         state_->curand.get(), DATA(y), y.shape().size(), mean, sd));
 }
 
-void CUDADevice::random_log_normal_impl(float mean, float sd, Tensor &y) {
+void CUDA::random_log_normal_impl(float mean, float sd, Tensor &y) {
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CURAND_CALL(::curandGenerateLogNormal(
         state_->curand.get(), DATA(y), y.shape().size(), mean, sd));
 }
 
-void CUDADevice::pick_fw_impl(
+void CUDA::pick_fw_impl(
     const Tensor &x, const std::vector<unsigned> &ids, unsigned dim,
     Tensor &y) {
   const unsigned wy = y.shape().lower_volume(dim);
@@ -654,7 +655,7 @@ void CUDADevice::pick_fw_impl(
       DATA(y));
 }
 
-void CUDADevice::slice_fw_impl(
+void CUDA::slice_fw_impl(
     const Tensor &x, unsigned dim, unsigned offset, Tensor &y) {
   const unsigned base = y.shape().lower_volume(dim);
   const unsigned span = base * y.shape()[dim];
@@ -666,7 +667,7 @@ void CUDADevice::slice_fw_impl(
       CDATA(x) + base * offset, span, skip, size, DATA(y));
 }
 
-void CUDADevice::concat_fw_impl(
+void CUDA::concat_fw_impl(
     const std::vector<const Tensor *> &xs, unsigned dim, Tensor &y) {
   const unsigned new_bs = y.shape().batch();
   const unsigned base = y.shape().lower_volume(dim);
@@ -685,7 +686,7 @@ void CUDADevice::concat_fw_impl(
   }
 }
 
-void CUDADevice::pick_bw_impl(
+void CUDA::pick_bw_impl(
     const Tensor &gy, const std::vector<unsigned>& ids, unsigned dim,
     Tensor &gx) {
   const unsigned wy = gy.shape().lower_volume(dim);
@@ -704,7 +705,7 @@ void CUDADevice::pick_bw_impl(
       DATA(gx));
 }
 
-void CUDADevice::slice_bw_impl(
+void CUDA::slice_bw_impl(
     const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) {
   const Shape &sx = gx.shape();
   const Shape &sy = gy.shape();
@@ -721,7 +722,7 @@ void CUDADevice::slice_bw_impl(
 }
 
 #define CUDADEV_FW_X(name) \
-void CUDADevice::name##_fw_impl(const Tensor &x, Tensor &y) { \
+void CUDA::name##_fw_impl(const Tensor &x, Tensor &y) { \
   const unsigned size = x.shape().size(); \
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_); \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
@@ -729,7 +730,7 @@ void CUDADevice::name##_fw_impl(const Tensor &x, Tensor &y) { \
 }
 
 #define CUDADEV_BW_X(name) \
-void CUDADevice::name##_bw_impl( \
+void CUDA::name##_bw_impl( \
     const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) { \
   const unsigned size = x.shape().size(); \
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_); \
@@ -739,7 +740,7 @@ void CUDADevice::name##_bw_impl( \
 }
 
 #define CUDADEV_FW_X_CONST(name) \
-void CUDADevice::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
+void CUDA::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
   const unsigned size = x.shape().size(); \
   const unsigned num_blocks = GRID_SIZE(size,dim1_x_); \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
@@ -747,7 +748,7 @@ void CUDADevice::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
 }
 
 #define CUDADEV_BW_X_CONST(name) \
-void CUDADevice::name##_bw_impl( \
+void CUDA::name##_bw_impl( \
     const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) { \
   const unsigned size = x.shape().size(); \
   const unsigned num_blocks = GRID_SIZE(size, dim1_x_); \
@@ -757,7 +758,7 @@ void CUDADevice::name##_bw_impl( \
 }
 
 #define CUDADEV_FW_X_SCALAR(name) \
-void CUDADevice::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
+void CUDA::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
   const unsigned size = y.shape().volume(); \
   const unsigned g1 = GRID_SIZE(size, dim1_x_); \
   const unsigned g2 = y.shape().batch(); \
@@ -768,7 +769,7 @@ void CUDADevice::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
 }
 
 #define CUDADEV_FW_AB(name) \
-void CUDADevice::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
+void CUDA::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
   const unsigned size = y.shape().volume(); \
   const unsigned g1 = GRID_SIZE(size, dim1_x_); \
   const unsigned g2 = y.shape().batch(); \
@@ -779,7 +780,7 @@ void CUDADevice::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
 }
 
 #define CUDADEV_BW_AB(name) \
-void CUDADevice::name##_bw_impl( \
+void CUDA::name##_bw_impl( \
     const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy, \
     Tensor &ga, Tensor &gb) { \
   const unsigned size = y.shape().volume(); \
@@ -855,7 +856,7 @@ CUDADEV_BW_AB(divide);
 #undef CUDADEV_FW_AB
 #undef CUDADEV_BW_AB
 
-void CUDADevice::transpose_fw_impl(const Tensor &x, Tensor &y) {
+void CUDA::transpose_fw_impl(const Tensor &x, Tensor &y) {
   const unsigned rows = x.shape()[0];
   const unsigned cols = x.shape()[1];
   const unsigned bs = x.shape().batch();
@@ -866,7 +867,7 @@ void CUDADevice::transpose_fw_impl(const Tensor &x, Tensor &y) {
       CDATA(x), rows, cols, DATA(y));
 }
 
-void CUDADevice::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
+void CUDA::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   const unsigned di = a.shape()[0];
   const unsigned dj = a.shape()[1];
   const unsigned dk = b.shape()[1];
@@ -896,7 +897,7 @@ void CUDADevice::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   }
 }
 
-void CUDADevice::transpose_bw_impl(
+void CUDA::transpose_bw_impl(
     const Tensor &, const Tensor &, const Tensor &gy, Tensor &gx) {
   const unsigned rows = gx.shape()[0];
   const unsigned cols = gx.shape()[1];
@@ -908,7 +909,7 @@ void CUDADevice::transpose_bw_impl(
       CDATA(gy), rows, cols, DATA(gx));
 }
 
-void CUDADevice::matmul_bw_impl(
+void CUDA::matmul_bw_impl(
     const Tensor &a, const Tensor &b, const Tensor &, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
   // ga += gy . b^T
@@ -952,7 +953,7 @@ void CUDADevice::matmul_bw_impl(
   }
 }
 
-void CUDADevice::sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
+void CUDA::sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
   const unsigned n = x.shape()[dim];
   const unsigned r = y.shape().size();
   const unsigned s = y.shape().lower_volume(dim);
@@ -977,7 +978,7 @@ void CUDADevice::sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
   }
 }
 
-void CUDADevice::logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
+void CUDA::logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
   const unsigned n = x.shape()[dim];
   const unsigned r = y.shape().size();
   const unsigned s = y.shape().lower_volume(dim);
@@ -1002,7 +1003,7 @@ void CUDADevice::logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
   }
 }
 
-void CUDADevice::broadcast_fw_impl(
+void CUDA::broadcast_fw_impl(
     const Tensor &x, unsigned dim, unsigned size, Tensor &y) {
   const unsigned skip1 = y.shape().lower_volume(dim);
   const unsigned skip2 = skip1 * size;
@@ -1012,7 +1013,7 @@ void CUDADevice::broadcast_fw_impl(
   ::broadcast_fw_dev<<<g1, dim1_x_>>>(CDATA(x), skip1, skip2, total, DATA(y));
 }
 
-void CUDADevice::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
+void CUDA::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   const unsigned size = y.shape().size();
   const unsigned g1 = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
@@ -1020,14 +1021,14 @@ void CUDADevice::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
       CDATA(x), size, x.shape().batch(), DATA(y));
 }
 
-void CUDADevice::inplace_multiply_const_impl(float k, Tensor &x) {
+void CUDA::inplace_multiply_const_impl(float k, Tensor &x) {
   const unsigned size = x.shape().size();
   const unsigned g1 = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::inplace_multiply_const_dev<<<g1, dim1_x_>>>(k, size, DATA(x));
 }
 
-void CUDADevice::inplace_add_impl(const Tensor &x, Tensor &y) {
+void CUDA::inplace_add_impl(const Tensor &x, Tensor &y) {
   const unsigned size = y.shape().volume();
   const unsigned g1 = GRID_SIZE(size, dim1_x_);
   const unsigned bs = std::max(x.shape().batch(), y.shape().batch());
@@ -1036,7 +1037,7 @@ void CUDADevice::inplace_add_impl(const Tensor &x, Tensor &y) {
       CDATA(x), size, x.shape().has_batch(), y.shape().has_batch(), DATA(y));
 }
 
-void CUDADevice::inplace_subtract_impl(const Tensor &x, Tensor &y) {
+void CUDA::inplace_subtract_impl(const Tensor &x, Tensor &y) {
   const unsigned size = y.shape().volume();
   const unsigned g1 = GRID_SIZE(size, dim1_x_);
   const unsigned bs = std::max(x.shape().batch(), y.shape().batch());
@@ -1045,4 +1046,5 @@ void CUDADevice::inplace_subtract_impl(const Tensor &x, Tensor &y) {
       CDATA(x), size, x.shape().has_batch(), y.shape().has_batch(), DATA(y));
 }
 
+}  // namespace devices
 }  // namespace primitiv
