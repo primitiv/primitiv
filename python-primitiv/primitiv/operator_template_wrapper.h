@@ -215,6 +215,10 @@ inline Node Node_sum(const Node &x, unsigned dim) {
     return operators::sum<Node>(x, dim);
 }
 
+inline Node Node_sum_container(vector<Node> &xs) {
+    return operators::sum<vector<Node>>(xs);
+}
+
 inline Tensor Tensor_sum(const Tensor &x, unsigned dim) {
     return operators::sum<Tensor>(x, dim);
 }

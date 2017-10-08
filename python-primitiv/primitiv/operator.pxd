@@ -61,6 +61,7 @@ cdef extern from "operator_template_wrapper.h" namespace "python_primitiv":
     Node Node_selu(const Node &x, float a, float s) except +
     Tensor Tensor_selu(const Tensor &x, float a, float s) except +
     Node Node_sum(const Node &x, unsigned dim) except +
+    Node Node_sum_container(vector[Node] &xs) except +
     Tensor Tensor_sum(const Tensor &x, unsigned dim) except +
     Node Node_mean(const Node &x, unsigned dim) except +
     Tensor Node_mean(const Tensor &x, unsigned dim) except +
