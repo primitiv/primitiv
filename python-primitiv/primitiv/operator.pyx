@@ -146,8 +146,15 @@ class _operators:
             return wrapNode(Node_sum((<_Node> x).wrapped, <unsigned> dim))
 
     @staticmethod
-    def mean(_Node x, unsigned dim):
-        return wrapNode(Node_mean(x.wrapped, dim))
+    def mean(x, dim = None):
+        cdef vector[Node] xs
+        cdef _Node node
+        if isinstance(x, list):
+            for node in x:
+                xs.push_back(node.wrapped)
+            return wrapNode(Node_mean_container(xs))
+        else:
+            return wrapNode(Node_mean((<_Node> x).wrapped, <unsigned> dim))
 
     @staticmethod
     def broadcast(_Node x, unsigned dim, unsigned size):

@@ -215,7 +215,7 @@ inline Node Node_sum(const Node &x, unsigned dim) {
     return operators::sum<Node>(x, dim);
 }
 
-inline Node Node_sum_container(vector<Node> &xs) {
+inline Node Node_sum_container(const vector<Node> &xs) {
     return operators::sum<vector<Node>>(xs);
 }
 
@@ -227,7 +227,11 @@ inline Node Node_mean(const Node &x, unsigned dim) {
     return operators::mean<Node>(x, dim);
 }
 
-inline Tensor Node_mean(const Tensor &x, unsigned dim) {
+inline Node Node_mean_container(const vector<Node> &xs) {
+    return operators::mean<vector<Node>>(xs);
+}
+
+inline Tensor Tensor_mean(const Tensor &x, unsigned dim) {
     return operators::mean<Tensor>(x, dim);
 }
 
