@@ -22,6 +22,7 @@ $ sudo make install
 2. Install Cython with Python 3
 
 ```
+$ sudo apt install python3-numpy
 $ sudo pip3 install cython
 ```
 
