@@ -10,7 +10,7 @@ cdef class _Trainer:
         elif name == "Adam":
             trainer = T.Adam()
         else:
-            raise IOError("Unknown trainer name:", name)
+            raise OSError("Unknown trainer name: %s" % name)
         trainer.set_configs_by_file(path)
         return trainer
 
