@@ -14,7 +14,11 @@ cdef inline vector[float] ndarrays_to_vector(list arrays):
     cdef np.float32_t *np_data
     cdef unsigned datasize
     cdef np.ndarray data_tmp
+
+    # NOTE(odashi):
+    # Below declaration is necessary to prevent large computation cost.
     cdef unsigned j, i
+
     if len(arrays) == 0:
         raise TypeError("arrays contains no item")
     datasize = arrays[0].size
