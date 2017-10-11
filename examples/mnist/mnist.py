@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
 
+# Sample code to train/test the MNIST dataset:
+#   http://yann.lecun.com/exdb/mnist/
+#
+# The model consists of a full-connected 2-layer (input/hidden/output)
+# perceptron with the softmax cross entropy loss.
+#
+# Usage:
+#   $ ./download_data.sh
+#   $ python3 ./mnist.py
+
+
 from primitiv import DefaultScope
 from primitiv import Graph
 from primitiv import Parameter
-from primitiv.devices import Naive
 
+from primitiv import devices as D
 from primitiv import initializers as I
 from primitiv import trainers as T
 from primitiv import operators as F
@@ -20,31 +31,24 @@ NUM_INPUT_UNITS = 28 * 28
 NUM_HIDDEN_UNITS = 800
 NUM_OUTPUT_UNITS = 10
 BATCH_SIZE = 200
-NUM_TRAIN_BATCHES = int(NUM_TRAIN_SAMPLES / BATCH_SIZE)
-NUM_TEST_BATCHES = int(NUM_TEST_SAMPLES / BATCH_SIZE)
+NUM_TRAIN_BATCHES = NUM_TRAIN_SAMPLES // BATCH_SIZE
+NUM_TEST_BATCHES = NUM_TEST_SAMPLES // BATCH_SIZE
 MAX_EPOCH = 100
 
 
 def load_images(filename, n):
-    try:
-        ifs = open(filename, "rb")
-    except:
-        print("File could not be opened:", filename, file=sys.stderr)
-        sys.exit(1)
-    ifs.seek(16)
-    ret = (np.fromfile(ifs, dtype=np.uint8, count=n*NUM_INPUT_UNITS) / 255).astype(np.float32).reshape((n, NUM_INPUT_UNITS))
-    ifs.close()
-    return ret
+    with open(filename, "rb") as ifs:
+        ifs.seek(16)  # header
+        return (np.fromfile(ifs, dtype=np.uint8, count=n*NUM_INPUT_UNITS) / 255) \
+            .astype(np.float32) \
+            .reshape((n, NUM_INPUT_UNITS))
 
 
 def load_labels(filename, n):
-    try:
-        ifs = open(filename, "rb")
-    except:
-        print("File could not be opened:", filename, file=sys.stderr)
-        sys.exit(1)
-    ifs.seek(8)  # header
-    return np.fromfile(ifs, dtype=np.uint8, count=n).astype(np.uint32)
+    with open(filename, "rb") as ifs:
+        ifs.seek(8)  # header
+        return np.fromfile(ifs, dtype=np.uint8, count=n) \
+            .astype(np.uint32)
 
 
 def main():
@@ -54,7 +58,7 @@ def main():
     test_inputs = load_images("data/t10k-images-idx3-ubyte", NUM_TEST_SAMPLES)
     test_labels = load_labels("data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES)
 
-    with DefaultScope(Naive()):
+    with DefaultScope(D.Naive()):  # or DefaultScope(D.CUDA(gpuid))
 
         pw1 = Parameter("w1", [NUM_HIDDEN_UNITS, NUM_INPUT_UNITS], I.XavierUniform())
         pb1 = Parameter("b1", [NUM_HIDDEN_UNITS], I.Constant(0))

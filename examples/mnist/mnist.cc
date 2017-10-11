@@ -5,12 +5,10 @@
 // perceptron with the softmax cross entropy loss.
 //
 // Usage:
-//   Run 'download_data.sh' in the same directory before using this code.
-// g++
-//   -std=c++11
-//   -I/path/to/primitiv/includes (typically -I../..)
-//   -L/path/to/primitiv/libs     (typically -L../../build/primitiv)
-//   mnist.cc -lprimitiv
+//   (set include/lib path correctly to use primitiv)
+//   $ ./download_data.sh
+//   $ g++ -std=c++11 ./mnist.cc -lprimitiv
+//   $ ./a.out
 
 #include <algorithm>
 #include <cmath>
