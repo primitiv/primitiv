@@ -23,8 +23,35 @@ TEST_F(CUDADeviceTest, CheckDeviceType) {
 }
 
 TEST_F(CUDADeviceTest, CheckInvalidInit) {
-  // We might not have millions of GPUs in one host.
+  // We probably do not have millions of GPUs in one host.
   EXPECT_THROW(devices::CUDA dev(12345678), Error);
+}
+
+TEST_F(CUDADeviceTest, CheckNewDelete) {
+  {
+    devices::CUDA dev(0);
+    {
+      Tensor x1 = dev.new_tensor(Shape());  // 1 value
+      Tensor x2 = dev.new_tensor(Shape({16, 16}));  // 256 values
+      Tensor x3 = dev.new_tensor(Shape({16, 16, 16}, 16));  // 65536 values
+    }
+    // All tensors are already deleted before arriving here.
+  }
+  SUCCEED();
+}
+
+TEST_F(CUDADeviceTest, CheckDanglingTensor) {
+  {
+    Tensor x1;
+    {
+      devices::CUDA dev(0);
+      x1 = dev.new_tensor(Shape());
+    }
+    // x1 still has valid object,
+    // but there is no guarantee that the memory is alive.
+    // Our implementation only guarantees the safety to delete Tensors anytime.
+  }
+  SUCCEED();
 }
 
 TEST_F(CUDADeviceTest, CheckRandomBernoulli) {
