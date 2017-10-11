@@ -2,10 +2,10 @@ from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libcpp cimport bool
 
-from primitiv.tensor cimport Tensor, _Tensor
-from primitiv.shape cimport Shape, _Shape
-from primitiv.device cimport Device
-from primitiv.initializer cimport Initializer, _Initializer
+from primitiv._tensor cimport Tensor, _Tensor
+from primitiv._shape cimport Shape, _Shape
+from primitiv._device cimport Device
+from primitiv._initializer cimport Initializer, _Initializer
 
 
 cdef extern from "primitiv/parameter.h" namespace "primitiv":

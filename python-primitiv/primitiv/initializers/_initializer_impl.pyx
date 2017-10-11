@@ -1,4 +1,4 @@
-from primitiv.tensor cimport _Tensor
+from primitiv._tensor cimport _Tensor
 
 
 cdef class _Constant(_Initializer):

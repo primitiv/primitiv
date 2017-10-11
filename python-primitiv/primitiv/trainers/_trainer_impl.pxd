@@ -1,8 +1,8 @@
 from libcpp.string cimport string
 from libcpp.unordered_map cimport unordered_map
 
-from primitiv.device cimport Device
-from primitiv.trainer cimport Trainer, _Trainer
+from primitiv._device cimport Device
+from primitiv._trainer cimport Trainer, _Trainer
 
 
 cdef extern from "primitiv/trainer_impl.h" namespace "primitiv::trainers":

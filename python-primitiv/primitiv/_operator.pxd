@@ -2,11 +2,11 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp cimport bool
 
-from primitiv.device cimport Device
-from primitiv.graph cimport Graph, Node
-from primitiv.tensor cimport Tensor
-from primitiv.shape cimport Shape
-from primitiv.parameter cimport Parameter
+from primitiv._device cimport Device
+from primitiv._graph cimport Graph, Node
+from primitiv._tensor cimport Tensor
+from primitiv._shape cimport Shape
+from primitiv._parameter cimport Parameter
 
 cdef extern from "operator_template_wrapper.h" namespace "python_primitiv":
 

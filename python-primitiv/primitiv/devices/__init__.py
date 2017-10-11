@@ -1,9 +1,9 @@
 try:
-    from primitiv.devices.cuda_device import _CUDA as CUDA
+    from primitiv.devices._cuda_device import _CUDA as CUDA
 #except ModuleNotFoundError:
 except ImportError:
     pass
-from primitiv.devices.naive_device import _Naive as Naive
+from primitiv.devices._naive_device import _Naive as Naive
 
 __all__ = [
     "CUDA",

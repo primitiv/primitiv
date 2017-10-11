@@ -1,8 +1,8 @@
 from libcpp.vector cimport vector
 from libcpp cimport bool
 
-from primitiv.device cimport Device
-from primitiv.shape cimport Shape
+from primitiv._device cimport Device
+from primitiv._shape cimport Shape
 
 
 cdef extern from "primitiv/tensor.h" namespace "primitiv" nogil:

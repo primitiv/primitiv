@@ -1,9 +1,9 @@
 from libcpp.vector cimport vector
 from libcpp.memory cimport unique_ptr
 from libcpp cimport bool
-from primitiv.device cimport Device
-from primitiv.shape cimport Shape
-from primitiv.tensor cimport Tensor
+from primitiv._device cimport Device
+from primitiv._shape cimport Shape
+from primitiv._tensor cimport Tensor
 
 
 cdef extern from "primitiv/graph.h" namespace "primitiv" nogil:

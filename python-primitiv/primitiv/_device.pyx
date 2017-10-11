@@ -1,7 +1,7 @@
 from libcpp.vector cimport vector
 
-from primitiv.shape cimport normShape
-from primitiv.tensor cimport wrapTensor, _Tensor
+from primitiv._shape cimport normShape
+from primitiv._tensor cimport wrapTensor, _Tensor
 
 
 cdef class _Device:

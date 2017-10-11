@@ -1,10 +1,10 @@
 from libcpp.vector cimport vector
 from libcpp cimport bool
 
-from primitiv.device cimport _Device, wrapDevice
-from primitiv.tensor cimport wrapTensor
-from primitiv.shape cimport wrapShape, normShape
-from primitiv.default_scope cimport _DefaultScopeDevice
+from primitiv._device cimport _Device, wrapDevice
+from primitiv._tensor cimport wrapTensor
+from primitiv._shape cimport wrapShape, normShape
+from primitiv._default_scope cimport _DefaultScopeDevice
 
 import numpy as np
 

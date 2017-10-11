@@ -1,7 +1,7 @@
 from libcpp.vector cimport vector
 
-from primitiv.device cimport wrapDevice
-from primitiv.shape cimport _Shape, wrapShape, normShape
+from primitiv._device cimport wrapDevice
+from primitiv._shape cimport _Shape, wrapShape, normShape
 
 cimport numpy as np
 import numpy as np

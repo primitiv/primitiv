@@ -1,5 +1,5 @@
-from primitiv.device cimport _Device
-from primitiv.devices.cuda_device cimport num_devices as CUDA_num_devices
+from primitiv._device cimport _Device
+from primitiv.devices._cuda_device cimport num_devices as CUDA_num_devices
 
 
 cdef class _CUDA(_Device):

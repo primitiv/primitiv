@@ -1,11 +1,11 @@
 from libcpp.vector cimport vector
 from libcpp cimport bool
 
-from primitiv.device cimport wrapDevice, _Device
-from primitiv.shape cimport _Shape, normShape
-from primitiv.graph cimport _Graph, wrapNode, Node, _Node
-from primitiv.parameter cimport _Parameter
-from primitiv.default_scope cimport _DefaultScopeDevice
+from primitiv._device cimport wrapDevice, _Device
+from primitiv._shape cimport _Shape, normShape
+from primitiv._graph cimport _Graph, wrapNode, Node, _Node
+from primitiv._parameter cimport _Parameter
+from primitiv._default_scope cimport _DefaultScopeDevice
 
 from utils cimport ndarrays_to_vector, ndarray_to_vector_unsigned
 

@@ -1,5 +1,5 @@
-from primitiv.device cimport _Device, Device, wrapDevice
-from primitiv.graph cimport _Graph, Graph, wrapGraph
+from primitiv._device cimport _Device, Device, wrapDevice
+from primitiv._graph cimport _Graph, Graph, wrapGraph
 
 
 cdef class _DefaultScopeDevice(object):

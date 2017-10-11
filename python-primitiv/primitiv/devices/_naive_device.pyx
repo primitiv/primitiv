@@ -1,4 +1,4 @@
-from primitiv.device cimport _Device
+from primitiv._device cimport _Device
 
 
 cdef class _Naive(_Device):

@@ -1,4 +1,4 @@
-from primitiv.initializer cimport Initializer, _Initializer
+from primitiv._initializer cimport Initializer, _Initializer
 
 
 cdef extern from "primitiv/initializer_impl.h" namespace "primitiv::initializers":

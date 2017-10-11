@@ -1,5 +1,5 @@
-from primitiv.device cimport Device, _Device
-from primitiv.graph cimport Graph, _Graph
+from primitiv._device cimport Device, _Device
+from primitiv._graph cimport Graph, _Graph
 
 
 cdef extern from "primitiv/default_scope.h" namespace "primitiv":

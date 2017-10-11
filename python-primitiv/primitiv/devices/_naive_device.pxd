@@ -1,4 +1,4 @@
-from primitiv.device cimport Device, _Device
+from primitiv._device cimport Device, _Device
 
 
 cdef extern from "primitiv/naive_device.h" namespace "primitiv::devices":

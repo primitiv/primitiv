@@ -1,4 +1,4 @@
-from primitiv.tensor cimport Tensor
+from primitiv._tensor cimport Tensor
 
 
 cdef extern from "primitiv/initializer.h" namespace "primitiv":

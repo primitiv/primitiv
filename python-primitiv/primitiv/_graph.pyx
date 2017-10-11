@@ -1,8 +1,8 @@
 from libcpp.vector cimport vector
 
-from primitiv.device cimport wrapDevice
-from primitiv.shape cimport wrapShape
-from primitiv.tensor cimport wrapTensor
+from primitiv._device cimport wrapDevice
+from primitiv._shape cimport wrapShape
+from primitiv._tensor cimport wrapTensor
 
 cimport numpy as np
 import numpy as np

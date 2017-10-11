@@ -4,9 +4,9 @@ from libcpp.unordered_map cimport unordered_map
 from libcpp cimport bool
 from libcpp.memory cimport shared_ptr
 
-from primitiv.device cimport Device
-from primitiv.shape cimport Shape
-from primitiv.parameter cimport Parameter, _Parameter
+from primitiv._device cimport Device
+from primitiv._shape cimport Shape
+from primitiv._parameter cimport Parameter, _Parameter
 
 
 cdef extern from "primitiv/trainer.h" namespace "primitiv":
