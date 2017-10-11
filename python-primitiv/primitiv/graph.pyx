@@ -11,7 +11,7 @@ import numpy as np
 cdef class _Node:
 
     def __init__(self, _Node node = None):
-        if node == None:
+        if node is None:
             self.wrapped = Node(node.wrapped)
         else:
             self.wrapped = Node()

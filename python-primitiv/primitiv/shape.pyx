@@ -4,7 +4,7 @@ from libcpp.vector cimport vector
 cdef class _Shape:
 
     def __init__(self, dims = None, unsigned batch = 1):
-        if dims == None:
+        if dims is None:
             self.wrapped = Shape()
         else:
             self.wrapped = Shape(<vector[unsigned]> dims, <unsigned> batch)

@@ -10,7 +10,7 @@ import numpy as np
 cdef class _Tensor:
 
     def __init__(self, src = None):
-        if src == None:
+        if src is None:
             self.wrapped = Tensor()
         else:
             self.wrapped = Tensor((<_Tensor> src).wrapped)

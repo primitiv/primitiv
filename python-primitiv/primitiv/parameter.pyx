@@ -17,7 +17,7 @@ cdef class _Parameter:
         if self.wrapped_newed is not NULL:
             raise MemoryError()
 
-        if device == None:
+        if device is None:
             device = _DefaultScopeDevice.get()
 
         # Parameter(name, shape, np.ndarray init, device) new from ndarray
@@ -102,6 +102,6 @@ cdef class _Parameter:
 
     @staticmethod
     def load(str path, bool with_stats = True, _Device device = None):
-        if device == None:
+        if device is None:
             device = _DefaultScopeDevice.get()
         return wrapParameterWithNew(Parameter_load(<string> path.encode("utf-8"), with_stats, device.wrapped[0]))
