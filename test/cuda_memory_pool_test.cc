@@ -12,9 +12,11 @@ namespace primitiv {
 
 class CUDAMemoryPoolTest : public testing::Test {};
 
+// This test should be placed on the top.
 TEST_F(CUDAMemoryPoolTest, CheckNew) {
   {
     CUDAMemoryPool pool(0);
+    EXPECT_EQ(0, pool.get_pool_id());
   }  // pool is destroyed at the end of scope.
   SUCCEED();
 }
@@ -22,6 +24,28 @@ TEST_F(CUDAMemoryPoolTest, CheckNew) {
 TEST_F(CUDAMemoryPoolTest, CheckInvalidNew) {
   // We might not have 12345678 GPUs.
   EXPECT_THROW(CUDAMemoryPool(12345678), Error);
+}
+
+TEST_F(CUDAMemoryPoolTest, CheckPoolIDs) {
+  CUDAMemoryPool pool0(0);
+  std::uint64_t base = pool0.get_pool_id();
+
+  CUDAMemoryPool pool1(0);
+  EXPECT_EQ(base + 1, pool1.get_pool_id());
+  CUDAMemoryPool(0);
+  CUDAMemoryPool(0);
+  CUDAMemoryPool pool2(0);
+  EXPECT_EQ(base + 4, pool2.get_pool_id());
+  {
+    CUDAMemoryPool pool3(0);
+    EXPECT_EQ(base + 5, pool3.get_pool_id());
+    CUDAMemoryPool(0);
+    CUDAMemoryPool(0);
+    CUDAMemoryPool pool4(0);
+    EXPECT_EQ(base + 8, pool4.get_pool_id());
+  }
+  CUDAMemoryPool pool5(0);
+  EXPECT_EQ(base + 9, pool5.get_pool_id());
 }
 
 TEST_F(CUDAMemoryPoolTest, CheckAllocate) {
