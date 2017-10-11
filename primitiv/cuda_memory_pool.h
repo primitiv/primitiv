@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace primitiv {
@@ -40,6 +41,15 @@ public:
 
 private:
   /**
+   * Checks whether given pool object is alive or not.
+   * @param pool Reference of a CUDAMemoryPool object.
+   * @return true if pool is alive, false otherwise.
+   */
+  static bool is_alive(const CUDAMemoryPool &pool) {
+    return pools_.find(&pool) != pools_.end();
+  }
+
+  /**
    * Disposes the memory.
    * @param ptr Handle of the memory to be disposed.
    */
@@ -50,6 +60,7 @@ private:
    */
   void release_reserved_blocks();
 
+  static std::unordered_set<const CUDAMemoryPool *> pools_;
   unsigned dev_id_;
   std::vector<std::vector<void *>> reserved_;
   std::unordered_map<void *, unsigned> supplied_;
@@ -62,7 +73,11 @@ class CUDAMemoryDeleter {
   CUDAMemoryDeleter() = delete;
 public:
   explicit CUDAMemoryDeleter(CUDAMemoryPool &pool) : pool_(pool) {}
-  void operator()(void *ptr) { pool_.free(ptr); }
+  void operator()(void *ptr) {
+    if (CUDAMemoryPool::is_alive(pool_)) {
+      pool_.free(ptr);
+    }
+  }
 private:
   CUDAMemoryPool &pool_;
 };

@@ -11,6 +11,8 @@ using std::make_pair;
 
 namespace primitiv {
 
+std::unordered_set<const CUDAMemoryPool *> CUDAMemoryPool::pools_;
+
 CUDAMemoryPool::CUDAMemoryPool(unsigned device_id)
 : dev_id_(device_id)
 , reserved_(64)
@@ -23,16 +25,20 @@ CUDAMemoryPool::CUDAMemoryPool(unsigned device_id)
         "Invalid CUDA device ID. given: " << dev_id_
         << " >= #devices: " << max_devs);
   }
+
+  // Registers this object.
+  pools_.insert(this);
 }
 
 CUDAMemoryPool::~CUDAMemoryPool() {
-  if (!supplied_.empty()) {
-    cerr << "FATAL ERROR: Detected memory leak on CUDA device!" << endl;
-    cerr << "Leaked blocks (handle: size):" << endl;
-    for (const auto &kv : supplied_) {
-      cerr << "  " << kv.first << ": " << kv.second << endl;
-    }
-    std::abort();
+  // Unregisters this object.
+  pools_.erase(this);
+
+  // NOTE(odashi):
+  // Due to GC-based languages, we chouldn't assume that all memories were
+  // disposed before arriving this code.
+  while (!supplied_.empty()) {
+    free(supplied_.begin()->first);
   }
   release_reserved_blocks();
 }

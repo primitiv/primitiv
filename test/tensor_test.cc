@@ -35,36 +35,6 @@ protected:
   }
 };
 
-TEST_F(TensorTest, CheckNewDelete) {
-  for (Device *dev : devices) {
-    Tensor x1 = dev->new_tensor(Shape()); // 1 value
-    Tensor x2 = dev->new_tensor(Shape {16, 16}); // 256 values
-    Tensor x3 = dev->new_tensor(Shape({16, 16, 16}, 16)); // 65536 values
-    // According to the C++ standard, local values are destroyed in the order:
-    // x3 -> x2 -> x1 -> dev.
-    // Then `dev` has no remaining memories.
-  }
-  SUCCEED();
-}
-
-// NOTE(odashi):
-//   Now the CPUDevice does not manage memories itself, and the CUDADevice is
-//   run on multi-threading that does not allow to perform the death test due to
-//   the constraint of gTest.
-#if 0
-TEST_F(TensorTest, CheckInvalidNewDelete) {
-  for (Device *dev : devices) {
-    EXPECT_DEATH({
-      Tensor x0;
-      x0 = dev->new_tensor(Shape());
-      // Local values are destroyed in the order: dev -> x0.
-      // `x0` still have a memory when destroying `dev` and the process will
-      // abort.
-    }, "");
-  }
-}
-#endif
-
 TEST_F(TensorTest, CheckInvalid) {
   const Tensor x;
   EXPECT_FALSE(x.valid());
