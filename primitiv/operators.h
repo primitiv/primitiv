@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_OPERATORS_H_
 #define PRIMITIV_OPERATORS_H_
 
+#include <cmath>
 #include <initializer_list>
 #include <vector>
 
@@ -140,6 +141,21 @@ type_traits::Identity<Var> exp(const Var &x);
 
 template<typename Var>
 type_traits::Identity<Var> log(const Var &x);
+
+template<typename Var>
+inline type_traits::Identity<Var> pow(const Var &x, float k) {
+  return exp(k * log(x));
+}
+
+template<typename Var>
+inline type_traits::Identity<Var> pow(float x, const Var &k) {
+  return exp(k * std::log(x));
+}
+
+template<typename Var>
+inline type_traits::Identity<Var> pow(const Var &x, const Var &k) {
+  return exp(k * log(x));
+}
 
 template<typename Var>
 type_traits::Identity<Var> tanh(const Var &x);
