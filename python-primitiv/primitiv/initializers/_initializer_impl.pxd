@@ -1,24 +1,24 @@
-from primitiv._initializer cimport Initializer, _Initializer
+from primitiv._initializer cimport CppInitializer, _Initializer
 
 
 cdef extern from "primitiv/initializer_impl.h" namespace "primitiv::initializers":
-    cdef cppclass Constant(Initializer):
-        Constant(float k)
+    cdef cppclass CppConstant "primitiv::initializers::Constant" (CppInitializer):
+        CppConstant(float k)
 
-    cdef cppclass Uniform(Initializer):
-        Uniform(float lower, float upper)
+    cdef cppclass CppUniform "primitiv::initializers::Uniform" (CppInitializer):
+        CppUniform(float lower, float upper)
 
-    cdef cppclass Normal(Initializer):
-        Normal(float mean, float sd)
+    cdef cppclass CppNormal "primitiv::initializers::Normal" (CppInitializer):
+        CppNormal(float mean, float sd)
 
-    cdef cppclass Identity(Initializer):
-        Identity()
+    cdef cppclass CppIdentity "primitiv::initializers::Identity" (CppInitializer):
+        CppIdentity()
 
-    cdef cppclass XavierUniform(Initializer):
-        XavierUniform(float scale)
+    cdef cppclass CppXavierUniform "primitiv::initializers::XavierUniform" (CppInitializer):
+        CppXavierUniform(float scale)
 
-    cdef cppclass XavierNormal(Initializer):
-        XavierNormal(float scale)
+    cdef cppclass CppXavierNormal "primitiv::initializers::XavierNormal" (CppInitializer):
+        CppXavierNormal(float scale)
 
 
 cdef class _Constant(_Initializer):

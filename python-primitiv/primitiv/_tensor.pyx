@@ -11,9 +11,9 @@ cdef class _Tensor:
 
     def __init__(self, src = None):
         if src is None:
-            self.wrapped = Tensor()
+            self.wrapped = CppTensor()
         else:
-            self.wrapped = Tensor((<_Tensor> src).wrapped)
+            self.wrapped = CppTensor((<_Tensor> src).wrapped)
         return
 
     def valid(self):
@@ -36,7 +36,7 @@ cdef class _Tensor:
 
     def to_ndarrays(self):
         cdef vector[float] vec
-        cdef Shape s = self.wrapped.shape()
+        cdef CppShape s = self.wrapped.shape()
         cdef np.ndarray output_item
         cdef np.float32_t *np_data
         cdef unsigned volume = s.volume()

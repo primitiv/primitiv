@@ -1,19 +1,19 @@
-from primitiv._device cimport Device, _Device
+from primitiv._device cimport CppDevice, _Device
 
 
 cdef extern from "primitiv/naive_device.h" namespace "primitiv::devices":
-    cdef cppclass Naive(Device):
-        Naive() except +
-        Naive(unsigned rng_seed) except +
+    cdef cppclass CppNaive "primitiv::devices::Naive" (CppDevice):
+        CppNaive() except +
+        CppNaive(unsigned rng_seed) except +
         void dump_description() except +
-        Device.DeviceType type() except +
+        CppDevice.DeviceType type() except +
 
 
 cdef class _Naive(_Device):
     pass
 
 
-cdef inline _Naive wrapNaive(Naive *wrapped) except +:
+cdef inline _Naive wrapNaive(CppNaive *wrapped) except +:
     cdef _Naive naive = _Naive.__new__(_Naive)
     naive.wrapped = wrapped
     return naive

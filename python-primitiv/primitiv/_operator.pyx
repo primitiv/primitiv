@@ -3,7 +3,7 @@ from libcpp cimport bool
 
 from primitiv._device cimport wrapDevice, _Device
 from primitiv._shape cimport _Shape, normShape
-from primitiv._graph cimport _Graph, wrapNode, Node, _Node
+from primitiv._graph cimport _Graph, wrapNode, CppNode, _Node
 from primitiv._parameter cimport _Parameter
 from primitiv._default_scope cimport _DefaultScopeDevice
 
@@ -56,7 +56,7 @@ class _operators:
 
     @staticmethod
     def concat(xs, unsigned dim):
-        cdef vector[Node] vec
+        cdef vector[CppNode] vec
         cdef _Node x
         for x in xs:
             vec.push_back(x.wrapped)
@@ -136,7 +136,7 @@ class _operators:
 
     @staticmethod
     def sum(x, dim = None):
-        cdef vector[Node] xs
+        cdef vector[CppNode] xs
         cdef _Node node
         if isinstance(x, list):
             for node in x:
@@ -147,7 +147,7 @@ class _operators:
 
     @staticmethod
     def mean(x, dim = None):
-        cdef vector[Node] xs
+        cdef vector[CppNode] xs
         cdef _Node node
         if isinstance(x, list):
             for node in x:

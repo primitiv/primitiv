@@ -1,5 +1,5 @@
-from primitiv._device cimport _Device, Device, wrapDevice
-from primitiv._graph cimport _Graph, Graph, wrapGraph
+from primitiv._device cimport _Device, CppDevice, wrapDevice
+from primitiv._graph cimport _Graph, CppGraph, wrapGraph
 
 
 cdef class _DefaultScopeDevice(object):
@@ -14,9 +14,9 @@ cdef class _DefaultScopeDevice(object):
         if self.wrapped_newed is not NULL:
             raise MemoryError()
         if self.obj is None:
-            self.wrapped_newed = new DefaultScope[Device]()
+            self.wrapped_newed = new CppDefaultScope[CppDevice]()
         else:
-            self.wrapped_newed = new DefaultScope[Device]((<_Device> self.obj).wrapped[0])
+            self.wrapped_newed = new CppDefaultScope[CppDevice]((<_Device> self.obj).wrapped[0])
         if self.wrapped_newed is NULL:
             raise MemoryError()
         self.wrapped = self.wrapped_newed
@@ -46,24 +46,30 @@ cdef class _DefaultScopeGraph(object):
     def __init__(self, _Graph obj = None):
         self.obj = obj
 
-    def __enter__(self):
+    def push(self):
         # WARNING: DO NOT OVERWRITE self.obj
         # A wrapped object is used in C++.
         # If you overwrite it, the object will be deleted.
         if self.wrapped_newed is not NULL:
             raise MemoryError()
         if self.obj is None:
-            self.wrapped_newed = new DefaultScope[Graph]()
+            self.wrapped_newed = new CppDefaultScope[CppGraph]()
         else:
-            self.wrapped_newed = new DefaultScope[Graph]((<_Graph> self.obj).wrapped[0])
+            self.wrapped_newed = new CppDefaultScope[CppGraph]((<_Graph> self.obj).wrapped[0])
         if self.wrapped_newed is NULL:
             raise MemoryError()
         self.wrapped = self.wrapped_newed
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __enter__(self):
+        self.push()
+
+    def pop(self):
         if self.wrapped_newed is not NULL:
             del self.wrapped_newed
         self.wrapped_newed = NULL
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.pop()
         return False
 
     def __dealloc__(self):

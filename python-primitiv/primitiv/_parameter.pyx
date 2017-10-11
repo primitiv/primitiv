@@ -24,21 +24,21 @@ cdef class _Parameter:
         if isinstance(init, np.ndarray):
             if shape is None:
                 shape = _Shape(init.shape, 1)
-            self.wrapped_newed = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, ndarrays_to_vector([init]), device.wrapped[0])
+            self.wrapped_newed = new CppParameter(<string> name.encode("utf-8"), normShape(shape).wrapped, ndarrays_to_vector([init]), device.wrapped[0])
 
         # Parameter(name, shape, device)
         elif shape is not None and init is None:
-            self.wrapped_newed = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, device.wrapped[0])
+            self.wrapped_newed = new CppParameter(<string> name.encode("utf-8"), normShape(shape).wrapped, device.wrapped[0])
 
         # Parameter(name, shape, Initializer init, device) new from Initializer
         elif shape is not None and isinstance(init, _Initializer):
-            self.wrapped_newed = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, (<_Initializer> init).wrapped[0], device.wrapped[0])
+            self.wrapped_newed = new CppParameter(<string> name.encode("utf-8"), normShape(shape).wrapped, (<_Initializer> init).wrapped[0], device.wrapped[0])
 
         elif isinstance(init, list):
             # Parameter(name, shape, vector<float> init, device) new from float list
             if shape is None:
                 raise TypeError("shape is required when init is a list")
-            self.wrapped_newed = new Parameter(<string> name.encode("utf-8"), normShape(shape).wrapped, <vector[float]> init, device.wrapped[0])
+            self.wrapped_newed = new CppParameter(<string> name.encode("utf-8"), normShape(shape).wrapped, <vector[float]> init, device.wrapped[0])
 
         else:
             raise TypeError("Argument 'init' has incorrect type (list, Initializer, or numpy.ndarray)")

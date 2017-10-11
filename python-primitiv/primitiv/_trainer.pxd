@@ -4,15 +4,15 @@ from libcpp.unordered_map cimport unordered_map
 from libcpp cimport bool
 from libcpp.memory cimport shared_ptr
 
-from primitiv._device cimport Device
-from primitiv._shape cimport Shape
-from primitiv._parameter cimport Parameter, _Parameter
+from primitiv._device cimport CppDevice
+from primitiv._shape cimport CppShape
+from primitiv._parameter cimport CppParameter, _Parameter
 
 
 cdef extern from "primitiv/trainer.h" namespace "primitiv":
-    cdef cppclass Trainer:
-        Trainer(Trainer &&) except +
-        Trainer() except +
+    cdef cppclass CppTrainer "primitiv::Trainer":
+        CppTrainer(CppTrainer &&) except +
+        CppTrainer() except +
         void save(const string &path) except +
         string name() except +
         unsigned get_epoch() except +
@@ -23,7 +23,7 @@ cdef extern from "primitiv/trainer.h" namespace "primitiv":
         void set_weight_decay(float strength) except +
         float get_gradient_clipping() except +
         void set_gradient_clipping(float threshold) except +
-        void add_parameter(Parameter &param) except +
+        void add_parameter(CppParameter &param) except +
         void reset_gradients() except +
         void update() except +
         void set_configs_by_file(const string &path) except +
@@ -34,11 +34,11 @@ cdef extern from "primitiv/trainer.h" namespace "primitiv::Trainer":
 
 
 cdef class _Trainer:
-    cdef Trainer *wrapped
-    cdef Trainer *wrapped_newed
+    cdef CppTrainer *wrapped
+    cdef CppTrainer *wrapped_newed
 
 
-cdef inline _Trainer wrapTrainer(Trainer *wrapped) except +:
+cdef inline _Trainer wrapTrainer(CppTrainer *wrapped) except +:
     cdef _Trainer trainer = _Trainer.__new__(_Trainer)
     trainer.wrapped = wrapped
     return trainer

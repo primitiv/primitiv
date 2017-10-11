@@ -2,118 +2,118 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp cimport bool
 
-from primitiv._device cimport Device
-from primitiv._graph cimport Graph, Node
-from primitiv._tensor cimport Tensor
-from primitiv._shape cimport Shape
-from primitiv._parameter cimport Parameter
+from primitiv._device cimport CppDevice
+from primitiv._graph cimport CppGraph, CppNode
+from primitiv._tensor cimport CppTensor
+from primitiv._shape cimport CppShape
+from primitiv._parameter cimport CppParameter
 
 cdef extern from "operator_template_wrapper.h" namespace "python_primitiv":
 
-    Node Node_input_vector(const Shape &shape, const vector[float] &data, Device &dev, Graph &g) except +
-    Node Node_input_vector(const Shape &shape, const vector[float] &data, Device &dev) except +
-    Tensor Tensor_input_vector(const Shape &shape, const vector[float] &data, Device &dev) except +
-    Node Node_parameter(Parameter &param, Graph &g) except +
-    Node Node_parameter(Parameter &param) except +
-    Tensor Tensor_parameter(Parameter &param) except +
-    Node Node_copy(const Node &x, Device &dev) except +
-    Tensor Tensor_copy(const Tensor &x, Device &dev) except +
-    Node Node_pick(const Node &x, const vector[unsigned] &ids, unsigned dim) except +
-    Tensor Tensor_pick(const Tensor &x, const vector[unsigned] &ids, unsigned dim) except +
-    Node Node_slice(const Node &x, unsigned dim, unsigned lower, unsigned upper) except +
-    Tensor Tensor_slice(const Tensor &x, unsigned dim, unsigned lower, unsigned upper) except +
-    Node Node_concat(const vector[Node] &xs, unsigned dim) except +
-    Tensor Tensor_concat(const vector[Tensor] &xs, unsigned dim) except +
-    Node Node_reshape(const Node &x, const Shape &new_shape) except +
-    Tensor Tensor_reshape(const Tensor &x, const Shape &new_shape) except +
-    Node Node_flatten(const Node &x) except +
-    Tensor Tensor_flatten(const Tensor &x) except +
-    Node Node_transpose(const Node &x) except +
-    Tensor Tensor_transpose(const Tensor &x) except +
-    Node Node_matmul(const Node &a, const Node &b) except +
-    Tensor Tensor_matmul(const Tensor &a, const Tensor &b) except +
-    Node Node_sqrt(const Node &x) except +
-    Tensor Tensor_sqrt(const Tensor &x) except +
-    Node Node_exp(const Node &x) except +
-    Tensor Tensor_exp(const Tensor &x) except +
-    Node Node_log(const Node &x) except +
-    Tensor Tensor_log(const Tensor &x) except +
-    Node Node_tanh(const Node &x) except +
-    Tensor Tensor_tanh(const Tensor &x) except +
-    Node Node_sigmoid(const Node &x) except +
-    Tensor Tensor_sigmoid(const Tensor &x) except +
-    Node Node_softplus(const Node &x) except +
-    Tensor Tensor_softplus(const Tensor &x) except +
-    Node Node_sin(const Node &x) except +
-    Tensor Tensor_sin(const Tensor &x) except +
-    Node Node_cos(const Node &x) except +
-    Tensor Tensor_cos(const Tensor &x) except +
-    Node Node_tan(const Node &x) except +
-    Tensor Tensor_tan(const Tensor &x) except +
-    Node Node_relu(const Node &x) except +
-    Tensor Tensor_relu(const Tensor &x) except +
-    Node Node_lrelu(const Node &x) except +
-    Tensor Tensor_lrelu(const Tensor &x) except +
-    Node Node_prelu(const Node &x, float a) except +
-    Tensor Tensor_prelu(const Tensor &x, float a) except +
-    Node Node_elu(const Node &x, float a) except +
-    Tensor Tensor_elu(const Tensor &x, float a) except +
-    Node Node_selu(const Node &x, float a, float s) except +
-    Tensor Tensor_selu(const Tensor &x, float a, float s) except +
-    Node Node_sum(const Node &x, unsigned dim) except +
-    Node Node_sum_container(const vector[Node] &xs) except +
-    Tensor Tensor_sum(const Tensor &x, unsigned dim) except +
-    Node Node_mean(const Node &x, unsigned dim) except +
-    Node Node_mean_container(const vector[Node] &xs) except +
-    Tensor Tensor_mean(const Tensor &x, unsigned dim) except +
-    Node Node_broadcast(const Node &x, unsigned dim, unsigned size) except +
-    Tensor Tensor_broadcast(const Tensor &x, unsigned dim, unsigned size) except +
-    Node Node_logsumexp(const Node &x, unsigned dim) except +
-    Tensor Tensor_logsumexp(const Tensor &x, unsigned dim) except +
-    Node Node_log_softmax(const Node &x, unsigned dim) except +
-    Tensor Tensor_log_softmax(const Tensor &x, unsigned dim) except +
-    Node Node_softmax(const Node &x, unsigned dim) except +
-    Tensor Tensor_softmax(const Tensor &x, unsigned dim) except +
-    Node Node_softmax_cross_entropy(const Node &x, const Node &t, unsigned dim) except +
-    Tensor Tensor_softmax_cross_entropy(const Tensor &x, const Tensor &t, unsigned dim) except +
-    Node Node_softmax_cross_entropy(const Node &x, const vector[unsigned] &ids, unsigned dim) except +
-    Tensor Tensor_softmax_cross_entropy(const Tensor &x, const vector[unsigned] &ids, unsigned dim) except +
+    CppNode Node_input_vector(const CppShape &shape, const vector[float] &data, CppDevice &dev, CppGraph &g) except +
+    CppNode Node_input_vector(const CppShape &shape, const vector[float] &data, CppDevice &dev) except +
+    CppTensor Tensor_input_vector(const CppShape &shape, const vector[float] &data, CppDevice &dev) except +
+    CppNode Node_parameter(CppParameter &param, CppGraph &g) except +
+    CppNode Node_parameter(CppParameter &param) except +
+    CppTensor Tensor_parameter(CppParameter &param) except +
+    CppNode Node_copy(const CppNode &x, CppDevice &dev) except +
+    CppTensor Tensor_copy(const CppTensor &x, CppDevice &dev) except +
+    CppNode Node_pick(const CppNode &x, const vector[unsigned] &ids, unsigned dim) except +
+    CppTensor Tensor_pick(const CppTensor &x, const vector[unsigned] &ids, unsigned dim) except +
+    CppNode Node_slice(const CppNode &x, unsigned dim, unsigned lower, unsigned upper) except +
+    CppTensor Tensor_slice(const CppTensor &x, unsigned dim, unsigned lower, unsigned upper) except +
+    CppNode Node_concat(const vector[CppNode] &xs, unsigned dim) except +
+    CppTensor Tensor_concat(const vector[CppTensor] &xs, unsigned dim) except +
+    CppNode Node_reshape(const CppNode &x, const CppShape &new_shape) except +
+    CppTensor Tensor_reshape(const CppTensor &x, const CppShape &new_shape) except +
+    CppNode Node_flatten(const CppNode &x) except +
+    CppTensor Tensor_flatten(const CppTensor &x) except +
+    CppNode Node_transpose(const CppNode &x) except +
+    CppTensor Tensor_transpose(const CppTensor &x) except +
+    CppNode Node_matmul(const CppNode &a, const CppNode &b) except +
+    CppTensor Tensor_matmul(const CppTensor &a, const CppTensor &b) except +
+    CppNode Node_sqrt(const CppNode &x) except +
+    CppTensor Tensor_sqrt(const CppTensor &x) except +
+    CppNode Node_exp(const CppNode &x) except +
+    CppTensor Tensor_exp(const CppTensor &x) except +
+    CppNode Node_log(const CppNode &x) except +
+    CppTensor Tensor_log(const CppTensor &x) except +
+    CppNode Node_tanh(const CppNode &x) except +
+    CppTensor Tensor_tanh(const CppTensor &x) except +
+    CppNode Node_sigmoid(const CppNode &x) except +
+    CppTensor Tensor_sigmoid(const CppTensor &x) except +
+    CppNode Node_softplus(const CppNode &x) except +
+    CppTensor Tensor_softplus(const CppTensor &x) except +
+    CppNode Node_sin(const CppNode &x) except +
+    CppTensor Tensor_sin(const CppTensor &x) except +
+    CppNode Node_cos(const CppNode &x) except +
+    CppTensor Tensor_cos(const CppTensor &x) except +
+    CppNode Node_tan(const CppNode &x) except +
+    CppTensor Tensor_tan(const CppTensor &x) except +
+    CppNode Node_relu(const CppNode &x) except +
+    CppTensor Tensor_relu(const CppTensor &x) except +
+    CppNode Node_lrelu(const CppNode &x) except +
+    CppTensor Tensor_lrelu(const CppTensor &x) except +
+    CppNode Node_prelu(const CppNode &x, float a) except +
+    CppTensor Tensor_prelu(const CppTensor &x, float a) except +
+    CppNode Node_elu(const CppNode &x, float a) except +
+    CppTensor Tensor_elu(const CppTensor &x, float a) except +
+    CppNode Node_selu(const CppNode &x, float a, float s) except +
+    CppTensor Tensor_selu(const CppTensor &x, float a, float s) except +
+    CppNode Node_sum(const CppNode &x, unsigned dim) except +
+    CppNode Node_sum_container(const vector[CppNode] &xs) except +
+    CppTensor Tensor_sum(const CppTensor &x, unsigned dim) except +
+    CppNode Node_mean(const CppNode &x, unsigned dim) except +
+    CppNode Node_mean_container(const vector[CppNode] &xs) except +
+    CppTensor Tensor_mean(const CppTensor &x, unsigned dim) except +
+    CppNode Node_broadcast(const CppNode &x, unsigned dim, unsigned size) except +
+    CppTensor Tensor_broadcast(const CppTensor &x, unsigned dim, unsigned size) except +
+    CppNode Node_logsumexp(const CppNode &x, unsigned dim) except +
+    CppTensor Tensor_logsumexp(const CppTensor &x, unsigned dim) except +
+    CppNode Node_log_softmax(const CppNode &x, unsigned dim) except +
+    CppTensor Tensor_log_softmax(const CppTensor &x, unsigned dim) except +
+    CppNode Node_softmax(const CppNode &x, unsigned dim) except +
+    CppTensor Tensor_softmax(const CppTensor &x, unsigned dim) except +
+    CppNode Node_softmax_cross_entropy(const CppNode &x, const CppNode &t, unsigned dim) except +
+    CppTensor Tensor_softmax_cross_entropy(const CppTensor &x, const CppTensor &t, unsigned dim) except +
+    CppNode Node_softmax_cross_entropy(const CppNode &x, const vector[unsigned] &ids, unsigned dim) except +
+    CppTensor Tensor_softmax_cross_entropy(const CppTensor &x, const vector[unsigned] &ids, unsigned dim) except +
 
-    Node Node_batch_sum(const Node &x) except +
-    Tensor Tensor_batch_sum(const Tensor &x) except +
-    Node Node_batch_mean(const Node &x) except +
-    Tensor Tensor_batch_mean(const Tensor &x) except +
-    Node Node_batch_normalize(const Node &x) except +
-    Tensor Tensor_batch_normalize(const Tensor &x) except +
+    CppNode Node_batch_sum(const CppNode &x) except +
+    CppTensor Tensor_batch_sum(const CppTensor &x) except +
+    CppNode Node_batch_mean(const CppNode &x) except +
+    CppTensor Tensor_batch_mean(const CppTensor &x) except +
+    CppNode Node_batch_normalize(const CppNode &x) except +
+    CppTensor Tensor_batch_normalize(const CppTensor &x) except +
 
-    Node Node_constant(const Shape &shape, float k, Device &dev, Graph &g) except +
-    Node Node_zeros(const Shape &shape, Device &dev, Graph &g) except +
-    Node Node_ones(const Shape &shape, Device &dev, Graph &g) except +
-    Node Node_identity(unsigned size, Device &dev, Graph &g) except +
-    Node Node_constant(const Shape &shape, float k, Device &dev) except +
-    Tensor Tensor_constant(const Shape &shape, float k, Device &dev) except +
-    Node Node_zeros(const Shape &shape, Device &dev) except +
-    Tensor Tensor_zeros(const Shape &shape, Device &dev) except +
-    Node Node_ones(const Shape &shape, Device &dev) except +
-    Tensor Tensor_ones(const Shape &shape, Device &dev) except +
-    Node Node_identity(unsigned size, Device &dev) except +
-    Tensor Tensor_identity(unsigned size, Device &dev) except +
+    CppNode Node_constant(const CppShape &shape, float k, CppDevice &dev, CppGraph &g) except +
+    CppNode Node_zeros(const CppShape &shape, CppDevice &dev, CppGraph &g) except +
+    CppNode Node_ones(const CppShape &shape, CppDevice &dev, CppGraph &g) except +
+    CppNode Node_identity(unsigned size, CppDevice &dev, CppGraph &g) except +
+    CppNode Node_constant(const CppShape &shape, float k, CppDevice &dev) except +
+    CppTensor Tensor_constant(const CppShape &shape, float k, CppDevice &dev) except +
+    CppNode Node_zeros(const CppShape &shape, CppDevice &dev) except +
+    CppTensor Tensor_zeros(const CppShape &shape, CppDevice &dev) except +
+    CppNode Node_ones(const CppShape &shape, CppDevice &dev) except +
+    CppTensor Tensor_ones(const CppShape &shape, CppDevice &dev) except +
+    CppNode Node_identity(unsigned size, CppDevice &dev) except +
+    CppTensor Tensor_identity(unsigned size, CppDevice &dev) except +
 
-    Node Node_random_bernoulli(const Shape &shape, float p, Device &dev, Graph &g) except +
-    Node Node_random_bernoulli(const Shape &shape, float p, Device &dev) except +
-    Tensor Tensor_random_bernoulli(const Shape &shape, float p, Device &dev) except +
-    Node Node_random_uniform(const Shape &shape, float lower, float upper, Device &dev, Graph &g) except +
-    Node Node_random_uniform(const Shape &shape, float lower, float upper, Device &dev) except +
-    Tensor Tensor_random_uniform(const Shape &shape, float lower, float upper, Device &dev) except +
-    Node Node_random_normal(const Shape &shape, float mean, float sd, Device &dev, Graph &g) except +
-    Node Node_random_normal(const Shape &shape, float mean, float sd, Device &dev) except +
-    Tensor Tensor_random_normal(const Shape &shape, float mean, float sd, Device &dev) except +
-    Node Node_random_log_normal(const Shape &shape, float mean, float sd, Device &dev, Graph &g) except +
-    Node Node_random_log_normal(const Shape &shape, float mean, float sd, Device &dev) except +
-    Tensor Tensor_random_log_normal(const Shape &shape, float mean, float sd, Device &dev) except +
-    Node Node_random_gumbel(const Shape &shape, float mu, float beta, Device &dev, Graph &g) except +
-    Node Node_random_gumbel(const Shape &shape, float mu, float beta, Device &dev) except +
-    Tensor Tensor_random_gumbel(const Shape &shape, float mu, float beta, Device &dev) except +
+    CppNode Node_random_bernoulli(const CppShape &shape, float p, CppDevice &dev, CppGraph &g) except +
+    CppNode Node_random_bernoulli(const CppShape &shape, float p, CppDevice &dev) except +
+    CppTensor Tensor_random_bernoulli(const CppShape &shape, float p, CppDevice &dev) except +
+    CppNode Node_random_uniform(const CppShape &shape, float lower, float upper, CppDevice &dev, CppGraph &g) except +
+    CppNode Node_random_uniform(const CppShape &shape, float lower, float upper, CppDevice &dev) except +
+    CppTensor Tensor_random_uniform(const CppShape &shape, float lower, float upper, CppDevice &dev) except +
+    CppNode Node_random_normal(const CppShape &shape, float mean, float sd, CppDevice &dev, CppGraph &g) except +
+    CppNode Node_random_normal(const CppShape &shape, float mean, float sd, CppDevice &dev) except +
+    CppTensor Tensor_random_normal(const CppShape &shape, float mean, float sd, CppDevice &dev) except +
+    CppNode Node_random_log_normal(const CppShape &shape, float mean, float sd, CppDevice &dev, CppGraph &g) except +
+    CppNode Node_random_log_normal(const CppShape &shape, float mean, float sd, CppDevice &dev) except +
+    CppTensor Tensor_random_log_normal(const CppShape &shape, float mean, float sd, CppDevice &dev) except +
+    CppNode Node_random_gumbel(const CppShape &shape, float mu, float beta, CppDevice &dev, CppGraph &g) except +
+    CppNode Node_random_gumbel(const CppShape &shape, float mu, float beta, CppDevice &dev) except +
+    CppTensor Tensor_random_gumbel(const CppShape &shape, float mu, float beta, CppDevice &dev) except +
 
-    Node Node_dropout(const Node &x, float rate, bool enabled) except +
-    Tensor Tensor_dropout(const Tensor &x, float rate, bool enabled) except +
+    CppNode Node_dropout(const CppNode &x, float rate, bool enabled) except +
+    CppTensor Tensor_dropout(const CppTensor &x, float rate, bool enabled) except +

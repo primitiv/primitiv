@@ -12,9 +12,9 @@ cdef class _Node:
 
     def __init__(self, _Node node = None):
         if node is None:
-            self.wrapped = Node(node.wrapped)
+            self.wrapped = CppNode(node.wrapped)
         else:
-            self.wrapped = Node()
+            self.wrapped = CppNode()
 
     def valid(self):
         return self.wrapped.valid()
@@ -42,7 +42,7 @@ cdef class _Node:
 
     def to_ndarrays(self):
         cdef vector[float] vec
-        cdef Shape s = self.wrapped.shape()
+        cdef CppShape s = self.wrapped.shape()
         cdef np.ndarray output_item
         cdef np.float32_t *np_data
         cdef unsigned volume = s.volume()
@@ -111,7 +111,7 @@ cdef class _Graph:
     def __init__(self):
         if self.wrapped_newed is not NULL:
             raise MemoryError()
-        self.wrapped_newed = new Graph()
+        self.wrapped_newed = new CppGraph()
         if self.wrapped_newed is NULL:
             raise MemoryError()
         self.wrapped = self.wrapped_newed
@@ -122,7 +122,7 @@ cdef class _Graph:
             self.wrapped_newed = NULL
 
     def forward(self, _Node node):
-        cdef Tensor t
+        cdef CppTensor t
         with nogil:
             t = self.wrapped.forward(node.wrapped)
         return wrapTensor(t)

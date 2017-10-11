@@ -5,9 +5,9 @@ cdef class _Shape:
 
     def __init__(self, dims = None, unsigned batch = 1):
         if dims is None:
-            self.wrapped = Shape()
+            self.wrapped = CppShape()
         else:
-            self.wrapped = Shape(<vector[unsigned]> dims, <unsigned> batch)
+            self.wrapped = CppShape(<vector[unsigned]> dims, <unsigned> batch)
 
     def depth(self):
         return self.wrapped.depth()
