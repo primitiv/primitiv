@@ -3,6 +3,7 @@ from libcpp.vector cimport vector
 from primitiv._device cimport wrapDevice
 from primitiv._shape cimport wrapShape
 from primitiv._tensor cimport wrapTensor
+from primitiv._operator cimport Node_pow
 
 cimport numpy as np
 import numpy as np
@@ -102,6 +103,18 @@ cdef class _Node:
             return wrapNode(op_node_div(<float> left, (<_Node> right).wrapped))
         elif isinstance(left, _Node) and isinstance(right, _Node):
             return wrapNode(op_node_div((<_Node> left).wrapped, (<_Node> right).wrapped))
+        else:
+            return NotImplemented
+
+    def __pow__(left, right, mod):
+        if mod is not None:
+            return NotImplemented
+        if isinstance(right, (int, float)):
+            return wrapNode(Node_pow((<_Node> left).wrapped, <float> right))
+        elif isinstance(left, (int, float)):
+            return wrapNode(Node_pow(<float> left, (<_Node> right).wrapped))
+        elif isinstance(left, _Node) and isinstance(right, _Node):
+            return wrapNode(Node_pow((<_Node> left).wrapped, (<_Node> right).wrapped))
         else:
             return NotImplemented
 

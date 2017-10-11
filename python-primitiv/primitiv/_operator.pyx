@@ -91,6 +91,17 @@ class _operators:
         return wrapNode(Node_log(x.wrapped))
 
     @staticmethod
+    def pow(x, k):
+        if isinstance(x, _Node) and isinstance(k, (int, float)):
+            return wrapNode(Node_pow((<_Node> x).wrapped, <float> k))
+        elif isinstance(x, (int, float)) and isinstance(k, _Node):
+            return wrapNode(Node_pow(<float> x, (<_Node> k).wrapped))
+        elif isinstance(x, _Node) and isinstance(k, _Node):
+            return wrapNode(Node_pow((<_Node> x).wrapped, (<_Node> k).wrapped))
+        else:
+            raise TypeError("Argument 'x' or 'k' has incorrect type (Node or float or int)")
+
+    @staticmethod
     def tanh(_Node x):
         return wrapNode(Node_tanh(x.wrapped))
 

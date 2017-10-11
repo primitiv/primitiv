@@ -38,6 +38,9 @@ cdef extern from "operator_template_wrapper.h" namespace "python_primitiv":
     CppTensor Tensor_exp(const CppTensor &x) except +
     CppNode Node_log(const CppNode &x) except +
     CppTensor Tensor_log(const CppTensor &x) except +
+    CppNode Node_pow(const CppNode &x, float k) except +
+    CppNode Node_pow(float x, const CppNode &k) except +
+    CppNode Node_pow(const CppNode &x, const CppNode &k) except +
     CppNode Node_tanh(const CppNode &x) except +
     CppTensor Tensor_tanh(const CppTensor &x) except +
     CppNode Node_sigmoid(const CppNode &x) except +

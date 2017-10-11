@@ -11,6 +11,8 @@ namespace python_primitiv {
 
 using namespace primitiv;
 
+// TODO: Tensor operators will be removed.
+
 inline Node Node_input_vector(const Shape &shape, const std::vector<float> &data, Device &dev, Graph &g) {
     return operators::input(shape, data, dev, g);
 }
@@ -121,6 +123,18 @@ inline Node Node_log(const Node &x) {
 
 inline Tensor Tensor_log(const Tensor &x) {
     return operators::log<Tensor>(x);
+}
+
+inline Node Node_pow(const Node &x, float k) {
+    return operators::pow<Node>(x, k);
+}
+
+inline Node Node_pow(float x, const Node &k) {
+    return operators::pow<Node>(x, k);
+}
+
+inline Node Node_pow(const Node &x, const Node &k) {
+    return operators::pow<Node>(x, k);
 }
 
 inline Node Node_tanh(const Node &x) {
