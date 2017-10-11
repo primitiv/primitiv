@@ -58,59 +58,43 @@ cdef class _Node:
     def __neg__(self):
         return wrapNode(op_node_neg(self.wrapped))
 
-    def __add__(_Node self, v):
-        if isinstance(v, (int, float)):
-            return wrapNode(op_node_add(self.wrapped, <float> v))
-        elif isinstance(v, _Node):
-            return wrapNode(op_node_add(self.wrapped, (<_Node> v).wrapped))
+    def __add__(left, right):
+        if isinstance(right, (int, float)):
+            return wrapNode(op_node_add((<_Node> left).wrapped, <float> right))
+        elif isinstance(left, (int, float)):
+            return wrapNode(op_node_add(<float> left, (<_Node> right).wrapped))
+        elif isinstance(left, _Node) and isinstance(right, _Node):
+            return wrapNode(op_node_add((<_Node> left).wrapped, (<_Node> right).wrapped))
         else:
             return NotImplemented
 
-    def __radd__(self, v):
-        if isinstance(v, _Node):
-            return wrapNode(op_node_add(<float> v, self.wrapped))
+    def __sub__(left, right):
+        if isinstance(right, (int, float)):
+            return wrapNode(op_node_sub((<_Node> left).wrapped, <float> right))
+        elif isinstance(left, (int, float)):
+            return wrapNode(op_node_sub(<float> left, (<_Node> right).wrapped))
+        elif isinstance(left, _Node) and isinstance(right, _Node):
+            return wrapNode(op_node_sub((<_Node> left).wrapped, (<_Node> right).wrapped))
         else:
             return NotImplemented
 
-    def __sub__(_Node self, v):
-        if isinstance(v, (int, float)):
-            return wrapNode(op_node_sub(self.wrapped, <float> v))
-        elif isinstance(v, _Node):
-            return wrapNode(op_node_sub(self.wrapped, (<_Node> v).wrapped))
+    def __mul__(left, right):
+        if isinstance(right, (int, float)):
+            return wrapNode(op_node_mul((<_Node> left).wrapped, <float> right))
+        elif isinstance(left, (int, float)):
+            return wrapNode(op_node_mul(<float> left, (<_Node> right).wrapped))
+        elif isinstance(left, _Node) and isinstance(right, _Node):
+            return wrapNode(op_node_mul((<_Node> left).wrapped, (<_Node> right).wrapped))
         else:
             return NotImplemented
 
-    def __rsub__(self, v):
-        if isinstance(v, _Node):
-            return wrapNode(op_node_sub(<float> v, self.wrapped))
-        else:
-            return NotImplemented
-
-    def __mul__(_Node self, v):
-        if isinstance(v, (int, float)):
-            return wrapNode(op_node_mul(self.wrapped, <float> v))
-        elif isinstance(v, _Node):
-            return wrapNode(op_node_mul(self.wrapped, (<_Node> v).wrapped))
-        else:
-            return NotImplemented
-
-    def __rmul__(self, v):
-        if isinstance(v, _Node):
-            return wrapNode(op_node_mul(<float> v, self.wrapped))
-        else:
-            return NotImplemented
-
-    def __div__(_Node self, v):
-        if isinstance(v, (int, float)):
-            return wrapNode(op_node_div(self.wrapped, <float> v))
-        elif isinstance(v, _Node):
-            return wrapNode(op_node_div(self.wrapped, (<_Node> v).wrapped))
-        else:
-            return NotImplemented
-
-    def __rdiv__(self, v):
-        if isinstance(v, _Node):
-            return wrapNode(op_node_div(<float> v, self.wrapped))
+    def __truediv__(left, right):
+        if isinstance(right, (int, float)):
+            return wrapNode(op_node_div((<_Node> left).wrapped, <float> right))
+        elif isinstance(left, (int, float)):
+            return wrapNode(op_node_div(<float> left, (<_Node> right).wrapped))
+        elif isinstance(left, _Node) and isinstance(right, _Node):
+            return wrapNode(op_node_div((<_Node> left).wrapped, (<_Node> right).wrapped))
         else:
             return NotImplemented
 
