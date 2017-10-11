@@ -6,7 +6,7 @@ from primitiv.shape cimport Shape
 from primitiv.tensor cimport Tensor
 
 
-cdef extern from "primitiv/graph.h" namespace "primitiv":
+cdef extern from "primitiv/graph.h" namespace "primitiv" nogil:
     cdef cppclass Node:
         Node(Node &&src) except +
         Node() except +
@@ -36,7 +36,7 @@ cdef extern from "node_op.h" namespace "python_primitiv_node":
     cdef Node op_node_div(const Node &a, const Node &b) except +
 
 
-cdef extern from "primitiv/graph.h" namespace "primitiv":
+cdef extern from "primitiv/graph.h" namespace "primitiv" nogil:
     cdef cppclass Graph:
         Graph() except +
         const Tensor &forward(const Node &node) except +

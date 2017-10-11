@@ -5,7 +5,7 @@ from primitiv.device cimport Device
 from primitiv.shape cimport Shape
 
 
-cdef extern from "primitiv/tensor.h" namespace "primitiv":
+cdef extern from "primitiv/tensor.h" namespace "primitiv" nogil:
     cdef cppclass Tensor:
         Tensor(Tensor &&src) except +
         Tensor() except +

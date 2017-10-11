@@ -29,20 +29,27 @@ cdef class _Tensor:
         #return self.wrapped.data()
 
     def to_list(self):
-        return self.wrapped.to_vector()
+        cdef vector[float] vec
+        with nogil:
+            vec = self.wrapped.to_vector()
+        return vec
 
     def to_ndarrays(self):
-        cdef vector[float] vec = self.wrapped.to_vector()
+        cdef vector[float] vec
         cdef Shape s = self.wrapped.shape()
         cdef np.ndarray output_item
         cdef np.float32_t *np_data
         cdef unsigned volume = s.volume()
+        cdef unsigned j, i
+        with nogil:
+            vec = self.wrapped.to_vector()
         output = []
         for j in range(s.batch()):
             output_item = np.empty([s[i] for i in range(s.depth())], dtype=np.float32, order="F")
             np_data = <np.float32_t*> output_item.data
-            for i in range(volume):
-                np_data[i] = vec[i + j * volume]
+            with nogil:
+                for i in range(volume):
+                    np_data[i] = vec[i + j * volume]
             output.append(output_item)
         return output
 
