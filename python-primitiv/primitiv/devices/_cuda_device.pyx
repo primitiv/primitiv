@@ -1,5 +1,5 @@
 from primitiv._device cimport _Device
-from primitiv.devices._cuda_device cimport num_devices as CUDA_num_devices
+from primitiv.devices._cuda_device cimport num_devices as CppCUDA_num_devices
 
 
 cdef class _CUDA(_Device):
@@ -8,27 +8,27 @@ cdef class _CUDA(_Device):
         if self.wrapped_newed is not NULL:
             raise MemoryError()
         if rng_seed == None:
-            self.wrapped_newed = new CUDA(device_id)
+            self.wrapped_newed = new CppCUDA(device_id)
         else:
-            self.wrapped_newed = new CUDA(device_id, <unsigned> rng_seed)
+            self.wrapped_newed = new CppCUDA(device_id, <unsigned> rng_seed)
         if self.wrapped_newed is NULL:
             raise MemoryError()
         self.wrapped = self.wrapped_newed
 
     def __dealloc__(self):
-        cdef CUDA *temp
+        cdef CppCUDA *temp
         if self.wrapped_newed is not NULL:
-            temp = <CUDA*> self.wrapped_newed
+            temp = <CppCUDA*> self.wrapped_newed
             del temp
             self.wrapped_newed = NULL
 
     @staticmethod
     def num_devices():
-        return CUDA_num_devices()
+        return CppCUDA_num_devices()
 
     def dump_description(self):
-        (<CUDA*> self.wrapped).dump_description()
+        (<CppCUDA*> self.wrapped).dump_description()
         return
 
     def type(self):
-        return (<CUDA*> self.wrapped).type()
+        return (<CppCUDA*> self.wrapped).type()
