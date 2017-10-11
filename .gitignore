@@ -1,9 +1,9 @@
+__pycache__
 /build
-/example/*/a.out
-/example/*/*.config
-/example/*/*.param
-/example/*/data
-/python-primitiv/**/__pycache__
+/examples/*/a.out
+/examples/*/*.config
+/examples/*/*.param
+/examples/*/data
 /python-primitiv/**/*.cpp
 /python-primitiv/**/*.so
 /python-primitiv/*.egg-info
