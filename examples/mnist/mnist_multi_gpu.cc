@@ -143,7 +143,7 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      DefaultScope<Graph> gs(g);
+      Graph::set_default(g);
       Node y = make_graph(inputs);
       Node loss = F::softmax_cross_entropy(y, labels, 0);
       Node avg_loss = F::batch::mean(loss);
@@ -166,7 +166,7 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      DefaultScope<Graph> gs(g);
+      Graph::set_default(g);
       Node y = make_graph(inputs);
 
       // Gets outputs, argmax, and compares them with the label.

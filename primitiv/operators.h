@@ -5,7 +5,6 @@
 #include <initializer_list>
 #include <vector>
 
-#include <primitiv/default_scope.h>
 #include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/graph.h>
@@ -69,7 +68,7 @@ template<typename Var>
 type_traits::Identity<Var> input(
     const Shape &shape,
     const std::vector<float> &data,
-    Device &dev = DefaultScope<Device>::get());
+    Device &dev = Device::get_default());
 
 Node parameter(Parameter &param, Graph &g);
 
@@ -78,7 +77,7 @@ type_traits::Identity<Var> parameter(Parameter &param);
 
 template<typename Var>
 type_traits::Identity<Var> copy(
-    const Var &x, Device &dev = DefaultScope<Device>::get());
+    const Var &x, Device &dev = Device::get_default());
 
 template<typename Var>
 type_traits::Identity<Var> pick(
@@ -290,26 +289,26 @@ Node identity(unsigned size, Device &dev, Graph &g);
 template<typename Var>
 type_traits::Identity<Var> constant(
     const Shape &shape, float k,
-    Device &dev = DefaultScope<Device>::get());
+    Device &dev = Device::get_default());
 
 template<typename Var>
 inline type_traits::Identity<Var> zeros(
     const Shape &shape,
-    Device &dev = DefaultScope<Device>::get()) {
+    Device &dev = Device::get_default()) {
   return constant<Var>(shape, 0, dev);
 }
 
 template<typename Var>
 inline type_traits::Identity<Var> ones(
     const Shape &shape,
-    Device &dev = DefaultScope<Device>::get()) {
+    Device &dev = Device::get_default()) {
   return constant<Var>(shape, 1, dev);
 }
 
 template<typename Var>
 type_traits::Identity<Var> identity(
     unsigned size,
-    Device &dev = DefaultScope<Device>::get());
+    Device &dev = Device::get_default());
 
 namespace random {
 
@@ -331,27 +330,27 @@ Node gumbel(
 template<typename Var>
 type_traits::Identity<Var> bernoulli(
     const Shape &shape, float p,
-    Device &dev = DefaultScope<Device>::get());
+    Device &dev = Device::get_default());
 
 template<typename Var>
 type_traits::Identity<Var> uniform(
     const Shape &shape, float lower, float upper,
-    Device &dev = DefaultScope<Device>::get());
+    Device &dev = Device::get_default());
 
 template<typename Var>
 type_traits::Identity<Var> normal(
     const Shape &shape, float mean, float sd,
-    Device &dev = DefaultScope<Device>::get());
+    Device &dev = Device::get_default());
 
 template<typename Var>
 type_traits::Identity<Var> log_normal(
     const Shape &shape, float mean, float sd,
-    Device &dev = DefaultScope<Device>::get());
+    Device &dev = Device::get_default());
 
 template<typename Var>
 inline type_traits::Identity<Var> gumbel(
     const Shape &shape, float mu, float beta,
-    Device &dev = DefaultScope<Device>::get()) {
+    Device &dev = Device::get_default()) {
   return mu - beta * log(-log(uniform<Var>(shape, 0, .9999999, dev)));
 }
 

@@ -13,6 +13,8 @@ namespace primitiv {
 class Device {
   friend Tensor;
 
+  static Device *default_obj_;
+
   Device(const Device &) = delete;
   Device(Device &&) = delete;
   Device &operator=(const Device &) = delete;
@@ -27,8 +29,20 @@ public:
     DEVICE_TYPE_CUDA = 0x10000,
   };
 
+  /**
+   * Retrieves the current default device.
+   * @return Reference of the default device.
+   */
+  static Device &get_default();
+
+  /**
+   * Registers a new default device.
+   * @param dev New default device.
+   */
+  static void set_default(Device &dev);
+
   Device() = default;
-  virtual ~Device() = default;
+  virtual ~Device();
 
   /**
    * Prints device description to stderr.

@@ -24,6 +24,21 @@ using std::vector;
 
 namespace primitiv {
 
+Graph *Graph::default_obj_ = nullptr;
+
+Graph &Graph::get_default() {
+  if (!default_obj_) THROW_ERROR("Default graph is null.");
+  return *default_obj_;
+}
+
+void Graph::set_default(Graph &g) {
+  default_obj_ = &g;
+}
+
+Graph::~Graph() {
+  if (default_obj_ == this) default_obj_ = nullptr;
+}
+
 #define CHECK_NODE(n) { \
   if ((n).g_ != this) { \
     THROW_ERROR( \

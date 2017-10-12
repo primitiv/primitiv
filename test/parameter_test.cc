@@ -3,7 +3,6 @@
 #include <cstdio>
 #include <vector>
 #include <gtest/gtest.h>
-#include <primitiv/default_scope.h>
 #include <primitiv/error.h>
 #include <primitiv/initializer_impl.h>
 #include <primitiv/naive_device.h>
@@ -32,7 +31,7 @@ TEST_F(ParameterTest, CheckInvalid) {
 }
 
 TEST_F(ParameterTest, CheckNew) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
   const Shape shape {2, 2};
   Parameter p("test", shape);
   EXPECT_TRUE(p.valid());
@@ -44,7 +43,7 @@ TEST_F(ParameterTest, CheckNew) {
 }
 
 TEST_F(ParameterTest, CheckNewWithValues) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
   const Shape shape {2, 2};
   Parameter p("test", shape, {1, 2, 3, 4});
   EXPECT_TRUE(p.valid());
@@ -57,7 +56,7 @@ TEST_F(ParameterTest, CheckNewWithValues) {
 }
 
 TEST_F(ParameterTest, CheckNewWithInitializer) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
   const Shape shape {2, 2};
   const initializers::Constant init(42);
   Parameter p("test", shape, init);
@@ -71,7 +70,7 @@ TEST_F(ParameterTest, CheckNewWithInitializer) {
 }
 
 TEST_F(ParameterTest, CheckAddStats) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
   Parameter p("test", {});
   EXPECT_FALSE(p.has_stats("a"));
   EXPECT_FALSE(p.has_stats("b"));
@@ -108,7 +107,7 @@ TEST_F(ParameterTest, CheckInvalidAddStats) {
 }
 
 TEST_F(ParameterTest, CheckMove) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
   const Shape shape {2, 2};
   Parameter p1("test", shape, {1, 2, 3, 4});
   ASSERT_TRUE(p1.valid());
@@ -136,12 +135,12 @@ TEST_F(ParameterTest, CheckMove) {
 }
 
 TEST_F(ParameterTest, CheckInvalidNew) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
   EXPECT_THROW(Parameter("test", Shape({}, 3)), Error);
 }
 
 TEST_F(ParameterTest, CheckResetValueByVector) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
   const Shape shape {2, 2};
   const vector<float> expected {1, 2, 3, 4};
   Parameter p("test", shape);
@@ -150,7 +149,7 @@ TEST_F(ParameterTest, CheckResetValueByVector) {
 }
 
 TEST_F(ParameterTest, CheckResetValueByInitializer) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
   const Shape shape {2, 2};
   const initializers::Constant init(0);
   const vector<float> expected {0, 0, 0, 0};
@@ -160,7 +159,7 @@ TEST_F(ParameterTest, CheckResetValueByInitializer) {
 }
 
 TEST_F(ParameterTest, CheckResetGradient) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
   const Shape shape {2, 2};
   const vector<float> expected {0, 0, 0, 0};
   Parameter p("test", shape);
@@ -169,7 +168,7 @@ TEST_F(ParameterTest, CheckResetGradient) {
 }
 
 TEST_F(ParameterTest, CheckAddValue) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
   const Shape shape {2, 2};
   const initializers::Constant init(0);
   const vector<float> diff_values1 {1, 2, 3, 4};
@@ -184,7 +183,7 @@ TEST_F(ParameterTest, CheckAddValue) {
 }
 
 TEST_F(ParameterTest, CheckAddGradient) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
   const Shape shape {2, 2};
   const vector<float> diff_values1 {1, 2, 3, 4};
   const vector<float> diff_values2 {2, 4, 6, 8};
@@ -198,7 +197,7 @@ TEST_F(ParameterTest, CheckAddGradient) {
 }
 
 TEST_F(ParameterTest, CheckSaveLoad) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
   const Shape shape {2, 2};
   const vector<float> values {1, 2, 3, 4};
   const Parameter p1("test", shape, values);
@@ -215,7 +214,7 @@ TEST_F(ParameterTest, CheckSaveLoad) {
 }
 
 TEST_F(ParameterTest, CheckSaveLoadWithStats) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
   const Shape shape {2, 2};
   const vector<float> values {1, 2, 3, 4};
   Parameter p1("test", shape, values);
@@ -236,7 +235,7 @@ TEST_F(ParameterTest, CheckSaveLoadWithStats) {
 }
 
 TEST_F(ParameterTest, CheckSaveWithoutStats) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
   const Shape shape {2, 2};
   const vector<float> values {1, 2, 3, 4};
   Parameter p1("test", shape, values);
@@ -256,7 +255,7 @@ TEST_F(ParameterTest, CheckSaveWithoutStats) {
 }
 
 TEST_F(ParameterTest, CheckLoadWithoutStats) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
   const Shape shape {2, 2};
   const vector<float> values {1, 2, 3, 4};
   Parameter p1("test", shape, values);

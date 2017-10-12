@@ -81,7 +81,7 @@ int main() {
 
   // Uses GPU.
   devices::CUDA dev(0);
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
 
   // Parameters for the multilayer perceptron.
   Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, I::XavierUniform());
@@ -148,7 +148,7 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      DefaultScope<Graph> gs(g);
+      Graph::set_default(g);
       Node y = make_graph(inputs, true);
       Node loss = F::softmax_cross_entropy(y, labels, 0);
       Node avg_loss = F::batch::mean(loss);
@@ -174,7 +174,7 @@ int main() {
 
       // Constructs the graph.
       Graph g;
-      DefaultScope<Graph> gs(g);
+      Graph::set_default(g);
       Node y = make_graph(inputs, false);
 
       // Gets outputs, argmax, and compares them with the label.
