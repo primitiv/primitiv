@@ -5,7 +5,6 @@ from primitiv._device cimport wrapDevice, _Device
 from primitiv._shape cimport _Shape, normShape
 from primitiv._graph cimport _Graph, wrapNode, CppNode, _Node
 from primitiv._parameter cimport _Parameter
-from primitiv._default_scope cimport _DefaultScopeDevice
 
 from utils cimport ndarrays_to_vector, ndarray_to_vector_unsigned
 
@@ -19,7 +18,7 @@ class _operators:
     def input(data, shape = None, _Device device = None, _Graph g = None):
         cdef vector[float] data_vector
         if device is None:
-            device = _DefaultScopeDevice.get()
+            device = _Device.get_default()
         if isinstance(data, np.ndarray):
             data = [data]
         elif not isinstance(data, list):
@@ -197,7 +196,7 @@ class _operators:
     @staticmethod
     def constant(shape, float k, _Device device = None, _Graph g = None):
         if device is None:
-            device = _DefaultScopeDevice.get()
+            device = _Device.get_default()
         if g is None:
             return wrapNode(Node_constant(normShape(shape).wrapped, k, device.wrapped[0]))
         else:
@@ -206,7 +205,7 @@ class _operators:
     @staticmethod
     def zeros(shape, _Device device = None, _Graph g = None):
         if device is None:
-            device = _DefaultScopeDevice.get()
+            device = _Device.get_default()
         if g is None:
             return wrapNode(Node_zeros(normShape(shape).wrapped, device.wrapped[0]))
         else:
@@ -215,7 +214,7 @@ class _operators:
     @staticmethod
     def ones(shape, _Device device = None, _Graph g = None):
         if device is None:
-            device = _DefaultScopeDevice.get()
+            device = _Device.get_default()
         if g is None:
             return wrapNode(Node_ones(normShape(shape).wrapped, device.wrapped[0]))
         else:
@@ -224,7 +223,7 @@ class _operators:
     @staticmethod
     def identity(unsigned size, _Device device = None, _Graph g = None):
         if device is None:
-            device = _DefaultScopeDevice.get()
+            device = _Device.get_default()
         if g is None:
             return wrapNode(Node_identity(size, device.wrapped[0]))
         else:
@@ -247,7 +246,7 @@ class _operators:
         @staticmethod
         def bernoulli(shape, float p, _Device device = None, _Graph g = None):
             if device is None:
-                device = _DefaultScopeDevice.get()
+                device = _Device.get_default()
             if g is None:
                 return wrapNode(Node_random_bernoulli(normShape(shape).wrapped, p, device.wrapped[0]))
             else:
@@ -256,7 +255,7 @@ class _operators:
         @staticmethod
         def uniform(shape, float lower, float upper, _Device device = None, _Graph g = None):
             if device is None:
-                device = _DefaultScopeDevice.get()
+                device = _Device.get_default()
             if g is None:
                 return wrapNode(Node_random_uniform(normShape(shape).wrapped, lower, upper, device.wrapped[0]))
             else:
@@ -265,7 +264,7 @@ class _operators:
         @staticmethod
         def normal(shape, float mean, float sd, _Device device = None, _Graph g = None):
             if device is None:
-                device = _DefaultScopeDevice.get()
+                device = _Device.get_default()
             if g is None:
                 return wrapNode(Node_random_normal(normShape(shape).wrapped, mean, sd, device.wrapped[0]))
             else:
@@ -274,7 +273,7 @@ class _operators:
         @staticmethod
         def log_normal(shape, float mean, float sd, _Device device = None, _Graph g = None):
             if device is None:
-                device = _DefaultScopeDevice.get()
+                device = _Device.get_default()
             if g is None:
                 return wrapNode(Node_random_log_normal(normShape(shape).wrapped, mean, sd, device.wrapped[0]))
             else:
@@ -283,7 +282,7 @@ class _operators:
         @staticmethod
         def gumbel(shape, float mu, float beta, _Device device = None, _Graph g = None):
             if device is None:
-                device = _DefaultScopeDevice.get()
+                device = _Device.get_default()
             if g is None:
                 return wrapNode(Node_random_gumbel(normShape(shape).wrapped, mu, beta, device.wrapped[0]))
             else:

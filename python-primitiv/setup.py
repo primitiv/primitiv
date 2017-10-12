@@ -78,12 +78,6 @@ ext_modules = [
               libraries=["primitiv"],
               extra_compile_args=["-std=c++11"],
     ),
-    Extension("primitiv._default_scope",
-              sources=["primitiv/_default_scope.pyx"],
-              language="c++",
-              libraries=["primitiv"],
-              extra_compile_args=["-std=c++11"],
-    ),
 ]
 
 if enable_cuda:

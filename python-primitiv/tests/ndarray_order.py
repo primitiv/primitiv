@@ -1,4 +1,4 @@
-from primitiv import DefaultScope
+from primitiv import Device
 from primitiv import Graph
 from primitiv import operators as F
 from primitiv.devices import Naive
@@ -20,6 +20,8 @@ class ArrayOrderingTest(unittest.TestCase):
     def setUp(self):
         self.device = Naive()
         self.graph = Graph()
+        Device.set_default(self.device)
+        Graph.set_default(self.graph)
         self.input_data = [
             np.array([
                 [ 1, 2, 3],
@@ -41,9 +43,7 @@ class ArrayOrderingTest(unittest.TestCase):
         pass
 
     def test_input_ndarrays(self):
-        with DefaultScope(self.device):
-            with DefaultScope(self.graph):
-                x = F.input(self.input_data)
-                self.assertEqual(x.to_list(), self.list_expected)
-                self.assertTrue((x.to_ndarrays()[0] == self.input_data[0]).all())
-                self.assertTrue((x.to_ndarrays()[1] == self.input_data[1]).all())
+        x = F.input(self.input_data)
+        self.assertEqual(x.to_list(), self.list_expected)
+        self.assertTrue((x.to_ndarrays()[0] == self.input_data[0]).all())
+        self.assertTrue((x.to_ndarrays()[1] == self.input_data[1]).all())

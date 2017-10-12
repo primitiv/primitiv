@@ -6,9 +6,6 @@ from primitiv._graph import _Node as Node
 from primitiv._graph import _Graph as Graph
 from primitiv._trainer import _Trainer as Trainer
 from primitiv._operator import _operators as operators
-from primitiv._default_scope import _DefaultScopeDevice as DefaultScopeDevice
-from primitiv._default_scope import _DefaultScopeGraph as DefaultScopeGraph
-from primitiv._default_scope import _DefaultScope as DefaultScope
 from primitiv import devices
 from primitiv import initializers
 from primitiv import trainers
@@ -29,7 +26,4 @@ __all__ = [
     "Tensor",
     "Trainer",
     "trainers",
-    "DefaultScopeDevice",
-    "DefaultScopeGraph",
-    "DefaultScope",
 ]

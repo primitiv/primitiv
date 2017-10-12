@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from primitiv import DefaultScope
+from primitiv import Device
 from primitiv import Graph
 from primitiv import Parameter
 
@@ -13,67 +13,72 @@ import numpy as np
 
 
 def main():
-    with DefaultScope(D.Naive()):  # or DefaultScope(D.CUDA(gpuid))
-        # Parameters
-        pw1 = Parameter("w1", [8, 2], I.XavierUniform())
-        pb1 = Parameter("b1", [8], I.Constant(0))
-        pw2 = Parameter("w2", [1, 8], I.XavierUniform())
-        pb2 = Parameter("b2", [], I.Constant(0))
+    dev = D.Naive()  # or D.CUDA(gpuid)
+    Device.set_default(dev)
 
-        # Trainer
-        trainer = T.SGD(0.1)
+    # Parameters
+    pw1 = Parameter("w1", [8, 2], I.XavierUniform())
+    pb1 = Parameter("b1", [8], I.Constant(0))
+    pw2 = Parameter("w2", [1, 8], I.XavierUniform())
+    pb2 = Parameter("b2", [], I.Constant(0))
 
-        # Registers parameters.
-        trainer.add_parameter(pw1)
-        trainer.add_parameter(pb1)
-        trainer.add_parameter(pw2)
-        trainer.add_parameter(pb2)
+    # Trainer
+    trainer = T.SGD(0.1)
 
-        # Training data
-        input_data = [
-            np.array([ 1,  1], dtype=np.float32),  # Sample 1
-            np.array([ 1, -1], dtype=np.float32),  # Sample 2
-            np.array([-1,  1], dtype=np.float32),  # Sample 3
-            np.array([-1, -1], dtype=np.float32),  # Sample 4
-        ]
-        output_data = [
-            np.array([ 1], dtype=np.float32),  # Label 1
-            np.array([-1], dtype=np.float32),  # Label 2
-            np.array([-1], dtype=np.float32),  # Label 3
-            np.array([ 1], dtype=np.float32),  # Label 4
-        ]
+    # Registers parameters.
+    trainer.add_parameter(pw1)
+    trainer.add_parameter(pb1)
+    trainer.add_parameter(pw2)
+    trainer.add_parameter(pb2)
 
-        for i in range(10):
-            g = Graph()
-            with DefaultScope(g):
-                # Builds a computation graph.
-                x = F.input(input_data)
-                w1 = F.parameter(pw1)
-                b1 = F.parameter(pb1)
-                w2 = F.parameter(pw2)
-                b2 = F.parameter(pb2)
-                h = F.tanh(F.matmul(w1, x) + b1)
-                y = F.matmul(w2, h) + b2
+    # Training data
+    input_data = [
+        np.array([ 1,  1], dtype=np.float32),  # Sample 1
+        np.array([ 1, -1], dtype=np.float32),  # Sample 2
+        np.array([-1,  1], dtype=np.float32),  # Sample 3
+        np.array([-1, -1], dtype=np.float32),  # Sample 4
+    ]
+    output_data = [
+        np.array([ 1], dtype=np.float32),  # Label 1
+        np.array([-1], dtype=np.float32),  # Label 2
+        np.array([-1], dtype=np.float32),  # Label 3
+        np.array([ 1], dtype=np.float32),  # Label 4
+    ]
 
-                # Obtains values.
-                y_val = y.to_list()
-                print("epoch ", i, ":")
-                for j in range(4):
-                    print("  [", j, "]: ", y_val[j])
-                    t = F.input(output_data)
+    g = Graph()
+    Graph.set_default(g)
 
-                # Extends the computation graph to calculate loss values.
-                diff = t - y
-                loss = F.batch.mean(diff * diff)
+    for i in range(10):
+        g.clear()
 
-                # Obtains the loss.
-                loss_val = loss.to_list()[0]
-                print("  loss: ", loss_val)
+        # Builds a computation graph.
+        x = F.input(input_data)
+        w1 = F.parameter(pw1)
+        b1 = F.parameter(pb1)
+        w2 = F.parameter(pw2)
+        b2 = F.parameter(pb2)
+        h = F.tanh(F.matmul(w1, x) + b1)
+        y = F.matmul(w2, h) + b2
 
-                # Updates parameters.
-                trainer.reset_gradients()
-                g.backward(loss)
-                trainer.update()
+        # Obtains values.
+        y_val = y.to_list()
+        print("epoch ", i, ":")
+        for j in range(4):
+            print("  [", j, "]: ", y_val[j])
+            t = F.input(output_data)
+
+        # Extends the computation graph to calculate loss values.
+        diff = t - y
+        loss = F.batch.mean(diff * diff)
+
+        # Obtains the loss.
+        loss_val = loss.to_list()[0]
+        print("  loss: ", loss_val)
+
+        # Updates parameters.
+        trainer.reset_gradients()
+        g.backward(loss)
+        trainer.update()
 
 
 if __name__ == "__main__":

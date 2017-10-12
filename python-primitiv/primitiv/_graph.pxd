@@ -39,12 +39,18 @@ cdef extern from "node_op.h" namespace "python_primitiv_node":
 cdef extern from "primitiv/graph.h" namespace "primitiv" nogil:
     cdef cppclass CppGraph "primitiv::Graph":
         CppGraph() except +
+        void clear() except +
         const CppTensor &forward(const CppNode &node) except +
         void backward(const CppNode &node) except +
         const CppShape &get_shape(const CppNode &node) except +
         CppDevice &get_device(const CppNode &node) except +
         void dump() except +
         unsigned num_functions() except +
+
+
+cdef extern from "primitiv/graph.h" namespace "primitiv::Graph":
+    cdef CppGraph &get_default()
+    cdef void set_default(CppGraph &g)
 
 
 cdef class _Node:

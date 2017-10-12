@@ -4,7 +4,6 @@ from libcpp cimport bool
 from primitiv._device cimport _Device, wrapDevice
 from primitiv._tensor cimport wrapTensor
 from primitiv._shape cimport wrapShape, normShape
-from primitiv._default_scope cimport _DefaultScopeDevice
 
 import numpy as np
 
@@ -18,7 +17,7 @@ cdef class _Parameter:
             raise MemoryError()
 
         if device is None:
-            device = _DefaultScopeDevice.get()
+            device = _Device.get_default()
 
         # Parameter(name, shape, np.ndarray init, device) new from ndarray
         if isinstance(init, np.ndarray):
@@ -103,5 +102,5 @@ cdef class _Parameter:
     @staticmethod
     def load(str path, bool with_stats = True, _Device device = None):
         if device is None:
-            device = _DefaultScopeDevice.get()
+            device = _Device.get_default()
         return wrapParameterWithNew(Parameter_load(<string> path.encode("utf-8"), with_stats, device.wrapped[0]))

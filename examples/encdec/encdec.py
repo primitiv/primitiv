@@ -4,7 +4,7 @@ import sys
 import random
 import math
 
-from primitiv import DefaultScope, Parameter, Graph
+from primitiv import Device, Parameter, Graph
 from primitiv.devices import Naive
 
 from primitiv import operators as F
@@ -141,6 +141,9 @@ def train(encdec, trainer, prefix, best_valid_ppl):
     train_ids = list(range(num_train_sents))
     valid_ids = list(range(num_valid_sents))
 
+    g = Graph()
+    Graph.set_default(g)
+
     # Train/valid loop.
     for epoch in range(MAX_EPOCH):
         print("epoch", epoch + 1, '/', MAX_EPOCH, ':')
@@ -154,13 +157,15 @@ def train(encdec, trainer, prefix, best_valid_ppl):
             src_batch = make_batch(train_src_corpus, batch_ids, src_vocab)
             trg_batch = make_batch(train_trg_corpus, batch_ids, trg_vocab)
             trainer.reset_gradients()
-            g = Graph()
-            with DefaultScope(g):
-                encdec.encode(src_batch, True)
-                loss = encdec.loss(trg_batch, True)
-                train_loss += loss.to_list()[0] * len(batch_ids)
-                g.backward(loss)
-                trainer.update()
+
+            g.clear()
+
+            encdec.encode(src_batch, True)
+            loss = encdec.loss(trg_batch, True)
+            train_loss += loss.to_list()[0] * len(batch_ids)
+            g.backward(loss)
+            trainer.update()
+
             print("\r%d" % ofs, end="")
             sys.stdout.flush()
 
@@ -173,11 +178,13 @@ def train(encdec, trainer, prefix, best_valid_ppl):
             batch_ids = valid_ids[ofs : min(ofs + BATCH_SIZE, num_valid_sents)]
             src_batch = make_batch(valid_src_corpus, batch_ids, src_vocab)
             trg_batch = make_batch(valid_trg_corpus, batch_ids, trg_vocab)
-            g = Graph()
-            with DefaultScope(g):
-                encdec.encode(src_batch, False)
-                loss = encdec.loss(trg_batch, False)
-                valid_loss += loss.to_list()[0] * len(batch_ids)
+
+            g.clear()
+
+            encdec.encode(src_batch, False)
+            loss = encdec.loss(trg_batch, False)
+            valid_loss += loss.to_list()[0] * len(batch_ids)
+
             print("\r%d" % ofs, end="")
             sys.stdout.flush()
 
@@ -202,25 +209,28 @@ def test(encdec):
     trg_vocab = make_vocab(TRG_TRAIN_FILE, TRG_VOCAB_SIZE)
     inv_trg_vocab = make_inv_vocab(trg_vocab)
 
+    g = Graph()
+    Graph.set_default(g)
+
     for line in sys.stdin:
         src_corpus = [line_to_sent(line.strip(), src_vocab)]
         src_batch = make_batch(src_corpus, [0], src_vocab)
 
-        g = Graph()
-        with DefaultScope(g):
-            encdec.encode(src_batch, False)
+        g.clear()
 
-            # Generates target words one-by-one.
-            trg_ids = [trg_vocab["<bos>"]]
-            eos_id = trg_vocab["<eos>"]
-            while trg_ids[-1] != eos_id:
-                if len(trg_ids) > GENERATION_LIMIT + 1:
-                    print("Warning: Sentence generation did not finish in", GENERATION_LIMIT, "iterations.", file=sys.stderr)
-                    trg_ids.append(eos_id)
-                    break
-                y = encdec.decode_step([trg_ids[-1]], False)
-                logits = y.to_list()
-                trg_ids.append(argmax(logits))
+        encdec.encode(src_batch, False)
+
+        # Generates target words one-by-one.
+        trg_ids = [trg_vocab["<bos>"]]
+        eos_id = trg_vocab["<eos>"]
+        while trg_ids[-1] != eos_id:
+            if len(trg_ids) > GENERATION_LIMIT + 1:
+                print("Warning: Sentence generation did not finish in", GENERATION_LIMIT, "iterations.", file=sys.stderr)
+                trg_ids.append(eos_id)
+                break
+            y = encdec.decode_step([trg_ids[-1]], False)
+            logits = y.to_list()
+            trg_ids.append(argmax(logits))
 
         # Prints the result.
         print(" ".join(inv_trg_vocab[wid] for wid in trg_ids[1:-1]))
@@ -245,29 +255,30 @@ def main():
     sys.stderr.flush()
 
     dev = Naive() # = CUDA(0)
-    with DefaultScope(dev):
-        print("done.", file=sys.stderr)
+    Device.set_default(dev)
 
-        if mode == "train":
-            encdec = EncoderDecoder("encdec", SRC_VOCAB_SIZE, TRG_VOCAB_SIZE, NUM_EMBED_UNITS, NUM_HIDDEN_UNITS, DROPOUT_RATE)
-            trainer = T.Adam()
-            trainer.set_weight_decay(1e-6)
-            trainer.set_gradient_clipping(5)
-            train(encdec, trainer, prefix, 1e10)
-        elif mode == "resume":
-            print("loading model/trainer ... ", end="", file=sys.stderr)
-            sys.stderr.flush()
-            encdec = EncoderDecoder.load("encdec", prefix + '.')
-            trainer = Trainer.load(prefix + ".trainer.config")
-            valid_ppl = load_ppl(prefix + ".valid_ppl.config")
-            print("done.", file=sys.stderr)
-            train(encdec, trainer, prefix, valid_ppl)
-        else:  # mode == "test"
-            print("loading model ... ", end="", file=sys.stderr)
-            sys.stderr.flush()
-            encdec = EncoderDecoder.load("encdec", prefix + '.');
-            print("done.", file=sys.stderr)
-            test(encdec);
+    print("done.", file=sys.stderr)
+
+    if mode == "train":
+        encdec = EncoderDecoder("encdec", SRC_VOCAB_SIZE, TRG_VOCAB_SIZE, NUM_EMBED_UNITS, NUM_HIDDEN_UNITS, DROPOUT_RATE)
+        trainer = T.Adam()
+        trainer.set_weight_decay(1e-6)
+        trainer.set_gradient_clipping(5)
+        train(encdec, trainer, prefix, 1e10)
+    elif mode == "resume":
+        print("loading model/trainer ... ", end="", file=sys.stderr)
+        sys.stderr.flush()
+        encdec = EncoderDecoder.load("encdec", prefix + '.')
+        trainer = Trainer.load(prefix + ".trainer.config")
+        valid_ppl = load_ppl(prefix + ".valid_ppl.config")
+        print("done.", file=sys.stderr)
+        train(encdec, trainer, prefix, valid_ppl)
+    else:  # mode == "test"
+        print("loading model ... ", end="", file=sys.stderr)
+        sys.stderr.flush()
+        encdec = EncoderDecoder.load("encdec", prefix + '.');
+        print("done.", file=sys.stderr)
+        test(encdec);
 
 
 if __name__ == "__main__":

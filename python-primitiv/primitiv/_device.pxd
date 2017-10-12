@@ -88,6 +88,11 @@ cdef extern from "primitiv/device.h" namespace "primitiv":
         void inplace_subtract(const CppTensor &x, CppTensor &y) except +
 
 
+cdef extern from "primitiv/device.h" namespace "primitiv::Device":
+    cdef CppDevice &get_default()
+    cdef void set_default(CppDevice &dev)
+
+
 cdef class _Device:
     cdef CppDevice *wrapped
     cdef CppDevice *wrapped_newed

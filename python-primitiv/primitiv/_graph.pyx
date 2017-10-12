@@ -4,6 +4,8 @@ from primitiv._device cimport wrapDevice
 from primitiv._shape cimport wrapShape
 from primitiv._tensor cimport wrapTensor
 from primitiv._operator cimport Node_pow
+from primitiv._graph cimport get_default as Graph_get_default
+from primitiv._graph cimport set_default as Graph_set_default
 
 cimport numpy as np
 import numpy as np
@@ -133,6 +135,18 @@ cdef class _Graph:
         if self.wrapped_newed is not NULL:
             del self.wrapped_newed
             self.wrapped_newed = NULL
+
+    @staticmethod
+    def get_default():
+        return wrapGraph(&Graph_get_default())
+
+    @staticmethod
+    def set_default(_Graph g):
+        Graph_set_default(g.wrapped[0])
+
+    def clear(self):
+        self.wrapped.clear()
+        return
 
     def forward(self, _Node node):
         cdef CppTensor t

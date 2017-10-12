@@ -11,7 +11,7 @@
 #   $ python3 ./mnist.py
 
 
-from primitiv import DefaultScope
+from primitiv import Device
 from primitiv import Graph
 from primitiv import Parameter
 
@@ -58,82 +58,85 @@ def main():
     test_inputs = load_images("data/t10k-images-idx3-ubyte", NUM_TEST_SAMPLES)
     test_labels = load_labels("data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES)
 
-    with DefaultScope(D.Naive()):  # or DefaultScope(D.CUDA(gpuid))
+    dev = D.Naive()  # or D.CUDA(gpuid)
+    Device.set_default(dev)
 
-        pw1 = Parameter("w1", [NUM_HIDDEN_UNITS, NUM_INPUT_UNITS], I.XavierUniform())
-        pb1 = Parameter("b1", [NUM_HIDDEN_UNITS], I.Constant(0))
-        pw2 = Parameter("w2", [NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS], I.XavierUniform())
-        pb2 = Parameter("b2", [NUM_OUTPUT_UNITS], I.Constant(0))
+    pw1 = Parameter("w1", [NUM_HIDDEN_UNITS, NUM_INPUT_UNITS], I.XavierUniform())
+    pb1 = Parameter("b1", [NUM_HIDDEN_UNITS], I.Constant(0))
+    pw2 = Parameter("w2", [NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS], I.XavierUniform())
+    pb2 = Parameter("b2", [NUM_OUTPUT_UNITS], I.Constant(0))
 
-        trainer = T.SGD(.5)
-        trainer.add_parameter(pw1)
-        trainer.add_parameter(pb1)
-        trainer.add_parameter(pw2)
-        trainer.add_parameter(pb2)
+    trainer = T.SGD(.5)
+    trainer.add_parameter(pw1)
+    trainer.add_parameter(pb1)
+    trainer.add_parameter(pw2)
+    trainer.add_parameter(pb2)
 
-        def make_graph(inputs, train):
-            x = F.input(inputs)
+    def make_graph(inputs, train):
+        x = F.input(inputs)
 
-            w1 = F.parameter(pw1)
-            b1 = F.parameter(pb1)
-            h = F.relu(F.matmul(w1, x) + b1)
+        w1 = F.parameter(pw1)
+        b1 = F.parameter(pb1)
+        h = F.relu(F.matmul(w1, x) + b1)
 
-            h = F.dropout(h, .5, train)
+        h = F.dropout(h, .5, train)
 
-            w2 = F.parameter(pw2)
-            b2 = F.parameter(pb2)
-            return F.matmul(w2, h) + b2
+        w2 = F.parameter(pw2)
+        b2 = F.parameter(pb2)
+        return F.matmul(w2, h) + b2
 
-        ids = list(range(NUM_TRAIN_SAMPLES))
+    ids = list(range(NUM_TRAIN_SAMPLES))
 
-        for epoch in range(MAX_EPOCH):
-            random.shuffle(ids)
+    g = Graph()
+    Graph.set_default(g)
 
-            # Training loop
-            for batch in range(NUM_TRAIN_BATCHES):
-                print("\rTraining... %d / %d" % (batch + 1, NUM_TRAIN_BATCHES), end="")
-                inputs = [train_inputs[ids[batch * BATCH_SIZE + i]] for i in range(BATCH_SIZE)]
-                labels = [train_labels[ids[batch * BATCH_SIZE + i]] for i in range(BATCH_SIZE)]
+    for epoch in range(MAX_EPOCH):
+        random.shuffle(ids)
 
-                trainer.reset_gradients()
+        # Training loop
+        for batch in range(NUM_TRAIN_BATCHES):
+            print("\rTraining... %d / %d" % (batch + 1, NUM_TRAIN_BATCHES), end="")
+            inputs = [train_inputs[ids[batch * BATCH_SIZE + i]] for i in range(BATCH_SIZE)]
+            labels = [train_labels[ids[batch * BATCH_SIZE + i]] for i in range(BATCH_SIZE)]
 
-                g = Graph()
-                with DefaultScope(g):
-                    y = make_graph(inputs, True)
-                    loss = F.softmax_cross_entropy(y, labels, 0)
-                    avg_loss = F.batch.mean(loss)
+            trainer.reset_gradients()
 
-                    g.backward(avg_loss)
+            g.clear()
 
-                    trainer.update()
+            y = make_graph(inputs, True)
+            loss = F.softmax_cross_entropy(y, labels, 0)
+            avg_loss = F.batch.mean(loss)
 
-            print()
+            g.backward(avg_loss)
 
-            match = 0
+            trainer.update()
 
-            # Test loop
-            for batch in range(NUM_TEST_BATCHES):
-                print("\rTesting... %d / %d" % (batch + 1, NUM_TEST_BATCHES), end="")
-                inputs = [test_inputs[batch * BATCH_SIZE + i] for i in range(BATCH_SIZE)]
+        print()
 
-                g = Graph()
-                with DefaultScope(g):
-                    y = make_graph(inputs, False)
+        match = 0
 
-                    y_val = y.to_list()
-                    for i in range(BATCH_SIZE):
-                        maxval = -1e10
-                        argmax = -1
-                        for j in range(NUM_OUTPUT_UNITS):
-                            v = y_val[j + i * NUM_OUTPUT_UNITS]
-                            if (v > maxval):
-                                maxval = v
-                                argmax = j
-                        if argmax == test_labels[i + batch * BATCH_SIZE]:
-                            match += 1
+        # Test loop
+        for batch in range(NUM_TEST_BATCHES):
+            print("\rTesting... %d / %d" % (batch + 1, NUM_TEST_BATCHES), end="")
+            inputs = [test_inputs[batch * BATCH_SIZE + i] for i in range(BATCH_SIZE)]
 
-            accuracy = 100.0 * match / NUM_TEST_SAMPLES
-            print("\nepoch %d: accuracy: %.2f%%\n" % (epoch, accuracy))
+            g.clear()
+
+            y = make_graph(inputs, False)
+            y_val = y.to_list()
+            for i in range(BATCH_SIZE):
+                maxval = -1e10
+                argmax = -1
+                for j in range(NUM_OUTPUT_UNITS):
+                    v = y_val[j + i * NUM_OUTPUT_UNITS]
+                    if (v > maxval):
+                        maxval = v
+                        argmax = j
+                if argmax == test_labels[i + batch * BATCH_SIZE]:
+                    match += 1
+
+        accuracy = 100.0 * match / NUM_TEST_SAMPLES
+        print("\nepoch %d: accuracy: %.2f%%\n" % (epoch, accuracy))
 
 
 if __name__ == "__main__":

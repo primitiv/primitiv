@@ -2,9 +2,19 @@ from libcpp.vector cimport vector
 
 from primitiv._shape cimport normShape
 from primitiv._tensor cimport wrapTensor, _Tensor
+from primitiv._device cimport get_default as Device_get_default
+from primitiv._device cimport set_default as Device_set_default
 
 
 cdef class _Device:
+
+    @staticmethod
+    def get_default():
+        return wrapDevice(&Device_get_default())
+
+    @staticmethod
+    def set_default(_Device dev):
+        Device_set_default(dev.wrapped[0])
 
     def new_tensor(self, shape, float k = 0):
         return wrapTensor(self.wrapped.new_tensor(normShape(shape).wrapped, k))
