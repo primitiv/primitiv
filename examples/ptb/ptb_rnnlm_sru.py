@@ -18,36 +18,24 @@ DROPOUT_RATE = 0.5
 
 # Gathers the set of words from space-separated corpus.
 def make_vocab(filename):
-    try:
-        ifs = open(filename, "r")
-    except OSError:
-        print("File could not be opened:", filename, file=sys.stderr)
-        sys.exit(1)
-
     vocab = {}
-    for line in ifs:
-        line = "<bos> " + line.strip() + " <eos>"
-        for word in line.split():
-            if word not in vocab:
-                vocab[word] = len(vocab)
-
+    with open(filename, "r") as ifs:
+        for line in ifs:
+            line = "<bos> " + line.strip() + " <eos>"
+            for word in line.split():
+                if word not in vocab:
+                    vocab[word] = len(vocab)
     return vocab
 
 
 # Generates word ID list using corpus and vocab.
 def load_corpus(filename, vocab):
-    try:
-        ifs = open(filename, "r")
-    except OSError:
-        print("File could not be opened:", filename, file=sys.stderr)
-        sys.exit(1)
-
     corpus = []
-    for line in ifs:
-        line = "<bos> " + line.strip() + " <eos>"
-        sentence = [vocab[word] for word in line.split()]
-        corpus.append(sentence)
-
+    with open(filename, "r") as ifs:
+        for line in ifs:
+            line = "<bos> " + line.strip() + " <eos>"
+            sentence = [vocab[word] for word in line.split()]
+            corpus.append(sentence)
     return corpus
 
 
