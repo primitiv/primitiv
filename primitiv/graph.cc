@@ -39,6 +39,10 @@ Graph::~Graph() {
   if (default_obj_ == this) default_obj_ = nullptr;
 }
 
+void Graph::clear() {
+  funcs_.clear();
+}
+
 #define CHECK_NODE(n) { \
   if ((n).g_ != this) { \
     THROW_ERROR( \

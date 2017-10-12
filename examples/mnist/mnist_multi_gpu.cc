@@ -85,6 +85,10 @@ int main() {
   devices::CUDA dev0(0);  // GPU 0
   devices::CUDA dev1(1);  // GPU 1
 
+  // Computation graph
+  Graph g;
+  Graph::set_default(g);
+
   // Parameters on GPU 0.
   Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, I::XavierUniform(), dev0);
   Parameter pb1("b1", {NUM_HIDDEN_UNITS}, I::Constant(0), dev0);
@@ -142,8 +146,7 @@ int main() {
       }
 
       // Constructs the graph.
-      Graph g;
-      Graph::set_default(g);
+      g.clear();
       Node y = make_graph(inputs);
       Node loss = F::softmax_cross_entropy(y, labels, 0);
       Node avg_loss = F::batch::mean(loss);
@@ -165,8 +168,7 @@ int main() {
            &inputs[0]);
 
       // Constructs the graph.
-      Graph g;
-      Graph::set_default(g);
+      g.clear();
       Node y = make_graph(inputs);
 
       // Gets outputs, argmax, and compares them with the label.

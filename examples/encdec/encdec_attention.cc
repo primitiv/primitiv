@@ -241,6 +241,10 @@ void train(
   iota(begin(train_ids), end(train_ids), 0);
   iota(begin(valid_ids), end(valid_ids), 0);
 
+  // Computation graph.
+  Graph g;
+  Graph::set_default(g);
+
   // Train/valid loop.
   for (unsigned epoch = 0; epoch < MAX_EPOCH; ++epoch) {
     cout << "epoch " << (epoch + 1) << '/' << MAX_EPOCH
@@ -256,16 +260,19 @@ void train(
           begin(train_ids) + std::min<unsigned>(ofs + BATCH_SIZE, num_train_sents));
       const auto src_batch = ::make_batch(train_src_corpus, batch_ids, src_vocab);
       const auto trg_batch = ::make_batch(train_trg_corpus, batch_ids, trg_vocab);
-      trainer.reset_gradients();
-      Graph g;
-      Graph::set_default(g);
+
+      g.clear();
       encdec.encode(src_batch, true);
       const auto loss = encdec.loss(trg_batch, true);
       train_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
+
+      trainer.reset_gradients();
       g.backward(loss);
       trainer.update();
+
       cout << ofs << '\r' << flush;
     }
+
     const float train_ppl = std::exp(train_loss / num_train_labels);
     cout << "  train ppl = " << train_ppl << endl;
 
@@ -277,13 +284,15 @@ void train(
           begin(valid_ids) + std::min<unsigned>(ofs + BATCH_SIZE, num_valid_sents));
       const auto src_batch = ::make_batch(valid_src_corpus, batch_ids, src_vocab);
       const auto trg_batch = ::make_batch(valid_trg_corpus, batch_ids, trg_vocab);
-      Graph g;
-      Graph::set_default(g);
+
+      g.clear();
       encdec.encode(src_batch, false);
       const auto loss = encdec.loss(trg_batch, false);
       valid_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
+
       cout << ofs << '\r' << flush;
     }
+
     const float valid_ppl = std::exp(valid_loss / num_valid_labels);
     cout << "  valid ppl = " << valid_ppl << endl;
 
