@@ -46,6 +46,12 @@ class _operators:
             return wrapNode(Node_parameter(param.wrapped[0]))
 
     @staticmethod
+    def copy(_Node x, _Device device = None):
+        if device is None:
+            device = _Device.get_default()
+        return wrapNode(Node_copy(x.wrapped, device.wrapped[0]))
+
+    @staticmethod
     def pick(_Node x, vector[unsigned] ids, unsigned dim):
         return wrapNode(Node_pick(x.wrapped, ids, dim))
 
