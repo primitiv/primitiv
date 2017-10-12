@@ -186,6 +186,8 @@ int main() {
   // Uses GPU.
   devices::CUDA dev(0);
   Device::set_default(dev);
+  Graph g;
+  Graph::set_default(g);
 
   // Trainer.
   Adam trainer;
@@ -219,16 +221,19 @@ int main() {
           begin(train_ids) + std::min<unsigned>(
             ofs + BATCH_SIZE, num_train_sents));
       const auto batch = ::make_batch(train_corpus, batch_ids, eos_id);
-      trainer.reset_gradients();
-      Graph g;
-      Graph::set_default(g);
+
+      g.clear();
       const auto outputs = lm.forward(batch);
       const auto loss = lm.forward_loss(outputs, batch);
       train_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
+
+      trainer.reset_gradients();
       g.backward(loss);
       trainer.update();
+
       cout << ofs << '\r' << flush;
     }
+
     const float train_ppl = std::exp(train_loss / num_train_labels);
     cout << "  train ppl = " << train_ppl << endl;
 
@@ -240,13 +245,15 @@ int main() {
           begin(valid_ids) + std::min<unsigned>(
             ofs + BATCH_SIZE, num_valid_sents));
       const auto batch = ::make_batch(valid_corpus, batch_ids, eos_id);
-      Graph g;
-      Graph::set_default(g);
+
+      g.clear();
       const auto outputs = lm.forward(batch);
       const auto loss = lm.forward_loss(outputs, batch);
       valid_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
+
       cout << ofs << '\r' << flush;
     }
+
     const float valid_ppl = std::exp(valid_loss / num_valid_labels);
     cout << "  valid ppl = " << valid_ppl << endl;
   }

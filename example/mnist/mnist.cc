@@ -84,6 +84,8 @@ int main() {
   // Uses GPU.
   devices::CUDA dev(0);
   Device::set_default(dev);
+  Graph g;
+  Graph::set_default(g);
 
   // Parameters for the multilayer perceptron.
   Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, I::XavierUniform());
@@ -91,18 +93,12 @@ int main() {
   Parameter pw2("w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, I::XavierUniform());
   Parameter pb2("b2", {NUM_OUTPUT_UNITS}, I::Constant(0));
 
-  // Parameters for batch normalization.
-  //Parameter pbeta("beta", {NUM_HIDDEN_UNITS}, I::Constant(0));
-  //Parameter pgamma("gamma", {NUM_HIDDEN_UNITS}, I::Constant(1));
-
   // Trainer
   T::SGD trainer(.5);
   trainer.add_parameter(pw1);
   trainer.add_parameter(pb1);
   trainer.add_parameter(pw2);
   trainer.add_parameter(pb2);
-  //trainer.add_parameter(&pbeta);
-  //trainer.add_parameter(&pgamma);
 
   // Helper lambda to construct the predictor network.
   auto make_graph = [&](const vector<float> &inputs, bool train) {
@@ -112,10 +108,6 @@ int main() {
     Node w1 = F::parameter<Node>(pw1);
     Node b1 = F::parameter<Node>(pb1);
     Node h = F::relu(F::matmul(w1, x) + b1);
-    // Batch normalization
-    //Node beta = F::parameter(pbeta);
-    //Node gamma = F::parameter(pgamma);
-    //h = F::batch::normalize(h) * gamma + beta;
     // Dropout
     h = F::dropout(h, .5, train);
     // Calculates the output layer.
@@ -149,8 +141,7 @@ int main() {
       trainer.reset_gradients();
 
       // Constructs the graph.
-      Graph g;
-      Graph::set_default(g);
+      g.clear();
       Node y = make_graph(inputs, true);
       Node loss = F::softmax_cross_entropy(y, labels, 0);
       Node avg_loss = F::batch::mean(loss);
@@ -160,7 +151,6 @@ int main() {
 
       // Implicit forward, backward, and updates parameters.
       g.backward(avg_loss);
-
       trainer.update();
     }
 
@@ -175,8 +165,7 @@ int main() {
            &inputs[0]);
 
       // Constructs the graph.
-      Graph g;
-      Graph::set_default(g);
+      g.clear();
       Node y = make_graph(inputs, false);
 
       // Gets outputs, argmax, and compares them with the label.
@@ -198,8 +187,6 @@ int main() {
     //pb1.save("mnist-params-b1.param");
     //pw2.save("mnist-params-w2.param");
     //pb2.save("mnist-params-b2.param");
-    //pbeta.save("mnist-params-beta.param");
-    //pgamma.save("mnist-params-gamma.param");
     //cout << "epoch " << epoch << ": saved parameters." << endl;
   }
 
