@@ -6,7 +6,6 @@ protobuf_generate_cpp(primitiv_proto_SRCS primitiv_proto_HDRS messages.proto)
 # Core headers.
 set(primitiv_base_HDRS
   ${primitiv_proto_HDRS}
-  default_scope.h
   device.h
   error.h
   function.h
