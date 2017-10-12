@@ -132,6 +132,13 @@ public:
   ~Graph();
 
   /**
+   * Clear all functions in the graph.
+   * @remarks After calling this method, all Node objects supplied by the graph
+   *          itself is invalidated.
+   */
+  void clear();
+
+  /**
    * Adds a function subgraph.
    * @param func Interface of the new function.
    * @param args List of arguments. Each node should point a node in the same

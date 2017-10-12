@@ -126,6 +126,38 @@ TEST_F(GraphTest, CheckInvalidMultipleDevices) {
   EXPECT_THROW(g.forward(x3), Error);
 }
 
+TEST_F(GraphTest, CheckClear) {
+  Device::set_default(dev);
+
+  Graph g;
+  Graph::set_default(g);
+
+  EXPECT_EQ(0u, g.num_functions());
+
+  {
+    operators::input<Node>({}, {1});
+    operators::input<Node>({}, {1});
+    EXPECT_EQ(2u, g.num_functions());
+  }
+
+  g.clear();
+  EXPECT_EQ(0u, g.num_functions());
+
+  {
+    operators::input<Node>({}, {1});
+    operators::input<Node>({}, {1});
+    operators::input<Node>({}, {1});
+    EXPECT_EQ(3u, g.num_functions());
+  }
+
+  g.clear();
+  EXPECT_EQ(0u, g.num_functions());
+
+  // Clear empty graph.
+  g.clear();
+  EXPECT_EQ(0u, g.num_functions());
+}
+
 TEST_F(GraphTest, CheckForwardBackward) {
   Device::set_default(dev);
 
