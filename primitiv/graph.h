@@ -115,7 +115,21 @@ class Graph {
   Graph &operator=(Graph &&) = delete;
 
 public:
+
+  /**
+   * Retrieves the current default graph.
+   * @return Reference of the default graph.
+   */
+  static Graph &get_default();
+
+  /**
+   * Registers a new default graph.
+   * @param g New default graph.
+   */
+  static void set_default(Graph &g);
+
   Graph() = default;
+  ~Graph();
 
   /**
    * Adds a function subgraph.
@@ -202,6 +216,7 @@ private:
     std::vector<NodeInfo> rets;
   };
 
+  static Graph *default_obj_;
   std::vector<FunctionInfo> funcs_;
 };
 

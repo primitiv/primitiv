@@ -102,7 +102,7 @@ Node input(
 template<>
 Node input<Node>(
     const Shape &shape, const std::vector<float> &data, Device &dev) {
-  return input(shape, data, dev, DefaultScope<Graph>::get());
+  return input(shape, data, dev, Graph::get_default());
 }
 
 Node parameter(Parameter &param, Graph &g) {
@@ -111,7 +111,7 @@ Node parameter(Parameter &param, Graph &g) {
 
 template<>
 Node parameter<Node>(Parameter &param) {
-  return parameter(param, DefaultScope<Graph>::get());
+  return parameter(param, Graph::get_default());
 }
 
 template<>
@@ -280,12 +280,12 @@ Node identity(unsigned size, Device &dev, Graph &g) {
 
 template<>
 Node constant<Node>(const Shape &shape, float k, Device &dev) {
-  return constant(shape, k, dev, DefaultScope<Graph>::get());
+  return constant(shape, k, dev, Graph::get_default());
 }
 
 template<>
 Node identity<Node>(unsigned size, Device &dev) {
-  return identity(size, dev, DefaultScope<Graph>::get());
+  return identity(size, dev, Graph::get_default());
 }
 
 namespace random {
@@ -312,22 +312,22 @@ Node gumbel(const Shape &shape, float mu, float beta, Device &dev, Graph &g) {
 
 template<>
 Node bernoulli<Node>(const Shape &shape, float p, Device &dev) {
-  return bernoulli(shape, p, dev, DefaultScope<Graph>::get());
+  return bernoulli(shape, p, dev, Graph::get_default());
 }
 
 template<>
 Node uniform<Node>(const Shape &shape, float lower, float upper, Device &dev) {
-  return uniform(shape, lower, upper, dev, DefaultScope<Graph>::get());
+  return uniform(shape, lower, upper, dev, Graph::get_default());
 }
 
 template<>
 Node normal<Node>(const Shape &shape, float mean, float sd, Device &dev) {
-  return normal(shape, mean, sd, dev, DefaultScope<Graph>::get());
+  return normal(shape, mean, sd, dev, Graph::get_default());
 }
 
 template<>
 Node log_normal<Node>(const Shape &shape, float mean, float sd, Device &dev) {
-  return log_normal(shape, mean, sd, dev, DefaultScope<Graph>::get());
+  return log_normal(shape, mean, sd, dev, Graph::get_default());
 }
 
 }  // namespace random

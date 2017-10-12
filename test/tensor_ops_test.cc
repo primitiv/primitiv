@@ -5,7 +5,6 @@
 #include <utility>
 #include <vector>
 #include <gtest/gtest.h>
-#include <primitiv/default_scope.h>
 #include <primitiv/error.h>
 #include <primitiv/naive_device.h>
 #include <primitiv/operators.h>
@@ -106,7 +105,7 @@ TEST_F(TensorOpsTest, CheckIdentity) {
     {4, {4, 4}, {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}},
   };
   for (Device *dev : devices) {
-    DefaultScope<Device> ds(*dev);
+    Device::set_default(*dev);
     for (const TestCase &tc : test_cases) {
       const Tensor y = identity<Tensor>(tc.size);
       EXPECT_EQ(tc.shape, y.shape());
@@ -117,7 +116,7 @@ TEST_F(TensorOpsTest, CheckIdentity) {
 
 TEST_F(TensorOpsTest, CheckInvalidIdentity) {
   for (Device *dev : devices) {
-    DefaultScope<Device> ds(*dev);
+    Device::set_default(*dev);
     EXPECT_THROW(identity<Tensor>(0), Error);
   }
 }

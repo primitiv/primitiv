@@ -3,7 +3,6 @@
 #include <sstream>
 #include <vector>
 #include <gtest/gtest.h>
-#include <primitiv/default_scope.h>
 #include <primitiv/error.h>
 #include <primitiv/function_impl.h>
 #include <primitiv/graph.h>
@@ -25,6 +24,25 @@ protected:
   devices::Naive dev2;
 };
 
+TEST_F(GraphTest, CheckDefault) {
+  EXPECT_THROW(Graph::get_default(), Error);
+  {
+    Graph g1;
+    Graph::set_default(g1);
+    EXPECT_EQ(&g1, &Graph::get_default());
+    {
+      Graph g2;
+      Graph::set_default(g2);
+      EXPECT_EQ(&g2, &Graph::get_default());
+    }
+    EXPECT_THROW(Graph::get_default(), Error);
+    Graph g3;
+    Graph::set_default(g3);
+    EXPECT_EQ(&g3, &Graph::get_default());
+  }
+  EXPECT_THROW(Graph::get_default(), Error);
+}
+
 TEST_F(GraphTest, CheckInvalidNode) {
   Node node;
   EXPECT_FALSE(node.valid());
@@ -37,10 +55,10 @@ TEST_F(GraphTest, CheckInvalidNode) {
 }
 
 TEST_F(GraphTest, CheckMoveNode) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
 
   Graph g;
-  DefaultScope<Graph> gs(g);
+  Graph::set_default(g);
 
   Node x1 = operators::zeros<Node>({2, 2});
   ASSERT_TRUE(x1.valid());
@@ -64,10 +82,10 @@ TEST_F(GraphTest, CheckMoveNode) {
 }
 
 TEST_F(GraphTest, CheckMultipleDevices) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
 
   Graph g;
-  DefaultScope<Graph> gs(g);
+  Graph::set_default(g);
 
   const vector<float> data1 {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4};
   const vector<float> data2 {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
@@ -96,10 +114,10 @@ TEST_F(GraphTest, CheckMultipleDevices) {
 }
 
 TEST_F(GraphTest, CheckInvalidMultipleDevices) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
 
   Graph g;
-  DefaultScope<Graph> gs(g);
+  Graph::set_default(g);
 
   const vector<float> dummy(12);
   const Node x1 = operators::input<Node>(Shape({2, 2}, 3), dummy);
@@ -109,10 +127,10 @@ TEST_F(GraphTest, CheckInvalidMultipleDevices) {
 }
 
 TEST_F(GraphTest, CheckForwardBackward) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
 
   Graph g;
-  DefaultScope<Graph> gs(g);
+  Graph::set_default(g);
 
   const vector<float> data1 {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4};
   const vector<float> data3 {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
@@ -195,7 +213,7 @@ TEST_F(GraphTest, CheckForwardBackward) {
 }
 
 TEST_F(GraphTest, CheckXor) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
 
   // Solves a 2-dimension XOR problem with 3-layer perceptron.
   // h = tanh(W1.x + b1)
@@ -209,7 +227,7 @@ TEST_F(GraphTest, CheckXor) {
   const vector<float> outputs {1, -1, -1, 1};
 
   Graph g;
-  DefaultScope<Graph> gs(g);
+  Graph::set_default(g);
 
   vector<Node> nodes;
   // sources
@@ -270,7 +288,7 @@ TEST_F(GraphTest, CheckXor) {
 }
 
 TEST_F(GraphTest, CheckLSTM) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
 
   // Software-based LSTM implementation with input/forget/output-gates.
   // i = sigmoid(Wix . x + Wih . h + bi)
@@ -293,7 +311,7 @@ TEST_F(GraphTest, CheckLSTM) {
   Parameter pbj("bj", {2}, initializers::Constant(0));
 
   Graph g;
-  DefaultScope<Graph> gs(g);
+  Graph::set_default(g);
 
   using operators::matmul;
   using operators::input;
@@ -377,7 +395,7 @@ TEST_F(GraphTest, CheckLSTM) {
 }
 
 TEST_F(GraphTest, CheckConcatLSTM) {
-  DefaultScope<Device> ds(dev);
+  Device::set_default(dev);
 
   // Another implementation of LSTM that concatenates all gates and inputs.
   // All values and gradients should be same as that of "CheckLSTM".
@@ -390,7 +408,7 @@ TEST_F(GraphTest, CheckConcatLSTM) {
   Parameter pb("b", {8}, initializers::Constant(0));
 
   Graph g;
-  DefaultScope<Graph> gs(g);
+  Graph::set_default(g);
 
   using operators::matmul;
   using operators::input;

@@ -4,7 +4,6 @@
 #include <primitiv/cuda_memory_pool.h>
 #include <primitiv/cuda_device.h>
 #include <primitiv/cuda_utils.h>
-#include <primitiv/default_scope.h>
 #include <primitiv/error.h>
 #include <primitiv/shape.h>
 
