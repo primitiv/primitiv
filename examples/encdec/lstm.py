@@ -54,7 +54,7 @@ class LSTM(object):
 
     # One step forwarding.
     def forward(self, x):
-        u = F.matmul(self.wxh_, x) + F.matmul(self.whh_, self.h_) + self.bh_
+        u = self.wxh_ @ x + self.whh_ @ self.h_ + self.bh_
         i = F.sigmoid(F.slice(u, 0, 0, self.out_size_))
         f = F.sigmoid(F.slice(u, 0, self.out_size_, 2 * self.out_size_));
         o = F.sigmoid(F.slice(u, 0, 2 * self.out_size_, 3 * self.out_size_));

@@ -77,13 +77,13 @@ def main():
 
         w1 = F.parameter(pw1)
         b1 = F.parameter(pb1)
-        h = F.relu(F.matmul(w1, x) + b1)
+        h = F.relu(w1 @ x + b1)
 
         h = F.dropout(h, .5, train)
 
         w2 = F.parameter(pw2)
         b2 = F.parameter(pb2)
-        return F.matmul(w2, h) + b2
+        return w2 @ h + b2
 
     ids = list(range(NUM_TRAIN_SAMPLES))
 

@@ -103,7 +103,7 @@ class EncoderDecoder(object):
         x = F.dropout(x, self.dropout_rate_, train)
         h = self.trg_lstm_.forward(x)
         h = F.dropout(h, self.dropout_rate_, train)
-        return F.matmul(self.why_, h) + self.by_
+        return self.why_ @ h + self.by_
 
     # Calculates the loss function over given target sentences.
     def loss(self, trg_batch, train):

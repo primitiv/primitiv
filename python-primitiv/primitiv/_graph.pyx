@@ -3,7 +3,7 @@ from libcpp.vector cimport vector
 from primitiv._device cimport wrapDevice
 from primitiv._shape cimport wrapShape
 from primitiv._tensor cimport wrapTensor
-from primitiv._operator cimport Node_pow
+from primitiv._operator cimport Node_pow, Node_matmul
 from primitiv._graph cimport get_default as Graph_get_default
 from primitiv._graph cimport set_default as Graph_set_default
 
@@ -95,6 +95,12 @@ cdef class _Node:
             return wrapNode(op_node_mul(<float> left, (<_Node> right).wrapped))
         elif isinstance(left, _Node) and isinstance(right, _Node):
             return wrapNode(op_node_mul((<_Node> left).wrapped, (<_Node> right).wrapped))
+        else:
+            return NotImplemented
+
+    def __matmul__(left, right):
+        if isinstance(left, _Node) and isinstance(right, _Node):
+            return wrapNode(Node_matmul((<_Node> left).wrapped, (<_Node> right).wrapped))
         else:
             return NotImplemented
 

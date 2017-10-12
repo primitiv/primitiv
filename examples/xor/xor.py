@@ -57,8 +57,8 @@ def main():
         b1 = F.parameter(pb1)
         w2 = F.parameter(pw2)
         b2 = F.parameter(pb2)
-        h = F.tanh(F.matmul(w1, x) + b1)
-        y = F.matmul(w2, h) + b2
+        h = F.tanh(w1 @ x + b1)
+        y = w2 @ h + b2
 
         # Obtains values.
         y_val = y.to_list()
