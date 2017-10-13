@@ -64,12 +64,12 @@ public:
    * Returns the hyperparameter eps.
    * @return The value of eps.
    */
-	float eps() const {return eps;}
+	float eps() const {return eps_;}
 
 private:
 	float eta_;
 	float eps_;
-}
+};
 
 /**
  * Adam optimizer.
