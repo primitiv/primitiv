@@ -25,10 +25,14 @@ Prerequisites
 - (optional) CUDA 7.5 or later
   - Required only when `-DPRIMITIV_USE_CUDA=ON`
 
-Ubuntu Protocol Buffers Installation Guide
-------------------------------------------
+Install
+-------
 
-Install [Protocol Buffers](https://github.com/google/protobuf) first.
+- Install Protocol Buffers (for Ubuntu 16.04 users)
+
+The default `protobuf` repository on Ubuntu 16.04 does not support *proto3* format and
+users need to install newer library from source.
+Typical step to build/install `protobuf` is below:
 
     sudo apt install autoconf automake build-essential cmake libtool unzip
     git clone https://github.com/google/protobuf
@@ -40,8 +44,7 @@ Install [Protocol Buffers](https://github.com/google/protobuf) first.
     sudo make install
     sudo ldconfig
 
-Build
------
+- Install `primitiv`:
 
     git clone <this repository>
     cd primitiv
