@@ -217,7 +217,7 @@ def train(encdec, trainer, prefix, best_valid_ppl):
             print("\r%d" % (ofs), end="")
             sys.stdout.flush()
 
-        train_pp = math.exp(train_loss / num_valid_labels)
+        train_ppl = math.exp(train_loss / num_valid_labels)
         print("\n\ttrain ppl =", train_ppl)
 
         # Valdation.
@@ -228,7 +228,7 @@ def train(encdec, trainer, prefix, best_valid_ppl):
             trg_batch = make_batch(valid_trg_corpus, batch_ids, trg_vocab)
 
             g.clear()
-            encdec.encde(src_batch, False)
+            encdec.encode(src_batch, False)
             loss = encdec.loss(trg_batch, False)
             valid_loss += g.forward(loss).to_list()[0] * len(batch_ids)
 
@@ -254,13 +254,16 @@ def train(encdec, trainer, prefix, best_valid_ppl):
 
 # Generates translation by consuming stdin.
 def test(encdec):
+    g = Graph()
+    Graph.set_default(g)
+
     # Loads vocab.
     src_vocab = make_vocab(SRC_TRAIN_FILE, SRC_VOCAB_SIZE)
     trg_vocab = make_vocab(TRG_TRAIN_FILE, TRG_VOCAB_SIZE)
     inv_trg_vocab = make_inv_vocab(trg_vocab)
 
     for line in sys.stdin:
-        src_vocab = [line_to_sent(line.strip(), src_vocab)]
+        src_corpus = [line_to_sent(line.strip(), src_vocab)]
         src_batch = make_batch(src_corpus, [0], src_vocab)
         encdec.encode(src_batch, False)
 
