@@ -28,7 +28,7 @@ Prerequisites
 Install
 -------
 
-- Install Protocol Buffers (for Ubuntu 16.04 users)
+### Install Protocol Buffers (for Ubuntu 16.04 users) ###
 
 The default `protobuf` repository on Ubuntu 16.04 does not support *proto3* format and
 users need to install newer library from source.
@@ -44,7 +44,7 @@ Typical step to build/install `protobuf` is below:
     sudo make install
     sudo ldconfig
 
-- Install `primitiv`:
+### Install `primitiv` ###
 
     git clone <this repository>
     cd primitiv
