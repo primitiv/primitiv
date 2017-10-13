@@ -1,5 +1,5 @@
-#ifndef PYTHON_PRIMITIV_OP_TEMPLATE_WRAPPER_H_
-#define PYTHON_PRIMITIV_OP_TEMPLATE_WRAPPER_H_
+#ifndef PYTHON_PRIMITIV_OPERATOR_TEMPLATE_WRAPPER_H_
+#define PYTHON_PRIMITIV_OPERATOR_TEMPLATE_WRAPPER_H_
 
 #include <primitiv/operators.h>
 
@@ -255,6 +255,6 @@ inline Node Node_dropout(const Node &x, float rate, bool enabled) {
     return operators::dropout<Node>(x, rate, enabled);
 }
 
-}
+}  // namespace python_primitiv
 
-#endif
+#endif  // PYTHON_PRIMITIV_OPERATOR_TEMPLATE_WRAPPER_H_

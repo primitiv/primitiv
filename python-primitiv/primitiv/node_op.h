@@ -4,7 +4,6 @@
 #include <primitiv/operators.h>
 #include <primitiv/graph.h>
 
-
 namespace python_primitiv_node {
 
 using namespace primitiv;
@@ -65,5 +64,6 @@ inline Node op_node_div(const Node &a, const Node &b) {
     return a / b;
 }
 
-}
+}  // namespace python_primitiv_node
+
 #endif  // PYTHON_PRIMITIV_NODE_OP_H_

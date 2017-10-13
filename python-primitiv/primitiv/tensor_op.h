@@ -18,4 +18,4 @@ inline primitiv::Tensor &tensor_inplace_subtract(primitiv::Tensor &tensor, const
     return tensor;
 }
 
-#endif
+#endif  // PYTHON_PRIMITIV_TENSOR_OP_H_
