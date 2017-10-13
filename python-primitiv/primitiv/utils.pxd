@@ -32,20 +32,3 @@ cdef inline vector[float] ndarrays_to_vector(list arrays):
         for i in range(datasize):
             result[j * datasize + i] = np_data[i]
     return result
-
-cdef inline vector[unsigned] ndarray_to_vector_unsigned(np.ndarray array):
-    cdef vector[unsigned] result
-    cdef unsigned *np_data
-    cdef unsigned datasize
-    cdef np.ndarray array_tmp
-
-    if array.dtype != np.uint32:
-        raise TypeError("numpy.ndarray must be constructed from uint32 data")
-
-    datasize = array.size
-    result.resize(datasize)
-    array_tmp = np.array(array, order="F")
-    np_data = <unsigned*> array_tmp.data
-    for i in range(datasize):
-        result[i] = np_data[i]
-    return result
