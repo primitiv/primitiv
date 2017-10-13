@@ -42,6 +42,9 @@ private:
   float eta_;
 };
 
+/**
+ * AdaGrad optimizer.
+ */
 class AdaGrad : public primitiv::Trainer {
   DECL_DEFAULTS(AdaGrad);
 
@@ -58,17 +61,17 @@ public:
    * Returns the hyperparameter eta.
    * @return The value of eta.
    */
-	float eta() const {return eta_;}
+  float eta() const {return eta_;}
 
   /**
    * Returns the hyperparameter eps.
    * @return The value of eps.
    */
-	float eps() const {return eps_;}
+  float eps() const {return eps_;}
 
 private:
-	float eta_;
-	float eps_;
+  float eta_;
+  float eps_;
 };
 
 /**
