@@ -74,4 +74,4 @@ cdef inline _Graph wrapGraph(CppGraph *wrapped) except +:
     return graph
 
 
-cdef _Graph py_default_graph
+cdef _Graph py_primitiv_Graph_default

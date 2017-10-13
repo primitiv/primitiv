@@ -144,15 +144,15 @@ cdef class _Graph:
 
     @staticmethod
     def get_default():
-        if py_default_graph is None:
+        if py_primitiv_Graph_default is None:
             raise RuntimeError("Default graph is null.")
-        return py_default_graph
+        return py_primitiv_Graph_default
 
     @staticmethod
     def set_default(g):
-        global py_default_graph
+        global py_primitiv_Graph_default
         Graph_set_default((<_Graph> g).wrapped[0])
-        py_default_graph = g
+        py_primitiv_Graph_default = g
 
     def clear(self):
         self.wrapped.clear()

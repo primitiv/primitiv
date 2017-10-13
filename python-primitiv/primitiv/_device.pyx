@@ -10,15 +10,15 @@ cdef class _Device:
 
     @staticmethod
     def get_default():
-        if py_default_device is None:
+        if py_primitiv_Device_default is None:
             raise RuntimeError("Default device is null.")
-        return py_default_device
+        return py_primitiv_Device_default
 
     @staticmethod
     def set_default(dev):
-        global py_default_device
+        global py_primitiv_Device_default
         Device_set_default((<_Device> dev).wrapped[0])
-        py_default_device = dev
+        py_primitiv_Device_default = dev
 
     def new_tensor(self, shape, float k = 0):
         return wrapTensor(self.wrapped.new_tensor(normShape(shape).wrapped, k))

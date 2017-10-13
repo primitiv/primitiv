@@ -104,4 +104,4 @@ cdef inline _Device wrapDevice(CppDevice *wrapped) except +:
     return device
 
 
-cdef _Device py_default_device
+cdef _Device py_primitiv_Device_default
