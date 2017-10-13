@@ -10,11 +10,15 @@ cdef class _Device:
 
     @staticmethod
     def get_default():
-        return wrapDevice(&Device_get_default())
+        if py_default_device is None:
+            raise RuntimeError("Default device is null.")
+        return py_default_device
 
     @staticmethod
-    def set_default(_Device dev):
-        Device_set_default(dev.wrapped[0])
+    def set_default(dev):
+        global py_default_device
+        Device_set_default((<_Device> dev).wrapped[0])
+        py_default_device = dev
 
     def new_tensor(self, shape, float k = 0):
         return wrapTensor(self.wrapped.new_tensor(normShape(shape).wrapped, k))

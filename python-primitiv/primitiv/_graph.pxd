@@ -72,3 +72,6 @@ cdef inline _Graph wrapGraph(CppGraph *wrapped) except +:
     cdef _Graph graph = _Graph.__new__(_Graph)
     graph.wrapped = wrapped
     return graph
+
+
+cdef object py_default_graph

@@ -144,11 +144,15 @@ cdef class _Graph:
 
     @staticmethod
     def get_default():
-        return wrapGraph(&Graph_get_default())
+        if py_default_graph is None:
+            raise RuntimeError("Default graph is null.")
+        return py_default_graph
 
     @staticmethod
-    def set_default(_Graph g):
-        Graph_set_default(g.wrapped[0])
+    def set_default(g):
+        global py_default_graph
+        Graph_set_default((<_Graph> g).wrapped[0])
+        py_default_graph = g
 
     def clear(self):
         self.wrapped.clear()

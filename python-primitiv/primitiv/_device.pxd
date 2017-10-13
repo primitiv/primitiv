@@ -102,3 +102,6 @@ cdef inline _Device wrapDevice(CppDevice *wrapped) except +:
     cdef _Device device = _Device.__new__(_Device)
     device.wrapped = wrapped
     return device
+
+
+cdef object py_default_device
