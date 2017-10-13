@@ -25,8 +25,26 @@ Prerequisites
 - (optional) CUDA 7.5 or later
   - Required only when `-DPRIMITIV_USE_CUDA=ON`
 
-Build
------
+Install
+-------
+
+- Install Protocol Buffers (for Ubuntu 16.04 users)
+
+The default `protobuf` repository on Ubuntu 16.04 does not support *proto3* format and
+users need to install newer library from source.
+Typical step to build/install `protobuf` is below:
+
+    sudo apt install autoconf automake build-essential cmake libtool unzip
+    git clone https://github.com/google/protobuf
+    cd protobuf
+    ./autogen.sh
+    ./configure
+    make [-j <threads>]
+    make check
+    sudo make install
+    sudo ldconfig
+
+- Install `primitiv`:
 
     git clone <this repository>
     cd primitiv
