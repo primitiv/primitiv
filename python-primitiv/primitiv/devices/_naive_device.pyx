@@ -20,10 +20,3 @@ cdef class _Naive(_Device):
             temp = <CppNaive*> self.wrapped_newed
             del temp
             self.wrapped_newed = NULL
-
-    def dump_description(self):
-        (<CppNaive*> self.wrapped).dump_description()
-        return
-
-    def type(self):
-        return (<CppNaive*> self.wrapped).type()

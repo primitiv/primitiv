@@ -25,10 +25,3 @@ cdef class _CUDA(_Device):
     @staticmethod
     def num_devices():
         return CppCUDA_num_devices()
-
-    def dump_description(self):
-        (<CppCUDA*> self.wrapped).dump_description()
-        return
-
-    def type(self):
-        return (<CppCUDA*> self.wrapped).type()

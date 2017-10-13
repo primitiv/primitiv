@@ -5,8 +5,6 @@ cdef extern from "primitiv/cuda_device.h" namespace "primitiv::devices":
     cdef cppclass CppCUDA "primitiv::devices::CUDA" (CppDevice):
         CppCUDA(unsigned device_id) except +
         CppCUDA(unsigned device_id, unsigned rng_seed) except +
-        void dump_description() except +
-        CppDevice.DeviceType type() except +
 
 
 cdef extern from "primitiv/cuda_device.h" namespace "primitiv::devices::CUDA":

@@ -5,8 +5,6 @@ cdef extern from "primitiv/naive_device.h" namespace "primitiv::devices":
     cdef cppclass CppNaive "primitiv::devices::Naive" (CppDevice):
         CppNaive() except +
         CppNaive(unsigned rng_seed) except +
-        void dump_description() except +
-        CppDevice.DeviceType type() except +
 
 
 cdef class _Naive(_Device):
