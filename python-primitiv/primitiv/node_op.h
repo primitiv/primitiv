@@ -1,4 +1,4 @@
-#ifndef PYTHON_PRIMITIV_NODE_OP_H
+#ifndef PYTHON_PRIMITIV_NODE_OP_H_
 #define PYTHON_PRIMITIV_NODE_OP_H_
 
 #include <primitiv/operators.h>
@@ -66,4 +66,4 @@ inline Node op_node_div(const Node &a, const Node &b) {
 }
 
 }
-#endif
+#endif  // PYTHON_PRIMITIV_NODE_OP_H_
