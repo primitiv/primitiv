@@ -65,9 +65,9 @@ def main():
         print("epoch ", i, ":")
         for j in range(4):
             print("  [", j, "]: ", y_val[j])
-        t = F.input(output_data)
 
         # Extends the computation graph to calculate loss values.
+        t = F.input(output_data)
         diff = t - y
         loss = F.batch.mean(diff * diff)
 
