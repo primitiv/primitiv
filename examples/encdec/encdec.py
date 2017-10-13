@@ -63,12 +63,12 @@ class EncoderDecoder(object):
 
     # Saves all parameters.
     def save(self, prefix):
-        self.psrc_lookup_.save(prefix + self.name_ + "_src_lookup.param");
-        self.ptrg_lookup_.save(prefix + self.name_ + "_trg_lookup.param");
-        self.pwhy_.save(prefix + self.name_ + "_why.param");
-        self.pby_.save(prefix + self.name_ + "_by.param");
-        self.src_lstm_.save(prefix);
-        self.trg_lstm_.save(prefix);
+        self.psrc_lookup_.save(prefix + self.name_ + "_src_lookup.param")
+        self.ptrg_lookup_.save(prefix + self.name_ + "_trg_lookup.param")
+        self.pwhy_.save(prefix + self.name_ + "_why.param")
+        self.pby_.save(prefix + self.name_ + "_by.param")
+        self.src_lstm_.save(prefix)
+        self.trg_lstm_.save(prefix)
         with open(prefix + self.name_ + ".config", "w") as ofs:
             print(self.dropout_rate_, file=ofs)
 
@@ -99,7 +99,7 @@ class EncoderDecoder(object):
 
     # One step decoding.
     def decode_step(self, trg_words, train):
-        x = F.pick(self.trg_lookup_, trg_words, 1);
+        x = F.pick(self.trg_lookup_, trg_words, 1)
         x = F.dropout(x, self.dropout_rate_, train)
         h = self.trg_lstm_.forward(x)
         h = F.dropout(h, self.dropout_rate_, train)
@@ -111,13 +111,13 @@ class EncoderDecoder(object):
         for i in range(len(trg_batch) - 1):
             y = self.decode_step(trg_batch[i], train)
             losses.append(F.softmax_cross_entropy(y, trg_batch[i + 1], 0))
-        return F.batch.mean(F.sum(losses));
+        return F.batch.mean(F.sum(losses))
 
 
 # Training encoder decoder model.
 def train(encdec, trainer, prefix, best_valid_ppl):
     # Registers all parameters to the trainer.
-    encdec.register_training(trainer);
+    encdec.register_training(trainer)
 
     # Loads vocab.
     src_vocab = make_vocab(SRC_TRAIN_FILE, SRC_VOCAB_SIZE)
@@ -132,8 +132,8 @@ def train(encdec, trainer, prefix, best_valid_ppl):
     valid_trg_corpus = load_corpus(TRG_VALID_FILE, trg_vocab)
     num_train_sents = len(train_trg_corpus)
     num_valid_sents = len(valid_trg_corpus)
-    num_train_labels = count_labels(train_trg_corpus);
-    num_valid_labels = count_labels(valid_trg_corpus);
+    num_train_labels = count_labels(train_trg_corpus)
+    num_valid_labels = count_labels(valid_trg_corpus)
     print("train:", num_train_sents, "sentences,", num_train_labels, "labels")
     print("valid:", num_valid_sents, "sentences,", num_valid_labels, "labels")
 
@@ -198,7 +198,7 @@ def train(encdec, trainer, prefix, best_valid_ppl):
             sys.stdout.flush()
             encdec.save(prefix + '.')
             trainer.save(prefix + ".trainer.config")
-            save_ppl(prefix + ".valid_ppl.config", best_valid_ppl);
+            save_ppl(prefix + ".valid_ppl.config", best_valid_ppl)
             print("done.")
 
 

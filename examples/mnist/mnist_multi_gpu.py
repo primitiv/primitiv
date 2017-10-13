@@ -72,11 +72,11 @@ def main():
         w2 = F.parameter(pw2)
         b2 = F.parameter(pb2)
         # The hidden layer is calculated and implicitly stored on GPU 0.
-        h_on_gpu0 = F.relu(w1 @ x + b1);
+        h_on_gpu0 = F.relu(w1 @ x + b1)
         # `copy()` transfers the hiddne layer to GPU 1.
-        h_on_gpu1 = F.copy(h_on_gpu0, dev1);
+        h_on_gpu1 = F.copy(h_on_gpu0, dev1)
         # The output layer is calculated and implicitly stored on GPU 1.
-        return w2 @ h_on_gpu1 + b2;
+        return w2 @ h_on_gpu1 + b2
 
     ids = list(range(NUM_TRAIN_SAMPLES))
 
