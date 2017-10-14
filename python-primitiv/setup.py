@@ -73,4 +73,8 @@ setup(
         "primitiv.initializers",
         "primitiv.trainers",
     ],
+    install_requires=[
+        "cython",
+        "numpy",
+    ],
 )
