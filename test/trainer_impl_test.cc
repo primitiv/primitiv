@@ -23,40 +23,40 @@ protected:
 TEST_F(TrainerImplTest, CheckNames) {
   SGD sgd;
   EXPECT_EQ("SGD", sgd.name());
-  Adam adam;
-  EXPECT_EQ("Adam", adam.name());
   AdaGrad adagrad;
   EXPECT_EQ("AdaGrad", adagrad.name());
+  Adam adam;
+  EXPECT_EQ("Adam", adam.name());
 }
 
 TEST_F(TrainerImplTest, CheckDefaultHyperparameters) {
   SGD sgd;
   EXPECT_FLOAT_EQ(.1, sgd.eta());
 
+  AdaGrad adagrad;
+  EXPECT_FLOAT_EQ(.001, adagrad.eta());
+  EXPECT_FLOAT_EQ(1e-8, adagrad.eps());
+
   Adam adam;
   EXPECT_FLOAT_EQ(.001, adam.alpha());
   EXPECT_FLOAT_EQ(.9, adam.beta1());
   EXPECT_FLOAT_EQ(.999, adam.beta2());
   EXPECT_FLOAT_EQ(1e-8, adam.eps());
-
-  AdaGrad adagrad;
-  EXPECT_FLOAT_EQ(.001, adagrad.eta());
-  EXPECT_FLOAT_EQ(1e-8, adagrad.eps());
 }
 
 TEST_F(TrainerImplTest, CheckGivenHyperparameters) {
   SGD sgd(1);
   EXPECT_FLOAT_EQ(1, sgd.eta());
 
+  AdaGrad adagrad(1, 2);
+  EXPECT_FLOAT_EQ(1, adagrad.eta());
+  EXPECT_FLOAT_EQ(2, adagrad.eps());
+
   Adam adam(1, 2, 3, 4);
   EXPECT_FLOAT_EQ(1, adam.alpha());
   EXPECT_FLOAT_EQ(2, adam.beta1());
   EXPECT_FLOAT_EQ(3, adam.beta2());
   EXPECT_FLOAT_EQ(4, adam.eps());
-
-  AdaGrad adagrad(1, 2);
-  EXPECT_FLOAT_EQ(1, adagrad.eta());
-  EXPECT_FLOAT_EQ(2, adagrad.eps());
 }
 
 TEST_F(TrainerImplTest, CheckInvalidSetConfigsByFile) {
@@ -65,11 +65,13 @@ TEST_F(TrainerImplTest, CheckInvalidSetConfigsByFile) {
   const std::string path = "/tmp/primitiv_TrainerImplTest_CheckInvalidSetConfigsByFile.data";
   sgd.save(path);
 
+  AdaGrad adagrad;
+  EXPECT_THROW(adagrad.set_configs_by_file(path), Error);
+
   Adam adam;
   EXPECT_THROW(adam.set_configs_by_file(path), Error);
 
-  AdaGrad adagrad;
-  EXPECT_THROW(adagrad.set_configs_by_file(path), Error);
+  std::remove(path.c_str());
 }
 
 TEST_F(TrainerImplTest, CheckSGDSaveLoad) {
@@ -159,6 +161,7 @@ TEST_F(TrainerImplTest, CheckSGDSetConfigsByFile) {
   sgd2.set_gradient_clipping(0);
 
   sgd2.set_configs_by_file(path);
+  std::remove(path.c_str());
 
   EXPECT_EQ(1, sgd2.eta());
   EXPECT_EQ(2, sgd2.get_epoch());
@@ -286,6 +289,7 @@ TEST_F(TrainerImplTest, CheckAdaGradSetConfigsByFile) {
   adagrad2.set_gradient_clipping(0);
 
   adagrad2.set_configs_by_file(path);
+  std::remove(path.c_str());
 
   EXPECT_EQ(1, adagrad2.eta());
   EXPECT_EQ(2, adagrad2.eps());
@@ -435,6 +439,7 @@ TEST_F(TrainerImplTest, CheckAdamSetConfigsByFile) {
   adam2.set_gradient_clipping(0);
 
   adam2.set_configs_by_file(path);
+  std::remove(path.c_str());
 
   EXPECT_EQ(1, adam2.alpha());
   EXPECT_EQ(2, adam2.beta1());

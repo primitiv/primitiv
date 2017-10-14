@@ -55,19 +55,19 @@ public:
    * @param eps Bias of power.
    */
   AdaGrad(float eta = 0.001, float eps = 1e-8)
-    : eta_(eta), eps_(eps){}
+    : eta_(eta), eps_(eps) {}
 
   /**
    * Returns the hyperparameter eta.
    * @return The value of eta.
    */
-  float eta() const {return eta_;}
+  float eta() const { return eta_; }
 
   /**
    * Returns the hyperparameter eps.
    * @return The value of eps.
    */
-  float eps() const {return eps_;}
+  float eps() const { return eps_; }
 
 private:
   float eta_;
