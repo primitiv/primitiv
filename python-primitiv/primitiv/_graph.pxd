@@ -4,6 +4,7 @@ from libcpp cimport bool
 from primitiv._device cimport CppDevice
 from primitiv._shape cimport CppShape
 from primitiv._tensor cimport CppTensor
+from libc.stdint cimport uintptr_t
 
 
 cdef extern from "primitiv/graph.h" namespace "primitiv" nogil:
@@ -60,6 +61,7 @@ cdef class _Node:
 cdef class _Graph:
     cdef CppGraph *wrapped
     cdef CppGraph *wrapped_newed
+    cdef object __weakref__
 
 
 cdef inline _Node wrapNode(CppNode wrapped) except +:
@@ -68,10 +70,12 @@ cdef inline _Node wrapNode(CppNode wrapped) except +:
     return node
 
 
+cdef object py_primitiv_graph_weak_dict
+
 cdef inline _Graph wrapGraph(CppGraph *wrapped) except +:
+    global py_primitiv_graph_weak_dict
+    if (<uintptr_t> wrapped) in py_primitiv_graph_weak_dict:
+        return py_primitiv_graph_weak_dict[<uintptr_t> wrapped]
     cdef _Graph graph = _Graph.__new__(_Graph)
     graph.wrapped = wrapped
     return graph
-
-
-cdef _Graph py_primitiv_Graph_default

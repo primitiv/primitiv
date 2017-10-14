@@ -1,5 +1,8 @@
 from primitiv._device cimport _Device
 from primitiv.devices._cuda_device cimport num_devices as CppCUDA_num_devices
+from weakref import WeakValueDictionary
+from libc.stdint cimport uintptr_t
+from primitiv._device cimport py_primitiv_device_weak_dict
 
 
 cdef class _CUDA(_Device):
@@ -14,6 +17,11 @@ cdef class _CUDA(_Device):
         if self.wrapped_newed is NULL:
             raise MemoryError()
         self.wrapped = self.wrapped_newed
+
+        global py_primitiv_device_weak_dict
+        if py_primitiv_device_weak_dict is None:
+            py_primitiv_device_weak_dict = WeakValueDictionary()
+        py_primitiv_device_weak_dict[<uintptr_t> self.wrapped_newed] = self
 
     def __dealloc__(self):
         cdef CppCUDA *temp

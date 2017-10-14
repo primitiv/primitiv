@@ -6,6 +6,7 @@ from primitiv._tensor cimport wrapTensor
 from primitiv._operator cimport Node_pow, Node_matmul
 from primitiv._graph cimport get_default as Graph_get_default
 from primitiv._graph cimport set_default as Graph_set_default
+from weakref import WeakValueDictionary
 
 cimport numpy as np
 import numpy as np
@@ -137,6 +138,11 @@ cdef class _Graph:
             raise MemoryError()
         self.wrapped = self.wrapped_newed
 
+        global py_primitiv_graph_weak_dict
+        if py_primitiv_graph_weak_dict is None:
+            py_primitiv_graph_weak_dict = WeakValueDictionary()
+        py_primitiv_graph_weak_dict[<uintptr_t> self.wrapped_newed] = self
+
     def __dealloc__(self):
         if self.wrapped_newed is not NULL:
             del self.wrapped_newed
@@ -144,15 +150,11 @@ cdef class _Graph:
 
     @staticmethod
     def get_default():
-        if py_primitiv_Graph_default is None:
-            raise RuntimeError("Default graph is null.")
-        return py_primitiv_Graph_default
+        return wrapGraph(&Graph_get_default())
 
     @staticmethod
     def set_default(g):
-        global py_primitiv_Graph_default
         Graph_set_default((<_Graph> g).wrapped[0])
-        py_primitiv_Graph_default = g
 
     def clear(self):
         self.wrapped.clear()
