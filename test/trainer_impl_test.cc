@@ -25,6 +25,8 @@ TEST_F(TrainerImplTest, CheckNames) {
   EXPECT_EQ("SGD", sgd.name());
   Adam adam;
   EXPECT_EQ("Adam", adam.name());
+  AdaGrad adagrad;
+  EXPECT_EQ("AdaGrad", adagrad.name());
 }
 
 TEST_F(TrainerImplTest, CheckDefaultHyperparameters) {
@@ -36,6 +38,10 @@ TEST_F(TrainerImplTest, CheckDefaultHyperparameters) {
   EXPECT_FLOAT_EQ(.9, adam.beta1());
   EXPECT_FLOAT_EQ(.999, adam.beta2());
   EXPECT_FLOAT_EQ(1e-8, adam.eps());
+
+  AdaGrad adagrad;
+  EXPECT_FLOAT_EQ(.001, adagrad.eta());
+  EXPECT_FLOAT_EQ(1e-8, adagrad.eps());
 }
 
 TEST_F(TrainerImplTest, CheckGivenHyperparameters) {
@@ -47,6 +53,10 @@ TEST_F(TrainerImplTest, CheckGivenHyperparameters) {
   EXPECT_FLOAT_EQ(2, adam.beta1());
   EXPECT_FLOAT_EQ(3, adam.beta2());
   EXPECT_FLOAT_EQ(4, adam.eps());
+
+  AdaGrad adagrad(1, 2);
+  EXPECT_FLOAT_EQ(1, adagrad.eta());
+  EXPECT_FLOAT_EQ(2, adagrad.eps());
 }
 
 TEST_F(TrainerImplTest, CheckInvalidSetConfigsByFile) {
@@ -57,6 +67,9 @@ TEST_F(TrainerImplTest, CheckInvalidSetConfigsByFile) {
 
   Adam adam;
   EXPECT_THROW(adam.set_configs_by_file(path), Error);
+
+  AdaGrad adagrad;
+  EXPECT_THROW(adagrad.set_configs_by_file(path), Error);
 }
 
 TEST_F(TrainerImplTest, CheckSGDSaveLoad) {
@@ -179,6 +192,147 @@ TEST_F(TrainerImplTest, CheckSGDUpdate) {
     param.gradient() += param.value();  // Squared loss
     trainer.update();
     EXPECT_TRUE(vector_match(expected_v[i], param.value().to_vector()));
+  }
+}
+
+TEST_F(TrainerImplTest, CheckAdaGradSaveLoad) {
+  AdaGrad adagrad(1, 2);
+  adagrad.set_epoch(3);
+  adagrad.set_learning_rate_scaling(4);
+  adagrad.set_weight_decay(5);
+  adagrad.set_gradient_clipping(6);
+
+  const std::string path = "/tmp/primitiv_TrainerImplTest_CheckAdaGradSaveLoad.data";
+  adagrad.save(path);
+
+  EXPECT_EQ("AdaGrad", Trainer::detect_name(path));
+
+  std::shared_ptr<Trainer> loaded = Trainer::load(path);
+  std::remove(path.c_str());
+
+  ASSERT_EQ("AdaGrad", loaded->name());
+
+  std::shared_ptr<AdaGrad> adagrad2 = std::static_pointer_cast<AdaGrad>(loaded);
+  EXPECT_EQ(1, adagrad2->eta());
+  EXPECT_EQ(2, adagrad2->eps());
+  EXPECT_EQ(3, adagrad2->get_epoch());
+  EXPECT_EQ(4, adagrad2->get_learning_rate_scaling());
+  EXPECT_EQ(5, adagrad2->get_weight_decay());
+  EXPECT_EQ(6, adagrad2->get_gradient_clipping());
+}
+
+TEST_F(TrainerImplTest, CheckAdaGradGetConfigs) {
+  AdaGrad adagrad(1, 2);
+  adagrad.set_epoch(3);
+  adagrad.set_learning_rate_scaling(4);
+  adagrad.set_weight_decay(5);
+  adagrad.set_gradient_clipping(6);
+
+  std::unordered_map<std::string, unsigned> uint_configs;
+  std::unordered_map<std::string, float> float_configs;
+  adagrad.get_configs(uint_configs, float_configs);
+
+  EXPECT_EQ(1u, uint_configs.size());
+  EXPECT_EQ(5u, float_configs.size());
+  EXPECT_EQ(1, float_configs.at("AdaGrad.eta"));
+  EXPECT_EQ(2, float_configs.at("AdaGrad.eps"));
+  EXPECT_EQ(3, uint_configs.at("Trainer.epoch"));
+  EXPECT_EQ(4, float_configs.at("Trainer.lr_scale"));
+  EXPECT_EQ(5, float_configs.at("Trainer.l2_strength"));
+  EXPECT_EQ(6, float_configs.at("Trainer.clip_threshold"));
+}
+
+TEST_F(TrainerImplTest, CheckAdaGradSetConfigs) {
+  AdaGrad adagrad(0, 0);
+  adagrad.set_epoch(0);
+  adagrad.set_learning_rate_scaling(0);
+  adagrad.set_weight_decay(0);
+  adagrad.set_gradient_clipping(0);
+
+  std::unordered_map<std::string, unsigned> uint_configs {
+    std::make_pair("Trainer.epoch", 3),
+  };
+  std::unordered_map<std::string, float> float_configs {
+    std::make_pair("AdaGrad.eta", 1),
+    std::make_pair("AdaGrad.eps", 2),
+    std::make_pair("Trainer.lr_scale", 4),
+    std::make_pair("Trainer.l2_strength", 5),
+    std::make_pair("Trainer.clip_threshold", 6),
+  };
+  adagrad.set_configs(uint_configs, float_configs);
+
+  EXPECT_EQ(1, adagrad.eta());
+  EXPECT_EQ(2, adagrad.eps());
+  EXPECT_EQ(3, adagrad.get_epoch());
+  EXPECT_EQ(4, adagrad.get_learning_rate_scaling());
+  EXPECT_EQ(5, adagrad.get_weight_decay());
+  EXPECT_EQ(6, adagrad.get_gradient_clipping());
+}
+
+TEST_F(TrainerImplTest, CheckAdaGradSetConfigsByFile) {
+  AdaGrad adagrad(1, 2);
+  adagrad.set_epoch(3);
+  adagrad.set_learning_rate_scaling(4);
+  adagrad.set_weight_decay(5);
+  adagrad.set_gradient_clipping(6);
+
+  const std::string path = "/tmp/primitiv_TrainerImplTest_CheckAdaGradSetConfigsFromFile.data";
+  adagrad.save(path);
+
+  AdaGrad adagrad2(0, 0);
+  adagrad2.set_epoch(0);
+  adagrad2.set_learning_rate_scaling(0);
+  adagrad2.set_weight_decay(0);
+  adagrad2.set_gradient_clipping(0);
+
+  adagrad2.set_configs_by_file(path);
+
+  EXPECT_EQ(1, adagrad2.eta());
+  EXPECT_EQ(2, adagrad2.eps());
+  EXPECT_EQ(3, adagrad2.get_epoch());
+  EXPECT_EQ(4, adagrad2.get_learning_rate_scaling());
+  EXPECT_EQ(5, adagrad2.get_weight_decay());
+  EXPECT_EQ(6, adagrad2.get_gradient_clipping());
+}
+
+TEST_F(TrainerImplTest, CheckAdaGradUpdate) {
+  Parameter param("param", {2, 2}, {1, 2, 3, 4}, dev);
+  ASSERT_TRUE(vector_match(
+        vector<float> {1, 2, 3, 4}, param.value().to_vector()));
+
+  AdaGrad trainer;
+  trainer.set_learning_rate_scaling(.1);
+  trainer.add_parameter(param);
+  ASSERT_TRUE(param.has_stats("adagrad-m"));
+  EXPECT_TRUE(vector_match(
+        vector<float>(4, 0), param.stats("adagrad-m").to_vector()));
+
+  const vector<vector<float>> expected_v {
+    {9.9989998e-01, 1.9999000e+00, 2.9999001e+00, 3.9999001e+00},
+    {9.9982929e-01, 1.9998293e+00, 2.9998293e+00, 3.9998293e+00},
+    {9.9977154e-01, 1.9997716e+00, 2.9997716e+00, 3.9997716e+00},
+    {9.9972153e-01, 1.9997216e+00, 2.9997215e+00, 3.9997215e+00},
+    {9.9967682e-01, 1.9996769e+00, 2.9996767e+00, 3.9996767e+00}
+  };
+  const vector<vector<float>> expected_m {
+    {1.0000000e+00, 4.0000000e+00, 9.0000000e+00, 1.6000000e+01},
+    {1.9998000e+00, 7.9995999e+00, 1.7999401e+01, 3.1999201e+01},
+    {2.9994586e+00, 1.1998917e+01, 2.6998377e+01, 4.7997833e+01},
+    {3.9990017e+00, 1.5998003e+01, 3.5997005e+01, 6.3996006e+01},
+    {4.9984450e+00, 1.9996889e+01, 4.4995335e+01, 7.9993774e+01}
+  };
+
+  for (unsigned i = 0; i < 5; ++i) {
+    trainer.reset_gradients();
+    EXPECT_TRUE(vector_match(
+          vector<float>(4, 0), param.gradient().to_vector()));
+
+    param.gradient() += param.value();  // Squared loss
+    trainer.update();
+    EXPECT_TRUE(vector_near(
+          expected_v[i], param.value().to_vector(), 1e-5));
+    EXPECT_TRUE(vector_near(
+          expected_m[i], param.stats("adagrad-m").to_vector(), 1e-5));
   }
 }
 
