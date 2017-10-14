@@ -29,6 +29,21 @@ void SGD::set_configs(
   eta_ = float_configs.at("SGD.eta");
 }
 
+void AdaGrad::configure_parameter(Parameter &param) {
+  const std::string name = "adagrad-m";
+  if (!param.has_stats(name)) {
+    param.add_stats(name, param.shape());
+    param.stats(name).reset(0);
+  }
+}
+
+void AdaGrad::update_parameter(float scale, Parameter &param) {
+  const Tensor &g = param.gradient();
+  Tensor &m = param.stats("adagrad-m");
+  m += g * g;
+  param.value() -= (scale * eta_) * g / (operators::sqrt(m) + eps_);
+}
+  
 void AdaGrad::get_configs(
     std::unordered_map<std::string, unsigned> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
@@ -43,21 +58,6 @@ void AdaGrad::set_configs(
   Trainer::set_configs(uint_configs, float_configs);
   eta_ = float_configs.at("AdaGrad.eta");
   eps_ = float_configs.at("AdaGrad.eps");
-}
-
-void AdaGrad::configure_parameter(Parameter &param) {
-  std::string name = "adagrad-m";
-  if (!param.has_stats(name)) {
-    param.add_stats(name, param.shape());
-    param.stats(name).reset(0);
-  }
-}
-
-void AdaGrad::update_parameter(float scale, Parameter &param) {
-  const Tensor &g = param.gradient();
-  Tensor &m = param.stats("adagrad-m");
-  m += g * g;
-  param.value() -= scale * eta_ * g / (operators::sqrt(m) + eps_);
 }
 
 void Adam::configure_parameter(Parameter &param) {
