@@ -43,6 +43,38 @@ private:
 };
 
 /**
+ * AdaGrad optimizer.
+ */
+class AdaGrad : public primitiv::Trainer {
+  DECL_DEFAULTS(AdaGrad);
+
+public:
+  /**
+   * Creates a new AdaGrad object.
+   * @param eta Learning rate.
+   * @param eps Bias of power.
+   */
+  AdaGrad(float eta = 0.001, float eps = 1e-8)
+    : eta_(eta), eps_(eps) {}
+
+  /**
+   * Returns the hyperparameter eta.
+   * @return The value of eta.
+   */
+  float eta() const { return eta_; }
+
+  /**
+   * Returns the hyperparameter eps.
+   * @return The value of eps.
+   */
+  float eps() const { return eps_; }
+
+private:
+  float eta_;
+  float eps_;
+};
+
+/**
  * Adam optimizer.
  * https://arxiv.org/abs/1412.6980
  */

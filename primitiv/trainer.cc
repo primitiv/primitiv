@@ -56,6 +56,7 @@ std::shared_ptr<Trainer> Trainer::load(const std::string &path) {
 
   std::shared_ptr<Trainer> trainer;
   if (name == "SGD") trainer.reset(new trainers::SGD());
+  else if (name == "AdaGrad") trainer.reset(new trainers::AdaGrad());
   else if (name == "Adam") trainer.reset(new trainers::Adam());
   else THROW_ERROR("Unknown trainer name: " << name);
 
