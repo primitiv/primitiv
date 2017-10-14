@@ -20,19 +20,19 @@ from utils import (
 
 from argparse import ArgumentParser
 
-SRC_VOCAB_SIZE = 4000;
-TRG_VOCAB_SIZE = 5000;
-NUM_EMBED_UNITS = 512;
-NUM_HIDDEN_UNITS = 512;
-BATCH_SIZE = 64;
-MAX_EPOCH = 100;
-GENERATION_LIMIT = 32;
-DROPOUT_RATE = 0.5;
+SRC_VOCAB_SIZE = 4000
+TRG_VOCAB_SIZE = 5000
+NUM_EMBED_UNITS = 512
+NUM_HIDDEN_UNITS = 512
+BATCH_SIZE = 64
+MAX_EPOCH = 100
+GENERATION_LIMIT = 32
+DROPOUT_RATE = 0.5
 
-SRC_TRAIN_FILE = "data/train.en";
-TRG_TRAIN_FILE = "data/train.ja";
-SRC_VALID_FILE = "data/dev.en";
-TRG_VALID_FILE = "data/dev.ja";
+SRC_TRAIN_FILE = "data/train.en"
+TRG_TRAIN_FILE = "data/train.ja"
+SRC_VALID_FILE = "data/dev.en"
+TRG_VALID_FILE = "data/dev.ja"
 
 # Encoder-decoder translation model with dot-attention.
 class EncoderDecoder(object):
@@ -43,9 +43,9 @@ class EncoderDecoder(object):
         self.psrc_lookup_ = Parameter(name+"_src_lookup", [embed_size, src_vocab_size], I.XavierUniform())
         self.ptrg_lookup_ = Parameter(name+"_trg_lookup", [embed_size, trg_vocab_size], I.XavierUniform())
         self.pwhj_ = Parameter(name+"_whj", [embed_size, 2*hidden_size], I.XavierUniform())
-        self.pbj_ = Parameter(name+"_pbj", [embed_size], I.Constant(0))
+        self.pbj_ = Parameter(name+"_bj", [embed_size], I.Constant(0))
         self.pwjy_ = Parameter(name+"_wjy", [trg_vocab_size, embed_size], I.XavierUniform())
-        self.pby_ = Parameter(name+"_pby", [trg_vocab_size], I.Constant(0))
+        self.pby_ = Parameter(name+"_by", [trg_vocab_size], I.Constant(0))
         self.src_fw_lstm_ = LSTM(name+"_src_fw_lstm", embed_size, hidden_size)
         self.src_bw_lstm_ = LSTM(name+"_src_bw_lstm", embed_size, hidden_size)
         self.trg_lstm_ = LSTM(name+"_trg_lstm", embed_size*2, hidden_size)
@@ -99,7 +99,7 @@ class EncoderDecoder(object):
     def encode(self, src_batch, train):
         # Embedding lookup.
         src_lookup = F.parameter(self.psrc_lookup_)
-        e_list = list()
+        e_list = []
         for x in src_batch:
             e = F.pick(src_lookup, x, 1)
             e = F.dropout(e, self.dropout_rate_, train)
@@ -107,7 +107,7 @@ class EncoderDecoder(object):
 
         # Forward encoding
         self.src_fw_lstm_.init()
-        f_list = list()
+        f_list = []
         for e in e_list:
             f = self.src_fw_lstm_.forward(e)
             f = F.dropout(f, self.dropout_rate_, train)
@@ -115,17 +115,16 @@ class EncoderDecoder(object):
 
         # Backward encoding
         self.src_bw_lstm_.init()
-        b_list = list()
+        b_list = []
         for e in reversed(e_list):
             b = self.src_bw_lstm_.forward(e)
             b = F.dropout(b, self.dropout_rate_, train)
             b_list.append(b)
+
         b_list.reverse()
 
         # Concatenates RNN states.
-        fb_list = list()
-        for i in range(len(src_batch)):
-            fb_list.append(f_list[i]+b_list[i])
+        fb_list = [f_list[i] + b_list[i] for i in range(len(src_batch))]
         self.concat_fb_ = F.concat(fb_list, 1)
         self.t_concat_fb_ = F.transpose(self.concat_fb_)
 
@@ -141,8 +140,8 @@ class EncoderDecoder(object):
             self.src_fw_lstm_.get_h() + self.src_bw_lstm_.get_h())
 
     # One step decoding.
-    def decode_step(self, trg_word, train):
-        e = F.pick(self.trg_lookup_, trg_word, 1)
+    def decode_step(self, trg_words, train):
+        e = F.pick(self.trg_lookup_, trg_words, 1)
         e = F.dropout(e, self.dropout_rate_, train)
         h = self.trg_lstm_.forward(F.concat([e, self.feed_], 0))
         h = F.dropout(h, self.dropout_rate_, train)
@@ -151,9 +150,9 @@ class EncoderDecoder(object):
         self.feed_ = F.tanh(self.whj_ @ F.concat([h, c], 0) + self.bj_)
         return self.wjy_ @ self.feed_ + self.by_
 
-    # Caluculates the loss function over given target sentences.
+    # Calculates the loss function over given target sentences.
     def loss(self, trg_batch, train):
-        losses = list()
+        losses = []
         for i in range(len(trg_batch)-1):
             y = self.decode_step(trg_batch[i], train)
             loss = F.softmax_cross_entropy(y, trg_batch[i+1], 0)
@@ -208,19 +207,19 @@ def train(encdec, trainer, prefix, best_valid_ppl):
             g.clear()
             encdec.encode(src_batch, True)
             loss = encdec.loss(trg_batch, True)
-            train_loss += g.forward(loss).to_list()[0] * len(batch_ids)
+            train_loss += loss.to_list()[0] * len(batch_ids)
 
             trainer.reset_gradients()
             g.backward(loss)
             trainer.update()
 
-            print("\r%d" % (ofs), end="")
+            print("\r%d" % ofs, end="")
             sys.stdout.flush()
 
-        train_ppl = math.exp(train_loss / num_valid_labels)
+        train_ppl = math.exp(train_loss / num_train_labels)
         print("\n\ttrain ppl =", train_ppl)
 
-        # Valdation.
+        # Validation.
         valid_loss = 0.
         for ofs in range(0, num_valid_sents, BATCH_SIZE):
             batch_ids = valid_ids[ofs:min(ofs+BATCH_SIZE, num_valid_sents)]
@@ -230,9 +229,9 @@ def train(encdec, trainer, prefix, best_valid_ppl):
             g.clear()
             encdec.encode(src_batch, False)
             loss = encdec.loss(trg_batch, False)
-            valid_loss += g.forward(loss).to_list()[0] * len(batch_ids)
+            valid_loss += loss.to_list()[0] * len(batch_ids)
 
-            print("\r%d"%(ofs), end="")
+            print("\r%d" % ofs, end="")
             sys.stdout.flush()
 
         valid_ppl = math.exp(valid_loss/num_valid_labels)
@@ -241,7 +240,7 @@ def train(encdec, trainer, prefix, best_valid_ppl):
         # Saves best model/trainer.
         if valid_ppl < best_valid_ppl:
             best_valid_ppl = valid_ppl
-            print("\tsaving model/trainer ...", end="")
+            print("\tsaving model/trainer ... ", end="")
             sys.stdout.flush()
             encdec.save(prefix+".")
             trainer.save(prefix+".trainer.config")
@@ -251,6 +250,7 @@ def train(encdec, trainer, prefix, best_valid_ppl):
             # Learning rate decay by 1/sqrt(2)
             new_scale = .7071 * trainer.get_learning_rate_scaling()
             trainer.set_learning_rate_scaling(new_scale)
+
 
 # Generates translation by consuming stdin.
 def test(encdec):
@@ -265,6 +265,9 @@ def test(encdec):
     for line in sys.stdin:
         src_corpus = [line_to_sent(line.strip(), src_vocab)]
         src_batch = make_batch(src_corpus, [0], src_vocab)
+
+        g.clear()
+
         encdec.encode(src_batch, False)
 
         # Generates target words one-by-one.
@@ -272,7 +275,7 @@ def test(encdec):
         eos_id = trg_vocab["<eos>"]
         while trg_ids[-1] != eos_id:
             if len(trg_ids) > GENERATION_LIMIT+1:
-                print("Waring: Sentene generation did not finish in",
+                print("Warning: Sentence generation did not finish in",
                       GENERATION_LIMIT, "iterations.", file=sys.stderr)
                 trg_ids.append(eos_id)
                 break
@@ -282,6 +285,7 @@ def test(encdec):
 
         # Prints the result.
         print(" ".join(inv_trg_vocab[wid] for wid in trg_ids[1:-1]))
+
 
 def main():
     parser = ArgumentParser()
@@ -312,7 +316,7 @@ def main():
         trainer.set_gradient_clipping(5)
         train(encdec, trainer, prefix, 1e10)
     elif mode == "resume":
-        print("loading mode/trainer ... ", end="", file=sys.stderr)
+        print("loading model/trainer ... ", end="", file=sys.stderr)
         sys.stderr.flush()
         encdec = EncoderDecoder.load("encdec", prefix+".")
         trainer = Trainer.load(prefix + ".trainer.config")
@@ -320,10 +324,11 @@ def main():
         print("done.", file=sys.stderr)
         train(encdec, trainer, prefix, valid_ppl)
     else:
-        print("loading mode ... ", file=sys.stderr)
+        print("loading model ... ", end="", file=sys.stderr)
+        sys.stderr.flush()
         encdec = EncoderDecoder.load("encdec", prefix+".")
         print("done.", file=sys.stderr)
         test(encdec)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
