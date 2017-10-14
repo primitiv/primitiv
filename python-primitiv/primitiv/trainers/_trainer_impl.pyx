@@ -35,6 +35,43 @@ cdef class _SGD(_Trainer):
         return
 
 
+cdef class _AdaGrad(_Trainer):
+
+    def __init__(self, float eta = 0.001, float eps = 1e-8):
+        if self.wrapped_newed is not NULL:
+            raise MemoryError()
+        self.wrapped_newed = new CppAdaGrad(eta, eps)
+        if self.wrapped_newed is NULL:
+            raise MemoryError()
+        self.wrapped = self.wrapped_newed
+
+    def __dealloc__(self):
+        cdef CppAdaGrad *temp
+        if self.wrapped_newed is not NULL:
+            temp = <CppAdaGrad*> self.wrapped_newed
+            del temp
+            self.wrapped_newed = NULL
+
+    def name(self):
+        return (<CppAdaGrad*> self.wrapped).name()
+
+    def eta(self):
+        return (<CppAdaGrad*> self.wrapped).eta()
+
+    def eps(self):
+        return (<CppAdaGrad*> self.wrapped).eps()
+
+    def get_configs(self):
+        cdef unordered_map[string, unsigned] uint_configs
+        cdef unordered_map[string, float] float_configs
+        (<CppAdaGrad*> self.wrapped).get_configs(uint_configs, float_configs)
+        return (uint_configs, float_configs)
+
+    def set_configs(self, unordered_map[string, unsigned] uint_configs, unordered_map[string, float] float_configs):
+        (<CppAdaGrad*> self.wrapped).set_configs(uint_configs, float_configs)
+        return
+
+
 cdef class _Adam(_Trainer):
 
     def __init__(self, float alpha = 0.001, float beta1 = 0.9, float beta2 = 0.999, float eps = 1e-8):
@@ -70,9 +107,9 @@ cdef class _Adam(_Trainer):
     def get_configs(self):
         cdef unordered_map[string, unsigned] uint_configs
         cdef unordered_map[string, float] float_configs
-        (<CppSGD*> self.wrapped).get_configs(uint_configs, float_configs)
+        (<CppAdam*> self.wrapped).get_configs(uint_configs, float_configs)
         return (uint_configs, float_configs)
 
     def set_configs(self, unordered_map[string, unsigned] uint_configs, unordered_map[string, float] float_configs):
-        (<CppSGD*> self.wrapped).set_configs(uint_configs, float_configs)
+        (<CppAdam*> self.wrapped).set_configs(uint_configs, float_configs)
         return
