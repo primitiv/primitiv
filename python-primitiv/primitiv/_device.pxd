@@ -23,6 +23,10 @@ cdef class _Device:
     cdef object __weakref__
 
 
+# This is used for holding python instances related to C++.
+# Without this variable, python instances are always created when C++ class
+# instances are returned from functions.
+# It means that users can not compare instances by using "is" operator.
 cdef object py_primitiv_device_weak_dict
 
 cdef inline _Device wrapDevice(CppDevice *wrapped) except +:
