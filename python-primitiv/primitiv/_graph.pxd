@@ -78,9 +78,7 @@ cdef object py_primitiv_graph_weak_dict
 
 cdef inline _Graph wrapGraph(CppGraph *wrapped) except +:
     global py_primitiv_graph_weak_dict
-    instance = py_primitiv_graph_weak_dict.get(<uintptr_t> wrapped)
-    if instance is not None:
-        return instance
-    cdef _Graph graph = _Graph.__new__(_Graph)
-    graph.wrapped = wrapped
-    return graph
+
+    # _Graph instances should be created and be registered before this
+    # function is called.
+    return py_primitiv_graph_weak_dict[<uintptr_t> wrapped]

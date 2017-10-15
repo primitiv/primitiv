@@ -31,9 +31,7 @@ cdef object py_primitiv_device_weak_dict
 
 cdef inline _Device wrapDevice(CppDevice *wrapped) except +:
     global py_primitiv_device_weak_dict
-    instance = py_primitiv_device_weak_dict.get(<uintptr_t> wrapped)
-    if instance is not None:
-        return instance
-    cdef _Device device = _Device.__new__(_Device)
-    device.wrapped = wrapped
-    return device
+
+    # _Device instances should be created and be registered before this
+    # function is called.
+    return py_primitiv_device_weak_dict[<uintptr_t> wrapped]
