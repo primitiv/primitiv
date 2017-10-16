@@ -29,6 +29,37 @@ void SGD::set_configs(
   eta_ = float_configs.at("SGD.eta");
 }
 
+void MomentumSGD::configure_parameter(Parameter &param) {
+  const std::string name = "momentumsgd-m";
+  if (!param.has_stats(name)) {
+    param.add_stats(name, param.shape());
+    param.stats(name).reset(0);
+  }
+}
+
+void MomentumSGD::update_parameter(float scale, Parameter &param) {
+  Tensor &m = param.stats("momentumsgd-m");
+  m *= momentum_;
+  m -= (scale * eta_) * param.gradient();
+  param.value() += m;
+}
+
+void MomentumSGD::get_configs(
+    std::unordered_map<std::string, unsigned> &uint_configs,
+    std::unordered_map<std::string, float> &float_configs) const {
+  Trainer::get_configs(uint_configs, float_configs);
+  float_configs.insert(std::make_pair("MomentumSGD.eta", eta_));
+  float_configs.insert(std::make_pair("MomentumSGD.momentum", momentum_));
+}
+
+void MomentumSGD::set_configs(
+    const std::unordered_map<std::string, unsigned> &uint_configs,
+    const std::unordered_map<std::string, float> &float_configs) {
+  Trainer::set_configs(uint_configs, float_configs);
+  eta_ = float_configs.at("MomentumSGD.eta");
+  momentum_ = float_configs.at("MomentumSGD.momentum");
+}
+
 void AdaGrad::configure_parameter(Parameter &param) {
   const std::string name = "adagrad-m";
   if (!param.has_stats(name)) {
@@ -43,7 +74,7 @@ void AdaGrad::update_parameter(float scale, Parameter &param) {
   m += g * g;
   param.value() -= (scale * eta_) * g / (operators::sqrt(m) + eps_);
 }
-  
+
 void AdaGrad::get_configs(
     std::unordered_map<std::string, unsigned> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {

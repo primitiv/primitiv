@@ -43,6 +43,38 @@ private:
 };
 
 /**
+ * Stochastic gradient descent with momentum.
+ */
+class MomentumSGD : public primitiv::Trainer {
+  DECL_DEFAULTS(MomentumSGD);
+
+public:
+  /**
+   * Creates a new MomentumSGD object.
+   * @param eta Learning rate.
+   * @param momentum Decay factor of the momentum.
+   */
+  MomentumSGD(float eta = 0.01, float momentum = 0.9)
+    : eta_(eta), momentum_(momentum) {}
+
+  /**
+   * Returns the hyperparameter eta.
+   * @return The value of eta.
+   */
+  float eta() const { return eta_; }
+
+  /**
+   * Returns the hyperparameter momentum.
+   * @return The value of momentum.
+   */
+  float momentum() const { return momentum_; }
+
+private:
+  float eta_;
+  float momentum_;
+};
+
+/**
  * AdaGrad optimizer.
  */
 class AdaGrad : public primitiv::Trainer {
