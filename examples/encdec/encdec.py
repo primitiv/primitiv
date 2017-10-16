@@ -18,6 +18,8 @@ from utils import (
 )
 
 from argparse import ArgumentParser
+from bleu import get_bleu_stats, calculate_bleu
+from collections import defaultdict
 
 SRC_VOCAB_SIZE = 4000
 TRG_VOCAB_SIZE = 5000
@@ -32,6 +34,8 @@ SRC_TRAIN_FILE = "data/train.en"
 TRG_TRAIN_FILE = "data/train.ja"
 SRC_VALID_FILE = "data/dev.en"
 TRG_VALID_FILE = "data/dev.ja"
+SRC_TEST_FILE = "data/test.en"
+TRG_TEST_FILE = "data/test.ja"
 
 # Encoder-decoder translation model.
 
@@ -122,6 +126,7 @@ def train(encdec, trainer, prefix, best_valid_ppl):
     # Loads vocab.
     src_vocab = make_vocab(SRC_TRAIN_FILE, SRC_VOCAB_SIZE)
     trg_vocab = make_vocab(TRG_TRAIN_FILE, TRG_VOCAB_SIZE)
+    inv_trg_vocab = make_inv_vocab(trg_vocab)
     print("#src_vocab:", len(src_vocab))  # == SRC_VOCAB_SIZE
     print("#trg_vocab:", len(trg_vocab))  # == TRG_VOCAB_SIZE
 
@@ -141,11 +146,12 @@ def train(encdec, trainer, prefix, best_valid_ppl):
     train_ids = list(range(num_train_sents))
     valid_ids = list(range(num_valid_sents))
 
-    g = Graph()
-    Graph.set_default(g)
-
     # Train/valid loop.
     for epoch in range(MAX_EPOCH):
+        # Computation graph.
+        g = Graph()
+        Graph.set_default(g)
+
         print("epoch", epoch + 1, '/', MAX_EPOCH, ':')
         # Shuffles train sentence IDs.
         random.shuffle(train_ids)
@@ -201,6 +207,40 @@ def train(encdec, trainer, prefix, best_valid_ppl):
             save_ppl(prefix + ".valid_ppl.config", best_valid_ppl)
             print("done.")
 
+        stats = defaultdict(int)
+        with open(SRC_TEST_FILE, "r") as fp_src, open(TRG_TEST_FILE, "r") as fp_trg:
+            for test_src, test_ref in zip(fp_src, fp_trg):
+                hyp_ids = test_one(encdec, src_vocab, trg_vocab, test_src)
+                hyp = [inv_trg_vocab[wid] for wid in hyp_ids]
+                for k, v in get_bleu_stats(test_ref.split(), hyp).items():
+                    stats[k] += v
+        bleu = calculate_bleu(stats)
+        print("BLEU =", bleu)
+
+
+def test_one(encdec, src_vocab, trg_vocab, line):
+    g = Graph()
+    Graph.set_default(g)
+
+    src_corpus = [line_to_sent(line.strip(), src_vocab)]
+    src_batch = make_batch(src_corpus, [0], src_vocab)
+
+    encdec.encode(src_batch, False)
+
+    # Generates target words one-by-one.
+    trg_ids = [trg_vocab["<bos>"]]
+    eos_id = trg_vocab["<eos>"]
+    while trg_ids[-1] != eos_id:
+        if len(trg_ids) > GENERATION_LIMIT + 1:
+            print("Warning: Sentence generation did not finish in", GENERATION_LIMIT, "iterations.", file=sys.stderr)
+            trg_ids.append(eos_id)
+            break
+        y = encdec.decode_step([trg_ids[-1]], False)
+        logits = y.to_list()
+        trg_ids.append(argmax(logits))
+
+    return trg_ids[1:-1]
+
 
 # Generates translation by consuming stdin.
 def test(encdec):
@@ -209,31 +249,10 @@ def test(encdec):
     trg_vocab = make_vocab(TRG_TRAIN_FILE, TRG_VOCAB_SIZE)
     inv_trg_vocab = make_inv_vocab(trg_vocab)
 
-    g = Graph()
-    Graph.set_default(g)
-
     for line in sys.stdin:
-        src_corpus = [line_to_sent(line.strip(), src_vocab)]
-        src_batch = make_batch(src_corpus, [0], src_vocab)
-
-        g.clear()
-
-        encdec.encode(src_batch, False)
-
-        # Generates target words one-by-one.
-        trg_ids = [trg_vocab["<bos>"]]
-        eos_id = trg_vocab["<eos>"]
-        while trg_ids[-1] != eos_id:
-            if len(trg_ids) > GENERATION_LIMIT + 1:
-                print("Warning: Sentence generation did not finish in", GENERATION_LIMIT, "iterations.", file=sys.stderr)
-                trg_ids.append(eos_id)
-                break
-            y = encdec.decode_step([trg_ids[-1]], False)
-            logits = y.to_list()
-            trg_ids.append(argmax(logits))
-
+        trg_ids = test_one(encdec, src_vocab, trg_vocab, inv_trg_vocab, line)
         # Prints the result.
-        print(" ".join(inv_trg_vocab[wid] for wid in trg_ids[1:-1]))
+        print(" ".join(inv_trg_vocab[wid] for wid in trg_ids))
 
 
 def main():
