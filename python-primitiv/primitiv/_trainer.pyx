@@ -27,7 +27,7 @@ cdef class _Trainer:
         return
 
     def name(self):
-        return self.wrapped.name()
+        return self.wrapped.name().decode("utf-8")
 
     def get_epoch(self):
         return self.wrapped.get_epoch()
@@ -67,6 +67,16 @@ cdef class _Trainer:
 
     def update(self):
         self.wrapped.update()
+        return
+
+    def get_configs(self):
+        cdef unordered_map[string, unsigned] uint_configs
+        cdef unordered_map[string, float] float_configs
+        self.wrapped.get_configs(uint_configs, float_configs)
+        return (uint_configs, float_configs)
+
+    def set_configs(self, unordered_map[string, unsigned] uint_configs, unordered_map[string, float] float_configs):
+        self.wrapped.set_configs(uint_configs, float_configs)
         return
 
     def set_configs_by_file(self, str path):

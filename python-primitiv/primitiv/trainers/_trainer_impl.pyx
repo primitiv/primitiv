@@ -18,21 +18,8 @@ cdef class _SGD(_Trainer):
             del temp
             self.wrapped_newed = NULL
 
-    def name(self):
-        return (<CppSGD*> self.wrapped).name()
-
     def eta(self):
         return (<CppSGD*> self.wrapped).eta()
-
-    def get_configs(self):
-        cdef unordered_map[string, unsigned] uint_configs
-        cdef unordered_map[string, float] float_configs
-        (<CppSGD*> self.wrapped).get_configs(uint_configs, float_configs)
-        return (uint_configs, float_configs)
-
-    def set_configs(self, const unordered_map[string, unsigned] uint_configs, const unordered_map[string, float] float_configs):
-        (<CppSGD*> self.wrapped).set_configs(uint_configs, float_configs)
-        return
 
 
 cdef class _MomentumSGD(_Trainer):
@@ -52,24 +39,11 @@ cdef class _MomentumSGD(_Trainer):
             del temp
             self.wrapped_newed = NULL
 
-    def name(self):
-        return (<CppMomentumSGD*> self.wrapped).name()
-
     def eta(self):
         return (<CppMomentumSGD*> self.wrapped).eta()
 
     def momentum(self):
         return (<CppMomentumSGD*> self.wrapped).momentum()
-
-    def get_configs(self):
-        cdef unordered_map[string, unsigned] uint_configs
-        cdef unordered_map[string, float] float_configs
-        (<CppMomentumSGD*> self.wrapped).get_configs(uint_configs, float_configs)
-        return (uint_configs, float_configs)
-
-    def set_configs(self, const unordered_map[string, unsigned] uint_configs, const unordered_map[string, float] float_configs):
-        (<CppMomentumSGD*> self.wrapped).set_configs(uint_configs, float_configs)
-        return
 
 
 cdef class _AdaGrad(_Trainer):
@@ -89,24 +63,11 @@ cdef class _AdaGrad(_Trainer):
             del temp
             self.wrapped_newed = NULL
 
-    def name(self):
-        return (<CppAdaGrad*> self.wrapped).name()
-
     def eta(self):
         return (<CppAdaGrad*> self.wrapped).eta()
 
     def eps(self):
         return (<CppAdaGrad*> self.wrapped).eps()
-
-    def get_configs(self):
-        cdef unordered_map[string, unsigned] uint_configs
-        cdef unordered_map[string, float] float_configs
-        (<CppAdaGrad*> self.wrapped).get_configs(uint_configs, float_configs)
-        return (uint_configs, float_configs)
-
-    def set_configs(self, unordered_map[string, unsigned] uint_configs, unordered_map[string, float] float_configs):
-        (<CppAdaGrad*> self.wrapped).set_configs(uint_configs, float_configs)
-        return
 
 
 cdef class _Adam(_Trainer):
@@ -126,9 +87,6 @@ cdef class _Adam(_Trainer):
             del temp
             self.wrapped_newed = NULL
 
-    def name(self):
-        return (<CppAdam*> self.wrapped).name()
-
     def alpha(self):
         return (<CppAdam*> self.wrapped).alpha()
 
@@ -140,13 +98,3 @@ cdef class _Adam(_Trainer):
 
     def eps(self):
         return (<CppAdam*> self.wrapped).eps()
-
-    def get_configs(self):
-        cdef unordered_map[string, unsigned] uint_configs
-        cdef unordered_map[string, float] float_configs
-        (<CppAdam*> self.wrapped).get_configs(uint_configs, float_configs)
-        return (uint_configs, float_configs)
-
-    def set_configs(self, unordered_map[string, unsigned] uint_configs, unordered_map[string, float] float_configs):
-        (<CppAdam*> self.wrapped).set_configs(uint_configs, float_configs)
-        return

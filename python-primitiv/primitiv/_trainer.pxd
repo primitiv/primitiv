@@ -26,6 +26,8 @@ cdef extern from "primitiv/trainer.h" namespace "primitiv":
         void add_parameter(CppParameter &param) except +
         void reset_gradients() except +
         void update() except +
+        void get_configs(unordered_map[string, unsigned] &uint_configs, unordered_map[string, float] &float_configs) except +
+        void set_configs(const unordered_map[string, unsigned] &uint_configs, const unordered_map[string, float] &float_configs) except +
         void set_configs_by_file(const string &path) except +
 
 
