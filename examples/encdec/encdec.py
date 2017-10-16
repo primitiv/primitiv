@@ -14,7 +14,7 @@ from primitiv import trainers as T
 from lstm import LSTM
 from utils import (
     make_vocab, load_corpus, count_labels, make_batch,
-    save_ppl, make_inv_vocab, line_to_sent, argmax
+    save_ppl, make_inv_vocab, line_to_sent, argmax, load_ppl
 )
 
 from argparse import ArgumentParser
