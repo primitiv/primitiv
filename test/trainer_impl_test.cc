@@ -23,6 +23,8 @@ protected:
 TEST_F(TrainerImplTest, CheckNames) {
   SGD sgd;
   EXPECT_EQ("SGD", sgd.name());
+  MomentumSGD momentumsgd;
+  EXPECT_EQ("MomentumSGD", momentumsgd.name());
   AdaGrad adagrad;
   EXPECT_EQ("AdaGrad", adagrad.name());
   Adam adam;
@@ -32,6 +34,10 @@ TEST_F(TrainerImplTest, CheckNames) {
 TEST_F(TrainerImplTest, CheckDefaultHyperparameters) {
   SGD sgd;
   EXPECT_FLOAT_EQ(.1, sgd.eta());
+
+  MomentumSGD momentumsgd;
+  EXPECT_FLOAT_EQ(.01, momentumsgd.eta());
+  EXPECT_FLOAT_EQ(.9, momentumsgd.momentum());
 
   AdaGrad adagrad;
   EXPECT_FLOAT_EQ(.001, adagrad.eta());
@@ -47,6 +53,10 @@ TEST_F(TrainerImplTest, CheckDefaultHyperparameters) {
 TEST_F(TrainerImplTest, CheckGivenHyperparameters) {
   SGD sgd(1);
   EXPECT_FLOAT_EQ(1, sgd.eta());
+
+  MomentumSGD momentumsgd(1, 2);
+  EXPECT_FLOAT_EQ(1, momentumsgd.eta());
+  EXPECT_FLOAT_EQ(2, momentumsgd.momentum());
 
   AdaGrad adagrad(1, 2);
   EXPECT_FLOAT_EQ(1, adagrad.eta());
@@ -64,6 +74,9 @@ TEST_F(TrainerImplTest, CheckInvalidSetConfigsByFile) {
 
   const std::string path = "/tmp/primitiv_TrainerImplTest_CheckInvalidSetConfigsByFile.data";
   sgd.save(path);
+
+  MomentumSGD momentumsgd;
+  EXPECT_THROW(momentumsgd.set_configs_by_file(path), Error);
 
   AdaGrad adagrad;
   EXPECT_THROW(adagrad.set_configs_by_file(path), Error);
@@ -195,6 +208,146 @@ TEST_F(TrainerImplTest, CheckSGDUpdate) {
     param.gradient() += param.value();  // Squared loss
     trainer.update();
     EXPECT_TRUE(vector_match(expected_v[i], param.value().to_vector()));
+  }
+}
+
+TEST_F(TrainerImplTest, CheckMomentumSGDSaveLoad) {
+  MomentumSGD trainer(1, 2);
+  trainer.set_epoch(3);
+  trainer.set_learning_rate_scaling(4);
+  trainer.set_weight_decay(5);
+  trainer.set_gradient_clipping(6);
+
+  const std::string path = "/tmp/primitiv_TrainerImplTest_CheckMomentumSGDSaveLoad.data";
+  trainer.save(path);
+
+  EXPECT_EQ("MomentumSGD", Trainer::detect_name(path));
+
+  std::shared_ptr<Trainer> loaded = Trainer::load(path);
+  std::remove(path.c_str());
+
+  ASSERT_EQ("MomentumSGD", loaded->name());
+
+  std::shared_ptr<MomentumSGD> trainer2 = std::static_pointer_cast<MomentumSGD>(loaded);
+  EXPECT_EQ(1, trainer2->eta());
+  EXPECT_EQ(2, trainer2->momentum());
+  EXPECT_EQ(3, trainer2->get_epoch());
+  EXPECT_EQ(4, trainer2->get_learning_rate_scaling());
+  EXPECT_EQ(5, trainer2->get_weight_decay());
+  EXPECT_EQ(6, trainer2->get_gradient_clipping());
+}
+
+TEST_F(TrainerImplTest, CheckMomentumSGDGetConfigs) {
+  MomentumSGD trainer(1, 2);
+  trainer.set_epoch(3);
+  trainer.set_learning_rate_scaling(4);
+  trainer.set_weight_decay(5);
+  trainer.set_gradient_clipping(6);
+
+  std::unordered_map<std::string, unsigned> uint_configs;
+  std::unordered_map<std::string, float> float_configs;
+  trainer.get_configs(uint_configs, float_configs);
+
+  EXPECT_EQ(1u, uint_configs.size());
+  EXPECT_EQ(5u, float_configs.size());
+  EXPECT_EQ(1, float_configs.at("MomentumSGD.eta"));
+  EXPECT_EQ(2, float_configs.at("MomentumSGD.momentum"));
+  EXPECT_EQ(3, uint_configs.at("Trainer.epoch"));
+  EXPECT_EQ(4, float_configs.at("Trainer.lr_scale"));
+  EXPECT_EQ(5, float_configs.at("Trainer.l2_strength"));
+  EXPECT_EQ(6, float_configs.at("Trainer.clip_threshold"));
+}
+
+TEST_F(TrainerImplTest, CheckMomentumSGDSetConfigs) {
+  MomentumSGD trainer(0, 0);
+  trainer.set_epoch(0);
+  trainer.set_learning_rate_scaling(0);
+  trainer.set_weight_decay(0);
+  trainer.set_gradient_clipping(0);
+
+  std::unordered_map<std::string, unsigned> uint_configs {
+    std::make_pair("Trainer.epoch", 3),
+  };
+  std::unordered_map<std::string, float> float_configs {
+    std::make_pair("MomentumSGD.eta", 1),
+    std::make_pair("MomentumSGD.momentum", 2),
+    std::make_pair("Trainer.lr_scale", 4),
+    std::make_pair("Trainer.l2_strength", 5),
+    std::make_pair("Trainer.clip_threshold", 6),
+  };
+  trainer.set_configs(uint_configs, float_configs);
+
+  EXPECT_EQ(1, trainer.eta());
+  EXPECT_EQ(2, trainer.momentum());
+  EXPECT_EQ(3, trainer.get_epoch());
+  EXPECT_EQ(4, trainer.get_learning_rate_scaling());
+  EXPECT_EQ(5, trainer.get_weight_decay());
+  EXPECT_EQ(6, trainer.get_gradient_clipping());
+}
+
+TEST_F(TrainerImplTest, CheckMomentumSGDSetConfigsByFile) {
+  MomentumSGD trainer(1, 2);
+  trainer.set_epoch(3);
+  trainer.set_learning_rate_scaling(4);
+  trainer.set_weight_decay(5);
+  trainer.set_gradient_clipping(6);
+
+  const std::string path = "/tmp/primitiv_TrainerImplTest_CheckMomentumSGDSetConfigsFromFile.data";
+  trainer.save(path);
+
+  MomentumSGD trainer2(0, 0);
+  trainer.set_epoch(0);
+  trainer.set_learning_rate_scaling(0);
+  trainer.set_weight_decay(0);
+  trainer.set_gradient_clipping(0);
+
+  trainer2.set_configs_by_file(path);
+  std::remove(path.c_str());
+
+  EXPECT_EQ(1, trainer2.eta());
+  EXPECT_EQ(2, trainer2.momentum());
+  EXPECT_EQ(3, trainer2.get_epoch());
+  EXPECT_EQ(4, trainer2.get_learning_rate_scaling());
+  EXPECT_EQ(5, trainer2.get_weight_decay());
+  EXPECT_EQ(6, trainer2.get_gradient_clipping());
+}
+
+TEST_F(TrainerImplTest, CheckMomentumSGDUpdate) {
+  Parameter param("param", {2, 2}, {1, 2, 3, 4}, dev);
+  ASSERT_TRUE(vector_match(
+        vector<float> {1, 2, 3, 4}, param.value().to_vector()));
+
+  MomentumSGD trainer;
+  trainer.set_learning_rate_scaling(.1);
+  trainer.add_parameter(param);
+  ASSERT_TRUE(vector_match(
+        vector<float>(4, 0), param.stats("momentumsgd-m").to_vector()));
+
+  const vector<vector<float>> expected_v {
+    {9.9900000e-01, 1.9980000e+00, 2.9970000e+00, 3.9960000e+00},
+    {9.9710100e-01, 1.9942020e+00, 2.9913030e+00, 3.9884040e+00},
+    {9.9439480e-01, 1.9887896e+00, 2.9831844e+00, 3.9775792e+00},
+    {9.9096482e-01, 1.9819296e+00, 2.9728945e+00, 3.9638593e+00},
+    {9.8688688e-01, 1.9737738e+00, 2.9606606e+00, 3.9475475e+00},
+  };
+  const vector<vector<float>> expected_m {
+    {-1.0000000e-03, -2.0000000e-03, -3.0000000e-03, -4.0000000e-03},
+    {-1.8990000e-03, -3.7980000e-03, -5.6970000e-03, -7.5960000e-03},
+    {-2.7062010e-03, -5.4124020e-03, -8.1186030e-03, -1.0824804e-02},
+    {-3.4299757e-03, -6.8599514e-03, -1.0289927e-02, -1.3719903e-02},
+    {-4.0779430e-03, -8.1558859e-03, -1.2233829e-02, -1.6311772e-02},
+  };
+
+  for (unsigned i = 0; i < 5; ++i) {
+    trainer.reset_gradients();
+    EXPECT_TRUE(vector_match(
+          vector<float>(4, 0), param.gradient().to_vector()));
+
+    param.gradient() += param.value();  // Squared loss
+    trainer.update();
+    EXPECT_TRUE(vector_match(expected_v[i], param.value().to_vector()));
+    EXPECT_TRUE(vector_match(
+          expected_m[i], param.stats("momentumsgd-m").to_vector()));
   }
 }
 
@@ -333,10 +486,9 @@ TEST_F(TrainerImplTest, CheckAdaGradUpdate) {
 
     param.gradient() += param.value();  // Squared loss
     trainer.update();
-    EXPECT_TRUE(vector_near(
-          expected_v[i], param.value().to_vector(), 1e-5));
-    EXPECT_TRUE(vector_near(
-          expected_m[i], param.stats("adagrad-m").to_vector(), 1e-5));
+    EXPECT_TRUE(vector_match(expected_v[i], param.value().to_vector()));
+    EXPECT_TRUE(vector_match(
+          expected_m[i], param.stats("adagrad-m").to_vector()));
   }
 }
 
