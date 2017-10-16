@@ -486,10 +486,9 @@ TEST_F(TrainerImplTest, CheckAdaGradUpdate) {
 
     param.gradient() += param.value();  // Squared loss
     trainer.update();
-    EXPECT_TRUE(vector_near(
-          expected_v[i], param.value().to_vector(), 1e-5));
-    EXPECT_TRUE(vector_near(
-          expected_m[i], param.stats("adagrad-m").to_vector(), 1e-5));
+    EXPECT_TRUE(vector_match(expected_v[i], param.value().to_vector()));
+    EXPECT_TRUE(vector_match(
+          expected_m[i], param.stats("adagrad-m").to_vector()));
   }
 }
 
