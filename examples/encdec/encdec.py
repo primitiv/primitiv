@@ -152,13 +152,16 @@ def train(encdec, trainer, prefix, best_valid_ppl):
         g = Graph()
         Graph.set_default(g)
 
-        print("epoch", epoch + 1, '/', MAX_EPOCH, ':')
+        print("epoch %d/%d:" % (epoch + 1, MAX_EPOCH))
         # Shuffles train sentence IDs.
         random.shuffle(train_ids)
 
         # Training.
         train_loss = 0;
         for ofs in range(0, num_train_sents, BATCH_SIZE):
+            print("%d" % ofs, end="\r")
+            sys.stdout.flush()
+
             batch_ids = train_ids[ofs : min(ofs + BATCH_SIZE, num_train_sents)]
             src_batch = make_batch(train_src_corpus, batch_ids, src_vocab)
             trg_batch = make_batch(train_trg_corpus, batch_ids, trg_vocab)
@@ -172,15 +175,15 @@ def train(encdec, trainer, prefix, best_valid_ppl):
             g.backward(loss)
             trainer.update()
 
-            print("\r%d" % ofs, end="")
-            sys.stdout.flush()
-
         train_ppl = math.exp(train_loss / num_train_labels)
-        print("\n  train ppl =", train_ppl)
+        print("  train PPL = %.4f" % train_ppl)
 
         # Validation.
         valid_loss = 0
         for ofs in range(0, num_valid_sents, BATCH_SIZE):
+            print("%d" % ofs, end="\r")
+            sys.stdout.flush()
+
             batch_ids = valid_ids[ofs : min(ofs + BATCH_SIZE, num_valid_sents)]
             src_batch = make_batch(valid_src_corpus, batch_ids, src_vocab)
             trg_batch = make_batch(valid_trg_corpus, batch_ids, trg_vocab)
@@ -191,11 +194,23 @@ def train(encdec, trainer, prefix, best_valid_ppl):
             loss = encdec.loss(trg_batch, False)
             valid_loss += loss.to_list()[0] * len(batch_ids)
 
-            print("\r%d" % ofs, end="")
-            sys.stdout.flush()
-
         valid_ppl = math.exp(valid_loss / num_valid_labels)
-        print("\n  valid ppl =", valid_ppl)
+        print("  valid PPL = %.4f" % valid_ppl)
+
+        # Calculates test BLEU.
+        stats = defaultdict(int)
+        with open(SRC_TEST_FILE, "r") as fp_src, open(TRG_TEST_FILE, "r") as fp_trg:
+            for ofs, (test_src, test_ref) in enumerate(zip(fp_src, fp_trg)):
+                print("%d" % ofs, end="\r")
+                sys.stdout.flush()
+
+                hyp_ids = test_one(encdec, src_vocab, trg_vocab, test_src)
+                hyp = [inv_trg_vocab[wid] for wid in hyp_ids]
+                for k, v in get_bleu_stats(test_ref.split(), hyp).items():
+                    stats[k] += v
+
+        bleu = calculate_bleu(stats)
+        print("  test BLEU = %.2f" % (100 * bleu))
 
         # Saves best model/trainer.
         if valid_ppl < best_valid_ppl:
@@ -206,16 +221,6 @@ def train(encdec, trainer, prefix, best_valid_ppl):
             trainer.save(prefix + ".trainer.config")
             save_ppl(prefix + ".valid_ppl.config", best_valid_ppl)
             print("done.")
-
-        stats = defaultdict(int)
-        with open(SRC_TEST_FILE, "r") as fp_src, open(TRG_TEST_FILE, "r") as fp_trg:
-            for test_src, test_ref in zip(fp_src, fp_trg):
-                hyp_ids = test_one(encdec, src_vocab, trg_vocab, test_src)
-                hyp = [inv_trg_vocab[wid] for wid in hyp_ids]
-                for k, v in get_bleu_stats(test_ref.split(), hyp).items():
-                    stats[k] += v
-        bleu = calculate_bleu(stats)
-        print("BLEU =", bleu)
 
 
 def test_one(encdec, src_vocab, trg_vocab, line):
