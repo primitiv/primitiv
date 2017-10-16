@@ -7,6 +7,8 @@ cdef class _Trainer:
         name = _Trainer.detect_name(path);
         if name == "SGD":
             trainer = T.SGD()
+        elif name == "AdaGrad":
+            trainer = T.AdaGrad()
         elif name == "Adam":
             trainer = T.Adam()
         else:
