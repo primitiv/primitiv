@@ -5,9 +5,9 @@ import sys
 import random
 import math
 
-from primitiv import Device, Parameter, Graph
-from primitiv.devices import Naive
+from primitiv import Device, Parameter, Graph, Trainer
 
+from primitiv import devices as D
 from primitiv import operators as F
 from primitiv import initializers as I
 from primitiv import trainers as T
@@ -305,7 +305,7 @@ def main():
     print("initializing device ... ", end="", file=sys.stderr)
     sys.stderr.flush()
 
-    dev = Naive() # = CUDA(0)
+    dev = D.Naive() # = D.CUDA(0)
     Device.set_default(dev)
     print("done.", file=sys.stderr)
 
