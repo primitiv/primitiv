@@ -15,6 +15,12 @@ cdef extern from "primitiv/trainer_impl.h" namespace "primitiv::trainers":
         float eta()
         float momentum()
 
+    cdef cppclass CppRMSProp "primitiv::trainers::RMSProp" (CppTrainer):
+        CppRMSProp(const float eta, const float alpha, const float eps)
+        float eta()
+        float alpha()
+        float eps()
+
     cdef cppclass CppAdaGrad "primitiv::trainers::AdaGrad" (CppTrainer):
         CppAdaGrad(float eta, float eps)
         float eta()

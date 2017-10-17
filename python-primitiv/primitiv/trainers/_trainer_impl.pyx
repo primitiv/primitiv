@@ -45,6 +45,31 @@ cdef class _MomentumSGD(_Trainer):
     def momentum(self):
         return (<CppMomentumSGD*> self.wrapped).momentum()
 
+cdef class _RMSProp(_Trainer):
+
+    def __init__(self, float eta = 0.01, float alpha = 0.9, float eps = 1e-8):
+        if self.wrapped_newed is not NULL:
+            raise MemoryError()
+        self.wrapped_newed = new CppRMSProp(eta, alpha, eps)
+        if self.wrapped_newed is NULL:
+            raise MemoryError()
+        self.wrapped = self.wrapped_newed
+
+    def __dealloc__(self):
+        cdef CppRMSProp *temp
+        if self.wrapped_newed is not NULL:
+            temp = <CppRMSProp*> self.wrapped_newed
+            del temp
+            self.wrapped_newed = NULL
+
+    def eta(self):
+        return (<CppRMSProp*> self.wrapped).eta()
+
+    def alpha(self):
+        return (<CppRMSProp*> self.wrapped).alpha()
+
+    def eps(self):
+        return (<CppRMSProp*> self.wrapped).eps()
 
 cdef class _AdaGrad(_Trainer):
 

@@ -75,6 +75,46 @@ private:
 };
 
 /**
+ * RMSProp Optimizer.
+ */
+class RMSProp : public primitiv::Trainer {
+  DECL_DEFAULTS(RMSProp);
+
+public:
+  /**
+   * Creates a new RMSProp object.
+   * @param eta Learning rate.
+   * @param alpha Decay factor of moment.
+   * @param eps Bias of power.
+   */
+  RMSProp(float eta = 0.01, float alpha = 0.9, float eps = 1e-8)
+    : eta_(eta), alpha_(alpha), eps_(eps) {}
+
+  /**
+   * Returns the hyperparameter eta.
+   * @return The value of eta.
+   */
+  float eta() const { return eta_; }
+
+  /**
+   * Returns the hyperparameter alpha.
+   * @return The value of alpha.
+   */
+  float alpha() const { return alpha_; }
+
+  /**
+   * Returns the hyperparameter eps.
+   * @return The value of eps.
+   */
+  float eps() const { return eps_; }
+
+private:
+  float eta_;
+  float alpha_;
+  float eps_;
+};
+
+/**
  * AdaGrad optimizer.
  */
 class AdaGrad : public primitiv::Trainer {
