@@ -1,6 +1,27 @@
 # test definitions
 
-find_package(GTest REQUIRED)
+if(GTEST_SOURCE_DIR)
+  include(ExternalProject)
+  ExternalProject_Add(
+    GTest
+    SOURCE_DIR ${GTEST_SOURCE_DIR}
+    INSTALL_COMMAND ""
+  )
+  ExternalProject_Get_Property(GTest binary_dir)
+  add_library(gtest STATIC IMPORTED)
+  set_property(
+    TARGET gtest
+    PROPERTY IMPORTED_LOCATION ${binary_dir}/libgtest.a
+  )
+  add_library(gtest_main STATIC IMPORTED)
+  set_property(
+    TARGET gtest_main
+    PROPERTY IMPORTED_LOCATION ${binary_dir}/libgtest_main.a
+  )
+  set(GTEST_BOTH_LIBRARIES gtest gtest_main)
+else()
+  find_package(GTest REQUIRED)
+endif()
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -9,6 +30,9 @@ include_directories(
 
 function(primitiv_test name)
   add_executable(${name}_test test_utils.h ${name}_test.cc)
+  if(GTEST_SOURCE_DIR)
+    add_dependencies(${name}_test GTest)
+  endif()
   target_link_libraries(${name}_test primitiv ${GTEST_BOTH_LIBRARIES} pthread)
   add_test(
     NAME ${name}_test
