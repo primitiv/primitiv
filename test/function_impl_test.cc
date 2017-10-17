@@ -352,6 +352,7 @@ TEST_F(FunctionImplTest, CheckRandomNormal) {
     float mean, sd;
     vector<float> data;
   };
+#ifdef __GLIBCXX__
   const vector<TestCase> test_cases {
     {Shape({2, 2}, 3), -2, 2,
       {-3.57166052, -2.78148127, -0.94226873, -2.95729542,
@@ -366,6 +367,28 @@ TEST_F(FunctionImplTest, CheckRandomNormal) {
         2.16808653, 2.08484149, 0.90178788, 1.73830211,
         2.59950328, 1.45240283, 1.47200286, 1.91403091}},
   };
+#elif defined _LIBCPP_VERSION
+  const vector<TestCase> test_cases {
+    {Shape({2, 2}, 3), -2, 2,
+      {-2.78148127, -3.57166052, -2.95729542, -0.94226873,
+        2.98024511,  0.35889030, -1.78313935, -0.96429944,
+       -0.94322312, -2.08661819, -1.56128621, -0.78637350}},
+    {Shape({2, 2}, 3), 0, 1,
+      { 1.36268508, -0.69024169,  0.43081367, -0.96791244,
+        0.29187110,  0.46228072, -0.88196278, -0.22691579,
+       -0.60850668,  0.92891538,  1.47957015,  1.20224774}},
+    {Shape({2, 2}, 3), 2, .5,
+      {2.52679920, 2.07982802, 2.26420283, 2.56787491,
+       2.08484149, 2.16808653, 1.73830211, 0.90178788,
+       1.45240283, 2.59950328, 1.91403091, 1.47200286}},
+  };
+#else
+  const vector<TestCase> test_cases {
+    {Shape({2, 2}, 3), -2, 2, {}},
+    {Shape({2, 2}, 3), 0, 1, {}},
+    {Shape({2, 2}, 3), 2, .5, {}},
+  };
+#endif
   for (const TestCase &tc : test_cases) {
     RandomNormal node(tc.shape, tc.mean, tc.sd, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
@@ -388,6 +411,7 @@ TEST_F(FunctionImplTest, CheckRandomLogNormal) {
     float mean, sd;
     vector<float> data;
   };
+#ifdef __GLIBCXX__
   const vector<TestCase> test_cases {
     {Shape({2, 2}, 3), -2, 2,
       {0.02810914, 0.06194668, 0.38974261, 0.05195925,
@@ -402,6 +426,28 @@ TEST_F(FunctionImplTest, CheckRandomLogNormal) {
         8.74154091, 8.04331684, 2.46400452, 5.68767834,
         13.45705223, 4.27337027, 4.35795498, 6.78036499}},
   };
+#elif defined _LIBCPP_VERSION
+  const vector<TestCase> test_cases {
+    {Shape({2, 2}, 3), -2, 2,
+      { 0.06194668, 0.02810914, 0.05195925, 0.38974261,
+       19.69264221, 1.43173969, 0.16810957, 0.38125020,
+        0.38937083, 0.12410613, 0.20986597, 0.45549366}},
+    {Shape({2, 2}, 3), 0, 1,
+      {3.90666890, 0.50145483, 1.53850889, 0.37987521,
+       1.33893037, 1.58769095, 0.41396958, 0.79698789,
+       0.54416287, 2.53176165, 4.39105797, 3.32758808}},
+    {Shape({2, 2}, 3), 2, .5,
+      {12.51338959,  8.00309277, 9.62345028, 13.03808784,
+        8.04331684,  8.74154091, 5.68767834,  2.46400452,
+        4.27337027, 13.45705223, 6.78036499,  4.35795498}},
+  };
+#else
+  const vector<TestCase> test_cases {
+    {Shape({2, 2}, 3), -2, 2, {}},
+    {Shape({2, 2}, 3), 0, 1, {}},
+    {Shape({2, 2}, 3), 2, .5, {}},
+  };
+#endif
   for (const TestCase &tc : test_cases) {
     RandomLogNormal node(tc.shape, tc.mean, tc.sd, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
