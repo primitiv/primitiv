@@ -60,6 +60,37 @@ void MomentumSGD::set_configs(
   momentum_ = float_configs.at("MomentumSGD.momentum");
 }
 
+void AdaGrad::configure_parameter(Parameter &param) {
+  const std::string name = "adagrad-m";
+  if (!param.has_stats(name)) {
+    param.add_stats(name, param.shape());
+    param.stats(name).reset(0);
+  }
+}
+
+void AdaGrad::update_parameter(float scale, Parameter &param) {
+  const Tensor &g = param.gradient();
+  Tensor &m = param.stats("adagrad-m");
+  m += g * g;
+  param.value() -= (scale * eta_) * g / (operators::sqrt(m) + eps_);
+}
+
+void AdaGrad::get_configs(
+    std::unordered_map<std::string, unsigned> &uint_configs,
+    std::unordered_map<std::string, float> &float_configs) const {
+  Trainer::get_configs(uint_configs, float_configs);
+  float_configs.insert(std::make_pair("AdaGrad.eta", eta_));
+  float_configs.insert(std::make_pair("AdaGrad.eps", eps_));
+}
+
+void AdaGrad::set_configs(
+    const std::unordered_map<std::string, unsigned> &uint_configs,
+    const std::unordered_map<std::string, float> &float_configs) {
+  Trainer::set_configs(uint_configs, float_configs);
+  eta_ = float_configs.at("AdaGrad.eta");
+  eps_ = float_configs.at("AdaGrad.eps");
+}
+
 void RMSProp::configure_parameter(Parameter &param) {
   const std::string name = "rmsprop-m";
   if (!param.has_stats(name)) {
@@ -93,35 +124,41 @@ void RMSProp::set_configs(
   eps_ = float_configs.at("RMSProp.eps");
 }
 
-void AdaGrad::configure_parameter(Parameter &param) {
-  const std::string name = "adagrad-m";
-  if (!param.has_stats(name)) {
-    param.add_stats(name, param.shape());
-    param.stats(name).reset(0);
+void AdaDelta::configure_parameter(Parameter &param) {
+  for (const char *name : {"adadelta-m1", "adadelta-m2"}) {
+    if (!param.has_stats(name)) {
+      param.add_stats(name, param.shape());
+      param.stats(name).reset(0);
+    }
   }
 }
 
-void AdaGrad::update_parameter(float scale, Parameter &param) {
+void AdaDelta::update_parameter(float scale, Parameter &param) {
   const Tensor &g = param.gradient();
-  Tensor &m = param.stats("adagrad-m");
-  m += g * g;
-  param.value() -= (scale * eta_) * g / (operators::sqrt(m) + eps_);
+  Tensor &m1 = param.stats("adadelta-m1");
+  Tensor &m2 = param.stats("adadelta-m2");
+  m2 *= rho_;
+  m2 += (1 - rho_) * g * g;
+  const Tensor dx = operators::sqrt((m1 + eps_) / (m2 + eps_)) * g;
+  m1 *= rho_;
+  m1 += (1 - rho_) * dx * dx;
+  param.value() -= scale * dx;
 }
 
-void AdaGrad::get_configs(
+void AdaDelta::get_configs(
     std::unordered_map<std::string, unsigned> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
   Trainer::get_configs(uint_configs, float_configs);
-  float_configs.insert(std::make_pair("AdaGrad.eta", eta_));
-  float_configs.insert(std::make_pair("AdaGrad.eps", eps_));
+  float_configs.insert(std::make_pair("AdaDelta.rho", rho_));
+  float_configs.insert(std::make_pair("AdaDelta.eps", eps_));
 }
 
-void AdaGrad::set_configs(
+void AdaDelta::set_configs(
     const std::unordered_map<std::string, unsigned> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
   Trainer::set_configs(uint_configs, float_configs);
-  eta_ = float_configs.at("AdaGrad.eta");
-  eps_ = float_configs.at("AdaGrad.eps");
+  rho_ = float_configs.at("AdaDelta.rho");
+  eps_ = float_configs.at("AdaDelta.eps");
 }
 
 void Adam::configure_parameter(Parameter &param) {

@@ -75,6 +75,38 @@ private:
 };
 
 /**
+ * AdaGrad optimizer.
+ */
+class AdaGrad : public primitiv::Trainer {
+  DECL_DEFAULTS(AdaGrad);
+
+public:
+  /**
+   * Creates a new AdaGrad object.
+   * @param eta Learning rate.
+   * @param eps Bias of power.
+   */
+  AdaGrad(float eta = 0.001, float eps = 1e-8)
+    : eta_(eta), eps_(eps) {}
+
+  /**
+   * Returns the hyperparameter eta.
+   * @return The value of eta.
+   */
+  float eta() const { return eta_; }
+
+  /**
+   * Returns the hyperparameter eps.
+   * @return The value of eps.
+   */
+  float eps() const { return eps_; }
+
+private:
+  float eta_;
+  float eps_;
+};
+
+/**
  * RMSProp Optimizer.
  */
 class RMSProp : public primitiv::Trainer {
@@ -115,25 +147,26 @@ private:
 };
 
 /**
- * AdaGrad optimizer.
+ * AdaDelta optimizer.
+ * https://arxiv.org/abs/1212.5701
  */
-class AdaGrad : public primitiv::Trainer {
-  DECL_DEFAULTS(AdaGrad);
+class AdaDelta : public primitiv::Trainer {
+  DECL_DEFAULTS(AdaDelta);
 
 public:
   /**
-   * Creates a new AdaGrad object.
-   * @param eta Learning rate.
-   * @param eps Bias of power.
+   * Creates a new AdaDelta object.
+   * @param rho Decay factor of RMS operation.
+   * @param eps Bias of RMS values.
    */
-  AdaGrad(float eta = 0.001, float eps = 1e-8)
-    : eta_(eta), eps_(eps) {}
+  AdaDelta(float rho = 0.95, float eps = 1e-6)
+    : rho_(rho), eps_(eps) {}
 
   /**
-   * Returns the hyperparameter eta.
-   * @return The value of eta.
+   * Returns the hyperparameter rho.
+   * @return The value of rho.
    */
-  float eta() const { return eta_; }
+  float rho() const { return rho_; }
 
   /**
    * Returns the hyperparameter eps.
@@ -142,7 +175,7 @@ public:
   float eps() const { return eps_; }
 
 private:
-  float eta_;
+  float rho_;
   float eps_;
 };
 
