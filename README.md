@@ -76,7 +76,7 @@ Building Options
 Usage
 -----
 
-See [examples](https://github.com/odashi/primitiv/tree/master/example).
+See [examples](https://github.com/odashi/primitiv/tree/master/examples).
 
 
 Contact

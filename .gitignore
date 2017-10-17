@@ -1,5 +1,12 @@
-build
-example/*/a.out
-example/*/*.config
-example/*/*.param
-example/*/data
+.python-version
+__pycache__
+/build
+/examples/*/a.out
+/examples/*/*.config
+/examples/*/*.param
+/examples/*/data
+/python-primitiv/**/*.cpp
+/python-primitiv/**/*.so
+/python-primitiv/*.egg-info
+/python-primitiv/build
+/python-primitiv/dist
