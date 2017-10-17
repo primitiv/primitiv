@@ -25,6 +25,8 @@ TEST_F(TrainerImplTest, CheckNames) {
   EXPECT_EQ("SGD", sgd.name());
   MomentumSGD momentumsgd;
   EXPECT_EQ("MomentumSGD", momentumsgd.name());
+  RMSProp rmsprop;
+  EXPECT_EQ("RMSProp", rmsprop.name());
   AdaGrad adagrad;
   EXPECT_EQ("AdaGrad", adagrad.name());
   Adam adam;
@@ -38,6 +40,11 @@ TEST_F(TrainerImplTest, CheckDefaultHyperparameters) {
   MomentumSGD momentumsgd;
   EXPECT_FLOAT_EQ(.01, momentumsgd.eta());
   EXPECT_FLOAT_EQ(.9, momentumsgd.momentum());
+
+  RMSProp rmsprop;
+  EXPECT_FLOAT_EQ(.01, rmsprop.eta());
+  EXPECT_FLOAT_EQ(.9, rmsprop.alpha());
+  EXPECT_FLOAT_EQ(1e-8, rmsprop.eps());
 
   AdaGrad adagrad;
   EXPECT_FLOAT_EQ(.001, adagrad.eta());
@@ -58,6 +65,11 @@ TEST_F(TrainerImplTest, CheckGivenHyperparameters) {
   EXPECT_FLOAT_EQ(1, momentumsgd.eta());
   EXPECT_FLOAT_EQ(2, momentumsgd.momentum());
 
+  RMSProp rmsprop(1, 2, 3);
+  EXPECT_FLOAT_EQ(1, rmsprop.eta());
+  EXPECT_FLOAT_EQ(2, rmsprop.alpha());
+  EXPECT_FLOAT_EQ(3, rmsprop.eps());
+
   AdaGrad adagrad(1, 2);
   EXPECT_FLOAT_EQ(1, adagrad.eta());
   EXPECT_FLOAT_EQ(2, adagrad.eps());
@@ -77,6 +89,9 @@ TEST_F(TrainerImplTest, CheckInvalidSetConfigsByFile) {
 
   MomentumSGD momentumsgd;
   EXPECT_THROW(momentumsgd.set_configs_by_file(path), Error);
+
+  RMSProp rmsprop;
+	EXPECT_THROW(rmsprop.set_configs_by_file(path), Error);
 
   AdaGrad adagrad;
   EXPECT_THROW(adagrad.set_configs_by_file(path), Error);
@@ -348,6 +363,152 @@ TEST_F(TrainerImplTest, CheckMomentumSGDUpdate) {
     EXPECT_TRUE(vector_match(expected_v[i], param.value().to_vector()));
     EXPECT_TRUE(vector_match(
           expected_m[i], param.stats("momentumsgd-m").to_vector()));
+  }
+}
+
+TEST_F(TrainerImplTest, CheckRMSPropSaveLoad) {
+  RMSProp rmsprop(1, 2, 3);
+  rmsprop.set_epoch(4);
+  rmsprop.set_learning_rate_scaling(5);
+  rmsprop.set_weight_decay(6);
+  rmsprop.set_gradient_clipping(7);
+
+  const std::string path = "/tmp/primitiv_TrainerImplTest_CheckRMSPropSaveLoad.data";
+  rmsprop.save(path);
+
+  EXPECT_EQ("RMSProp", Trainer::detect_name(path));
+
+  std::shared_ptr<Trainer> loaded = Trainer::load(path);
+  std::remove(path.c_str());
+
+  ASSERT_EQ("RMSProp", loaded->name());
+
+  std::shared_ptr<RMSProp> rmsprop2 = std::static_pointer_cast<RMSProp>(loaded);
+  EXPECT_EQ(1, rmsprop2->eta());
+  EXPECT_EQ(2, rmsprop2->alpha());
+  EXPECT_EQ(3, rmsprop2->eps());
+  EXPECT_EQ(4, rmsprop2->get_epoch());
+  EXPECT_EQ(5, rmsprop2->get_learning_rate_scaling());
+  EXPECT_EQ(6, rmsprop2->get_weight_decay());
+  EXPECT_EQ(7, rmsprop2->get_gradient_clipping());
+}
+
+TEST_F(TrainerImplTest, CheckRMSPropGetConfigs) {
+  RMSProp rmsprop(1, 2, 3);
+  rmsprop.set_epoch(4);
+  rmsprop.set_learning_rate_scaling(5);
+  rmsprop.set_weight_decay(6);
+  rmsprop.set_gradient_clipping(7);
+
+  std::unordered_map<std::string, unsigned> uint_configs;
+  std::unordered_map<std::string, float> float_configs;
+  rmsprop.get_configs(uint_configs, float_configs);
+
+  EXPECT_EQ(1u, uint_configs.size());
+  EXPECT_EQ(6u, float_configs.size());
+  EXPECT_EQ(1, float_configs.at("RMSProp.eta"));
+  EXPECT_EQ(2, float_configs.at("RMSProp.alpha"));
+  EXPECT_EQ(3, float_configs.at("RMSProp.eps"));
+  EXPECT_EQ(4, uint_configs.at("Trainer.epoch"));
+  EXPECT_EQ(5, float_configs.at("Trainer.lr_scale"));
+  EXPECT_EQ(6, float_configs.at("Trainer.l2_strength"));
+  EXPECT_EQ(7, float_configs.at("Trainer.clip_threshold"));
+}
+
+TEST_F(TrainerImplTest, CheckRMSPropSetConfigs) {
+  RMSProp rmsprop(0, 0, 0);
+  rmsprop.set_epoch(0);
+  rmsprop.set_learning_rate_scaling(0);
+  rmsprop.set_weight_decay(0);
+  rmsprop.set_gradient_clipping(0);
+
+  std::unordered_map<std::string, unsigned> uint_configs {
+    std::make_pair("Trainer.epoch", 4),
+  };
+  std::unordered_map<std::string, float> float_configs {
+    std::make_pair("RMSProp.eta", 1),
+    std::make_pair("RMSProp.alpha", 2),
+    std::make_pair("RMSProp.eps", 3),
+    std::make_pair("Trainer.lr_scale", 5),
+    std::make_pair("Trainer.l2_strength", 6),
+    std::make_pair("Trainer.clip_threshold", 7),
+  };
+  rmsprop.set_configs(uint_configs, float_configs);
+
+  EXPECT_EQ(1, rmsprop.eta());
+  EXPECT_EQ(2, rmsprop.alpha());
+  EXPECT_EQ(3, rmsprop.eps());
+  EXPECT_EQ(4, rmsprop.get_epoch());
+  EXPECT_EQ(5, rmsprop.get_learning_rate_scaling());
+  EXPECT_EQ(6, rmsprop.get_weight_decay());
+  EXPECT_EQ(7, rmsprop.get_gradient_clipping());
+}
+
+TEST_F(TrainerImplTest, CheckRMSPropSetConfigsByFile) {
+  RMSProp rmsprop(1, 2, 3);
+  rmsprop.set_epoch(4);
+  rmsprop.set_learning_rate_scaling(5);
+  rmsprop.set_weight_decay(6);
+  rmsprop.set_gradient_clipping(7);
+
+  const std::string path = "/tmp/primitiv_TrainerImplTest_CheckRMSPropSetConfigsFromFile.data";
+  rmsprop.save(path);
+
+  RMSProp rmsprop2(0, 0, 0);
+  rmsprop2.set_epoch(0);
+  rmsprop2.set_learning_rate_scaling(0);
+  rmsprop2.set_weight_decay(0);
+  rmsprop2.set_gradient_clipping(0);
+
+  rmsprop2.set_configs_by_file(path);
+  std::remove(path.c_str());
+
+  EXPECT_EQ(1, rmsprop2.eta());
+  EXPECT_EQ(2, rmsprop2.alpha());
+  EXPECT_EQ(3, rmsprop2.eps());
+  EXPECT_EQ(4, rmsprop2.get_epoch());
+  EXPECT_EQ(5, rmsprop2.get_learning_rate_scaling());
+  EXPECT_EQ(6, rmsprop2.get_weight_decay());
+  EXPECT_EQ(7, rmsprop2.get_gradient_clipping());
+}
+
+TEST_F(TrainerImplTest, CheckRMSPropUpdate) {
+  Parameter param("param", {2, 2}, {1, 2, 3, 4}, dev);
+  ASSERT_TRUE(vector_match(
+        vector<float> {1, 2, 3, 4}, param.value().to_vector()));
+
+  RMSProp trainer;
+  trainer.set_learning_rate_scaling(.1);
+  trainer.add_parameter(param);
+  ASSERT_TRUE(param.has_stats("rmsprop-m"));
+  EXPECT_TRUE(vector_match(
+        vector<float>(4, 0), param.stats("rmsprop-m").to_vector()));
+
+  const vector<vector<float>> expected_v {
+    {9.9683774e-01, 1.9968377e+00, 2.9968376e+00, 3.9968376e+00},
+    {9.9454701e-01, 1.9945453e+00, 2.9945445e+00, 3.9945443e+00},
+    {9.9263066e-01, 1.9926267e+00, 2.9926250e+00, 3.9926245e+00},
+    {9.9093068e-01, 1.9909240e+00, 2.9909215e+00, 3.9909205e+00},
+    {9.8937368e-01, 1.9893641e+00, 2.9893608e+00, 3.9893594e+00}
+  };
+  const vector<vector<float>> expected_m {
+    {1.0000000e-01, 4.0000001e-01, 9.0000004e-01, 1.6000000e+00},
+    {1.8936855e-01, 7.5873607e-01, 1.7081037e+00, 3.0374711e+00},
+    {2.6934406e-01, 1.0806836e+00, 2.4340229e+00, 4.3293624e+00},
+    {3.4094119e-01, 1.3696713e+00, 3.0862012e+00, 5.4905310e+00},
+    {4.0504143e-01, 1.6290820e+00, 3.6721420e+00, 6.5342226e+00}
+  };
+
+  for (unsigned i = 0; i < 5; ++i) {
+    trainer.reset_gradients();
+    EXPECT_TRUE(vector_match(
+          vector<float>(4, 0), param.gradient().to_vector()));
+
+    param.gradient() += param.value();  // Squared loss
+    trainer.update();
+    EXPECT_TRUE(vector_match(expected_v[i], param.value().to_vector()));
+    EXPECT_TRUE(vector_match(
+          expected_m[i], param.stats("rmsprop-m").to_vector()));
   }
 }
 

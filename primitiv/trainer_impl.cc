@@ -60,6 +60,39 @@ void MomentumSGD::set_configs(
   momentum_ = float_configs.at("MomentumSGD.momentum");
 }
 
+void RMSProp::configure_parameter(Parameter &param) {
+  const std::string name = "rmsprop-m";
+  if (!param.has_stats(name)) {
+    param.add_stats(name, param.shape());
+    param.stats(name).reset(0);
+  }
+}
+
+void RMSProp::update_parameter(float scale, Parameter &param) {
+  const Tensor &g = param.gradient();
+  Tensor &m = param.stats("rmsprop-m");
+  m = alpha_ * m + (1 - alpha_) * g * g;
+  param.value() -= (scale * eta_) * g / (operators::sqrt(m) + eps_);
+}
+
+void RMSProp::get_configs(
+    std::unordered_map<std::string, unsigned> &uint_configs,
+    std::unordered_map<std::string, float> &float_configs) const {
+  Trainer::get_configs(uint_configs, float_configs);
+  float_configs.insert(std::make_pair("RMSProp.eta", eta_));
+  float_configs.insert(std::make_pair("RMSProp.alpha", alpha_));
+  float_configs.insert(std::make_pair("RMSProp.eps", eps_));
+}
+
+void RMSProp::set_configs(
+    const std::unordered_map<std::string, unsigned> &uint_configs,
+    const std::unordered_map<std::string, float> &float_configs) {
+  Trainer::set_configs(uint_configs, float_configs);
+  eta_ = float_configs.at("RMSProp.eta");
+  alpha_ = float_configs.at("RMSProp.alpha");
+  eps_ = float_configs.at("RMSProp.eps");
+}
+
 void AdaGrad::configure_parameter(Parameter &param) {
   const std::string name = "adagrad-m";
   if (!param.has_stats(name)) {

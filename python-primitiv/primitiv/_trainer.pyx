@@ -9,6 +9,8 @@ cdef class _Trainer:
             trainer = T.SGD()
         elif name == "MomentumSGD":
             trainer = T.MomentumSGD()
+        elif name == "RMSProp":
+            trainer = T.RMSProp()
         elif name == "AdaGrad":
             trainer = T.AdaGrad()
         elif name == "Adam":
