@@ -48,6 +48,20 @@ class TrainerVirtualFuncTest(unittest.TestCase):
         uint_configs, float_configs = t.get_configs()
         self.assertEqual(uint_configs[b'Trainer.epoch'], 1)
 
+    def test_adagrad_virtual(self):
+        t = T.AdaGrad()
+        self.assertEqual(t.name(), "AdaGrad")
+        uint_configs = {b'Trainer.epoch': 1}
+        float_configs = {b'AdaGrad.eps': 0.0,
+                         b'AdaGrad.eta': 0.0,
+                         b'Trainer.clip_threshold': 0.0,
+                         b'Trainer.lr_scale': 1.0,
+                         b'Trainer.l2_strength': 0.0,
+        }
+        t.set_configs(uint_configs, float_configs)
+        uint_configs, float_configs = t.get_configs()
+        self.assertEqual(uint_configs[b'Trainer.epoch'], 1)
+
     def test_rmsprop_virtual(self):
         t = T.RMSProp()
         self.assertEqual(t.name(), "RMSProp")
@@ -63,12 +77,12 @@ class TrainerVirtualFuncTest(unittest.TestCase):
         uint_configs, float_configs = t.get_configs()
         self.assertEqual(uint_configs[b'Trainer.epoch'], 1)
 
-    def test_adagrad_virtual(self):
-        t = T.AdaGrad()
-        self.assertEqual(t.name(), "AdaGrad")
+    def test_adadelta_virtual(self):
+        t = T.AdaDelta()
+        self.assertEqual(t.name(), "AdaDelta")
         uint_configs = {b'Trainer.epoch': 1}
-        float_configs = {b'AdaGrad.eps': 0.0,
-                         b'AdaGrad.eta': 0.0,
+        float_configs = {b'AdaDelta.rho': 2.0,
+                         b'AdaDelta.eps': 3.0,
                          b'Trainer.clip_threshold': 0.0,
                          b'Trainer.lr_scale': 1.0,
                          b'Trainer.l2_strength': 0.0,

@@ -7,23 +7,28 @@ from primitiv._trainer cimport CppTrainer, _Trainer
 
 cdef extern from "primitiv/trainer_impl.h" namespace "primitiv::trainers":
     cdef cppclass CppSGD "primitiv::trainers::SGD" (CppTrainer):
-        CppSGD(const float eta)
+        CppSGD(float eta)
         float eta()
 
     cdef cppclass CppMomentumSGD "primitiv::trainers::MomentumSGD" (CppTrainer):
-        CppMomentumSGD(const float eta, const float momentum)
+        CppMomentumSGD(float eta, float momentum)
         float eta()
         float momentum()
-
-    cdef cppclass CppRMSProp "primitiv::trainers::RMSProp" (CppTrainer):
-        CppRMSProp(const float eta, const float alpha, const float eps)
-        float eta()
-        float alpha()
-        float eps()
 
     cdef cppclass CppAdaGrad "primitiv::trainers::AdaGrad" (CppTrainer):
         CppAdaGrad(float eta, float eps)
         float eta()
+        float eps()
+
+    cdef cppclass CppRMSProp "primitiv::trainers::RMSProp" (CppTrainer):
+        CppRMSProp(float eta, float alpha, float eps)
+        float eta()
+        float alpha()
+        float eps()
+
+    cdef cppclass CppAdaDelta "primitiv::trainers::AdaDelta" (CppTrainer):
+        CppAdaDelta(float rho, float eps)
+        float rho()
         float eps()
 
     cdef cppclass CppAdam "primitiv::trainers::Adam" (CppTrainer):
@@ -38,7 +43,19 @@ cdef class _SGD(_Trainer):
     pass
 
 
+cdef class _MomentumSGD(_Trainer):
+    pass
+
+
 cdef class _AdaGrad(_Trainer):
+    pass
+
+
+cdef class _RMSProp(_Trainer):
+    pass
+
+
+cdef class _AdaDelta(_Trainer):
     pass
 
 

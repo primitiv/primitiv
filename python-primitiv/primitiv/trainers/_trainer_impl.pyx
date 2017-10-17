@@ -45,6 +45,31 @@ cdef class _MomentumSGD(_Trainer):
     def momentum(self):
         return (<CppMomentumSGD*> self.wrapped).momentum()
 
+
+cdef class _AdaGrad(_Trainer):
+
+    def __init__(self, float eta = 0.001, float eps = 1e-8):
+        if self.wrapped_newed is not NULL:
+            raise MemoryError()
+        self.wrapped_newed = new CppAdaGrad(eta, eps)
+        if self.wrapped_newed is NULL:
+            raise MemoryError()
+        self.wrapped = self.wrapped_newed
+
+    def __dealloc__(self):
+        cdef CppAdaGrad *temp
+        if self.wrapped_newed is not NULL:
+            temp = <CppAdaGrad*> self.wrapped_newed
+            del temp
+            self.wrapped_newed = NULL
+
+    def eta(self):
+        return (<CppAdaGrad*> self.wrapped).eta()
+
+    def eps(self):
+        return (<CppAdaGrad*> self.wrapped).eps()
+
+
 cdef class _RMSProp(_Trainer):
 
     def __init__(self, float eta = 0.01, float alpha = 0.9, float eps = 1e-8):
@@ -71,28 +96,29 @@ cdef class _RMSProp(_Trainer):
     def eps(self):
         return (<CppRMSProp*> self.wrapped).eps()
 
-cdef class _AdaGrad(_Trainer):
 
-    def __init__(self, float eta = 0.001, float eps = 1e-8):
+cdef class _AdaDelta(_Trainer):
+
+    def __init__(self, float rho = 0.95, float eps = 1e-6):
         if self.wrapped_newed is not NULL:
             raise MemoryError()
-        self.wrapped_newed = new CppAdaGrad(eta, eps)
+        self.wrapped_newed = new CppAdaDelta(rho, eps)
         if self.wrapped_newed is NULL:
             raise MemoryError()
         self.wrapped = self.wrapped_newed
 
     def __dealloc__(self):
-        cdef CppAdaGrad *temp
+        cdef CppAdaDelta *temp
         if self.wrapped_newed is not NULL:
-            temp = <CppAdaGrad*> self.wrapped_newed
+            temp = <CppAdaDelta*> self.wrapped_newed
             del temp
             self.wrapped_newed = NULL
 
-    def eta(self):
-        return (<CppAdaGrad*> self.wrapped).eta()
+    def rho(self):
+        return (<CppAdaDelta*> self.wrapped).rho()
 
     def eps(self):
-        return (<CppAdaGrad*> self.wrapped).eps()
+        return (<CppAdaDelta*> self.wrapped).eps()
 
 
 cdef class _Adam(_Trainer):
