@@ -8,7 +8,10 @@ namespace primitiv {
 
 float Tensor::to_float() const {
   if (!valid()) THROW_ERROR("Invalid tensor.");
-  if (shape_.size() != 1) THROW_ERROR("Tensor has more than 1 values.");
+  if (shape_.size() != 1) {
+    THROW_ERROR(
+        "Tensor has more than 1 values. shape = " << shape_.to_string());
+  }
   return device_->tensor_to_vector(*this)[0];
 }
 

@@ -85,7 +85,16 @@ public:
   Device &device() const;
 
   /**
-   * Calculates the value of this node.
+   * Calculates the value of this node and returns a float.
+   * @return A calculated float value.
+   * @remarks This function calls Graph::forward() internally.
+   *          This function can be used only when the Node has a scalar and
+   *          non-minibatched shape (i.e., shape() == Shape())
+   */
+  float to_float() const;
+
+  /**
+   * Calculates the value of this node and returns a list of float.
    * @return A list of calculated values.
    * @remarks This function calls Graph::forward() internally.
    */
@@ -240,6 +249,11 @@ inline const Shape &Node::shape() const {
 inline Device &Node::device() const {
   if (!valid()) THROW_ERROR("Invalid node.");
   return g_->get_device(*this);
+}
+
+inline float Node::to_float() const {
+  if (!valid()) THROW_ERROR("Invalid node.");
+  return g_->forward(*this).to_float();
 }
 
 inline std::vector<float> Node::to_vector() const {

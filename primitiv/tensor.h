@@ -87,8 +87,8 @@ public:
   /**
    * Retrieves one internal value in the tensor.
    * @return An internal float value.
-   * @remarks This function can be used only when the scalar and no-minibatched
-   * data (i.e. shape() == Shape()).
+   * @remarks This function can be used only when the tensor is a scalar and
+   *          non-minibatched (i.e., shape() == Shape()).
    */
   float to_float() const;
 
