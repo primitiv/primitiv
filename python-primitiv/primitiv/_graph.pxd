@@ -17,6 +17,7 @@ cdef extern from "primitiv/graph.h" namespace "primitiv" nogil:
         unsigned value_id() except +
         const CppShape &shape() except +
         CppDevice &device() except +
+        float to_float() except +
         vector[float] to_vector() except +
 
 
