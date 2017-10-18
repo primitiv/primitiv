@@ -153,6 +153,7 @@ TEST_F(NaiveDeviceTest, CheckRandomNormalWithSeed) {
   };
 #else
   const vector<float> expected {};
+  std::cerr << "... Unknown C++ library. An expected result can't be defined." << std::endl;
 #endif
   devices::Naive dev(12345);
   const Tensor x = dev.random_normal(Shape({2, 2}, 2), 1, 3);
@@ -195,6 +196,7 @@ TEST_F(NaiveDeviceTest, CheckRandomLogNormalWithSeed) {
   };
 #else
   const vector<float> expected {};
+  std::cerr << "... Unknown C++ library. An expected result can't be defined." << std::endl;
 #endif
   devices::Naive dev(12345);
   const Tensor x = dev.random_log_normal(Shape({2, 2}, 2), 1, 3);

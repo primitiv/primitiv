@@ -388,6 +388,7 @@ TEST_F(FunctionImplTest, CheckRandomNormal) {
     {Shape({2, 2}, 3), 0, 1, {}},
     {Shape({2, 2}, 3), 2, .5, {}},
   };
+  std::cerr << "... Unknown C++ library. An expected result can't be defined." << std::endl;
 #endif
   for (const TestCase &tc : test_cases) {
     RandomNormal node(tc.shape, tc.mean, tc.sd, *dev);
@@ -447,6 +448,7 @@ TEST_F(FunctionImplTest, CheckRandomLogNormal) {
     {Shape({2, 2}, 3), 0, 1, {}},
     {Shape({2, 2}, 3), 2, .5, {}},
   };
+  std::cerr << "... Unknown C++ library. An expected result can't be defined." << std::endl;
 #endif
   for (const TestCase &tc : test_cases) {
     RandomLogNormal node(tc.shape, tc.mean, tc.sd, *dev);
