@@ -141,10 +141,20 @@ TEST_F(NaiveDeviceTest, CheckRandomNormal) {
 }
 
 TEST_F(NaiveDeviceTest, CheckRandomNormalWithSeed) {
+#ifdef __GLIBCXX__
   const vector<float> expected {
     -1.3574908e+00, -1.7222166e-01, 2.5865970e+00, -4.3594337e-01,
     4.5383353e+00, 8.4703674e+00, 2.5535507e+00, 1.3252910e+00,
   };
+#elif defined _LIBCPP_VERSION
+  const vector<float> expected {
+    -1.7222166e-01, -1.3574908e+00, -4.3594337e-01, 2.5865970e+00,
+    8.4703674e+00, 4.5383353e+00, 1.3252910e+00, 2.5535507e+00,
+  };
+#else
+  const vector<float> expected {};
+  std::cerr << "... Unknown C++ library. Expected results can't be defined." << std::endl;
+#endif
   devices::Naive dev(12345);
   const Tensor x = dev.random_normal(Shape({2, 2}, 2), 1, 3);
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
@@ -174,10 +184,20 @@ TEST_F(NaiveDeviceTest, CheckRandomLogNormal) {
 }
 
 TEST_F(NaiveDeviceTest, CheckRandomLogNormalWithSeed) {
+#ifdef __GLIBCXX__
   const vector<float> expected {
     2.5730559e-01, 8.4179258e-01, 1.3284487e+01, 6.4665437e-01,
     9.3534966e+01, 4.7712681e+03, 1.2852659e+01, 3.7632804e+00,
   };
+#elif defined _LIBCPP_VERSION
+  const vector<float> expected {
+    8.4179258e-01, 2.5730559e-01, 6.4665437e-01, 1.3284487e+01,
+    4.7712681e+03, 9.3534966e+01, 3.7632804e+00, 1.2852659e+01,
+  };
+#else
+  const vector<float> expected {};
+  std::cerr << "... Unknown C++ library. Expected results can't be defined." << std::endl;
+#endif
   devices::Naive dev(12345);
   const Tensor x = dev.random_log_normal(Shape({2, 2}, 2), 1, 3);
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
