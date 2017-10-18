@@ -316,7 +316,7 @@ def test(encdec):
     inv_trg_vocab = make_inv_vocab(trg_vocab)
 
     for line in sys.stdin:
-        trg_ids = test_batch(encdec, src_vocab, trg_vocab, inv_trg_vocab, [line])[0]
+        trg_ids = test_batch(encdec, src_vocab, trg_vocab, [line])[0]
         # Prints the result.
         print(" ".join(inv_trg_vocab[wid] for wid in trg_ids))
 
