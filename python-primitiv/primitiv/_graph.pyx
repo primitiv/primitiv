@@ -69,6 +69,10 @@ cdef class _Node:
             output.append(output_item)
         return output
 
+    def backward(self):
+        with nogil:
+            self.wrapped.backward()
+
     def __pos__(self):
         return wrapNode(op_node_pos(self.wrapped))
 
