@@ -165,14 +165,15 @@ def train(encdec, trainer, prefix, best_valid_ppl):
             batch_ids = train_ids[ofs : min(ofs + BATCH_SIZE, num_train_sents)]
             src_batch = make_batch(train_src_corpus, batch_ids, src_vocab)
             trg_batch = make_batch(train_trg_corpus, batch_ids, trg_vocab)
-            trainer.reset_gradients()
 
             g.clear()
 
             encdec.encode(src_batch, True)
             loss = encdec.loss(trg_batch, True)
-            train_loss += loss.to_list()[0] * len(batch_ids)
-            g.backward(loss)
+            train_loss += loss.to_float() * len(batch_ids)
+
+            trainer.reset_gradients()
+            loss.backward()
             trainer.update()
 
         train_ppl = math.exp(train_loss / num_train_labels)
@@ -192,7 +193,7 @@ def train(encdec, trainer, prefix, best_valid_ppl):
 
             encdec.encode(src_batch, False)
             loss = encdec.loss(trg_batch, False)
-            valid_loss += loss.to_list()[0] * len(batch_ids)
+            valid_loss += loss.to_float() * len(batch_ids)
 
         valid_ppl = math.exp(valid_loss / num_valid_labels)
         print("  valid PPL = %.4f" % valid_ppl)

@@ -28,6 +28,12 @@ cdef class _Tensor:
     #def data(self):
         #return self.wrapped.data()
 
+    def to_float(self):
+        cdef float val
+        with nogil:
+            val = self.wrapped.to_float()
+        return val
+
     def to_list(self):
         cdef vector[float] vec
         with nogil:

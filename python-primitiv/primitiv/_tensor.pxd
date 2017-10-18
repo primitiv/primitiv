@@ -13,6 +13,7 @@ cdef extern from "primitiv/tensor.h" namespace "primitiv" nogil:
         const CppShape &shape() except +
         CppDevice &device()
         const void *data() except +
+        float to_float() except +
         vector[float] to_vector() except +
         void reset(const float k) except +
         # void reset_by_array(const float *values) except +

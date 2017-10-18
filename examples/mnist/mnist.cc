@@ -136,8 +136,6 @@ int main() {
         labels[i] = train_labels[id];
       }
 
-      trainer.reset_gradients();
-
       // Constructs the graph.
       g.clear();
       Node y = make_graph(inputs, true);
@@ -148,7 +146,8 @@ int main() {
       //if (epoch == 0 && batch == 0) g.dump();
 
       // Implicit forward, backward, and updates parameters.
-      g.backward(avg_loss);
+      trainer.reset_gradients();
+      avg_loss.backward();
       trainer.update();
     }
 
@@ -167,7 +166,7 @@ int main() {
       Node y = make_graph(inputs, false);
 
       // Gets outputs, argmax, and compares them with the label.
-      vector<float> y_val = g.forward(y).to_vector();
+      vector<float> y_val = y.to_vector();
       for (unsigned i = 0; i < BATCH_SIZE; ++i) {
         float maxval = -1e10;
         unsigned argmax = -1;

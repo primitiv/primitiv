@@ -41,6 +41,8 @@ TEST_F(TensorTest, CheckInvalid) {
   EXPECT_THROW(x.shape(), Error);
   EXPECT_THROW(x.device(), Error);
   EXPECT_THROW(x.data(), Error);
+  EXPECT_THROW(x.to_float(), Error);
+  EXPECT_THROW(x.to_vector(), Error);
 }
 
 TEST_F(TensorTest, CheckNewScalar) {
@@ -52,6 +54,7 @@ TEST_F(TensorTest, CheckNewScalar) {
     const vector<float> d = x.to_vector();
     EXPECT_EQ(1u, d.size());
     EXPECT_EQ(dev, &x.device());
+    EXPECT_NO_THROW(x.to_float());
   }
 }
 
@@ -64,6 +67,7 @@ TEST_F(TensorTest, CheckNewMatrix) {
     const vector<float> d = x.to_vector();
     EXPECT_EQ(6u, d.size());
     EXPECT_EQ(dev, &x.device());
+    EXPECT_THROW(x.to_float(), Error);
   }
 }
 
@@ -76,6 +80,7 @@ TEST_F(TensorTest, CheckNewMatrixMinibatch) {
     const vector<float> d = x.to_vector();
     EXPECT_EQ(24u, d.size());
     EXPECT_EQ(dev, &x.device());
+    EXPECT_THROW(x.to_float(), Error);
   }
 }
 
@@ -86,6 +91,7 @@ TEST_F(TensorTest, CheckNewScalarWithData) {
     EXPECT_EQ(Shape(), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     EXPECT_TRUE(vector_match(vector<float> {1}, x.to_vector()));
+    EXPECT_FLOAT_EQ(1.0f, x.to_float());
   }
 }
 
@@ -97,6 +103,7 @@ TEST_F(TensorTest, CheckNewMatrixWithData) {
     EXPECT_EQ(Shape({2, 3}), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     EXPECT_TRUE(vector_match(data, x.to_vector()));
+    EXPECT_THROW(x.to_float(), Error);
   }
 }
 
@@ -111,6 +118,7 @@ TEST_F(TensorTest, CheckNewMatrixMinibatchWithData) {
     EXPECT_EQ(Shape({2, 3}, 4), x.shape());
     EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     EXPECT_TRUE(vector_match(data, x.to_vector()));
+    EXPECT_THROW(x.to_float(), Error);
   }
 }
 

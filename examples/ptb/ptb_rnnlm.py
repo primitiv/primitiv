@@ -144,15 +144,17 @@ def main():
         for ofs in range(0, num_train_sents, BATCH_SIZE):
             batch_ids = train_ids[ofs : min(ofs + BATCH_SIZE, num_train_sents)]
             batch = make_batch(train_corpus, batch_ids, eos_id)
-            trainer.reset_gradients()
 
             g.clear()
 
             outputs = lm.forward(batch)
             loss = lm.forward_loss(outputs, batch)
-            train_loss += g.forward(loss).to_list()[0] * len(batch_ids)
-            g.backward(loss)
+            train_loss += loss.to_float() * len(batch_ids)
+
+            trainer.reset_gradients()
+            loss.backward()
             trainer.update()
+
             print("\r%d" % ofs, end="")
             sys.stdout.flush()
 
@@ -171,7 +173,7 @@ def main():
 
             outputs = lm.forward(batch)
             loss = lm.forward_loss(outputs, batch)
-            valid_loss += g.forward(loss).to_list()[0] * len(batch_ids)
+            valid_loss += loss.to_float() * len(batch_ids)
             print("\r%d" % ofs, end="")
             sys.stdout.flush()
 

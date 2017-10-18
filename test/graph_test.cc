@@ -51,7 +51,9 @@ TEST_F(GraphTest, CheckInvalidNode) {
   EXPECT_THROW(node.value_id(), Error);
   EXPECT_THROW(node.shape(), Error);
   EXPECT_THROW(node.device(), Error);
+  EXPECT_THROW(node.to_float(), Error);
   EXPECT_THROW(node.to_vector(), Error);
+  EXPECT_THROW(node.backward(), Error);
 }
 
 TEST_F(GraphTest, CheckMoveNode) {
@@ -106,7 +108,7 @@ TEST_F(GraphTest, CheckMultipleDevices) {
   EXPECT_TRUE(vector_match(data3, g.forward(x3).to_vector()));
   EXPECT_TRUE(vector_match(data3, x3.to_vector()));
 #if 0
-  EXPECT_NO_THROW(g.backward(x3));
+  EXPECT_NO_THROW(x3.backward());
   EXPECT_TRUE(vector_match(grad, g.get_gradient(x1).to_vector()));
   EXPECT_TRUE(vector_match(grad, g.get_gradient(x2).to_vector()));
   EXPECT_TRUE(vector_match(grad, g.get_gradient(x3).to_vector()));
@@ -221,7 +223,7 @@ TEST_F(GraphTest, CheckForwardBackward) {
   }
 
 #if 0
-  g.backward(nodes.back());
+  nodes.back().backward();
 
   // Check all node gradients.
   const vector<vector<float>> expected_grads {
@@ -345,10 +347,12 @@ TEST_F(GraphTest, CheckLSTM) {
   Graph g;
   Graph::set_default(g);
 
+  namespace batch = operators::batch;
   using operators::matmul;
   using operators::input;
   using operators::parameter;
   using operators::sigmoid;
+  using operators::sum;
   using operators::tanh;
   using operators::zeros;
 
@@ -378,17 +382,24 @@ TEST_F(GraphTest, CheckLSTM) {
   const Node t = zeros<Node>({2});
   const Node diff = hh - t;
   const Node loss = diff * diff;
+  const Node sum_loss = batch::sum(sum(loss, 0));
 
-  EXPECT_EQ(43u, g.num_functions());
+  EXPECT_EQ(45u, g.num_functions());
 
   const Tensor loss_tensor = g.forward(loss);
-  g.backward(loss);
+  const Tensor sum_loss_tensor = g.forward(sum_loss);
+  sum_loss.backward();
 
   const vector<float> expected_losses {
     5.7667205e-03, 2.8605087e-02, 1.4819370e-03, 3.0073307e-03
   };
+  const float expected_sum_loss = std::accumulate(
+      begin(expected_losses), end(expected_losses), .0f);
+
   EXPECT_TRUE(vector_near(expected_losses, loss_tensor.to_vector(), 1e-6));
   EXPECT_TRUE(vector_near(expected_losses, loss.to_vector(), 1e-6));
+  EXPECT_FLOAT_EQ(expected_sum_loss, sum_loss_tensor.to_float());
+  EXPECT_FLOAT_EQ(expected_sum_loss, sum_loss.to_float());
 
   auto print = [](const std::string &name, const Tensor &value) {
     std::cout << name << ": shape=" << value.shape().to_string()
@@ -442,11 +453,13 @@ TEST_F(GraphTest, CheckConcatLSTM) {
   Graph g;
   Graph::set_default(g);
 
+  namespace batch = operators::batch;
   using operators::matmul;
   using operators::input;
   using operators::parameter;
   using operators::sigmoid;
   using operators::slice;
+  using operators::sum;
   using operators::tanh;
   using operators::zeros;
 
@@ -468,17 +481,24 @@ TEST_F(GraphTest, CheckConcatLSTM) {
   const Node t = zeros<Node>({2});
   const Node diff = hh - t;
   const Node loss = diff * diff;
+  const Node sum_loss = batch::sum(sum(loss, 0));
 
-  EXPECT_EQ(26u, g.num_functions());
+  EXPECT_EQ(28u, g.num_functions());
 
   const Tensor loss_tensor = g.forward(loss);
-  g.backward(loss);
+  const Tensor sum_loss_tensor = g.forward(sum_loss);
+  sum_loss.backward();
 
   const vector<float> expected_losses {
     5.7667205e-03, 2.8605087e-02, 1.4819370e-03, 3.0073307e-03
   };
+  const float expected_sum_loss = std::accumulate(
+      begin(expected_losses), end(expected_losses), .0f);
+
   EXPECT_TRUE(vector_near(expected_losses, loss_tensor.to_vector(), 1e-6));
   EXPECT_TRUE(vector_near(expected_losses, loss.to_vector(), 1e-6));
+  EXPECT_FLOAT_EQ(expected_sum_loss, sum_loss_tensor.to_float());
+  EXPECT_FLOAT_EQ(expected_sum_loss, sum_loss.to_float());
 
   auto print = [](const std::string &name, const Tensor &value) {
     std::cout << name << ": shape=" << value.shape().to_string()

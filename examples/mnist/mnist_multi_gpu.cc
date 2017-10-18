@@ -153,7 +153,7 @@ int main() {
 
       // Implicit forward, backward, and updates parameters.
       trainer.reset_gradients();
-      g.backward(avg_loss);
+      avg_loss.backward();
       trainer.update();
     }
 
@@ -172,7 +172,7 @@ int main() {
       Node y = make_graph(inputs);
 
       // Gets outputs, argmax, and compares them with the label.
-      vector<float> y_val = g.forward(y).to_vector();
+      vector<float> y_val = y.to_vector();
       for (unsigned i = 0; i < BATCH_SIZE; ++i) {
         float maxval = -1e10;
         unsigned argmax = -1;

@@ -85,7 +85,15 @@ public:
   }
 
   /**
-   * Retrieves internal values of the tensor as a vector.
+   * Retrieves one internal value in the tensor.
+   * @return An internal float value.
+   * @remarks This function can be used only when the tensor is a scalar and
+   *          non-minibatched (i.e., shape() == Shape()).
+   */
+  float to_float() const;
+
+  /**
+   * Retrieves internal values in the tensor as a vector.
    * @return A list of the internal values.
    * @remarks Each resulting values a re ordered by the column-major order, and
    *          the batch size is assumed as the last dimension of the tensor.

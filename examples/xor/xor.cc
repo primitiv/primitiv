@@ -96,14 +96,14 @@ int main() {
     const Node loss = F::batch::mean(diff * diff);
 
     // Obtains the loss.
-    const float loss_val = loss.to_vector()[0];
+    const float loss_val = loss.to_float();
     cout << "  loss: " << loss_val << endl;
 
     // Resets cumulative gradients of all registered parameters.
     trainer.reset_gradients();
 
     // Backpropagation
-    g.backward(loss);
+    loss.backward();
 
     // Updates parameters.
     trainer.update();

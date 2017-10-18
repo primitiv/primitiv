@@ -85,11 +85,25 @@ public:
   Device &device() const;
 
   /**
-   * Calculates the value of this node.
+   * Calculates the value of this node and returns a float.
+   * @return A calculated float value.
+   * @remarks This function calls Graph::forward() internally.
+   *          This function can be used only when the Node has a scalar and
+   *          non-minibatched shape (i.e., shape() == Shape())
+   */
+  float to_float() const;
+
+  /**
+   * Calculates the value of this node and returns a list of float.
    * @return A list of calculated values.
    * @remarks This function calls Graph::forward() internally.
    */
   std::vector<float> to_vector() const;
+
+  /**
+   * Executes the backward operation from this node.
+   */
+  void backward() const;
 
 private:
   /**
@@ -237,9 +251,19 @@ inline Device &Node::device() const {
   return g_->get_device(*this);
 }
 
+inline float Node::to_float() const {
+  if (!valid()) THROW_ERROR("Invalid node.");
+  return g_->forward(*this).to_float();
+}
+
 inline std::vector<float> Node::to_vector() const {
   if (!valid()) THROW_ERROR("Invalid node.");
   return g_->forward(*this).to_vector();
+}
+
+inline void Node::backward() const {
+  if (!valid()) THROW_ERROR("Invalid node.");
+  g_->backward(*this);
 }
 
 }  // namespace primitiv

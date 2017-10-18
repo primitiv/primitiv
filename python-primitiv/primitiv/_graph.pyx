@@ -38,6 +38,12 @@ cdef class _Node:
     def device(self):
         return wrapDevice(&self.wrapped.device())
 
+    def to_float(self):
+        cdef float val
+        with nogil:
+            val = self.wrapped.to_float()
+        return val
+
     def to_list(self):
         cdef vector[float] vec
         with nogil:
@@ -62,6 +68,10 @@ cdef class _Node:
                     np_data[i] = vec[i + j * volume]
             output.append(output_item)
         return output
+
+    def backward(self):
+        with nogil:
+            self.wrapped.backward()
 
     def __pos__(self):
         return wrapNode(op_node_pos(self.wrapped))

@@ -212,10 +212,10 @@ void train(
       g.clear();
       encdec.encode(src_batch, true);
       const auto loss = encdec.loss(trg_batch, true);
-      train_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
+      train_loss += loss.to_float() * batch_ids.size();
 
       trainer.reset_gradients();
-      g.backward(loss);
+      loss.backward();
       trainer.update();
 
       cout << ofs << '\r' << flush;
@@ -236,7 +236,7 @@ void train(
       g.clear();
       encdec.encode(src_batch, false);
       const auto loss = encdec.loss(trg_batch, false);
-      valid_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
+      valid_loss += loss.to_float() * batch_ids.size();
 
       cout << ofs << '\r' << flush;
     }

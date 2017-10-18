@@ -99,16 +99,14 @@ def main():
             inputs = [train_inputs[ids[batch * BATCH_SIZE + i]] for i in range(BATCH_SIZE)]
             labels = [train_labels[ids[batch * BATCH_SIZE + i]] for i in range(BATCH_SIZE)]
 
-            trainer.reset_gradients()
-
             g.clear()
 
             y = make_graph(inputs, True)
             loss = F.softmax_cross_entropy(y, labels, 0)
             avg_loss = F.batch.mean(loss)
 
-            g.backward(avg_loss)
-
+            trainer.reset_gradients()
+            avg_loss.backward()
             trainer.update()
 
         print()

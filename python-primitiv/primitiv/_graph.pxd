@@ -17,7 +17,9 @@ cdef extern from "primitiv/graph.h" namespace "primitiv" nogil:
         unsigned value_id() except +
         const CppShape &shape() except +
         CppDevice &device() except +
+        float to_float() except +
         vector[float] to_vector() except +
+        void backward() except +
 
 
 cdef extern from "node_op.h" namespace "python_primitiv_node":
