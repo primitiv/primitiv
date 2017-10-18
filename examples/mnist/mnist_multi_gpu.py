@@ -99,7 +99,7 @@ def main():
             avg_loss = F.batch.mean(loss)
 
             trainer.reset_gradients()
-            g.backward(avg_loss)
+            avg_loss.backward()
             trainer.update()
 
         print()

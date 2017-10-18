@@ -225,10 +225,10 @@ int main() {
       g.clear();
       const auto outputs = lm.forward(batch);
       const auto loss = lm.forward_loss(outputs, batch);
-      train_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
+      train_loss += loss.to_float() * batch_ids.size();
 
       trainer.reset_gradients();
-      g.backward(loss);
+      loss.backward();
       trainer.update();
 
       cout << ofs << '\r' << flush;
@@ -249,7 +249,7 @@ int main() {
       g.clear();
       const auto outputs = lm.forward(batch);
       const auto loss = lm.forward_loss(outputs, batch);
-      valid_loss += g.forward(loss).to_vector()[0] * batch_ids.size();
+      valid_loss += loss.to_float() * batch_ids.size();
 
       cout << ofs << '\r' << flush;
     }

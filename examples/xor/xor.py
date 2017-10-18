@@ -72,12 +72,12 @@ def main():
         loss = F.batch.mean(diff * diff)
 
         # Obtains the loss.
-        loss_val = loss.to_list()[0]
+        loss_val = loss.to_float()
         print("  loss: ", loss_val)
 
         # Updates parameters.
         trainer.reset_gradients()
-        g.backward(loss)
+        loss.backward()
         trainer.update()
 
 
