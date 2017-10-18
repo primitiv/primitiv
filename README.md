@@ -62,6 +62,10 @@ Building Options
   - Builds a static library instead of a shared object.
 - `PRIMITIV_BUILD_TESTS` (default=`OFF`)
   - Builds test binaries and generates `make test` command.
+- `GTEST_SOURCE_DIR` (default=`OFF`)
+  - Specifies the source directory of Google Test. If you installed `googletest` package
+    of Debian or Ubuntu, please add `-DGTEST_SOURCE_DIR=/usr/src/googletest/googletest`
+    with `PRIMITIV_BUILD_TESTS` option.
 - `PRIMITIV_USE_CACHE` (default=`OFF`)
   - Whether or not to use cached values to prevent increasing computation amount.
   - Libraries built with this flag will tend to consume more memory.
