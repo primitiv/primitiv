@@ -106,7 +106,7 @@ TEST_F(GraphTest, CheckMultipleDevices) {
   EXPECT_TRUE(vector_match(data3, g.forward(x3).to_vector()));
   EXPECT_TRUE(vector_match(data3, x3.to_vector()));
 #if 0
-  EXPECT_NO_THROW(g.backward(x3));
+  EXPECT_NO_THROW(x3.backward());
   EXPECT_TRUE(vector_match(grad, g.get_gradient(x1).to_vector()));
   EXPECT_TRUE(vector_match(grad, g.get_gradient(x2).to_vector()));
   EXPECT_TRUE(vector_match(grad, g.get_gradient(x3).to_vector()));
@@ -221,7 +221,7 @@ TEST_F(GraphTest, CheckForwardBackward) {
   }
 
 #if 0
-  g.backward(nodes.back());
+  nodes.back().backward();
 
   // Check all node gradients.
   const vector<vector<float>> expected_grads {
@@ -382,7 +382,7 @@ TEST_F(GraphTest, CheckLSTM) {
   EXPECT_EQ(43u, g.num_functions());
 
   const Tensor loss_tensor = g.forward(loss);
-  g.backward(loss);
+  loss.backward();
 
   const vector<float> expected_losses {
     5.7667205e-03, 2.8605087e-02, 1.4819370e-03, 3.0073307e-03
@@ -472,7 +472,7 @@ TEST_F(GraphTest, CheckConcatLSTM) {
   EXPECT_EQ(26u, g.num_functions());
 
   const Tensor loss_tensor = g.forward(loss);
-  g.backward(loss);
+  loss.backward();
 
   const vector<float> expected_losses {
     5.7667205e-03, 2.8605087e-02, 1.4819370e-03, 3.0073307e-03

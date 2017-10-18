@@ -91,6 +91,11 @@ public:
    */
   std::vector<float> to_vector() const;
 
+  /**
+   * Executes the backward operation from this node.
+   */
+  void backward() const;
+
 private:
   /**
    * Creates a new node pointer.
@@ -240,6 +245,11 @@ inline Device &Node::device() const {
 inline std::vector<float> Node::to_vector() const {
   if (!valid()) THROW_ERROR("Invalid node.");
   return g_->forward(*this).to_vector();
+}
+
+inline void Node::backward() const {
+  if (!valid()) THROW_ERROR("Invalid node.");
+  g_->backward(*this);
 }
 
 }  // namespace primitiv
