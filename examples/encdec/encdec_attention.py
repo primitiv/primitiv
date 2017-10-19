@@ -20,6 +20,7 @@ from utils import (
     save_ppl, make_inv_vocab, line_to_sent, argmax, load_ppl
 )
 
+from itertools import takewhile
 from argparse import ArgumentParser
 from bleu import get_bleu_stats, calculate_bleu
 from collections import defaultdict
@@ -305,7 +306,7 @@ def test_batch(encdec, src_vocab, trg_vocab, lines):
         logits_list = y.to_ndarrays()
         trg_ids.append(np.argmax(logits_list, axis=1))
 
-    return np.array(trg_ids[1:-1]).T
+    return [takewhile(lambda x: x != eos_id, hyp) for hyp in np.array(trg_ids[1:-1]).T]
 
 
 # Generates translation by consuming stdin.
