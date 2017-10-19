@@ -69,6 +69,18 @@ cdef class _Node:
             output.append(output_item)
         return output
 
+    def to_argmax_list(self, unsigned axis):
+        cdef vector[unsigned] vec
+        with nogil:
+            vec = self.wrapped.to_argmax_vector(axis)
+        return vec
+
+    def to_argmin_list(self, unsigned axis):
+        cdef vector[unsigned] vec
+        with nogil:
+            vec = self.wrapped.to_argmin_vector(axis)
+        return vec
+
     def backward(self):
         with nogil:
             self.wrapped.backward()

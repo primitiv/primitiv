@@ -51,6 +51,8 @@ private:
   std::shared_ptr<void> new_handle(const Shape &shape) override;
 
   std::vector<float> tensor_to_vector_impl(const Tensor &x) override;
+  std::vector<unsigned> tensor_to_argmax_vector_impl(const Tensor &x, unsigned axis) override;
+  std::vector<unsigned> tensor_to_argmin_vector_impl(const Tensor &x, unsigned axis) override;
 
   void reset_tensor_impl(float k, Tensor &x) override;
   void reset_tensor_by_array_impl(const float values[], Tensor &x) override;

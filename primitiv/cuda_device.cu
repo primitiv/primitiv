@@ -380,6 +380,46 @@ __global__ void inplace_subtract_dev(
   if (i < size) ::atomicAdd(py + i + mby * shift, -px[i + mbx * shift]);
 }
 
+__global__ void inplace_argmax_dev(
+    const float *px, unsigned fsize, unsigned ssize, unsigned axis_len, unsigned *py) {
+  const unsigned i = IDX;
+  const unsigned k = IDY;
+  unsigned ret_ofs = blockIdx.z * fsize * ssize;
+  unsigned x_ofs = ret_ofs * axis_len;
+  if (i < fsize && k < ssize) {
+    unsigned max_idx = 0;
+    float max_data = px[x_ofs + (i * axis_len) * ssize + k];
+    for (unsigned j = 1; j < axis_len; ++j) {
+      float data = px[x_ofs + (i * axis_len + j) * ssize + k];
+      if (max_data < data) {
+        max_data = data;
+        max_idx = j;
+      }
+    }
+    py[ret_ofs + i * ssize + k] = max_idx;
+  }
+}
+
+__global__ void inplace_argmin_dev(
+    const float *px, unsigned fsize, unsigned ssize, unsigned axis_len, unsigned *py) {
+  const unsigned i = IDX;
+  const unsigned k = IDY;
+  unsigned ret_ofs = blockIdx.z * fsize * ssize;
+  unsigned x_ofs = ret_ofs * axis_len;
+  if (i < fsize && k < ssize) {
+    unsigned max_idx = 0;
+    float max_data = px[x_ofs + (i * axis_len) * ssize + k];
+    for (unsigned j = 1; j < axis_len; ++j) {
+      float data = px[x_ofs + (i * axis_len + j) * ssize + k];
+      if (max_data > data) {
+        max_data = data;
+        max_idx = j;
+      }
+    }
+    py[ret_ofs + i * ssize + k] = max_idx;
+  }
+}
+
 #undef IDX
 #undef IDY
 
@@ -562,6 +602,66 @@ std::vector<float> CUDA::tensor_to_vector_impl(const Tensor &x) {
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CUDA_CALL(::cudaMemcpy(
         &ret[0], x.data(), sizeof(float) * size, cudaMemcpyDeviceToHost));
+  return ret;
+}
+
+std::vector<unsigned> CUDA::tensor_to_argmax_vector_impl(const Tensor &x, unsigned axis) {
+  Shape s = x.shape();
+  const unsigned depth = s.depth();
+  const unsigned axis_len = s[axis];
+  const unsigned bs = s.batch();
+  unsigned fsize = 1;
+  unsigned ssize = 1;
+  if (axis >= depth) {
+    THROW_ERROR("axis >= depth");
+  }
+  for(unsigned i = 0; i < axis; ++i) {
+    ssize *= s[i];
+  }
+  for(unsigned i = axis + 1; i < depth; ++i) {
+    fsize *= s[i];
+  }
+  std::vector<unsigned> ret(fsize * ssize * bs);
+  unsigned *d_ret;
+  const unsigned g1 = GRID_SIZE(fsize, dim2_x_);
+  const unsigned g2 = GRID_SIZE(ssize, dim2_y_);
+  CUDA_CALL(::cudaSetDevice(dev_id_));
+  cudaMalloc(&d_ret, sizeof(unsigned) * fsize * ssize * bs);
+  ::inplace_argmax_dev<<<dim3(g1, g2, bs), dim3(dim2_x_, dim2_y_, 1)>>>(
+      CDATA(x), fsize, ssize, axis_len, d_ret);
+  CUDA_CALL(::cudaMemcpy(
+        &ret[0], d_ret, sizeof(unsigned) * fsize * ssize * bs, cudaMemcpyDeviceToHost));
+  cudaFree(d_ret);
+  return ret;
+}
+
+std::vector<unsigned> CUDA::tensor_to_argmin_vector_impl(const Tensor &x, unsigned axis) {
+  Shape s = x.shape();
+  const unsigned depth = s.depth();
+  const unsigned axis_len = s[axis];
+  const unsigned bs = s.batch();
+  unsigned fsize = 1;
+  unsigned ssize = 1;
+  if (axis >= depth) {
+    THROW_ERROR("axis >= depth");
+  }
+  for(unsigned i = 0; i < axis; ++i) {
+    ssize *= s[i];
+  }
+  for(unsigned i = axis + 1; i < depth; ++i) {
+    fsize *= s[i];
+  }
+  std::vector<unsigned> ret(fsize * ssize * bs);
+  unsigned *d_ret;
+  const unsigned g1 = GRID_SIZE(fsize, dim2_x_);
+  const unsigned g2 = GRID_SIZE(ssize, dim2_y_);
+  CUDA_CALL(::cudaSetDevice(dev_id_));
+  cudaMalloc(&d_ret, sizeof(unsigned) * fsize * ssize * bs);
+  ::inplace_argmin_dev<<<dim3(g1, g2, bs), dim3(dim2_x_, dim2_y_, 1)>>>(
+      CDATA(x), fsize, ssize, axis_len, d_ret);
+  CUDA_CALL(::cudaMemcpy(
+        &ret[0], d_ret, sizeof(unsigned) * fsize * ssize * bs, cudaMemcpyDeviceToHost));
+  cudaFree(d_ret);
   return ret;
 }
 

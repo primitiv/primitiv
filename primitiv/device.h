@@ -233,6 +233,22 @@ private:
    */
   std::vector<float> tensor_to_vector(const Tensor &x);
 
+  /**
+   * Retrieves indices of the maximum values along an axis as a vector.
+   * @param x A tensor.
+   * @param axis A specified axis.
+   * @return A list of integers that indicates positions of the maximum values.
+   */
+  std::vector<unsigned> tensor_to_argmax_vector(const Tensor &x, unsigned axis);
+
+  /**
+   * Retrieves indices of the minimum values along an axis as a vector.
+   * @param x A tensor.
+   * @param axis A specified axis.
+   * @return A list of integers that indicates positions of the minimum values.
+   */
+  std::vector<unsigned> tensor_to_argmin_vector(const Tensor &x, unsigned axis);
+
 protected:
   /**
    * Reset internal values of the tensor using a constant.
@@ -267,6 +283,8 @@ private:
   virtual std::shared_ptr<void> new_handle(const Shape &shape) = 0;
 
   virtual std::vector<float> tensor_to_vector_impl(const Tensor &x) = 0;
+  virtual std::vector<unsigned> tensor_to_argmax_vector_impl(const Tensor &x, unsigned axis) = 0;
+  virtual std::vector<unsigned> tensor_to_argmin_vector_impl(const Tensor &x, unsigned axis) = 0;
 
   virtual void reset_tensor_impl(float k, Tensor &x) = 0;
   virtual void reset_tensor_by_array_impl(const float values[], Tensor &x) = 0;
