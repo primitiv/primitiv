@@ -251,7 +251,7 @@ def test_batch(encdec, src_vocab, trg_vocab, lines):
         logits_list = y.to_ndarrays()
         trg_ids.append(np.argmax(logits_list, axis=1))
 
-    return [hyp[:np.where(hyp == eos_id)[0][0]] for hyp in np.array(trg_ids[1:-1]).T]
+    return [hyp[:np.where(hyp == eos_id)[0][0]] for hyp in np.array(trg_ids[1:]).T]
 
 
 # Generates translation by consuming stdin.
