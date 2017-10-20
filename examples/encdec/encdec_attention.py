@@ -16,11 +16,10 @@ from primitiv import trainers as T
 
 from lstm import LSTM
 from utils import (
-    make_vocab, load_corpus, count_labels, make_batch,
+    make_vocab, load_corpus, load_corpus_ref, count_labels, make_batch,
     save_ppl, make_inv_vocab, line_to_sent, argmax, load_ppl
 )
 
-from itertools import takewhile
 from argparse import ArgumentParser
 from bleu import get_bleu_stats, calculate_bleu
 from collections import defaultdict
@@ -185,7 +184,7 @@ def train(encdec, trainer, prefix, best_valid_ppl):
     valid_src_corpus = load_corpus(SRC_VALID_FILE, src_vocab)
     valid_trg_corpus = load_corpus(TRG_VALID_FILE, trg_vocab)
     test_src_corpus = load_corpus(SRC_TEST_FILE, src_vocab)
-    test_ref_corpus = load_corpus(REF_TEST_FILE, trg_vocab)
+    test_ref_corpus = load_corpus_ref(REF_TEST_FILE, trg_vocab)
     num_train_sents = len(train_trg_corpus)
     num_valid_sents = len(valid_trg_corpus)
     num_test_sents = len(test_ref_corpus)
