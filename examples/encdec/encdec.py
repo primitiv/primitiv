@@ -138,8 +138,8 @@ def train(encdec, trainer, prefix, best_valid_ppl):
     train_trg_corpus = load_corpus(TRG_TRAIN_FILE, trg_vocab)
     valid_src_corpus = load_corpus(SRC_VALID_FILE, src_vocab)
     valid_trg_corpus = load_corpus(TRG_VALID_FILE, trg_vocab)
-    test_src_corpus = list(open(SRC_TEST_FILE))
-    test_ref_corpus = list(open(REF_TEST_FILE))
+    test_src_corpus = load_corpus(SRC_TEST_FILE, src_vocab)
+    test_ref_corpus = load_corpus(REF_TEST_FILE, trg_vocab)
     num_train_sents = len(train_trg_corpus)
     num_valid_sents = len(valid_trg_corpus)
     num_test_sents = len(test_ref_corpus)
@@ -214,8 +214,7 @@ def train(encdec, trainer, prefix, best_valid_ppl):
 
             hyp_ids = test_batch(encdec, src_vocab, trg_vocab, src_batch)
             for hyp_line, ref_line in zip(hyp_ids, ref_batch):
-                hyp = [inv_trg_vocab[wid] for wid in hyp_line]
-                for k, v in get_bleu_stats(ref_line.split(), hyp).items():
+                for k, v in get_bleu_stats(ref_line[1:-1], hyp_line).items():
                     stats[k] += v
 
         bleu = calculate_bleu(stats)
@@ -236,8 +235,7 @@ def test_batch(encdec, src_vocab, trg_vocab, lines):
     g = Graph()
     Graph.set_default(g)
 
-    src_corpus = [line_to_sent(line.strip(), src_vocab) for line in lines]
-    src_batch = make_batch(src_corpus, list(range(len(lines))), src_vocab)
+    src_batch = make_batch(lines, list(range(len(lines))), src_vocab)
 
     encdec.encode(src_batch, False)
 
@@ -254,7 +252,7 @@ def test_batch(encdec, src_vocab, trg_vocab, lines):
         logits_list = y.to_ndarrays()
         trg_ids.append(np.argmax(logits_list, axis=1))
 
-    return [takewhile(lambda x: x != eos_id, hyp) for hyp in np.array(trg_ids[1:-1]).T]
+    return [hyp[:np.where(hyp == eos_id)[0][0]] for hyp in np.array(trg_ids[1:-1]).T]
 
 
 # Generates translation by consuming stdin.
@@ -265,7 +263,7 @@ def test(encdec):
     inv_trg_vocab = make_inv_vocab(trg_vocab)
 
     for line in sys.stdin:
-        trg_ids = test_batch(encdec, src_vocab, trg_vocab, [line])[0]
+        trg_ids = test_batch(encdec, src_vocab, trg_vocab, [line_to_sent(line.strip(), src_vocab)])[0]
         # Prints the result.
         print(" ".join(inv_trg_vocab[wid] for wid in trg_ids))
 
