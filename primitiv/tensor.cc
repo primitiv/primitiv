@@ -20,14 +20,14 @@ std::vector<float> Tensor::to_vector() const {
   return device_->tensor_to_vector(*this);
 }
 
-std::vector<unsigned> Tensor::to_argmax_vector(unsigned axis) const {
+std::vector<unsigned> Tensor::argmax(unsigned dim) const {
   if (!valid()) THROW_ERROR("Invalid tensor.");
-  return device_->tensor_to_argmax_vector(*this, axis);
+  return device_->argmax(*this, dim);
 }
 
-std::vector<unsigned> Tensor::to_argmin_vector(unsigned axis) const {
+std::vector<unsigned> Tensor::argmin(unsigned dim) const {
   if (!valid()) THROW_ERROR("Invalid tensor.");
-  return device_->tensor_to_argmin_vector(*this, axis);
+  return device_->argmin(*this, dim);
 }
 
 void *Tensor::data() {

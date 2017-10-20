@@ -15,8 +15,8 @@ cdef extern from "primitiv/tensor.h" namespace "primitiv" nogil:
         const void *data() except +
         float to_float() except +
         vector[float] to_vector() except +
-        vector[unsigned] to_argmax_vector(unsigned axis) except +
-        vector[unsigned] to_argmin_vector(unsigned axis) except +
+        vector[unsigned] argmax(unsigned dim) except +
+        vector[unsigned] argmin(unsigned dim) except +
         void reset(const float k) except +
         # void reset_by_array(const float *values) except +
         void reset_by_vector(const vector[float] &values) except +

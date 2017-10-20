@@ -101,18 +101,18 @@ public:
   std::vector<float> to_vector() const;
 
   /**
-   * Retrieves indices of the maximum values along an axis as a vector.
-   * @param axis A specified axis.
+   * Retrieves argmax indices along an axis.
+   * @param dim A specified axis.
    * @return A list of integers that indicates positions of the maximum values.
    */
-  std::vector<unsigned> to_argmax_vector(unsigned axis) const;
+  std::vector<unsigned> argmax(unsigned dim) const;
 
   /**
-   * Retrieves indices of the minimum values along an axis as a vector.
-   * @param axis A specified axis.
+   * Retrieves argmin indices along an axis.
+   * @param dim A specified axis.
    * @return A list of integers that indicates positions of the minimum values.
    */
-  std::vector<unsigned> to_argmin_vector(unsigned axis) const;
+  std::vector<unsigned> argmin(unsigned dim) const;
 
   /**
    * Reset internal values using a constant.

@@ -60,14 +60,14 @@ vector<float> Device::tensor_to_vector(const Tensor &x) {
   return tensor_to_vector_impl(x);
 }
 
-vector<unsigned> Device::tensor_to_argmax_vector(const Tensor &x, unsigned axis) {
+vector<unsigned> Device::argmax(const Tensor &x, unsigned dim) {
   CHECK_DEVICE(x);
-  return tensor_to_argmax_vector_impl(x, axis);
+  return argmax_impl(x, dim);
 }
 
-vector<unsigned> Device::tensor_to_argmin_vector(const Tensor &x, unsigned axis) {
+vector<unsigned> Device::argmin(const Tensor &x, unsigned dim) {
   CHECK_DEVICE(x);
-  return tensor_to_argmin_vector_impl(x, axis);
+  return argmin_impl(x, dim);
 }
 
 void Device::reset_tensor(float k, Tensor &x) {

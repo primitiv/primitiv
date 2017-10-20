@@ -41,80 +41,52 @@ std::vector<float> Naive::tensor_to_vector_impl(const Tensor &x) {
   return ret;
 }
 
-std::vector<unsigned> Naive::tensor_to_argmax_vector_impl(const Tensor &x, unsigned axis) {
-  Shape s = x.shape();
-  const unsigned depth = s.depth();
-  const unsigned axis_len = s[axis];
-  const unsigned bs = s.batch();
-  unsigned fsize = 1;
-  unsigned ssize = 1;
-  if (axis >= depth) {
-    THROW_ERROR("axis >= depth");
-  }
-  for(unsigned i = 0; i < axis; ++i) {
-    ssize *= s[i];
-  }
-  for(unsigned i = axis + 1; i < depth; ++i) {
-    fsize *= s[i];
-  }
-  float *px = (float*) x.data();
-  std::vector<unsigned> ret(fsize * ssize * bs);
-  for (unsigned z = 0; z < bs; ++z) {
-    unsigned ret_ofs = z * fsize * ssize;
-    unsigned x_ofs = ret_ofs * axis_len;
-    for (unsigned i = 0; i < fsize; ++i) {
-      for (unsigned k = 0; k < ssize; ++k) {
-        unsigned max_idx = 0;
-        float max_data = px[x_ofs + (i * axis_len) * ssize + k];
-        for (unsigned j = 1; j < axis_len; ++j) {
-          float data = px[x_ofs + (i * axis_len + j) * ssize + k];
-          if (max_data < data) {
-            max_data = data;
-            max_idx = j;
-          }
-        }
-        ret[ret_ofs + i * ssize + k] = max_idx;
+std::vector<unsigned> Naive::argmax_impl(const Tensor &x, unsigned dim) {
+  const Shape &s = x.shape();
+  const unsigned n = s[dim];
+  const unsigned repeat = s.size() / n;
+  const unsigned skip1 = s.lower_volume(dim);
+  const unsigned skip2 = skip1 * n;
+  const float *src = CDATA(x);
+  std::vector<unsigned> ret;
+  ret.reserve(repeat);
+  for (unsigned i = 0; i < repeat; ++i) {
+    unsigned offset = i % skip1 + (i / skip1) * skip2;
+    float max_val = src[offset];
+    unsigned argmax_val = 0;
+    for (unsigned j = 1; j < n; ++j) {
+      offset += skip1;
+      if (src[offset] > max_val) {
+        max_val = src[offset];
+        argmax_val = j;
       }
     }
+    ret.emplace_back(argmax_val);
   }
   return ret;
 }
 
-std::vector<unsigned> Naive::tensor_to_argmin_vector_impl(const Tensor &x, unsigned axis) {
-  Shape s = x.shape();
-  const unsigned depth = s.depth();
-  const unsigned axis_len = s[axis];
-  const unsigned bs = s.batch();
-  unsigned fsize = 1;
-  unsigned ssize = 1;
-  if (axis >= depth) {
-    THROW_ERROR("axis >= depth");
-  }
-  for(unsigned i = 0; i < axis; ++i) {
-    ssize *= s[i];
-  }
-  for(unsigned i = axis + 1; i < depth; ++i) {
-    fsize *= s[i];
-  }
-  float *px = (float*) x.data();
-  std::vector<unsigned> ret(fsize * ssize * bs);
-  for (unsigned z = 0; z < bs; ++z) {
-    unsigned ret_ofs = z * fsize * ssize;
-    unsigned x_ofs = ret_ofs * axis_len;
-    for (unsigned i = 0; i < fsize; ++i) {
-      for (unsigned k = 0; k < ssize; ++k) {
-        unsigned max_idx = 0;
-        float max_data = px[x_ofs + (i * axis_len) * ssize + k];
-        for (unsigned j = 1; j < axis_len; ++j) {
-          float data = px[x_ofs + (i * axis_len + j) * ssize + k];
-          if (max_data > data) {
-            max_data = data;
-            max_idx = j;
-          }
-        }
-        ret[ret_ofs + i * ssize + k] = max_idx;
+std::vector<unsigned> Naive::argmin_impl(const Tensor &x, unsigned dim) {
+  const Shape &s = x.shape();
+  const unsigned n = s[dim];
+  const unsigned repeat = s.size() / n;
+  const unsigned skip1 = s.lower_volume(dim);
+  const unsigned skip2 = skip1 * n;
+  const float *src = CDATA(x);
+  std::vector<unsigned> ret;
+  ret.reserve(repeat);
+  for (unsigned i = 0; i < repeat; ++i) {
+    unsigned offset = i % skip1 + (i / skip1) * skip2;
+    float max_val = src[offset];
+    unsigned argmax_val = 0;
+    for (unsigned j = 1; j < n; ++j) {
+      offset += skip1;
+      if (src[offset] < max_val) {
+        max_val = src[offset];
+        argmax_val = j;
       }
     }
+    ret.emplace_back(argmax_val);
   }
   return ret;
 }
