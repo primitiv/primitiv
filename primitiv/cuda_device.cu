@@ -341,6 +341,88 @@ __global__ void logsumexp_fw_dev(
   if (tid == 0) py[bid] = temp[0];
 }
 
+template<unsigned BLOCK_SIZE>
+__global__ void argmax_dev(
+    const float *px, unsigned skip, unsigned n, unsigned *py) {
+  __shared__ float max_val[BLOCK_SIZE];
+  __shared__ unsigned argmax_val[BLOCK_SIZE];
+  const unsigned bid = blockIdx.x;
+  const unsigned tid = threadIdx.x;
+  px += bid % skip + (bid / skip) * skip * n;
+  max_val[tid] = -1e38;  // NOTE(odashi): Near the minimum of the float.
+  for (unsigned i = tid; i < n; i += BLOCK_SIZE) {
+    const float val = px[i * skip];
+    if (val > max_val[tid]) {
+      max_val[tid] = val;
+      argmax_val[tid] = i;
+    }
+  }
+  __syncthreads();
+#define REDUCE(k) \
+  if (BLOCK_SIZE >= k << 1) { \
+    if (tid < k) { \
+      if (max_val[tid + k] > max_val[tid]) { \
+        max_val[tid] = max_val[tid + k]; \
+        argmax_val[tid] = argmax_val[tid + k]; \
+      } \
+    } \
+    __syncthreads(); \
+  }
+  REDUCE(512)
+  REDUCE(256)
+  REDUCE(128)
+  REDUCE(64)
+  REDUCE(32)
+  REDUCE(16)
+  REDUCE(8)
+  REDUCE(4)
+  REDUCE(2)
+  REDUCE(1)
+#undef REDUCE
+  if (tid == 0) py[bid] = argmax_val[0];
+}
+
+template<unsigned BLOCK_SIZE>
+__global__ void argmin_dev(
+    const float *px, unsigned skip, unsigned n, unsigned *py) {
+  __shared__ float min_val[BLOCK_SIZE];
+  __shared__ unsigned argmin_val[BLOCK_SIZE];
+  const unsigned bid = blockIdx.x;
+  const unsigned tid = threadIdx.x;
+  px += bid % skip + (bid / skip) * skip * n;
+  min_val[tid] = 1e38;  // NOTE(odashi): Near the maximum of the float.
+  for (unsigned i = tid; i < n; i += BLOCK_SIZE) {
+    const float val = px[i * skip];
+    if (val < min_val[tid]) {
+      min_val[tid] = val;
+      argmin_val[tid] = i;
+    }
+  }
+  __syncthreads();
+#define REDUCE(k) \
+  if (BLOCK_SIZE >= k << 1) { \
+    if (tid < k) { \
+      if (min_val[tid + k] < min_val[tid]) { \
+        min_val[tid] = min_val[tid + k]; \
+        argmin_val[tid] = argmin_val[tid + k]; \
+      } \
+    } \
+    __syncthreads(); \
+  }
+  REDUCE(512)
+  REDUCE(256)
+  REDUCE(128)
+  REDUCE(64)
+  REDUCE(32)
+  REDUCE(16)
+  REDUCE(8)
+  REDUCE(4)
+  REDUCE(2)
+  REDUCE(1)
+#undef REDUCE
+  if (tid == 0) py[bid] = argmin_val[0];
+}
+
 __global__ void broadcast_fw_dev(
     const float *px, unsigned skip1, unsigned skip2, unsigned size, float *py) {
   const unsigned i = IDX;
@@ -566,11 +648,67 @@ std::vector<float> CUDA::tensor_to_vector_impl(const Tensor &x) {
 }
 
 std::vector<unsigned> CUDA::argmax_impl(const Tensor &x, unsigned dim) {
-  THROW_ERROR("Not implemented");
+  const Shape &shape = x.shape();
+  const unsigned n = shape[dim];
+  const unsigned r = shape.size() / n;
+  const unsigned s = shape.lower_volume(dim);
+  unsigned block_size = dim1_x_;
+  while (block_size >> 1 >= n) block_size >>= 1;
+  std::shared_ptr<void> py = pool_.allocate(sizeof(unsigned) * r);
+  CUDA_CALL(::cudaSetDevice(dev_id_));
+  switch (block_size) {
+#define CASE(k) \
+    case k: ::argmax_dev<k><<<r, k>>>( \
+        CDATA(x), s, n, static_cast<unsigned *>(py.get())); break
+    CASE(1024);
+    CASE(512);
+    CASE(256);
+    CASE(128);
+    CASE(64);
+    CASE(32);
+    CASE(16);
+    CASE(8);
+    CASE(4);
+    CASE(2);
+    CASE(1);
+#undef CASE
+  }
+  std::vector<unsigned> ret(r);
+  CUDA_CALL(::cudaMemcpy(
+        &ret[0], py.get(), sizeof(unsigned) * r, cudaMemcpyDeviceToHost));
+  return ret;
 }
 
 std::vector<unsigned> CUDA::argmin_impl(const Tensor &x, unsigned dim) {
-  THROW_ERROR("Not implemented");
+  const Shape &shape = x.shape();
+  const unsigned n = shape[dim];
+  const unsigned r = shape.size() / n;
+  const unsigned s = shape.lower_volume(dim);
+  unsigned block_size = dim1_x_;
+  while (block_size >> 1 >= n) block_size >>= 1;
+  std::shared_ptr<void> py = pool_.allocate(sizeof(unsigned) * r);
+  CUDA_CALL(::cudaSetDevice(dev_id_));
+  switch (block_size) {
+#define CASE(k) \
+    case k: ::argmin_dev<k><<<r, k>>>( \
+        CDATA(x), s, n, static_cast<unsigned *>(py.get())); break
+    CASE(1024);
+    CASE(512);
+    CASE(256);
+    CASE(128);
+    CASE(64);
+    CASE(32);
+    CASE(16);
+    CASE(8);
+    CASE(4);
+    CASE(2);
+    CASE(1);
+#undef CASE
+  }
+  std::vector<unsigned> ret(r);
+  CUDA_CALL(::cudaMemcpy(
+        &ret[0], py.get(), sizeof(unsigned) * r, cudaMemcpyDeviceToHost));
+  return ret;
 }
 
 void CUDA::reset_tensor_impl(float k, Tensor &x) {
