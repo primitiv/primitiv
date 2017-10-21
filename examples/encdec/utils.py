@@ -42,6 +42,9 @@ def load_corpus(path, vocab):
 
 # Generates word ID list from a reference sentence.
 def line_to_sent_ref(line, vocab):
+    # NOTE(odashi):
+    # -1 never becomes a word ID of any specific words and this is useful to
+    # prevent BLEU contamination.
     unk_id = -1
     converted = "<bos> " + line + " <eos>"
     return [vocab.get(word, unk_id) for word in converted.split()]
