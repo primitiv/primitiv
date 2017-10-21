@@ -41,6 +41,56 @@ std::vector<float> Naive::tensor_to_vector_impl(const Tensor &x) {
   return ret;
 }
 
+std::vector<unsigned> Naive::argmax_impl(const Tensor &x, unsigned dim) {
+  const Shape &s = x.shape();
+  const unsigned n = s[dim];
+  const unsigned repeat = s.size() / n;
+  const unsigned skip1 = s.lower_volume(dim);
+  const unsigned skip2 = skip1 * n;
+  const float *src = CDATA(x);
+  std::vector<unsigned> ret;
+  ret.reserve(repeat);
+  for (unsigned i = 0; i < repeat; ++i) {
+    unsigned offset = i % skip1 + (i / skip1) * skip2;
+    float max_val = src[offset];
+    unsigned argmax_val = 0;
+    for (unsigned j = 1; j < n; ++j) {
+      offset += skip1;
+      if (src[offset] > max_val) {
+        max_val = src[offset];
+        argmax_val = j;
+      }
+    }
+    ret.emplace_back(argmax_val);
+  }
+  return ret;
+}
+
+std::vector<unsigned> Naive::argmin_impl(const Tensor &x, unsigned dim) {
+  const Shape &s = x.shape();
+  const unsigned n = s[dim];
+  const unsigned repeat = s.size() / n;
+  const unsigned skip1 = s.lower_volume(dim);
+  const unsigned skip2 = skip1 * n;
+  const float *src = CDATA(x);
+  std::vector<unsigned> ret;
+  ret.reserve(repeat);
+  for (unsigned i = 0; i < repeat; ++i) {
+    unsigned offset = i % skip1 + (i / skip1) * skip2;
+    float max_val = src[offset];
+    unsigned argmax_val = 0;
+    for (unsigned j = 1; j < n; ++j) {
+      offset += skip1;
+      if (src[offset] < max_val) {
+        max_val = src[offset];
+        argmax_val = j;
+      }
+    }
+    ret.emplace_back(argmax_val);
+  }
+  return ret;
+}
+
 void Naive::reset_tensor_impl(float k, Tensor &x) {
   float *dest = DATA(x);
   const unsigned size = x.shape().size();

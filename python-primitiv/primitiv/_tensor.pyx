@@ -59,6 +59,18 @@ cdef class _Tensor:
             output.append(output_item)
         return output
 
+    def argmax(self, unsigned dim):
+        cdef vector[unsigned] vec
+        with nogil:
+            vec = self.wrapped.argmax(dim)
+        return vec
+
+    def argmin(self, unsigned dim):
+        cdef vector[unsigned] vec
+        with nogil:
+            vec = self.wrapped.argmin(dim)
+        return vec
+
     def reset(self, float k):
         self.wrapped.reset(k)
 

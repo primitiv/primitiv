@@ -101,6 +101,20 @@ public:
   std::vector<float> to_vector() const;
 
   /**
+   * Returns argmax indices along an axis of this node.
+   * @param dim A specified axis.
+   * @return A list of integers that indicates positions of the maximum values.
+   */
+  std::vector<unsigned> argmax(unsigned dim) const;
+
+  /**
+   * Returns argmin indices along an axis of this node.
+   * @param dim A specified axis.
+   * @return A list of integers that indicates positions of the minimum values.
+   */
+  std::vector<unsigned> argmin(unsigned dim) const;
+
+  /**
    * Executes the backward operation from this node.
    */
   void backward() const;
@@ -259,6 +273,16 @@ inline float Node::to_float() const {
 inline std::vector<float> Node::to_vector() const {
   if (!valid()) THROW_ERROR("Invalid node.");
   return g_->forward(*this).to_vector();
+}
+
+inline std::vector<unsigned> Node::argmax(unsigned dim) const {
+  if (!valid()) THROW_ERROR("Invalid node.");
+  return g_->forward(*this).argmax(dim);
+}
+
+inline std::vector<unsigned> Node::argmin(unsigned dim) const {
+  if (!valid()) THROW_ERROR("Invalid node.");
+  return g_->forward(*this).argmin(dim);
 }
 
 inline void Node::backward() const {

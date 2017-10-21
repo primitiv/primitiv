@@ -20,6 +20,16 @@ std::vector<float> Tensor::to_vector() const {
   return device_->tensor_to_vector(*this);
 }
 
+std::vector<unsigned> Tensor::argmax(unsigned dim) const {
+  if (!valid()) THROW_ERROR("Invalid tensor.");
+  return device_->argmax(*this, dim);
+}
+
+std::vector<unsigned> Tensor::argmin(unsigned dim) const {
+  if (!valid()) THROW_ERROR("Invalid tensor.");
+  return device_->argmin(*this, dim);
+}
+
 void *Tensor::data() {
   if (!valid()) THROW_ERROR("Invalid tensor.");
   // If the internal memory is shared with other objects, the memory will be

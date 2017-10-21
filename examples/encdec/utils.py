@@ -103,14 +103,3 @@ def save_ppl(path, ppl):
 def load_ppl(path):
     with open(path, "r") as ifs:
         return float(ifs.readline());
-
-
-# Finds a word ID with the highest logit.
-def argmax(logits):
-    ret = 0
-    best = -1e10
-    for i in range(len(logits)):
-        if logits[i] > best:
-            ret = i
-            best = logits[i]
-    return ret

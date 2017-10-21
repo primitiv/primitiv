@@ -19,6 +19,8 @@ cdef extern from "primitiv/graph.h" namespace "primitiv" nogil:
         CppDevice &device() except +
         float to_float() except +
         vector[float] to_vector() except +
+        vector[unsigned] argmax(unsigned dim) except +
+        vector[unsigned] argmin(unsigned dim) except +
         void backward() except +
 
 
