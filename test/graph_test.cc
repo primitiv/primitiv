@@ -184,7 +184,7 @@ TEST_F(GraphTest, CheckForwardBackward) {
   EXPECT_EQ(10u, g.num_functions());
 
   // Dump the graph to the output log.
-  g.dump();
+  std::cout << g.dump("dot");
 
   // Check all shapes and devices.
   const vector<Shape> expected_shapes {
@@ -283,7 +283,7 @@ TEST_F(GraphTest, CheckXor) {
   nodes.emplace_back(operators::batch::sum(nodes[12]));
 
   EXPECT_EQ(nodes.size(), g.num_functions());
-  g.dump();
+  std::cout << g.dump("dot");
 
   g.forward(nodes.back());
 

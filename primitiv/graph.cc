@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <functional>
 #include <iostream>
+#include <sstream>
 #include <utility>
 #include <primitiv/device.h>
 #include <primitiv/error.h>
@@ -213,7 +214,28 @@ Device &Graph::get_device(const Node &node) const {
   return ACCESS(node).device;
 }
 
-void Graph::dump() const {
+std::string Graph::dump(const std::string &format) const {
+  if (format != "dot") THROW_ERROR("Unknown format: " << format);
+
+  std::stringstream ss;
+  ss << "digraph ComputationGraph {\n";
+
+  for (unsigned i = 0; i < funcs_.size(); ++i) {
+    const FunctionInfo &f = funcs_[i];
+    ss << "  " << i << " [label = \"" << f.func->name() << "\", shape = box];\n";
+  }
+
+  for (unsigned i = 0; i < funcs_.size(); ++i) {
+    const FunctionInfo &f = funcs_[i];
+    for (unsigned j = 0; j < f.args.size(); ++j) {
+      ss << "  " << f.args[j].fid << " -> " << i << ";\n";
+    }
+  }
+
+  ss << "}\n";
+  return ss.str();
+
+  /*
   cout << "Computation graph:" << endl;
   for (unsigned i = 0; i < funcs_.size(); ++i) {
     const FunctionInfo &f = funcs_[i];
@@ -237,6 +259,7 @@ void Graph::dump() const {
       cout << ']' << endl;
     }
   }
+  */
 }
 
 }  // namespace primitiv

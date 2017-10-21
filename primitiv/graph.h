@@ -197,9 +197,12 @@ public:
   Device &get_device(const Node &node) const;
 
   /**
-   * Dump internal graphs.
+   * Dump internal graph structure.
+   * @param format Name of the format. Available options:
+   *                 "dot" ... Graphviz's dot format.
+   * @return A string that represents the internal graph using given format.
    */
-  void dump() const;
+  std::string dump(const std::string &format) const;
 
   /**
    * Returns the number of functions in the computation graph.
