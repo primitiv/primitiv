@@ -40,6 +40,20 @@ def line_to_sent(line, vocab):
 def load_corpus(path, vocab):
     return [line_to_sent(line, vocab) for line in open(path)]
 
+# Generates word ID list from a reference sentence.
+def line_to_sent_ref(line, vocab):
+    # NOTE(odashi):
+    # -1 never becomes a word ID of any specific words and this is useful to
+    # prevent BLEU contamination.
+    unk_id = -1
+    converted = "<bos> " + line + " <eos>"
+    return [vocab.get(word, unk_id) for word in converted.split()]
+
+# Generates word ID list from a reference corpus.
+# All out-of-vocab words are replaced to -1.
+def load_corpus_ref(path, vocab):
+    return [line_to_sent_ref(line, vocab) for line in open(path)]
+
 # Counts output labels in the corpus.
 def count_labels(corpus):
     ret = 0
