@@ -280,8 +280,7 @@ void test(EncoderDecoder<Tensor> &encdec) {
         break;
       }
       const auto y = encdec.decode_step({trg_ids.back()}, false);
-      const auto logits = y.to_vector();
-      trg_ids.emplace_back(::argmax(logits));
+      trg_ids.emplace_back(y.argmax(0)[0]);
     }
 
     // Prints the result.

@@ -159,17 +159,4 @@ inline float load_ppl(const std::string &path) {
   return ppl;
 }
 
-// Finds a word ID with the highest logit.
-inline unsigned argmax(const std::vector<float> &logits) {
-  unsigned ret = 0;
-  float best = -1e10;
-  for (unsigned i = 0; i < logits.size(); ++i) {
-    if (logits[i] > best) {
-      ret = i;
-      best = logits[i];
-    }
-  }
-  return ret;
-}
-
 #endif  // PRIMITIV_EXAMPLE_ENCDEC_UTILS_H_
