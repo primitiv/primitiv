@@ -218,48 +218,38 @@ std::string Graph::dump(const std::string &format) const {
   if (format != "dot") THROW_ERROR("Unknown format: " << format);
 
   std::stringstream ss;
-  ss << "digraph ComputationGraph {\n";
+  ss << R"(digraph ComputationGraph {
+  graph [
+    fontname = "Times-Roman",
+  ];
+  node [
+    fontname = "Times-Roman",
+    shape = "box",
+    style = "rounded",
+    width = "0.0",
+    height = "0.0",
+  ];
+  edge [
+    fontname = "Courier",
+  ];)";
 
   for (unsigned i = 0; i < funcs_.size(); ++i) {
     const FunctionInfo &f = funcs_[i];
-    ss << "  " << i << " [label = \"" << f.func->name() << "\", shape = box];\n";
+    ss << "  " << i << " [label = \"" << f.func->name() << "\"];\n";
   }
 
   for (unsigned i = 0; i < funcs_.size(); ++i) {
     const FunctionInfo &f = funcs_[i];
     for (unsigned j = 0; j < f.args.size(); ++j) {
-      ss << "  " << f.args[j].fid << " -> " << i << ";\n";
+      const Shape &s = funcs_[f.args[j].fid].rets[f.args[j].vid].shape;
+      ss << "  "
+         << f.args[j].fid << " -> " << i
+         << "[label = \"" << s.to_string() << "\"];\n";
     }
   }
 
   ss << "}\n";
   return ss.str();
-
-  /*
-  cout << "Computation graph:" << endl;
-  for (unsigned i = 0; i < funcs_.size(); ++i) {
-    const FunctionInfo &f = funcs_[i];
-    cout << "Function " << i
-         << ": name=" << f.func->name()
-         << ", args=[";
-    for (unsigned j = 0; j < f.args.size(); ++j) {
-      if (j > 0) cout << ", ";
-      cout << f.args[j].fid << ':' << f.args[j].vid;
-    }
-    cout << ']' << endl;
-    for (unsigned j = 0; j < f.rets.size(); ++j) {
-      const NodeInfo &n = f.rets[j];
-      cout << "  Return " << j
-           << ": shape=" << n.shape.to_string()
-           << ", sinks=[";
-      for (unsigned k = 0; k < n.sinks.size(); ++k) {
-        if (k > 0) cout << ", ";
-        cout << n.sinks[k];
-      }
-      cout << ']' << endl;
-    }
-  }
-  */
 }
 
 }  // namespace primitiv
