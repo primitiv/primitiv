@@ -86,3 +86,9 @@ cdef class _Trainer:
     def set_configs_by_file(self, str path):
         self.wrapped.set_configs_by_file(path.encode("utf-8"))
         return
+
+    def __copy__(self):
+        raise NotImplementedError(type(self).__name__ + " does not support `__copy__` for now.")
+
+    def __deepcopy__(self, memo):
+        raise NotImplementedError(type(self).__name__ + " does not support `__deepcopy__` for now.")

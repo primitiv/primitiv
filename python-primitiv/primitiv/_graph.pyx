@@ -149,6 +149,12 @@ cdef class _Node:
         else:
             return NotImplemented
 
+    def __copy__(self):
+        raise NotImplementedError(type(self).__name__ + " does not support `__copy__` for now.")
+
+    def __deepcopy__(self, memo):
+        raise NotImplementedError(type(self).__name__ + " does not support `__deepcopy__` for now.")
+
 
 cdef class _Graph:
 
@@ -204,3 +210,9 @@ cdef class _Graph:
 
     def num_functions(self):
         return self.wrapped.num_functions()
+
+    def __copy__(self):
+        raise NotImplementedError(type(self).__name__ + " does not support `__copy__` for now.")
+
+    def __deepcopy__(self, memo):
+        raise NotImplementedError(type(self).__name__ + " does not support `__deepcopy__` for now.")
