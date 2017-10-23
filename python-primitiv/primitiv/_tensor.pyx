@@ -9,11 +9,11 @@ import numpy as np
 
 cdef class _Tensor:
 
-    def __init__(self, src = None):
+    def __init__(self, _Tensor src = None):
         if src is None:
             self.wrapped = CppTensor()
         else:
-            self.wrapped = CppTensor((<_Tensor> src).wrapped)
+            self.wrapped = CppTensor(src.wrapped)
         return
 
     def valid(self):
