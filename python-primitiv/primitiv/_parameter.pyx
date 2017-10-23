@@ -104,3 +104,9 @@ cdef class _Parameter:
         if device is None:
             device = _Device.get_default()
         return wrapParameterWithNew(Parameter_load(<string> path.encode("utf-8"), with_stats, device.wrapped[0]))
+
+    def __copy__(self):
+        raise NotImplementedError(type(self).__name__ + " does not support `__copy__` for now.")
+
+    def __deepcopy__(self, memo):
+        raise NotImplementedError(type(self).__name__ + " does not support `__deepcopy__` for now.")

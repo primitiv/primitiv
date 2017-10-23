@@ -70,3 +70,9 @@ cdef class _Shape:
 
     def update_batch(self, unsigned batch):
         self.wrapped.update_batch(batch)
+
+    def __copy__(self):
+        raise NotImplementedError(type(self).__name__ + " does not support `__copy__` for now.")
+
+    def __deepcopy__(self, memo):
+        raise NotImplementedError(type(self).__name__ + " does not support `__deepcopy__` for now.")
