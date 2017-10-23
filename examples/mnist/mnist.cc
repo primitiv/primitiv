@@ -143,7 +143,7 @@ int main() {
       Node avg_loss = F::batch::mean(loss);
 
       // Dump computation graph at the first time.
-      //if (epoch == 0 && batch == 0) g.dump();
+      //if (epoch == 0 && batch == 0) cout << g.dump("dot");
 
       // Implicit forward, backward, and updates parameters.
       trainer.reset_gradients();

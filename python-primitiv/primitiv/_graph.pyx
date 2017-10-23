@@ -199,9 +199,8 @@ cdef class _Graph:
     def get_device(self, _Node node):
         return wrapDevice(&self.wrapped.get_device(node.wrapped))
 
-    def dump(self):
-        self.wrapped.dump()
-        return
+    def dump(self, str format):
+        return self.wrapped.dump(<string> format.encode("utf-8")).decode("utf-8")
 
     def num_functions(self):
         return self.wrapped.num_functions()

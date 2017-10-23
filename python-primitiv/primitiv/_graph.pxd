@@ -1,3 +1,4 @@
+from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp.memory cimport unique_ptr
 from libcpp cimport bool
@@ -49,7 +50,7 @@ cdef extern from "primitiv/graph.h" namespace "primitiv" nogil:
         void backward(const CppNode &node) except +
         const CppShape &get_shape(const CppNode &node) except +
         CppDevice &get_device(const CppNode &node) except +
-        void dump() except +
+        string dump(const string &format) except +
         unsigned num_functions() except +
 
 
