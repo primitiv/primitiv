@@ -8,7 +8,7 @@ from primitiv._device cimport CppDevice
 from primitiv._initializer cimport CppInitializer, _Initializer
 
 
-cdef extern from "primitiv/parameter.h" namespace "primitiv":
+cdef extern from "primitiv/parameter.h":
     cdef cppclass CppParameter "primitiv::Parameter":
         CppParameter(CppParameter &&src)
         CppParameter() except +

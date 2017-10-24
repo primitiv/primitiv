@@ -9,7 +9,7 @@ from primitiv._shape cimport CppShape
 from primitiv._parameter cimport CppParameter, _Parameter
 
 
-cdef extern from "primitiv/trainer.h" namespace "primitiv":
+cdef extern from "primitiv/trainer.h":
     cdef cppclass CppTrainer "primitiv::Trainer":
         CppTrainer(CppTrainer &&) except +
         CppTrainer() except +
@@ -31,8 +31,8 @@ cdef extern from "primitiv/trainer.h" namespace "primitiv":
         void set_configs_by_file(const string &path) except +
 
 
-cdef extern from "primitiv/trainer.h" namespace "primitiv::Trainer":
-    string detect_name(const string &path) except +
+cdef extern from "primitiv/trainer.h":
+    string CppTrainer_detect_name "primitiv::Trainer::detect_name"(const string &path) except +
 
 
 cdef class _Trainer:

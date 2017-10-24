@@ -5,7 +5,7 @@ from primitiv._device cimport CppDevice
 from primitiv._shape cimport CppShape
 
 
-cdef extern from "primitiv/tensor.h" namespace "primitiv" nogil:
+cdef extern from "primitiv/tensor.h" nogil:
     cdef cppclass CppTensor "primitiv::Tensor":
         CppTensor(CppTensor &&src) except +
         CppTensor() except +
@@ -24,7 +24,7 @@ cdef extern from "primitiv/tensor.h" namespace "primitiv" nogil:
         CppTensor flatten() except +
 
 
-cdef extern from "tensor_op.h":
+cdef extern from "tensor_op.h" namespace "python_primitiv_tensor":
     CppTensor &tensor_inplace_multiply_const(CppTensor &tensor, float k) except +
     CppTensor &tensor_inplace_add(CppTensor &tensor, const CppTensor &x) except +
     CppTensor &tensor_inplace_subtract(CppTensor &tensor, const CppTensor &x) except +

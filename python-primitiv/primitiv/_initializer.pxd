@@ -1,7 +1,7 @@
 from primitiv._tensor cimport CppTensor
 
 
-cdef extern from "primitiv/initializer.h" namespace "primitiv":
+cdef extern from "primitiv/initializer.h":
     cdef cppclass CppInitializer "primitiv::Initializer":
         CppInitializer() except +
         void apply(CppTensor &x) except +

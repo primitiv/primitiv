@@ -24,7 +24,7 @@ cdef class _Trainer:
 
     @staticmethod
     def detect_name(str path):
-        return detect_name(path.encode("utf-8")).decode("utf-8")
+        return CppTrainer_detect_name(path.encode("utf-8")).decode("utf-8")
 
     def save(self, str path):
         self.wrapped.save(path.encode("utf-8"))
