@@ -65,7 +65,6 @@ cdef class _Node:
 
 cdef class _Graph:
     cdef CppGraph *wrapped
-    cdef CppGraph *wrapped_newed
     cdef object __weakref__
 
 

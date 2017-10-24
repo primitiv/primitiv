@@ -19,7 +19,6 @@ cdef extern from "primitiv/device.h":
 
 cdef class _Device:
     cdef CppDevice *wrapped
-    cdef CppDevice *wrapped_newed
     cdef object __weakref__
 
 

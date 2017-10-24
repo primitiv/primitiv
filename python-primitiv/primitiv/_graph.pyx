@@ -157,22 +157,19 @@ cdef class _Node:
 cdef class _Graph:
 
     def __init__(self):
-        if self.wrapped_newed is not NULL:
+        if self.wrapped is not NULL:
             raise MemoryError()
-        self.wrapped_newed = new CppGraph()
-        if self.wrapped_newed is NULL:
-            raise MemoryError()
-        self.wrapped = self.wrapped_newed
+        self.wrapped = new CppGraph()
 
         global py_primitiv_graph_weak_dict
         if py_primitiv_graph_weak_dict is None:
             py_primitiv_graph_weak_dict = WeakValueDictionary()
-        py_primitiv_graph_weak_dict[<uintptr_t> self.wrapped_newed] = self
+        py_primitiv_graph_weak_dict[<uintptr_t> self.wrapped] = self
 
     def __dealloc__(self):
-        if self.wrapped_newed is not NULL:
-            del self.wrapped_newed
-            self.wrapped_newed = NULL
+        if self.wrapped is not NULL:
+            del self.wrapped
+            self.wrapped = NULL
 
     @staticmethod
     def get_default():

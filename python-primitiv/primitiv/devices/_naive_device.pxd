@@ -9,9 +9,3 @@ cdef extern from "primitiv/naive_device.h":
 
 cdef class _Naive(_Device):
     pass
-
-
-cdef inline _Naive wrapNaive(CppNaive *wrapped) except +:
-    cdef _Naive naive = _Naive.__new__(_Naive)
-    naive.wrapped = wrapped
-    return naive

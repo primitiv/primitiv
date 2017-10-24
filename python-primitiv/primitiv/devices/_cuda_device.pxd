@@ -13,9 +13,3 @@ cdef extern from "primitiv/cuda_device.h":
 
 cdef class _CUDA(_Device):
     pass
-
-
-cdef inline _CUDA wrapCUDA(CppCUDA *wrapped) except +:
-    cdef _CUDA cuda = _CUDA.__new__(_CUDA)
-    cuda.wrapped = wrapped
-    return cuda
