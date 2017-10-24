@@ -75,7 +75,7 @@ cdef class _Parameter:
         return
 
     def has_stats(self, str name):
-        return self.wrapped.has_stats(name)
+        return self.wrapped.has_stats(name.encode("utf-8"))
 
     def name(self):
         return self.wrapped.name().decode("utf-8")
