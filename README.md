@@ -80,8 +80,8 @@ Building Options
 Usage
 -----
 
-[Short tutorial](https://github.com/odashi/primitiv/tree/develop/examples/tutorial1_xor.ipynb) with solving XOR problem.
-[Other examples](https://github.com/odashi/primitiv/tree/develop/examples).
+- [Short tutorial](https://github.com/odashi/primitiv/tree/develop/examples/tutorial1_xor.ipynb) with solving XOR problem.
+- [Other examples](https://github.com/odashi/primitiv/tree/develop/examples).
 
 
 Contact
