@@ -8,7 +8,7 @@ from primitiv._tensor cimport CppTensor
 from libc.stdint cimport uintptr_t
 
 
-cdef extern from "primitiv/graph.h" namespace "primitiv" nogil:
+cdef extern from "primitiv/graph.h" nogil:
     cdef cppclass CppNode "primitiv::Node":
         CppNode(CppNode &&src) except +
         CppNode() except +
@@ -42,7 +42,7 @@ cdef extern from "node_op.h" namespace "python_primitiv_node":
     cdef CppNode op_node_div(const CppNode &a, const CppNode &b) except +
 
 
-cdef extern from "primitiv/graph.h" namespace "primitiv" nogil:
+cdef extern from "primitiv/graph.h" nogil:
     cdef cppclass CppGraph "primitiv::Graph":
         CppGraph() except +
         void clear() except +
@@ -54,9 +54,9 @@ cdef extern from "primitiv/graph.h" namespace "primitiv" nogil:
         unsigned num_functions() except +
 
 
-cdef extern from "primitiv/graph.h" namespace "primitiv::Graph":
-    cdef CppGraph &get_default()
-    cdef void set_default(CppGraph &g)
+cdef extern from "primitiv/graph.h":
+    cdef CppGraph &CppGraph_get_default "primitiv::Graph::get_default"()
+    cdef void CppGraph_set_default "primitiv::Graph::set_default"(CppGraph &g)
 
 
 cdef class _Node:
@@ -65,7 +65,6 @@ cdef class _Node:
 
 cdef class _Graph:
     cdef CppGraph *wrapped
-    cdef CppGraph *wrapped_newed
     cdef object __weakref__
 
 

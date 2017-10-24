@@ -4,8 +4,6 @@ from primitiv._device cimport wrapDevice
 from primitiv._shape cimport wrapShape
 from primitiv._tensor cimport wrapTensor
 from primitiv._operator cimport Node_pow, Node_matmul
-from primitiv._graph cimport get_default as Graph_get_default
-from primitiv._graph cimport set_default as Graph_set_default
 from weakref import WeakValueDictionary
 
 cimport numpy as np
@@ -159,30 +157,27 @@ cdef class _Node:
 cdef class _Graph:
 
     def __init__(self):
-        if self.wrapped_newed is not NULL:
+        if self.wrapped is not NULL:
             raise MemoryError()
-        self.wrapped_newed = new CppGraph()
-        if self.wrapped_newed is NULL:
-            raise MemoryError()
-        self.wrapped = self.wrapped_newed
+        self.wrapped = new CppGraph()
 
         global py_primitiv_graph_weak_dict
         if py_primitiv_graph_weak_dict is None:
             py_primitiv_graph_weak_dict = WeakValueDictionary()
-        py_primitiv_graph_weak_dict[<uintptr_t> self.wrapped_newed] = self
+        py_primitiv_graph_weak_dict[<uintptr_t> self.wrapped] = self
 
     def __dealloc__(self):
-        if self.wrapped_newed is not NULL:
-            del self.wrapped_newed
-            self.wrapped_newed = NULL
+        if self.wrapped is not NULL:
+            del self.wrapped
+            self.wrapped = NULL
 
     @staticmethod
     def get_default():
-        return wrapGraph(&Graph_get_default())
+        return wrapGraph(&CppGraph_get_default())
 
     @staticmethod
-    def set_default(g):
-        Graph_set_default((<_Graph> g).wrapped[0])
+    def set_default(_Graph g):
+        CppGraph_set_default(g.wrapped[0])
 
     def clear(self):
         self.wrapped.clear()
@@ -205,8 +200,8 @@ cdef class _Graph:
     def get_device(self, _Node node):
         return wrapDevice(&self.wrapped.get_device(node.wrapped))
 
-    def dump(self, str format):
-        return self.wrapped.dump(<string> format.encode("utf-8")).decode("utf-8")
+    def dump(self, str fmt):
+        return self.wrapped.dump(<string> fmt.encode("utf-8")).decode("utf-8")
 
     def num_functions(self):
         return self.wrapped.num_functions()

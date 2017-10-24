@@ -5,7 +5,7 @@ from primitiv._device cimport CppDevice
 from primitiv._trainer cimport CppTrainer, _Trainer
 
 
-cdef extern from "primitiv/trainer_impl.h" namespace "primitiv::trainers":
+cdef extern from "primitiv/trainer_impl.h":
     cdef cppclass CppSGD "primitiv::trainers::SGD" (CppTrainer):
         CppSGD(float eta)
         float eta()

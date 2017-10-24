@@ -3,7 +3,7 @@ from libcpp.string cimport string
 from libcpp cimport bool
 
 
-cdef extern from "primitiv/shape.h" namespace "primitiv":
+cdef extern from "primitiv/shape.h":
     cdef cppclass CppShape "primitiv::Shape":
         CppShape() except +
         CppShape(vector[unsigned] &dims, unsigned batch) except +
