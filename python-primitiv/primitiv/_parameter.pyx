@@ -87,13 +87,13 @@ cdef class _Parameter:
         return wrapDevice(&self.wrapped.device())
 
     def value(self):
-        return wrapTensor(self.wrapped.value())
+        return wrapTensor(&self.wrapped.value())
 
     def gradient(self):
-        return wrapTensor(self.wrapped.gradient())
+        return wrapTensor(&self.wrapped.gradient())
 
     def stats(self, str name):
-        return wrapTensor(self.wrapped.stats(<string> name.encode("utf-8")))
+        return wrapTensor(&self.wrapped.stats(<string> name.encode("utf-8")))
 
     def save(self, str path, bool with_stats = True):
         self.wrapped.save(<string> path.encode("utf-8"), with_stats)

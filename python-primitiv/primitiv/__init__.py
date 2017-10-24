@@ -10,6 +10,7 @@ from primitiv._trainer import _Trainer as Trainer
 from primitiv import devices
 from primitiv import initializers
 from primitiv._operator import _operators as operators
+from primitiv._operator import _tensor_operators as tensor_operators
 from primitiv import trainers
 
 
@@ -26,5 +27,6 @@ __all__ = [
     "devices",
     "initializers",
     "operators",
+    "tensor_operators",
     "trainers",
 ]
