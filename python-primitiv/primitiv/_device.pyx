@@ -35,12 +35,10 @@ cdef class _Device:
 
     @staticmethod
     cdef void register_wrapper(CppDevice *ptr, _Device wrapper):
-        global py_primitiv_device_weak_dict
         py_primitiv_device_weak_dict[<uintptr_t> ptr] = wrapper
 
     @staticmethod
     cdef _Device get_wrapper(CppDevice *ptr):
-        global py_primitiv_device_weak_dict
         # _Device instances should be created and be registered before this
         # function is called.
         return py_primitiv_device_weak_dict[<uintptr_t> ptr]

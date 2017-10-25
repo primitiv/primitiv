@@ -216,12 +216,10 @@ cdef class _Graph:
 
     @staticmethod
     cdef void register_wrapper(CppGraph *ptr, _Graph wrapper):
-        global py_primitiv_graph_weak_dict
         py_primitiv_graph_weak_dict[<uintptr_t> ptr] = wrapper
 
     @staticmethod
     cdef _Graph get_wrapper(CppGraph *ptr):
-        global py_primitiv_graph_weak_dict
         # _Device instances should be created and be registered before this
         # function is called.
         return py_primitiv_graph_weak_dict[<uintptr_t> ptr]

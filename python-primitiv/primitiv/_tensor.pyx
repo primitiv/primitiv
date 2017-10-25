@@ -187,12 +187,10 @@ cdef class _Tensor:
 
     @staticmethod
     cdef void register_wrapper(CppTensor *ptr, _Tensor wrapper):
-        global py_primitiv_tensor_weak_dict
         py_primitiv_tensor_weak_dict[<uintptr_t> ptr] = wrapper
 
     @staticmethod
     cdef _Tensor get_wrapper(CppTensor *ptr):
-        global py_primitiv_tensor_weak_dict
         ret = py_primitiv_tensor_weak_dict.get(<uintptr_t> ptr)
         if ret:
             return ret
@@ -207,5 +205,5 @@ cdef class _Tensor:
         cdef _Tensor tensor = _Tensor.__new__(_Tensor)
         tensor.wrapped = ptr
         tensor.del_required = True
-        _Tensor.register_wrapper(ptr, tensor)
+        py_primitiv_tensor_weak_dict[<uintptr_t> ptr] = tensor
         return tensor
