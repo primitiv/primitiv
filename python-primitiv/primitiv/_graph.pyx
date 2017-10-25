@@ -1,14 +1,18 @@
+from libc.stdint cimport uintptr_t
 from libcpp.vector cimport vector
 
 from primitiv._device cimport _Device
 from primitiv._shape cimport wrapShape
 from primitiv._tensor cimport _Tensor
 from primitiv._operator cimport op_pow, op_matmul
+
 from weakref import WeakValueDictionary
 
 cimport numpy as np
 import numpy as np
 
+
+# NOTE(vbkaisetsu):
 # This is used for holding python instances related to C++.
 # Without this variable, python instances are always created when C++ class
 # instances are returned from functions.
@@ -216,10 +220,13 @@ cdef class _Graph:
 
     @staticmethod
     cdef void register_wrapper(CppGraph *ptr, _Graph wrapper):
+        if <uintptr_t> ptr in py_primitiv_graph_weak_dict:
+            raise ValueError("Attempted to register the same C++ object twice.")
         py_primitiv_graph_weak_dict[<uintptr_t> ptr] = wrapper
 
     @staticmethod
     cdef _Graph get_wrapper(CppGraph *ptr):
+        # NOTE(vbkaisetsu):
         # _Device instances should be created and be registered before this
         # function is called.
         return py_primitiv_graph_weak_dict[<uintptr_t> ptr]

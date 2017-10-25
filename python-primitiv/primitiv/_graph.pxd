@@ -1,11 +1,9 @@
 from libcpp.string cimport string
 from libcpp.vector cimport vector
-from libcpp.memory cimport unique_ptr
 from libcpp cimport bool
 from primitiv._device cimport CppDevice
 from primitiv._shape cimport CppShape
 from primitiv._tensor cimport CppTensor
-from libc.stdint cimport uintptr_t
 
 
 cdef extern from "primitiv/graph.h" nogil:

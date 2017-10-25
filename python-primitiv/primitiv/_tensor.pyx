@@ -1,3 +1,4 @@
+from libc.stdint cimport uintptr_t
 from libcpp.vector cimport vector
 
 from primitiv._device cimport _Device
@@ -9,6 +10,7 @@ from weakref import WeakValueDictionary
 cimport numpy as np
 import numpy as np
 
+# NOTE(vbkaisetsu):
 # This is used for holding python instances related to C++.
 # Without this variable, python instances are always created when C++ class
 # instances are returned from functions.
@@ -187,6 +189,8 @@ cdef class _Tensor:
 
     @staticmethod
     cdef void register_wrapper(CppTensor *ptr, _Tensor wrapper):
+        if <uintptr_t> ptr in py_primitiv_tensor_weak_dict:
+            raise ValueError("Attempted to register the same C++ object twice.")
         py_primitiv_tensor_weak_dict[<uintptr_t> ptr] = wrapper
 
     @staticmethod
@@ -204,6 +208,8 @@ cdef class _Tensor:
     cdef _Tensor get_wrapper_with_new(CppTensor *ptr):
         cdef _Tensor tensor = _Tensor.__new__(_Tensor)
         tensor.wrapped = ptr
+        tensor.del_required = False  # dummy to add this to dict.
+        if py_primitiv_tensor_weak_dict.setdefault(<uintptr_t> ptr, tensor) is not tensor:
+            raise ValueError("Attempted to register the same C++ object twice.")
         tensor.del_required = True
-        py_primitiv_tensor_weak_dict[<uintptr_t> ptr] = tensor
         return tensor

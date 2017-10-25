@@ -1,6 +1,5 @@
 from libcpp.vector cimport vector
 from libcpp cimport bool
-from libc.stdint cimport uintptr_t
 
 from primitiv._device cimport CppDevice
 from primitiv._shape cimport CppShape

@@ -1,12 +1,3 @@
-from libcpp.vector cimport vector
-from libcpp.string cimport string
-from libcpp cimport bool
-from libc.stdint cimport uintptr_t
-
-from primitiv._tensor cimport CppTensor
-from primitiv._shape cimport CppShape
-
-
 cdef extern from "primitiv/device.h":
     cdef cppclass CppDevice "primitiv::Device":
         void dump_description() except +

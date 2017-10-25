@@ -1,11 +1,9 @@
-from libcpp.vector cimport vector
 from libc.stdint cimport uintptr_t
-
-from primitiv._shape cimport normShape
-from primitiv._tensor cimport _Tensor
 
 from weakref import WeakValueDictionary
 
+
+# NOTE(vbkaisetsu):
 # This is used for holding python instances related to C++.
 # Without this variable, python instances are always created when C++ class
 # instances are returned from functions.
@@ -35,10 +33,13 @@ cdef class _Device:
 
     @staticmethod
     cdef void register_wrapper(CppDevice *ptr, _Device wrapper):
+        if <uintptr_t> ptr in py_primitiv_device_weak_dict:
+            raise ValueError("Attempted to register the same C++ object twice.")
         py_primitiv_device_weak_dict[<uintptr_t> ptr] = wrapper
 
     @staticmethod
     cdef _Device get_wrapper(CppDevice *ptr):
+        # NOTE(vbkaisetsu):
         # _Device instances should be created and be registered before this
         # function is called.
         return py_primitiv_device_weak_dict[<uintptr_t> ptr]
