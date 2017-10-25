@@ -6,61 +6,59 @@
 
 namespace python_primitiv_tensor {
 
-using namespace primitiv;
-
-inline Tensor op_tensor_pos(const Tensor &x) {
+inline primitiv::Tensor op_tensor_pos(const primitiv::Tensor &x) {
     return +x;
 }
 
-inline Tensor op_tensor_neg(const Tensor &x) {
+inline primitiv::Tensor op_tensor_neg(const primitiv::Tensor &x) {
     return -x;
 }
 
-inline Tensor op_tensor_add(const Tensor &x, float k) {
+inline primitiv::Tensor op_tensor_add(const primitiv::Tensor &x, float k) {
     return x + k;
 }
 
-inline Tensor op_tensor_add(float k, const Tensor &x) {
+inline primitiv::Tensor op_tensor_add(float k, const primitiv::Tensor &x) {
     return k + x;
 }
 
-inline Tensor op_tensor_add(const Tensor &a, const Tensor &b) {
+inline primitiv::Tensor op_tensor_add(const primitiv::Tensor &a, const primitiv::Tensor &b) {
     return a + b;
 }
 
-inline Tensor op_tensor_sub(const Tensor &x, float k) {
+inline primitiv::Tensor op_tensor_sub(const primitiv::Tensor &x, float k) {
     return x - k;
 }
 
-inline Tensor op_tensor_sub(float k, const Tensor &x) {
+inline primitiv::Tensor op_tensor_sub(float k, const primitiv::Tensor &x) {
     return k - x;
 }
 
-inline Tensor op_tensor_sub(const Tensor &a, const Tensor &b) {
+inline primitiv::Tensor op_tensor_sub(const primitiv::Tensor &a, const primitiv::Tensor &b) {
     return a - b;
 }
 
-inline Tensor op_tensor_mul(const Tensor &x, float k) {
+inline primitiv::Tensor op_tensor_mul(const primitiv::Tensor &x, float k) {
     return x * k;
 }
 
-inline Tensor op_tensor_mul(float k, const Tensor &x) {
+inline primitiv::Tensor op_tensor_mul(float k, const primitiv::Tensor &x) {
     return k * x;
 }
 
-inline Tensor op_tensor_mul(const Tensor &a, const Tensor &b) {
+inline primitiv::Tensor op_tensor_mul(const primitiv::Tensor &a, const primitiv::Tensor &b) {
     return a * b;
 }
 
-inline Tensor op_tensor_div(const Tensor &x, float k) {
+inline primitiv::Tensor op_tensor_div(const primitiv::Tensor &x, float k) {
     return x / k;
 }
 
-inline Tensor op_tensor_div(float k, const Tensor &x) {
+inline primitiv::Tensor op_tensor_div(float k, const primitiv::Tensor &x) {
     return k / x;
 }
 
-inline Tensor op_tensor_div(const Tensor &a, const Tensor &b) {
+inline primitiv::Tensor op_tensor_div(const primitiv::Tensor &a, const primitiv::Tensor &b) {
     return a / b;
 }
 
