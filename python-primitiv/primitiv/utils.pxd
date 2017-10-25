@@ -1,7 +1,7 @@
 from libcpp.vector cimport vector
 from libcpp cimport bool
 
-from primitiv._device cimport wrapDevice, _Device
+from primitiv._device cimport _Device
 from primitiv._shape cimport _Shape, normShape
 from primitiv._graph cimport _Graph, wrapNode, CppNode, _Node
 from primitiv._parameter cimport _Parameter
