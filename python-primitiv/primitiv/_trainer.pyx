@@ -77,10 +77,12 @@ cdef class _Trainer:
         cdef unordered_map[string, unsigned] uint_configs
         cdef unordered_map[string, float] float_configs
         self.wrapped.get_configs(uint_configs, float_configs)
-        return (uint_configs, float_configs)
+        return ({k.decode("utf-8"): v for k, v in dict(uint_configs).items()},
+                {k.decode("utf-8"): v for k, v in dict(float_configs).items()})
 
-    def set_configs(self, unordered_map[string, unsigned] uint_configs, unordered_map[string, float] float_configs):
-        self.wrapped.set_configs(uint_configs, float_configs)
+    def set_configs(self, dict uint_configs, dict float_configs):
+        self.wrapped.set_configs({k.encode("utf-8"): v for k, v in uint_configs.items()},
+                                 {k.encode("utf-8"): v for k, v in float_configs.items()})
         return
 
     def set_configs_by_file(self, str path):
