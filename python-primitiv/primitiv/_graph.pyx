@@ -2,8 +2,8 @@ from libcpp.vector cimport vector
 
 from primitiv._device cimport wrapDevice
 from primitiv._shape cimport wrapShape
-from primitiv._tensor cimport wrapTensor
-from primitiv._operator cimport Node_pow, Node_matmul
+from primitiv._tensor cimport wrapTensor, wrapTensorWithNew
+from primitiv._operator cimport op_pow, op_matmul
 from weakref import WeakValueDictionary
 
 cimport numpy as np
@@ -121,7 +121,7 @@ cdef class _Node:
 
     def __matmul__(left, right):
         if isinstance(left, _Node) and isinstance(right, _Node):
-            return wrapNode(Node_matmul((<_Node> left).wrapped, (<_Node> right).wrapped))
+            return wrapNode(op_matmul((<_Node> left).wrapped, (<_Node> right).wrapped))
         else:
             return NotImplemented
 
@@ -139,11 +139,11 @@ cdef class _Node:
         if mod is not None:
             return NotImplemented
         if isinstance(right, (int, float)):
-            return wrapNode(Node_pow((<_Node> left).wrapped, <float> right))
+            return wrapNode(op_pow((<_Node> left).wrapped, <float> right))
         elif isinstance(left, (int, float)):
-            return wrapNode(Node_pow(<float> left, (<_Node> right).wrapped))
+            return wrapNode(op_pow(<float> left, (<_Node> right).wrapped))
         elif isinstance(left, _Node) and isinstance(right, _Node):
-            return wrapNode(Node_pow((<_Node> left).wrapped, (<_Node> right).wrapped))
+            return wrapNode(op_pow((<_Node> left).wrapped, (<_Node> right).wrapped))
         else:
             return NotImplemented
 
@@ -187,7 +187,7 @@ cdef class _Graph:
         cdef CppTensor t
         with nogil:
             t = self.wrapped.forward(node.wrapped)
-        return wrapTensor(t)
+        return wrapTensorWithNew(new CppTensor(t))
 
     def backward(self, _Node node):
         with nogil:

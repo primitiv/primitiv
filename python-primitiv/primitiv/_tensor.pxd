@@ -1,5 +1,6 @@
 from libcpp.vector cimport vector
 from libcpp cimport bool
+from libc.stdint cimport uintptr_t
 
 from primitiv._device cimport CppDevice
 from primitiv._shape cimport CppShape
@@ -25,16 +26,60 @@ cdef extern from "primitiv/tensor.h" nogil:
 
 
 cdef extern from "tensor_op.h" namespace "python_primitiv_tensor":
-    CppTensor &tensor_inplace_multiply_const(CppTensor &tensor, float k) except +
-    CppTensor &tensor_inplace_add(CppTensor &tensor, const CppTensor &x) except +
-    CppTensor &tensor_inplace_subtract(CppTensor &tensor, const CppTensor &x) except +
+    cdef CppTensor op_tensor_pos(const CppTensor &x) except +
+    cdef CppTensor op_tensor_neg(const CppTensor &x) except +
+    cdef CppTensor op_tensor_add(const CppTensor &x, float k) except +
+    cdef CppTensor op_tensor_add(float k, const CppTensor &x) except +
+    cdef CppTensor op_tensor_add(const CppTensor &a, const CppTensor &b) except +
+    cdef CppTensor op_tensor_sub(const CppTensor &x, float k) except +
+    cdef CppTensor op_tensor_sub(float k, const CppTensor &x) except +
+    cdef CppTensor op_tensor_sub(const CppTensor &a, const CppTensor &b) except +
+    cdef CppTensor op_tensor_mul(const CppTensor &x, float k) except +
+    cdef CppTensor op_tensor_mul(float k, const CppTensor &x) except +
+    cdef CppTensor op_tensor_mul(const CppTensor &a, const CppTensor &b) except +
+    cdef CppTensor op_tensor_div(const CppTensor &x, float k) except +
+    cdef CppTensor op_tensor_div(float k, const CppTensor &x) except +
+    cdef CppTensor op_tensor_div(const CppTensor &a, const CppTensor &b) except +
+    cdef void op_tensor_imul(CppTensor &tensor, float k) except +
+    cdef void op_tensor_iadd(CppTensor &tensor, const CppTensor &x) except +
+    cdef void op_tensor_isub(CppTensor &tensor, const CppTensor &x) except +
 
 
 cdef class _Tensor:
-    cdef CppTensor wrapped
+    cdef CppTensor *wrapped
+    cdef bool del_required
+    cdef object __weakref__
 
 
-cdef inline _Tensor wrapTensor(CppTensor wrapped) except +:
+# This is used for holding python instances related to C++.
+# Without this variable, python instances are always created when C++ class
+# instances are returned from functions.
+# It means that users can not compare instances by using "is" operator.
+cdef object py_primitiv_tensor_weak_dict
+
+cdef inline _Tensor wrapTensor(CppTensor *wrapped) except +:
+    cdef _Tensor tensor
+    global py_primitiv_tensor_weak_dict
+    if py_primitiv_tensor_weak_dict is None:
+        from weakref import WeakValueDictionary
+        py_primitiv_tensor_weak_dict = WeakValueDictionary()
+    ret = py_primitiv_tensor_weak_dict.get(<uintptr_t> wrapped)
+    if ret:
+        return ret
+    tensor = _Tensor.__new__(_Tensor)
+    tensor.wrapped = wrapped
+    tensor.del_required = False
+    py_primitiv_tensor_weak_dict[<uintptr_t> wrapped] = tensor
+    return tensor
+
+
+cdef inline _Tensor wrapTensorWithNew(CppTensor *wrapped) except +:
+    global py_primitiv_tensor_weak_dict
     cdef _Tensor tensor = _Tensor.__new__(_Tensor)
     tensor.wrapped = wrapped
+    if py_primitiv_tensor_weak_dict is None:
+        from weakref import WeakValueDictionary
+        py_primitiv_tensor_weak_dict = WeakValueDictionary()
+    tensor.del_required = True
+    py_primitiv_tensor_weak_dict[<uintptr_t> tensor.wrapped] = tensor
     return tensor

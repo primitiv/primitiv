@@ -19,7 +19,7 @@ cdef class _Constant(_Initializer):
             self.wrapped_newed = NULL
 
     def apply(self, _Tensor x):
-        (<CppConstant*> self.wrapped).apply(x.wrapped)
+        (<CppConstant*> self.wrapped).apply(x.wrapped[0])
         return
 
 
@@ -41,7 +41,7 @@ cdef class _Uniform(_Initializer):
             self.wrapped_newed = NULL
 
     def apply(self, _Tensor x):
-        (<CppUniform*> self.wrapped).apply(x.wrapped)
+        (<CppUniform*> self.wrapped).apply(x.wrapped[0])
         return
 
 
@@ -63,7 +63,7 @@ cdef class _Normal(_Initializer):
             self.wrapped_newed = NULL
 
     def apply(self, _Tensor x):
-        (<CppNormal*> self.wrapped).apply(x.wrapped)
+        (<CppNormal*> self.wrapped).apply(x.wrapped[0])
         return
 
 
@@ -85,7 +85,7 @@ cdef class _Identity(_Initializer):
             self.wrapped_newed = NULL
 
     def apply(self, _Tensor x):
-        (<CppIdentity*> self.wrapped).apply(x.wrapped)
+        (<CppIdentity*> self.wrapped).apply(x.wrapped[0])
         return
 
 
@@ -107,7 +107,7 @@ cdef class _XavierUniform(_Initializer):
             self.wrapped_newed = NULL
 
     def apply(self, _Tensor x):
-        (<CppXavierUniform*> self.wrapped).apply(x.wrapped)
+        (<CppXavierUniform*> self.wrapped).apply(x.wrapped[0])
         return
 
 
@@ -129,5 +129,5 @@ cdef class _XavierNormal(_Initializer):
             self.wrapped_newed = NULL
 
     def apply(self, _Tensor x):
-        (<CppXavierNormal*> self.wrapped).apply(x.wrapped)
+        (<CppXavierNormal*> self.wrapped).apply(x.wrapped[0])
         return
