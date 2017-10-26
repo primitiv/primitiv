@@ -1,11 +1,9 @@
 from libcpp.string cimport string
 from libcpp.vector cimport vector
-from libcpp.memory cimport unique_ptr
 from libcpp cimport bool
 from primitiv._device cimport CppDevice
 from primitiv._shape cimport CppShape
 from primitiv._tensor cimport CppTensor
-from libc.stdint cimport uintptr_t
 
 
 cdef extern from "primitiv/graph.h" nogil:
@@ -66,23 +64,13 @@ cdef class _Node:
 cdef class _Graph:
     cdef CppGraph *wrapped
     cdef object __weakref__
+    @staticmethod
+    cdef void register_wrapper(CppGraph *ptr, _Graph wrapper)
+    @staticmethod
+    cdef _Graph get_wrapper(CppGraph *ptr)
 
 
 cdef inline _Node wrapNode(CppNode wrapped) except +:
     cdef _Node node = _Node.__new__(_Node)
     node.wrapped = wrapped
     return node
-
-
-# This is used for holding python instances related to C++.
-# Without this variable, python instances are always created when C++ class
-# instances are returned from functions.
-# It means that users can not compare instances by using "is" operator.
-cdef object py_primitiv_graph_weak_dict
-
-cdef inline _Graph wrapGraph(CppGraph *wrapped) except +:
-    global py_primitiv_graph_weak_dict
-
-    # _Graph instances should be created and be registered before this
-    # function is called.
-    return py_primitiv_graph_weak_dict[<uintptr_t> wrapped]

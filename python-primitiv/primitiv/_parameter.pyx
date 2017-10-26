@@ -1,8 +1,8 @@
 from libcpp.vector cimport vector
 from libcpp cimport bool
 
-from primitiv._device cimport _Device, wrapDevice
-from primitiv._tensor cimport wrapTensor
+from primitiv._device cimport _Device
+from primitiv._tensor cimport _Tensor
 from primitiv._shape cimport wrapShape, normShape
 
 import numpy as np
@@ -84,16 +84,16 @@ cdef class _Parameter:
         return wrapShape(self.wrapped.shape())
 
     def device(self):
-        return wrapDevice(&self.wrapped.device())
+        return _Device.get_wrapper(&self.wrapped.device())
 
     def value(self):
-        return wrapTensor(&self.wrapped.value())
+        return _Tensor.get_wrapper(&self.wrapped.value())
 
     def gradient(self):
-        return wrapTensor(&self.wrapped.gradient())
+        return _Tensor.get_wrapper(&self.wrapped.gradient())
 
     def stats(self, str name):
-        return wrapTensor(&self.wrapped.stats(<string> name.encode("utf-8")))
+        return _Tensor.get_wrapper(&self.wrapped.stats(<string> name.encode("utf-8")))
 
     def save(self, str path, bool with_stats = True):
         self.wrapped.save(<string> path.encode("utf-8"), with_stats)

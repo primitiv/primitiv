@@ -1,13 +1,23 @@
+from libc.stdint cimport uintptr_t
 from libcpp.vector cimport vector
 
-from primitiv._device cimport wrapDevice
+from primitiv._device cimport _Device
 from primitiv._shape cimport wrapShape
-from primitiv._tensor cimport wrapTensor, wrapTensorWithNew
+from primitiv._tensor cimport _Tensor
 from primitiv._operator cimport op_pow, op_matmul
+
 from weakref import WeakValueDictionary
 
 cimport numpy as np
 import numpy as np
+
+
+# NOTE(vbkaisetsu):
+# This is used for holding python instances related to C++.
+# Without this variable, python instances are always created when C++ class
+# instances are returned from functions.
+# It means that users can not compare instances by using "is" operator.
+cdef object py_primitiv_graph_weak_dict = WeakValueDictionary()
 
 
 cdef class _Node:
@@ -22,7 +32,7 @@ cdef class _Node:
         return self.wrapped.valid()
 
     def graph(self):
-        return wrapGraph(&self.wrapped.graph())
+        return _Graph.get_wrapper(&self.wrapped.graph())
 
     def function_id(self):
         return self.wrapped.function_id()
@@ -34,7 +44,7 @@ cdef class _Node:
         return wrapShape(self.wrapped.shape())
 
     def device(self):
-        return wrapDevice(&self.wrapped.device())
+        return _Device.get_wrapper(&self.wrapped.device())
 
     def to_float(self):
         cdef float val
@@ -160,11 +170,7 @@ cdef class _Graph:
         if self.wrapped is not NULL:
             raise MemoryError()
         self.wrapped = new CppGraph()
-
-        global py_primitiv_graph_weak_dict
-        if py_primitiv_graph_weak_dict is None:
-            py_primitiv_graph_weak_dict = WeakValueDictionary()
-        py_primitiv_graph_weak_dict[<uintptr_t> self.wrapped] = self
+        _Graph.register_wrapper(self.wrapped, self)
 
     def __dealloc__(self):
         if self.wrapped is not NULL:
@@ -173,7 +179,7 @@ cdef class _Graph:
 
     @staticmethod
     def get_default():
-        return wrapGraph(&CppGraph_get_default())
+        return _Graph.get_wrapper(&CppGraph_get_default())
 
     @staticmethod
     def set_default(_Graph g):
@@ -187,7 +193,7 @@ cdef class _Graph:
         cdef CppTensor t
         with nogil:
             t = self.wrapped.forward(node.wrapped)
-        return wrapTensorWithNew(new CppTensor(t))
+        return _Tensor.get_wrapper_with_new(new CppTensor(t))
 
     def backward(self, _Node node):
         with nogil:
@@ -198,7 +204,7 @@ cdef class _Graph:
         return wrapShape(self.wrapped.get_shape(node.wrapped))
 
     def get_device(self, _Node node):
-        return wrapDevice(&self.wrapped.get_device(node.wrapped))
+        return _Device.get_wrapper(&self.wrapped.get_device(node.wrapped))
 
     def dump(self, str fmt):
         return self.wrapped.dump(<string> fmt.encode("utf-8")).decode("utf-8")
@@ -211,3 +217,16 @@ cdef class _Graph:
 
     def __deepcopy__(self, memo):
         raise NotImplementedError(type(self).__name__ + " does not support `__deepcopy__` for now.")
+
+    @staticmethod
+    cdef void register_wrapper(CppGraph *ptr, _Graph wrapper):
+        if <uintptr_t> ptr in py_primitiv_graph_weak_dict:
+            raise ValueError("Attempted to register the same C++ object twice.")
+        py_primitiv_graph_weak_dict[<uintptr_t> ptr] = wrapper
+
+    @staticmethod
+    cdef _Graph get_wrapper(CppGraph *ptr):
+        # NOTE(vbkaisetsu):
+        # _Device instances should be created and be registered before this
+        # function is called.
+        return py_primitiv_graph_weak_dict[<uintptr_t> ptr]

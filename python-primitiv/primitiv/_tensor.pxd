@@ -1,6 +1,5 @@
 from libcpp.vector cimport vector
 from libcpp cimport bool
-from libc.stdint cimport uintptr_t
 
 from primitiv._device cimport CppDevice
 from primitiv._shape cimport CppShape
@@ -49,37 +48,9 @@ cdef class _Tensor:
     cdef CppTensor *wrapped
     cdef bool del_required
     cdef object __weakref__
-
-
-# This is used for holding python instances related to C++.
-# Without this variable, python instances are always created when C++ class
-# instances are returned from functions.
-# It means that users can not compare instances by using "is" operator.
-cdef object py_primitiv_tensor_weak_dict
-
-cdef inline _Tensor wrapTensor(CppTensor *wrapped) except +:
-    cdef _Tensor tensor
-    global py_primitiv_tensor_weak_dict
-    if py_primitiv_tensor_weak_dict is None:
-        from weakref import WeakValueDictionary
-        py_primitiv_tensor_weak_dict = WeakValueDictionary()
-    ret = py_primitiv_tensor_weak_dict.get(<uintptr_t> wrapped)
-    if ret:
-        return ret
-    tensor = _Tensor.__new__(_Tensor)
-    tensor.wrapped = wrapped
-    tensor.del_required = False
-    py_primitiv_tensor_weak_dict[<uintptr_t> wrapped] = tensor
-    return tensor
-
-
-cdef inline _Tensor wrapTensorWithNew(CppTensor *wrapped) except +:
-    global py_primitiv_tensor_weak_dict
-    cdef _Tensor tensor = _Tensor.__new__(_Tensor)
-    tensor.wrapped = wrapped
-    if py_primitiv_tensor_weak_dict is None:
-        from weakref import WeakValueDictionary
-        py_primitiv_tensor_weak_dict = WeakValueDictionary()
-    tensor.del_required = True
-    py_primitiv_tensor_weak_dict[<uintptr_t> tensor.wrapped] = tensor
-    return tensor
+    @staticmethod
+    cdef void register_wrapper(CppTensor *ptr, _Tensor wrapper)
+    @staticmethod
+    cdef _Tensor get_wrapper(CppTensor *ptr)
+    @staticmethod
+    cdef _Tensor get_wrapper_with_new(CppTensor *ptr)
