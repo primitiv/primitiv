@@ -1,6 +1,18 @@
 from primitiv import trainers as T
+from primitiv._parameter cimport _Parameter
+
 
 cdef class _Trainer:
+
+    def __init__(self):
+        if self.wrapped is not NULL:
+            raise MemoryError()
+        self.wrapped = new CppPyTrainer(self)
+
+    def __dealloc__(self):
+        if self.wrapped is not NULL:
+            del self.wrapped
+            self.wrapped = NULL
 
     @staticmethod
     def load(str path):
@@ -94,3 +106,60 @@ cdef class _Trainer:
 
     def __deepcopy__(self, memo):
         raise NotImplementedError(type(self).__name__ + " does not support `__deepcopy__` for now.")
+
+
+cdef public api int python_primitiv_trainer_name(
+                        object self,
+                        string *val) except -1:
+    if "name" not in self.__class__.__dict__:
+        raise NotImplementedError("'name()' is not implemented in '%s'"
+                                        % self.__class__.__name__)
+    ret_str = self.name()
+    val[0] = ret_str.encode("utf-8")
+    return 0
+
+
+cdef public api int python_primitiv_trainer_configure_parameter(
+                        object self,
+                        CppParameter &param) except -1:
+    if "configure_parameter" not in self.__class__.__dict__:
+        raise NotImplementedError("'configure_parameter()' is not implemented in '%s'"
+                                        % self.__class__.__name__)
+    self.configure_parameter(_Parameter.get_wrapper(&param))
+    return 0
+
+
+cdef public api int python_primitiv_trainer_update_parameter(
+                        object self,
+                        float scale,
+                        CppParameter &param) except -1:
+    if "update_parameter" not in self.__class__.__dict__:
+        raise NotImplementedError("'update_parameter()' is not implemented in '%s'"
+                                        % self.__class__.__name__)
+    self.update_parameter(scale, _Parameter.get_wrapper(&param))
+    return 0
+
+
+cdef public api int python_primitiv_trainer_get_configs(
+                        object self,
+                        unordered_map[string, unsigned] &uint_configs,
+                        unordered_map[string, float] &float_configs) except -1:
+    if "get_configs" not in self.__class__.__dict__:
+        raise NotImplementedError("'get_configs()' is not implemented in '%s'"
+                                        % self.__class__.__name__)
+    uint_configs_tmp, float_configs_tmp = self.get_configs()
+    uint_configs.swap({k.encode("utf-8"): v for k, v in uint_configs_tmp.items()})
+    float_configs.swap({k.encode("utf-8"): v for k, v in float_configs_tmp.items()})
+    return 0
+
+
+cdef public api int python_primitiv_trainer_set_configs(
+                        object self,
+                        const unordered_map[string, unsigned] &uint_configs,
+                        const unordered_map[string, float] &float_configs) except -1:
+    if "set_configs" not in self.__class__.__dict__:
+        raise NotImplementedError("'set_configs()' is not implemented in '%s'"
+                                        % self.__class__.__name__)
+    self.set_configs({k.decode("utf-8"): v for k, v in dict(uint_configs).items()},
+                     {k.decode("utf-8"): v for k, v in dict(float_configs).items()})
+    return 0

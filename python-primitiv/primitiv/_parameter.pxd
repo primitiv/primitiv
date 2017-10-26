@@ -1,6 +1,7 @@
 from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libcpp cimport bool
+from libc.stdint cimport uintptr_t
 
 from primitiv._tensor cimport CppTensor, _Tensor
 from primitiv._shape cimport CppShape, _Shape
