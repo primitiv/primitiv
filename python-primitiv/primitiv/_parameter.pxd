@@ -35,7 +35,7 @@ cdef extern from "parameter_load_wrapper.h" namespace "python_primitiv":
 
 
 cdef class _ParameterStatistics:
-    cdef _Parameter param
+    cdef object param_ref
 
 
 cdef class _Parameter:

@@ -10,6 +10,7 @@ from utils cimport ndarrays_to_vector
 from weakref import WeakValueDictionary
 
 import numpy as np
+import weakref
 
 # NOTE(vbkaisetsu):
 # This is used for holding python instances related to C++.
@@ -22,19 +23,22 @@ cdef object py_primitiv_parameter_weak_dict = WeakValueDictionary()
 cdef class _ParameterStatistics:
 
     def __init__(self, _Parameter param):
-        self.param = param
+        # NOTE(vbkaisetsu): It becomes circular reference.
+        # We can't know when it will be deleted.
+        # Therefore we hold this instance in a weakref to delete it immediately.
+        self.param_ref = weakref.ref(param)
 
     def __getitem__(self, str name):
-        return _Tensor.get_wrapper(&self.param.wrapped.stats(<string> name.encode("utf-8")))
+        return _Tensor.get_wrapper(&(<_Parameter> self.param_ref()).wrapped.stats(<string> name.encode("utf-8")))
 
     def __setitem__(self, str name, _Tensor value):
-        cdef CppTensor *tensor_p = &self.param.wrapped.stats(<string> name.encode("utf-8"))
+        cdef CppTensor *tensor_p = &(<_Parameter> self.param_ref()).wrapped.stats(<string> name.encode("utf-8"))
         if tensor_p == value.wrapped:
             return
         tensor_p[0] = value.wrapped[0]
 
     def __contains__(self, str name):
-        return self.param.wrapped.has_stats(name.encode("utf-8"))
+        return (<_Parameter> self.param_ref()).wrapped.has_stats(name.encode("utf-8"))
 
 
 cdef class _Parameter:
