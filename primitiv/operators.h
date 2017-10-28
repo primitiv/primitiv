@@ -4,6 +4,7 @@
 #include <cmath>
 #include <initializer_list>
 #include <vector>
+#include <limits>
 
 #include <primitiv/device.h>
 #include <primitiv/error.h>
@@ -309,6 +310,18 @@ template<typename Var>
 type_traits::Identity<Var> identity(
     unsigned size,
     Device &dev = Device::get_default());
+
+template<typename Var>
+inline type_traits::Identity<Var> pow(const Var &x, unsigned k) {
+  if (k == 0) return ones<Var>(x.shape());
+  Var ret = x;
+  for(auto i = std::numeric_limits<unsigned>::digits - 2; i >= 0; --i) {
+    if (k >> i + 1 == 0) continue;
+    ret = ret * ret;
+    if (k >> i & 1) ret = ret * x;
+  }
+  return ret;
+}
 
 namespace random {
 

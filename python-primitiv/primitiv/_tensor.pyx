@@ -160,7 +160,9 @@ cdef class _Tensor:
     def __pow__(left, right, mod):
         if mod is not None:
             return NotImplemented
-        if isinstance(right, (int, float)):
+        if isinstance(right, int) and right >= 0:
+            return _Tensor.get_wrapper_with_new(new CppTensor(op_pow((<_Tensor> left).wrapped[0], <unsigned> right)))
+        elif isinstance(right, (int, float)):
             return _Tensor.get_wrapper_with_new(new CppTensor(op_pow((<_Tensor> left).wrapped[0], <float> right)))
         elif isinstance(left, (int, float)):
             return _Tensor.get_wrapper_with_new(new CppTensor(op_pow(<float> left, (<_Tensor> right).wrapped[0])))

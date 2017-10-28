@@ -148,7 +148,9 @@ cdef class _Node:
     def __pow__(left, right, mod):
         if mod is not None:
             return NotImplemented
-        if isinstance(right, (int, float)):
+        if isinstance(right, int) and right >= 0:
+            return wrapNode(op_pow((<_Node> left).wrapped, <unsigned> right))
+        elif isinstance(right, (int, float)):
             return wrapNode(op_pow((<_Node> left).wrapped, <float> right))
         elif isinstance(left, (int, float)):
             return wrapNode(op_pow(<float> left, (<_Node> right).wrapped))
