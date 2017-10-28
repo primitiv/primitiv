@@ -121,8 +121,16 @@ cdef class _Parameter:
         cdef CppTensor *tensor_p = &self.wrapped.value()
         tensor_p[0] = value.wrapped[0]
 
+    # NOTE(vbkaisetsu)
+    # `value` function is replaced with a property in Python.
+    @property
     def gradient(self):
         return _Tensor.get_wrapper(&self.wrapped.gradient())
+
+    @gradient.setter
+    def gradient(self, _Tensor value):
+        cdef CppTensor *tensor_p = &self.wrapped.gradient()
+        tensor_p[0] = value.wrapped[0]
 
     # NOTE(vbkaisetsu)
     # This function is replaced with `stats` variable.
