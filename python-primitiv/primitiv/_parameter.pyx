@@ -122,7 +122,7 @@ cdef class _Parameter:
         tensor_p[0] = value.wrapped[0]
 
     # NOTE(vbkaisetsu)
-    # `value` function is replaced with a property in Python.
+    # `gradient` function is replaced with a property in Python.
     @property
     def gradient(self):
         return _Tensor.get_wrapper(&self.wrapped.gradient())
