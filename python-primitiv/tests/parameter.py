@@ -52,3 +52,12 @@ class ParameterTest(unittest.TestCase):
         self.assertTrue((val.to_ndarrays()[0] == np.array([2, 3, 4, 5, 6, 7, 8, 9])).all())
         with self.assertRaises(NotImplementedError):
             del self.p.value
+
+    def test_parameter_gradient(self):
+        self.p.reset_gradient()
+        self.assertTrue((self.p.gradient.to_ndarrays() == np.zeros([8])).all())
+        grad = self.p.gradient
+        self.p.gradient += tF.input(np.ones([8]))
+        self.assertTrue((grad.to_ndarrays()[0] == np.ones([8])).all())
+        with self.assertRaises(NotImplementedError):
+            del self.p.gradient

@@ -33,8 +33,6 @@ cdef class _ParameterStatistics:
 
     def __setitem__(self, str name, _Tensor value):
         cdef CppTensor *tensor_p = &(<_Parameter> self.param_ref()).wrapped.stats(<string> name.encode("utf-8"))
-        if tensor_p == value.wrapped:
-            return
         tensor_p[0] = value.wrapped[0]
 
     def __contains__(self, str name):
@@ -121,12 +119,18 @@ cdef class _Parameter:
     @value.setter
     def value(self, _Tensor value):
         cdef CppTensor *tensor_p = &self.wrapped.value()
-        if tensor_p == value.wrapped:
-            return
         tensor_p[0] = value.wrapped[0]
 
+    # NOTE(vbkaisetsu)
+    # `gradient` function is replaced with a property in Python.
+    @property
     def gradient(self):
         return _Tensor.get_wrapper(&self.wrapped.gradient())
+
+    @gradient.setter
+    def gradient(self, _Tensor value):
+        cdef CppTensor *tensor_p = &self.wrapped.gradient()
+        tensor_p[0] = value.wrapped[0]
 
     # NOTE(vbkaisetsu)
     # This function is replaced with `stats` variable.

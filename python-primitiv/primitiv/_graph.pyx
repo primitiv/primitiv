@@ -227,6 +227,6 @@ cdef class _Graph:
     @staticmethod
     cdef _Graph get_wrapper(CppGraph *ptr):
         # NOTE(vbkaisetsu):
-        # _Device instances should be created and be registered before this
+        # _Graph instances should be created and be registered before this
         # function is called.
         return py_primitiv_graph_weak_dict[<uintptr_t> ptr]
