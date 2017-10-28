@@ -30,7 +30,7 @@ class TestAdam(Trainer):
 
     def update_parameter(self, scale, param):
         epoch = self.get_epoch() + 1
-        g = param.gradient()
+        g = param.gradient
         param.stats["adam-m1"] = self.beta1_ * param.stats["adam-m1"] + (1 - self.beta1_) * g
         param.stats["adam-m2"] = self.beta2_ * param.stats["adam-m2"] + (1 - self.beta2_) * g * g
         mm1 = param.stats["adam-m1"] / (1 - self.beta1_ ** epoch)

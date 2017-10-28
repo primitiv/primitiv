@@ -67,8 +67,8 @@ class ArgumentTest(unittest.TestCase):
 
     def test_tensor_instance(self):
         param = Parameter("p", Shape([]))
-        t_origin = param.gradient()
-        t = param.gradient()
+        t_origin = param.gradient
+        t = param.gradient
         self.assertIs(t, t_origin)
 
         t = Tensor(t_origin)
