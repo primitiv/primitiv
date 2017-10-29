@@ -76,6 +76,7 @@ class TensorOperatorsTest(unittest.TestCase):
         self.assertTrue(np.isclose((x ** y).to_ndarrays()[0], np.array([[1, 2], [81, 65536]])).all())
         self.assertTrue(np.isclose((x ** 2).to_ndarrays()[0], np.array([[1, 4], [9, 16]])).all())
         self.assertTrue(np.isclose((2 ** x).to_ndarrays()[0], np.array([[2, 4], [8, 16]])).all())
+        self.assertTrue(np.isclose((x ** -2).to_ndarrays()[0], np.array([[1, 1/4], [1/9, 1/16]])).all())
         input_arr = np.array([1, -1, 3, -3, 5, -5])
         x = tF.input(input_arr)
         self.assertTrue(((x ** 6).to_ndarrays()[0] == np.array([1, 1, 729, 729, 15625, 15625])).all())

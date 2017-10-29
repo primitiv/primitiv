@@ -98,9 +98,9 @@ class _operators:
 
     @staticmethod
     def pow(x, k):
-        if isinstance(x, _Node) and isinstance(k, int):
+        if isinstance(x, _Node) and isinstance(k, int) and k >= 0:
             return wrapNode(op_pow((<_Node> x).wrapped, <unsigned> k))
-        if isinstance(x, _Node) and isinstance(k, float):
+        elif isinstance(x, _Node) and isinstance(k, (int, float)):
             return wrapNode(op_pow((<_Node> x).wrapped, <float> k))
         elif isinstance(x, (int, float)) and isinstance(k, _Node):
             return wrapNode(op_pow(<float> x, (<_Node> k).wrapped))
