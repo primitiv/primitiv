@@ -4,7 +4,6 @@
 #include <cmath>
 #include <initializer_list>
 #include <vector>
-#include <limits>
 
 #include <primitiv/device.h>
 #include <primitiv/error.h>
@@ -314,11 +313,13 @@ type_traits::Identity<Var> identity(
 template<typename Var>
 inline type_traits::Identity<Var> pow(const Var &x, unsigned k) {
   if (k == 0) return ones<Var>(x.shape());
+  Var xx = x;
   Var ret = x;
-  for(auto i = std::numeric_limits<unsigned>::digits - 2; i >= 0; --i) {
-    if (k >> i + 1 == 0) continue;
-    ret = ret * ret;
-    if (k >> i & 1) ret = ret * x;
+  k -= 1;
+  if (k & 1) ret = ret * xx;
+  for(k >>= 1; k != 0; k >>= 1) {
+    xx = xx * xx;
+    if (k & 1) ret = ret * xx;
   }
   return ret;
 }
