@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <initializer_list>
+#include <limits>
 #include <vector>
 
 #include <primitiv/device.h>
@@ -312,7 +313,16 @@ type_traits::Identity<Var> identity(
 
 template<typename Var>
 inline type_traits::Identity<Var> ipow(const Var &x, int k) {
-  unsigned idx = k >= 0 ? k : -k;
+  /*
+   * NOTE(vbkaisetsu):
+   * std::abs() returns a signed int, so -0x0x800...000 (lower bound number) can not
+   * be converted correctly.
+   *
+   * NOTE(odashi):
+   * The second operand should be evaluated as 0x800...000 under 2's complement.
+   */
+  const int min_k = std::numeric_limits<int>::min();
+  unsigned idx = (k == min_k) ? min_k : std::abs(k);
   /*
    * NOTE(vbkaisetsu)
    *

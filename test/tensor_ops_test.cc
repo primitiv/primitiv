@@ -1142,7 +1142,7 @@ TEST_F(TensorOpsTest, CheckLog) {
   }
 }
 
-TEST_F(TensorOpsTest, CheckPowFloat) {
+TEST_F(TensorOpsTest, CheckPow) {
   // float index pow
   const vector<float> x_data {
     0.01, .5, 1, 2, 4, 8,
@@ -1160,37 +1160,56 @@ TEST_F(TensorOpsTest, CheckPowFloat) {
   }
 }
 
-TEST_F(TensorOpsTest, CheckPowInt) {
-  const vector<float> x_data_1 {
+TEST_F(TensorOpsTest, CheckIPowPositive) {
+  const vector<float> x_data {
     0.01, .5, 1, 2, 4, 8,
     -0.01, -.5, -1, -2, -4, -8,
   };
-  const vector<float> y_data_1 {
+  const vector<float> y_data {
     0.000001, 0.125, 1, 8, 64, 512,
     -0.000001, -0.125, -1, -8, -64, -512,
   };
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data_1);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
     const Tensor y = ipow(x, 3);
     EXPECT_EQ(Shape({2, 3}, 2), y.shape());
-    EXPECT_TRUE(vector_match(y_data_1, y.to_vector()));
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
-  const vector<float> x_data_2 {
+}
+
+TEST_F(TensorOpsTest, CheckIPowNegative) {
+  const vector<float> x_data {
     0.01, .5, 1, 2, 4, 8,
     -0.01, -.5, -1, -2, -4, -8,
   };
-  const vector<float> y_data_2 {
+  const vector<float> y_data {
     1000000, 8, 1, 0.125, 0.015625, 0.001953125,
     -1000000, -8, -1, -0.125, -0.015625, -0.001953125,
   };
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data_2);
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
     const Tensor y = ipow(x, -3);
     EXPECT_EQ(Shape({2, 3}, 2), y.shape());
-    EXPECT_TRUE(vector_match(y_data_2, y.to_vector()));
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
 }
 
+TEST_F(TensorOpsTest, CheckIPowLowerBound) {
+  const vector<float> x_data {
+    1, -1, 1, -1, 1, -1,
+    1, -1, 1, -1, 1, -1,
+  };
+  const vector<float> y_data {
+    1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1,
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
+    const Tensor y = ipow(x, 0x80000000);
+    EXPECT_EQ(Shape({2, 3}, 2), y.shape());
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+  }
+}
 
 TEST_F(TensorOpsTest, CheckTanh) {
   const vector<float> x_data {
