@@ -20,9 +20,9 @@ protected:
 TEST_F(TrainerTest, CheckAddParameter) {
   Device::set_default(dev);
   trainers::SGD trainer;
-  Parameter param1("param1", {2, 2});
-  Parameter param2("param2", {2, 2});
-  Parameter param3("param3", {2, 2});
+  Parameter param1({2, 2});
+  Parameter param2({2, 2});
+  Parameter param3({2, 2});
 
   EXPECT_NO_THROW(trainer.add_parameter(param1));
   EXPECT_THROW(trainer.add_parameter(param1), Error);
@@ -35,10 +35,6 @@ TEST_F(TrainerTest, CheckAddParameter) {
   EXPECT_THROW(trainer.add_parameter(param1), Error);
   EXPECT_THROW(trainer.add_parameter(param2), Error);
   EXPECT_THROW(trainer.add_parameter(param3), Error);
-
-  // Different object but same name
-  Parameter param4("param1", {});
-  EXPECT_THROW(trainer.add_parameter(param4), Error);
 }
 
 TEST_F(TrainerTest, CheckEpoch) {
@@ -72,7 +68,7 @@ TEST_F(TrainerTest, CheckWeightDecay) {
   trainers::SGD trainer;
   ASSERT_EQ(.0f, trainer.get_weight_decay());
 
-  Parameter param("param1", {2, 2});
+  Parameter param({2, 2});
   trainer.add_parameter(param);
 
   struct TestCase {
@@ -107,7 +103,7 @@ TEST_F(TrainerTest, CheckGradientClipping) {
   trainers::SGD trainer;
   ASSERT_EQ(.0f, trainer.get_gradient_clipping());
 
-  Parameter param("param1", {2, 2});
+  Parameter param({2, 2});
   trainer.add_parameter(param);
 
   struct TestCase {

@@ -83,44 +83,44 @@ void Trainer::save(const std::string &path) const {
 }
 
 void Trainer::add_parameter(Parameter &param) {
-  if (params_.find(param.name()) != params_.end()) {
-    THROW_ERROR("Parameter '" << param.name() << "' is already registered.");
+  if (params_.find(&param) != params_.end()) {
+    THROW_ERROR("Parameter '" << &param << "' is already registered.");
   }
-  params_.insert(std::make_pair(param.name(), &param));
+  params_.insert(&param);
   configure_parameter(param);
 }
 
 void Trainer::reset_gradients() {
-  for (const auto &kv : params_) {
-    kv.second->reset_gradient();
+  for (Parameter *param : params_) {
+    param->reset_gradient();
   }
 }
 
 void Trainer::update() {
   if (l2_strength_ > 0) {
     // Weight decay
-    for (const auto &kv : params_) {
-      kv.second->gradient() += l2_strength_ * kv.second->value();
+    for (Parameter *param : params_) {
+      param->gradient() += l2_strength_ * param->value();
     }
   }
 
   if (clip_threshold_ > 0) {
     // Gradient clipping
     float sq_norm = 0;
-    for (const auto &kv : params_) {
-      const Tensor &g = kv.second->gradient();
-      sq_norm += operators::sum(operators::flatten(g * g), 0).to_vector()[0];
+    for (const Parameter *param : params_) {
+      const Tensor &g = param->gradient();
+      sq_norm += operators::sum(operators::flatten(g * g), 0).to_float();
     }
     if (sq_norm > clip_threshold_ * clip_threshold_) {
       float clip_scale = clip_threshold_ / std::sqrt(sq_norm);
-      for (const auto &kv : params_) {
-        kv.second->gradient() *= clip_scale;
+      for (Parameter *param : params_) {
+        param->gradient() *= clip_scale;
       }
     }
   }
 
-  for (const auto &kv : params_) {
-    update_parameter(lr_scale_, *kv.second);
+  for (Parameter *param : params_) {
+    update_parameter(lr_scale_, *param);
   }
 
   ++epoch_;

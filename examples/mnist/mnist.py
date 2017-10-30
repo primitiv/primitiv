@@ -61,10 +61,10 @@ def main():
     dev = D.Naive()  # or D.CUDA(gpuid)
     Device.set_default(dev)
 
-    pw1 = Parameter("w1", [NUM_HIDDEN_UNITS, NUM_INPUT_UNITS], I.XavierUniform())
-    pb1 = Parameter("b1", [NUM_HIDDEN_UNITS], I.Constant(0))
-    pw2 = Parameter("w2", [NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS], I.XavierUniform())
-    pb2 = Parameter("b2", [NUM_OUTPUT_UNITS], I.Constant(0))
+    pw1 = Parameter([NUM_HIDDEN_UNITS, NUM_INPUT_UNITS], I.XavierUniform())
+    pb1 = Parameter([NUM_HIDDEN_UNITS], I.Constant(0))
+    pw2 = Parameter([NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS], I.XavierUniform())
+    pb2 = Parameter([NUM_OUTPUT_UNITS], I.Constant(0))
 
     trainer = T.SGD(.5)
     trainer.add_parameter(pw1)

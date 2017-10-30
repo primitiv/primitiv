@@ -13,9 +13,8 @@ message Tensor {
 }
 
 message Parameter {
-  string name = 1;
-  Tensor value = 2;
-  map<string, Tensor> stats = 3;
+  Tensor value = 1;
+  map<string, Tensor> stats = 2;
 }
 
 message TrainerConfigs {

@@ -117,10 +117,9 @@ class Affine {
   Var w_, b_;
 
 public:
-  Affine(const string &name,
-      unsigned in_size, unsigned out_size, Trainer &trainer)
-    : pw_(name + ".w", {out_size, in_size}, Uniform(-0.1, 0.1))
-    , pb_(name + ".b", {out_size}, Constant(0)) {
+  Affine(unsigned in_size, unsigned out_size, Trainer &trainer)
+    : pw_({out_size, in_size}, Uniform(-0.1, 0.1))
+    , pb_({out_size}, Constant(0)) {
       trainer.add_parameter(pw_);
       trainer.add_parameter(pb_);
     }
@@ -151,12 +150,11 @@ class SRU {
   Var w_, bf_, br_;
 
 public:
-  SRU(const string &name,
-      unsigned in_size, unsigned out_size, Trainer &trainer)
+  SRU(unsigned in_size, unsigned out_size, Trainer &trainer)
     : out_size_(out_size)
-    , pw_(name + ".w", {3 * out_size, in_size}, Uniform(-0.1, 0.1))
-    , pbf_(name + ".bf", {out_size}, Constant(0))
-    , pbr_(name + ".br", {out_size}, Constant(0)) {
+    , pw_({3 * out_size, in_size}, Uniform(-0.1, 0.1))
+    , pbf_({out_size}, Constant(0))
+    , pbr_({out_size}, Constant(0)) {
       trainer.add_parameter(pw_);
       trainer.add_parameter(pbf_);
       trainer.add_parameter(pbr_);
@@ -204,10 +202,10 @@ class RNNLM {
 public:
   RNNLM(unsigned vocab_size, unsigned eos_id, Trainer &trainer)
     : eos_id_(eos_id)
-    , plookup_("lookup", {NUM_HIDDEN_UNITS, vocab_size}, Uniform(-0.1, 0.1))
-    , rnn1_("rnn1", NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS, trainer)
-    , rnn2_("rnn2", NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS, trainer)
-    , hy_("hy", NUM_HIDDEN_UNITS, vocab_size, trainer) {
+    , plookup_({NUM_HIDDEN_UNITS, vocab_size}, Uniform(-0.1, 0.1))
+    , rnn1_(NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS, trainer)
+    , rnn2_(NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS, trainer)
+    , hy_(NUM_HIDDEN_UNITS, vocab_size, trainer) {
       trainer.add_parameter(plookup_);
     }
 

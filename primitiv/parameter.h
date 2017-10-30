@@ -22,8 +22,7 @@ class Parameter {
 
 public:
   Parameter(Parameter &&src)
-    : name_(std::move(src.name_))
-    , shape_(std::move(src.shape_))
+    : shape_(std::move(src.shape_))
     , device_(src.device_)
     , value_(std::move(src.value_))
     , grad_(std::move(src.grad_))
@@ -33,7 +32,6 @@ public:
 
   Parameter &operator=(Parameter &&src) {
     if (&src != this) {
-      name_ = std::move(src.name_);
       shape_ = std::move(src.shape_);
       device_ = src.device_;
       value_ = std::move(src.value_);
@@ -47,41 +45,37 @@ public:
   /**
    * Creates an invalid parameter object.
    */
-  Parameter() : name_(), shape_(), device_(nullptr), value_(), grad_() {}
+  Parameter() : shape_(), device_(nullptr), value_(), grad_() {}
 
   /**
    * Creates a new Parameter object.
-   * @param name Name of the parameter.
    * @param shape The shape of the parameter. The batch size should be 1.
    * @param device The device object to manage internal memory.
    */
   Parameter(
-      const std::string &name,
       const Shape &shape,
       Device &device = Device::get_default());
 
   /**
    * Creates a new Parameter object.
-   * @param name Name of the parameter.
    * @param shape The shape of the parameter. The batch size should be 1.
    * @param value List of initial values. Order of elements should be of
    *              `Tensor::set_values()`.
    * @param device The device object to manage internal memory.
    */
   Parameter(
-      const std::string &name, const Shape &shape,
+      const Shape &shape,
       const std::vector<float> &value,
       Device &device = Device::get_default());
 
   /**
    * Creates a new Parameter object.
-   * @param name Name of the parameter.
    * @param shape The shape of the parameter. The batch size should be 1.
    * @param init An Initializer object.
    * @param device The device object to manage internal memory.
    */
   Parameter(
-      const std::string &name, const Shape &shape,
+      const Shape &shape,
       const Initializer &init,
       Device &device = Device::get_default());
 
@@ -124,15 +118,6 @@ public:
   bool has_stats(const std::string &name) const {
     if (!valid()) THROW_ERROR("Invalid parameter.");
     return stats_.find(name) != stats_.end();
-  }
-
-  /**
-   * Returns the name of the parameter.
-   * @return Name of the parameter.
-   */
-  const std::string &name() const {
-    if (!valid()) THROW_ERROR("Invalid parameter.");
-    return name_;
   }
 
   /**
@@ -232,12 +217,11 @@ public:
 private:
   /**
    * Makes a Parameter object directly from its values.
-   * @param name Name of the parameter.
    * @param value Value of the parameter.
    * @param stats Map of optional statistics.
    */
   void initialize_by_data(
-      std::string &&name, Tensor &&value,
+      Tensor &&value,
       std::unordered_map<std::string, Tensor> &&stats);
 
   /**
@@ -245,7 +229,6 @@ private:
    */
   void check_shape();
 
-  std::string name_;
   Shape shape_;
   Device *device_;
   Tensor value_;

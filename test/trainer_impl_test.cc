@@ -217,7 +217,7 @@ TEST_F(TrainerImplTest, CheckSGDSetConfigsByFile) {
 }
 
 TEST_F(TrainerImplTest, CheckSGDUpdate) {
-  Parameter param("param", {2, 2}, {1, 2, 3, 4}, dev);
+  Parameter param({2, 2}, {1, 2, 3, 4}, dev);
   ASSERT_TRUE(vector_match(
         vector<float> {1, 2, 3, 4}, param.value().to_vector()));
 
@@ -346,7 +346,7 @@ TEST_F(TrainerImplTest, CheckMomentumSGDSetConfigsByFile) {
 }
 
 TEST_F(TrainerImplTest, CheckMomentumSGDUpdate) {
-  Parameter param("param", {2, 2}, {1, 2, 3, 4}, dev);
+  Parameter param({2, 2}, {1, 2, 3, 4}, dev);
   ASSERT_TRUE(vector_match(
         vector<float> {1, 2, 3, 4}, param.value().to_vector()));
 
@@ -486,7 +486,7 @@ TEST_F(TrainerImplTest, CheckAdaGradSetConfigsByFile) {
 }
 
 TEST_F(TrainerImplTest, CheckAdaGradUpdate) {
-  Parameter param("param", {2, 2}, {1, 2, 3, 4}, dev);
+  Parameter param({2, 2}, {1, 2, 3, 4}, dev);
   ASSERT_TRUE(vector_match(
         vector<float> {1, 2, 3, 4}, param.value().to_vector()));
 
@@ -632,7 +632,7 @@ TEST_F(TrainerImplTest, CheckRMSPropSetConfigsByFile) {
 }
 
 TEST_F(TrainerImplTest, CheckRMSPropUpdate) {
-  Parameter param("param", {2, 2}, {1, 2, 3, 4}, dev);
+  Parameter param({2, 2}, {1, 2, 3, 4}, dev);
   ASSERT_TRUE(vector_match(
         vector<float> {1, 2, 3, 4}, param.value().to_vector()));
 
@@ -773,7 +773,7 @@ TEST_F(TrainerImplTest, CheckAdaDeltaSetConfigsByFile) {
 }
 
 TEST_F(TrainerImplTest, CheckAdaDeltaUpdate) {
-  Parameter param("param", {2, 2}, {1, 2, 3, 4}, dev);
+  Parameter param({2, 2}, {1, 2, 3, 4}, dev);
   ASSERT_TRUE(vector_match(
         vector<float> {1, 2, 3, 4}, param.value().to_vector()));
 
@@ -936,7 +936,7 @@ TEST_F(TrainerImplTest, CheckAdamSetConfigsByFile) {
 }
 
 TEST_F(TrainerImplTest, CheckAdamUpdate) {
-  Parameter param("param", {2, 2}, {1, 2, 3, 4}, dev);
+  Parameter param({2, 2}, {1, 2, 3, 4}, dev);
   ASSERT_TRUE(vector_match(
         vector<float> {1, 2, 3, 4}, param.value().to_vector()));
 

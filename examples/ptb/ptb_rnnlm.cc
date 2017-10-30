@@ -114,9 +114,9 @@ class RNNLM {
 public:
   RNNLM(unsigned vocab_size, unsigned eos_id, Trainer &trainer)
     : eos_id_(eos_id)
-    , pwlookup_("Lookup", {NUM_HIDDEN_UNITS, vocab_size}, XavierUniform())
-    , pwxs_("Wxs", {NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS}, XavierUniform())
-    , pwsy_("Wsy", {vocab_size, NUM_HIDDEN_UNITS}, XavierUniform()) {
+    , pwlookup_({NUM_HIDDEN_UNITS, vocab_size}, XavierUniform())
+    , pwxs_({NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS}, XavierUniform())
+    , pwsy_({vocab_size, NUM_HIDDEN_UNITS}, XavierUniform()) {
       trainer.add_parameter(pwlookup_);
       trainer.add_parameter(pwxs_);
       trainer.add_parameter(pwsy_);

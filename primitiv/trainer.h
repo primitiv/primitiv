@@ -2,7 +2,7 @@
 #define PRIMITIV_TRAINER_H_
 
 #include <memory>
-#include <unordered_map>
+#include <unordered_set>
 #include <primitiv/error.h>
 
 namespace primitiv {
@@ -156,7 +156,11 @@ private:
   float lr_scale_;
   float l2_strength_;
   float clip_threshold_;
-  std::unordered_map<std::string, Parameter *> params_;
+
+  // TODO(odashi):
+  // This lookup table does not work if a different Parameter object is
+  // allocated at the same pointer.
+  std::unordered_set<Parameter *> params_;
 
   /**
    * Event handler on adding a new parameter.
