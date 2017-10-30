@@ -90,10 +90,8 @@ void Parameter::check_shape() {
   }
 }
 
-Parameter::Parameter(
-    const string &name, const Shape &shape, Device &device)
-: name_(name)
-, shape_(shape)
+Parameter::Parameter(const Shape &shape, Device &device)
+: shape_(shape)
 , device_(&device)
 , value_(device.new_tensor(shape))
 , grad_(device.new_tensor(shape)) {
@@ -101,11 +99,10 @@ Parameter::Parameter(
 }
 
 Parameter::Parameter(
-    const string &name, const Shape &shape,
+    const Shape &shape,
     const vector<float> & value,
     Device &device)
-: name_(name)
-, shape_(shape)
+: shape_(shape)
 , device_(&device)
 , value_(device.new_tensor(shape))
 , grad_(device.new_tensor(shape)) {
@@ -114,11 +111,10 @@ Parameter::Parameter(
 }
 
 Parameter::Parameter(
-    const string &name, const Shape &shape,
+    const Shape &shape,
     const Initializer &init,
     Device &device)
-: name_(name)
-, shape_(shape)
+: shape_(shape)
 , device_(&device)
 , value_(device.new_tensor(shape))
 , grad_(device.new_tensor(shape)) {
@@ -127,10 +123,9 @@ Parameter::Parameter(
 }
 
 void Parameter::initialize_by_data(
-    string &&name, Tensor &&value,
+    Tensor &&value,
     std::unordered_map<string, Tensor> &&stats) {
-  value_ = std::move(value);  // Initializes at first.
-  name_ = std::move(name);
+  value_ = std::move(value);  // Should initialize this at first.
   shape_ = value_.shape();
   device_ = &value_.device();
   grad_ = value_.device().new_tensor(value_.shape());
@@ -167,7 +162,6 @@ void Parameter::save(const string &path, bool with_stats) const  {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   messages::Parameter dest;
-  dest.set_name(name_);
   ::store_tensor(value_, *dest.mutable_value());
   if (with_stats) {
     auto &dest_stats = *dest.mutable_stats();
@@ -211,7 +205,6 @@ Parameter Parameter::load(const string &path, bool with_stats, Device &device) {
 
   Parameter param;
   param.initialize_by_data(
-      string(src.name()),
       ::parse_tensor(src.value(), device),
       std::move(stats));
 
