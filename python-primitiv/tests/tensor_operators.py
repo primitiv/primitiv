@@ -81,6 +81,12 @@ class TensorOperatorsTest(unittest.TestCase):
         x = tF.input(input_arr)
         self.assertTrue(((x ** 6).to_ndarrays()[0] == np.array([1, 1, 729, 729, 15625, 15625])).all())
         self.assertTrue(((x ** 9).to_ndarrays()[0] == np.array([1, -1, 19683, -19683, 1953125, -1953125])).all())
+        input_arr = np.array([1, -1])
+        x = tF.input(input_arr)
+        self.assertTrue(((x ** 0x7fffffff).to_ndarrays()[0] == np.array([1, -1])).all())
+        self.assertTrue(((x ** -0x80000000).to_ndarrays()[0] == np.array([1, 1])).all())
+        self.assertTrue(np.isnan((x ** 0x80000000).to_ndarrays()[0]).any())
+        self.assertTrue(np.isnan((x ** -0x80000001).to_ndarrays()[0]).any())
         self.assertRaises(TypeError, lambda: pow(x, y, 2))
 
     def test_tensor_iadd(self):
