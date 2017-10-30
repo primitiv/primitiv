@@ -24,12 +24,9 @@ public:
   LSTM(const std::string &name, unsigned in_size, unsigned out_size)
     : name_(name)
     , out_size_(out_size)
-    , pwxh_(name_ + "_wxh", {4 * out_size, in_size},
-        primitiv::initializers::XavierUniform())
-    , pwhh_(name_ + "_whh", {4 * out_size, out_size},
-        primitiv::initializers::XavierUniform())
-    , pbh_(name_ + "_bh", {4 * out_size},
-        primitiv::initializers::Constant(0)) {}
+    , pwxh_({4 * out_size, in_size}, primitiv::initializers::XavierUniform())
+    , pwhh_({4 * out_size, out_size}, primitiv::initializers::XavierUniform())
+    , pbh_({4 * out_size}, primitiv::initializers::Constant(0)) {}
 
   // Loads all parameters.
   LSTM(const std::string &name, const std::string &prefix)

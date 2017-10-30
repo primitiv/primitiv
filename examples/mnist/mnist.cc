@@ -86,10 +86,10 @@ int main() {
   Graph::set_default(g);
 
   // Parameters for the multilayer perceptron.
-  Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, I::XavierUniform());
-  Parameter pb1("b1", {NUM_HIDDEN_UNITS}, I::Constant(0));
-  Parameter pw2("w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, I::XavierUniform());
-  Parameter pb2("b2", {NUM_OUTPUT_UNITS}, I::Constant(0));
+  Parameter pw1({NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, I::XavierUniform());
+  Parameter pb1({NUM_HIDDEN_UNITS}, I::Constant(0));
+  Parameter pw2({NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, I::XavierUniform());
+  Parameter pb2({NUM_OUTPUT_UNITS}, I::Constant(0));
 
   // Trainer
   T::SGD trainer(.5);

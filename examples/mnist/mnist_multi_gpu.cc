@@ -90,12 +90,12 @@ int main() {
   Graph::set_default(g);
 
   // Parameters on GPU 0.
-  Parameter pw1("w1", {NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, I::XavierUniform(), dev0);
-  Parameter pb1("b1", {NUM_HIDDEN_UNITS}, I::Constant(0), dev0);
+  Parameter pw1({NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, I::XavierUniform(), dev0);
+  Parameter pb1({NUM_HIDDEN_UNITS}, I::Constant(0), dev0);
   
   // Parameters on GPU 1.
-  Parameter pw2("w2", {NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, I::XavierUniform(), dev1);
-  Parameter pb2("b2", {NUM_OUTPUT_UNITS}, I::Constant(0), dev1);
+  Parameter pw2({NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, I::XavierUniform(), dev1);
+  Parameter pb2({NUM_OUTPUT_UNITS}, I::Constant(0), dev1);
 
   // Trainer
   T::SGD trainer(.1);

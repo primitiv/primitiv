@@ -17,9 +17,9 @@ class LSTM(object):
     def __init__(self, name, in_size, out_size):
         self.name_ = name
         self.out_size_ = out_size
-        self.pwxh_ = Parameter(name + "_wxh", [4 * out_size, in_size], I.XavierUniform())
-        self.pwhh_ = Parameter(name + "_whh", [4 * out_size, out_size], I.XavierUniform())
-        self.pbh_ = Parameter(name + "_bh", [4 * out_size], I.Constant(0))
+        self.pwxh_ = Parameter([4 * out_size, in_size], I.XavierUniform())
+        self.pwhh_ = Parameter([4 * out_size, out_size], I.XavierUniform())
+        self.pbh_ = Parameter([4 * out_size], I.Constant(0))
 
     # Loads all parameters.
     @staticmethod

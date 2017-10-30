@@ -45,10 +45,10 @@ class EncoderDecoder(object):
     def __init__(self, name, src_vocab_size, trg_vocab_size, embed_size, hidden_size, dropout_rate):
         self.name_ = name
         self.dropout_rate_ = dropout_rate
-        self.psrc_lookup_ = Parameter(name + "_src_lookup", [embed_size, src_vocab_size], I.XavierUniform())
-        self.ptrg_lookup_ = Parameter(name + "_trg_lookup", [embed_size, trg_vocab_size], I.XavierUniform())
-        self.pwhy_ = Parameter(name + "_why", [trg_vocab_size, hidden_size], I.XavierUniform())
-        self.pby_ = Parameter(name + "_by", [trg_vocab_size], I.Constant(0))
+        self.psrc_lookup_ = Parameter([embed_size, src_vocab_size], I.XavierUniform())
+        self.ptrg_lookup_ = Parameter([embed_size, trg_vocab_size], I.XavierUniform())
+        self.pwhy_ = Parameter([trg_vocab_size, hidden_size], I.XavierUniform())
+        self.pby_ = Parameter([trg_vocab_size], I.Constant(0))
         self.src_lstm_ = LSTM(name + "_src_lstm", embed_size, hidden_size)
         self.trg_lstm_ = LSTM(name + "_trg_lstm", embed_size, hidden_size)
 
