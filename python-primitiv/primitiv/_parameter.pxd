@@ -12,16 +12,15 @@ cdef extern from "primitiv/parameter.h":
     cdef cppclass CppParameter "primitiv::Parameter":
         CppParameter(CppParameter &&src)
         CppParameter() except +
-        CppParameter(const string &name, const CppShape &shape, CppDevice &device) except +
-        CppParameter(const string &name, const CppShape &shape, const vector[float] &value, CppDevice &device) except +
-        CppParameter(const string &name, const CppShape &shape, const CppInitializer &init, CppDevice &device) except +
+        CppParameter(const CppShape &shape, CppDevice &device) except +
+        CppParameter(const CppShape &shape, const vector[float] &value, CppDevice &device) except +
+        CppParameter(const CppShape &shape, const CppInitializer &init, CppDevice &device) except +
         bool valid() except +
         void reset_value(const vector[float] &value) except +
         void reset_value(const CppInitializer &init) except +
         void reset_gradient() except +
         void add_stats(const string &name, const CppShape &shape) except +
         bool has_stats(const string &name) except +
-        const string &name() except +
         const CppShape &shape() except +
         CppDevice &device() except +
         CppTensor &value() except +
