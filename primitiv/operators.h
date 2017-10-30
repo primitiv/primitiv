@@ -311,17 +311,19 @@ type_traits::Identity<Var> identity(
     Device &dev = Device::get_default());
 
 template<typename Var>
-inline type_traits::Identity<Var> pow(const Var &x, unsigned k) {
-  if (k == 0) return ones<Var>(x.shape());
+inline type_traits::Identity<Var> ipow(const Var &x, int k) {
+  unsigned idx = k >= 0 ? k : -k;
+  if (idx == 0) return ones<Var>(x.shape());
   Var xx = x;
   Var ret = x;
-  k -= 1;
-  if (k & 1) ret = ret * xx;
-  for(k >>= 1; k != 0; k >>= 1) {
+  --idx;
+  if (idx & 1) ret = ret * xx;
+  for(idx >>= 1; idx != 0; idx >>= 1) {
     xx = xx * xx;
-    if (k & 1) ret = ret * xx;
+    if (idx & 1) ret = ret * xx;
   }
-  return ret;
+  if (k >= 0) return ret;
+  else return 1.0 / ret;
 }
 
 namespace random {

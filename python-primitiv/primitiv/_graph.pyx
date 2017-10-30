@@ -4,7 +4,7 @@ from libcpp.vector cimport vector
 from primitiv._device cimport _Device
 from primitiv._shape cimport wrapShape
 from primitiv._tensor cimport _Tensor
-from primitiv._operator cimport op_pow, op_matmul
+from primitiv._operator cimport op_pow, op_ipow, op_matmul
 
 from weakref import WeakValueDictionary
 
@@ -148,8 +148,8 @@ cdef class _Node:
     def __pow__(left, right, mod):
         if mod is not None:
             return NotImplemented
-        if isinstance(right, int) and right >= 0:
-            return wrapNode(op_pow((<_Node> left).wrapped, <unsigned> right))
+        if isinstance(right, int) and -0x80000000 <= right <= 0x7fffffff:
+            return wrapNode(op_ipow((<_Node> left).wrapped, <int> right))
         elif isinstance(right, (int, float)):
             return wrapNode(op_pow((<_Node> left).wrapped, <float> right))
         elif isinstance(left, (int, float)):
