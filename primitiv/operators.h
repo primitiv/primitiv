@@ -313,6 +313,23 @@ type_traits::Identity<Var> identity(
 template<typename Var>
 inline type_traits::Identity<Var> ipow(const Var &x, int k) {
   unsigned idx = k >= 0 ? k : -k;
+  /*
+   * NOTE(vbkaisetsu)
+   *
+   * The following code is simpler than the implemented code:
+   *
+   *   Var xx = x;
+   *   Var ret = ones<Var>(x.shape()); # <-- [1]
+   *   for(; idx != 0; idx >>= 1) {
+   *     if (idx & 1) ret = ret * xx;
+   *     xx = xx * xx; # <-- [2]
+   *   }
+   *
+   * However it additionaly generates a "Const" node [1], and
+   * a "Multiply" node [2] that is not used.
+   *
+   * We can reduce nodes by the following implementation.
+   */
   if (idx == 0) return ones<Var>(x.shape());
   Var xx = x;
   Var ret = x;
