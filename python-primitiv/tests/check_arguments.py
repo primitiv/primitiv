@@ -84,22 +84,22 @@ class ArgumentTest(unittest.TestCase):
         # shape w/ Initializer
         p = Parameter("test2", Shape([4, 3]), I.Constant(1))
         self.assertEqual(p.shape(), Shape([4, 3]))
-        self.assertEqual(p.value().to_list(), [1] * 12)
+        self.assertEqual(p.value.to_list(), [1] * 12)
 
         # shape w/ list[float]
         p = Parameter("test3", Shape([4, 3]), self.list_data[:12])
         self.assertEqual(p.shape(), Shape([4, 3]))
-        self.assertEqual(p.value().to_list(), self.list_data[:12])
+        self.assertEqual(p.value.to_list(), self.list_data[:12])
 
         # ndarray w/o shape
         p = Parameter("test4", init=self.ndarray_data[0])
         self.assertEqual(p.shape(), Shape([4, 3]))
-        self.assertEqual(p.value().to_list(), self.list_data[:12])
+        self.assertEqual(p.value.to_list(), self.list_data[:12])
 
         # ndarray w/ shape
         p = Parameter("test5", Shape([2, 6]), init=self.ndarray_data[0])
         self.assertEqual(p.shape(), Shape([2, 6]))
-        self.assertEqual(p.value().to_list(), self.list_data[:12])
+        self.assertEqual(p.value.to_list(), self.list_data[:12])
 
         # list[float] w/o shape
         self.assertRaises(TypeError, lambda: Parameter("test6", init=self.list_data[:12]))

@@ -34,19 +34,21 @@ cdef extern from "parameter_load_wrapper.h" namespace "python_primitiv":
     CppParameter* Parameter_load(const string &path, bool with_stats, CppDevice &device) except +
 
 
+cdef class _ParameterStatistics:
+    cdef object param_ref
+
+
 cdef class _Parameter:
     cdef CppParameter *wrapped
-    cdef CppParameter *wrapped_newed
+    cdef object __weakref__
+    cdef readonly _ParameterStatistics stats
+    @staticmethod
+    cdef void register_wrapper(CppParameter *ptr, _Parameter wrapper)
+    @staticmethod
+    cdef _Parameter get_wrapper(CppParameter *ptr)
+    @staticmethod
+    cdef _Parameter get_wrapper_with_new(CppParameter *ptr)
 
-
-cdef inline _Parameter wrapParameter(CppParameter *wrapped) except +:
-    cdef _Parameter parameter = _Parameter.__new__(_Parameter)
-    parameter.wrapped = wrapped
-    return parameter
-
-
-cdef inline _Parameter wrapParameterWithNew(CppParameter *wrapped) except +:
-    cdef _Parameter parameter = _Parameter.__new__(_Parameter)
-    parameter.wrapped = wrapped
-    parameter.wrapped_newed = wrapped
-    return parameter
+    # NOTE(vbkaisetsu)
+    # _Parameter is always created with `new`, so `del_required` is not used.
+    # cdef bool del_required
