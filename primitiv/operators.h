@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <initializer_list>
+#include <limits>
 #include <vector>
 
 #include <primitiv/device.h>
@@ -309,6 +310,32 @@ template<typename Var>
 type_traits::Identity<Var> identity(
     unsigned size,
     Device &dev = Device::get_default());
+
+template<typename Var>
+inline type_traits::Identity<Var> ipow(const Var &x, int k) {
+  /*
+   * NOTE(odashi):
+   * std::abs(-0x800..000) generates undefined behavior under 2's complement
+   * systems. However, this value should be also evaluated as 0x800..000 by
+   * directly casting to unsigned integers.
+   */
+  const int min_k = std::numeric_limits<int>::min();
+  unsigned idx = (k == min_k) ? min_k : std::abs(k);
+  /*
+   * NOTE(odashi):
+   * This function is implemented based on an exponentation-by-squaring method
+   * and some minor modifications are also included to prevent generating
+   * redundant variables.
+   */
+  if (idx == 0) return ones<Var>(x.shape());
+  Var ret;  // temporarily invalid
+  for (Var factor = x; ; factor = factor * factor) {
+    if (idx & 1) ret = ret.valid() ? ret * factor : factor;
+    if (!(idx >>= 1)) break;
+  }
+  if (k >= 0) return ret;
+  else return 1.0 / ret;
+}
 
 namespace random {
 

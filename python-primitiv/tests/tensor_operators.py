@@ -76,6 +76,17 @@ class TensorOperatorsTest(unittest.TestCase):
         self.assertTrue(np.isclose((x ** y).to_ndarrays()[0], np.array([[1, 2], [81, 65536]])).all())
         self.assertTrue(np.isclose((x ** 2).to_ndarrays()[0], np.array([[1, 4], [9, 16]])).all())
         self.assertTrue(np.isclose((2 ** x).to_ndarrays()[0], np.array([[2, 4], [8, 16]])).all())
+        self.assertTrue(np.isclose((x ** -2).to_ndarrays()[0], np.array([[1, 1/4], [1/9, 1/16]])).all())
+        input_arr = np.array([1, -1, 3, -3, 5, -5])
+        x = tF.input(input_arr)
+        self.assertTrue(((x ** 6).to_ndarrays()[0] == np.array([1, 1, 729, 729, 15625, 15625])).all())
+        self.assertTrue(((x ** 9).to_ndarrays()[0] == np.array([1, -1, 19683, -19683, 1953125, -1953125])).all())
+        input_arr = np.array([1, -1])
+        x = tF.input(input_arr)
+        self.assertTrue(((x ** 0x7fffffff).to_ndarrays()[0] == np.array([1, -1])).all())
+        self.assertTrue(((x ** -0x80000000).to_ndarrays()[0] == np.array([1, 1])).all())
+        self.assertTrue(np.isnan((x ** 0x80000000).to_ndarrays()[0]).any())
+        self.assertTrue(np.isnan((x ** -0x80000001).to_ndarrays()[0]).any())
         self.assertRaises(TypeError, lambda: pow(x, y, 2))
 
     def test_tensor_iadd(self):
