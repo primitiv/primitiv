@@ -1194,6 +1194,23 @@ TEST_F(TensorOpsTest, CheckIPowNegative) {
   }
 }
 
+TEST_F(TensorOpsTest, CheckIPowUpperBound) {
+  const vector<float> x_data {
+    1, -1, 1, -1, 1, -1,
+    1, -1, 1, -1, 1, -1,
+  };
+  const vector<float> y_data {
+    1, -1, 1, -1, 1, -1,
+    1, -1, 1, -1, 1, -1,
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
+    const Tensor y = ipow(x, 0x7fffffff);
+    EXPECT_EQ(Shape({2, 3}, 2), y.shape());
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+  }
+}
+
 TEST_F(TensorOpsTest, CheckIPowLowerBound) {
   const vector<float> x_data {
     1, -1, 1, -1, 1, -1,
@@ -1202,6 +1219,40 @@ TEST_F(TensorOpsTest, CheckIPowLowerBound) {
   const vector<float> y_data {
     1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1,
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
+    const Tensor y = ipow(x, 0x80000000);
+    EXPECT_EQ(Shape({2, 3}, 2), y.shape());
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+  }
+}
+
+TEST_F(TensorOpsTest, CheckIPowPositiveConvergence) {
+  const vector<float> x_data {
+    0.9999999, -0.9999999, 0.9999999, -0.9999999, 0.9999999, -0.9999999,
+    0.9999999, -0.9999999, 0.9999999, -0.9999999, 0.9999999, -0.9999999,
+  };
+  const vector<float> y_data {
+    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
+    const Tensor y = ipow(x, 0x7fffffff);
+    EXPECT_EQ(Shape({2, 3}, 2), y.shape());
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+  }
+}
+
+TEST_F(TensorOpsTest, CheckIPowNegativeConvergence) {
+  const vector<float> x_data {
+    1.000001, -1.000001, 1.000001, -1.000001, 1.000001, -1.000001,
+    1.000001, -1.000001, 1.000001, -1.000001, 1.000001, -1.000001,
+  };
+  const vector<float> y_data {
+    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
   };
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
