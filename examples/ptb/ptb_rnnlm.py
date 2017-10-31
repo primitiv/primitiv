@@ -64,9 +64,9 @@ class RNNLM(object):
 
     def __init__(self, vocab_size, eos_id, trainer):
         self.eos_id_ = eos_id
-        self.pwlookup_ = Parameter("Lookup", [NUM_HIDDEN_UNITS, vocab_size], I.XavierUniform())
-        self.pwxs_ = Parameter("Wxs", [NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS], I.XavierUniform())
-        self.pwsy_ = Parameter("Wsy", [vocab_size, NUM_HIDDEN_UNITS], I.XavierUniform())
+        self.pwlookup_ = Parameter([NUM_HIDDEN_UNITS, vocab_size], I.XavierUniform())
+        self.pwxs_ = Parameter([NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS], I.XavierUniform())
+        self.pwsy_ = Parameter([vocab_size, NUM_HIDDEN_UNITS], I.XavierUniform())
         trainer.add_parameter(self.pwlookup_)
         trainer.add_parameter(self.pwxs_)
         trainer.add_parameter(self.pwsy_)

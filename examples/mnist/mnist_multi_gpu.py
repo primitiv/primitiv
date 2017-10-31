@@ -51,12 +51,12 @@ def main():
     dev1 = D.CUDA(1)
 
     # Parameters on GPU 0.
-    pw1 = Parameter("w1", [NUM_HIDDEN_UNITS, NUM_INPUT_UNITS], I.XavierUniform(), dev0)
-    pb1 = Parameter("b1", [NUM_HIDDEN_UNITS], I.Constant(0), dev0)
+    pw1 = Parameter([NUM_HIDDEN_UNITS, NUM_INPUT_UNITS], I.XavierUniform(), dev0)
+    pb1 = Parameter([NUM_HIDDEN_UNITS], I.Constant(0), dev0)
 
     # Parameters on GPU 1.
-    pw2 = Parameter("w2", [NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS], I.XavierUniform(), dev1)
-    pb2 = Parameter("b2", [NUM_OUTPUT_UNITS], I.Constant(0), dev1)
+    pw2 = Parameter([NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS], I.XavierUniform(), dev1)
+    pb2 = Parameter([NUM_OUTPUT_UNITS], I.Constant(0), dev1)
 
     trainer = T.SGD(.1)
     trainer.add_parameter(pw1)

@@ -44,27 +44,27 @@ cdef class _Parameter:
     def __cinit__(self):
         self.stats = _ParameterStatistics(self)
 
-    def __init__(self, str name, shape = None, init = None, _Device device = None):
+    def __init__(self, shape = None, init = None, _Device device = None):
         if self.wrapped is not NULL:
             raise MemoryError()
         if device is None:
             device = _Device.get_default()
-        # Parameter(name, shape, np.ndarray init, device) new from ndarray
+        # Parameter(shape, np.ndarray init, device) new from ndarray
         if isinstance(init, np.ndarray):
             if shape is None:
                 shape = _Shape(init.shape, 1)
-            self.wrapped = new CppParameter(<string> name.encode("utf-8"), normShape(shape).wrapped, ndarrays_to_vector([init]), device.wrapped[0])
-        # Parameter(name, shape, device)
+            self.wrapped = new CppParameter(normShape(shape).wrapped, ndarrays_to_vector([init]), device.wrapped[0])
+        # Parameter(shape, device)
         elif shape is not None and init is None:
-            self.wrapped = new CppParameter(<string> name.encode("utf-8"), normShape(shape).wrapped, device.wrapped[0])
-        # Parameter(name, shape, Initializer init, device) new from Initializer
+            self.wrapped = new CppParameter(normShape(shape).wrapped, device.wrapped[0])
+        # Parameter(shape, Initializer init, device) new from Initializer
         elif shape is not None and isinstance(init, _Initializer):
-            self.wrapped = new CppParameter(<string> name.encode("utf-8"), normShape(shape).wrapped, (<_Initializer> init).wrapped[0], device.wrapped[0])
+            self.wrapped = new CppParameter(normShape(shape).wrapped, (<_Initializer> init).wrapped[0], device.wrapped[0])
         elif isinstance(init, list):
-            # Parameter(name, shape, vector<float> init, device) new from float list
+            # Parameter(shape, vector<float> init, device) new from float list
             if shape is None:
                 raise TypeError("shape is required when init is a list")
-            self.wrapped = new CppParameter(<string> name.encode("utf-8"), normShape(shape).wrapped, <vector[float]> init, device.wrapped[0])
+            self.wrapped = new CppParameter(normShape(shape).wrapped, <vector[float]> init, device.wrapped[0])
         else:
             raise TypeError("Argument 'init' has incorrect type (list, Initializer, or numpy.ndarray)")
         if self.wrapped is NULL:
@@ -95,14 +95,11 @@ cdef class _Parameter:
         self.wrapped.add_stats(<string> name.encode("utf-8"), normShape(shape).wrapped)
         return
 
-    # NOTE(vbkaisetsu)
+    # NOTE(vbkaisetsu):
     # `has_stats` function is removed in Python.
     # Use "in" operator of `stats` variable instead.
     # def has_stats(self, str name):
     #     return self.wrapped.has_stats(name.encode("utf-8"))
-
-    def name(self):
-        return self.wrapped.name().decode("utf-8")
 
     def shape(self):
         return wrapShape(self.wrapped.shape())
@@ -110,7 +107,7 @@ cdef class _Parameter:
     def device(self):
         return _Device.get_wrapper(&self.wrapped.device())
 
-    # NOTE(vbkaisetsu)
+    # NOTE(vbkaisetsu):
     # `value` function is replaced with a property in Python.
     @property
     def value(self):
@@ -121,7 +118,7 @@ cdef class _Parameter:
         cdef CppTensor *tensor_p = &self.wrapped.value()
         tensor_p[0] = value.wrapped[0]
 
-    # NOTE(vbkaisetsu)
+    # NOTE(vbkaisetsu):
     # `gradient` function is replaced with a property in Python.
     @property
     def gradient(self):
@@ -132,7 +129,7 @@ cdef class _Parameter:
         cdef CppTensor *tensor_p = &self.wrapped.gradient()
         tensor_p[0] = value.wrapped[0]
 
-    # NOTE(vbkaisetsu)
+    # NOTE(vbkaisetsu):
     # This function is replaced with `stats` variable.
     # def stats(self, str name):
     #     return _Tensor.get_wrapper(&self.wrapped.stats(<string> name.encode("utf-8")))
