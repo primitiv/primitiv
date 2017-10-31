@@ -252,10 +252,10 @@ TEST_F(GraphTest, CheckXor) {
   // Solves a 2-dimension XOR problem with 3-layer perceptron.
   // h = tanh(W1.x + b1)
   // y = W2.h + b2
-  Parameter w1("w1", {2, 2}, {1, -1, 1, -1});
-  Parameter b1("b1", {2}, {-1, -1});
-  Parameter w2("w2", {1, 2}, {1, 1});
-  Parameter b2("b2", {}, {1});
+  Parameter w1({2, 2}, {1, -1, 1, -1});
+  Parameter b1({2}, {-1, -1});
+  Parameter w2({1, 2}, {1, 1});
+  Parameter b2({}, {1});
 
   const vector<float> inputs {1, 1, 1, -1, -1, 1, -1, -1};
   const vector<float> outputs {1, -1, -1, 1};
@@ -331,18 +331,18 @@ TEST_F(GraphTest, CheckLSTM) {
   // j = tanh(Wjx . x + Wjh . h + bj)
   // cc = f * c + i * j
   // hh = o * tanh(cc)
-  Parameter pWix("Wix", {2, 2}, {.3, .1, .5, .3});
-  Parameter pWfx("Wfx", {2, 2}, {.4, .1, .5, .8});
-  Parameter pWox("Wox", {2, 2}, {.5, .9, .9, .7});
-  Parameter pWjx("Wjx", {2, 2}, {.2, .6, .9, .3});
-  Parameter pWih("Wih", {2, 2}, {.2, .3, .3, .3});
-  Parameter pWfh("Wfh", {2, 2}, {.8, .4, .8, .3});
-  Parameter pWoh("Woh", {2, 2}, {.6, .2, .2, .7});
-  Parameter pWjh("Wjh", {2, 2}, {.6, .4, .9, .5});
-  Parameter pbi("bi", {2}, initializers::Constant(0));
-  Parameter pbf("bf", {2}, initializers::Constant(0));
-  Parameter pbo("bo", {2}, initializers::Constant(0));
-  Parameter pbj("bj", {2}, initializers::Constant(0));
+  Parameter pWix({2, 2}, {.3, .1, .5, .3});
+  Parameter pWfx({2, 2}, {.4, .1, .5, .8});
+  Parameter pWox({2, 2}, {.5, .9, .9, .7});
+  Parameter pWjx({2, 2}, {.2, .6, .9, .3});
+  Parameter pWih({2, 2}, {.2, .3, .3, .3});
+  Parameter pWfh({2, 2}, {.8, .4, .8, .3});
+  Parameter pWoh({2, 2}, {.6, .2, .2, .7});
+  Parameter pWjh({2, 2}, {.6, .4, .9, .5});
+  Parameter pbi({2}, initializers::Constant(0));
+  Parameter pbf({2}, initializers::Constant(0));
+  Parameter pbo({2}, initializers::Constant(0));
+  Parameter pbj({2}, initializers::Constant(0));
 
   Graph g;
   Graph::set_default(g);
@@ -442,13 +442,13 @@ TEST_F(GraphTest, CheckConcatLSTM) {
 
   // Another implementation of LSTM that concatenates all gates and inputs.
   // All values and gradients should be same as that of "CheckLSTM".
-  Parameter pWx("Wx", {8, 2}, {
+  Parameter pWx({8, 2}, {
       .3, .1, .4, .1, .5, .9, .2, .6,
       .5, .3, .5, .8, .9, .7, .9, .3});
-  Parameter pWh("Wh", {8, 2}, {
+  Parameter pWh({8, 2}, {
       .2, .3, .8, .4, .6, .2, .6, .4,
       .3, .3, .8, .3, .2, .7, .9, .5});
-  Parameter pb("b", {8}, initializers::Constant(0));
+  Parameter pb({8}, initializers::Constant(0));
 
   Graph g;
   Graph::set_default(g);

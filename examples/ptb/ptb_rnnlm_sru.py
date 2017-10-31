@@ -67,9 +67,9 @@ def make_batch(corpus, sent_ids, eos_id):
 #   y = W . x + b
 class Affine(object):
 
-    def __init__(self, name, in_size, out_size, trainer):
-        self.pw_ = Parameter(name + ".w", [out_size, in_size], I.Uniform(-0.1, 0.1))
-        self.pb_ = Parameter(name + ".b", [out_size], I.Constant(0))
+    def __init__(self, in_size, out_size, trainer):
+        self.pw_ = Parameter([out_size, in_size], I.Uniform(-0.1, 0.1))
+        self.pb_ = Parameter([out_size], I.Constant(0))
         trainer.add_parameter(self.pw_)
         trainer.add_parameter(self.pb_)
 
@@ -92,11 +92,11 @@ class Affine(object):
 #   h[t] = r[t] * tanh(c[t]) + (1 - r[t]) * x[t]
 class SRU(object):
 
-    def __init__(self, name, in_size, out_size, trainer):
+    def __init__(self, in_size, out_size, trainer):
         self.out_size_ = out_size
-        self.pw_ = Parameter(name + ".w", [3 * out_size, in_size], I.Uniform(-0.1, 0.1))
-        self.pbf_ = Parameter(name + ".bf", [out_size], I.Constant(0))
-        self.pbr_ = Parameter(name + ".br", [out_size], I.Constant(0))
+        self.pw_ = Parameter([3 * out_size, in_size], I.Uniform(-0.1, 0.1))
+        self.pbf_ = Parameter([out_size], I.Constant(0))
+        self.pbr_ = Parameter([out_size], I.Constant(0))
         trainer.add_parameter(self.pw_)
         trainer.add_parameter(self.pbf_)
         trainer.add_parameter(self.pbr_)
@@ -135,10 +135,10 @@ class RNNLM(object):
 
     def __init__(self, vocab_size, eos_id, trainer):
         self.eos_id_ = eos_id
-        self.plookup_ = Parameter("lookup", [NUM_HIDDEN_UNITS, vocab_size], I.Uniform(-0.1, 0.1))
-        self.rnn1_ = SRU("rnn1", NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS, trainer)
-        self.rnn2_ = SRU("rnn2", NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS, trainer)
-        self.hy_ = Affine("hy", NUM_HIDDEN_UNITS, vocab_size, trainer)
+        self.plookup_ = Parameter([NUM_HIDDEN_UNITS, vocab_size], I.Uniform(-0.1, 0.1))
+        self.rnn1_ = SRU(NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS, trainer)
+        self.rnn2_ = SRU(NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS, trainer)
+        self.hy_ = Affine(NUM_HIDDEN_UNITS, vocab_size, trainer)
         trainer.add_parameter(self.plookup_)
 
 

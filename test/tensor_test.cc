@@ -175,6 +175,8 @@ TEST_F(TensorTest, CheckMoveValidToInvalid) {
   }
 }
 
+#if 0
+// Some compilers does not compile this test due to "-Wself-move".
 TEST_F(TensorTest, CheckMoveValidToThis) {
   for (Device *dev : devices) {
     Tensor x = dev->new_tensor_by_vector({6}, {2, 4, 6, 8, 10 ,12});
@@ -187,6 +189,7 @@ TEST_F(TensorTest, CheckMoveValidToThis) {
     EXPECT_TRUE(vector_match({2, 4, 6, 8, 10 ,12}, x.to_vector()));
   }
 }
+#endif
 
 TEST_F(TensorTest, CheckMoveInvalidToNew) {
   Tensor tmp;
@@ -223,6 +226,8 @@ TEST_F(TensorTest, CheckMoveInvalidToInalid) {
   EXPECT_FALSE(tmp.valid());
 }
 
+#if 0
+// Some compilers does not compile this test due to "-Wself-move".
 TEST_F(TensorTest, CheckMoveInvalidToThis) {
   Tensor x;
   ASSERT_FALSE(x.valid());
@@ -230,6 +235,7 @@ TEST_F(TensorTest, CheckMoveInvalidToThis) {
   x = std::move(x);
   EXPECT_FALSE(x.valid());
 }
+#endif
 
 TEST_F(TensorTest, CheckCopyValidToNew) {
   for (Device *dev : devices) {

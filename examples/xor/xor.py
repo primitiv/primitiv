@@ -17,10 +17,10 @@ def main():
     Device.set_default(dev)
 
     # Parameters
-    pw1 = Parameter("w1", [8, 2], I.XavierUniform())
-    pb1 = Parameter("b1", [8], I.Constant(0))
-    pw2 = Parameter("w2", [1, 8], I.XavierUniform())
-    pb2 = Parameter("b2", [], I.Constant(0))
+    pw1 = Parameter([8, 2], I.XavierUniform())
+    pb1 = Parameter([8], I.Constant(0))
+    pw2 = Parameter([1, 8], I.XavierUniform())
+    pb2 = Parameter([], I.Constant(0))
 
     # Trainer
     trainer = T.SGD(0.1)

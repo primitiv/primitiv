@@ -71,10 +71,10 @@ public:
       unsigned embed_size, unsigned hidden_size, float dropout_rate)
     : name_(name)
     , dropout_rate_(dropout_rate)
-    , psrc_lookup_(name_ + "_src_lookup", {embed_size, src_vocab_size}, I::XavierUniform())
-    , ptrg_lookup_(name_ + "_trg_lookup", {embed_size, trg_vocab_size}, I::XavierUniform())
-    , pwhy_(name_ + "_why", {trg_vocab_size, hidden_size}, I::XavierUniform())
-    , pby_(name_ + "_by", {trg_vocab_size}, I::Constant(0))
+    , psrc_lookup_({embed_size, src_vocab_size}, I::XavierUniform())
+    , ptrg_lookup_({embed_size, trg_vocab_size}, I::XavierUniform())
+    , pwhy_({trg_vocab_size, hidden_size}, I::XavierUniform())
+    , pby_({trg_vocab_size}, I::Constant(0))
     , src_lstm_(name_ + "_src_lstm", embed_size, hidden_size)
     , trg_lstm_(name + "_trg_lstm", embed_size, hidden_size) {}
 
