@@ -314,40 +314,24 @@ type_traits::Identity<Var> identity(
 template<typename Var>
 inline type_traits::Identity<Var> ipow(const Var &x, int k) {
   /*
-   * NOTE(vbkaisetsu):
-   * std::abs() returns a signed int, so -0x0x800...000 (lower bound number) can not
-   * be converted correctly.
-   *
    * NOTE(odashi):
-   * The second operand should be evaluated as 0x800...000 under 2's complement.
+   * std::abs(-0x800..000) generates undefined behavior under 2's complement
+   * systems. However, this value should be also evaluated as 0x800..000 by
+   * directly casting to unsigned integers.
    */
   const int min_k = std::numeric_limits<int>::min();
   unsigned idx = (k == min_k) ? min_k : std::abs(k);
   /*
-   * NOTE(vbkaisetsu)
-   *
-   * The following code is simpler than the implemented code:
-   *
-   *   Var xx = x;
-   *   Var ret = ones<Var>(x.shape()); # <-- [1]
-   *   for(; idx != 0; idx >>= 1) {
-   *     if (idx & 1) ret = ret * xx;
-   *     xx = xx * xx; # <-- [2]
-   *   }
-   *
-   * However it additionaly generates a "Const" node [1], and
-   * a "Multiply" node [2] that is not used.
-   *
-   * We can reduce nodes by the following implementation.
+   * NOTE(odashi):
+   * This function is implemented based on an exponentation-by-squaring method
+   * and some minor modifications are also included to prevent generating
+   * redundant variables.
    */
   if (idx == 0) return ones<Var>(x.shape());
-  Var xx = x;
-  Var ret = x;
-  --idx;
-  if (idx & 1) ret = ret * xx;
-  for(idx >>= 1; idx != 0; idx >>= 1) {
-    xx = xx * xx;
-    if (idx & 1) ret = ret * xx;
+  Var ret;  // temporarily invalid
+  for (Var factor = x; ; factor = factor * factor) {
+    if (idx & 1) ret = ret.valid() ? ret * factor : factor;
+    if (!(idx >>= 1)) break;
   }
   if (k >= 0) return ret;
   else return 1.0 / ret;
