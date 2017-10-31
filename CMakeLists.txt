@@ -9,11 +9,17 @@ option(PRIMITIV_BUILD_TESTS "Builds test binaries." OFF)
 option(PRIMITIV_USE_CACHE "Enables cached values in some functions but needs more memory." OFF)
 option(PRIMITIV_USE_CUDA "Finds CUDA library ant use it." OFF)
 
-# compiler requirements and settings
+# C++ version
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-if(CMAKE_COMPILER_IS_GNUCXX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast -Wall -Werror -fPIC")
+
+# compiler settings
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -Werror -fPIC")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -Werror -fPIC")
+else()
+  message(WARNING "primitiv may not support the detected compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
 configure_file(

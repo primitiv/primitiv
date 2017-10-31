@@ -216,11 +216,14 @@ TEST_F(ShapeTest, CheckMove) {
   EXPECT_EQ(trg2, moved);
 }
 
+#if 0
+// Some compilers does not compile this test due to "-Wself-move".
 TEST_F(ShapeTest, CheckMoveToThis) {
   Shape a({2, 3, 5}, 7);
   a = std::move(a);
   EXPECT_EQ(Shape({2, 3, 5}, 7), a);
 }
+#endif
 
 TEST_F(ShapeTest, CheckHasBatch) {
   EXPECT_FALSE(Shape().has_batch());
