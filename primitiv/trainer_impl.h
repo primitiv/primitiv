@@ -6,7 +6,7 @@
 namespace primitiv {
 namespace trainers {
 
-#define DECL_DEFAULTS(name_) \
+#define DECL_DEFAULTS \
 public: \
   void get_configs( \
       std::unordered_map<std::string, unsigned> &uint_configs, \
@@ -22,7 +22,7 @@ private: \
  * Simple stochastic gradient descent.
  */
 class SGD : public primitiv::Trainer {
-  DECL_DEFAULTS(SGD);
+  DECL_DEFAULTS;
 
 public:
   /**
@@ -45,7 +45,7 @@ private:
  * Stochastic gradient descent with momentum.
  */
 class MomentumSGD : public primitiv::Trainer {
-  DECL_DEFAULTS(MomentumSGD);
+  DECL_DEFAULTS;
 
 public:
   /**
@@ -77,7 +77,7 @@ private:
  * AdaGrad optimizer.
  */
 class AdaGrad : public primitiv::Trainer {
-  DECL_DEFAULTS(AdaGrad);
+  DECL_DEFAULTS;
 
 public:
   /**
@@ -109,7 +109,7 @@ private:
  * RMSProp Optimizer.
  */
 class RMSProp : public primitiv::Trainer {
-  DECL_DEFAULTS(RMSProp);
+  DECL_DEFAULTS;
 
 public:
   /**
@@ -150,7 +150,7 @@ private:
  * https://arxiv.org/abs/1212.5701
  */
 class AdaDelta : public primitiv::Trainer {
-  DECL_DEFAULTS(AdaDelta);
+  DECL_DEFAULTS;
 
 public:
   /**
@@ -183,7 +183,7 @@ private:
  * https://arxiv.org/abs/1412.6980
  */
 class Adam : public primitiv::Trainer {
-  DECL_DEFAULTS(Adam);
+  DECL_DEFAULTS;
 
 public:
   /**
