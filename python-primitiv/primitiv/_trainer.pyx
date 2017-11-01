@@ -9,6 +9,9 @@ cdef class _Trainer:
             raise MemoryError()
         self.wrapped = new CppPyTrainer(self)
 
+    # NOTE(vbkaisetsu):
+    # This method is also used by child classes implemented in
+    # trainers/_trainer_impl.pyx
     def __dealloc__(self):
         if self.wrapped is not NULL:
             del self.wrapped

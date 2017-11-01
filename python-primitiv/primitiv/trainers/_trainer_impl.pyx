@@ -8,11 +8,6 @@ cdef class _SGD(_Trainer):
             raise MemoryError()
         self.wrapped = new CppSGD(eta)
 
-    def __dealloc__(self):
-        if self.wrapped is not NULL:
-            del self.wrapped
-            self.wrapped = NULL
-
     def eta(self):
         return (<CppSGD*> self.wrapped).eta()
 
@@ -23,11 +18,6 @@ cdef class _MomentumSGD(_Trainer):
         if self.wrapped is not NULL:
             raise MemoryError()
         self.wrapped = new CppMomentumSGD(eta, momentum)
-
-    def __dealloc__(self):
-        if self.wrapped is not NULL:
-            del self.wrapped
-            self.wrapped = NULL
 
     def eta(self):
         return (<CppMomentumSGD*> self.wrapped).eta()
@@ -43,11 +33,6 @@ cdef class _AdaGrad(_Trainer):
             raise MemoryError()
         self.wrapped = new CppAdaGrad(eta, eps)
 
-    def __dealloc__(self):
-        if self.wrapped is not NULL:
-            del self.wrapped
-            self.wrapped = NULL
-
     def eta(self):
         return (<CppAdaGrad*> self.wrapped).eta()
 
@@ -61,11 +46,6 @@ cdef class _RMSProp(_Trainer):
         if self.wrapped is not NULL:
             raise MemoryError()
         self.wrapped = new CppRMSProp(eta, alpha, eps)
-
-    def __dealloc__(self):
-        if self.wrapped is not NULL:
-            del self.wrapped
-            self.wrapped = NULL
 
     def eta(self):
         return (<CppRMSProp*> self.wrapped).eta()
@@ -84,11 +64,6 @@ cdef class _AdaDelta(_Trainer):
             raise MemoryError()
         self.wrapped = new CppAdaDelta(rho, eps)
 
-    def __dealloc__(self):
-        if self.wrapped is not NULL:
-            del self.wrapped
-            self.wrapped = NULL
-
     def rho(self):
         return (<CppAdaDelta*> self.wrapped).rho()
 
@@ -102,11 +77,6 @@ cdef class _Adam(_Trainer):
         if self.wrapped is not NULL:
             raise MemoryError()
         self.wrapped = new CppAdam(alpha, beta1, beta2, eps)
-
-    def __dealloc__(self):
-        if self.wrapped is not NULL:
-            del self.wrapped
-            self.wrapped = NULL
 
     def alpha(self):
         return (<CppAdam*> self.wrapped).alpha()
