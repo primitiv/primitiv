@@ -13,6 +13,7 @@ set(primitiv_base_HDRS
   graph.h
   initializer.h
   initializer_impl.h
+  model.h
   naive_device.h
   operators.h
   parameter.h
@@ -33,6 +34,7 @@ set(primitiv_base_SRCS
   function_impl.cc
   graph.cc
   initializer_impl.cc
+  model.cc
   naive_device.cc
   node_ops.cc
   parameter.cc
