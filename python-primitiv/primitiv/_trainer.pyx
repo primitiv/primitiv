@@ -114,7 +114,10 @@ cdef class _Trainer:
 cdef public api int python_primitiv_trainer_name(
                         object self,
                         string *val) except -1:
-    if "name" not in self.__class__.__dict__:
+    # NOTE(vbkaisetsu):
+    # `hasattr(self.__class__, "name")` also scans a parent class.
+    # We want check that the function is overrided or not.
+    if "name" not in self.__class__.__dict__ or not callable(self.name):
         raise NotImplementedError("'name()' is not implemented in '%s'"
                                         % self.__class__.__name__)
     ret_str = self.name()
@@ -125,7 +128,10 @@ cdef public api int python_primitiv_trainer_name(
 cdef public api int python_primitiv_trainer_configure_parameter(
                         object self,
                         CppParameter &param) except -1:
-    if "configure_parameter" not in self.__class__.__dict__:
+    # NOTE(vbkaisetsu):
+    # `hasattr(self.__class__, "configure_parameter")` also scans a parent class.
+    # We want check that the function is overrided or not.
+    if "configure_parameter" not in self.__class__.__dict__ or not callable(self.configure_parameter):
         raise NotImplementedError("'configure_parameter()' is not implemented in '%s'"
                                         % self.__class__.__name__)
     self.configure_parameter(_Parameter.get_wrapper(&param))
@@ -136,7 +142,10 @@ cdef public api int python_primitiv_trainer_update_parameter(
                         object self,
                         float scale,
                         CppParameter &param) except -1:
-    if "update_parameter" not in self.__class__.__dict__:
+    # NOTE(vbkaisetsu):
+    # `hasattr(self.__class__, "update_parameter")` also scans a parent class.
+    # We want check that the function is overrided or not.
+    if "update_parameter" not in self.__class__.__dict__ or not callable(self.update_parameter):
         raise NotImplementedError("'update_parameter()' is not implemented in '%s'"
                                         % self.__class__.__name__)
     self.update_parameter(scale, _Parameter.get_wrapper(&param))
@@ -147,7 +156,10 @@ cdef public api int python_primitiv_trainer_get_configs(
                         object self,
                         unordered_map[string, unsigned] &uint_configs,
                         unordered_map[string, float] &float_configs) except -1:
-    if "get_configs" not in self.__class__.__dict__:
+    # NOTE(vbkaisetsu):
+    # `hasattr(self.__class__, "get_configs")` also scans a parent class.
+    # We want check that the function is overrided or not.
+    if "get_configs" not in self.__class__.__dict__ or not callable(self.get_configs):
         raise NotImplementedError("'get_configs()' is not implemented in '%s'"
                                         % self.__class__.__name__)
     uint_configs_tmp, float_configs_tmp = self.get_configs()
@@ -160,7 +172,10 @@ cdef public api int python_primitiv_trainer_set_configs(
                         object self,
                         const unordered_map[string, unsigned] &uint_configs,
                         const unordered_map[string, float] &float_configs) except -1:
-    if "set_configs" not in self.__class__.__dict__:
+    # NOTE(vbkaisetsu):
+    # `hasattr(self.__class__, "set_configs")` also scans a parent class.
+    # We want check that the function is overrided or not.
+    if "set_configs" not in self.__class__.__dict__ or not callable(self.set_configs):
         raise NotImplementedError("'set_configs()' is not implemented in '%s'"
                                         % self.__class__.__name__)
     self.set_configs({k.decode("utf-8"): v for k, v in dict(uint_configs).items()},
