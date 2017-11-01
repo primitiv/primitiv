@@ -1,37 +1,41 @@
 from primitiv import trainers as T
+from primitiv._parameter cimport _Parameter
+
 
 cdef class _Trainer:
 
-    @staticmethod
-    def load(str path):
-        name = _Trainer.detect_name(path);
-        if name == "SGD":
-            trainer = T.SGD()
-        elif name == "MomentumSGD":
-            trainer = T.MomentumSGD()
-        elif name == "AdaGrad":
-            trainer = T.AdaGrad()
-        elif name == "RMSProp":
-            trainer = T.RMSProp()
-        elif name == "AdaDelta":
-            trainer = T.AdaDelta()
-        elif name == "Adam":
-            trainer = T.Adam()
-        else:
-            raise OSError("Unknown trainer name: %s" % name)
-        trainer.set_configs_by_file(path)
-        return trainer
+    # NOTE(vbkaisetsu):
+    # This method should be called in the __init__() method of a
+    # custom Trainer class.
+    #
+    # Users can define custom trainers written in Python. This method
+    # generates an instance of a helper trainer called "PyTrainer" that
+    # can call methods implemented in child classes of Trainer.
+    def __init__(self):
+        if self.wrapped is not NULL:
+            raise MemoryError()
+        self.wrapped = new CppPyTrainer(self)
 
-    @staticmethod
-    def detect_name(str path):
-        return CppTrainer_detect_name(path.encode("utf-8")).decode("utf-8")
+    # NOTE(vbkaisetsu):
+    # This method is also used by child classes implemented in
+    # trainers/_trainer_impl.pyx
+    # Please be careful when you change behavior around pointer of PyTrainer.
+    def __dealloc__(self):
+        # NOTE(vbkaisetsu):
+        # DO NOT delete C++ instance without checking NULL.
+        # __init__() is not guaranteed to be called when an instance is created.
+        # e.g. __new__() method, inherited without __init__(), etc.
+        if self.wrapped is not NULL:
+            del self.wrapped
+            self.wrapped = NULL
+
+    def load(self, str path):
+        self.wrapped.load(path.encode("utf-8"))
+        return
 
     def save(self, str path):
         self.wrapped.save(path.encode("utf-8"))
         return
-
-    def name(self):
-        return self.wrapped.name().decode("utf-8")
 
     def get_epoch(self):
         return self.wrapped.get_epoch()
@@ -85,12 +89,66 @@ cdef class _Trainer:
                                  {k.encode("utf-8"): v for k, v in float_configs.items()})
         return
 
-    def set_configs_by_file(self, str path):
-        self.wrapped.set_configs_by_file(path.encode("utf-8"))
-        return
-
     def __copy__(self):
         raise NotImplementedError(type(self).__name__ + " does not support `__copy__` for now.")
 
     def __deepcopy__(self, memo):
         raise NotImplementedError(type(self).__name__ + " does not support `__deepcopy__` for now.")
+
+
+cdef public api int python_primitiv_trainer_configure_parameter(
+                        object self,
+                        CppParameter &param) except -1:
+    # NOTE(vbkaisetsu):
+    # `hasattr(self.__class__, "configure_parameter")` also scans a parent class.
+    # We want check that the function is overrided or not.
+    if "configure_parameter" in self.__class__.__dict__ and callable(self.configure_parameter):
+        self.configure_parameter(_Parameter.get_wrapper(&param))
+        return 0
+    raise NotImplementedError("'configure_parameter()' is not implemented in '%s'"
+                                        % self.__class__.__name__)
+
+
+cdef public api int python_primitiv_trainer_update_parameter(
+                        object self,
+                        float scale,
+                        CppParameter &param) except -1:
+    # NOTE(vbkaisetsu):
+    # `hasattr(self.__class__, "update_parameter")` also scans a parent class.
+    # We want check that the function is overrided or not.
+    if "update_parameter" in self.__class__.__dict__ and callable(self.update_parameter):
+        self.update_parameter(scale, _Parameter.get_wrapper(&param))
+        return 0
+    raise NotImplementedError("'update_parameter()' is not implemented in '%s'"
+                                        % self.__class__.__name__)
+
+
+cdef public api int python_primitiv_trainer_get_configs(
+                        object self,
+                        unordered_map[string, unsigned] &uint_configs,
+                        unordered_map[string, float] &float_configs) except -1:
+    # NOTE(vbkaisetsu):
+    # `hasattr(self.__class__, "get_configs")` also scans a parent class.
+    # We want check that the function is overrided or not.
+    if "get_configs" in self.__class__.__dict__ and callable(self.get_configs):
+        uint_configs_tmp, float_configs_tmp = self.get_configs()
+        uint_configs.swap({k.encode("utf-8"): v for k, v in uint_configs_tmp.items()})
+        float_configs.swap({k.encode("utf-8"): v for k, v in float_configs_tmp.items()})
+        return 0
+    raise NotImplementedError("'get_configs()' is not implemented in '%s'"
+                                        % self.__class__.__name__)
+
+
+cdef public api int python_primitiv_trainer_set_configs(
+                        object self,
+                        const unordered_map[string, unsigned] &uint_configs,
+                        const unordered_map[string, float] &float_configs) except -1:
+    # NOTE(vbkaisetsu):
+    # `hasattr(self.__class__, "set_configs")` also scans a parent class.
+    # We want check that the function is overrided or not.
+    if "set_configs" in self.__class__.__dict__ and callable(self.set_configs):
+        self.set_configs({k.decode("utf-8"): v for k, v in dict(uint_configs).items()},
+                         {k.decode("utf-8"): v for k, v in dict(float_configs).items()})
+        return 0
+    raise NotImplementedError("'set_configs()' is not implemented in '%s'"
+                                        % self.__class__.__name__)

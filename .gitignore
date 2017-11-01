@@ -11,3 +11,5 @@ __pycache__
 /python-primitiv/*.egg-info
 /python-primitiv/build
 /python-primitiv/dist
+/python-primitiv/primitiv/_trainer.h
+/python-primitiv/primitiv/_trainer_api.h
