@@ -4,6 +4,13 @@ from primitiv._parameter cimport _Parameter
 
 cdef class _Trainer:
 
+    # NOTE(vbkaisetsu):
+    # This method should be called in the __init__() method of a
+    # custom Trainer class.
+    #
+    # Users can define custom trainers written in Python. This method
+    # generates an instance of a helper trainer called "PyTrainer" that
+    # can call methods implemented in child classes of Trainer.
     def __init__(self):
         if self.wrapped is not NULL:
             raise MemoryError()
