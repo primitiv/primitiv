@@ -23,9 +23,8 @@ cdef object py_primitiv_parameter_weak_dict = WeakValueDictionary()
 cdef class _ParameterStatistics:
 
     def __init__(self, _Parameter param):
-        # NOTE(vbkaisetsu):
-        # It becomes circular reference.
-        # We can't know when it will be deleted.
+        # NOTE(vbkaisetsu): It becomes circular reference.
+        # We can't know when it will be deleted by the garbage collector.
         # Therefore we hold this instance in a weakref to delete it immediately.
         self.param_ref = weakref.ref(param)
 

@@ -32,10 +32,8 @@ cdef extern from "primitiv/trainer.h":
 
 cdef class _Trainer:
     cdef CppTrainer *wrapped
-    cdef CppTrainer *wrapped_newed
 
 
-cdef inline _Trainer wrapTrainer(CppTrainer *wrapped) except +:
-    cdef _Trainer trainer = _Trainer.__new__(_Trainer)
-    trainer.wrapped = wrapped
-    return trainer
+cdef extern from "pytrainer.h":
+    cdef cppclass CppPyTrainer "python_primitiv::PyTrainer" (CppTrainer):
+        CppPyTrainer(object obj) except +
