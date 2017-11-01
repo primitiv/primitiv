@@ -91,20 +91,6 @@ cdef class _Trainer:
         raise NotImplementedError(type(self).__name__ + " does not support `__deepcopy__` for now.")
 
 
-cdef public api int python_primitiv_trainer_name(
-                        object self,
-                        string *val) except -1:
-    # NOTE(vbkaisetsu):
-    # `hasattr(self.__class__, "name")` also scans a parent class.
-    # We want check that the function is overrided or not.
-    if "name" not in self.__class__.__dict__ or not callable(self.name):
-        raise NotImplementedError("'name()' is not implemented in '%s'"
-                                        % self.__class__.__name__)
-    ret_str = self.name()
-    val[0] = ret_str.encode("utf-8")
-    return 0
-
-
 cdef public api int python_primitiv_trainer_configure_parameter(
                         object self,
                         CppParameter &param) except -1:

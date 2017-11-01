@@ -19,9 +19,6 @@ class TestAdam(Trainer):
         self.beta2_ = np.float32(beta2)
         self.eps_ = np.float32(eps)
 
-    def name(self):
-        return "TestAdam"
-
     def configure_parameter(self, param):
         for name in ("testadam-m1", "testadam-m2"):
             if name not in param.stats:
@@ -59,9 +56,6 @@ class TestException(Exception):
 
 
 class ExceptionTrainer(Trainer):
-
-    def name(self):
-        raise TestException("name")
 
     def configure_parameter(self, param):
         raise TestException("configure_parameter")
@@ -177,9 +171,6 @@ class PythonTrainerTest(unittest.TestCase):
         self.assertTrue(np.isclose(py_params[2], c_params[2]).all())
         self.assertTrue(np.isclose(py_params[3], c_params[3]).all())
 
-    def test_pytrainer_name(self):
-        self.assertEqual(Trainer.name(self.t), "TestAdam")
-
     def test_pytrainer_loadsave(self):
         t_loaded = TestAdam(alpha = 0, beta1 = 0, beta2 = 0, eps = 0)
         self.assertEqual(t_loaded.alpha_, 0)
@@ -188,7 +179,7 @@ class PythonTrainerTest(unittest.TestCase):
         self.assertEqual(t_loaded.eps_, 0)
         with tempfile.NamedTemporaryFile() as fp:
             self.t.save(fp.name)
-            t_loaded.set_configs_by_file(fp.name)
+            t_loaded.load(fp.name)
         self.assertAlmostEqual(t_loaded.alpha_, 0.001)
         self.assertAlmostEqual(t_loaded.beta1_, 0.9)
         self.assertAlmostEqual(t_loaded.beta2_, 0.999)
@@ -198,9 +189,6 @@ class PythonTrainerTest(unittest.TestCase):
         dev = D.Naive()
         Device.set_default(dev)
         trainer = ExceptionTrainer()
-        with self.assertRaises(TestException) as ctx:
-            Trainer.name(trainer)
-        self.assertEqual(str(ctx.exception), "name")
         p = Parameter(Shape([]))
         with self.assertRaises(TestException) as ctx:
             trainer.add_parameter(p)
@@ -223,8 +211,6 @@ class PythonTrainerTest(unittest.TestCase):
         dev = D.Naive()
         Device.set_default(dev)
         trainer = IncompleteTrainer()
-        with self.assertRaises(NotImplementedError):
-            Trainer.name(trainer)
         p = Parameter(Shape([]))
         with self.assertRaises(NotImplementedError):
             trainer.add_parameter(p)

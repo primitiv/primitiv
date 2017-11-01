@@ -4,8 +4,6 @@
 #include <primitiv/trainer.h>
 #include <iostream>
 
-__PYX_EXTERN_C int python_primitiv_trainer_name(
-                        PyObject *obj, std::string *val);
 __PYX_EXTERN_C int python_primitiv_trainer_get_configs(
                         PyObject *obj,
                         std::unordered_map<std::string, unsigned> &uint_configs,
@@ -27,15 +25,6 @@ class PyTrainer : public primitiv::Trainer {
 
 public:
   PyTrainer(PyObject *obj) : obj_(obj) {}
-
-  std::string name() const override {
-    std::string val;
-    int ret = python_primitiv_trainer_name(obj_, &val);
-    if (ret == -1) {
-      THROW_ERROR("error: name");
-    }
-    return val;
-  }
 
   void get_configs(std::unordered_map<std::string, unsigned> &uint_configs,
                    std::unordered_map<std::string, float> &float_configs) const override {
