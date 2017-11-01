@@ -30,6 +30,8 @@ public:
                    std::unordered_map<std::string, float> &float_configs) const override {
     int ret = python_primitiv_trainer_get_configs(obj_, uint_configs, float_configs);
     if (ret == -1) {
+      // NOTE(vbkaisetsu): This is just a trigger of throwing an error.
+      // This message is not passed to Python.
       THROW_ERROR("error: get_configs");
     }
     Trainer::get_configs(uint_configs, float_configs);
@@ -40,6 +42,8 @@ public:
     Trainer::set_configs(uint_configs, float_configs);
     int ret = python_primitiv_trainer_set_configs(obj_, uint_configs, float_configs);
     if (ret == -1) {
+      // NOTE(vbkaisetsu): This is just a trigger of throwing an error.
+      // This message is not passed to Python.
       THROW_ERROR("error: set_configs");
     }
   }
@@ -47,6 +51,8 @@ public:
   void configure_parameter(Parameter &param) override {
     int ret = python_primitiv_trainer_configure_parameter(obj_, param);
     if (ret == -1) {
+      // NOTE(vbkaisetsu): This is just a trigger of throwing an error.
+      // This message is not passed to Python.
       THROW_ERROR("error: configure_parameter");
     }
   }
@@ -54,6 +60,8 @@ public:
   void update_parameter(float scale, Parameter &param) override {
     int ret = python_primitiv_trainer_update_parameter(obj_, scale, param);
     if (ret == -1) {
+      // NOTE(vbkaisetsu): This is just a trigger of throwing an error.
+      // This message is not passed to Python.
       THROW_ERROR("error: update_parameter");
     }
   }

@@ -19,7 +19,12 @@ cdef class _Trainer:
     # NOTE(vbkaisetsu):
     # This method is also used by child classes implemented in
     # trainers/_trainer_impl.pyx
+    # Please be careful when you change behavior around pointer of PyTrainer.
     def __dealloc__(self):
+        # NOTE(vbkaisetsu):
+        # DO NOT delete C++ instance without checking NULL.
+        # __init__() is not guaranteed to be called when an instance is created.
+        # e.g. __new__() method, inherited without __init__(), etc.
         if self.wrapped is not NULL:
             del self.wrapped
             self.wrapped = NULL
