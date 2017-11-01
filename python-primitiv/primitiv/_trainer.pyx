@@ -2,36 +2,13 @@ from primitiv import trainers as T
 
 cdef class _Trainer:
 
-    @staticmethod
-    def load(str path):
-        name = _Trainer.detect_name(path);
-        if name == "SGD":
-            trainer = T.SGD()
-        elif name == "MomentumSGD":
-            trainer = T.MomentumSGD()
-        elif name == "AdaGrad":
-            trainer = T.AdaGrad()
-        elif name == "RMSProp":
-            trainer = T.RMSProp()
-        elif name == "AdaDelta":
-            trainer = T.AdaDelta()
-        elif name == "Adam":
-            trainer = T.Adam()
-        else:
-            raise OSError("Unknown trainer name: %s" % name)
-        trainer.set_configs_by_file(path)
-        return trainer
-
-    @staticmethod
-    def detect_name(str path):
-        return CppTrainer_detect_name(path.encode("utf-8")).decode("utf-8")
+    def load(self, str path):
+        self.wrapped.load(path.encode("utf-8"))
+        return
 
     def save(self, str path):
         self.wrapped.save(path.encode("utf-8"))
         return
-
-    def name(self):
-        return self.wrapped.name().decode("utf-8")
 
     def get_epoch(self):
         return self.wrapped.get_epoch()
@@ -83,10 +60,6 @@ cdef class _Trainer:
     def set_configs(self, dict uint_configs, dict float_configs):
         self.wrapped.set_configs({k.encode("utf-8"): v for k, v in uint_configs.items()},
                                  {k.encode("utf-8"): v for k, v in float_configs.items()})
-        return
-
-    def set_configs_by_file(self, str path):
-        self.wrapped.set_configs_by_file(path.encode("utf-8"))
         return
 
     def __copy__(self):
