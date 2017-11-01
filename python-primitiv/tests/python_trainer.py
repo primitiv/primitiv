@@ -14,16 +14,16 @@ import numpy as np
 class TestAdam(Trainer):
     def __init__(self, alpha, beta1, beta2, eps):
         super().__init__()
-        self.alpha_ = alpha
-        self.beta1_ = beta1
-        self.beta2_ = beta2
-        self.eps_ = eps
+        self.alpha_ = np.float32(alpha)
+        self.beta1_ = np.float32(beta1)
+        self.beta2_ = np.float32(beta2)
+        self.eps_ = np.float32(eps)
 
     def name(self):
-        return "MyAdam"
+        return "TestAdam"
 
     def configure_parameter(self, param):
-        for name in ("adam-m1", "adam-m2"):
+        for name in ("testadam-m1", "testadam-m2"):
             if name not in param.stats:
                 param.add_stats(name, param.shape())
                 param.stats[name].reset(0)
@@ -31,27 +31,27 @@ class TestAdam(Trainer):
     def update_parameter(self, scale, param):
         epoch = self.get_epoch() + 1
         g = param.gradient
-        param.stats["adam-m1"] = self.beta1_ * param.stats["adam-m1"] + (1 - self.beta1_) * g
-        param.stats["adam-m2"] = self.beta2_ * param.stats["adam-m2"] + (1 - self.beta2_) * g * g
-        mm1 = param.stats["adam-m1"] / (1 - self.beta1_ ** epoch)
-        mm2 = param.stats["adam-m2"] / (1 - self.beta2_ ** epoch)
+        param.stats["testadam-m1"] = self.beta1_ * param.stats["testadam-m1"] + (1 - self.beta1_) * g
+        param.stats["testadam-m2"] = self.beta2_ * param.stats["testadam-m2"] + (1 - self.beta2_) * g * g
+        mm1 = param.stats["testadam-m1"] / (1 - self.beta1_ ** epoch)
+        mm2 = param.stats["testadam-m2"] / (1 - self.beta2_ ** epoch)
         param.value -= (scale * self.alpha_) * mm1 / (tF.sqrt(mm2) + self.eps_)
 
     def get_configs(self):
         uint_configs = {}
         float_configs = {
-            "Adam.alpha": self.alpha_,
-            "Adam.beta1": self.beta1_,
-            "Adam.beta2": self.beta2_,
-            "Adam.eps": self.eps_,
+            "TestAdam.alpha": self.alpha_,
+            "TestAdam.beta1": self.beta1_,
+            "TestAdam.beta2": self.beta2_,
+            "TestAdam.eps": self.eps_,
         }
         return uint_configs, float_configs
 
     def set_configs(self, uint_configs, float_configs):
-        self.alpha_ = float_configs["Adam.alpha"]
-        self.beta1_ = float_configs["Adam.beta1"]
-        self.beta2_ = float_configs["Adam.beta2"]
-        self.eps_ = float_configs["Adam.eps"]
+        self.alpha_ = float_configs["TestAdam.alpha"]
+        self.beta1_ = float_configs["TestAdam.beta1"]
+        self.beta2_ = float_configs["TestAdam.beta2"]
+        self.eps_ = float_configs["TestAdam.eps"]
 
 
 class TestException(Exception):
@@ -86,10 +86,10 @@ def train_func(trainer):
     g = Graph()
     Graph.set_default(g)
 
-    pw1 = Parameter("w1", [8, 2], I.XavierUniform())
-    pb1 = Parameter("b1", [8], I.Constant(0))
-    pw2 = Parameter("w2", [1, 8], I.XavierUniform())
-    pb2 = Parameter("b2", [1], I.Constant(0))
+    pw1 = Parameter([8, 2], I.XavierUniform())
+    pb1 = Parameter([8], I.Constant(0))
+    pw2 = Parameter([1, 8], I.XavierUniform())
+    pb2 = Parameter([1], I.Constant(0))
 
     trainer.add_parameter(pw1)
     trainer.add_parameter(pb1)
@@ -134,7 +134,7 @@ class PythonTrainerTest(unittest.TestCase):
         pass
 
     def setUp(self):
-        self.t = TestAdam(alpha = 0.001,  beta1 = 0.9, beta2 = 0.999, eps = 1e-8)
+        self.t = TestAdam(alpha = 0.001, beta1 = 0.9, beta2 = 0.999, eps = 1e-8)
 
     def tearDown(self):
         pass
@@ -142,34 +142,43 @@ class PythonTrainerTest(unittest.TestCase):
     def test_pytrainer_get_set_config(self):
         uint_configs, float_configs = Trainer.get_configs(self.t)
         self.assertAlmostEqual(uint_configs['Trainer.epoch'], 0)
-        self.assertAlmostEqual(float_configs['Adam.alpha'], 0.001)
-        self.assertAlmostEqual(float_configs['Adam.beta1'], 0.9)
-        self.assertAlmostEqual(float_configs['Adam.beta2'], 0.999)
-        self.assertAlmostEqual(float_configs['Adam.eps'], 1e-8, places=10)
-        float_configs['Adam.beta1'] = 200
+        self.assertAlmostEqual(float_configs['TestAdam.alpha'], 0.001)
+        self.assertAlmostEqual(float_configs['TestAdam.beta1'], 0.9)
+        self.assertAlmostEqual(float_configs['TestAdam.beta2'], 0.999)
+        self.assertAlmostEqual(float_configs['TestAdam.eps'], 1e-8, places=10)
+        float_configs['TestAdam.beta1'] = 200
         Trainer.set_configs(self.t, uint_configs, float_configs)
         self.assertEqual(self.t.beta1_, 200)
 
     def test_pytrainer_parameter(self):
         dev = D.Naive()
         Device.set_default(dev)
-        pw1 = Parameter("w1", [8, 2], I.XavierUniform())
+        pw1 = Parameter([8, 2], I.XavierUniform())
         self.t.add_parameter(pw1)
-        self.assertIn("adam-m1", pw1.stats)
-        self.assertIn("adam-m2", pw1.stats)
+        self.assertIn("testadam-m1", pw1.stats)
+        self.assertIn("testadam-m2", pw1.stats)
 
     def test_pytrainer_compare_with_cpp(self):
-        c_trainer = T.Adam(alpha = 0.001,  beta1 = 0.9, beta2 = 0.999, eps = 1e-8)
+        c_trainer = T.Adam(alpha = 0.001, beta1 = 0.9, beta2 = 0.999, eps = 1e-8)
         py_params = train_func(self.t)
         c_params = train_func(c_trainer)
-        self.assertEqual(Trainer.get_configs(self.t), c_trainer.get_configs())
+        py_uint_configs, py_float_configs = Trainer.get_configs(self.t)
+        c_uint_configs, c_float_configs = c_trainer.get_configs()
+        self.assertEqual(py_uint_configs["Trainer.epoch"], c_uint_configs["Trainer.epoch"])
+        self.assertEqual(py_float_configs["TestAdam.alpha"], c_float_configs["Adam.alpha"])
+        self.assertEqual(py_float_configs["TestAdam.beta1"], c_float_configs["Adam.beta1"])
+        self.assertEqual(py_float_configs["TestAdam.beta2"], c_float_configs["Adam.beta2"])
+        self.assertEqual(py_float_configs["TestAdam.eps"], c_float_configs["Adam.eps"])
+        self.assertEqual(py_float_configs["Trainer.clip_threshold"], c_float_configs["Trainer.clip_threshold"])
+        self.assertEqual(py_float_configs["Trainer.l2_strength"], c_float_configs["Trainer.l2_strength"])
+        self.assertEqual(py_float_configs["Trainer.lr_scale"], c_float_configs["Trainer.lr_scale"])
         self.assertTrue(np.isclose(py_params[0], c_params[0]).all())
         self.assertTrue(np.isclose(py_params[1], c_params[1]).all())
         self.assertTrue(np.isclose(py_params[2], c_params[2]).all())
         self.assertTrue(np.isclose(py_params[3], c_params[3]).all())
 
     def test_pytrainer_name(self):
-        self.assertEqual(Trainer.name(self.t), "MyAdam")
+        self.assertEqual(Trainer.name(self.t), "TestAdam")
 
     def test_pytrainer_loadsave(self):
         t_loaded = TestAdam(alpha = 0,  beta1 = 0, beta2 = 0, eps = 0)
@@ -192,7 +201,7 @@ class PythonTrainerTest(unittest.TestCase):
         with self.assertRaises(TestException) as ctx:
             Trainer.name(trainer)
         self.assertEqual(str(ctx.exception), "name")
-        p = Parameter("p", Shape([]))
+        p = Parameter(Shape([]))
         with self.assertRaises(TestException) as ctx:
             trainer.add_parameter(p)
         self.assertEqual(str(ctx.exception), "configure_parameter")
@@ -216,7 +225,7 @@ class PythonTrainerTest(unittest.TestCase):
         trainer = IncompleteTrainer()
         with self.assertRaises(NotImplementedError):
             Trainer.name(trainer)
-        p = Parameter("p", Shape([]))
+        p = Parameter(Shape([]))
         with self.assertRaises(NotImplementedError):
             trainer.add_parameter(p)
         with self.assertRaises(NotImplementedError):

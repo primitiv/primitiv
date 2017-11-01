@@ -53,7 +53,7 @@ class ArgumentTest(unittest.TestCase):
         dev = self.graph.get_device(node)
         self.assertIs(dev, my_device)
 
-        param = Parameter("p", Shape([]))
+        param = Parameter(Shape([]))
         dev = param.device()
         self.assertIs(dev, self.device)
 
@@ -66,7 +66,7 @@ class ArgumentTest(unittest.TestCase):
         self.assertIs(g, self.graph)
 
     def test_tensor_instance(self):
-        param = Parameter("p", Shape([]))
+        param = Parameter(Shape([]))
         t_origin = param.gradient
         t = param.gradient
         self.assertIs(t, t_origin)
