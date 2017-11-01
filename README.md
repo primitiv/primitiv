@@ -1,3 +1,7 @@
+[![C++](https://img.shields.io/badge/C%2B%2B-11-blue.svg)]()
+[![Python](https://img.shields.io/badge/Python-3.5-blue.svg)]()
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+
 primitiv
 ========
 
@@ -80,7 +84,7 @@ Building Options
 Usage
 -----
 
-- [Short tutorial](https://github.com/odashi/primitiv/tree/develop/examples/tutorial1_xor.ipynb) with solving XOR problem.
+- [Short Python tutorial](https://github.com/odashi/primitiv/tree/develop/examples/tutorial1_xor.ipynb) with solving XOR problem.
 - [Other examples](https://github.com/odashi/primitiv/tree/develop/examples).
 
 
