@@ -7,13 +7,12 @@
 #include <primitiv/operators.h>
 #include <primitiv/parameter.h>
 #include <primitiv/trainer.h>
-#include <primitiv/trainer_impl.h>
 
 namespace {
 
 void read_proto(
     const std::string &path,
-    primitiv::messages::TrainerConfigs &msg) {
+    primitiv::messages::Trainer &msg) {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   std::ifstream ifs(path);
@@ -22,13 +21,13 @@ void read_proto(
   }
 
   if (!msg.ParseFromIstream(&ifs)) {
-    THROW_ERROR("Failed to read TrainerConfigs message: " << path);
+    THROW_ERROR("Failed to read Trainer message: " << path);
   }
 }
 
 void write_proto(
     const std::string &path,
-    const primitiv::messages::TrainerConfigs &msg) {
+    const primitiv::messages::Trainer &msg) {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   std::ofstream ofs(path);
@@ -37,7 +36,7 @@ void write_proto(
   }
 
   if (!msg.SerializeToOstream(&ofs)) {
-    THROW_ERROR("Failed to write TrainerConfigs message: " << path);
+    THROW_ERROR("Failed to write Trainer message: " << path);
   }
 }
 
@@ -45,27 +44,14 @@ void write_proto(
 
 namespace primitiv {
 
-std::string Trainer::detect_name(const std::string &path) {
-  messages::TrainerConfigs msg;
+void Trainer::load(const std::string &path) {
+  messages::Trainer msg;
   ::read_proto(path, msg);
-  return msg.name();
-}
-
-std::shared_ptr<Trainer> Trainer::load(const std::string &path) {
-  const std::string name = detect_name(path);
-
-  std::shared_ptr<Trainer> trainer;
-  if (name == "SGD") trainer.reset(new trainers::SGD());
-  else if (name == "MomentumSGD") trainer.reset(new trainers::MomentumSGD());
-  else if (name == "AdaGrad") trainer.reset(new trainers::AdaGrad());
-  else if (name == "RMSProp") trainer.reset(new trainers::RMSProp());
-  else if (name == "AdaDelta") trainer.reset(new trainers::AdaDelta());
-  else if (name == "Adam") trainer.reset(new trainers::Adam());
-  else THROW_ERROR("Unknown trainer name: " << name);
-
-  trainer->set_configs_by_file(path);
-
-  return trainer;
+  std::unordered_map<std::string, unsigned> uint_configs(
+      msg.uint_configs().begin(), msg.uint_configs().end());
+  std::unordered_map<std::string, float> float_configs(
+      msg.float_configs().begin(), msg.float_configs().end());
+  set_configs(uint_configs, float_configs);
 }
 
 void Trainer::save(const std::string &path) const {
@@ -75,8 +61,7 @@ void Trainer::save(const std::string &path) const {
   std::unordered_map<std::string, float> float_configs;
   get_configs(uint_configs, float_configs);
 
-  messages::TrainerConfigs msg;
-  msg.set_name(name());
+  messages::Trainer msg;
   msg.mutable_uint_configs()->insert(uint_configs.begin(), uint_configs.end());
   msg.mutable_float_configs()->insert(float_configs.begin(), float_configs.end());
   ::write_proto(path, msg);
@@ -138,26 +123,18 @@ void Trainer::get_configs(
 void Trainer::set_configs(
     const std::unordered_map<std::string, unsigned> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
-  epoch_ = uint_configs.at("Trainer.epoch");
-  lr_scale_ = float_configs.at("Trainer.lr_scale");
-  l2_strength_ = float_configs.at("Trainer.l2_strength");
-  clip_threshold_ = float_configs.at("Trainer.clip_threshold");
+#define SET_CONFIG(dest, cfg, key) { \
+  const auto it = cfg.find(key); \
+  if (it == cfg.end()) { \
+    THROW_ERROR("Key not found in the trainer config: " << key); \
+  } \
+  dest = it->second; \
 }
-
-void Trainer::set_configs_by_file(const std::string &path) {
-  messages::TrainerConfigs msg;
-  ::read_proto(path, msg);
-  if (msg.name() != name()) {
-    THROW_ERROR(
-        "Trainer name mismatched. expected: "
-        << name() << ", actual: " << msg.name());
-  }
-
-  std::unordered_map<std::string, unsigned> uint_configs(
-      msg.uint_configs().begin(), msg.uint_configs().end());
-  std::unordered_map<std::string, float> float_configs(
-      msg.float_configs().begin(), msg.float_configs().end());
-  set_configs(uint_configs, float_configs);
+  SET_CONFIG(epoch_, uint_configs, "Trainer.epoch");
+  SET_CONFIG(lr_scale_, float_configs, "Trainer.lr_scale");
+  SET_CONFIG(l2_strength_, float_configs, "Trainer.l2_strength");
+  SET_CONFIG(clip_threshold_, float_configs, "Trainer.clip_threshold");
+#undef SET_CONFIG
 }
 
 }  // namespace primitiv

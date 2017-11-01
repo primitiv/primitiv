@@ -8,7 +8,6 @@ namespace trainers {
 
 #define DECL_DEFAULTS(name_) \
 public: \
-  std::string name() const override { return #name_; } \
   void get_configs( \
       std::unordered_map<std::string, unsigned> &uint_configs, \
       std::unordered_map<std::string, float> &float_configs) const override; \
