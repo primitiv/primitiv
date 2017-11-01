@@ -181,7 +181,7 @@ class PythonTrainerTest(unittest.TestCase):
         self.assertEqual(Trainer.name(self.t), "TestAdam")
 
     def test_pytrainer_loadsave(self):
-        t_loaded = TestAdam(alpha = 0,  beta1 = 0, beta2 = 0, eps = 0)
+        t_loaded = TestAdam(alpha = 0, beta1 = 0, beta2 = 0, eps = 0)
         self.assertEqual(t_loaded.alpha_, 0)
         self.assertEqual(t_loaded.beta1_, 0)
         self.assertEqual(t_loaded.beta2_, 0)
