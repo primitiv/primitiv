@@ -39,6 +39,7 @@ cdef extern from "primitiv/operators.h":
     Var op_sqrt "primitiv::operators::sqrt" [Var](const Var &x) except +
     Var op_exp "primitiv::operators::exp" [Var](const Var &x) except +
     Var op_log "primitiv::operators::log" [Var](const Var &x) except +
+    Var op_ipow "primitiv::operators::ipow" [Var](const Var &x, int k) except +
     Var op_pow "primitiv::operators::pow" [Var](const Var &x, float k) except +
     Var op_pow "primitiv::operators::pow" [Var](float x, const Var &k) except +
     Var op_pow "primitiv::operators::pow" [Var](const Var &x, const Var &k) except +

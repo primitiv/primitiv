@@ -17,8 +17,7 @@ message Parameter {
   map<string, Tensor> stats = 2;
 }
 
-message TrainerConfigs {
-  string name = 1;
+message Trainer {
   map<string, uint32> uint_configs = 2;
   map<string, float> float_configs = 3;
 }

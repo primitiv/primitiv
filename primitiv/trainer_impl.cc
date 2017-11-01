@@ -9,6 +9,14 @@
 namespace primitiv {
 namespace trainers {
 
+#define SET_CONFIG(dest, cfg, key) { \
+  const auto it = cfg.find(key); \
+  if (it == cfg.end()) { \
+    THROW_ERROR("Key not found in the trainer config: " << key); \
+  } \
+  dest = it->second; \
+}
+
 void SGD::configure_parameter(Parameter &param) {}
 
 void SGD::update_parameter(float scale, Parameter &param) {
@@ -26,7 +34,7 @@ void SGD::set_configs(
     const std::unordered_map<std::string, unsigned> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
   Trainer::set_configs(uint_configs, float_configs);
-  eta_ = float_configs.at("SGD.eta");
+  SET_CONFIG(eta_, float_configs, "SGD.eta");
 }
 
 void MomentumSGD::configure_parameter(Parameter &param) {
@@ -56,8 +64,8 @@ void MomentumSGD::set_configs(
     const std::unordered_map<std::string, unsigned> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
   Trainer::set_configs(uint_configs, float_configs);
-  eta_ = float_configs.at("MomentumSGD.eta");
-  momentum_ = float_configs.at("MomentumSGD.momentum");
+  SET_CONFIG(eta_, float_configs, "MomentumSGD.eta");
+  SET_CONFIG(momentum_, float_configs, "MomentumSGD.momentum");
 }
 
 void AdaGrad::configure_parameter(Parameter &param) {
@@ -87,8 +95,8 @@ void AdaGrad::set_configs(
     const std::unordered_map<std::string, unsigned> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
   Trainer::set_configs(uint_configs, float_configs);
-  eta_ = float_configs.at("AdaGrad.eta");
-  eps_ = float_configs.at("AdaGrad.eps");
+  SET_CONFIG(eta_, float_configs, "AdaGrad.eta");
+  SET_CONFIG(eps_, float_configs, "AdaGrad.eps");
 }
 
 void RMSProp::configure_parameter(Parameter &param) {
@@ -119,9 +127,9 @@ void RMSProp::set_configs(
     const std::unordered_map<std::string, unsigned> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
   Trainer::set_configs(uint_configs, float_configs);
-  eta_ = float_configs.at("RMSProp.eta");
-  alpha_ = float_configs.at("RMSProp.alpha");
-  eps_ = float_configs.at("RMSProp.eps");
+  SET_CONFIG(eta_, float_configs, "RMSProp.eta");
+  SET_CONFIG(alpha_, float_configs, "RMSProp.alpha");
+  SET_CONFIG(eps_, float_configs, "RMSProp.eps");
 }
 
 void AdaDelta::configure_parameter(Parameter &param) {
@@ -157,8 +165,8 @@ void AdaDelta::set_configs(
     const std::unordered_map<std::string, unsigned> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
   Trainer::set_configs(uint_configs, float_configs);
-  rho_ = float_configs.at("AdaDelta.rho");
-  eps_ = float_configs.at("AdaDelta.eps");
+  SET_CONFIG(rho_, float_configs, "AdaDelta.rho");
+  SET_CONFIG(eps_, float_configs, "AdaDelta.eps");
 }
 
 void Adam::configure_parameter(Parameter &param) {
@@ -196,11 +204,13 @@ void Adam::set_configs(
     const std::unordered_map<std::string, unsigned> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
   Trainer::set_configs(uint_configs, float_configs);
-  alpha_ = float_configs.at("Adam.alpha");
-  beta1_ = float_configs.at("Adam.beta1");
-  beta2_ = float_configs.at("Adam.beta2");
-  eps_ = float_configs.at("Adam.eps");
+  SET_CONFIG(alpha_, float_configs, "Adam.alpha");
+  SET_CONFIG(beta1_, float_configs, "Adam.beta1");
+  SET_CONFIG(beta2_, float_configs, "Adam.beta2");
+  SET_CONFIG(eps_, float_configs, "Adam.eps");
 }
+
+#undef SET_CONFIG
 
 }  // namespace trainers
 }  // namespace primitiv

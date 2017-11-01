@@ -32,7 +32,7 @@
 #include <random>
 
 #include <primitiv/primitiv.h>
-#include <primitiv/primitiv_cuda.h>
+//#include <primitiv/primitiv_cuda.h>
 
 #include "lstm.h"
 #include "utils.h"
@@ -309,7 +309,8 @@ int main(const int argc, const char *argv[]) {
   }
 
   cerr << "initializing device ... " << flush;
-  devices::CUDA dev(0);
+  devices::Naive dev;
+  //devices::CUDA dev(0);
   Device::set_default(dev);
   cerr << "done." << endl;
 
@@ -324,10 +325,11 @@ int main(const int argc, const char *argv[]) {
   } else if (mode == "resume") {
     cerr << "loading model/trainer ... " << flush;
     ::EncoderDecoder<Node> encdec("encdec", prefix + '.');
-    shared_ptr<Trainer> trainer = Trainer::load(prefix + ".trainer.config");
+    trainers::Adam trainer;
+    trainer.load(prefix + ".trainer.config");
     float valid_ppl = ::load_ppl(prefix + ".valid_ppl.config");
     cerr << "done." << endl;
-    ::train(encdec, *trainer, prefix, valid_ppl);
+    ::train(encdec, trainer, prefix, valid_ppl);
   } else {  // mode == "test"
     cerr << "loading model ... ";
     ::EncoderDecoder<Tensor> encdec("encdec", prefix + '.');

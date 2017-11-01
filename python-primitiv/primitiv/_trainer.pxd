@@ -13,8 +13,8 @@ cdef extern from "primitiv/trainer.h":
     cdef cppclass CppTrainer "primitiv::Trainer":
         CppTrainer(CppTrainer &&) except +
         CppTrainer() except +
+        void load(const string &path) except +
         void save(const string &path) except +
-        string name() except +
         unsigned get_epoch() except +
         void set_epoch(unsigned epoch) except +
         float get_learning_rate_scaling() except +
@@ -28,11 +28,6 @@ cdef extern from "primitiv/trainer.h":
         void update() except +
         void get_configs(unordered_map[string, unsigned] &uint_configs, unordered_map[string, float] &float_configs) except +
         void set_configs(const unordered_map[string, unsigned] &uint_configs, const unordered_map[string, float] &float_configs) except +
-        void set_configs_by_file(const string &path) except +
-
-
-cdef extern from "primitiv/trainer.h":
-    string CppTrainer_detect_name "primitiv::Trainer::detect_name"(const string &path) except +
 
 
 cdef class _Trainer:

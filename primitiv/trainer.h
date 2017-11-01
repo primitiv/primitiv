@@ -23,30 +23,16 @@ public:
   Trainer() : epoch_(0), lr_scale_(1), l2_strength_(0), clip_threshold_(0) {}
 
   /**
-   * Retrieves a trainer name from a file.
-   * @param path Path of the file that stores trainer parameters.
-   * @return Corresponding trainer name.
-   */
-  static std::string detect_name(const std::string &path);
-
-  /**
-   * Loads a trainer from a file.
+   * Loads configurations from a file.
    * @param path Path of the trainer parameter file.
-   * @return A shared pointer of the Trainer object.
    */
-  static std::shared_ptr<Trainer> load(const std::string &path);
+  void load(const std::string &path);
 
   /**
-   * Saves the parameters to a file.
+   * Saves current configurations to a file.
    * @param path Path of the file that will store trainer parameters.
    */
   void save(const std::string &path) const;
-
-  /**
-   * Retrieves the name of the trainer.
-   * @return Name of the trainer.
-   */
-  virtual std::string name() const = 0;
 
   /**
    * Retrieves current epoch.
@@ -144,12 +130,6 @@ public:
   virtual void set_configs(
       const std::unordered_map<std::string, unsigned> &uint_configs,
       const std::unordered_map<std::string, float> &float_configs);
-
-  /**
-   * Sets configuration values using a file.
-   * @param path Path of the trainer parameter file.
-   */
-  void set_configs_by_file(const std::string &path);
 
 private:
   unsigned epoch_;
