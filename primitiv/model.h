@@ -24,8 +24,19 @@ public:
    * Registers a new parameter.
    * @param name Name of the parameter.
    * @param param Reference to the parameter.
+   * @remarks `name` should not be overlapped with all registered parameters and
+   *          submodels.
    */
   void add_parameter(const std::string &name, Parameter &param);
+
+  /**
+   * Registers a new submodel.
+   * @param name Name of the submodel.
+   * @param model Reference to the submodel.
+   * @remarks `name` should not be overlapped with all registered parameters and
+   *          submodels.
+   */
+  void add_submodel(const std::string &name, Model &model);
 
   /**
    * Retrieves all parameters in the model which are trainable.
@@ -35,7 +46,10 @@ public:
 
 private:
   std::unordered_map<std::string, Parameter *> param_kv_;
-  std::unordered_set<Parameter *> param_set_;  // Shortcut to find parameters.
+  std::unordered_map<std::string, Model *> submodel_kv_;
+  std::unordered_set<std::string> name_set_;
+  std::unordered_set<Parameter *> param_set_;
+  std::unordered_set<Model *> submodel_set_;
 };
 
 }  // namespace primitiv
