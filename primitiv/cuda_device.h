@@ -16,10 +16,6 @@ struct CUDAInternalState;
  */
 class CUDA : public Device {
   CUDA() = delete;
-  CUDA(const CUDA &) = delete;
-  CUDA(CUDA &&) = delete;
-  CUDA &operator=(const CUDA &) = delete;
-  CUDA &operator=(CUDA &&) = delete;
 
 public:
   /** Retrieves the number of active hardwares.

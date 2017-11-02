@@ -12,11 +12,6 @@ class Device;
 namespace functions {
 
 #define DEFAULT_CLASS_DECL(name_) \
-private: \
-  name_(const name_ &) = delete; \
-  name_(name_ &&) = delete; \
-  name_ &operator=(const name_ &) = delete; \
-  name_ &operator=(name_ &&) = delete; \
 public: \
   Shape forward_shape(const std::vector<const Shape *> &args) const override; \
   Tensor forward(const std::vector<const Tensor *> &args) override; \

@@ -7,6 +7,34 @@ namespace primitiv {
 namespace mixins {
 
 /**
+ * Mix-in class to prohibit copying.
+ */
+template<typename T>
+class Noncopyable {
+private:
+  Noncopyable(const Noncopyable &) = delete;
+  Noncopyable &operator=(const Noncopyable &) = delete;
+protected:
+  Noncopyable() = default;
+  ~Noncopyable() = default;
+};
+
+/**
+ * Mix-in class to prohibit moving and copying.
+ */
+template<typename T>
+class Nonmovable {
+private:
+  Nonmovable(const Nonmovable &) = delete;
+  Nonmovable(Nonmovable &&) = delete;
+  Nonmovable &operator=(const Nonmovable &) = delete;
+  Nonmovable &operator=(Nonmovable &&) = delete;
+protected:
+  Nonmovable() = default;
+  ~Nonmovable() = default;
+};
+
+/**
  * Mix-in class to provide default value setter/getter.
  */
 template<typename T>
@@ -21,7 +49,7 @@ class DefaultSettable {
    */
   static T *default_obj_;
 
-public:
+protected:
   DefaultSettable() = default;
 
   ~DefaultSettable() {
@@ -31,6 +59,7 @@ public:
     }
   }
 
+public:
   /**
    * Retrieves the current default object.
    * @return Reference of the current default object.

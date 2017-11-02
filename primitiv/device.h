@@ -11,13 +11,10 @@ namespace primitiv {
 /**
  * Interface of the Tensor provider.
  */
-class Device : public mixins::DefaultSettable<Device> {
+class Device
+    : public mixins::DefaultSettable<Device>
+    , mixins::Nonmovable<Device> {
   friend Tensor;
-
-  Device(const Device &) = delete;
-  Device(Device &&) = delete;
-  Device &operator=(const Device &) = delete;
-  Device &operator=(Device &&) = delete;
 
 public:
   /**

@@ -6,6 +6,7 @@
 #include <vector>
 #include <primitiv/device.h>
 #include <primitiv/error.h>
+#include <primitiv/mixins.h>
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
 
@@ -16,10 +17,7 @@ class Initializer;
 /**
  * Class to manage a trainable tensor parameter.
  */
-class Parameter {
-  Parameter(const Parameter &) = delete;
-  Parameter &operator=(const Parameter &) = delete;
-
+class Parameter : mixins::Noncopyable<Parameter> {
 public:
   Parameter(Parameter &&src)
     : shape_(std::move(src.shape_))

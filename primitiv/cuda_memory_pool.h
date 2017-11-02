@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <primitiv/mixins.h>
+
 namespace primitiv {
 
 class CUDAMemoryDeleter;
@@ -13,14 +15,10 @@ class CUDAMemoryDeleter;
 /**
  * Memory manager on the CUDA devices.
  */
-class CUDAMemoryPool {
+class CUDAMemoryPool : mixins::Nonmovable<CUDAMemoryPool> {
   friend CUDAMemoryDeleter;
 
   CUDAMemoryPool() = delete;
-  CUDAMemoryPool(const CUDAMemoryPool &) = delete;
-  CUDAMemoryPool(CUDAMemoryPool &&) = delete;
-  CUDAMemoryPool &operator=(const CUDAMemoryPool &) = delete;
-  CUDAMemoryPool &operator=(CUDAMemoryPool &&) = delete;
 
 public:
   /**
