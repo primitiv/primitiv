@@ -21,7 +21,7 @@ class DefaultSettable {
    */
   static T *default_obj_;
 
-public:
+protected:
   DefaultSettable() = default;
 
   ~DefaultSettable() {
@@ -31,6 +31,7 @@ public:
     }
   }
 
+public:
   /**
    * Retrieves the current default object.
    * @return Reference of the current default object.
