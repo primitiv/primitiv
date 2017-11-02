@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include <primitiv/mixins.h>
+
 namespace primitiv {
 
 class Parameter;
@@ -13,14 +15,9 @@ class Parameter;
 /**
  * Set of parameters and specific algorithms.
  */
-class Model {
-  Model(const Model &) = delete;
-  Model &operator=(const Model &) = delete;
-
+class Model : mixins::Nonmovable<Model> {
 public:
   Model() = default;
-  Model(Model &&) = default;
-  Model &operator=(Model &&) = default;
   virtual ~Model() = default;
 
   /**
