@@ -11,7 +11,7 @@ from primitiv._initializer cimport CppInitializer, _Initializer
 
 cdef extern from "primitiv/parameter.h":
     cdef cppclass CppParameter "primitiv::Parameter":
-        CppParameter(CppParameter &&src)
+        CppParameter(CppParameter &&src) except +
         CppParameter() except +
         CppParameter(const CppShape &shape, CppDevice &device) except +
         CppParameter(const CppShape &shape, const vector[float] &value, CppDevice &device) except +
