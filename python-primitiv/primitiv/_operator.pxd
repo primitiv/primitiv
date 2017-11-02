@@ -43,7 +43,7 @@ cdef extern from "primitiv/operators.h":
     Var op_pow "primitiv::operators::pow" [Var](const Var &x, float k) except +
     Var op_pow "primitiv::operators::pow" [Var](float x, const Var &k) except +
     Var op_pow "primitiv::operators::pow" [Var](const Var &x, const Var &k) except +
-    Var op_tanh "primitiv::operators::tanh" [Var](const Var &x)
+    Var op_tanh "primitiv::operators::tanh" [Var](const Var &x) except +
     Var op_sigmoid "primitiv::operators::sigmoid" [Var](const Var &x) except +
     Var op_softplus "primitiv::operators::softplus" [Var](const Var &x) except +
     Var op_sin "primitiv::operators::sin" [Var](const Var &x) except +
@@ -68,7 +68,7 @@ cdef extern from "primitiv/operators.h":
     Var op_zeros "primitiv::operators::zeros" [Var](const CppShape &shape, CppDevice &dev) except +
     Var op_ones "primitiv::operators::ones" [Var](const CppShape &shape, CppDevice &dev) except +
     Var op_identity "primitiv::operators::identity" [Var](unsigned size, CppDevice &dev) except +
-    Var op_dropout "primitiv::operators::dropout" [Var](const Var &x, float rate, bool enabled)
+    Var op_dropout "primitiv::operators::dropout" [Var](const Var &x, float rate, bool enabled) except +
 
 
 cdef extern from "primitiv/operators.h":
