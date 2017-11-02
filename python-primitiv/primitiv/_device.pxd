@@ -4,7 +4,7 @@ cdef extern from "primitiv/device.h":
 
 
 cdef extern from "primitiv/device.h":
-    cdef CppDevice &CppDevice_get_default "primitiv::Device::get_default"()
+    cdef CppDevice &CppDevice_get_default "primitiv::Device::get_default"() except +
     cdef void CppDevice_set_default "primitiv::Device::set_default"(CppDevice &dev)
 
 

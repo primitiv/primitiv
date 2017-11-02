@@ -17,21 +17,6 @@ using std::vector;
 
 namespace primitiv {
 
-Device *Device::default_obj_ = nullptr;
-
-Device &Device::get_default() {
-  if (!default_obj_) THROW_ERROR("Default device is null.");
-  return *default_obj_;
-}
-
-void Device::set_default(Device &dev) {
-  default_obj_ = &dev;
-}
-
-Device::~Device() {
-  if (default_obj_ == this) default_obj_ = nullptr;
-}
-
 Tensor Device::new_tensor(const Shape &shape) {
   return Tensor(shape, *this, new_handle(shape));
 }

@@ -53,7 +53,7 @@ cdef extern from "primitiv/graph.h" nogil:
 
 
 cdef extern from "primitiv/graph.h":
-    cdef CppGraph &CppGraph_get_default "primitiv::Graph::get_default"()
+    cdef CppGraph &CppGraph_get_default "primitiv::Graph::get_default"() except +
     cdef void CppGraph_set_default "primitiv::Graph::set_default"(CppGraph &g)
 
 
