@@ -42,11 +42,6 @@ using ReducePtr = typename std::enable_if<
   >::type
 >::type;
 
-// Returns true_type if T is Device or Graph.
-template<typename T> struct is_scoped : std::false_type {};
-template<> struct is_scoped<Device> : std::true_type {};
-template<> struct is_scoped<Graph> : std::true_type {};
-
 }  // namespace type_traits
 
 }  // namespace primitiv
