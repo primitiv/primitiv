@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <primitiv/function.h>
+#include <primitiv/mixins.h>
 #include <primitiv/shape.h>
 
 namespace primitiv {
@@ -136,28 +137,15 @@ private:
 /**
  * Computation graph.
  */
-class Graph {
+class Graph : public mixins::DefaultSettable<Graph> {
   Graph(const Graph &) = delete;
   Graph(Graph &&) = delete;
   Graph &operator=(const Graph &) = delete;
   Graph &operator=(Graph &&) = delete;
 
 public:
-
-  /**
-   * Retrieves the current default graph.
-   * @return Reference of the default graph.
-   */
-  static Graph &get_default();
-
-  /**
-   * Registers a new default graph.
-   * @param g New default graph.
-   */
-  static void set_default(Graph &g);
-
   Graph() = default;
-  ~Graph();
+  ~Graph() = default;
 
   /**
    * Clear all functions in the graph.

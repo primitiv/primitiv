@@ -2,6 +2,7 @@
 #define PRIMITIV_DEVICE_H_
 
 #include <memory>
+#include <primitiv/mixins.h>
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
 
@@ -10,10 +11,8 @@ namespace primitiv {
 /**
  * Interface of the Tensor provider.
  */
-class Device {
+class Device : public mixins::DefaultSettable<Device> {
   friend Tensor;
-
-  static Device *default_obj_;
 
   Device(const Device &) = delete;
   Device(Device &&) = delete;
@@ -29,20 +28,8 @@ public:
     DEVICE_TYPE_CUDA = 0x10000,
   };
 
-  /**
-   * Retrieves the current default device.
-   * @return Reference of the default device.
-   */
-  static Device &get_default();
-
-  /**
-   * Registers a new default device.
-   * @param dev New default device.
-   */
-  static void set_default(Device &dev);
-
   Device() = default;
-  virtual ~Device();
+  virtual ~Device() = default;
 
   /**
    * Prints device description to stderr.
