@@ -137,12 +137,9 @@ private:
 /**
  * Computation graph.
  */
-class Graph : public mixins::DefaultSettable<Graph> {
-  Graph(const Graph &) = delete;
-  Graph(Graph &&) = delete;
-  Graph &operator=(const Graph &) = delete;
-  Graph &operator=(Graph &&) = delete;
-
+class Graph
+    : public mixins::DefaultSettable<Graph>
+    , mixins::Nonmovable<Graph> {
 public:
   Graph() = default;
   ~Graph() = default;

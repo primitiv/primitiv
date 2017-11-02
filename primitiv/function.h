@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <primitiv/mixins.h>
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
 
@@ -13,12 +14,7 @@ class Device;
 /**
  * Interface of the function on the computation graph.
  */
-class Function {
-  Function(const Function &) = delete;
-  Function(Function &&) = delete;
-  Function &operator=(const Function &) = delete;
-  Function &operator=(Function &&) = delete;
-
+class Function : mixins::Nonmovable<Function> {
 public:
   Function() = default;
   virtual ~Function() = default;
