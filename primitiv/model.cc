@@ -18,4 +18,8 @@ void Model::add_parameter(const std::string &name, Parameter &param) {
   param_kv_.emplace(name, &param);
 }
 
+std::vector<Parameter *> Model::get_trainable_parameters() const {
+  return std::vector<Parameter *>(param_set_.begin(), param_set_.end());
+}
+
 }  // namespace primitiv

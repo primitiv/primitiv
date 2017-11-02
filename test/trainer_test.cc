@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 #include <primitiv/error.h>
+#include <primitiv/model.h>
 #include <primitiv/naive_device.h>
 #include <primitiv/parameter.h>
 #include <primitiv/trainer_impl.h>
@@ -32,6 +33,24 @@ TEST_F(TrainerTest, CheckAddParameter) {
   EXPECT_THROW(trainer.add_parameter(param2), Error);
 
   EXPECT_NO_THROW(trainer.add_parameter(param3));
+  EXPECT_THROW(trainer.add_parameter(param1), Error);
+  EXPECT_THROW(trainer.add_parameter(param2), Error);
+  EXPECT_THROW(trainer.add_parameter(param3), Error);
+}
+
+TEST_F(TrainerTest, CheckAddModel) {
+  Device::set_default(dev);
+  trainers::SGD trainer;
+  Model m;
+  Parameter param1({2, 2});
+  Parameter param2({2, 2});
+  Parameter param3({2, 2});
+  m.add_parameter("param1", param1);
+  m.add_parameter("param2", param2);
+  m.add_parameter("param3", param3);
+
+  EXPECT_NO_THROW(trainer.add_model(m));
+  EXPECT_THROW(trainer.add_model(m), Error);
   EXPECT_THROW(trainer.add_parameter(param1), Error);
   EXPECT_THROW(trainer.add_parameter(param2), Error);
   EXPECT_THROW(trainer.add_parameter(param3), Error);
