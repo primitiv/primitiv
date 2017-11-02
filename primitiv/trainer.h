@@ -4,6 +4,7 @@
 #include <memory>
 #include <unordered_set>
 #include <primitiv/error.h>
+#include <primitiv/mixins.h>
 
 namespace primitiv {
 
@@ -12,15 +13,11 @@ class Parameter;
 /**
  * Abstract class for parameter optimizers.
  */
-class Trainer {
+class Trainer : mixins::Nonmovable<Trainer> {
 public:
-  Trainer(const Trainer &) = default;
-  Trainer(Trainer &&) = default;
-  Trainer &operator=(const Trainer &) = default;
-  Trainer &operator=(Trainer &&) = default;
-  virtual ~Trainer() = default;
-
   Trainer() : epoch_(0), lr_scale_(1), l2_strength_(0), clip_threshold_(0) {}
+
+  virtual ~Trainer() = default;
 
   /**
    * Loads configurations from a file.

@@ -15,11 +15,11 @@ cdef class _Device:
 
     @staticmethod
     def get_default():
-        return _Device.get_wrapper(&CppDevice_get_default())
+        return _Device.get_wrapper(&CppDevice.get_default())
 
     @staticmethod
     def set_default(_Device dev):
-        CppDevice_set_default(dev.wrapped[0])
+        CppDevice.set_default(dev.wrapped[0])
 
     def dump_description(self):
         self.wrapped.dump_description()

@@ -13,6 +13,7 @@ set(primitiv_base_HDRS
   graph.h
   initializer.h
   initializer_impl.h
+  mixins.h
   model.h
   naive_device.h
   operators.h

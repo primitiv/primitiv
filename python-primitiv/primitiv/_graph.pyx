@@ -181,11 +181,11 @@ cdef class _Graph:
 
     @staticmethod
     def get_default():
-        return _Graph.get_wrapper(&CppGraph_get_default())
+        return _Graph.get_wrapper(&CppGraph.get_default())
 
     @staticmethod
     def set_default(_Graph g):
-        CppGraph_set_default(g.wrapped[0])
+        CppGraph.set_default(g.wrapped[0])
 
     def clear(self):
         self.wrapped.clear()

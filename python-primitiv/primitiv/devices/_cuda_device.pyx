@@ -19,4 +19,4 @@ cdef class _CUDA(_Device):
 
     @staticmethod
     def num_devices():
-        return CppDevices_CUDA_num_devices()
+        return CppCUDA.num_devices()

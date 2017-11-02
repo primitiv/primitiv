@@ -1,6 +1,8 @@
 #ifndef PRIMITIV_INITIALIZER_H_
 #define PRIMITIV_INITIALIZER_H_
 
+#include <primitiv/mixins.h>
+
 namespace primitiv {
 
 class Tensor;
@@ -8,12 +10,7 @@ class Tensor;
 /**
  * Abstract class to provide parameter initialization algorithms.
  */
-class Initializer {
-  Initializer(const Initializer &) = delete;
-  Initializer(Initializer &&) = delete;
-  Initializer &operator=(const Initializer &) = delete;
-  Initializer &operator=(Initializer &&) = delete;
-
+class Initializer : mixins::Nonmovable<Initializer> {
 public:
   Initializer() = default;
   virtual ~Initializer() = default;

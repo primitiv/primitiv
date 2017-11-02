@@ -43,6 +43,10 @@ cdef extern from "node_op.h" namespace "python_primitiv_node":
 cdef extern from "primitiv/graph.h" nogil:
     cdef cppclass CppGraph "primitiv::Graph":
         CppGraph() except +
+        @staticmethod
+        CppGraph &get_default() except +
+        @staticmethod
+        void set_default(CppGraph &g) except +
         void clear() except +
         const CppTensor &forward(const CppNode &node) except +
         void backward(const CppNode &node) except +
@@ -50,11 +54,6 @@ cdef extern from "primitiv/graph.h" nogil:
         CppDevice &get_device(const CppNode &node) except +
         string dump(const string &format) except +
         unsigned num_functions() except +
-
-
-cdef extern from "primitiv/graph.h":
-    cdef CppGraph &CppGraph_get_default "primitiv::Graph::get_default"()
-    cdef void CppGraph_set_default "primitiv::Graph::set_default"(CppGraph &g)
 
 
 cdef class _Node:
@@ -70,7 +69,7 @@ cdef class _Graph:
     cdef _Graph get_wrapper(CppGraph *ptr)
 
 
-cdef inline _Node wrapNode(CppNode wrapped) except +:
+cdef inline _Node wrapNode(CppNode wrapped):
     cdef _Node node = _Node.__new__(_Node)
     node.wrapped = wrapped
     return node

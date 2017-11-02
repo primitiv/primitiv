@@ -1,6 +1,7 @@
 from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libcpp cimport bool
+from libc.stdint cimport uintptr_t
 
 from primitiv._tensor cimport CppTensor, _Tensor
 from primitiv._shape cimport CppShape, _Shape
@@ -10,7 +11,7 @@ from primitiv._initializer cimport CppInitializer, _Initializer
 
 cdef extern from "primitiv/parameter.h":
     cdef cppclass CppParameter "primitiv::Parameter":
-        CppParameter(CppParameter &&src)
+        CppParameter(CppParameter &&src) except +
         CppParameter() except +
         CppParameter(const CppShape &shape, CppDevice &device) except +
         CppParameter(const CppShape &shape, const vector[float] &value, CppDevice &device) except +

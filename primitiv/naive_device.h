@@ -11,11 +11,6 @@ namespace devices {
  * Device class for the naive function implementations on CPU.
  */
 class Naive : public Device {
-  Naive(const Naive &) = delete;
-  Naive(Naive &&) = delete;
-  Naive &operator=(const Naive &) = delete;
-  Naive &operator=(Naive &&) = delete;
-
 public:
   /**
    * Creates a Naive object.
