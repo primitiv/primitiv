@@ -49,6 +49,7 @@ TEST_F(NaiveDeviceTest, CheckDanglingTensor) {
   SUCCEED();
 }
 
+#ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
 TEST_F(NaiveDeviceTest, CheckRandomBernoulli) {
   vector<vector<float>> history;
   for (unsigned i = 0; i < 10; ++i) {
@@ -71,6 +72,7 @@ TEST_F(NaiveDeviceTest, CheckRandomBernoulli) {
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
   }
 }
+#endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
 TEST_F(NaiveDeviceTest, CheckRandomBernoulliWithSeed) {
   const vector<float> expected {
@@ -84,6 +86,7 @@ TEST_F(NaiveDeviceTest, CheckRandomBernoulliWithSeed) {
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
 }
 
+#ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
 TEST_F(NaiveDeviceTest, CheckRandomUniform) {
   vector<vector<float>> history;
   for (unsigned i = 0; i < 10; ++i) {
@@ -106,6 +109,7 @@ TEST_F(NaiveDeviceTest, CheckRandomUniform) {
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
   }
 }
+#endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
 TEST_F(NaiveDeviceTest, CheckRandomUniformWithSeed) {
   const vector<float> expected {
@@ -117,6 +121,7 @@ TEST_F(NaiveDeviceTest, CheckRandomUniformWithSeed) {
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
 }
 
+#ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
 TEST_F(NaiveDeviceTest, CheckRandomNormal) {
   vector<vector<float>> history;
   for (unsigned i = 0; i < 10; ++i) {
@@ -139,6 +144,7 @@ TEST_F(NaiveDeviceTest, CheckRandomNormal) {
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
   }
 }
+#endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
 TEST_F(NaiveDeviceTest, CheckRandomNormalWithSeed) {
 #ifdef __GLIBCXX__
@@ -160,6 +166,7 @@ TEST_F(NaiveDeviceTest, CheckRandomNormalWithSeed) {
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
 }
 
+#ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
 TEST_F(NaiveDeviceTest, CheckRandomLogNormal) {
   vector<vector<float>> history;
   for (unsigned i = 0; i < 10; ++i) {
@@ -182,6 +189,7 @@ TEST_F(NaiveDeviceTest, CheckRandomLogNormal) {
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
   }
 }
+#endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
 TEST_F(NaiveDeviceTest, CheckRandomLogNormalWithSeed) {
 #ifdef __GLIBCXX__

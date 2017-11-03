@@ -2,6 +2,8 @@
 [![Python](https://img.shields.io/badge/Python-3.5-blue.svg)]()
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
+[![Build Status](https://api.travis-ci.org/odashi/primitiv.svg?branch=develop)](https://travis-ci.org/odashi/primitiv)
+
 primitiv
 ========
 
@@ -66,6 +68,8 @@ Building Options
   - Builds a static library instead of a shared object.
 - `PRIMITIV_BUILD_TESTS` (default=`OFF`)
   - Builds test binaries and generates `make test` command.
+- `PRIMITIV_BUILD_TESTS_PROBABILISTIC` (default=`OFF`)
+  - Builds test cases that probabilistically fails.
 - `GTEST_SOURCE_DIR` (default=`OFF`)
   - Specifies the source directory of Google Test. If you installed `googletest` package
     of Debian or Ubuntu, please add `-DGTEST_SOURCE_DIR=/usr/src/googletest/googletest`

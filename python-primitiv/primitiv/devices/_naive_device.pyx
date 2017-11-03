@@ -5,7 +5,7 @@ cdef class _Naive(_Device):
 
     def __init__(self, rng_seed = None):
         if self.wrapped is not NULL:
-            raise MemoryError()
+            raise TypeError("__init__() has already been called.")
         if rng_seed is None:
             self.wrapped = new CppNaive()
         else:

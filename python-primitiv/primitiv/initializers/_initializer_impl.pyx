@@ -5,10 +5,8 @@ cdef class _Constant(_Initializer):
 
     def __init__(self, float k):
         if self.wrapped_newed is not NULL:
-            raise MemoryError()
+            raise TypeError("__init__() has already been called.")
         self.wrapped_newed = new CppConstant(k)
-        if self.wrapped_newed is NULL:
-            raise MemoryError()
         self.wrapped = self.wrapped_newed
 
     def __dealloc__(self):
@@ -27,10 +25,8 @@ cdef class _Uniform(_Initializer):
 
     def __init__(self, float lower, float upper):
         if self.wrapped_newed is not NULL:
-            raise MemoryError()
+            raise TypeError("__init__() has already been called.")
         self.wrapped_newed = new CppUniform(lower, upper)
-        if self.wrapped_newed is NULL:
-            raise MemoryError()
         self.wrapped = self.wrapped_newed
 
     def __dealloc__(self):
@@ -49,10 +45,8 @@ cdef class _Normal(_Initializer):
 
     def __init__(self, float mean, float sd):
         if self.wrapped_newed is not NULL:
-            raise MemoryError()
+            raise TypeError("__init__() has already been called.")
         self.wrapped_newed = new CppNormal(mean, sd)
-        if self.wrapped_newed is NULL:
-            raise MemoryError()
         self.wrapped = self.wrapped_newed
 
     def __dealloc__(self):
@@ -71,10 +65,8 @@ cdef class _Identity(_Initializer):
 
     def __init__(self):
         if self.wrapped_newed is not NULL:
-            raise MemoryError()
+            raise TypeError("__init__() has already been called.")
         self.wrapped_newed = new CppIdentity()
-        if self.wrapped_newed is NULL:
-            raise MemoryError()
         self.wrapped = self.wrapped_newed
 
     def __dealloc__(self):
@@ -93,10 +85,8 @@ cdef class _XavierUniform(_Initializer):
 
     def __init__(self, scale = 1.0):
         if self.wrapped_newed is not NULL:
-            raise MemoryError()
+            raise TypeError("__init__() has already been called.")
         self.wrapped_newed = new CppXavierUniform(scale)
-        if self.wrapped_newed is NULL:
-            raise MemoryError()
         self.wrapped = self.wrapped_newed
 
     def __dealloc__(self):
@@ -115,10 +105,8 @@ cdef class _XavierNormal(_Initializer):
 
     def __init__(self, float scale = 1.0):
         if self.wrapped_newed is not NULL:
-            raise MemoryError()
+            raise TypeError("__init__() has already been called.")
         self.wrapped_newed = new CppXavierNormal(scale)
-        if self.wrapped_newed is NULL:
-            raise MemoryError()
         self.wrapped = self.wrapped_newed
 
     def __dealloc__(self):
