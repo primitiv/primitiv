@@ -1,4 +1,5 @@
 from libcpp.vector cimport vector
+from primitiv.config cimport cppstr_to_pystr
 
 
 cdef class _Shape:
@@ -25,7 +26,10 @@ cdef class _Shape:
         return self.wrapped.size()
 
     def __str__(self):
-        return self.wrapped.to_string().decode("utf-8")
+        return cppstr_to_pystr(self.wrapped.to_string())
+
+    def __repr__(self):
+        return "Shape([%s], %d)" % (", ".join(str(self[i]) for i in range(self.depth())), self.batch())
 
     def __getitem__(self, unsigned i):
         return self.wrapped[i]

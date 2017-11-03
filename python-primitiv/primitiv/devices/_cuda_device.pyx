@@ -5,7 +5,7 @@ cdef class _CUDA(_Device):
 
     def __init__(self, unsigned device_id, rng_seed = None):
         if self.wrapped is not NULL:
-            raise MemoryError()
+            raise TypeError("__init__() has already been called.")
         if rng_seed is None:
             self.wrapped = new CppCUDA(device_id)
         else:
