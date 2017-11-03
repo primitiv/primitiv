@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include <primitiv/error.h>
 #include <primitiv/mixins.h>
 
 namespace primitiv {
@@ -37,6 +38,56 @@ public:
    *          submodels.
    */
   void add_submodel(const std::string &name, Model &model);
+
+  /**
+   * Retrieves a parameter with specified name.
+   * @param name Name of the parameter.
+   * @return Const-reference of the corresponding `Parameter` object.
+   * @throw primitiv::Error Parameter with `name` not found.
+   */
+  const Parameter &get_parameter(const std::string &name) const {
+    const auto it = param_kv_.find(name);
+    if (it == param_kv_.end()) {
+      THROW_ERROR("Parameter with name '" << name << "' not found.");
+    }
+    return *it->second;
+  }
+
+  /**
+   * Retrieves a parameter with specified name.
+   * @param name Name of the parameter.
+   * @return Reference of the corresponding `Parameter` object.
+   * @throw primitiv::Error Parameter with `name` not found.
+   */
+  Parameter &get_parameter(const std::string &name) {
+    return const_cast<Parameter &>(
+        static_cast<const Model *>(this)->get_parameter(name));
+  }
+
+  /**
+   * Retrieves a submodel with specified name.
+   * @param name Name of the submodel.
+   * @return Const-reference of the corresponding `Model` object.
+   * @throw primitiv::Error Submodel with `name` not found.
+   */
+  const Model &get_submodel(const std::string &name) const {
+    const auto it = submodel_kv_.find(name);
+    if (it == submodel_kv_.end()) {
+      THROW_ERROR("Submodel with name '" << name << "' not found.");
+    }
+    return *it->second;
+  }
+
+  /**
+   * Retrieves a submodel with specified name.
+   * @param name Name of the submodel.
+   * @return Reference of the corresponding `Model` object.
+   * @throw primitiv::Error Submodel with `name` not found.
+   */
+  Model &get_submodel(const std::string &name) {
+    return const_cast<Model &>(
+        static_cast<const Model *>(this)->get_submodel(name));
+  }
 
   /**
    * Retrieves all parameters in the model which are trainable.

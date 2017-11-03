@@ -75,6 +75,48 @@ TEST_F(ModelTest, CheckAddSubmodelCycle) {
   EXPECT_NO_THROW(m4.add_submodel("m3", m3));
 }
 
+TEST_F(ModelTest, CheckGetParameter) {
+  Model m, sm;
+  Parameter p1, p2, p3;
+  m.add_parameter("p1", p1);
+  m.add_parameter("p2", p2);
+  sm.add_parameter("p3", p3);
+  m.add_submodel("sm", sm);
+
+  EXPECT_EQ(&p1, &m.get_parameter("p1"));
+  EXPECT_EQ(&p2, &m.get_parameter("p2"));
+  EXPECT_THROW(m.get_parameter("p3"), Error);
+  EXPECT_THROW(m.get_parameter("sm"), Error);
+  EXPECT_THROW(m.get_parameter("x"), Error);
+
+  const Model &rm = m;
+  EXPECT_EQ(&p1, &rm.get_parameter("p1"));
+  EXPECT_EQ(&p2, &rm.get_parameter("p2"));
+  EXPECT_THROW(rm.get_parameter("p3"), Error);
+  EXPECT_THROW(rm.get_parameter("sm"), Error);
+  EXPECT_THROW(rm.get_parameter("x"), Error);
+}
+
+TEST_F(ModelTest, CheckGetSubmodel) {
+  Model m, sm1, sm2, ssm;
+  Parameter p;
+  m.add_parameter("p", p);
+  m.add_submodel("sm1", sm1);
+  m.add_submodel("sm2", sm2);
+  sm1.add_submodel("ssm", ssm);
+
+  EXPECT_EQ(&sm1, &m.get_submodel("sm1"));
+  EXPECT_EQ(&sm2, &m.get_submodel("sm2"));
+  EXPECT_THROW(m.get_submodel("ssm"), Error);
+  EXPECT_THROW(m.get_submodel("p"), Error);
+
+  const Model &rm = m;
+  EXPECT_EQ(&sm1, &rm.get_submodel("sm1"));
+  EXPECT_EQ(&sm2, &rm.get_submodel("sm2"));
+  EXPECT_THROW(rm.get_submodel("ssm"), Error);
+  EXPECT_THROW(rm.get_submodel("p"), Error);
+}
+
 TEST_F(ModelTest, CheckGetTrainableParameters) {
   Model m;
   Parameter p1, p2, p3;
