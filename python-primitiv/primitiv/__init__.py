@@ -14,6 +14,10 @@ from primitiv._operator import _tensor_operators as tensor_operators
 from primitiv import trainers
 from primitiv import config
 
+# NOTE(vbkaisetsu):
+# Python uses unicode for string management, but C++ only uses raw byte arrays.
+# This code sets the current locale information for the default encoding to convert
+# strings between Python and C++.
 config.set_encoding()
 
 

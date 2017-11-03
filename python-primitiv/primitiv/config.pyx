@@ -3,11 +3,11 @@ cdef str py_primitiv_utils_encoding = None
 
 def set_encoding(str encoding = None):
     global py_primitiv_utils_encoding
-    if encoding:
+    if encoding is not None:
         py_primitiv_utils_encoding = encoding
     else:
         import locale
-        lang, py_primitiv_utils_encoding = locale.getdefaultlocale()
+        _, py_primitiv_utils_encoding = locale.getdefaultlocale()
 
 
 def get_encoding():
