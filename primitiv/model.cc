@@ -21,8 +21,10 @@ void Model::add_parameter(const std::string &name, Parameter &param) {
 
 void Model::add_submodel(const std::string &name, Model &model) {
   if (&model == this) {
-    THROW_ERROR(
-        "Attempted to register the model itself as a submodel.");
+    THROW_ERROR("Can't add self as a submodel.");
+  }
+  if (model.has_submodel(*this)) {
+    THROW_ERROR("Can't add an ancestor model as a submodel.");
   }
   if (name_set_.find(name) != name_set_.end()) {
     THROW_ERROR(
@@ -39,11 +41,19 @@ void Model::add_submodel(const std::string &name, Model &model) {
 
 std::vector<Parameter *> Model::get_trainable_parameters() const {
   std::vector<Parameter *> params(param_set_.begin(), param_set_.end());
-  for (Model *sm : submodel_set_) {
+  for (const Model *sm : submodel_set_) {
     const auto sm_params = sm->get_trainable_parameters();
     params.insert(params.end(), sm_params.begin(), sm_params.end());
   }
   return params;
+}
+
+bool Model::has_submodel(const Model &model) const {
+  for (const Model *sm : submodel_set_) {
+    if (sm == &model) return true;
+    if (sm->has_submodel(model)) return true;
+  }
+  return false;
 }
 
 }  // namespace primitiv
