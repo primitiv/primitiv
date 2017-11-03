@@ -5,7 +5,7 @@ cdef class _SGD(_Trainer):
 
     def __init__(self, float eta = 0.1):
         if self.wrapped is not NULL:
-            raise MemoryError()
+            raise TypeError("__init__() has already been called.")
         self.wrapped = new CppSGD(eta)
 
     def eta(self):
@@ -16,7 +16,7 @@ cdef class _MomentumSGD(_Trainer):
 
     def __init__(self, float eta = 0.01, float momentum = 0.9):
         if self.wrapped is not NULL:
-            raise MemoryError()
+            raise TypeError("__init__() has already been called.")
         self.wrapped = new CppMomentumSGD(eta, momentum)
 
     def eta(self):
@@ -30,7 +30,7 @@ cdef class _AdaGrad(_Trainer):
 
     def __init__(self, float eta = 0.001, float eps = 1e-8):
         if self.wrapped is not NULL:
-            raise MemoryError()
+            raise TypeError("__init__() has already been called.")
         self.wrapped = new CppAdaGrad(eta, eps)
 
     def eta(self):
@@ -44,7 +44,7 @@ cdef class _RMSProp(_Trainer):
 
     def __init__(self, float eta = 0.01, float alpha = 0.9, float eps = 1e-8):
         if self.wrapped is not NULL:
-            raise MemoryError()
+            raise TypeError("__init__() has already been called.")
         self.wrapped = new CppRMSProp(eta, alpha, eps)
 
     def eta(self):
@@ -61,7 +61,7 @@ cdef class _AdaDelta(_Trainer):
 
     def __init__(self, float rho = 0.95, float eps = 1e-6):
         if self.wrapped is not NULL:
-            raise MemoryError()
+            raise TypeError("__init__() has already been called.")
         self.wrapped = new CppAdaDelta(rho, eps)
 
     def rho(self):
@@ -75,7 +75,7 @@ cdef class _Adam(_Trainer):
 
     def __init__(self, float alpha = 0.001, float beta1 = 0.9, float beta2 = 0.999, float eps = 1e-8):
         if self.wrapped is not NULL:
-            raise MemoryError()
+            raise TypeError("__init__() has already been called.")
         self.wrapped = new CppAdam(alpha, beta1, beta2, eps)
 
     def alpha(self):
