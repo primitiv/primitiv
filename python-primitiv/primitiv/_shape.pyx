@@ -29,7 +29,7 @@ cdef class _Shape:
         return cppstr_to_pystr(self.wrapped.to_string())
 
     def __repr__(self):
-        return "Shape(%s)" % str(self)
+        return "Shape([%s], %d)" % (", ".join(str(self[i]) for i in range(self.depth())), self.batch())
 
     def __getitem__(self, unsigned i):
         return self.wrapped[i]
