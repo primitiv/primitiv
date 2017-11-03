@@ -46,7 +46,7 @@ cdef class _Parameter:
 
     def __init__(self, shape = None, init = None, _Device device = None):
         if self.wrapped is not NULL:
-            raise MemoryError()
+            raise TypeError("__init__() has already been called.")
         if device is None:
             device = _Device.get_default()
         # Parameter(shape, np.ndarray init, device) new from ndarray
@@ -67,8 +67,6 @@ cdef class _Parameter:
             self.wrapped = new CppParameter(normShape(shape).wrapped, <vector[float]> init, device.wrapped[0])
         else:
             raise TypeError("Argument 'init' has incorrect type (list, Initializer, or numpy.ndarray)")
-        if self.wrapped is NULL:
-            raise MemoryError()
         _Parameter.register_wrapper(self.wrapped, self)
 
     def __dealloc__(self):

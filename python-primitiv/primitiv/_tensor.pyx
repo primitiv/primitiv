@@ -22,7 +22,7 @@ cdef class _Tensor:
 
     def __init__(self, _Tensor src = None):
         if self.wrapped is not NULL:
-            raise MemoryError()
+            raise TypeError("__init__() has already been called.")
         if src is None:
             self.wrapped = new CppTensor()
         else:

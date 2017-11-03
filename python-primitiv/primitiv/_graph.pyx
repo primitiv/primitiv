@@ -170,7 +170,7 @@ cdef class _Graph:
 
     def __init__(self):
         if self.wrapped is not NULL:
-            raise MemoryError()
+            raise TypeError("__init__() has already been called.")
         self.wrapped = new CppGraph()
         _Graph.register_wrapper(self.wrapped, self)
 

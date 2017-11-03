@@ -13,7 +13,7 @@ cdef class _Trainer:
     # can call methods implemented in child classes of Trainer.
     def __init__(self):
         if self.wrapped is not NULL:
-            raise MemoryError()
+            raise TypeError("__init__() has already been called.")
         self.wrapped = new CppPyTrainer(self)
 
     # NOTE(vbkaisetsu):
