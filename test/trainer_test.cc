@@ -56,6 +56,50 @@ TEST_F(TrainerTest, CheckAddModel) {
   EXPECT_THROW(trainer.add_parameter(param3), Error);
 }
 
+TEST_F(TrainerTest, CheckAddModelWithMultipleModels) {
+  Device::set_default(dev);
+  trainers::SGD trainer;
+  Model m1, m2, m3;
+  Parameter param1({2, 2});
+  Parameter param2({2, 2});
+  Parameter param3({2, 2});
+  m1.add_parameter("param1", param1);
+  m2.add_parameter("param2", param2);
+  m3.add_parameter("param3", param3);
+
+  EXPECT_NO_THROW(trainer.add_model(m1));
+  EXPECT_NO_THROW(trainer.add_model(m2));
+  EXPECT_NO_THROW(trainer.add_model(m3));
+  EXPECT_THROW(trainer.add_model(m1), Error);
+  EXPECT_THROW(trainer.add_model(m2), Error);
+  EXPECT_THROW(trainer.add_model(m3), Error);
+  EXPECT_THROW(trainer.add_parameter(param1), Error);
+  EXPECT_THROW(trainer.add_parameter(param2), Error);
+  EXPECT_THROW(trainer.add_parameter(param3), Error);
+}
+
+TEST_F(TrainerTest, CheckAddModelWithSubmodels) {
+  Device::set_default(dev);
+  trainers::SGD trainer;
+  Model m, sm, ssm;
+  Parameter param1({2, 2});
+  Parameter param2({2, 2});
+  Parameter param3({2, 2});
+  m.add_parameter("param1", param1);
+  sm.add_parameter("param2", param2);
+  ssm.add_parameter("param3", param3);
+  m.add_submodel("sm", sm);
+  sm.add_submodel("ssm", ssm);
+
+  EXPECT_NO_THROW(trainer.add_model(m));
+  EXPECT_THROW(trainer.add_model(m), Error);
+  EXPECT_THROW(trainer.add_model(sm), Error);
+  EXPECT_THROW(trainer.add_model(ssm), Error);
+  EXPECT_THROW(trainer.add_parameter(param1), Error);
+  EXPECT_THROW(trainer.add_parameter(param2), Error);
+  EXPECT_THROW(trainer.add_parameter(param3), Error);
+}
+
 TEST_F(TrainerTest, CheckEpoch) {
   trainers::SGD trainer;
   ASSERT_EQ(0u, trainer.get_epoch());
