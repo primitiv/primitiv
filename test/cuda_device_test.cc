@@ -54,6 +54,7 @@ TEST_F(CUDADeviceTest, CheckDanglingTensor) {
   SUCCEED();
 }
 
+#ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
 TEST_F(CUDADeviceTest, CheckRandomBernoulli) {
   vector<vector<float>> history;
   for (unsigned i = 0; i < 10; ++i) {
@@ -76,6 +77,7 @@ TEST_F(CUDADeviceTest, CheckRandomBernoulli) {
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
   }
 }
+#endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
 TEST_F(CUDADeviceTest, CheckRandomBernoulliWithSeed) {
   const vector<float> expected {
@@ -89,6 +91,7 @@ TEST_F(CUDADeviceTest, CheckRandomBernoulliWithSeed) {
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
 }
 
+#ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
 TEST_F(CUDADeviceTest, CheckRandomUniform) {
   vector<vector<float>> history;
   for (unsigned i = 0; i < 10; ++i) {
@@ -111,6 +114,7 @@ TEST_F(CUDADeviceTest, CheckRandomUniform) {
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
   }
 }
+#endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
 TEST_F(CUDADeviceTest, CheckRandomUniformWithSeed) {
   const vector<float> expected {
@@ -122,6 +126,7 @@ TEST_F(CUDADeviceTest, CheckRandomUniformWithSeed) {
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
 }
 
+#ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
 TEST_F(CUDADeviceTest, CheckRandomNormal) {
   vector<vector<float>> history;
   for (unsigned i = 0; i < 10; ++i) {
@@ -144,6 +149,7 @@ TEST_F(CUDADeviceTest, CheckRandomNormal) {
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
   }
 }
+#endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
 TEST_F(CUDADeviceTest, CheckRandomNormalWithSeed) {
   const vector<float> expected {
@@ -155,6 +161,7 @@ TEST_F(CUDADeviceTest, CheckRandomNormalWithSeed) {
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
 }
 
+#ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
 TEST_F(CUDADeviceTest, CheckRandomLogNormal) {
   vector<vector<float>> history;
   for (unsigned i = 0; i < 10; ++i) {
@@ -177,6 +184,7 @@ TEST_F(CUDADeviceTest, CheckRandomLogNormal) {
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
   }
 }
+#endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
 TEST_F(CUDADeviceTest, CheckRandomLogNormalWithSeed) {
   const vector<float> expected {

@@ -6,6 +6,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 option(PRIMITIV_BUILD_STATIC_LIBRARY "Builds static library." OFF)
 option(PRIMITIV_BUILD_TESTS "Builds test binaries." OFF)
+option(PRIMITIV_BUILD_TESTS_PROBABILISTIC "Builds test cases that probabilistically fails." OFF)
 option(PRIMITIV_USE_CACHE "Enables cached values in some functions but needs more memory." OFF)
 option(PRIMITIV_USE_CUDA "Finds CUDA library ant use it." OFF)
 
