@@ -12,6 +12,9 @@ from primitiv import initializers
 from primitiv._operator import _operators as operators
 from primitiv._operator import _tensor_operators as tensor_operators
 from primitiv import trainers
+from primitiv import utils
+
+utils.set_encoding()
 
 
 __all__ = [
@@ -29,4 +32,5 @@ __all__ = [
     "operators",
     "tensor_operators",
     "trainers",
+    "utils",
 ]

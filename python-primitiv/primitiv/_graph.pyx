@@ -5,6 +5,7 @@ from primitiv._device cimport _Device
 from primitiv._shape cimport wrapShape
 from primitiv._tensor cimport _Tensor
 from primitiv._operator cimport op_pow, op_ipow, op_matmul
+from primitiv.utils cimport str_py2cpp, str_cpp2py
 
 from weakref import WeakValueDictionary
 
@@ -209,7 +210,7 @@ cdef class _Graph:
         return _Device.get_wrapper(&self.wrapped.get_device(node.wrapped))
 
     def dump(self, str fmt):
-        return self.wrapped.dump(<string> fmt.encode("utf-8")).decode("utf-8")
+        return str_cpp2py(self.wrapped.dump(str_py2cpp(fmt)))
 
     def num_functions(self):
         return self.wrapped.num_functions()
