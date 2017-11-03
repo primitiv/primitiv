@@ -3,11 +3,15 @@ cdef str py_primitiv_utils_encoding = None
 
 def set_encoding(str encoding = None):
     global py_primitiv_utils_encoding
-    if encoding is not None:
-        py_primitiv_utils_encoding = encoding
-    else:
+    if encoding is None:
         import locale
-        _, py_primitiv_utils_encoding = locale.getdefaultlocale()
+        _, encoding = locale.getdefaultlocale()
+        if encoding is None:
+            # NOTE(vbkaisetsu):
+            # Sometimes, the locale does not have an encoding information. (e.g. LANG=C)
+            # In that case, the default encoding is set to "utf-8".
+            encoding = "utf-8"
+    py_primitiv_utils_encoding = encoding
 
 
 def get_encoding():
