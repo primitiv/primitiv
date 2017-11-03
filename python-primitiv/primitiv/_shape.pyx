@@ -28,6 +28,9 @@ cdef class _Shape:
     def __str__(self):
         return str_cpp2py(self.wrapped.to_string())
 
+    def __repr__(self):
+        return "Shape(%s)" % str(self)
+
     def __getitem__(self, unsigned i):
         return self.wrapped[i]
 
