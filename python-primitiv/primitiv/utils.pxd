@@ -1,6 +1,5 @@
 from libcpp.vector cimport vector
 from libcpp cimport bool
-from libcpp.string cimport string
 
 from primitiv._device cimport _Device
 from primitiv._shape cimport _Shape, normShape
@@ -33,7 +32,3 @@ cdef inline vector[float] ndarrays_to_vector(list arrays):
         for i in range(datasize):
             result[j * datasize + i] = np_data[i]
     return result
-
-
-cdef string str_py2cpp(str s)
-cdef str str_cpp2py(string s)

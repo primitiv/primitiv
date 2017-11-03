@@ -6,7 +6,7 @@ from primitiv._device cimport _Device
 from primitiv._tensor cimport _Tensor
 from primitiv._shape cimport wrapShape, normShape
 from utils cimport ndarrays_to_vector
-from primitiv.utils cimport str_py2cpp
+from primitiv.config cimport pystr_to_cppstr
 
 from weakref import WeakValueDictionary
 
@@ -30,14 +30,14 @@ cdef class _ParameterStatistics:
         self.param_ref = weakref.ref(param)
 
     def __getitem__(self, str name):
-        return _Tensor.get_wrapper(&(<_Parameter> self.param_ref()).wrapped.stats(str_py2cpp(name)))
+        return _Tensor.get_wrapper(&(<_Parameter> self.param_ref()).wrapped.stats(pystr_to_cppstr(name)))
 
     def __setitem__(self, str name, _Tensor value):
-        cdef CppTensor *tensor_p = &(<_Parameter> self.param_ref()).wrapped.stats(str_py2cpp(name))
+        cdef CppTensor *tensor_p = &(<_Parameter> self.param_ref()).wrapped.stats(pystr_to_cppstr(name))
         tensor_p[0] = value.wrapped[0]
 
     def __contains__(self, str name):
-        return (<_Parameter> self.param_ref()).wrapped.has_stats(str_py2cpp(name))
+        return (<_Parameter> self.param_ref()).wrapped.has_stats(pystr_to_cppstr(name))
 
 
 cdef class _Parameter:
@@ -91,14 +91,14 @@ cdef class _Parameter:
         return
 
     def add_stats(self, str name, shape):
-        self.wrapped.add_stats(str_py2cpp(name), normShape(shape).wrapped)
+        self.wrapped.add_stats(pystr_to_cppstr(name), normShape(shape).wrapped)
         return
 
     # NOTE(vbkaisetsu):
     # `has_stats` function is removed in Python.
     # Use "in" operator of `stats` variable instead.
     # def has_stats(self, str name):
-    #     return self.wrapped.has_stats(str_py2cpp(name))
+    #     return self.wrapped.has_stats(pystr_to_cppstr(name))
 
     def shape(self):
         return wrapShape(self.wrapped.shape())
@@ -131,17 +131,17 @@ cdef class _Parameter:
     # NOTE(vbkaisetsu):
     # This function is replaced with `stats` variable.
     # def stats(self, str name):
-    #     return _Tensor.get_wrapper(&self.wrapped.stats(str_py2cpp(name)))
+    #     return _Tensor.get_wrapper(&self.wrapped.stats(pystr_to_cppstr(name)))
 
     def save(self, str path, bool with_stats = True):
-        self.wrapped.save(str_py2cpp(path), with_stats)
+        self.wrapped.save(pystr_to_cppstr(path), with_stats)
         return
 
     @staticmethod
     def load(str path, bool with_stats = True, _Device device = None):
         if device is None:
             device = _Device.get_default()
-        return _Parameter.get_wrapper_with_new(Parameter_load(str_py2cpp(path), with_stats, device.wrapped[0]))
+        return _Parameter.get_wrapper_with_new(Parameter_load(pystr_to_cppstr(path), with_stats, device.wrapped[0]))
 
     def __copy__(self):
         raise NotImplementedError(type(self).__name__ + " does not support `__copy__` for now.")

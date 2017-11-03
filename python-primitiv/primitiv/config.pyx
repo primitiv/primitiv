@@ -14,9 +14,9 @@ def get_encoding():
     return py_primitiv_utils_encoding
 
 
-cdef string str_py2cpp(str s):
+cdef string pystr_to_cppstr(str s):
     return s.encode(py_primitiv_utils_encoding)
 
 
-cdef str str_cpp2py(string s):
+cdef str cppstr_to_pystr(string s):
     return s.decode(py_primitiv_utils_encoding)

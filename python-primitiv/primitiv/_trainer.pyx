@@ -1,6 +1,6 @@
 from primitiv import trainers as T
 from primitiv._parameter cimport _Parameter
-from primitiv.utils cimport str_py2cpp, str_cpp2py
+from primitiv.config cimport pystr_to_cppstr, cppstr_to_pystr
 
 
 cdef class _Trainer:
@@ -31,11 +31,11 @@ cdef class _Trainer:
             self.wrapped = NULL
 
     def load(self, str path):
-        self.wrapped.load(str_py2cpp(path))
+        self.wrapped.load(pystr_to_cppstr(path))
         return
 
     def save(self, str path):
-        self.wrapped.save(str_py2cpp(path))
+        self.wrapped.save(pystr_to_cppstr(path))
         return
 
     def get_epoch(self):
@@ -82,12 +82,12 @@ cdef class _Trainer:
         cdef unordered_map[string, unsigned] uint_configs
         cdef unordered_map[string, float] float_configs
         self.wrapped.get_configs(uint_configs, float_configs)
-        return ({str_cpp2py(k): v for k, v in dict(uint_configs).items()},
-                {str_cpp2py(k): v for k, v in dict(float_configs).items()})
+        return ({cppstr_to_pystr(k): v for k, v in dict(uint_configs).items()},
+                {cppstr_to_pystr(k): v for k, v in dict(float_configs).items()})
 
     def set_configs(self, dict uint_configs, dict float_configs):
-        self.wrapped.set_configs({str_py2cpp(k): v for k, v in uint_configs.items()},
-                                 {str_py2cpp(k): v for k, v in float_configs.items()})
+        self.wrapped.set_configs({pystr_to_cppstr(k): v for k, v in uint_configs.items()},
+                                 {pystr_to_cppstr(k): v for k, v in float_configs.items()})
         return
 
     def __copy__(self):
@@ -133,8 +133,8 @@ cdef public api int python_primitiv_trainer_get_configs(
     # We want check that the function is overrided or not.
     if "get_configs" in self.__class__.__dict__ and callable(self.get_configs):
         uint_configs_tmp, float_configs_tmp = self.get_configs()
-        uint_configs.swap({str_py2cpp(k): v for k, v in uint_configs_tmp.items()})
-        float_configs.swap({str_py2cpp(k): v for k, v in float_configs_tmp.items()})
+        uint_configs.swap({pystr_to_cppstr(k): v for k, v in uint_configs_tmp.items()})
+        float_configs.swap({pystr_to_cppstr(k): v for k, v in float_configs_tmp.items()})
         return 0
     raise NotImplementedError("'get_configs()' is not implemented in '%s'"
                                         % self.__class__.__name__)
@@ -148,8 +148,8 @@ cdef public api int python_primitiv_trainer_set_configs(
     # `hasattr(self.__class__, "set_configs")` also scans a parent class.
     # We want check that the function is overrided or not.
     if "set_configs" in self.__class__.__dict__ and callable(self.set_configs):
-        self.set_configs({str_cpp2py(k): v for k, v in dict(uint_configs).items()},
-                         {str_cpp2py(k): v for k, v in dict(float_configs).items()})
+        self.set_configs({cppstr_to_pystr(k): v for k, v in dict(uint_configs).items()},
+                         {cppstr_to_pystr(k): v for k, v in dict(float_configs).items()})
         return 0
     raise NotImplementedError("'set_configs()' is not implemented in '%s'"
                                         % self.__class__.__name__)
