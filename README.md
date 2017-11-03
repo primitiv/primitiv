@@ -1,6 +1,7 @@
-[![C++](https://img.shields.io/badge/C%2B%2B-11-blue.svg)]()
-[![Python](https://img.shields.io/badge/Python-3.5-blue.svg)]()
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![c++](https://img.shields.io/badge/C%2B%2B-11-blue.svg)]()
+[![python](https://img.shields.io/badge/Python-3.5-blue.svg)]()
+
+[![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 [![Build Status](https://api.travis-ci.org/odashi/primitiv.svg?branch=develop)](https://travis-ci.org/odashi/primitiv)
 
