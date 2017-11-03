@@ -70,7 +70,7 @@ TEST_F(ModelTest, CheckAddSubmodelCycle) {
 
   // NOTE(odashi):
   // This generates a diamond hierarchy.
-  // We allow to do this for now, but Trainer.add_model() may fails because of
+  // We allow to do this for now, but Trainer.add_model() may fail because of
   // registering same parameters multiple times.
   EXPECT_NO_THROW(m4.add_submodel("m3", m3));
 }
