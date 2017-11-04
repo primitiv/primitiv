@@ -31,9 +31,12 @@ TEST_F(CUDADeviceTest, CheckNewDelete) {
   {
     devices::CUDA dev(0);
     {
-      Tensor x1 = dev.new_tensor(Shape());  // 1 value
-      Tensor x2 = dev.new_tensor(Shape({16, 16}));  // 256 values
-      Tensor x3 = dev.new_tensor(Shape({16, 16, 16}, 16));  // 65536 values
+      // 1 value
+      Tensor x1 = dev.new_tensor_by_constant(Shape(), 0);
+      // 256 values
+      Tensor x2 = dev.new_tensor_by_constant(Shape({16, 16}), 0);
+      // 65536 values
+      Tensor x3 = dev.new_tensor_by_constant(Shape({16, 16, 16}, 16), 0);
     }
     // All tensors are already deleted before arriving here.
   }
@@ -45,7 +48,7 @@ TEST_F(CUDADeviceTest, CheckDanglingTensor) {
     Tensor x1;
     {
       devices::CUDA dev(0);
-      x1 = dev.new_tensor(Shape());
+      x1 = dev.new_tensor_by_constant(Shape(), 0);
     }
     // x1 still has valid object,
     // but there is no guarantee that the memory is alive.
