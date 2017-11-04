@@ -12,10 +12,10 @@
 #include <iostream>
 #include <sstream>
 #include <utility>
-#include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/function.h>
 #include <primitiv/graph.h>
+#include <primitiv/operators.h>
 
 using std::cerr;
 using std::cout;
@@ -145,7 +145,8 @@ void Graph::backward(const Node &node) {
   }
 
   // Makes the identity gradient (dx/dx = 1) at the last node.
-  last_n.grad = last_n.device.new_tensor(last_v->shape(), 1.f);
+  last_n.grad = operators::constant<Tensor>(
+      last_v->shape(), 1.f, last_n.device);
 
   // Performs backpropagation.
   // NOTE(odashi):
@@ -175,7 +176,8 @@ void Graph::backward(const Node &node) {
         ? &arg_n.value
         : arg_f.func->get_inner_value();
       if (!arg_n.grad.valid()) {
-        arg_n.grad = arg_n.device.new_tensor(arg_v->shape(), 0.f);
+        arg_n.grad = operators::constant<Tensor>(
+            arg_v->shape(), 0.f, arg_n.device);
       }
       arg_values.emplace_back(arg_v);
       arg_grads.emplace_back(&arg_n.grad);
