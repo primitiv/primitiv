@@ -269,7 +269,7 @@ Tensor sum(const Tensor &x) {
 
 template<>
 Tensor constant<Tensor>(const Shape &shape, float k, Device &dev) {
-  return dev.new_tensor(shape, k);
+  return dev.new_tensor_by_constant(shape, k);
 }
 
 template<>

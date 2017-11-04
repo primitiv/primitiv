@@ -39,20 +39,22 @@ public:
    */
   virtual DeviceType type() const = 0;
 
+private:
   /**
    * Provides a new Tensor object on the device.
    * @param shape Shape of the tensor.
    * @return A new Tensor object.
    */
-  Tensor new_tensor(const Shape &shape);
+  Tensor new_raw_tensor(const Shape &shape);
 
+public:
   /**
    * Provides a new Tensor object with same-value elements.
    * @param shape Shape of the tensor.
    * @param k Constant to initialize elements.
    * @return A new Tensor object.
    */
-  Tensor new_tensor(const Shape &shape, float k);
+  Tensor new_tensor_by_constant(const Shape &shape, float k);
 
   /**
    * Provides a new Tensor object with specific values.

@@ -5,6 +5,7 @@
 #include <primitiv/function_impl.h>
 #include <primitiv/initializer_impl.h>
 #include <primitiv/naive_device.h>
+#include <primitiv/operators.h>
 #include <primitiv/parameter.h>
 #include <test_utils.h>
 
@@ -21,21 +22,24 @@ public:
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
     arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
         *arg_shapes[0], {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4})));
-    arg_grads.emplace_back(new Tensor(dev->new_tensor(*arg_shapes[0], 0)));
+    arg_grads.emplace_back(
+        new Tensor(operators::zeros<Tensor>(*arg_shapes[0], *dev)));
   }
 
   void setup_1arg_nonnegative() {
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
     arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
         *arg_shapes[0], {1, 2, 3, 4, .01, .01, .01, .01, 1, 4, 9, 16})));
-    arg_grads.emplace_back(new Tensor(dev->new_tensor(*arg_shapes[0], 0)));
+    arg_grads.emplace_back(
+        new Tensor(operators::zeros<Tensor>(*arg_shapes[0], *dev)));
   }
 
   void setup_1arg_nonzero() {
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
     arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
         *arg_shapes[0], {1, 2, 3, 4, 1, -1, 1, -1, -1, -2, -3, -4})));
-    arg_grads.emplace_back(new Tensor(dev->new_tensor(*arg_shapes[0], 0)));
+    arg_grads.emplace_back(
+        new Tensor(operators::zeros<Tensor>(*arg_shapes[0], *dev)));
   }
 
   void setup_2args() {
@@ -45,8 +49,10 @@ public:
         *arg_shapes[0], {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4})));
     arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
         *arg_shapes[1], {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3})));
-    arg_grads.emplace_back(new Tensor(dev->new_tensor(*arg_shapes[0], 0)));
-    arg_grads.emplace_back(new Tensor(dev->new_tensor(*arg_shapes[1], 0)));
+    arg_grads.emplace_back(
+        new Tensor(operators::zeros<Tensor>(*arg_shapes[0], *dev)));
+    arg_grads.emplace_back(
+        new Tensor(operators::zeros<Tensor>(*arg_shapes[1], *dev)));
   }
 
   void setup_2args_scalar() {
@@ -56,8 +62,10 @@ public:
         *arg_shapes[0], {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4})));
     arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
         *arg_shapes[1], {1, 2, 3})));
-    arg_grads.emplace_back(new Tensor(dev->new_tensor(*arg_shapes[0], 0)));
-    arg_grads.emplace_back(new Tensor(dev->new_tensor(*arg_shapes[1], 0)));
+    arg_grads.emplace_back(
+        new Tensor(operators::zeros<Tensor>(*arg_shapes[0], *dev)));
+    arg_grads.emplace_back(
+        new Tensor(operators::zeros<Tensor>(*arg_shapes[1], *dev)));
   }
 
   void setup_2args_scalar_nonzero() {
@@ -67,8 +75,10 @@ public:
         *arg_shapes[0], {1, 2, 3, 4, 1, -1, 1, -1, -1, -2, -3, -4})));
     arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
         *arg_shapes[1], {1, 2, 3})));
-    arg_grads.emplace_back(new Tensor(dev->new_tensor(*arg_shapes[0], 0)));
-    arg_grads.emplace_back(new Tensor(dev->new_tensor(*arg_shapes[1], 0)));
+    arg_grads.emplace_back(
+        new Tensor(operators::zeros<Tensor>(*arg_shapes[0], *dev)));
+    arg_grads.emplace_back(
+        new Tensor(operators::zeros<Tensor>(*arg_shapes[1], *dev)));
   }
 
   void setup_2args_softmax_cross_entropy() {
@@ -78,8 +88,10 @@ public:
         *arg_shapes[0], {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4})));
     arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
         *arg_shapes[1], {1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1})));
-    arg_grads.emplace_back(new Tensor(dev->new_tensor(*arg_shapes[0], 0)));
-    arg_grads.emplace_back(new Tensor(dev->new_tensor(*arg_shapes[1], 0)));
+    arg_grads.emplace_back(
+        new Tensor(operators::zeros<Tensor>(*arg_shapes[0], *dev)));
+    arg_grads.emplace_back(
+        new Tensor(operators::zeros<Tensor>(*arg_shapes[1], *dev)));
   }
 
   void reset_gradients() {
@@ -108,7 +120,7 @@ protected:
   name_ node; \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
-  const Tensor cur_grad = dev->new_tensor(ret_shape, 1); \
+  const Tensor cur_grad = operators::ones<Tensor>(ret_shape, *dev); \
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ(#name_, node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
@@ -121,7 +133,7 @@ protected:
   name_ node(k_); \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
-  const Tensor cur_grad = dev->new_tensor(ret_shape, 1); \
+  const Tensor cur_grad = operators::ones<Tensor>(ret_shape, *dev); \
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ( \
       std::string(#name_) + '(' + \
@@ -136,7 +148,7 @@ protected:
   name_ node; \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
-  const Tensor cur_grad = dev->new_tensor(ret_shape, 1); \
+  const Tensor cur_grad = operators::ones<Tensor>(ret_shape, *dev); \
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ(#name_, node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
@@ -149,7 +161,7 @@ protected:
   name_ node(k_); \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
-  const Tensor cur_grad = dev->new_tensor(ret_shape, 1); \
+  const Tensor cur_grad = operators::ones<Tensor>(ret_shape, *dev); \
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ( \
       std::string(#name_) + '(' + \
@@ -164,7 +176,7 @@ protected:
   name_ node; \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
-  const Tensor cur_grad = dev->new_tensor(ret_shape, 1); \
+  const Tensor cur_grad = operators::ones<Tensor>(ret_shape, *dev); \
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ(#name_, node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
@@ -180,7 +192,7 @@ TEST_F(FunctionImplTest, CheckInput) {
   Input node(ret_shape, ret_data, *dev);
   const Shape cur_shape = node.forward_shape(arg_shapes);
   const Tensor cur_value = node.forward(arg_values);
-  const Tensor cur_grad = dev->new_tensor(ret_shape, 1);
+  const Tensor cur_grad = operators::ones<Tensor>(ret_shape, *dev);
   // backward() has no effect.
   EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
   EXPECT_EQ("Input", node.name());
@@ -201,7 +213,7 @@ TEST_F(FunctionImplTest, CheckParameterInput) {
   // ParameterInput could not return values from forward().
   EXPECT_THROW(node.forward(arg_values), Error);
   const Tensor *cur_value = node.get_inner_value();
-  const Tensor cur_grad = dev->new_tensor(ret_shape, 1);
+  const Tensor cur_grad = operators::ones<Tensor>(ret_shape, *dev);
   // backward() updates the gradient of `param`.
   EXPECT_NO_THROW(node.backward(*cur_value, cur_grad, arg_values, arg_grads));
   EXPECT_EQ("ParameterInput", node.name());
@@ -246,7 +258,7 @@ TEST_F(FunctionImplTest, CheckConstant) {
     Constant node(tc.shape, tc.k, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
+    const Tensor cur_grad = operators::ones<Tensor>(tc.shape, *dev);
     // backward() has no effect.
     EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
     EXPECT_EQ("Constant(" + std::to_string(tc.k) + ')', node.name());
@@ -273,7 +285,7 @@ TEST_F(FunctionImplTest, CheckIdentity) {
     IdentityMatrix node(tc.size, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
+    const Tensor cur_grad = operators::ones<Tensor>(tc.shape, *dev);
     // backward() has no effect.
     EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
     EXPECT_EQ("IdentityMatrix(" + std::to_string(tc.size) + ')', node.name());
@@ -298,7 +310,7 @@ TEST_F(FunctionImplTest, CheckRandomBernoulli) {
     RandomBernoulli node(tc.shape, tc.p, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
+    const Tensor cur_grad = operators::ones<Tensor>(tc.shape, *dev);
     // backward() has no effect.
     EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
     EXPECT_EQ("RandomBernoulli(" + std::to_string(tc.p) + ')', node.name());
@@ -332,7 +344,7 @@ TEST_F(FunctionImplTest, CheckRandomUniform) {
     RandomUniform node(tc.shape, tc.lower, tc.upper, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
+    const Tensor cur_grad = operators::ones<Tensor>(tc.shape, *dev);
     // backward() has no effect.
     EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
     EXPECT_EQ(
@@ -392,7 +404,7 @@ TEST_F(FunctionImplTest, CheckRandomNormal) {
     RandomNormal node(tc.shape, tc.mean, tc.sd, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
+    const Tensor cur_grad = operators::ones<Tensor>(tc.shape, *dev);
     // backward() has no effect.
     EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
     EXPECT_EQ(
@@ -452,7 +464,7 @@ TEST_F(FunctionImplTest, CheckRandomLogNormal) {
     RandomLogNormal node(tc.shape, tc.mean, tc.sd, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = dev->new_tensor(tc.shape, 1);
+    const Tensor cur_grad = operators::ones<Tensor>(tc.shape, *dev);
     // backward() has no effect.
     EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
     EXPECT_EQ(
@@ -494,7 +506,7 @@ TEST_F(FunctionImplTest, CheckPick) {
     Pick node(tc.ids, tc.dim);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = dev->new_tensor(tc.ret_shape, 1);
+    const Tensor cur_grad = operators::ones<Tensor>(tc.ret_shape, *dev);
     reset_gradients();
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ("Pick(" + std::to_string(tc.dim) + ')', node.name());
@@ -543,7 +555,7 @@ TEST_F(FunctionImplTest, CheckSlice) {
     Slice node(tc.dim, tc.lower, tc.upper);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = dev->new_tensor(tc.ret_shape, 1);
+    const Tensor cur_grad = operators::ones<Tensor>(tc.ret_shape, *dev);
     reset_gradients();
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ(
@@ -611,7 +623,7 @@ TEST_F(FunctionImplTest, CheckReshape) {
     Reshape node(ret_shape);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = dev->new_tensor(ret_shape.resize_batch(3), 1);
+    const Tensor cur_grad = operators::ones<Tensor>(ret_shape.resize_batch(3), *dev);
     reset_gradients();
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ("Reshape(" + ret_shape.to_string() + ')', node.name());
@@ -1128,7 +1140,7 @@ TEST_F(FunctionImplTest, CheckSum) {
     Sum node(tc.dim);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = dev->new_tensor(tc.ret_shape, 1);
+    const Tensor cur_grad = operators::ones<Tensor>(tc.ret_shape, *dev);
     reset_gradients();
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ("Sum(" + std::to_string(tc.dim) + ')', node.name());
@@ -1172,7 +1184,7 @@ TEST_F(FunctionImplTest, CheckLogSumExp) {
     LogSumExp node(tc.dim);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = dev->new_tensor(tc.ret_shape, 1);
+    const Tensor cur_grad = operators::ones<Tensor>(tc.ret_shape, *dev);
     reset_gradients();
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ("LogSumExp(" + std::to_string(tc.dim) + ')', node.name());
@@ -1210,7 +1222,7 @@ TEST_F(FunctionImplTest, CheckBroadcast) {
     Broadcast node(tc.dim, tc.size);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = dev->new_tensor(tc.ret_shape, 1);
+    const Tensor cur_grad = operators::ones<Tensor>(tc.ret_shape, *dev);
     reset_gradients();
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ(
@@ -1254,7 +1266,7 @@ TEST_F(FunctionImplTest, CheckSoftmaxCrossEntropy) {
   SoftmaxCrossEntropy node(0);
   const Shape cur_shape = node.forward_shape(arg_shapes);
   const Tensor cur_value = node.forward(arg_values);
-  const Tensor cur_grad = dev->new_tensor(ret_shape, 1);
+  const Tensor cur_grad = operators::ones<Tensor>(ret_shape, *dev);
   node.backward(cur_value, cur_grad, arg_values, arg_grads);
   EXPECT_EQ("SoftmaxCrossEntropy(0)", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
@@ -1302,7 +1314,7 @@ TEST_F(FunctionImplTest, CheckSparseSoftmaxCrossEntropy) {
     SparseSoftmaxCrossEntropy node(tc.ids, tc.dim);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = dev->new_tensor(tc.ret_shape, 1);
+    const Tensor cur_grad = operators::ones<Tensor>(tc.ret_shape, *dev);
     reset_gradients();
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ(
