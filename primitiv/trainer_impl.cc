@@ -41,7 +41,6 @@ void MomentumSGD::configure_parameter(Parameter &param) {
   const std::string name = "momentumsgd-m";
   if (!param.has_stats(name)) {
     param.add_stats(name, param.shape());
-    param.stats(name).reset(0);
   }
 }
 
@@ -72,7 +71,6 @@ void AdaGrad::configure_parameter(Parameter &param) {
   const std::string name = "adagrad-m";
   if (!param.has_stats(name)) {
     param.add_stats(name, param.shape());
-    param.stats(name).reset(0);
   }
 }
 
@@ -103,7 +101,6 @@ void RMSProp::configure_parameter(Parameter &param) {
   const std::string name = "rmsprop-m";
   if (!param.has_stats(name)) {
     param.add_stats(name, param.shape());
-    param.stats(name).reset(0);
   }
 }
 
@@ -136,7 +133,6 @@ void AdaDelta::configure_parameter(Parameter &param) {
   for (const char *name : {"adadelta-m1", "adadelta-m2"}) {
     if (!param.has_stats(name)) {
       param.add_stats(name, param.shape());
-      param.stats(name).reset(0);
     }
   }
 }
@@ -173,7 +169,6 @@ void Adam::configure_parameter(Parameter &param) {
   for (const char *name : {"adam-m1", "adam-m2"}) {
     if (!param.has_stats(name)) {
       param.add_stats(name, param.shape());
-      param.stats(name).reset(0);
     }
   }
 }
