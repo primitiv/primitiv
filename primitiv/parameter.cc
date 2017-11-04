@@ -1,10 +1,10 @@
 #include <config.h>
 
 #include <fstream>
-#include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/initializer.h>
 #include <primitiv/messages.pb.h>
+#include <primitiv/operators.h>
 #include <primitiv/parameter.h>
 
 using std::string;
@@ -90,24 +90,15 @@ void Parameter::check_shape() {
   }
 }
 
-Parameter::Parameter(const Shape &shape, Device &device)
-: shape_(shape)
-, device_(&device)
-, value_(device.new_tensor(shape))
-, grad_(device.new_tensor(shape)) {
-  check_shape();
-}
-
 Parameter::Parameter(
     const Shape &shape,
     const vector<float> & value,
     Device &device)
 : shape_(shape)
 , device_(&device)
-, value_(device.new_tensor(shape))
-, grad_(device.new_tensor(shape)) {
+, value_(operators::input<Tensor>(shape, value, device))
+, grad_(operators::zeros<Tensor>(shape, device)) {
   check_shape();
-  reset_value(value);
 }
 
 Parameter::Parameter(
@@ -116,10 +107,10 @@ Parameter::Parameter(
     Device &device)
 : shape_(shape)
 , device_(&device)
-, value_(device.new_tensor(shape))
-, grad_(device.new_tensor(shape)) {
+, value_(operators::zeros<Tensor>(shape, device))
+, grad_(operators::zeros<Tensor>(shape, device)) {
   check_shape();
-  reset_value(init);
+  init.apply(value_);
 }
 
 void Parameter::initialize_by_data(
@@ -128,7 +119,7 @@ void Parameter::initialize_by_data(
   value_ = std::move(value);  // Should initialize this at first.
   shape_ = value_.shape();
   device_ = &value_.device();
-  grad_ = value_.device().new_tensor(value_.shape());
+  grad_ = operators::zeros<Tensor>(shape_, *device_);
   stats_ = std::move(stats);
   check_shape();
 }
@@ -153,7 +144,8 @@ void Parameter::add_stats(const string &name, const Shape &shape) {
   if (has_stats(name)) {
     THROW_ERROR("Statistics with name `" << name << "` already exists.");
   }
-  stats_.emplace(std::make_pair(name, device_->new_tensor(shape)));
+  stats_.emplace(
+      std::make_pair(name, operators::zeros<Tensor>(shape, *device_)));
 }
 
 void Parameter::save(const string &path, bool with_stats) const  {

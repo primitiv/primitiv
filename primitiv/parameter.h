@@ -48,15 +48,6 @@ public:
   /**
    * Creates a new Parameter object.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @param device The device object to manage internal memory.
-   */
-  Parameter(
-      const Shape &shape,
-      Device &device = Device::get_default());
-
-  /**
-   * Creates a new Parameter object.
-   * @param shape The shape of the parameter. The batch size should be 1.
    * @param value List of initial values. Order of elements should be of
    *              `Tensor::set_values()`.
    * @param device The device object to manage internal memory.
@@ -105,6 +96,7 @@ public:
    * Adds a new optional statistics tensor.
    * @param name Name of the statistics.
    * @param shape Shape of the tensor.
+   * @remarks All elements in the new statistics tensor is initialized by 0.
    */
   void add_stats(const std::string &name, const Shape &shape);
 
