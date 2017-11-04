@@ -145,8 +145,7 @@ void Graph::backward(const Node &node) {
   }
 
   // Makes the identity gradient (dx/dx = 1) at the last node.
-  last_n.grad = operators::constant<Tensor>(
-      last_v->shape(), 1.f, last_n.device);
+  last_n.grad = operators::ones<Tensor>(last_v->shape(), last_n.device);
 
   // Performs backpropagation.
   // NOTE(odashi):
@@ -176,8 +175,7 @@ void Graph::backward(const Node &node) {
         ? &arg_n.value
         : arg_f.func->get_inner_value();
       if (!arg_n.grad.valid()) {
-        arg_n.grad = operators::constant<Tensor>(
-            arg_v->shape(), 0.f, arg_n.device);
+        arg_n.grad = operators::zeros<Tensor>(arg_v->shape(), arg_n.device);
       }
       arg_values.emplace_back(arg_v);
       arg_grads.emplace_back(&arg_n.grad);
