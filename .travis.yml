@@ -1,51 +1,16 @@
-services:
-  - docker
-
-jobs:
+matrix:
   include:
     - os: linux
-      env: DOCKER_IMAGE=ubuntu:rolling
+      env: SCRIPT=ubuntu
+      services: docker
     - os: linux
-      env: DOCKER_IMAGE=debian:latest
+      env: SCRIPT=debian
+      services: docker
     - os: linux
-      env: DOCKER_IMAGE=fedora:latest
-
-before_install:
-  - if [[ $TRAVIS_OS_NAME == linux ]]; then
-        docker pull $DOCKER_IMAGE;
-        docker run --name travis-ci -v $TRAVIS_BUILD_DIR:/primitiv -td $DOCKER_IMAGE /bin/bash;
-    fi
-
-install:
-  - if [[ $TRAVIS_OS_NAME == linux ]]; then
-        if [[ $DOCKER_IMAGE =~ ^(ubuntu:rolling|debian:latest)$ ]]; then
-            docker exec travis-ci bash -c "apt update";
-            docker exec travis-ci bash -c "apt install -y build-essential cmake libprotobuf-dev protobuf-compiler googletest python3-dev python3-pip python3-numpy";
-        fi;
-        if [[ $DOCKER_IMAGE =~ ^(fedora:latest)$ ]]; then
-            docker exec travis-ci bash -c "yum update -y";
-            docker exec travis-ci bash -c "yum install -y gcc-c++ cmake protobuf-devel protobuf-compiler gtest-devel python3-devel python3-numpy";
-        fi;
-        docker exec travis-ci bash -c "pip3 install cython";
-    fi
+      env: SCRIPT=fedora
+      services: docker
+    - os: osx
+      env: SCRIPT=osx
 
 script:
-  - if [[ $TRAVIS_OS_NAME == linux ]]; then
-        docker exec travis-ci bash -c "mkdir /primitiv/result";
-        if [[ $DOCKER_IMAGE =~ ^(ubuntu:rolling|debian:latest)$ ]]; then
-            docker exec travis-ci bash -c "cd /primitiv && cmake . -DPRIMITIV_BUILD_TESTS=ON -DGTEST_SOURCE_DIR=/usr/src/googletest/googletest -DCMAKE_INSTALL_PREFIX=/primitiv/result";
-        fi;
-        if [[ $DOCKER_IMAGE =~ ^(fedora:latest)$ ]]; then
-            docker exec travis-ci bash -c "cd /primitiv && cmake . -DPRIMITIV_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=/primitiv/result";
-        fi;
-        docker exec travis-ci bash -c "cd /primitiv && make";
-        docker exec travis-ci bash -c "cd /primitiv && make test";
-        docker exec travis-ci bash -c "cd /primitiv && make install";
-        docker exec travis-ci bash -c "export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH::/primitiv/result/include && export LIBRARY_PATH=$LIBRARY_PATH::/primitiv/result/lib && cd /primitiv/python-primitiv && ./setup.py build";
-        docker exec travis-ci bash -c "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH::/primitiv/result/lib && cd /primitiv/python-primitiv && ./setup.py test";
-    fi
-
-after_script:
-  - if [[ $TRAVIS_OS_NAME == linux ]]; then
-        docker stop travis-ci;
-    fi
+  - $TRAVIS_BUILD_DIR/.travis/${SCRIPT}.sh
