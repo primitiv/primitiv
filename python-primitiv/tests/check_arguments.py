@@ -77,10 +77,6 @@ class ArgumentTest(unittest.TestCase):
         self.assertEqual(x.shape(), Shape([4, 3], 2))
 
     def test_Parameter_argument(self):
-        # shape w/o data
-        p = Parameter(Shape([2, 3]))
-        self.assertEqual(p.shape(), Shape([2, 3]))
-
         # shape w/ Initializer
         p = Parameter(Shape([4, 3]), I.Constant(1))
         self.assertEqual(p.shape(), Shape([4, 3]))

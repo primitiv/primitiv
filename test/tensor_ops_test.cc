@@ -183,7 +183,7 @@ TEST_F(TensorOpsTest, CheckInvalidPick) {
      {3, {1}},
   };
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({2, 2, 2}, 3), 0);
+    const Tensor x = dev->new_tensor_by_constant(Shape({2, 2, 2}, 3), 0);
     for (const TestCase &tc : test_cases) {
       EXPECT_THROW(pick(x, tc.ids, tc.dim), Error);
     }
@@ -265,7 +265,7 @@ TEST_F(TensorOpsTest, CheckInvalidSlice) {
     {2, 0, 0}, {2, 1, 0}, {2, 0, 2}, {2, 1, 2},
   };
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor({3, 3}, 3);
+    const Tensor x = dev->new_tensor_by_constant({3, 3}, 3);
     for (const TestCase &tc : test_cases) {
       EXPECT_THROW(slice(x, tc.dim, tc.lower, tc.upper), Error);
     }
@@ -402,10 +402,10 @@ TEST_F(TensorOpsTest, CheckConcatBatchBroadcast) {
 
 TEST_F(TensorOpsTest, CheckInvalidConcat) {
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor(Shape({1, 42}, 2), 0);
-    const Tensor b = dev->new_tensor(Shape({2, 42}, 2), 0);
-    const Tensor c = dev->new_tensor(Shape({1, 42}, 3), 0);
-    const Tensor d = dev->new_tensor({2, 42}, 0);
+    const Tensor a = dev->new_tensor_by_constant(Shape({1, 42}, 2), 0);
+    const Tensor b = dev->new_tensor_by_constant(Shape({2, 42}, 2), 0);
+    const Tensor c = dev->new_tensor_by_constant(Shape({1, 42}, 3), 0);
+    const Tensor d = dev->new_tensor_by_constant({2, 42}, 0);
 
     // NOTE(odashi): Now these lines generate compile errors.
     //EXPECT_THROW(concat({}, 0), Error);
@@ -460,7 +460,7 @@ TEST_F(TensorOpsTest, CheckReshape) {
 
 TEST_F(TensorOpsTest, CheckInvalidReshape) {
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor(Shape({6}, 2), 0);
+    const Tensor a = dev->new_tensor_by_constant(Shape({6}, 2), 0);
     EXPECT_THROW(reshape(a, {7}), Error);
     EXPECT_THROW(reshape(a, Shape({6}, 3)), Error);
     EXPECT_THROW(reshape(a, Shape({7}, 3)), Error);
@@ -985,7 +985,7 @@ TEST_F(TensorOpsTest, CheckTransposeMN) {
 
 TEST_F(TensorOpsTest, CheckInvalidTranspose) {
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor({2, 3, 4});
+    const Tensor x = dev->new_tensor_by_constant({2, 3, 4}, 0);
     EXPECT_THROW(transpose(x), Error);
   }
 }
@@ -1063,29 +1063,29 @@ TEST_F(TensorOpsTest, CheckInvalidMatMul) {
   for (Device *dev : devices) {
     {
       // Not a scalar multiplication.
-      const Tensor a = dev->new_tensor({2, 3});
-      const Tensor b = dev->new_tensor({});
+      const Tensor a = dev->new_tensor_by_constant({2, 3}, 0);
+      const Tensor b = dev->new_tensor_by_constant({}, 0);
       EXPECT_THROW(matmul(a, b), Error);
     }
     {
       // Not a scalar multiplication.
-      const Tensor a = dev->new_tensor({});
-      const Tensor b = dev->new_tensor({2, 3});
+      const Tensor a = dev->new_tensor_by_constant({}, 0);
+      const Tensor b = dev->new_tensor_by_constant({2, 3}, 0);
       EXPECT_THROW(matmul(a, b), Error);
     }
     {
-      const Tensor a = dev->new_tensor({2, 3, 4});
-      const Tensor b = dev->new_tensor({4});
+      const Tensor a = dev->new_tensor_by_constant({2, 3, 4}, 0);
+      const Tensor b = dev->new_tensor_by_constant({4}, 0);
       EXPECT_THROW(matmul(a, b), Error);
     }
     {
-      const Tensor a = dev->new_tensor({1, 2});
-      const Tensor b = dev->new_tensor({2, 3, 4});
+      const Tensor a = dev->new_tensor_by_constant({1, 2}, 0);
+      const Tensor b = dev->new_tensor_by_constant({2, 3, 4}, 0);
       EXPECT_THROW(matmul(a, b), Error);
     }
     {
-      const Tensor a = dev->new_tensor({2, 3});
-      const Tensor b = dev->new_tensor({2, 3});
+      const Tensor a = dev->new_tensor_by_constant({2, 3}, 0);
+      const Tensor b = dev->new_tensor_by_constant({2, 3}, 0);
       EXPECT_THROW(matmul(a, b), Error);
     }
   }
@@ -1471,7 +1471,7 @@ TEST_F(TensorOpsTest, CheckSum2) {
   };
   for (Device *dev : devices) {
     for (const unsigned n : ns) {
-      const Tensor x = dev->new_tensor({n}, 1);
+      const Tensor x = dev->new_tensor_by_constant({n}, 1);
       const Tensor y = sum(x, 0);
       EXPECT_EQ(Shape(), y.shape());
       EXPECT_TRUE(vector_match(vector<float>(1, n), y.to_vector()));
@@ -1516,7 +1516,7 @@ TEST_F(TensorOpsTest, CheckLogSumExp2) {
   for (Device *dev : devices) {
     for (const unsigned n : ns) {
       for (const float k : {-5, -1, 0, 1, 5}) {
-        const Tensor x = dev->new_tensor({n}, k);
+        const Tensor x = dev->new_tensor_by_constant({n}, k);
         const Tensor y = logsumexp(x, 0);
         EXPECT_EQ(Shape(), y.shape());
         // TODO(odashi): 1e-3 might not be enough precision.
@@ -1563,7 +1563,7 @@ TEST_F(TensorOpsTest, CheckLogSoftmax2) {
   for (Device *dev : devices) {
     for (const unsigned n : ns) {
       for (const float k : {-5, -1, 0, 1, 5}) {
-        const Tensor x = dev->new_tensor({n}, k);
+        const Tensor x = dev->new_tensor_by_constant({n}, k);
         const Tensor y = log_softmax(x, 0);
         EXPECT_EQ(Shape({n}), y.shape());
         // TODO(odashi): 1e-3 might not be enough precision.
@@ -1610,7 +1610,7 @@ TEST_F(TensorOpsTest, CheckSoftmax2) {
   for (Device *dev : devices) {
     for (const unsigned n : ns) {
       for (const float k : {-5, -1, 0, 1, 5}) {
-        const Tensor x = dev->new_tensor({n}, k);
+        const Tensor x = dev->new_tensor_by_constant({n}, k);
         const Tensor y = softmax(x, 0);
         EXPECT_EQ(Shape({n}), y.shape());
         EXPECT_TRUE(
@@ -1634,7 +1634,7 @@ TEST_F(TensorOpsTest, CheckBroadcast) {
   };
   for (Device *dev : devices) {
     for (const TestCase &tc : test_cases) {
-      const Tensor x = dev->new_tensor({}, 1);
+      const Tensor x = dev->new_tensor_by_constant({}, 1);
       const Tensor y = broadcast(x, tc.dim, tc.size);
       EXPECT_EQ(tc.shape, y.shape());
       EXPECT_TRUE(vector_match(tc.values, y.to_vector()));
@@ -1697,7 +1697,7 @@ TEST_F(TensorOpsTest, CheckBroadcast3) {
 
 TEST_F(TensorOpsTest, CheckInvalidBroadcast) {
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor({1, 2}, 0);
+    const Tensor x = dev->new_tensor_by_constant({1, 2}, 0);
     EXPECT_THROW(broadcast(x, 0, 0), Error);
     EXPECT_THROW(broadcast(x, 1, 0), Error);
     EXPECT_THROW(broadcast(x, 1, 1), Error);
@@ -1776,15 +1776,15 @@ TEST_F(TensorOpsTest, CheckSoftmaxCrossEntropyBatchBroadcast) {
 TEST_F(TensorOpsTest, CheckInvalidSoftmaxCrossEntropy) {
   for (Device *dev : devices) {
     {
-      const Tensor x = dev->new_tensor({2, 2}, .5);
-      const Tensor t = dev->new_tensor({2, 3}, .5);
+      const Tensor x = dev->new_tensor_by_constant({2, 2}, .5);
+      const Tensor t = dev->new_tensor_by_constant({2, 3}, .5);
       EXPECT_THROW(softmax_cross_entropy(x, t, 0), Error);
       EXPECT_THROW(softmax_cross_entropy(x, t, 1), Error);
       EXPECT_THROW(softmax_cross_entropy(x, t, 2), Error);
     }
     {
-      const Tensor x = dev->new_tensor(Shape({2, 2}, 2), .5);
-      const Tensor t = dev->new_tensor(Shape({2, 3}, 3), .5);
+      const Tensor x = dev->new_tensor_by_constant(Shape({2, 2}, 2), .5);
+      const Tensor t = dev->new_tensor_by_constant(Shape({2, 3}, 3), .5);
       EXPECT_THROW(softmax_cross_entropy(x, t, 0), Error);
       EXPECT_THROW(softmax_cross_entropy(x, t, 1), Error);
       EXPECT_THROW(softmax_cross_entropy(x, t, 2), Error);
@@ -1840,14 +1840,14 @@ TEST_F(TensorOpsTest, CheckSparseSoftmaxCrossEntropy) {
 TEST_F(TensorOpsTest, CheckInvalidSparseSoftmaxCrossEntropy) {
   for (Device *dev : devices) {
     {
-      const Tensor x = dev->new_tensor({2, 2}, .5);
+      const Tensor x = dev->new_tensor_by_constant({2, 2}, .5);
       const vector<unsigned> t {2};
       EXPECT_THROW(softmax_cross_entropy(x, t, 0), Error);
       EXPECT_THROW(softmax_cross_entropy(x, t, 1), Error);
       EXPECT_THROW(softmax_cross_entropy(x, t, 2), Error);
     }
     {
-      const Tensor x = dev->new_tensor(Shape({2, 2}, 2), .5);
+      const Tensor x = dev->new_tensor_by_constant(Shape({2, 2}, 2), .5);
       const vector<unsigned> t {0, 0, 0};
       EXPECT_THROW(softmax_cross_entropy(x, t, 0), Error);
       EXPECT_THROW(softmax_cross_entropy(x, t, 1), Error);

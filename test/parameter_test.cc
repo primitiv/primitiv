@@ -29,17 +29,6 @@ TEST_F(ParameterTest, CheckInvalid) {
   EXPECT_THROW(p.gradient(), Error);
 }
 
-TEST_F(ParameterTest, CheckNew) {
-  Device::set_default(dev);
-  const Shape shape {2, 2};
-  Parameter p(shape);
-  EXPECT_TRUE(p.valid());
-  EXPECT_EQ(shape, p.shape());
-  EXPECT_EQ(&dev, &p.device());
-  EXPECT_EQ(shape, p.value().shape());
-  EXPECT_EQ(shape, p.gradient().shape());
-}
-
 TEST_F(ParameterTest, CheckNewWithValues) {
   Device::set_default(dev);
   const Shape shape {2, 2};
@@ -50,6 +39,7 @@ TEST_F(ParameterTest, CheckNewWithValues) {
   EXPECT_EQ(shape, p.value().shape());
   EXPECT_EQ(shape, p.gradient().shape());
   EXPECT_TRUE(vector_match({1, 2, 3, 4}, p.value().to_vector()));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0}, p.gradient().to_vector()));
 }
 
 TEST_F(ParameterTest, CheckNewWithInitializer) {
@@ -63,11 +53,12 @@ TEST_F(ParameterTest, CheckNewWithInitializer) {
   EXPECT_EQ(shape, p.value().shape());
   EXPECT_EQ(shape, p.gradient().shape());
   EXPECT_TRUE(vector_match({42, 42, 42, 42}, p.value().to_vector()));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0}, p.gradient().to_vector()));
 }
 
 TEST_F(ParameterTest, CheckAddStats) {
   Device::set_default(dev);
-  Parameter p(Shape {});
+  Parameter p(Shape {}, {0});
   EXPECT_FALSE(p.has_stats("a"));
   EXPECT_FALSE(p.has_stats("b"));
   EXPECT_THROW(p.stats("a"), std::out_of_range);
@@ -78,28 +69,35 @@ TEST_F(ParameterTest, CheckAddStats) {
   EXPECT_FALSE(p.has_stats("b"));
   EXPECT_THROW(p.stats("b"), std::out_of_range);
 
-  Tensor &a = p.stats("a");
-  EXPECT_EQ(Shape({2, 2}), a.shape());
-  a.reset_by_vector({1, 2, 3, 4});
-
   p.add_stats("b", {3, 3});
   EXPECT_TRUE(p.has_stats("a"));
   EXPECT_TRUE(p.has_stats("b"));
 
+  Tensor &a = p.stats("a");
+  Tensor &b = p.stats("b");
   Tensor &a2 = p.stats("a");
   Tensor &b2 = p.stats("b");
   EXPECT_EQ(&a, &a2);
-  EXPECT_EQ(Shape({2, 2}), a2.shape());
-  EXPECT_EQ(Shape({3, 3}), b2.shape());
-  EXPECT_TRUE(vector_match({1, 2, 3, 4}, a2.to_vector()));
+  EXPECT_EQ(&b, &b2);
+
+  EXPECT_EQ(Shape({2, 2}), a.shape());
+  EXPECT_EQ(Shape({3, 3}), b.shape());
+
+  EXPECT_TRUE(vector_match({0, 0, 0, 0}, a.to_vector()));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0, 0, 0, 0, 0, 0}, b.to_vector()));
+
+  a.reset_by_vector({1, 2, 3, 4});
+  b.reset_by_vector({1, 2, 3, 4, 5, 6, 7, 8, 9});
+  EXPECT_TRUE(vector_match({1, 2, 3, 4}, a.to_vector()));
+  EXPECT_TRUE(vector_match({1, 2, 3, 4, 5, 6, 7, 8, 9}, b.to_vector()));
 
   EXPECT_THROW(p.add_stats("a", {}), Error);
   EXPECT_THROW(p.add_stats("b", {}), Error);
 }
 
 TEST_F(ParameterTest, CheckInvalidAddStats) {
-  Parameter p;
-  EXPECT_THROW(p.add_stats("a", {}), Error);
+  Parameter invalid;
+  EXPECT_THROW(invalid.add_stats("a", {}), Error);
 }
 
 TEST_F(ParameterTest, CheckMove) {
@@ -116,6 +114,7 @@ TEST_F(ParameterTest, CheckMove) {
   EXPECT_EQ(shape, p2.value().shape());
   EXPECT_EQ(shape, p2.gradient().shape());
   EXPECT_TRUE(vector_match({1, 2, 3, 4}, p2.value().to_vector()));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0}, p2.gradient().to_vector()));
 
   Parameter p3;
   p3 = std::move(p2);
@@ -126,18 +125,21 @@ TEST_F(ParameterTest, CheckMove) {
   EXPECT_EQ(shape, p3.value().shape());
   EXPECT_EQ(shape, p3.gradient().shape());
   EXPECT_TRUE(vector_match({1, 2, 3, 4}, p3.value().to_vector()));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0}, p3.gradient().to_vector()));
 }
 
 TEST_F(ParameterTest, CheckInvalidNew) {
   Device::set_default(dev);
-  EXPECT_THROW(Parameter(Shape({}, 3)), Error);
+  EXPECT_THROW(Parameter(Shape({}, 3), {0, 0, 0}), Error);
 }
 
 TEST_F(ParameterTest, CheckResetValueByVector) {
   Device::set_default(dev);
   const Shape shape {2, 2};
+  const vector<float> initialized {0, 0, 0, 0};
   const vector<float> expected {1, 2, 3, 4};
-  Parameter p(shape);
+  Parameter p(shape, initialized);
+  ASSERT_TRUE(vector_match(initialized, p.value().to_vector()));
   p.reset_value(expected);
   EXPECT_TRUE(vector_match(expected, p.value().to_vector()));
 }
@@ -145,9 +147,11 @@ TEST_F(ParameterTest, CheckResetValueByVector) {
 TEST_F(ParameterTest, CheckResetValueByInitializer) {
   Device::set_default(dev);
   const Shape shape {2, 2};
-  const initializers::Constant init(0);
-  const vector<float> expected {0, 0, 0, 0};
-  Parameter p(shape);
+  const vector<float> initialized {0, 0, 0, 0};
+  const initializers::Constant init(42);
+  const vector<float> expected {42, 42, 42, 42};
+  Parameter p(shape, {0, 0, 0, 0});
+  ASSERT_TRUE(vector_match(initialized, p.value().to_vector()));
   p.reset_value(init);
   EXPECT_TRUE(vector_match(expected, p.value().to_vector()));
 }
@@ -156,7 +160,11 @@ TEST_F(ParameterTest, CheckResetGradient) {
   Device::set_default(dev);
   const Shape shape {2, 2};
   const vector<float> expected {0, 0, 0, 0};
-  Parameter p(shape);
+  const vector<float> expected2 {42, 42, 42, 42};
+  Parameter p(shape, {42, 42, 42, 42});
+  ASSERT_TRUE(vector_match(expected, p.gradient().to_vector()));
+  p.gradient().reset(42);
+  ASSERT_TRUE(vector_match(expected2, p.gradient().to_vector()));
   p.reset_gradient();
   EXPECT_TRUE(vector_match(expected, p.gradient().to_vector()));
 }
@@ -164,12 +172,12 @@ TEST_F(ParameterTest, CheckResetGradient) {
 TEST_F(ParameterTest, CheckAddValue) {
   Device::set_default(dev);
   const Shape shape {2, 2};
-  const initializers::Constant init(0);
+  const vector<float> diff_values0 {0, 0, 0, 0};
   const vector<float> diff_values1 {1, 2, 3, 4};
   const vector<float> diff_values2 {2, 4, 6, 8};
   const Tensor diff = dev.new_tensor_by_vector(shape, diff_values1);
-  Parameter p(shape);
-  p.reset_value(init);
+  Parameter p(shape, {0, 0, 0, 0});
+  ASSERT_TRUE(vector_match(diff_values0, p.value().to_vector()));
   p.value() += diff;
   EXPECT_TRUE(vector_match(diff_values1, p.value().to_vector()));
   p.value() += diff;
@@ -179,11 +187,12 @@ TEST_F(ParameterTest, CheckAddValue) {
 TEST_F(ParameterTest, CheckAddGradient) {
   Device::set_default(dev);
   const Shape shape {2, 2};
+  const vector<float> diff_values0 {0, 0, 0, 0};
   const vector<float> diff_values1 {1, 2, 3, 4};
   const vector<float> diff_values2 {2, 4, 6, 8};
   const Tensor diff = dev.new_tensor_by_vector(shape, diff_values1);
-  Parameter p(shape);
-  p.reset_gradient();
+  Parameter p(shape, {42, 42, 42, 42});
+  ASSERT_TRUE(vector_match(diff_values0, p.gradient().to_vector()));
   p.gradient() += diff;
   EXPECT_TRUE(vector_match(diff_values1, p.gradient().to_vector()));
   p.gradient() += diff;
@@ -204,6 +213,7 @@ TEST_F(ParameterTest, CheckSaveLoad) {
 
   EXPECT_EQ(shape, p2.shape());
   EXPECT_TRUE(vector_match(values, p2.value().to_vector()));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0}, p2.gradient().to_vector()));
 }
 
 TEST_F(ParameterTest, CheckSaveLoadWithStats) {
@@ -222,6 +232,7 @@ TEST_F(ParameterTest, CheckSaveLoadWithStats) {
 
   EXPECT_EQ(shape, p2.shape());
   EXPECT_TRUE(vector_match(values, p2.value().to_vector()));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0}, p2.gradient().to_vector()));
   ASSERT_TRUE(p2.has_stats("a"));
   EXPECT_TRUE(vector_match(values, p2.stats("a").to_vector()));
 }
@@ -242,7 +253,8 @@ TEST_F(ParameterTest, CheckSaveWithoutStats) {
 
   EXPECT_EQ(shape, p2.shape());
   EXPECT_TRUE(vector_match(values, p2.value().to_vector()));
-  ASSERT_FALSE(p2.has_stats("a"));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0}, p2.gradient().to_vector()));
+  EXPECT_FALSE(p2.has_stats("a"));
 }
 
 TEST_F(ParameterTest, CheckLoadWithoutStats) {
@@ -261,7 +273,8 @@ TEST_F(ParameterTest, CheckLoadWithoutStats) {
 
   EXPECT_EQ(shape, p2.shape());
   EXPECT_TRUE(vector_match(values, p2.value().to_vector()));
-  ASSERT_FALSE(p2.has_stats("a"));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0}, p2.gradient().to_vector()));
+  EXPECT_FALSE(p2.has_stats("a"));
 }
 
 TEST_F(ParameterTest, CheckInvalidSave) {
