@@ -12,7 +12,7 @@ docker exec travis-ci bash -c "pip3 install cython"
 
 # script
 docker exec travis-ci bash -c "cd /primitiv && cmake . -DPRIMITIV_BUILD_TESTS=ON"
-docker exec travis-ci bash -c "cd /primitiv && make"
+docker exec travis-ci bash -c "cd /primitiv && make VERBOSE=1"
 docker exec travis-ci bash -c "cd /primitiv && make test"
 docker exec travis-ci bash -c "cd /primitiv && make install"
 docker exec travis-ci bash -c "cd /primitiv/python-primitiv && ./setup.py build"
