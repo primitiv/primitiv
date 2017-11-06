@@ -12,7 +12,7 @@ export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH::$TRAVIS_BUILD_DIR/googletest/goog
 cd $TRAVIS_BUILD_DIR
 cmake . -DPRIMITIV_BUILD_TESTS=ON -DGTEST_SOURCE_DIR=$TRAVIS_BUILD_DIR/googletest/googletest
 make VERBOSE=1
-make test
+make test ARGS='-V'
 make install
 cd $TRAVIS_BUILD_DIR/python-primitiv
 ./setup.py build
