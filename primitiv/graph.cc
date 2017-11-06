@@ -23,6 +23,15 @@ using std::endl;
 using std::move;
 using std::vector;
 
+#ifdef PRIMITIV_NEED_EXPLICIT_STATIC_SYMBOLS
+namespace primitiv {
+namespace mixins {
+template<>
+Graph *DefaultSettable<Graph>::default_obj_ = nullptr;
+}  // namespace mixins
+}  // namespace primitiv
+#endif  // PRIMITIV_NEED_EXPLICIT_STATIC_SYMBOLS
+
 namespace primitiv {
 
 void Graph::clear() {
