@@ -1,8 +1,8 @@
 [![c++](https://img.shields.io/badge/c%2B%2B-11-blue.svg)]()
 [![python](https://img.shields.io/badge/python-3.5-blue.svg)]()
 [![license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Build Status (master)](https://img.shields.io/travis/odashi/primitiv/master.svg?label=build+%28master%29)](https://travic-ci.org/odashi/primitiv)
-[![Build Status (develop)](https://img.shields.io/travis/odashi/primitiv/develop.svg?label=build+%28develop%29)](https://travic-ci.org/odashi/primitiv)
+[![Build Status (master)](https://img.shields.io/travis/odashi/primitiv/master.svg?label=build+%28master%29)](https://travis-ci.org/odashi/primitiv)
+[![Build Status (develop)](https://img.shields.io/travis/odashi/primitiv/develop.svg?label=build+%28develop%29)](https://travis-ci.org/odashi/primitiv)
 
 primitiv
 ========
