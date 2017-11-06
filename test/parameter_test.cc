@@ -56,6 +56,81 @@ TEST_F(ParameterTest, CheckNewWithInitializer) {
   EXPECT_TRUE(vector_match({0, 0, 0, 0}, p.gradient().to_vector()));
 }
 
+TEST_F(ParameterTest, CheckInvalidNew) {
+  Device::set_default(dev);
+  EXPECT_THROW(Parameter(Shape({}, 3), {0, 0, 0}), Error);
+}
+
+TEST_F(ParameterTest, CheckInitFromInvalidWithValues) {
+  Device::set_default(dev);
+  const Shape shape {2, 2};
+  Parameter p;
+  p.init(shape, {1, 2, 3, 4});
+  EXPECT_TRUE(p.valid());
+  EXPECT_EQ(shape, p.shape());
+  EXPECT_EQ(&dev, &p.device());
+  EXPECT_EQ(shape, p.value().shape());
+  EXPECT_EQ(shape, p.gradient().shape());
+  EXPECT_TRUE(vector_match({1, 2, 3, 4}, p.value().to_vector()));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0}, p.gradient().to_vector()));
+}
+
+TEST_F(ParameterTest, CheckInitFromInvalidWithInitializer) {
+  Device::set_default(dev);
+  const Shape shape {2, 2};
+  const initializers::Constant init(42);
+  Parameter p;
+  p.init(shape, init);
+  EXPECT_TRUE(p.valid());
+  EXPECT_EQ(shape, p.shape());
+  EXPECT_EQ(&dev, &p.device());
+  EXPECT_EQ(shape, p.value().shape());
+  EXPECT_EQ(shape, p.gradient().shape());
+  EXPECT_TRUE(vector_match({42, 42, 42, 42}, p.value().to_vector()));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0}, p.gradient().to_vector()));
+}
+
+TEST_F(ParameterTest, CheckInitFromValidWithValues) {
+  Device::set_default(dev);
+  const Shape shape {2, 2};
+  Parameter p(Shape(), {0});
+  p.init(shape, {1, 2, 3, 4});
+  EXPECT_TRUE(p.valid());
+  EXPECT_EQ(shape, p.shape());
+  EXPECT_EQ(&dev, &p.device());
+  EXPECT_EQ(shape, p.value().shape());
+  EXPECT_EQ(shape, p.gradient().shape());
+  EXPECT_TRUE(vector_match({1, 2, 3, 4}, p.value().to_vector()));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0}, p.gradient().to_vector()));
+}
+
+TEST_F(ParameterTest, CheckInitFromValidWithInitializer) {
+  Device::set_default(dev);
+  const Shape shape {2, 2};
+  const initializers::Constant init(42);
+  Parameter p(Shape(), {0});
+  p.init(shape, init);
+  EXPECT_TRUE(p.valid());
+  EXPECT_EQ(shape, p.shape());
+  EXPECT_EQ(&dev, &p.device());
+  EXPECT_EQ(shape, p.value().shape());
+  EXPECT_EQ(shape, p.gradient().shape());
+  EXPECT_TRUE(vector_match({42, 42, 42, 42}, p.value().to_vector()));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0}, p.gradient().to_vector()));
+}
+
+TEST_F(ParameterTest, CheckInvalidInit) {
+  Device::set_default(dev);
+  {
+    Parameter p;
+    EXPECT_THROW(p.init(Shape({}, 3), {0, 0, 0}), Error);
+  }
+  {
+    Parameter p(Shape(), {0});
+    EXPECT_THROW(p.init(Shape({}, 3), {0, 0, 0}), Error);
+  }
+}
+
 TEST_F(ParameterTest, CheckAddStats) {
   Device::set_default(dev);
   Parameter p(Shape {}, {0});
@@ -131,11 +206,6 @@ TEST_F(ParameterTest, CheckMove) {
   EXPECT_TRUE(vector_match({0, 0, 0, 0}, p3.gradient().to_vector()));
 }
 #endif
-
-TEST_F(ParameterTest, CheckInvalidNew) {
-  Device::set_default(dev);
-  EXPECT_THROW(Parameter(Shape({}, 3), {0, 0, 0}), Error);
-}
 
 // NOTE(odashi):
 // Parameters currently could not modify only their values.

@@ -27,8 +27,8 @@ public:
   /**
    * Creates a new Parameter object.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @param value List of initial values. Order of elements should be of
-   *              `Tensor::set_values()`.
+   * @param value List of initial values. Order of elements should be the
+   *              column-major (Fortran) order.
    * @param device The device object to manage internal memory.
    */
   Parameter(
@@ -44,7 +44,30 @@ public:
    */
   Parameter(
       const Shape &shape,
-      const Initializer &init,
+      const Initializer &initializer,
+      Device &device = Device::get_default());
+
+  /**
+   * Initializes the Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param value List of initial values. Order of elements should be the
+   *              column-major (Fortran) order.
+   * @param device The device object to manage internal memory.
+   */
+  void init(
+      const Shape &shape,
+      const std::vector<float> &value,
+      Device &device = Device::get_default());
+
+  /**
+   * Initializes the Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param init An Initializer object.
+   * @param device The device object to manage internal memory.
+   */
+  void init(
+      const Shape &shape,
+      const Initializer &initializer,
       Device &device = Device::get_default());
 
   /**

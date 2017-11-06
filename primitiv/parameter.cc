@@ -100,14 +100,47 @@ Parameter::Parameter(
 
 Parameter::Parameter(
     const Shape &shape,
-    const Initializer &init,
+    const Initializer &initializer,
     Device &device)
 : shape_(shape)
 , device_(&device)
 , value_(operators::zeros<Tensor>(shape, device))
 , grad_(operators::zeros<Tensor>(shape, device)) {
   ::check_shape(value_, grad_);
-  init.apply(value_);
+  initializer.apply(value_);
+}
+
+void Parameter::init(
+    const Shape &shape,
+    const std::vector<float> &value,
+    Device &device) {
+  Tensor value_temp = operators::input<Tensor>(shape, value, device);
+  Tensor grad_temp = operators::zeros<Tensor>(shape, device);
+  ::check_shape(value_temp, grad_temp);
+
+  // Initialization succeeded. Move all objects to `this`.
+  shape_ = shape;
+  device_ = &device;
+  value_ = std::move(value_temp);
+  grad_ = std::move(grad_temp);
+  stats_.clear();
+}
+
+void Parameter::init(
+    const Shape &shape,
+    const Initializer &initializer,
+    Device &device) {
+  Tensor value_temp = operators::zeros<Tensor>(shape, device);
+  Tensor grad_temp = operators::zeros<Tensor>(shape, device);
+  ::check_shape(value_temp, grad_temp);
+  initializer.apply(value_temp);
+
+  // Initialization succeeded. Move all objects to `this`.
+  shape_ = shape;
+  device_ = &device;
+  value_ = std::move(value_temp);
+  grad_ = std::move(grad_temp);
+  stats_.clear();
 }
 
 void Parameter::load(const string &path, bool with_stats, Device &device) {
@@ -134,15 +167,16 @@ void Parameter::load(const string &path, bool with_stats, Device &device) {
     }
   }
 
-  Tensor value = ::parse_tensor(src.value(), device);
-  Tensor grad = operators::zeros<Tensor>(value.shape(), device);
-  ::check_shape(value, grad);
+  Tensor value_temp = ::parse_tensor(src.value(), device);
+  const Shape &shape_temp = value_temp.shape();
+  Tensor grad_temp = operators::zeros<Tensor>(shape_temp, device);
+  ::check_shape(value_temp, grad_temp);
 
   // Loading succeeded. Move all data to `this`.
-  shape_ = value.shape();
+  shape_ = shape_temp;
   device_ = &device;
-  value_ = std::move(value);
-  grad_ = std::move(grad);
+  value_ = std::move(value_temp);
+  grad_ = std::move(grad_temp);
   stats_ = std::move(stats);
 }
 
