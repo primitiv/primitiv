@@ -66,29 +66,26 @@ primitiv::Tensor parse_tensor(const primitiv::messages::Tensor &src, primitiv::D
   return device.new_tensor_by_array(shape, src.data().data());
 }
 
+void check_shape(
+    const primitiv::Tensor &value,
+    const primitiv::Tensor &grad) {
+  const primitiv::Shape &sv = value.shape();
+  const primitiv::Shape &sg = grad.shape();
+  if (sv != sg) {
+    THROW_ERROR(
+        "Shape mismatched between value and gradient. value: "
+        << sv.to_string() << ", gradient: " << sg.to_string());
+  }
+  if (sv.has_batch()) {
+    THROW_ERROR(
+        "The batch size of the parameter should be 1. shape: "
+        << sv.to_string());
+  }
+}
+
 }  // namespace
 
 namespace primitiv {
-
-void Parameter::check_shape() {
-  if (shape_.has_batch()) {
-    THROW_ERROR(
-        "The batch size of the parameter shape should be 1. Given shape: "
-        << shape_.to_string());
-  }
-  if (value_.shape() != shape_) {
-    THROW_ERROR(
-        "Shape mismatched at Parameter::check_shape()."
-        << " value_.shape: " << value_.shape().to_string()
-        << " != expected: " << shape_.to_string());
-  }
-  if (grad_.shape() != shape_) {
-    THROW_ERROR(
-        "Shape mismatched at Parameter::check_shape()."
-        << " grad_.shape: " << grad_.shape().to_string()
-        << " != expected: " << shape_.to_string());
-  }
-}
 
 Parameter::Parameter(
     const Shape &shape,
@@ -98,7 +95,7 @@ Parameter::Parameter(
 , device_(&device)
 , value_(operators::input<Tensor>(shape, value, device))
 , grad_(operators::zeros<Tensor>(shape, device)) {
-  check_shape();
+  ::check_shape(value_, grad_);
 }
 
 Parameter::Parameter(
@@ -109,43 +106,44 @@ Parameter::Parameter(
 , device_(&device)
 , value_(operators::zeros<Tensor>(shape, device))
 , grad_(operators::zeros<Tensor>(shape, device)) {
-  check_shape();
+  ::check_shape(value_, grad_);
   init.apply(value_);
 }
 
-void Parameter::initialize_by_data(
-    Tensor &&value,
-    std::unordered_map<string, Tensor> &&stats) {
-  value_ = std::move(value);  // Should initialize this at first.
-  shape_ = value_.shape();
-  device_ = &value_.device();
-  grad_ = operators::zeros<Tensor>(shape_, *device_);
-  stats_ = std::move(stats);
-  check_shape();
-}
+void Parameter::load(const string &path, bool with_stats, Device &device) {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-void Parameter::reset_value(const vector<float> &value) {
-  if (!valid()) THROW_ERROR("Invalid parameter.");
-  value_.reset_by_vector(value);
-}
+  messages::Parameter src;
 
-void Parameter::reset_value(const Initializer &init) {
-  if (!valid()) THROW_ERROR("Invalid parameter.");
-  init.apply(value_);
-}
-
-void Parameter::reset_gradient() {
-  if (!valid()) THROW_ERROR("Invalid parameter.");
-  grad_.reset(0);
-}
-
-void Parameter::add_stats(const string &name, const Shape &shape) {
-  if (!valid()) THROW_ERROR("Invalid parameter.");
-  if (has_stats(name)) {
-    THROW_ERROR("Statistics with name `" << name << "` already exists.");
+  std::ifstream ifs(path);
+  if (!ifs.is_open()) {
+    THROW_ERROR("Could not open file: " << path);
   }
-  stats_.emplace(
-      std::make_pair(name, operators::zeros<Tensor>(shape, *device_)));
+  if (!src.ParseFromIstream(&ifs)) {
+    THROW_ERROR("Failed to read Parameter message: " << path);
+  }
+  if (!src.has_value()) {
+    THROW_ERROR("Invalid Parameter message: message has no 'value' member.");
+  }
+
+  std::unordered_map<string, Tensor> stats;
+  if (with_stats) {
+    for (const auto &kv : src.stats()) {
+      stats.emplace(std::make_pair(
+            kv.first, ::parse_tensor(kv.second, device)));
+    }
+  }
+
+  Tensor value = ::parse_tensor(src.value(), device);
+  Tensor grad = operators::zeros<Tensor>(value.shape(), device);
+  ::check_shape(value, grad);
+
+  // Loading succeeded. Move all data to `this`.
+  shape_ = value.shape();
+  device_ = &device;
+  value_ = std::move(value);
+  grad_ = std::move(grad);
+  stats_ = std::move(stats);
 }
 
 void Parameter::save(const string &path, bool with_stats) const  {
@@ -171,36 +169,28 @@ void Parameter::save(const string &path, bool with_stats) const  {
   }
 }
 
-Parameter Parameter::load(const string &path, bool with_stats, Device &device) {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
+void Parameter::reset_value(const vector<float> &value) {
+  if (!valid()) THROW_ERROR("Invalid parameter.");
+  value_.reset_by_vector(value);
+}
 
-  messages::Parameter src;
+void Parameter::reset_value(const Initializer &init) {
+  if (!valid()) THROW_ERROR("Invalid parameter.");
+  init.apply(value_);
+}
 
-  std::ifstream ifs(path);
-  if (!ifs.is_open()) {
-    THROW_ERROR("Could not open file: " << path);
+void Parameter::reset_gradient() {
+  if (!valid()) THROW_ERROR("Invalid parameter.");
+  grad_.reset(0);
+}
+
+void Parameter::add_stats(const string &name, const Shape &shape) {
+  if (!valid()) THROW_ERROR("Invalid parameter.");
+  if (has_stats(name)) {
+    THROW_ERROR("Statistics with name `" << name << "` already exists.");
   }
-  if (!src.ParseFromIstream(&ifs)) {
-    THROW_ERROR("Failed to read Parameter message: " << path);
-  }
-  if (!src.has_value()) {
-    THROW_ERROR("Invalid Parameter message: message has no 'value' member.");
-  }
-
-  std::unordered_map<string, Tensor> stats;
-  if (with_stats) {
-    for (const auto &kv : src.stats()) {
-      stats.emplace(std::make_pair(
-            kv.first, ::parse_tensor(kv.second, device)));
-    }
-  }
-
-  Parameter param;
-  param.initialize_by_data(
-      ::parse_tensor(src.value(), device),
-      std::move(stats));
-
-  return param;
+  stats_.emplace(
+      std::make_pair(name, operators::zeros<Tensor>(shape, *device_)));
 }
 
 }  // namespace primitiv

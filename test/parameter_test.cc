@@ -100,6 +100,9 @@ TEST_F(ParameterTest, CheckInvalidAddStats) {
   EXPECT_THROW(invalid.add_stats("a", {}), Error);
 }
 
+// NOTE(odashi):
+// Parameter is currently nonmovable.
+#if 0
 TEST_F(ParameterTest, CheckMove) {
   Device::set_default(dev);
   const Shape shape {2, 2};
@@ -127,6 +130,7 @@ TEST_F(ParameterTest, CheckMove) {
   EXPECT_TRUE(vector_match({1, 2, 3, 4}, p3.value().to_vector()));
   EXPECT_TRUE(vector_match({0, 0, 0, 0}, p3.gradient().to_vector()));
 }
+#endif
 
 TEST_F(ParameterTest, CheckInvalidNew) {
   Device::set_default(dev);
@@ -208,7 +212,8 @@ TEST_F(ParameterTest, CheckSaveLoad) {
   const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveLoad.data";
   p1.save(path);
 
-  const Parameter p2 = Parameter::load(path);
+  Parameter p2;
+  p2.load(path);
   std::remove(path.c_str());
 
   EXPECT_EQ(shape, p2.shape());
@@ -227,7 +232,8 @@ TEST_F(ParameterTest, CheckSaveLoadWithStats) {
   const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveLoadWithStats.data";
   p1.save(path);
 
-  const Parameter p2 = Parameter::load(path);
+  Parameter p2;
+  p2.load(path);
   std::remove(path.c_str());
 
   EXPECT_EQ(shape, p2.shape());
@@ -248,7 +254,8 @@ TEST_F(ParameterTest, CheckSaveWithoutStats) {
   const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveWithoutStats.data";
   p1.save(path, false);
 
-  const Parameter p2 = Parameter::load(path);
+  Parameter p2;
+  p2.load(path);
   std::remove(path.c_str());
 
   EXPECT_EQ(shape, p2.shape());
@@ -268,7 +275,8 @@ TEST_F(ParameterTest, CheckLoadWithoutStats) {
   const std::string path = "/tmp/primitiv_ParameterTest_CheckLoadWithoutStats.data";
   p1.save(path);
 
-  const Parameter p2 = Parameter::load(path, false);
+  Parameter p2;
+  p2.load(path, false);
   std::remove(path.c_str());
 
   EXPECT_EQ(shape, p2.shape());
