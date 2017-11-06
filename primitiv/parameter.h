@@ -74,19 +74,6 @@ public:
   bool valid() const { return !!device_; }
 
   /**
-   * Set all values.
-   * @param value List of new parameter values. Order of the values should be
-   *              of `Tensor::set_values()`.
-   */
-  void reset_value(const std::vector<float> &value);
-
-  /**
-   * Set all values using a specific initialization criteria.
-   * @param init An Initializer object.
-   */
-  void reset_value(const Initializer &init);
-
-  /**
    * Set all gradients to 0.
    */
   void reset_gradient();

@@ -169,16 +169,6 @@ void Parameter::save(const string &path, bool with_stats) const  {
   }
 }
 
-void Parameter::reset_value(const vector<float> &value) {
-  if (!valid()) THROW_ERROR("Invalid parameter.");
-  value_.reset_by_vector(value);
-}
-
-void Parameter::reset_value(const Initializer &init) {
-  if (!valid()) THROW_ERROR("Invalid parameter.");
-  init.apply(value_);
-}
-
 void Parameter::reset_gradient() {
   if (!valid()) THROW_ERROR("Invalid parameter.");
   grad_.reset(0);

@@ -137,6 +137,9 @@ TEST_F(ParameterTest, CheckInvalidNew) {
   EXPECT_THROW(Parameter(Shape({}, 3), {0, 0, 0}), Error);
 }
 
+// NOTE(odashi):
+// Parameters currently could not modify only their values.
+#if 0
 TEST_F(ParameterTest, CheckResetValueByVector) {
   Device::set_default(dev);
   const Shape shape {2, 2};
@@ -159,6 +162,7 @@ TEST_F(ParameterTest, CheckResetValueByInitializer) {
   p.reset_value(init);
   EXPECT_TRUE(vector_match(expected, p.value().to_vector()));
 }
+#endif
 
 TEST_F(ParameterTest, CheckResetGradient) {
   Device::set_default(dev);
