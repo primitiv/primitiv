@@ -79,7 +79,7 @@ public:
    */
   void load(
       const std::string &path,
-      bool with_statis = true,
+      bool with_stats = true,
       Device &device = Device::get_default());
 
   /**
