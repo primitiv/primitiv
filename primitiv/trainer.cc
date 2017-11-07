@@ -4,6 +4,7 @@
 #include <fstream>
 #include <primitiv/error.h>
 #include <primitiv/messages.pb.h>
+#include <primitiv/model.h>
 #include <primitiv/operators.h>
 #include <primitiv/parameter.h>
 #include <primitiv/trainer.h>
@@ -73,6 +74,12 @@ void Trainer::add_parameter(Parameter &param) {
   }
   params_.insert(&param);
   configure_parameter(param);
+}
+
+void Trainer::add_model(const Model &model) {
+  for (Parameter *param : model.get_trainable_parameters()) {
+    add_parameter(*param);
+  }
 }
 
 void Trainer::reset_gradients() {

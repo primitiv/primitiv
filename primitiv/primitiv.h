@@ -7,6 +7,7 @@
 #include <primitiv/function.h>
 #include <primitiv/graph.h>
 #include <primitiv/initializer_impl.h>
+#include <primitiv/model.h>
 #include <primitiv/naive_device.h>
 #include <primitiv/operators.h>
 #include <primitiv/parameter.h>
