@@ -41,7 +41,7 @@ Shape Input::forward_shape(const vector<const Shape *> &args) const {
 
 Tensor Input::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 0);
-  return device_.new_tensor_by_vector(shape_, data_);
+  return operators::input<Tensor>(shape_, data_, device_);
 }
 
 void Input::backward(
@@ -89,7 +89,7 @@ Shape Constant::forward_shape(const vector<const Shape *> &args) const {
 
 Tensor Constant::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 0);
-  return device_.new_tensor(shape_, k_);
+  return operators::constant<Tensor>(shape_, k_, device_);
 }
 
 void Constant::backward(

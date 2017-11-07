@@ -21,9 +21,9 @@ protected:
 TEST_F(TrainerTest, CheckAddParameter) {
   Device::set_default(dev);
   trainers::SGD trainer;
-  Parameter param1({2, 2});
-  Parameter param2({2, 2});
-  Parameter param3({2, 2});
+  Parameter param1;
+  Parameter param2;
+  Parameter param3;
 
   EXPECT_NO_THROW(trainer.add_parameter(param1));
   EXPECT_THROW(trainer.add_parameter(param1), Error);
@@ -131,7 +131,7 @@ TEST_F(TrainerTest, CheckWeightDecay) {
   trainers::SGD trainer;
   ASSERT_EQ(.0f, trainer.get_weight_decay());
 
-  Parameter param({2, 2});
+  Parameter param({2, 2}, {0, 0, 0, 0});
   trainer.add_parameter(param);
 
   struct TestCase {
@@ -166,7 +166,7 @@ TEST_F(TrainerTest, CheckGradientClipping) {
   trainers::SGD trainer;
   ASSERT_EQ(.0f, trainer.get_gradient_clipping());
 
-  Parameter param({2, 2});
+  Parameter param({2, 2}, {0, 0, 0, 0});
   trainer.add_parameter(param);
 
   struct TestCase {
