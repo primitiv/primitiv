@@ -22,6 +22,7 @@ set(primitiv_base_HDRS
   primitiv_cuda.h
   shape.h
   shape_ops.h
+  string_utils.h
   tensor.h
   trainer.h
   trainer_impl.h
