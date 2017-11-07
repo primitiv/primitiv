@@ -1,11 +1,13 @@
 #include <config.h>
 
+#include <string>
 #include <vector>
 #include <gtest/gtest.h>
 #include <primitiv/model.h>
 #include <primitiv/parameter.h>
 
 using std::set;
+using std::string;
 using std::vector;
 
 namespace primitiv {
@@ -97,6 +99,74 @@ TEST_F(ModelTest, CheckGetParameter) {
   EXPECT_THROW(rm.get_parameter("x"), Error);
 }
 
+TEST_F(ModelTest, CheckGetParameterRecursiveByInitializerList) {
+  Model m, sm;
+  Parameter p1, p2, p3;
+  m.add_parameter("p1", p1);
+  sm.add_parameter("p2", p2);
+  sm.add_parameter("p3", p3);
+  m.add_submodel("sm", sm);
+
+  EXPECT_EQ(&p1, &m.get_parameter({"p1"}));
+  EXPECT_EQ(&p2, &m.get_parameter({"sm", "p2"}));
+  EXPECT_EQ(&p3, &m.get_parameter({"sm", "p3"}));
+  EXPECT_EQ(&p2, &sm.get_parameter({"p2"}));
+  EXPECT_EQ(&p3, &sm.get_parameter({"p3"}));
+  EXPECT_THROW(m.get_parameter({"p2"}), Error);
+  EXPECT_THROW(m.get_parameter({"p3"}), Error);
+  EXPECT_THROW(m.get_parameter({"sm"}), Error);
+  EXPECT_THROW(m.get_parameter({"sm", "p1"}), Error);
+  EXPECT_THROW(sm.get_parameter({"p1"}), Error);
+  EXPECT_THROW(m.get_parameter({"x"}), Error);
+
+  const Model &rm = m, &rsm = sm;
+  EXPECT_EQ(&p1, &rm.get_parameter({"p1"}));
+  EXPECT_EQ(&p2, &rm.get_parameter({"sm", "p2"}));
+  EXPECT_EQ(&p3, &rm.get_parameter({"sm", "p3"}));
+  EXPECT_EQ(&p2, &rsm.get_parameter({"p2"}));
+  EXPECT_EQ(&p3, &rsm.get_parameter({"p3"}));
+  EXPECT_THROW(rm.get_parameter({"p2"}), Error);
+  EXPECT_THROW(rm.get_parameter({"p3"}), Error);
+  EXPECT_THROW(rm.get_parameter({"sm"}), Error);
+  EXPECT_THROW(rm.get_parameter({"sm", "p1"}), Error);
+  EXPECT_THROW(rsm.get_parameter({"p1"}), Error);
+  EXPECT_THROW(rm.get_parameter({"x"}), Error);
+}
+
+TEST_F(ModelTest, CheckGetParameterRecursiveByVector) {
+  Model m, sm;
+  Parameter p1, p2, p3;
+  m.add_parameter("p1", p1);
+  sm.add_parameter("p2", p2);
+  sm.add_parameter("p3", p3);
+  m.add_submodel("sm", sm);
+
+  EXPECT_EQ(&p1, &m.get_parameter(vector<string> {"p1"}));
+  EXPECT_EQ(&p2, &m.get_parameter(vector<string> {"sm", "p2"}));
+  EXPECT_EQ(&p3, &m.get_parameter(vector<string> {"sm", "p3"}));
+  EXPECT_EQ(&p2, &sm.get_parameter(vector<string> {"p2"}));
+  EXPECT_EQ(&p3, &sm.get_parameter(vector<string> {"p3"}));
+  EXPECT_THROW(m.get_parameter(vector<string> {"p2"}), Error);
+  EXPECT_THROW(m.get_parameter(vector<string> {"p3"}), Error);
+  EXPECT_THROW(m.get_parameter(vector<string> {"sm"}), Error);
+  EXPECT_THROW(m.get_parameter(vector<string> {"sm", "p1"}), Error);
+  EXPECT_THROW(sm.get_parameter(vector<string> {"p1"}), Error);
+  EXPECT_THROW(m.get_parameter(vector<string> {"x"}), Error);
+
+  const Model &rm = m, &rsm = sm;
+  EXPECT_EQ(&p1, &rm.get_parameter(vector<string> {"p1"}));
+  EXPECT_EQ(&p2, &rm.get_parameter(vector<string> {"sm", "p2"}));
+  EXPECT_EQ(&p3, &rm.get_parameter(vector<string> {"sm", "p3"}));
+  EXPECT_EQ(&p2, &rsm.get_parameter(vector<string> {"p2"}));
+  EXPECT_EQ(&p3, &rsm.get_parameter(vector<string> {"p3"}));
+  EXPECT_THROW(rm.get_parameter(vector<string> {"p2"}), Error);
+  EXPECT_THROW(rm.get_parameter(vector<string> {"p3"}), Error);
+  EXPECT_THROW(rm.get_parameter(vector<string> {"sm"}), Error);
+  EXPECT_THROW(rm.get_parameter(vector<string> {"sm", "p1"}), Error);
+  EXPECT_THROW(rsm.get_parameter(vector<string> {"p1"}), Error);
+  EXPECT_THROW(rm.get_parameter(vector<string> {"x"}), Error);
+}
+
 TEST_F(ModelTest, CheckGetSubmodel) {
   Model m, sm1, sm2, ssm;
   Parameter p;
@@ -115,6 +185,62 @@ TEST_F(ModelTest, CheckGetSubmodel) {
   EXPECT_EQ(&sm2, &rm.get_submodel("sm2"));
   EXPECT_THROW(rm.get_submodel("ssm"), Error);
   EXPECT_THROW(rm.get_submodel("p"), Error);
+}
+
+TEST_F(ModelTest, CheckGetSubmodelRecursiveByInitializerList) {
+  Model m, sm1, sm2, ssm;
+  Parameter p;
+  m.add_parameter("p", p);
+  m.add_submodel("sm1", sm1);
+  m.add_submodel("sm2", sm2);
+  sm1.add_submodel("ssm", ssm);
+
+  EXPECT_EQ(&sm1, &m.get_submodel({"sm1"}));
+  EXPECT_EQ(&sm2, &m.get_submodel({"sm2"}));
+  EXPECT_EQ(&ssm, &m.get_submodel({"sm1", "ssm"}));
+  EXPECT_EQ(&ssm, &sm1.get_submodel({"ssm"}));
+  EXPECT_THROW(m.get_submodel({"p"}), Error);
+  EXPECT_THROW(m.get_submodel({"ssm"}), Error);
+  EXPECT_THROW(m.get_submodel({"sm2", "ssm"}), Error);
+  EXPECT_THROW(m.get_submodel({"x"}), Error);
+
+  const Model &rm = m, &rsm1 = sm1;
+  EXPECT_EQ(&sm1, &rm.get_submodel({"sm1"}));
+  EXPECT_EQ(&sm2, &rm.get_submodel({"sm2"}));
+  EXPECT_EQ(&ssm, &rm.get_submodel({"sm1", "ssm"}));
+  EXPECT_EQ(&ssm, &rsm1.get_submodel({"ssm"}));
+  EXPECT_THROW(rm.get_submodel({"p"}), Error);
+  EXPECT_THROW(rm.get_submodel({"ssm"}), Error);
+  EXPECT_THROW(rm.get_submodel({"sm2", "ssm"}), Error);
+  EXPECT_THROW(rm.get_submodel({"x"}), Error);
+}
+
+TEST_F(ModelTest, CheckGetSubmodelRecursiveByVector) {
+  Model m, sm1, sm2, ssm;
+  Parameter p;
+  m.add_parameter("p", p);
+  m.add_submodel("sm1", sm1);
+  m.add_submodel("sm2", sm2);
+  sm1.add_submodel("ssm", ssm);
+
+  EXPECT_EQ(&sm1, &m.get_submodel(vector<string> {"sm1"}));
+  EXPECT_EQ(&sm2, &m.get_submodel(vector<string> {"sm2"}));
+  EXPECT_EQ(&ssm, &m.get_submodel(vector<string> {"sm1", "ssm"}));
+  EXPECT_EQ(&ssm, &sm1.get_submodel(vector<string> {"ssm"}));
+  EXPECT_THROW(m.get_submodel(vector<string> {"p"}), Error);
+  EXPECT_THROW(m.get_submodel(vector<string> {"ssm"}), Error);
+  EXPECT_THROW(m.get_submodel(vector<string> {"sm2", "ssm"}), Error);
+  EXPECT_THROW(m.get_submodel(vector<string> {"x"}), Error);
+
+  const Model &rm = m, &rsm1 = sm1;
+  EXPECT_EQ(&sm1, &rm.get_submodel(vector<string> {"sm1"}));
+  EXPECT_EQ(&sm2, &rm.get_submodel(vector<string> {"sm2"}));
+  EXPECT_EQ(&ssm, &rm.get_submodel(vector<string> {"sm1", "ssm"}));
+  EXPECT_EQ(&ssm, &rsm1.get_submodel(vector<string> {"ssm"}));
+  EXPECT_THROW(rm.get_submodel(vector<string> {"p"}), Error);
+  EXPECT_THROW(rm.get_submodel(vector<string> {"ssm"}), Error);
+  EXPECT_THROW(rm.get_submodel(vector<string> {"sm2", "ssm"}), Error);
+  EXPECT_THROW(rm.get_submodel(vector<string> {"x"}), Error);
 }
 
 TEST_F(ModelTest, CheckGetTrainableParameters) {

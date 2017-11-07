@@ -2,6 +2,7 @@
 
 #include <primitiv/error.h>
 #include <primitiv/model.h>
+#include <primitiv/string_utils.h>
 
 namespace primitiv {
 
@@ -37,6 +38,42 @@ void Model::add_submodel(const std::string &name, Model &model) {
   name_set_.emplace(name);
   submodel_set_.emplace(&model);
   submodel_kv_.emplace(name, &model);
+}
+
+const Model &Model::get_semiterminal(
+    const std::vector<std::string> &names) const {
+  const Model *cur = this;
+  for (auto it = names.begin(), end = names.end() - 1; it != end; ++it) {
+    const auto next = cur->submodel_kv_.find(*it);
+    if (next == cur->submodel_kv_.end()) {
+      THROW_ERROR(
+          "Parameter or submodel not found: "
+          "'" << string_utils::join(names, ".") << "'");
+    }
+    cur = next->second;
+  }
+  return *cur;
+}
+
+const Parameter &Model::get_parameter(
+    const std::vector<std::string> &names) const {
+  const Model &st = get_semiterminal(names);
+  const auto it = st.param_kv_.find(names.back());
+  if (it == st.param_kv_.end()) {
+    THROW_ERROR(
+        "Parameter not found: '" << string_utils::join(names, ".") << "'");
+  }
+  return *it->second;
+}
+
+const Model &Model::get_submodel(const std::vector<std::string> &names) const {
+  const Model &st = get_semiterminal(names);
+  const auto it = st.submodel_kv_.find(names.back());
+  if (it == st.submodel_kv_.end()) {
+    THROW_ERROR(
+        "Submodel not found: '" << string_utils::join(names, ".") << "'");
+  }
+  return *it->second;
 }
 
 std::vector<Parameter *> Model::get_trainable_parameters() const {
