@@ -88,14 +88,14 @@ class ArgumentTest(unittest.TestCase):
         self.assertEqual(p.value.to_list(), self.list_data[:12])
 
         # ndarray w/o shape
-        p = Parameter(init=self.ndarray_data[0])
+        p = Parameter(initializer=self.ndarray_data[0])
         self.assertEqual(p.shape(), Shape([4, 3]))
         self.assertEqual(p.value.to_list(), self.list_data[:12])
 
         # ndarray w/ shape
-        p = Parameter(Shape([2, 6]), init=self.ndarray_data[0])
+        p = Parameter(Shape([2, 6]), initializer=self.ndarray_data[0])
         self.assertEqual(p.shape(), Shape([2, 6]))
         self.assertEqual(p.value.to_list(), self.list_data[:12])
 
         # list[float] w/o shape
-        self.assertRaises(TypeError, lambda: Parameter(init=self.list_data[:12]))
+        self.assertRaises(TypeError, lambda: Parameter(initializer=self.list_data[:12]))
