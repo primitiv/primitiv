@@ -45,26 +45,26 @@ cdef class _Parameter:
     def __cinit__(self):
         self.stats = _ParameterStatistics(self)
 
-    def __init__(self, shape = None, init = None, _Device device = None):
+    def __init__(self, shape = None, initializer = None, _Device device = None):
         if self.wrapped is not NULL:
             raise TypeError("__init__() has already been called.")
         if device is None:
             device = _Device.get_default()
-        # Parameter(shape, np.ndarray init, device) new from ndarray
-        if isinstance(init, np.ndarray):
+        # Parameter(shape, np.ndarray initializer, device) new from ndarray
+        if isinstance(initializer, np.ndarray):
             if shape is None:
-                shape = _Shape(init.shape, 1)
-            self.wrapped = new CppParameter(normShape(shape).wrapped, ndarrays_to_vector([init]), device.wrapped[0])
-        # Parameter(shape, Initializer init, device) new from Initializer
-        elif shape is not None and isinstance(init, _Initializer):
-            self.wrapped = new CppParameter(normShape(shape).wrapped, (<_Initializer> init).wrapped[0], device.wrapped[0])
-        elif isinstance(init, list):
-            # Parameter(shape, vector<float> init, device) new from float list
+                shape = _Shape(initializer.shape, 1)
+            self.wrapped = new CppParameter(normShape(shape).wrapped, ndarrays_to_vector([initializer]), device.wrapped[0])
+        # Parameter(shape, Initializer initializer, device) new from Initializer
+        elif shape is not None and isinstance(initializer, _Initializer):
+            self.wrapped = new CppParameter(normShape(shape).wrapped, (<_Initializer> initializer).wrapped[0], device.wrapped[0])
+        elif isinstance(initializer, list):
+            # Parameter(shape, vector<float> initializer, device) new from float list
             if shape is None:
-                raise TypeError("shape is required when init is a list")
-            self.wrapped = new CppParameter(normShape(shape).wrapped, <vector[float]> init, device.wrapped[0])
+                raise TypeError("shape is required when initializer is a list")
+            self.wrapped = new CppParameter(normShape(shape).wrapped, <vector[float]> initializer, device.wrapped[0])
         else:
-            raise TypeError("Argument 'init' has incorrect type (list, Initializer, or numpy.ndarray)")
+            raise TypeError("Argument 'initializer' has incorrect type (list, Initializer, or numpy.ndarray)")
         _Parameter.register_wrapper(self.wrapped, self)
 
     def __dealloc__(self):
@@ -72,16 +72,35 @@ cdef class _Parameter:
             del self.wrapped
             self.wrapped = NULL
 
+    def init(self, _Shape shape = None, initializer = None, _Device device = None):
+        if device is None:
+            device = _Device.get_default()
+        if isinstance(initializer, np.ndarray):
+            if shape is None:
+                shape = _Shape(initializer.shape, 1)
+            self.wrapped.init(normShape(shape).wrapped, ndarrays_to_vector([initializer]), device.wrapped[0])
+        elif shape is not None and isinstance(initializer, _Initializer):
+            self.wrapped.init(normShape(shape).wrapped, (<_Initializer> initializer).wrapped[0], device.wrapped[0])
+        elif isinstance(initializer, list):
+            if shape is None:
+                raise TypeError("shape is required when initializer is a list")
+            self.wrapped.init(normShape(shape).wrapped, <vector[float]> initializer, device.wrapped[0])
+        else:
+            raise TypeError("Argument 'initializer' has incorrect type (list, Initializer, or numpy.ndarray)")
+        return
+
+    def load(self, str path, bool with_stats = True, _Device device = None):
+        if device is None:
+            device = _Device.get_default()
+        self.wrapped.load(pystr_to_cppstr(path), with_stats, device.wrapped[0])
+        return
+
+    def save(self, str path, bool with_stats = True):
+        self.wrapped.save(pystr_to_cppstr(path), with_stats)
+        return
+
     def valid(self):
         return self.wrapped.valid()
-
-    def reset_value_by_vector(self, vector[float] &value):
-        self.wrapped.reset_value(value)
-        return
-
-    def reset_value_by_initializer(self, _Initializer init):
-        self.wrapped.reset_value(init.wrapped[0])
-        return
 
     def reset_gradient(self):
         self.wrapped.reset_gradient()
@@ -129,16 +148,6 @@ cdef class _Parameter:
     # This function is replaced with `stats` variable.
     # def stats(self, str name):
     #     return _Tensor.get_wrapper(&self.wrapped.stats(pystr_to_cppstr(name)))
-
-    def save(self, str path, bool with_stats = True):
-        self.wrapped.save(pystr_to_cppstr(path), with_stats)
-        return
-
-    @staticmethod
-    def load(str path, bool with_stats = True, _Device device = None):
-        if device is None:
-            device = _Device.get_default()
-        return _Parameter.get_wrapper_with_new(Parameter_load(pystr_to_cppstr(path), with_stats, device.wrapped[0]))
 
     def __copy__(self):
         raise NotImplementedError(type(self).__name__ + " does not support `__copy__` for now.")
