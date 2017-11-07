@@ -7,7 +7,7 @@ docker run --name travis-ci -v $TRAVIS_BUILD_DIR:/primitiv -td fedora:latest /bi
 
 # install
 docker exec travis-ci bash -c "yum update -y"
-docker exec travis-ci bash -c "yum install -y gcc-c++ cmake protobuf-devel protobuf-compiler gtest-devel python3-devel python3-numpy"
+docker exec travis-ci bash -c "yum install -y gcc-c++ cmake git protobuf-devel protobuf-compiler gtest-devel python3-devel python3-numpy"
 docker exec travis-ci bash -c "pip3 install cython"
 
 # script
