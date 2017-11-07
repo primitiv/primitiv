@@ -27,8 +27,6 @@ Prerequisites
 - CMake 3.1.0 or later
 - GCC 4.8 or later
 - [Protocol Buffers](https://github.com/google/protobuf)
-- (optional) [Google Test](https://github.com/google/googletest)
-  - Required only when `-DPRIMITIV_BUILD_TESTS=ON`.
 - (optional) CUDA 7.5 or later
   - Required only when `-DPRIMITIV_USE_CUDA=ON`
 
@@ -71,10 +69,6 @@ Building Options
   - Builds test binaries and generates `make test` command.
 - `PRIMITIV_BUILD_TESTS_PROBABILISTIC` (default=`OFF`)
   - Builds test cases that probabilistically fails.
-- `GTEST_SOURCE_DIR` (default=`OFF`)
-  - Specifies the source directory of Google Test. If you installed `googletest` package
-    of Debian or Ubuntu, please add `-DGTEST_SOURCE_DIR=/usr/src/googletest/googletest`
-    with `PRIMITIV_BUILD_TESTS` option.
 - `PRIMITIV_USE_CACHE` (default=`OFF`)
   - Whether or not to use cached values to prevent increasing computation amount.
   - Libraries built with this flag will tend to consume more memory.
@@ -84,7 +78,6 @@ Building Options
   - CMake standard options.
   - [FindCUDA](https://cmake.org/cmake/help/v3.1/module/FindCUDA.html) options.
   - [FindProtobuf](https://cmake.org/cmake/help/v3.1/module/FindProtobuf.html) options.
-  - [FindGTest](https://cmake.org/cmake/help/v3.1/module/FindGTest.html) options.
 
 Usage
 -----

@@ -4,11 +4,15 @@ set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
 project(primitiv VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
+# options
 option(PRIMITIV_BUILD_STATIC_LIBRARY "Builds static library." OFF)
 option(PRIMITIV_BUILD_TESTS "Builds test binaries." OFF)
 option(PRIMITIV_BUILD_TESTS_PROBABILISTIC "Builds test cases that probabilistically fails." OFF)
 option(PRIMITIV_USE_CACHE "Enables cached values in some functions but needs more memory." OFF)
 option(PRIMITIV_USE_CUDA "Finds CUDA library ant use it." OFF)
+
+# test options (not documented in README.)
+option(PRIMITIV_GTEST_SOURCE_DIR "Path to the user-defined googletest directory." "")
 
 # C++ version
 set(CMAKE_CXX_STANDARD 11)
