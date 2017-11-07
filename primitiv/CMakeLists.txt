@@ -14,6 +14,7 @@ set(primitiv_base_HDRS
   initializer.h
   initializer_impl.h
   mixins.h
+  model.h
   naive_device.h
   operators.h
   parameter.h
@@ -21,6 +22,7 @@ set(primitiv_base_HDRS
   primitiv_cuda.h
   shape.h
   shape_ops.h
+  string_utils.h
   tensor.h
   trainer.h
   trainer_impl.h
@@ -34,6 +36,7 @@ set(primitiv_base_SRCS
   function_impl.cc
   graph.cc
   initializer_impl.cc
+  model.cc
   naive_device.cc
   node_ops.cc
   parameter.cc

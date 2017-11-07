@@ -1,0 +1,207 @@
+#ifndef PRIMITIV_MODEL_H_
+#define PRIMITIV_MODEL_H_
+
+#include <initializer_list>
+#include <string>
+#include <vector>
+#include <unordered_map>
+#include <unordered_set>
+
+#include <primitiv/error.h>
+#include <primitiv/mixins.h>
+
+namespace primitiv {
+
+class Parameter;
+
+/**
+ * Set of parameters and specific algorithms.
+ */
+class Model : mixins::Nonmovable<Model> {
+public:
+  Model() = default;
+  virtual ~Model() = default;
+
+  /**
+   * Registers a new parameter.
+   * @param name Name of the parameter.
+   * @param param Reference to the parameter.
+   * @remarks `name` should not be overlapped with all registered parameters and
+   *          submodels.
+   */
+  void add_parameter(const std::string &name, Parameter &param);
+
+  /**
+   * Registers a new submodel.
+   * @param name Name of the submodel.
+   * @param model Reference to the submodel.
+   * @remarks `name` should not be overlapped with all registered parameters and
+   *          submodels.
+   */
+  void add_submodel(const std::string &name, Model &model);
+
+  /**
+   * Retrieves a parameter with specified name.
+   * @param name Name of the parameter.
+   * @return Const-reference of the corresponding `Parameter` object.
+   * @throw primitiv::Error Parameter with `name` not found.
+   */
+  const Parameter &get_parameter(const std::string &name) const {
+    const auto it = param_kv_.find(name);
+    if (it == param_kv_.end()) {
+      THROW_ERROR("Parameter with name '" << name << "' not found.");
+    }
+    return *it->second;
+  }
+
+  /**
+   * Retrieves a parameter with specified name.
+   * @param name Name of the parameter.
+   * @return Reference of the corresponding `Parameter` object.
+   * @throw primitiv::Error Parameter with `name` not found.
+   */
+  Parameter &get_parameter(const std::string &name) {
+    return const_cast<Parameter &>(
+        static_cast<const Model *>(this)->get_parameter(name));
+  }
+
+  /**
+   * Recursively searches a parameter with specified name hierarchy.
+   * @param names Name hierarchy of the parameter.
+   * @return Const-reference of the corresponding `Parameter` object.
+   * @throw primitiv::Error Parameter with `names` not found.
+   */
+  const Parameter &get_parameter(const std::vector<std::string> &names) const;
+
+  /**
+   * Recursively searches a parameter with specified name hierarchy.
+   * @param names Name hierarchy of the parameter.
+   * @return Const-reference of the corresponding `Parameter` object.
+   * @throw primitiv::Error Parameter with `names` not found.
+   */
+  Parameter &get_parameter(const std::vector<std::string> &names) {
+    return const_cast<Parameter &>(
+        static_cast<const Model *>(this)->get_parameter(names));
+  }
+
+  /**
+   * Recursively searches a parameter with specified name hierarchy.
+   * @param names Name hierarchy of the parameter.
+   * @return Const-reference of the corresponding `Parameter` object.
+   * @throw primitiv::Error Parameter with `names` not found.
+   */
+  const Parameter &get_parameter(
+      const std::initializer_list<std::string> names) const {
+    return get_parameter(std::vector<std::string>(names));
+  }
+
+  /**
+   * Recursively searches a parameter with specified name hierarchy.
+   * @param names Name hierarchy of the parameter.
+   * @return Const-reference of the corresponding `Parameter` object.
+   * @throw primitiv::Error Parameter with `names` not found.
+   */
+  Parameter &get_parameter(const std::initializer_list<std::string> names) {
+    return get_parameter(std::vector<std::string>(names));
+  }
+
+  /**
+   * Retrieves a submodel with specified name.
+   * @param name Name of the submodel.
+   * @return Const-reference of the corresponding `Model` object.
+   * @throw primitiv::Error Submodel with `name` not found.
+   */
+  const Model &get_submodel(const std::string &name) const {
+    const auto it = submodel_kv_.find(name);
+    if (it == submodel_kv_.end()) {
+      THROW_ERROR("Submodel with name '" << name << "' not found.");
+    }
+    return *it->second;
+  }
+
+  /**
+   * Retrieves a submodel with specified name.
+   * @param name Name of the submodel.
+   * @return Reference of the corresponding `Model` object.
+   * @throw primitiv::Error Submodel with `name` not found.
+   */
+  Model &get_submodel(const std::string &name) {
+    return const_cast<Model &>(
+        static_cast<const Model *>(this)->get_submodel(name));
+  }
+
+  /**
+   * Recursively searches a submodel with specified name hierarchy.
+   * @param names Name hierarchy of the submodel.
+   * @return Const-reference of the corresponding `Model` object.
+   * @throw primitiv::Error Submodel with `names` not found.
+   */
+  const Model &get_submodel(const std::vector<std::string> &names) const;
+
+  /**
+   * Recursively searches a submodel with specified name hierarchy.
+   * @param names Name hierarchy of the submodel.
+   * @return Const-reference of the corresponding `Model` object.
+   * @throw primitiv::Error Submodel with `names` not found.
+   */
+  Model &get_submodel(const std::vector<std::string> &names) {
+    return const_cast<Model &>(
+        static_cast<const Model *>(this)->get_submodel(names));
+  }
+
+  /**
+   * Recursively searches a submodel with specified name hierarchy.
+   * @param names Name hierarchy of the submodel.
+   * @return Const-reference of the corresponding `Model` object.
+   * @throw primitiv::Error Submodel with `names` not found.
+   */
+  const Model &get_submodel(
+      const std::initializer_list<std::string> names) const {
+    return get_submodel(std::vector<std::string>(names));
+  }
+
+  /**
+   * Recursively searches a submodel with specified name hierarchy.
+   * @param names Name hierarchy of the submodel.
+   * @return Const-reference of the corresponding `Model` object.
+   * @throw primitiv::Error Submodel with `names` not found.
+   */
+  Model &get_submodel(const std::initializer_list<std::string> names) {
+    return get_submodel(std::vector<std::string>(names));
+  }
+
+  /**
+   * Retrieves all parameters in the model which are trainable.
+   * @return List of pointers of trainable parameters.
+   */
+  std::vector<Parameter *>get_trainable_parameters() const;
+
+  /**
+   * Check whether specified model is contained or not in the submodel
+   * hierarchy.
+   * This function is used to detect the cycle path of submodels.
+   * @param model Start point of the traversing path.
+   * @return true if at least one descendant submodel is equal to `model`,
+   *         false otherwise.
+   */
+  bool has_submodel(const Model &model) const;
+
+private:
+  std::unordered_map<std::string, Parameter *> param_kv_;
+  std::unordered_map<std::string, Model *> submodel_kv_;
+  std::unordered_set<std::string> name_set_;
+  std::unordered_set<Parameter *> param_set_;
+  std::unordered_set<Model *> submodel_set_;
+
+  /**
+   * Searches semi-terminal submodel with specified name hierarchy.
+   * @param names Name hierarchy of the submodel or parameter.
+   * @return Const-reference of the corresponding semi-terminal `Model` object.
+   * @throw primitiv::Error Submodel with specified hierarchy not found.
+   */
+  const Model &get_semiterminal(const std::vector<std::string> &names) const;
+};
+
+}  // namespace primitiv
+
+#endif  // PRIMITIV_MODEL_H_
