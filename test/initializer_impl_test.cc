@@ -54,10 +54,12 @@ TEST_F(InitializerImplTest, CheckUniform) {
       m1 += v;
       m2 += v * v;
     }
+#ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
     const float mean = m1 / (N * N);
     const float variance = m2 / (N * N) - mean * mean;
     EXPECT_NEAR(tc.mean, mean, 1e-2);
     EXPECT_NEAR(tc.variance, variance, 1e-2);
+#endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
   }
 }
 
@@ -82,10 +84,12 @@ TEST_F(InitializerImplTest, CheckNormal) {
       m1 += v;
       m2 += v * v;
     }
+#ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
     const float mean = m1 / (N * N);
     const float sd = std::sqrt(m2 / (N * N) - mean * mean);
     EXPECT_NEAR(tc.mean, mean, 1e-2);
     EXPECT_NEAR(tc.sd, sd, 1e-2);
+#endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
   }
 }
 
@@ -115,7 +119,6 @@ TEST_F(InitializerImplTest, CheckXavierUniform) {
 
   for (float scale : {.5f, 1.f, 2.f}) {
     const float bound = scale * std::sqrt(6. / (N + N));
-    const float expected_sd = scale * std::sqrt(2. / (N + N));
 
     const XavierUniform init(scale);
     init.apply(x);
@@ -127,10 +130,13 @@ TEST_F(InitializerImplTest, CheckXavierUniform) {
       m1 += v;
       m2 += v * v;
     }
+#ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
+    const float expected_sd = scale * std::sqrt(2. / (N + N));
     const float mean = m1 / (N * N);
     const float sd = std::sqrt(m2 / (N * N) - mean * mean);
     EXPECT_NEAR(0., mean, 1e-3);
     EXPECT_NEAR(expected_sd, sd, 1e-3);
+#endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
   }
 }
 
@@ -149,8 +155,6 @@ TEST_F(InitializerImplTest, CheckXavierNormal) {
   Tensor x = dev.new_tensor_by_constant({N, N}, 0);
 
   for (float scale : {.5f, 1.f, 2.f}) {
-    const float expected_sd = scale * std::sqrt(2. / (N + N));
-
     const XavierNormal init(scale);
     init.apply(x);
 
@@ -159,10 +163,13 @@ TEST_F(InitializerImplTest, CheckXavierNormal) {
       m1 += v;
       m2 += v * v;
     }
+#ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
+    const float expected_sd = scale * std::sqrt(2. / (N + N));
     const float mean = m1 / (N * N);
     const float sd = std::sqrt(m2 / (N * N) - mean * mean);
     EXPECT_NEAR(0., mean, 1e-3);
     EXPECT_NEAR(expected_sd, sd, 1e-3);
+#endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
   }
 }
 
