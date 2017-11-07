@@ -32,16 +32,16 @@ inline Node Node_sum(const Node &x, unsigned dim) {
     return operators::sum<Node>(x, dim);
 }
 
-inline Node Node_sum_container(const vector<Node> &xs) {
-    return operators::sum<vector<Node>>(xs);
+inline Node Node_sum_container(const std::vector<Node> &xs) {
+    return operators::sum<std::vector<Node>>(xs);
 }
 
 inline Node Node_mean(const Node &x, unsigned dim) {
     return operators::mean<Node>(x, dim);
 }
 
-inline Node Node_mean_container(const vector<Node> &xs) {
-    return operators::mean<vector<Node>>(xs);
+inline Node Node_mean_container(const std::vector<Node> &xs) {
+    return operators::mean<std::vector<Node>>(xs);
 }
 
 inline Tensor Tensor_input_vector(const Shape &shape, const std::vector<float> &data, Device &dev) {
@@ -57,16 +57,16 @@ inline Tensor Tensor_sum(const Tensor &x, unsigned dim) {
     return operators::sum<Tensor>(x, dim);
 }
 
-inline Tensor Tensor_sum_container(const vector<Tensor> &xs) {
-    return operators::sum<vector<Tensor>>(xs);
+inline Tensor Tensor_sum_container(const std::vector<Tensor> &xs) {
+    return operators::sum<std::vector<Tensor>>(xs);
 }
 
 inline Tensor Tensor_mean(const Tensor &x, unsigned dim) {
     return operators::mean<Tensor>(x, dim);
 }
 
-inline Tensor Tensor_mean_container(const vector<Tensor> &xs) {
-    return operators::mean<vector<Tensor>>(xs);
+inline Tensor Tensor_mean_container(const std::vector<Tensor> &xs) {
+    return operators::mean<std::vector<Tensor>>(xs);
 }
 
 }  // namespace python_primitiv

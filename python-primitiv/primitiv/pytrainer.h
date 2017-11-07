@@ -48,7 +48,7 @@ public:
     }
   }
 
-  void configure_parameter(Parameter &param) override {
+  void configure_parameter(primitiv::Parameter &param) override {
     int ret = python_primitiv_trainer_configure_parameter(obj_, param);
     if (ret == -1) {
       // NOTE(vbkaisetsu): This is just a trigger of throwing an error.
@@ -57,7 +57,7 @@ public:
     }
   }
 
-  void update_parameter(float scale, Parameter &param) override {
+  void update_parameter(float scale, primitiv::Parameter &param) override {
     int ret = python_primitiv_trainer_update_parameter(obj_, scale, param);
     if (ret == -1) {
       // NOTE(vbkaisetsu): This is just a trigger of throwing an error.

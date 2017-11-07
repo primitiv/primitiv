@@ -11,13 +11,14 @@ from primitiv._initializer cimport CppInitializer, _Initializer
 
 cdef extern from "primitiv/parameter.h":
     cdef cppclass CppParameter "primitiv::Parameter":
-        CppParameter(CppParameter &&src) except +
         CppParameter() except +
         CppParameter(const CppShape &shape, const vector[float] &value, CppDevice &device) except +
-        CppParameter(const CppShape &shape, const CppInitializer &init, CppDevice &device) except +
+        CppParameter(const CppShape &shape, const CppInitializer &initializer, CppDevice &device) except +
+        void init(const CppShape &shape, const vector[float] &value, CppDevice &device) except +
+        void init(const CppShape &shape, const CppInitializer &initializer, CppDevice &device) except +
+        void load(const string &path, bool with_stats, CppDevice &device) except +
+        void save(const string &path, bool with_stats) except +
         bool valid() except +
-        void reset_value(const vector[float] &value) except +
-        void reset_value(const CppInitializer &init) except +
         void reset_gradient() except +
         void add_stats(const string &name, const CppShape &shape) except +
         bool has_stats(const string &name) except +
@@ -26,11 +27,6 @@ cdef extern from "primitiv/parameter.h":
         CppTensor &value() except +
         CppTensor &gradient() except +
         CppTensor &stats(const string &name) except +
-        void save(const string &path, bool with_stats) except +
-
-
-cdef extern from "parameter_load_wrapper.h" namespace "python_primitiv":
-    CppParameter* Parameter_load(const string &path, bool with_stats, CppDevice &device) except +
 
 
 cdef class _ParameterStatistics:
