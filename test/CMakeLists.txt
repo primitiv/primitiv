@@ -1,27 +1,43 @@
 # test definitions
 
-if(GTEST_SOURCE_DIR)
-  include(ExternalProject)
-  ExternalProject_Add(
-    GTest
-    SOURCE_DIR ${GTEST_SOURCE_DIR}
+include(ExternalProject)
+
+if(PRIMITIV_GTEST_SOURCE_DIR)
+  # Use specific googletest.
+  message("-- Import googletest from: ${PRIMITIV_GTEST_SOURCE_DIR}")
+  ExternalProject_Add(googletest
+    SOURCE_DIR ${PRIMITIV_GTEST_SOURCE_DIR}
     INSTALL_COMMAND ""
+    TEST_COMMAND ""
   )
-  ExternalProject_Get_Property(GTest binary_dir)
-  add_library(gtest STATIC IMPORTED)
-  set_property(
-    TARGET gtest
-    PROPERTY IMPORTED_LOCATION ${binary_dir}/libgtest.a
-  )
-  add_library(gtest_main STATIC IMPORTED)
-  set_property(
-    TARGET gtest_main
-    PROPERTY IMPORTED_LOCATION ${binary_dir}/libgtest_main.a
-  )
-  set(GTEST_BOTH_LIBRARIES gtest gtest_main)
 else()
-  find_package(GTest REQUIRED)
+  # Download googletest from GitHub.
+  set(gtest_repo https://github.com/google/googletest.git)
+  set(gtest_tag release-1.8.0)
+  message("-- Import googletest from: ${gtest_repo} (${gtest_tag})")
+  ExternalProject_Add(googletest
+    GIT_REPOSITORY ${gtest_repo}
+    GIT_TAG ${gtest_tag}
+    SOURCE_DIR "${CMAKE_BINARY_DIR}/third_party/googletest-src"
+    BINARY_DIR "${CMAKE_BINARY_DIR}/third_party/googletest-build"
+    INSTALL_COMMAND ""
+    TEST_COMMAND ""
+  )
 endif()
+
+ExternalProject_Get_Property(googletest binary_dir)
+add_library(gtest UNKNOWN IMPORTED)
+add_library(gtest_main UNKNOWN IMPORTED)
+set_property(
+  TARGET gtest
+  PROPERTY IMPORTED_LOCATION ${binary_dir}/googlemock/gtest/libgtest.a
+)
+set_property(
+  TARGET gtest_main
+  PROPERTY IMPORTED_LOCATION ${binary_dir}/googlemock/gtest/libgtest_main.a
+)
+add_dependencies(gtest googletest)
+add_dependencies(gtest_main googletest)
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -30,10 +46,8 @@ include_directories(
 
 function(primitiv_test name)
   add_executable(${name}_test test_utils.h ${name}_test.cc)
-  if(GTEST_SOURCE_DIR)
-    add_dependencies(${name}_test GTest)
-  endif()
-  target_link_libraries(${name}_test primitiv ${GTEST_BOTH_LIBRARIES} pthread)
+  add_dependencies(${name}_test googletest)
+  target_link_libraries(${name}_test primitiv gtest gtest_main pthread)
   add_test(
     NAME ${name}_test
     COMMAND ${name}_test
