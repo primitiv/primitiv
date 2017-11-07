@@ -56,6 +56,81 @@ TEST_F(ParameterTest, CheckNewWithInitializer) {
   EXPECT_TRUE(vector_match({0, 0, 0, 0}, p.gradient().to_vector()));
 }
 
+TEST_F(ParameterTest, CheckInvalidNew) {
+  Device::set_default(dev);
+  EXPECT_THROW(Parameter(Shape({}, 3), {0, 0, 0}), Error);
+}
+
+TEST_F(ParameterTest, CheckInitFromInvalidWithValues) {
+  Device::set_default(dev);
+  const Shape shape {2, 2};
+  Parameter p;
+  p.init(shape, {1, 2, 3, 4});
+  EXPECT_TRUE(p.valid());
+  EXPECT_EQ(shape, p.shape());
+  EXPECT_EQ(&dev, &p.device());
+  EXPECT_EQ(shape, p.value().shape());
+  EXPECT_EQ(shape, p.gradient().shape());
+  EXPECT_TRUE(vector_match({1, 2, 3, 4}, p.value().to_vector()));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0}, p.gradient().to_vector()));
+}
+
+TEST_F(ParameterTest, CheckInitFromInvalidWithInitializer) {
+  Device::set_default(dev);
+  const Shape shape {2, 2};
+  const initializers::Constant init(42);
+  Parameter p;
+  p.init(shape, init);
+  EXPECT_TRUE(p.valid());
+  EXPECT_EQ(shape, p.shape());
+  EXPECT_EQ(&dev, &p.device());
+  EXPECT_EQ(shape, p.value().shape());
+  EXPECT_EQ(shape, p.gradient().shape());
+  EXPECT_TRUE(vector_match({42, 42, 42, 42}, p.value().to_vector()));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0}, p.gradient().to_vector()));
+}
+
+TEST_F(ParameterTest, CheckInitFromValidWithValues) {
+  Device::set_default(dev);
+  const Shape shape {2, 2};
+  Parameter p(Shape(), {0});
+  p.init(shape, {1, 2, 3, 4});
+  EXPECT_TRUE(p.valid());
+  EXPECT_EQ(shape, p.shape());
+  EXPECT_EQ(&dev, &p.device());
+  EXPECT_EQ(shape, p.value().shape());
+  EXPECT_EQ(shape, p.gradient().shape());
+  EXPECT_TRUE(vector_match({1, 2, 3, 4}, p.value().to_vector()));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0}, p.gradient().to_vector()));
+}
+
+TEST_F(ParameterTest, CheckInitFromValidWithInitializer) {
+  Device::set_default(dev);
+  const Shape shape {2, 2};
+  const initializers::Constant init(42);
+  Parameter p(Shape(), {0});
+  p.init(shape, init);
+  EXPECT_TRUE(p.valid());
+  EXPECT_EQ(shape, p.shape());
+  EXPECT_EQ(&dev, &p.device());
+  EXPECT_EQ(shape, p.value().shape());
+  EXPECT_EQ(shape, p.gradient().shape());
+  EXPECT_TRUE(vector_match({42, 42, 42, 42}, p.value().to_vector()));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0}, p.gradient().to_vector()));
+}
+
+TEST_F(ParameterTest, CheckInvalidInit) {
+  Device::set_default(dev);
+  {
+    Parameter p;
+    EXPECT_THROW(p.init(Shape({}, 3), {0, 0, 0}), Error);
+  }
+  {
+    Parameter p(Shape(), {0});
+    EXPECT_THROW(p.init(Shape({}, 3), {0, 0, 0}), Error);
+  }
+}
+
 TEST_F(ParameterTest, CheckAddStats) {
   Device::set_default(dev);
   Parameter p(Shape {}, {0});
@@ -100,6 +175,9 @@ TEST_F(ParameterTest, CheckInvalidAddStats) {
   EXPECT_THROW(invalid.add_stats("a", {}), Error);
 }
 
+// NOTE(odashi):
+// Parameter is currently nonmovable.
+#if 0
 TEST_F(ParameterTest, CheckMove) {
   Device::set_default(dev);
   const Shape shape {2, 2};
@@ -127,12 +205,11 @@ TEST_F(ParameterTest, CheckMove) {
   EXPECT_TRUE(vector_match({1, 2, 3, 4}, p3.value().to_vector()));
   EXPECT_TRUE(vector_match({0, 0, 0, 0}, p3.gradient().to_vector()));
 }
+#endif
 
-TEST_F(ParameterTest, CheckInvalidNew) {
-  Device::set_default(dev);
-  EXPECT_THROW(Parameter(Shape({}, 3), {0, 0, 0}), Error);
-}
-
+// NOTE(odashi):
+// Parameters currently could not modify only their values.
+#if 0
 TEST_F(ParameterTest, CheckResetValueByVector) {
   Device::set_default(dev);
   const Shape shape {2, 2};
@@ -155,6 +232,7 @@ TEST_F(ParameterTest, CheckResetValueByInitializer) {
   p.reset_value(init);
   EXPECT_TRUE(vector_match(expected, p.value().to_vector()));
 }
+#endif
 
 TEST_F(ParameterTest, CheckResetGradient) {
   Device::set_default(dev);
@@ -208,7 +286,8 @@ TEST_F(ParameterTest, CheckSaveLoad) {
   const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveLoad.data";
   p1.save(path);
 
-  const Parameter p2 = Parameter::load(path);
+  Parameter p2;
+  p2.load(path);
   std::remove(path.c_str());
 
   EXPECT_EQ(shape, p2.shape());
@@ -227,7 +306,8 @@ TEST_F(ParameterTest, CheckSaveLoadWithStats) {
   const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveLoadWithStats.data";
   p1.save(path);
 
-  const Parameter p2 = Parameter::load(path);
+  Parameter p2;
+  p2.load(path);
   std::remove(path.c_str());
 
   EXPECT_EQ(shape, p2.shape());
@@ -248,7 +328,8 @@ TEST_F(ParameterTest, CheckSaveWithoutStats) {
   const std::string path = "/tmp/primitiv_ParameterTest_CheckSaveWithoutStats.data";
   p1.save(path, false);
 
-  const Parameter p2 = Parameter::load(path);
+  Parameter p2;
+  p2.load(path);
   std::remove(path.c_str());
 
   EXPECT_EQ(shape, p2.shape());
@@ -268,7 +349,8 @@ TEST_F(ParameterTest, CheckLoadWithoutStats) {
   const std::string path = "/tmp/primitiv_ParameterTest_CheckLoadWithoutStats.data";
   p1.save(path);
 
-  const Parameter p2 = Parameter::load(path, false);
+  Parameter p2;
+  p2.load(path, false);
   std::remove(path.c_str());
 
   EXPECT_EQ(shape, p2.shape());
