@@ -6,6 +6,15 @@
 
 using std::vector;
 
+#ifdef PRIMITIV_NEED_EXPLICIT_STATIC_SYMBOLS
+namespace primitiv {
+namespace mixins {
+template<>
+Device *DefaultSettable<Device>::default_obj_ = nullptr;
+}  // namespace mixins
+}  // namespace primitiv
+#endif  // PRIMITIV_NEED_EXPLICIT_STATIC_SYMBOLS
+
 // NOTE(odashi): This source only checks shape prerequisites of each operation.
 
 #define CHECK_DEVICE(x) \
@@ -17,11 +26,11 @@ using std::vector;
 
 namespace primitiv {
 
-Tensor Device::new_tensor(const Shape &shape) {
+Tensor Device::new_raw_tensor(const Shape &shape) {
   return Tensor(shape, *this, new_handle(shape));
 }
 
-Tensor Device::new_tensor(const Shape &shape, float k) {
+Tensor Device::new_tensor_by_constant(const Shape &shape, float k) {
   Tensor ret(shape, *this, new_handle(shape));
   reset_tensor(k, ret);
   return ret;
@@ -82,7 +91,7 @@ Tensor Device::copy_tensor(const Tensor &x) {
   // NOTE(odashi):
   // This function should return always different memory with x.
   if (!x.valid()) THROW_ERROR("Attempted to copy an invalid tensor.");
-  Tensor y = new_tensor(x.shape());
+  Tensor y = new_raw_tensor(x.shape());
   copy_tensor_impl(x, y);
   return y;
 }
@@ -91,7 +100,7 @@ Tensor Device::identity(unsigned size) {
   if (size == 0) {
     THROW_ERROR("Invalid size of the identity matrix: " << size);
   }
-  Tensor y = new_tensor({size, size});
+  Tensor y = new_raw_tensor({size, size});
   identity_impl(y);
   return y;
 }
@@ -100,7 +109,7 @@ Tensor Device::random_bernoulli(const Shape &shape, float p) {
   if (p < 0 || p > 1) {
     THROW_ERROR("Invalid Bernoulli probability: " << p);
   }
-  Tensor y = new_tensor(shape);
+  Tensor y = new_raw_tensor(shape);
   random_bernoulli_impl(p, y);
   return y;
 }
@@ -112,7 +121,7 @@ Tensor Device::random_uniform(
         "Invalid parameter of the uniform distribution. lower: " << lower
         << ", upper: " << upper);
   }
-  Tensor y = new_tensor(shape);
+  Tensor y = new_raw_tensor(shape);
   random_uniform_impl(lower, upper, y);
   return y;
 }
@@ -123,7 +132,7 @@ Tensor Device::random_normal(const Shape &shape, float mean, float sd) {
         "Invalid parameter of the normal distribution. mean: " << mean
         << ", SD: " << sd);
   }
-  Tensor y = new_tensor(shape);
+  Tensor y = new_raw_tensor(shape);
   random_normal_impl(mean, sd, y);
   return y;
 }
@@ -134,7 +143,7 @@ Tensor Device::random_log_normal(const Shape &shape, float mean, float sd) {
         "Invalid parameter of the log-normal distribution. mean: " << mean
         << ", SD: " << sd);
   }
-  Tensor y = new_tensor(shape);
+  Tensor y = new_raw_tensor(shape);
   random_log_normal_impl(mean, sd, y);
   return y;
 }
@@ -142,7 +151,7 @@ Tensor Device::random_log_normal(const Shape &shape, float mean, float sd) {
 Tensor Device::pick_fw(
     const Tensor &x, const vector<unsigned> &ids, unsigned dim) {
   CHECK_DEVICE(x);
-  Tensor y = new_tensor(shape_ops::pick(x.shape(), ids, dim));
+  Tensor y = new_raw_tensor(shape_ops::pick(x.shape(), ids, dim));
   pick_fw_impl(x, ids, dim, y);
   return y;
 }
@@ -150,7 +159,7 @@ Tensor Device::pick_fw(
 Tensor Device::slice_fw(
     const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
   CHECK_DEVICE(x);
-  Tensor y = new_tensor(shape_ops::slice(x.shape(), dim, lower, upper));
+  Tensor y = new_raw_tensor(shape_ops::slice(x.shape(), dim, lower, upper));
   slice_fw_impl(x, dim, lower, y);
   return y;
 }
@@ -162,7 +171,7 @@ Tensor Device::concat_fw(const vector<const Tensor *> &xs, unsigned dim) {
     CHECK_DEVICE(*xs[i]);
     shapes[i] = &xs[i]->shape();
   }
-  Tensor y = new_tensor(shape_ops::concat(shapes, dim));
+  Tensor y = new_raw_tensor(shape_ops::concat(shapes, dim));
   concat_fw_impl(xs, dim, y);
   return y;
 }
@@ -201,7 +210,7 @@ void Device::slice_bw(
 #define DEV_FW_X(name, sop) \
 Tensor Device::name##_fw(const Tensor &x) { \
   CHECK_DEVICE(x); \
-  Tensor y = new_tensor(sop(x.shape())); \
+  Tensor y = new_raw_tensor(sop(x.shape())); \
   name##_fw_impl(x, y); \
   return y; \
 }
@@ -229,7 +238,7 @@ void Device::name##_bw( \
 #define DEV_FW_X_CONST(name) \
 Tensor Device::name##_fw(const Tensor &x, float k) { \
   CHECK_DEVICE(x); \
-  Tensor y = new_tensor(x.shape()); \
+  Tensor y = new_raw_tensor(x.shape()); \
   name##_fw_impl(x, k, y); \
   return y; \
 }
@@ -257,7 +266,7 @@ void Device::name##_bw( \
 Tensor Device::name##_fw(const Tensor &a, const Tensor &b) { \
   CHECK_DEVICE(a); \
   CHECK_DEVICE(b); \
-  Tensor y = new_tensor(sop(a.shape(), b.shape())); \
+  Tensor y = new_raw_tensor(sop(a.shape(), b.shape())); \
   name##_fw_impl(a, b, y); \
   return y; \
 }
@@ -357,28 +366,28 @@ DEV_BW_AB(matmul, shape_ops::matmul);
 
 Tensor Device::sum_fw(const Tensor &x, unsigned dim) {
   CHECK_DEVICE(x);
-  Tensor y = new_tensor(x.shape().resize_dim(dim, 1));
+  Tensor y = new_raw_tensor(x.shape().resize_dim(dim, 1));
   sum_fw_impl(x, dim, y);
   return y;
 }
 
 Tensor Device::logsumexp_fw(const Tensor &x, unsigned dim) {
   CHECK_DEVICE(x);
-  Tensor y = new_tensor(x.shape().resize_dim(dim, 1));
+  Tensor y = new_raw_tensor(x.shape().resize_dim(dim, 1));
   logsumexp_fw_impl(x, dim, y);
   return y;
 }
 
 Tensor Device::broadcast_fw(const Tensor &x, unsigned dim, unsigned size) {
   CHECK_DEVICE(x);
-  Tensor y = new_tensor(shape_ops::broadcast(x.shape(), dim, size));
+  Tensor y = new_raw_tensor(shape_ops::broadcast(x.shape(), dim, size));
   broadcast_fw_impl(x, dim, size, y);
   return y;
 }
 
 Tensor Device::batch_sum_fw(const Tensor &x) {
   CHECK_DEVICE(x);
-  Tensor y = new_tensor(x.shape().resize_batch(1));
+  Tensor y = new_raw_tensor(x.shape().resize_batch(1));
   batch_sum_fw_impl(x, y);
   return y;
 }

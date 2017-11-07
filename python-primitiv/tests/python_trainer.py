@@ -189,7 +189,7 @@ class PythonTrainerTest(unittest.TestCase):
         dev = D.Naive()
         Device.set_default(dev)
         trainer = ExceptionTrainer()
-        p = Parameter(Shape([]))
+        p = Parameter(Shape([]), [0])
         with self.assertRaises(TestException) as ctx:
             trainer.add_parameter(p)
         self.assertEqual(str(ctx.exception), "configure_parameter")
@@ -211,7 +211,7 @@ class PythonTrainerTest(unittest.TestCase):
         dev = D.Naive()
         Device.set_default(dev)
         trainer = IncompleteTrainer()
-        p = Parameter(Shape([]))
+        p = Parameter(Shape([]), [0])
         with self.assertRaises(NotImplementedError):
             trainer.add_parameter(p)
         with self.assertRaises(NotImplementedError):

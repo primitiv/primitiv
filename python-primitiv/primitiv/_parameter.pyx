@@ -55,9 +55,6 @@ cdef class _Parameter:
             if shape is None:
                 shape = _Shape(init.shape, 1)
             self.wrapped = new CppParameter(normShape(shape).wrapped, ndarrays_to_vector([init]), device.wrapped[0])
-        # Parameter(shape, device)
-        elif shape is not None and init is None:
-            self.wrapped = new CppParameter(normShape(shape).wrapped, device.wrapped[0])
         # Parameter(shape, Initializer init, device) new from Initializer
         elif shape is not None and isinstance(init, _Initializer):
             self.wrapped = new CppParameter(normShape(shape).wrapped, (<_Initializer> init).wrapped[0], device.wrapped[0])

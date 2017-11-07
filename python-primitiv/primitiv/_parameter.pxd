@@ -13,7 +13,6 @@ cdef extern from "primitiv/parameter.h":
     cdef cppclass CppParameter "primitiv::Parameter":
         CppParameter(CppParameter &&src) except +
         CppParameter() except +
-        CppParameter(const CppShape &shape, CppDevice &device) except +
         CppParameter(const CppShape &shape, const vector[float] &value, CppDevice &device) except +
         CppParameter(const CppShape &shape, const CppInitializer &init, CppDevice &device) except +
         bool valid() except +

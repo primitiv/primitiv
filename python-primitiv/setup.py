@@ -68,7 +68,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
-    ext_modules = cythonize(ext_modules),
+    ext_modules = cythonize(ext_modules, build_dir="build"),
     packages = [
         "primitiv",
         "primitiv.devices",

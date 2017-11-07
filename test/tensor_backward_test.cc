@@ -182,8 +182,8 @@ TEST_F(TensorBackwardTest, CheckInvalidSlice) {
   };
   for (Device *dev : devices) {
     for (const TestCase &tc : test_cases) {
-      Tensor a = dev->new_tensor(tc.a_shape, 0);
-      const Tensor b = dev->new_tensor(tc.b_shape, 0);
+      Tensor a = dev->new_tensor_by_constant(tc.a_shape, 0);
+      const Tensor b = dev->new_tensor_by_constant(tc.b_shape, 0);
       if (tc.ok) {
         EXPECT_NO_THROW(dev->slice_bw(b, tc.dim, tc.offset, a));
       } else {
@@ -347,8 +347,8 @@ TEST_F(TensorBackwardTest, CheckInvalidPick) {
   };
   for (Device *dev : devices) {
     for (const TestCase &tc : test_cases) {
-      Tensor a = dev->new_tensor(tc.a_shape, 0);
-      const Tensor b = dev->new_tensor(tc.b_shape, 0);
+      Tensor a = dev->new_tensor_by_constant(tc.a_shape, 0);
+      const Tensor b = dev->new_tensor_by_constant(tc.b_shape, 0);
       EXPECT_THROW(dev->pick_bw(b, tc.ids, tc.dim, a), Error);
     }
   }
@@ -379,7 +379,7 @@ TEST_F(TensorBackwardTest, CheckSqrt) {
     const Tensor y = dev->sqrt_fw(x);
     const Tensor gy = dev->new_tensor_by_vector(
         y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
-    Tensor gx = dev->new_tensor(x.shape(), 0);
+    Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
     dev->sqrt_bw(x, y, gy, gx);
     const vector<float> gx_val {5, -.5, .5, -1./3, 10, -1, .25, -1./6};
     EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
@@ -393,7 +393,7 @@ TEST_F(TensorBackwardTest, CheckExp) {
     const Tensor y = dev->exp_fw(x);
     const Tensor gy = dev->new_tensor_by_vector(
         y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
-    Tensor gx = dev->new_tensor(x.shape(), 0);
+    Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
     dev->exp_bw(x, y, gy, gx);
     const vector<float> gx_val {
       1, -2.7182818, 14.778112, -40.171074,
@@ -410,7 +410,7 @@ TEST_F(TensorBackwardTest, CheckLog) {
     const Tensor y = dev->log_fw(x);
     const Tensor gy = dev->new_tensor_by_vector(
         y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
-    Tensor gx = dev->new_tensor(x.shape(), 0);
+    Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
     dev->log_bw(x, y, gy, gx);
     const vector<float> gx_val { 100, -1, 1, -2./3, 200, -2, .5, -1./3 };
     EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
@@ -424,7 +424,7 @@ TEST_F(TensorBackwardTest, CheckTanh) {
     const Tensor y = dev->tanh_fw(x);
     const Tensor gy = dev->new_tensor_by_vector(
         y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
-    Tensor gx = dev->new_tensor(x.shape(), 0);
+    Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
     dev->tanh_bw(x, y, gy, gx);
     const vector<float> gx_val {
       1, -.41997434, .14130165, -.019732074,
@@ -441,7 +441,7 @@ TEST_F(TensorBackwardTest, CheckSigmoid) {
     const Tensor y = dev->sigmoid_fw(x);
     const Tensor gy = dev->new_tensor_by_vector(
         y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
-    Tensor gx = dev->new_tensor(x.shape(), 0);
+    Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
     dev->sigmoid_bw(x, y, gy, gx);
     const vector<float> gx_val {
       .25, -.19661193, .20998717, -.090353319,
@@ -458,7 +458,7 @@ TEST_F(TensorBackwardTest, CheckSoftplus) {
     const Tensor y = dev->softplus_fw(x);
     const Tensor gy = dev->new_tensor_by_vector(
         y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
-    Tensor gx = dev->new_tensor(x.shape(), 0);
+    Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
     dev->softplus_bw(x, y, gy, gx);
     const vector<float> gx_val {
       .5, -.73105858, 1.7615942, -1.9051483,
@@ -475,7 +475,7 @@ TEST_F(TensorBackwardTest, CheckSin) {
     const Tensor y = dev->sin_fw(x);
     const Tensor gy = dev->new_tensor_by_vector(
         y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
-    Tensor gx = dev->new_tensor(x.shape(), 0);
+    Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
     dev->sin_bw(x, y, gy, gx);
     const vector<float> gx_val {
       1, -.54030231, -.83229367, 1.9799850,
@@ -492,7 +492,7 @@ TEST_F(TensorBackwardTest, CheckCos) {
     const Tensor y = dev->cos_fw(x);
     const Tensor gy = dev->new_tensor_by_vector(
         y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
-    Tensor gx = dev->new_tensor(x.shape(), 0);
+    Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
     dev->cos_bw(x, y, gy, gx);
     const vector<float> gx_val {
       0, .84147098, -1.8185949, .28224002,
@@ -509,7 +509,7 @@ TEST_F(TensorBackwardTest, CheckTan) {
     const Tensor y = dev->tan_fw(x);
     const Tensor gy = dev->new_tensor_by_vector(
         y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
-    Tensor gx = dev->new_tensor(x.shape(), 0);
+    Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
     dev->tan_bw(x, y, gy, gx);
     const vector<float> gx_val {
       1, -3.4255188, 11.548798, -2.0406390,
@@ -528,7 +528,7 @@ TEST_F(TensorBackwardTest, CheckAddConst) {
       const Tensor y = dev->add_const_fw(x, k);
       const Tensor gy = dev->new_tensor_by_vector(
           y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
-      Tensor gx = dev->new_tensor(x.shape(), 0);
+      Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
       dev->add_const_bw(x, y, gy, k, gx);
       const vector<float> gx_val {
         1, -1, 2, -2, 2, -2, 1, -1,
@@ -547,7 +547,7 @@ TEST_F(TensorBackwardTest, CheckSubtractConstR) {
       const Tensor y = dev->subtract_const_r_fw(x, k);
       const Tensor gy = dev->new_tensor_by_vector(
           y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
-      Tensor gx = dev->new_tensor(x.shape(), 0);
+      Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
       dev->subtract_const_r_bw(x, y, gy, k, gx);
       const vector<float> gx_val {
         1, -1, 2, -2, 2, -2, 1, -1,
@@ -566,7 +566,7 @@ TEST_F(TensorBackwardTest, CheckSubtractConstL) {
       const Tensor y = dev->subtract_const_l_fw(x, k);
       const Tensor gy = dev->new_tensor_by_vector(
           y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
-      Tensor gx = dev->new_tensor(x.shape(), 0);
+      Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
       dev->subtract_const_l_bw(x, y, gy, k, gx);
       const vector<float> gx_val {
         -1, 1, -2, 2, -2, 2, -1, 1,
@@ -585,7 +585,7 @@ TEST_F(TensorBackwardTest, CheckMultiplyConst) {
       const Tensor y = dev->multiply_const_fw(x, k);
       const Tensor gy = dev->new_tensor_by_vector(
           y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
-      Tensor gx = dev->new_tensor(x.shape(), 0);
+      Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
       dev->multiply_const_bw(x, y, gy, k, gx);
       const vector<float> gx_val {
         k, -k, 2 *k, -2 * k, 2 * k, -2 * k, k, -k,
@@ -604,7 +604,7 @@ TEST_F(TensorBackwardTest, CheckDivideConstR) {
       const Tensor y = dev->divide_const_r_fw(x, k);
       const Tensor gy = dev->new_tensor_by_vector(
           y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
-      Tensor gx = dev->new_tensor(x.shape(), 0);
+      Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
       dev->divide_const_r_bw(x, y, gy, k, gx);
       const vector<float> gx_val {
         1 / k, -1 / k, 2 / k, -2 / k, 2 / k, -2 / k, 1 / k, -1 / k,
@@ -623,7 +623,7 @@ TEST_F(TensorBackwardTest, CheckDivideConstL) {
       const Tensor y = dev->divide_const_l_fw(x, k);
       const Tensor gy = dev->new_tensor_by_vector(
           y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
-      Tensor gx = dev->new_tensor(x.shape(), 0);
+      Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
       dev->divide_const_l_bw(x, y, gy, k, gx);
       const vector<float> gx_val {
        -100 * k, k, -k / 2, 2 * k / 9, -200 * k, 2 * k, -k / 4, k / 9,
@@ -642,7 +642,7 @@ TEST_F(TensorBackwardTest, CheckPReLU) {
       const Tensor y = dev->prelu_fw(x, k);
       const Tensor gy = dev->new_tensor_by_vector(
           y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
-      Tensor gx = dev->new_tensor(x.shape(), 0);
+      Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
       dev->prelu_bw(x, y, gy, k, gx);
       const vector<float> gx_val {
         k, -1, 2, -2, 2 * k, -2 * k, k, -k,
@@ -661,7 +661,7 @@ TEST_F(TensorBackwardTest, CheckELU) {
       const Tensor y = dev->elu_fw(x, k);
       const Tensor gy = dev->new_tensor_by_vector(
           y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
-      Tensor gx = dev->new_tensor(x.shape(), 0);
+      Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
       dev->elu_bw(x, y, gy, k, gx);
       const vector<float> gx_val {
         k, -1, 2, -2,
@@ -674,14 +674,14 @@ TEST_F(TensorBackwardTest, CheckELU) {
 
 TEST_F(TensorBackwardTest, CheckTranspose) {
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor(Shape({3, 4}, 2));
+    const Tensor x = dev->new_tensor_by_constant(Shape({3, 4}, 2), 0);
     const Tensor y = dev->transpose_fw(x);
     const Tensor gy = dev->new_tensor_by_vector(
         Shape({4, 3}, 2), {
           0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
           12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
         });
-    Tensor gx = dev->new_tensor(Shape({3, 4}, 2), 0);
+    Tensor gx = dev->new_tensor_by_constant(Shape({3, 4}, 2), 0);
     dev->transpose_bw(x, y, gy, gx);
     const vector<float> gx_val {
       0, 4, 8, 1, 5, 9, 2, 6, 10, 3, 7, 11,
@@ -693,12 +693,12 @@ TEST_F(TensorBackwardTest, CheckTranspose) {
 
 TEST_F(TensorBackwardTest, CheckAdd11) {
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor({2});
-    const Tensor b = dev->new_tensor({2});
+    const Tensor a = dev->new_tensor_by_constant({2}, 0);
+    const Tensor b = dev->new_tensor_by_constant({2}, 0);
     const Tensor y = dev->add_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector({2}, {1, -1});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->add_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {1, -1};
     const vector<float> gb_val {1, -1};
@@ -709,12 +709,12 @@ TEST_F(TensorBackwardTest, CheckAdd11) {
 
 TEST_F(TensorBackwardTest, CheckAddNN) {
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor(Shape({2}, 2));
-    const Tensor b = dev->new_tensor(Shape({2}, 2));
+    const Tensor a = dev->new_tensor_by_constant(Shape({2}, 2), 0);
+    const Tensor b = dev->new_tensor_by_constant(Shape({2}, 2), 0);
     const Tensor y = dev->add_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->add_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {1, -1, 2, -2};
     const vector<float> gb_val {1, -1, 2, -2};
@@ -725,12 +725,12 @@ TEST_F(TensorBackwardTest, CheckAddNN) {
 
 TEST_F(TensorBackwardTest, CheckAdd1N) {
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor({2});
-    const Tensor b = dev->new_tensor(Shape({2}, 2));
+    const Tensor a = dev->new_tensor_by_constant({2}, 0);
+    const Tensor b = dev->new_tensor_by_constant(Shape({2}, 2), 0);
     const Tensor y = dev->add_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->add_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {3, -3};
     const vector<float> gb_val {1, -1, 2, -2};
@@ -741,12 +741,12 @@ TEST_F(TensorBackwardTest, CheckAdd1N) {
 
 TEST_F(TensorBackwardTest, CheckAddN1) {
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor(Shape({2}, 2));
-    const Tensor b = dev->new_tensor({2});
+    const Tensor a = dev->new_tensor_by_constant(Shape({2}, 2), 0);
+    const Tensor b = dev->new_tensor_by_constant({2}, 0);
     const Tensor y = dev->add_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->add_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {1, -1, 2, -2};
     const vector<float> gb_val {3, -3};
@@ -757,12 +757,12 @@ TEST_F(TensorBackwardTest, CheckAddN1) {
 
 TEST_F(TensorBackwardTest, CheckSubtract11) {
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor({2});
-    const Tensor b = dev->new_tensor({2});
+    const Tensor a = dev->new_tensor_by_constant({2}, 0);
+    const Tensor b = dev->new_tensor_by_constant({2}, 0);
     const Tensor y = dev->subtract_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector({2}, {1, -1});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->subtract_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {1, -1};
     const vector<float> gb_val {-1, 1};
@@ -773,12 +773,12 @@ TEST_F(TensorBackwardTest, CheckSubtract11) {
 
 TEST_F(TensorBackwardTest, CheckSubtractNN) {
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor(Shape({2}, 2));
-    const Tensor b = dev->new_tensor(Shape({2}, 2));
+    const Tensor a = dev->new_tensor_by_constant(Shape({2}, 2), 0);
+    const Tensor b = dev->new_tensor_by_constant(Shape({2}, 2), 0);
     const Tensor y = dev->subtract_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->subtract_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {1, -1, 2, -2};
     const vector<float> gb_val {-1, 1, -2, 2};
@@ -789,12 +789,12 @@ TEST_F(TensorBackwardTest, CheckSubtractNN) {
 
 TEST_F(TensorBackwardTest, CheckSubtract1N) {
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor({2});
-    const Tensor b = dev->new_tensor(Shape({2}, 2));
+    const Tensor a = dev->new_tensor_by_constant({2}, 0);
+    const Tensor b = dev->new_tensor_by_constant(Shape({2}, 2), 0);
     const Tensor y = dev->subtract_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->subtract_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {3, -3};
     const vector<float> gb_val {-1, 1, -2, 2};
@@ -805,12 +805,12 @@ TEST_F(TensorBackwardTest, CheckSubtract1N) {
 
 TEST_F(TensorBackwardTest, CheckSubtractN1) {
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor(Shape({2}, 2));
-    const Tensor b = dev->new_tensor({2});
+    const Tensor a = dev->new_tensor_by_constant(Shape({2}, 2), 0);
+    const Tensor b = dev->new_tensor_by_constant({2}, 0);
     const Tensor y = dev->subtract_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->subtract_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {1, -1, 2, -2};
     const vector<float> gb_val {-3, 3};
@@ -825,8 +825,8 @@ TEST_F(TensorBackwardTest, CheckMultiply11) {
     const Tensor b = dev->new_tensor_by_vector({2}, {10, 1});
     const Tensor y = dev->multiply_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector({2}, {1, -1});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->multiply_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {10, -1};
     const vector<float> gb_val {1, -10};
@@ -841,8 +841,8 @@ TEST_F(TensorBackwardTest, CheckMultiplyNN) {
     const Tensor b = dev->new_tensor_by_vector(Shape({2}, 2), {10, 1, -10, -1});
     const Tensor y = dev->multiply_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->multiply_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {10, -1, -20, 2};
     const vector<float> gb_val {1, -10, -2, 20};
@@ -857,8 +857,8 @@ TEST_F(TensorBackwardTest, CheckMultiply1N) {
     const Tensor b = dev->new_tensor_by_vector(Shape({2}, 2), {10, 1, -10, -1});
     const Tensor y = dev->multiply_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->multiply_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {-10, 1};
     const vector<float> gb_val {1, -10, 2, -20};
@@ -873,8 +873,8 @@ TEST_F(TensorBackwardTest, CheckMultiplyN1) {
     const Tensor b = dev->new_tensor_by_vector({2}, {10, 1});
     const Tensor y = dev->multiply_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->multiply_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {10, -1, 20, -2};
     const vector<float> gb_val {-1, 10};
@@ -889,8 +889,8 @@ TEST_F(TensorBackwardTest, CheckDivide11) {
     const Tensor b = dev->new_tensor_by_vector({2}, {10, 1});
     const Tensor y = dev->divide_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector({2}, {1, -1});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->divide_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {.1, -1};
     const vector<float> gb_val {-.01, 10};
@@ -905,8 +905,8 @@ TEST_F(TensorBackwardTest, CheckDivideNN) {
     const Tensor b = dev->new_tensor_by_vector(Shape({2}, 2), {10, 1, -10, -1});
     const Tensor y = dev->divide_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->divide_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {.1, -1, -.2, 2};
     const vector<float> gb_val {-.01, 10, .02, -20};
@@ -921,8 +921,8 @@ TEST_F(TensorBackwardTest, CheckDivide1N) {
     const Tensor b = dev->new_tensor_by_vector(Shape({2}, 2), {10, 1, -10, -1});
     const Tensor y = dev->divide_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->divide_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {-.1, 1};
     const vector<float> gb_val {-.01, 10, -.02, 20};
@@ -937,8 +937,8 @@ TEST_F(TensorBackwardTest, CheckDivideN1) {
     const Tensor b = dev->new_tensor_by_vector({2}, {10, 1});
     const Tensor y = dev->divide_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector(Shape({2}, 2), {1, -1, 2, -2});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->divide_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {.1, -1, .2, -2};
     const vector<float> gb_val {.01, -10};
@@ -953,8 +953,8 @@ TEST_F(TensorBackwardTest, CheckMatMul11) {
     const Tensor b = dev->new_tensor_by_vector({2, 2}, {1, 0, 0, 2});
     const Tensor y = dev->matmul_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector({2, 2}, {1, -1, 2, -2});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->matmul_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {1, -1, 4, -4};
     const vector<float> gb_val {-1, -1, -2, -2};
@@ -972,8 +972,8 @@ TEST_F(TensorBackwardTest, CheckMatMulNN) {
     const Tensor y = dev->matmul_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector(
         Shape({2, 2}, 2), {1, -1, 2, -2, 2, -2, 1, -1});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->matmul_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {1, -1, 4, -4, 2, -2, 2, -2};
     const vector<float> gb_val {-1, -1, -2, -2, 2, 2, 1, 1};
@@ -990,8 +990,8 @@ TEST_F(TensorBackwardTest, CheckMatMul1N) {
     const Tensor y = dev->matmul_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector(
         Shape({2, 2}, 2), {1, -1, 2, -2, 2, -2, 1, -1});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->matmul_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {3, -3, 6, -6};
     const vector<float> gb_val {-1, -1, -2, -2, -2, -2, -1, -1};
@@ -1008,8 +1008,8 @@ TEST_F(TensorBackwardTest, CheckMatMulN1) {
     const Tensor y = dev->matmul_fw(a, b);
     const Tensor gy = dev->new_tensor_by_vector(
         Shape({2, 2}, 2), {1, -1, 2, -2, 2, -2, 1, -1});
-    Tensor ga = dev->new_tensor(a.shape(), 0);
-    Tensor gb = dev->new_tensor(b.shape(), 0);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->matmul_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {1, -1, 4, -4, 2, -2, 2, -2};
     const vector<float> gb_val {1, 1, -1, -1};
