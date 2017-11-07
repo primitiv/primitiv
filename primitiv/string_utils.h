@@ -21,7 +21,8 @@ std::string join(
     const std::vector<std::string> &strs,
     const std::string &delim) {
   if (strs.empty()) return std::string();
-  std::stringstream ss(strs[0]);
+  std::stringstream ss;
+  ss << strs[0];
   for (unsigned i = 1; i < strs.size(); ++i) ss << delim << strs[i];
   return ss.str();
 }
