@@ -117,7 +117,7 @@ def train_func(trainer):
             pb2.value.to_list()]
 
 
-class PythonTrainerTest(unittest.TestCase):
+class TrainerTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -189,7 +189,7 @@ class PythonTrainerTest(unittest.TestCase):
         dev = D.Naive()
         Device.set_default(dev)
         trainer = ExceptionTrainer()
-        p = Parameter(Shape([]), [0])
+        p = Parameter([], [1])
         with self.assertRaises(TestException) as ctx:
             trainer.add_parameter(p)
         self.assertEqual(str(ctx.exception), "configure_parameter")
@@ -211,7 +211,7 @@ class PythonTrainerTest(unittest.TestCase):
         dev = D.Naive()
         Device.set_default(dev)
         trainer = IncompleteTrainer()
-        p = Parameter(Shape([]), [0])
+        p = Parameter([], [1])
         with self.assertRaises(NotImplementedError):
             trainer.add_parameter(p)
         with self.assertRaises(NotImplementedError):
@@ -223,3 +223,84 @@ class PythonTrainerTest(unittest.TestCase):
                                          {'Trainer.clip_threshold': 0.0,
                                           'Trainer.lr_scale': 1.0,
                                           'Trainer.l2_strength': 0.0})
+
+    def test_sgd_virtual(self):
+        t = T.SGD()
+        uint_configs = {'Trainer.epoch': 1}
+        float_configs = {'SGD.eta': 0.0,
+                         'Trainer.clip_threshold': 0.0,
+                         'Trainer.lr_scale': 1.0,
+                         'Trainer.l2_strength': 0.0,
+        }
+        t.set_configs(uint_configs, float_configs)
+        uint_configs, float_configs = t.get_configs()
+        self.assertEqual(uint_configs['Trainer.epoch'], 1)
+
+    def test_momentum_sgd_virtual(self):
+        t = T.MomentumSGD()
+        uint_configs = {'Trainer.epoch': 1}
+        float_configs = {'MomentumSGD.momentum': 1.0,
+                         'MomentumSGD.eta': 0.0,
+                         'Trainer.clip_threshold': 0.0,
+                         'Trainer.lr_scale': 1.0,
+                         'Trainer.l2_strength': 0.0,
+        }
+        t.set_configs(uint_configs, float_configs)
+        uint_configs, float_configs = t.get_configs()
+        self.assertEqual(uint_configs['Trainer.epoch'], 1)
+
+    def test_adagrad_virtual(self):
+        t = T.AdaGrad()
+        uint_configs = {'Trainer.epoch': 1}
+        float_configs = {'AdaGrad.eps': 0.0,
+                         'AdaGrad.eta': 0.0,
+                         'Trainer.clip_threshold': 0.0,
+                         'Trainer.lr_scale': 1.0,
+                         'Trainer.l2_strength': 0.0,
+        }
+        t.set_configs(uint_configs, float_configs)
+        uint_configs, float_configs = t.get_configs()
+        self.assertEqual(uint_configs['Trainer.epoch'], 1)
+
+    def test_rmsprop_virtual(self):
+        t = T.RMSProp()
+        uint_configs = {'Trainer.epoch': 1}
+        float_configs = {'RMSProp.eta': 2.0,
+                         'RMSProp.alpha': 3.0,
+                         'RMSProp.eps': 4.0,
+                         'Trainer.clip_threshold': 0.0,
+                         'Trainer.lr_scale': 1.0,
+                         'Trainer.l2_strength': 0.0,
+        }
+        t.set_configs(uint_configs, float_configs)
+        uint_configs, float_configs = t.get_configs()
+        self.assertEqual(uint_configs['Trainer.epoch'], 1)
+
+    def test_adadelta_virtual(self):
+        t = T.AdaDelta()
+        uint_configs = {'Trainer.epoch': 1}
+        float_configs = {'AdaDelta.rho': 2.0,
+                         'AdaDelta.eps': 3.0,
+                         'Trainer.clip_threshold': 0.0,
+                         'Trainer.lr_scale': 1.0,
+                         'Trainer.l2_strength': 0.0,
+        }
+        t.set_configs(uint_configs, float_configs)
+        uint_configs, float_configs = t.get_configs()
+        self.assertEqual(uint_configs['Trainer.epoch'], 1)
+
+    def test_adam_virtual(self):
+        t = T.Adam()
+        uint_configs = {'Trainer.epoch': 1}
+        float_configs = {'Trainer.lr_scale': 1.0,
+                         'Adam.beta2': 1.0,
+                         'Adam.eps': 0.0,
+                         'Trainer.clip_threshold': 0.0,
+                         'Adam.alpha': 0.0,
+                         'Trainer.l2_strength': 0.0,
+                         'Adam.beta1': 1.0,
+        }
+        t.set_configs(uint_configs, float_configs)
+        uint_configs, float_configs = t.get_configs()
+        self.assertEqual(uint_configs['Trainer.epoch'], 1)
+
