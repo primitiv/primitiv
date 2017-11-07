@@ -83,6 +83,10 @@ class ParameterTest(unittest.TestCase):
             del self.p.gradient
 
     def test_parameter_argument(self):
+        # w/o arguments
+        p = Parameter()
+        self.assertFalse(p.valid())
+
         # shape w/ Initializer
         p = Parameter(Shape([4, 3]), I.Constant(1))
         self.assertEqual(p.shape(), Shape([4, 3]))
