@@ -24,7 +24,7 @@ class ParameterTest(unittest.TestCase):
     def setUp(self):
         self.dev = D.Naive()
         Device.set_default(self.dev)
-        self.p = Parameter(init=np.array([1, 2, 3, 4, 5, 6, 7, 8]))
+        self.p = Parameter(initializer=np.array([1, 2, 3, 4, 5, 6, 7, 8]))
 
     def tearDown(self):
          pass

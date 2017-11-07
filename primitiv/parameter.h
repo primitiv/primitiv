@@ -17,29 +17,8 @@ class Initializer;
 /**
  * Class to manage a trainable tensor parameter.
  */
-class Parameter : mixins::Noncopyable<Parameter> {
+class Parameter : mixins::Nonmovable<Parameter> {
 public:
-  Parameter(Parameter &&src)
-    : shape_(std::move(src.shape_))
-    , device_(src.device_)
-    , value_(std::move(src.value_))
-    , grad_(std::move(src.grad_))
-    , stats_(std::move(src.stats_)) {
-      src.device_ = nullptr;
-    }
-
-  Parameter &operator=(Parameter &&src) {
-    if (&src != this) {
-      shape_ = std::move(src.shape_);
-      device_ = src.device_;
-      value_ = std::move(src.value_);
-      grad_ = std::move(src.grad_);
-      stats_ = std::move(src.stats_);
-      src.device_ = nullptr;
-    }
-    return *this;
-  }
-
   /**
    * Creates an invalid parameter object.
    */
@@ -48,8 +27,8 @@ public:
   /**
    * Creates a new Parameter object.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @param value List of initial values. Order of elements should be of
-   *              `Tensor::set_values()`.
+   * @param value List of initial values. Order of elements should be the
+   *              column-major (Fortran) order.
    * @param device The device object to manage internal memory.
    */
   Parameter(
@@ -65,27 +44,57 @@ public:
    */
   Parameter(
       const Shape &shape,
-      const Initializer &init,
+      const Initializer &initializer,
       Device &device = Device::get_default());
+
+  /**
+   * Initializes the Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param value List of initial values. Order of elements should be the
+   *              column-major (Fortran) order.
+   * @param device The device object to manage internal memory.
+   */
+  void init(
+      const Shape &shape,
+      const std::vector<float> &value,
+      Device &device = Device::get_default());
+
+  /**
+   * Initializes the Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param init An Initializer object.
+   * @param device The device object to manage internal memory.
+   */
+  void init(
+      const Shape &shape,
+      const Initializer &initializer,
+      Device &device = Device::get_default());
+
+  /**
+   * Loads parameters from specified file.
+   * @param path File path to load parameters.
+   * @param with_stats Whether or not to load all additional statistics as well
+   *                   as parameter values if the file has them.
+   * @param device The device object to manage internal memory.
+   */
+  void load(
+      const std::string &path,
+      bool with_stats = true,
+      Device &device = Device::get_default());
+
+  /**
+   * Saves current parameters into specified file.
+   * @param path File path to save parameters.
+   * @param with_stats Whether or not to save all additional statistics as well
+   *                   as parameter values if the parameter object has them.
+   */
+  void save(const std::string &path, bool with_stats = true) const;
 
   /**
    * Returns whether the parameter is valid or not.
    * @return true or false w.r.t. the parameter is valid or not.
    */
   bool valid() const { return !!device_; }
-
-  /**
-   * Set all values.
-   * @param value List of new parameter values. Order of the values should be
-   *              of `Tensor::set_values()`.
-   */
-  void reset_value(const std::vector<float> &value);
-
-  /**
-   * Set all values using a specific initialization criteria.
-   * @param init An Initializer object.
-   */
-  void reset_value(const Initializer &init);
 
   /**
    * Set all gradients to 0.
@@ -183,42 +192,7 @@ public:
     return stats_.at(name);
   }
 
-  /**
-   * Saves current parameters into specified file with YAML format.
-   * @param path File path to write parameters.
-   * @param with_stats Whether or not to save all additional statistics as well
-   *                   as parameter values if the parameter object has them.
-   */
-  void save(const std::string &path, bool with_stats = true) const;
-
-  /**
-   * Loads parameters and returns a new Parameter object.
-   * @param path File path to load parameters.
-   * @param with_stats Whether or not to load all additional statistics as well
-   *                   as parameter values if the file contains them.
-   * @param device Device object to manage internal memories.
-   * @return A new Parameter object.
-   */
-  static Parameter load(
-      const std::string &path,
-      bool with_stats = true,
-      Device &device = Device::get_default());
-
 private:
-  /**
-   * Makes a Parameter object directly from its values.
-   * @param value Value of the parameter.
-   * @param stats Map of optional statistics.
-   */
-  void initialize_by_data(
-      Tensor &&value,
-      std::unordered_map<std::string, Tensor> &&stats);
-
-  /**
-   * Checks the shape of the parameter.
-   */
-  void check_shape();
-
   Shape shape_;
   Device *device_;
   Tensor value_;
