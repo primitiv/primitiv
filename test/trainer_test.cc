@@ -42,9 +42,9 @@ TEST_F(TrainerTest, CheckAddModel) {
   Device::set_default(dev);
   trainers::SGD trainer;
   Model m;
-  Parameter param1({2, 2});
-  Parameter param2({2, 2});
-  Parameter param3({2, 2});
+  Parameter param1;
+  Parameter param2;
+  Parameter param3;
   m.add_parameter("param1", param1);
   m.add_parameter("param2", param2);
   m.add_parameter("param3", param3);
@@ -60,9 +60,9 @@ TEST_F(TrainerTest, CheckAddModelWithMultipleModels) {
   Device::set_default(dev);
   trainers::SGD trainer;
   Model m1, m2, m3;
-  Parameter param1({2, 2});
-  Parameter param2({2, 2});
-  Parameter param3({2, 2});
+  Parameter param1;
+  Parameter param2;
+  Parameter param3;
   m1.add_parameter("param1", param1);
   m2.add_parameter("param2", param2);
   m3.add_parameter("param3", param3);
@@ -82,9 +82,9 @@ TEST_F(TrainerTest, CheckAddModelWithSubmodels) {
   Device::set_default(dev);
   trainers::SGD trainer;
   Model m, sm, ssm;
-  Parameter param1({2, 2});
-  Parameter param2({2, 2});
-  Parameter param3({2, 2});
+  Parameter param1;
+  Parameter param2;
+  Parameter param3;
   m.add_parameter("param1", param1);
   sm.add_parameter("param2", param2);
   ssm.add_parameter("param3", param3);
