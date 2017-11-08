@@ -22,6 +22,38 @@
 namespace primitiv {
 namespace msgpack {
 
+namespace writer_objects {
+
+/**
+ * Container to represent a binary object.
+ */
+class Binary : mixins::Nonmovable<Binary> {
+  const void *data_;
+  std::uint64_t size_;
+
+public:
+  /**
+   * Creates a new Binary object.
+   * @param data Pointer of raw data.
+   * @param size Number of bytes of the data in `data`.
+   */
+  Binary(const void *data, std::uint64_t size) : data_(data), size_(size) {}
+
+  /**
+   * Retrieves the inner pointer.
+   * @return Inner pointer.
+   */
+  const void *data() const { return data_; }
+
+  /**
+   * Retrieves the sizew of the data.
+   * @return size of the data.
+   */
+  std::uint64_t size() const { return size_; }
+};
+
+}  // namespace writer_objects
+
 #define UC(expr) static_cast<char>(expr)
 
 /**
@@ -31,6 +63,10 @@ class Writer : mixins::Nonmovable<Writer> {
   std::ostream &os_;
 
 public:
+  /**
+   * Creates a new Writer object.
+   * @param os Target output stream.
+   */
   Writer(std::ostream &os) : os_(os) {};
 
   Writer &operator<<(std::nullptr_t x) {
@@ -153,7 +189,8 @@ public:
     return *this;
   }
 
-  Writer &write(const void *data, std::uint64_t size) {
+  Writer &operator<<(const writer_objects::Binary &x) {
+    const std::uint64_t size = x.size();
     if (size < (1ull << 8)) {
       const char buf[2] { UC(0xc4), UC(size) };
       os_.write(buf, 2);
@@ -169,7 +206,7 @@ public:
       THROW_ERROR(
           "MessagePack: Can't store more than 2^32 - 1 bytes in one bin message.");
     }
-    os_.write(reinterpret_cast<const char *>(data), size);
+    os_.write(reinterpret_cast<const char *>(x.data()), size);
     return *this;
   }
 

@@ -156,40 +156,40 @@ TEST_F(WriterTest, CheckString_0x10000) {
 }
 
 TEST_F(WriterTest, CheckBinary_0) {
-  writer.write("", 0);
+  writer << writer_objects::Binary("", 0);
   match({ 0xc4, 0x00 });
 }
 
 TEST_F(WriterTest, CheckBinary_1) {
-  writer.write("a", 1);
+  writer << writer_objects::Binary("a", 1);
   match_str({ 0xc4, 0x01 }, "a");
 }
 
 TEST_F(WriterTest, CheckBinary_0xff) {
   vector<char> buf(0xff, 'a');
   const string data(buf.begin(), buf.end());
-  writer.write(data.c_str(), 0xff);
+  writer << writer_objects::Binary(data.c_str(), 0xff);
   match_str({ 0xc4, 0xff }, data);
 }
 
 TEST_F(WriterTest, CheckBinary_0x100) {
   vector<char> buf(0x100, 'a');
   const string data(buf.begin(), buf.end());
-  writer.write(data.c_str(), 0x100);
+  writer << writer_objects::Binary(data.c_str(), 0x100);
   match_str({ 0xc5, 0x01, 0x00 }, data);
 }
 
 TEST_F(WriterTest, CheckBinary_0xffff) {
   vector<char> buf(0xffff, 'a');
   const string data(buf.begin(), buf.end());
-  writer.write(data.c_str(), 0xffff);
+  writer << writer_objects::Binary(data.c_str(), 0xffff);
   match_str({ 0xc5, 0xff, 0xff }, data);
 }
 
 TEST_F(WriterTest, CheckBinary_0x10000) {
   vector<char> buf(0x10000, 'a');
   const string data(buf.begin(), buf.end());
-  writer.write(data.c_str(), 0x10000);
+  writer << writer_objects::Binary(data.c_str(), 0x10000);
   match_str({ 0xc6, 0x00, 0x01, 0x00, 0x00 }, data);
 }
 
