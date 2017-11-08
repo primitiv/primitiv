@@ -43,6 +43,8 @@ ext_modules = [
                           sources=["primitiv/trainers/_trainer_impl.pyx"]),
     extension_common_args("primitiv._operator",
                           sources=["primitiv/_operator.pyx"]),
+    extension_common_args("primitiv._model",
+                          sources=["primitiv/_model.pyx"]),
     extension_common_args("primitiv.config",
                           sources=["primitiv/config.pyx"]),
 ]

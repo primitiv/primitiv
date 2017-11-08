@@ -1,0 +1,84 @@
+from libc.stdint cimport uintptr_t
+
+from primitiv._parameter cimport _Parameter
+from primitiv.config cimport pystr_to_cppstr
+
+from weakref import WeakValueDictionary
+import weakref
+
+# NOTE(vbkaisetsu):
+# This is used for holding python instances related to C++.
+# Without this variable, python instances are always created when C++ class
+# instances are returned from functions.
+# It means that users can not compare instances by using "is" operator.
+cdef object py_primitiv_model_weak_dict = WeakValueDictionary()
+
+
+cdef class _ModelParameter:
+
+    def __init__(self, _Model model):
+        # NOTE(vbkaisetsu): It becomes circular reference.
+        # We can't know when it will be deleted by the garbage collector.
+        # Therefore we hold this instance in a weakref to delete it immediately.
+        self.model_ref = weakref.ref(model)
+
+    def __getitem__(self, key):
+        cdef vector[string] names
+        if isinstance(key, str):
+            return _Parameter.get_wrapper(&(<_Model> self.model_ref()).wrapped.get_parameter(pystr_to_cppstr(key)))
+        elif isinstance(key, tuple):
+            for name in key:
+                names.push_back(pystr_to_cppstr(name))
+            return _Parameter.get_wrapper(&(<_Model> self.model_ref()).wrapped.get_parameter(names))
+
+
+cdef class _ModelSubModel:
+
+    def __init__(self, _Model model):
+        # NOTE(vbkaisetsu): It becomes circular reference.
+        # We can't know when it will be deleted by the garbage collector.
+        # Therefore we hold this instance in a weakref to delete it immediately.
+        self.model_ref = weakref.ref(model)
+
+    def __getitem__(self, key):
+        cdef vector[string] names
+        if isinstance(key, str):
+            return _Model.get_wrapper(&(<_Model> self.model_ref()).wrapped.get_submodel(pystr_to_cppstr(key)))
+        elif isinstance(key, tuple):
+            for name in key:
+                names.push_back(pystr_to_cppstr(name))
+            return _Model.get_wrapper(&(<_Model> self.model_ref()).wrapped.get_submodel(names))
+
+
+cdef class _Model:
+
+    def __cinit__(self):
+        self.params = _ModelParameter(self)
+        self.submodels = _ModelSubModel(self)
+
+    def __init__(self):
+        if self.wrapped is not NULL:
+            raise TypeError("__init__() has already been called.")
+        self.wrapped = new CppModel()
+        _Model.register_wrapper(self.wrapped, self)
+
+    def __dealloc__(self):
+        if self.wrapped is not NULL:
+            del self.wrapped
+            self.wrapped = NULL
+
+    def add_parameter(self, str name, _Parameter param):
+        self.wrapped.add_parameter(pystr_to_cppstr(name), param.wrapped[0])
+
+    def add_submodel(self, str name, _Model model):
+        self.wrapped.add_submodel(pystr_to_cppstr(name), model.wrapped[0])
+
+    @staticmethod
+    cdef void register_wrapper(CppModel *ptr, _Model wrapper):
+        if <uintptr_t> ptr in py_primitiv_model_weak_dict:
+            raise ValueError("Attempted to register the same C++ object twice.")
+        py_primitiv_model_weak_dict[<uintptr_t> ptr] = wrapper
+
+    @staticmethod
+    cdef _Model get_wrapper(CppModel *ptr):
+        return py_primitiv_model_weak_dict[<uintptr_t> ptr]
