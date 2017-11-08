@@ -30,6 +30,8 @@ cdef class _ModelParameter:
             for name in key:
                 names.push_back(pystr_to_cppstr(name))
             return _Parameter.get_wrapper(&(<_Model> self.model_ref()).wrapped.get_parameter(names))
+        else:
+            raise TypeError("Argument 'key' has incorrect type (str or tuple)")
 
 
 cdef class _ModelSubModel:
@@ -48,6 +50,8 @@ cdef class _ModelSubModel:
             for name in key:
                 names.push_back(pystr_to_cppstr(name))
             return _Model.get_wrapper(&(<_Model> self.model_ref()).wrapped.get_submodel(names))
+        else:
+            raise TypeError("Argument 'key' has incorrect type (str or tuple)")
 
 
 cdef class _Model:
