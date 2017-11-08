@@ -1,3 +1,8 @@
+#ifndef PRIMITIV_TEST_UTILS_H_
+#define PRIMITIV_TEST_UTILS_H_
+
+#include <initializer_list>
+#include <string>
 #include <vector>
 #include <gtest/gtest.h>
 
@@ -85,4 +90,11 @@ testing::AssertionResult vector_near(
   return testing::AssertionSuccess();
 }
 
+// helper to generate std::string from a byte array.
+std::string bin_to_str(const std::initializer_list<int> data) {
+  return std::string(data.begin(), data.end());
+}
+
 }  // namespace test_utils
+
+#endif  // PRIMITIV_TEST_UTILS_H_

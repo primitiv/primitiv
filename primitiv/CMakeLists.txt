@@ -15,6 +15,7 @@ set(primitiv_base_HDRS
   initializer_impl.h
   mixins.h
   model.h
+  msgpack.h
   naive_device.h
   operators.h
   parameter.h
