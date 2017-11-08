@@ -8,6 +8,7 @@
 
 namespace primitiv {
 
+class Model;
 class Parameter;
 
 /**
@@ -99,6 +100,12 @@ public:
    * @param param Parameter to be optimized.
    */
   void add_parameter(Parameter &param);
+
+  /**
+   * Registers all trainable parameters in a model.
+   * @param model Model to be optimized.
+   */
+  void add_model(const Model &model);
 
   /**
    * Resets all gradients of registered parameters.
