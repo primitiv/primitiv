@@ -74,7 +74,7 @@ Building Options
 - `PRIMITIV_GTEST_SOURCE_DIR` (default=`""`)
   - Specifies the source directory of Google Test. If you want to use
     `googletest` module provided from Debian/Ubuntu repository,
-    add `-DGTEST_SOURCE_DIR=/usr/src/googletest/googletest`
+    add `-DPRIMITIV_GTEST_SOURCE_DIR=/usr/src/googletest/googletest`
     together with `-PRIMITIV_BUILD_TESTS=ON` option.
 - `PRIMITIV_USE_CACHE` (default=`OFF`)
   - Whether or not to use cached values to prevent increasing computation amount.
