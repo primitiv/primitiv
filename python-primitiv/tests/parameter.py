@@ -23,8 +23,28 @@ class ParameterTest(unittest.TestCase):
 
     def setUp(self):
         self.dev = D.Naive()
+        self.graph = Graph()
         Device.set_default(self.dev)
+        Graph.set_default(self.graph)
         self.p = Parameter(initializer=np.array([1, 2, 3, 4, 5, 6, 7, 8]))
+        self.ndarray_data = [
+            np.array([
+                [ 1, 2, 3],
+                [ 4, 5, 6],
+                [ 7, 8, 9],
+                [10,11,12],
+            ], np.float32),
+            np.array([
+                [13,14,15],
+                [16,17,18],
+                [19,20,21],
+                [22,23,24],
+            ], np.float32),
+        ]
+        self.list_data = [
+             1.0,  4.0,  7.0, 10.0,  2.0,  5.0,  8.0, 11.0,  3.0,  6.0,  9.0, 12.0,
+            13.0, 16.0, 19.0, 22.0, 14.0, 17.0, 20.0, 23.0, 15.0, 18.0, 21.0, 24.0,
+        ]
 
     def tearDown(self):
          pass
@@ -61,3 +81,31 @@ class ParameterTest(unittest.TestCase):
         self.assertTrue((grad.to_ndarrays()[0] == np.ones([8])).all())
         with self.assertRaises(NotImplementedError):
             del self.p.gradient
+
+    def test_parameter_argument(self):
+        # w/o arguments
+        p = Parameter()
+        self.assertFalse(p.valid())
+
+        # shape w/ Initializer
+        p = Parameter(Shape([4, 3]), I.Constant(1))
+        self.assertEqual(p.shape(), Shape([4, 3]))
+        self.assertEqual(p.value.to_list(), [1] * 12)
+
+        # shape w/ list[float]
+        p = Parameter(Shape([4, 3]), self.list_data[:12])
+        self.assertEqual(p.shape(), Shape([4, 3]))
+        self.assertEqual(p.value.to_list(), self.list_data[:12])
+
+        # ndarray w/o shape
+        p = Parameter(initializer=self.ndarray_data[0])
+        self.assertEqual(p.shape(), Shape([4, 3]))
+        self.assertEqual(p.value.to_list(), self.list_data[:12])
+
+        # ndarray w/ shape
+        p = Parameter(Shape([2, 6]), self.ndarray_data[0])
+        self.assertEqual(p.shape(), Shape([2, 6]))
+        self.assertEqual(p.value.to_list(), self.list_data[:12])
+
+        # list[float] w/o shape
+        self.assertRaises(TypeError, lambda: Parameter(initializer=self.list_data[:12]))

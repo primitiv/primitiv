@@ -1,8 +1,6 @@
 from primitiv import Device
 from primitiv import Graph
-from primitiv import Parameter
 from primitiv import Shape
-from primitiv import initializers as I
 from primitiv import operators as F
 from primitiv.devices import Naive
 
@@ -10,7 +8,7 @@ import numpy as np
 import unittest
 
 
-class ArgumentTest(unittest.TestCase):
+class OperatorTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -76,26 +74,8 @@ class ArgumentTest(unittest.TestCase):
         self.assertEqual(x.to_list(), self.list_data)
         self.assertEqual(x.shape(), Shape([4, 3], 2))
 
-    def test_Parameter_argument(self):
-        # shape w/ Initializer
-        p = Parameter(Shape([4, 3]), I.Constant(1))
-        self.assertEqual(p.shape(), Shape([4, 3]))
-        self.assertEqual(p.value.to_list(), [1] * 12)
-
-        # shape w/ list[float]
-        p = Parameter(Shape([4, 3]), self.list_data[:12])
-        self.assertEqual(p.shape(), Shape([4, 3]))
-        self.assertEqual(p.value.to_list(), self.list_data[:12])
-
-        # ndarray w/o shape
-        p = Parameter(initializer=self.ndarray_data[0])
-        self.assertEqual(p.shape(), Shape([4, 3]))
-        self.assertEqual(p.value.to_list(), self.list_data[:12])
-
-        # ndarray w/ shape
-        p = Parameter(Shape([2, 6]), initializer=self.ndarray_data[0])
-        self.assertEqual(p.shape(), Shape([2, 6]))
-        self.assertEqual(p.value.to_list(), self.list_data[:12])
-
-        # list[float] w/o shape
-        self.assertRaises(TypeError, lambda: Parameter(initializer=self.list_data[:12]))
+    def test_input_ndarrays(self):
+        x = F.input(self.ndarray_data)
+        self.assertEqual(x.to_list(), self.list_data)
+        self.assertTrue((x.to_ndarrays()[0] == self.ndarray_data[0]).all())
+        self.assertTrue((x.to_ndarrays()[1] == self.ndarray_data[1]).all())

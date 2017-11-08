@@ -1,4 +1,4 @@
-from primitiv import Device
+from primitiv import Device, Parameter, Shape, Tensor
 from primitiv import tensor_operators as tF
 from primitiv.devices import Naive
 
@@ -111,3 +111,17 @@ class TensorOperatorsTest(unittest.TestCase):
         x *= 2
         self.assertIs(x, x_tmp)
         self.assertTrue((x.to_ndarrays()[0] == np.array([[2, 4], [6, 8]])).all())
+
+    def test_tensor_instance(self):
+        param = Parameter([], [1])
+        t_origin = param.gradient
+        t = param.gradient
+        self.assertIs(t, t_origin)
+        t = Tensor(t_origin)
+        self.assertEqual(t.to_list(), t.to_list())
+        self.assertIsNot(t, t_origin)
+        t = t_origin
+        t *= 2
+        self.assertIs(t, t_origin)
+        t = t * 2
+        self.assertIsNot(t, t_origin)
