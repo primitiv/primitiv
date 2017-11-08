@@ -176,17 +176,17 @@ public:
    */
   std::vector<Parameter *>get_trainable_parameters() const;
 
+private:
   /**
    * Check whether specified model is contained or not in the submodel
    * hierarchy.
-   * This function is used to detect the cycle path of submodels.
+   * All descendant submodels will be searched by this function.
    * @param model Start point of the traversing path.
    * @return true if at least one descendant submodel is equal to `model`,
    *         false otherwise.
    */
   bool has_submodel(const Model &model) const;
 
-private:
   std::unordered_map<std::string, Parameter *> param_kv_;
   std::unordered_map<std::string, Model *> submodel_kv_;
   std::unordered_set<std::string> name_set_;
