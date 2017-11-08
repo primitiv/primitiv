@@ -77,6 +77,12 @@ cdef class _Model:
     def add_submodel(self, str name, _Model model):
         self.wrapped.add_submodel(pystr_to_cppstr(name), model.wrapped[0])
 
+    # NOTE(vbkaisetsu):
+    # get_parameter is replaced with `params` variable.
+
+    # NOTE(vbkaisetsu):
+    # get_submodel is replaced with `submodels` variable.
+
     @staticmethod
     cdef void register_wrapper(CppModel *ptr, _Model wrapper):
         if <uintptr_t> ptr in py_primitiv_model_weak_dict:
