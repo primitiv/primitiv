@@ -28,28 +28,28 @@ namespace writer_objects {
  * Container to represent a binary object.
  */
 class Binary : mixins::Nonmovable<Binary> {
-  const void *data_;
   std::uint64_t size_;
+  const void *data_;
 
 public:
   /**
    * Creates a new Binary object.
+   * @param size Number of bytes of the data.
    * @param data Pointer of raw data.
-   * @param size Number of bytes of the data in `data`.
    */
-  Binary(const void *data, std::uint64_t size) : data_(data), size_(size) {}
+  Binary(std::uint64_t size, const void *data) : size_(size), data_(data) {}
+
+  /**
+   * Retrieves the size of the data.
+   * @return Size of the data.
+   */
+  std::uint64_t size() const { return size_; }
 
   /**
    * Retrieves the inner pointer.
    * @return Inner pointer.
    */
   const void *data() const { return data_; }
-
-  /**
-   * Retrieves the sizew of the data.
-   * @return size of the data.
-   */
-  std::uint64_t size() const { return size_; }
 };
 
 }  // namespace writer_objects
@@ -191,7 +191,8 @@ public:
       os_.write(buf, 5);
     } else {
       THROW_ERROR(
-          "MessagePack: Can't store more than 2^32 - 1 bytes in one str message.");
+          "MessagePack: Can't store more than 2^32 - 1 bytes "
+          "in one str message.");
     }
     os_.write(x.c_str(), size);
     return *this;
@@ -212,7 +213,8 @@ public:
       os_.write(buf, 5);
     } else {
       THROW_ERROR(
-          "MessagePack: Can't store more than 2^32 - 1 bytes in one bin message.");
+          "MessagePack: Can't store more than 2^32 - 1 bytes "
+          "in one bin message.");
     }
     os_.write(reinterpret_cast<const char *>(x.data()), size);
     return *this;

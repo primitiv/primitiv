@@ -156,40 +156,40 @@ TEST_F(WriterTest, CheckString_0x10000) {
 }
 
 TEST_F(WriterTest, CheckBinary_0) {
-  writer << writer_objects::Binary("", 0);
+  writer << writer_objects::Binary(0, "");
   match({ 0xc4, 0x00 });
 }
 
 TEST_F(WriterTest, CheckBinary_1) {
-  writer << writer_objects::Binary("a", 1);
+  writer << writer_objects::Binary(1, "a");
   match_str({ 0xc4, 0x01 }, "a");
 }
 
 TEST_F(WriterTest, CheckBinary_0xff) {
   vector<char> buf(0xff, 'a');
   const string data(buf.begin(), buf.end());
-  writer << writer_objects::Binary(data.c_str(), 0xff);
+  writer << writer_objects::Binary(0xff, data.c_str());
   match_str({ 0xc4, 0xff }, data);
 }
 
 TEST_F(WriterTest, CheckBinary_0x100) {
   vector<char> buf(0x100, 'a');
   const string data(buf.begin(), buf.end());
-  writer << writer_objects::Binary(data.c_str(), 0x100);
+  writer << writer_objects::Binary(0x100, data.c_str());
   match_str({ 0xc5, 0x01, 0x00 }, data);
 }
 
 TEST_F(WriterTest, CheckBinary_0xffff) {
   vector<char> buf(0xffff, 'a');
   const string data(buf.begin(), buf.end());
-  writer << writer_objects::Binary(data.c_str(), 0xffff);
+  writer << writer_objects::Binary(0xffff, data.c_str());
   match_str({ 0xc5, 0xff, 0xff }, data);
 }
 
 TEST_F(WriterTest, CheckBinary_0x10000) {
   vector<char> buf(0x10000, 'a');
   const string data(buf.begin(), buf.end());
-  writer << writer_objects::Binary(data.c_str(), 0x10000);
+  writer << writer_objects::Binary(0x10000, data.c_str());
   match_str({ 0xc6, 0x00, 0x01, 0x00, 0x00 }, data);
 }
 
@@ -246,20 +246,20 @@ TEST_F(WriterTest, CheckVector_String_2) {
 }
 
 TEST_F(WriterTest, CheckMap_Bool_Nil_0) {
-  unordered_map<bool, nullptr_t> mp;
+  unordered_map<bool, std::nullptr_t> mp;
   writer << mp;
   match({ 0x80 });
 }
 
 TEST_F(WriterTest, CheckMap_Bool_Nil_1) {
-  unordered_map<bool, nullptr_t> mp;
+  unordered_map<bool, std::nullptr_t> mp;
   mp.emplace(false, nullptr);
   writer << mp;
   match({ 0x81, 0xc2, 0xc0 });
 }
 
 TEST_F(WriterTest, CheckMap_UInt8_Nil_15) {
-  unordered_map<std::int8_t, nullptr_t> mp;
+  unordered_map<std::int8_t, std::nullptr_t> mp;
   for (int8_t i = 0; i < 15; ++i) mp.emplace(i, nullptr);
   writer << mp;
 
@@ -268,7 +268,7 @@ TEST_F(WriterTest, CheckMap_UInt8_Nil_15) {
 }
 
 TEST_F(WriterTest, CheckMap_UInt8_Nil_16) {
-  unordered_map<std::int8_t, nullptr_t> mp;
+  unordered_map<std::int8_t, std::nullptr_t> mp;
   for (int8_t i = 0; i < 16; ++i) mp.emplace(i, nullptr);
   writer << mp;
 
@@ -277,7 +277,7 @@ TEST_F(WriterTest, CheckMap_UInt8_Nil_16) {
 }
 
 TEST_F(WriterTest, CheckMap_UInt32_Nil_0xffff) {
-  unordered_map<std::int32_t, nullptr_t> mp;
+  unordered_map<std::int32_t, std::nullptr_t> mp;
   for (int32_t i = 0; i < 0xffff; ++i) mp.emplace(i, nullptr);
   writer << mp;
 
@@ -286,7 +286,7 @@ TEST_F(WriterTest, CheckMap_UInt32_Nil_0xffff) {
 }
 
 TEST_F(WriterTest, CheckMap_UInt8_Nil_0x10000) {
-  unordered_map<std::int32_t, nullptr_t> mp;
+  unordered_map<std::int32_t, std::nullptr_t> mp;
   for (int32_t i = 0; i < 0x10000; ++i) mp.emplace(i, nullptr);
   writer << mp;
 
