@@ -15,6 +15,7 @@ import numpy as np
 
 class _operators:
 
+    @staticmethod
     def raw_input(shape, vector[float] data, _Device device = None, _Graph g = None):
         if device is None:
             device = _Device.get_default()
@@ -26,6 +27,7 @@ class _operators:
     # NOTE(vbkaisetsu)
     # This function takes an np.ndarray or a list of np.ndarray
     # instead of a vector.
+    @staticmethod
     def input(data, _Device device = None, _Graph g = None):
         if isinstance(data, np.ndarray):
             data = [data]
@@ -299,6 +301,7 @@ class _operators:
 
 class _tensor_operators:
 
+    @staticmethod
     def raw_input(shape, vector[float] data, _Device device = None):
         if device is None:
             device = _Device.get_default()
@@ -307,6 +310,7 @@ class _tensor_operators:
     # NOTE(vbkaisetsu)
     # This function takes an np.ndarray or a list of np.ndarray
     # instead of a vector.
+    @staticmethod
     def input(data, _Device device = None):
         if isinstance(data, np.ndarray):
             data = [data]
