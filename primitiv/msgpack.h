@@ -29,7 +29,7 @@ namespace objects {
  * Container to represent a binary object.
  */
 class Binary : mixins::Nonmovable<Binary> {
-  std::uint64_t size_;
+  std::size_t size_;
 
   // NOTE(odashi):
   // Only one of eigher `ex_data_` or `in_data_` could be a valid pointer.
@@ -47,7 +47,7 @@ public:
    * @param size Number of bytes of the data.
    * @param data Pointer of raw data.
    */
-  Binary(std::uint64_t size, const void *data)
+  Binary(std::size_t size, const void *data)
     : size_(size), ex_data_(data), in_data_(nullptr) {}
 
   ~Binary() {
@@ -72,7 +72,7 @@ public:
    * Retrieves the size of the data.
    * @return Size of the data.
    */
-  std::uint64_t size() const {
+  std::size_t size() const {
     check_valid();
     return size_;
   }
@@ -92,7 +92,7 @@ public:
    * @remarks Allocated memory is managed by `Binary` object itself.
    *          Users must not delete memory returned by this function.
    */
-  void *allocate(std::uint64_t size) {
+  void *allocate(std::size_t size) {
     if (valid()) THROW_ERROR("MessagePack: 'Binary' object is already valid.");
 
     // NOTE(odashi):
@@ -109,7 +109,7 @@ public:
  */
 class Extension : mixins::Nonmovable<Extension> {
   std::int8_t type_;
-  std::uint64_t size_;
+  std::size_t size_;
 
   // NOTE(odashi):
   // Only one of eigher `ex_data_` or `in_data_` could be a valid pointer.
@@ -128,7 +128,7 @@ public:
    * @param size Number of bytes of the data.
    * @param data Pointer of raw data.
    */
-  Extension(std::int8_t type, std::uint64_t size, const void *data)
+  Extension(std::int8_t type, std::size_t size, const void *data)
     : type_(type), size_(size), ex_data_(data), in_data_(nullptr) {}
 
   ~Extension() {
@@ -162,7 +162,7 @@ public:
    * Retrieves the size of the data.
    * @return Size of the data.
    */
-  std::uint64_t size() const {
+  std::size_t size() const {
     check_valid();
     return size_;
   }
@@ -183,7 +183,7 @@ public:
    * @remarks Allocated memory is managed by `Extension` object itself.
    *          Users must not delete memory returned by this function.
    */
-  void *allocate(std::int8_t type, std::uint64_t size) {
+  void *allocate(std::int8_t type, std::size_t size) {
     if (valid()) THROW_ERROR("MessagePack: 'Extension' object is already valid.");
 
     // NOTE(odashi):
@@ -208,6 +208,7 @@ class Writer : mixins::Nonmovable<Writer> {
   
 private:
   Writer &write_string(const char *x, std::size_t size) {     
+    static_assert(sizeof(std::size_t) > sizeof(std::uint32_t), "");
     if (size < (1 << 5)) {
       const char buf[1] { UC(0xa0 | (size & 0x1f)) };
       os_.write(buf, 1);
@@ -343,7 +344,8 @@ public:
   }
 
   Writer &operator<<(const objects::Binary &x) {
-    const std::uint64_t size = x.size();
+    static_assert(sizeof(std::size_t) > sizeof(std::uint32_t), "");
+    const std::size_t size = x.size();
     if (size < (1ull << 8)) {
       const char buf[2] { UC(0xc4), UC(size) };
       os_.write(buf, 2);
@@ -365,8 +367,9 @@ public:
   }
 
   Writer &operator<<(const objects::Extension &x) {
+    static_assert(sizeof(std::size_t) > sizeof(std::uint32_t), "");
     const std::int8_t type = x.type();
-    const std::uint64_t size = x.size();
+    const std::size_t size = x.size();
     if (size < (1ull << 8)) {
       switch (size) {
         case 1:
@@ -426,7 +429,8 @@ public:
 
   template<typename T>
   Writer &operator<<(const std::vector<T> &x) {
-    const std::uint64_t size = x.size();
+    static_assert(sizeof(std::size_t) > sizeof(std::uint32_t), "");
+    const std::size_t size = x.size();
     if (size < (1ull << 4)) {
       const char buf[1] { UC(0x90 | (size & 0x0f)) };
       os_.write(buf, 1);
@@ -445,7 +449,8 @@ public:
 
   template<typename T, typename U>
   Writer &operator<<(const std::unordered_map<T, U> &x) {
-    const std::uint64_t size = x.size();
+    static_assert(sizeof(std::size_t) > sizeof(std::uint32_t), "");
+    const std::size_t size = x.size();
     if (size < (1ull << 4)) {
       const char buf[1] { UC(0x80 | (size & 0x0f)) };
       os_.write(buf, 1);
