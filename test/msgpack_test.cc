@@ -327,7 +327,7 @@ TEST_F(WriterTest, CheckMap_UInt32_Nil_0xffff) {
   match_header_and_size({ 0xde, 0xff, 0xff }, 3 + 6 * 0xffff);
 }
 
-TEST_F(WriterTest, CheckMap_UInt8_Nil_0x10000) {
+TEST_F(WriterTest, CheckMap_UInt32_Nil_0x10000) {
   unordered_map<std::int32_t, std::nullptr_t> mp;
   for (int32_t i = 0; i < 0x10000; ++i) mp.emplace(i, nullptr);
   writer << mp;
