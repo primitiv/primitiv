@@ -205,12 +205,7 @@ public:
     return *this;
   }
 
-  Writer &operator<<(const char *x) {
-    return operator<<(std::string(x));
-  }
-
-  Writer &operator<<(const std::string &x) {
-    const std::uint64_t size = x.size();
+  Writer &writeString(const char *x, std::size_t size) {     
     if (size < (1 << 5)) {
       const char buf[1] { UC(0xa0 | (size & 0x1f)) };
       os_.write(buf, 1);
@@ -230,8 +225,16 @@ public:
           "MessagePack: Can't store more than 2^32 - 1 bytes "
           "in one str message.");
     }
-    os_.write(x.c_str(), size);
+    os_.write(x, size);
     return *this;
+  }
+
+  Writer &operator<<(const char *x) {
+    return writeString(x, std::strlen(x));
+  }
+
+  Writer &operator<<(const std::string &x) {    
+    return writeString(x.data(), x.size());
   }
 
   Writer &operator<<(const writer_objects::Binary &x) {
