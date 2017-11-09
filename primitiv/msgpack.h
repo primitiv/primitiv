@@ -11,6 +11,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -181,11 +182,9 @@ public:
   }
 
   Writer &operator<<(float x) {
-    union f2u32 {
-      float f;
-      std::uint32_t u;
-    };
-    const std::uint32_t y = reinterpret_cast<const f2u32 *>(&x)->u;
+    static_assert(sizeof(std::uint32_t) == sizeof(float), "");
+    std::uint32_t y;
+    std::memcpy(&y, &x, sizeof(std::uint32_t));
     const char buf[5] {
       UC(0xca), UC(y >> 24), UC(y >> 16), UC(y >> 8), UC(y),
     };
@@ -194,11 +193,9 @@ public:
   }
 
   Writer &operator<<(double x) {
-    union d2u64 {
-      double d;
-      std::uint64_t u;
-    };
-    const std::uint64_t y = reinterpret_cast<const d2u64 *>(&x)->u;
+    static_assert(sizeof(std::uint64_t) == sizeof(double), "");
+    std::uint64_t y;
+    std::memcpy(&y, &x, sizeof(std::uint64_t));
     const char buf[9] {
       UC(0xcb),
       UC(y >> 56), UC(y >> 48), UC(y >> 40), UC(y >> 32),
