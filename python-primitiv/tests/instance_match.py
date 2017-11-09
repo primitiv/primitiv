@@ -36,8 +36,8 @@ class ArgumentTest(unittest.TestCase):
         self.assertIs(dev, self.device)
 
         tensor = tF.raw_input([], [0])
-        #dev = tensor.device()
-        #self.assertIs(dev, self.device)
+        dev = tensor.device()
+        self.assertIs(dev, self.device)
 
         node = F.raw_input([], [0])
         dev = node.device()
