@@ -15,29 +15,26 @@ import numpy as np
 
 class _operators:
 
-    @staticmethod
-    def input(data, shape = None, _Device device = None, _Graph g = None):
-        cdef vector[float] data_vector
+    def raw_input(shape, vector[float] data, _Device device = None, _Graph g = None):
         if device is None:
             device = _Device.get_default()
+        if g is not None:
+            return wrapNode(Node_input_vector(normShape(shape).wrapped, data, device.wrapped[0], g.wrapped[0]))
+        else:
+            return wrapNode(Node_input_vector(normShape(shape).wrapped, data, device.wrapped[0]))
+
+    # NOTE(vbkaisetsu)
+    # This function takes an np.ndarray or a list of np.ndarray
+    # instead of a vector.
+    def input(data, _Device device = None, _Graph g = None):
         if isinstance(data, np.ndarray):
             data = [data]
-        elif not isinstance(data, list):
-            raise TypeError("Argument 'data' has incorrect type (list or numpy.ndarray)")
         if len(data) == 0:
-            raise TypeError("data is a list, but it contains no item")
-        if isinstance(data[0], (float, int)):
-            if shape is None:
-                raise TypeError("shape is required when data contains scalars")
-            data_vector = <vector[float]> data
-        else:
-            if shape is None:
-                shape = _Shape(data[0].shape, len(data))
-            data_vector = ndarrays_to_vector(data)
-        if g is not None:
-            return wrapNode(Node_input_vector(normShape(shape).wrapped, data_vector, device.wrapped[0], g.wrapped[0]))
-        else:
-            return wrapNode(Node_input_vector(normShape(shape).wrapped, data_vector, device.wrapped[0]))
+            raise TypeError("list is given but it contains no item")
+        if not isinstance(data[0], np.ndarray):
+            raise TypeError("list does not contain np.ndarray")
+        shape = _Shape(data[0].shape, len(data))
+        return _operators.raw_input(shape, ndarrays_to_vector(data), device, g)
 
     @staticmethod
     def parameter(_Parameter param, _Graph g = None):
@@ -302,26 +299,23 @@ class _operators:
 
 class _tensor_operators:
 
-    @staticmethod
-    def input(data, shape = None, _Device device = None):
-        cdef vector[float] data_vector
+    def raw_input(shape, vector[float] data, _Device device = None):
         if device is None:
             device = _Device.get_default()
+        return _Tensor.get_wrapper_with_new(new CppTensor(Tensor_input_vector(normShape(shape).wrapped, data, device.wrapped[0])))
+
+    # NOTE(vbkaisetsu)
+    # This function takes an np.ndarray or a list of np.ndarray
+    # instead of a vector.
+    def input(data, _Device device = None):
         if isinstance(data, np.ndarray):
             data = [data]
-        elif not isinstance(data, list):
-            raise TypeError("Argument 'data' has incorrect type (list or numpy.ndarray)")
         if len(data) == 0:
-            raise TypeError("data is a list, but it contains no item")
-        if isinstance(data[0], (float, int)):
-            if shape is None:
-                raise TypeError("shape is required when data contains scalars")
-            data_vector = <vector[float]> data
-        else:
-            if shape is None:
-                shape = _Shape(data[0].shape, len(data))
-            data_vector = ndarrays_to_vector(data)
-        return _Tensor.get_wrapper_with_new(new CppTensor(Tensor_input_vector(normShape(shape).wrapped, data_vector, device.wrapped[0])))
+            raise TypeError("list is given but it contains no item")
+        if not isinstance(data[0], np.ndarray):
+            raise TypeError("list does not contain np.ndarray")
+        shape = _Shape(data[0].shape, len(data))
+        return _tensor_operators.raw_input(shape, ndarrays_to_vector(data), device)
 
     @staticmethod
     def parameter(_Parameter param):
