@@ -142,7 +142,11 @@ public:
   }
 
   Writer &operator<<(float x) {
-    const std::uint32_t y = *reinterpret_cast<const std::uint32_t *>(&x);
+    union f2u32 {
+      float f;
+      std::uint32_t u;
+    };
+    const std::uint32_t y = reinterpret_cast<const f2u32 *>(&x)->u;
     const char buf[5] {
       UC(0xca), UC(y >> 24), UC(y >> 16), UC(y >> 8), UC(y),
     };
@@ -151,7 +155,11 @@ public:
   }
 
   Writer &operator<<(double x) {
-    const std::uint64_t y = *reinterpret_cast<const std::uint64_t *>(&x);
+    union d2u64 {
+      double d;
+      std::uint64_t u;
+    };
+    const std::uint64_t y = reinterpret_cast<const d2u64 *>(&x)->u;
     const char buf[9] {
       UC(0xcb),
       UC(y >> 56), UC(y >> 48), UC(y >> 40), UC(y >> 32),

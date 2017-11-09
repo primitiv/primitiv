@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_TEST_UTILS_H_
 #define PRIMITIV_TEST_UTILS_H_
 
+#include <cstdint>
 #include <initializer_list>
 #include <string>
 #include <vector>
@@ -8,20 +9,18 @@
 
 namespace test_utils {
 
-// float <-> int32_t bits converter.
-union f2i32 {
-  float f;
-  int32_t i;
-};
-
 // check whether or not two float values are near than the ULP-based threshold.
 bool float_eq(const float a, const float b) {
+  union f2i32 {
+    float f;
+    std::int32_t i;
+  };
   static const int MAX_ULPS = 4;
-  int ai = reinterpret_cast<const f2i32 *>(&a)->i;
+  std::int32_t ai = reinterpret_cast<const f2i32 *>(&a)->i;
   if (ai < 0) ai = 0x80000000 - ai;
-  int bi = reinterpret_cast<const f2i32 *>(&b)->i;
+  std::int32_t bi = reinterpret_cast<const f2i32 *>(&b)->i;
   if (bi < 0) bi = 0x80000000 - bi;
-  const int diff = ai > bi ? ai - bi : bi - ai;
+  const std::int32_t diff = ai > bi ? ai - bi : bi - ai;
   return (diff <= MAX_ULPS);
 }
 
