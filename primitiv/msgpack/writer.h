@@ -1,202 +1,20 @@
-#ifndef PRIMITIV_MSGPACK_H_
-#define PRIMITIV_MSGPACK_H_
-
-// NOTE(odashi):
-// This header implements the writer (emitter) and reader (parser) of
-// the standard MessagePack wire format.
-// Formal MessagePack specification can be found in:
-//
-//     https://github.com/msgpack/msgpack
-//
+#ifndef PRIMITIV_MSGPACK_WRITER_H_
+#define PRIMITIV_MSGPACK_WRITER_H_
 
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <iostream>
+#include <ostream>
 #include <string>
 #include <vector>
 #include <unordered_map>
 
 #include <primitiv/error.h>
 #include <primitiv/mixins.h>
+#include <primitiv/msgpack/objects.h>
 
 namespace primitiv {
 namespace msgpack {
-
-namespace objects {
-
-/**
- * Container to represent a binary object.
- */
-class Binary : mixins::Nonmovable<Binary> {
-  std::size_t size_;
-
-  // NOTE(odashi):
-  // Only one of eigher `ex_data_` or `in_data_` could be a valid pointer.
-  const void *ex_data_;
-  std::uint8_t *in_data_;
-
-public:
-  /**
-   * Creates a placeholder object.
-   */
-  Binary() : size_(0), ex_data_(nullptr), in_data_(nullptr) {}
-
-  /**
-   * Creates a new `Binary` object with an external memory.
-   * @param size Number of bytes of the data.
-   * @param data Pointer of raw data.
-   */
-  Binary(std::size_t size, const void *data)
-    : size_(size), ex_data_(data), in_data_(nullptr) {}
-
-  ~Binary() {
-    delete[] in_data_;
-  }
-
-  /**
-   * Checks whether the object is valid or not.
-   * @reutrn true the object is valid, false otherwise.
-   */
-  bool valid() const { return ex_data_ || in_data_; }
-
-  /**
-   * Returns whether the object is valid or not.
-   * @throw primitiv::Error Object is invalid.
-   */
-  void check_valid() const {
-    if (!valid()) THROW_ERROR("MessagePack: Invalid 'Binary' object.");
-  }
-
-  /**
-   * Retrieves the size of the data.
-   * @return Size of the data.
-   */
-  std::size_t size() const {
-    check_valid();
-    return size_;
-  }
-
-  /**
-   * Retrieves the inner pointer.
-   * @return Inner pointer.
-   */
-  const void *data() const {
-    check_valid();
-    return ex_data_ ? ex_data_ : in_data_;
-  }
-
-  /**
-   * Initializes a new memory for the data and returns it.
-   * @param size Number of bytes to be allocated for the data.
-   * @remarks Allocated memory is managed by `Binary` object itself.
-   *          Users must not delete memory returned by this function.
-   */
-  void *allocate(std::size_t size) {
-    if (valid()) THROW_ERROR("MessagePack: 'Binary' object is already valid.");
-
-    // NOTE(odashi):
-    // Allocation should be done at first (it may throws).
-    in_data_ = new std::uint8_t[size];
-
-    size_ = size;
-    return in_data_;
-  }
-};
-
-/**
- * Container to represent an extension object.
- */
-class Extension : mixins::Nonmovable<Extension> {
-  std::int8_t type_;
-  std::size_t size_;
-
-  // NOTE(odashi):
-  // Only one of eigher `ex_data_` or `in_data_` could be a valid pointer.
-  const void *ex_data_;
-  std::uint8_t *in_data_;
-
-public:
-  /**
-   * Creates a placeholder object.
-   */
-  Extension() : type_(0), size_(0), ex_data_(nullptr), in_data_(nullptr) {}
-
-  /**
-   * Creates a new `Extension` object with an external memory.
-   * @param type Extension type.
-   * @param size Number of bytes of the data.
-   * @param data Pointer of raw data.
-   */
-  Extension(std::int8_t type, std::size_t size, const void *data)
-    : type_(type), size_(size), ex_data_(data), in_data_(nullptr) {}
-
-  ~Extension() {
-    delete[] in_data_;
-  }
-
-  /**
-   * Returns whether the object is valid or not.
-   * @reutrn true the object is valid, false otherwise.
-   */
-  bool valid() const { return ex_data_ || in_data_; }
-
-  /**
-   * Returns whether the object is valid or not.
-   * @throw primitiv::Error Object is invalid.
-   */
-  void check_valid() const {
-    if (!valid()) THROW_ERROR("MessagePack: Invalid 'Extension' object.");
-  }
-
-  /**
-   * Retrieves the type of this extension.
-   * @return Type of this extension.
-   */
-  std::int8_t type() const {
-    check_valid();
-    return type_;
-  }
-
-  /**
-   * Retrieves the size of the data.
-   * @return Size of the data.
-   */
-  std::size_t size() const {
-    check_valid();
-    return size_;
-  }
-
-  /**
-   * Retrieves the inner pointer.
-   * @return Inner pointer.
-   */
-  const void *data() const {
-    check_valid();
-    return ex_data_ ? ex_data_ : in_data_;
-  }
-
-  /**
-   * Initializes a new memory for the data and returns it.
-   * @param type Extension type.
-   * @param size Number of bytes to be allocated for the data.
-   * @remarks Allocated memory is managed by `Extension` object itself.
-   *          Users must not delete memory returned by this function.
-   */
-  void *allocate(std::int8_t type, std::size_t size) {
-    if (valid()) THROW_ERROR("MessagePack: 'Extension' object is already valid.");
-
-    // NOTE(odashi):
-    // Allocation should be done at first (it may throws).
-    in_data_ = new std::uint8_t[size];
-
-    type_ = type;
-    size_ = size;
-    return in_data_;
-  }
-};
-
-}  // namespace objects
 
 #define UC(expr) static_cast<char>(expr)
 
@@ -205,9 +23,9 @@ public:
  */
 class Writer : mixins::Nonmovable<Writer> {
   std::ostream &os_;
-  
+
 private:
-  Writer &write_string(const char *x, std::size_t size) {     
+  Writer &write_string(const char *x, std::size_t size) {
     static_assert(sizeof(std::size_t) > sizeof(std::uint32_t), "");
     if (size < (1 << 5)) {
       const char buf[1] { UC(0xa0 | (size & 0x1f)) };
@@ -339,7 +157,7 @@ public:
     return write_string(x, std::strlen(x));
   }
 
-  Writer &operator<<(const std::string &x) {    
+  Writer &operator<<(const std::string &x) {
     return write_string(x.data(), x.size());
   }
 
@@ -473,4 +291,4 @@ public:
 }  // namespace msgpack
 }  // namespace primitiv
 
-#endif  // PRIMITIV_MSGPACK_H_
+#endif  // PRIMITIV_MSGPACK_WRITER_H_
