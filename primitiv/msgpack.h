@@ -205,6 +205,31 @@ public:
  */
 class Writer : mixins::Nonmovable<Writer> {
   std::ostream &os_;
+  
+private:
+  Writer &write_string(const char *x, std::size_t size) {     
+    if (size < (1 << 5)) {
+      const char buf[1] { UC(0xa0 | (size & 0x1f)) };
+      os_.write(buf, 1);
+    } else if (size < (1ull << 8)) {
+      const char buf[2] { UC(0xd9), UC(size) };
+      os_.write(buf, 2);
+    } else if (size < (1ull << 16)) {
+      const char buf[3] { UC(0xda), UC(size >> 8), UC(size) };
+      os_.write(buf, 3);
+    } else if (size < (1ull << 32)) {
+      const char buf[5] {
+        UC(0xdb), UC(size >> 24), UC(size >> 16), UC(size >> 8), UC(size),
+      };
+      os_.write(buf, 5);
+    } else {
+      THROW_ERROR(
+          "MessagePack: Can't store more than 2^32 - 1 bytes "
+          "in one str message.");
+    }
+    os_.write(x, size);
+    return *this;
+  }
 
 public:
   /**
@@ -310,32 +335,11 @@ public:
   }
 
   Writer &operator<<(const char *x) {
-    return operator<<(std::string(x));
+    return write_string(x, std::strlen(x));
   }
 
-  Writer &operator<<(const std::string &x) {
-    const std::uint64_t size = x.size();
-    if (size < (1 << 5)) {
-      const char buf[1] { UC(0xa0 | (size & 0x1f)) };
-      os_.write(buf, 1);
-    } else if (size < (1ull << 8)) {
-      const char buf[2] { UC(0xd9), UC(size) };
-      os_.write(buf, 2);
-    } else if (size < (1ull << 16)) {
-      const char buf[3] { UC(0xda), UC(size >> 8), UC(size) };
-      os_.write(buf, 3);
-    } else if (size < (1ull << 32)) {
-      const char buf[5] {
-        UC(0xdb), UC(size >> 24), UC(size >> 16), UC(size >> 8), UC(size),
-      };
-      os_.write(buf, 5);
-    } else {
-      THROW_ERROR(
-          "MessagePack: Can't store more than 2^32 - 1 bytes "
-          "in one str message.");
-    }
-    os_.write(x.c_str(), size);
-    return *this;
+  Writer &operator<<(const std::string &x) {    
+    return write_string(x.data(), x.size());
   }
 
   Writer &operator<<(const objects::Binary &x) {
