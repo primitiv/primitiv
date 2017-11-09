@@ -52,6 +52,45 @@ public:
   const void *data() const { return data_; }
 };
 
+/**
+ * Container to represent an extension object.
+ */
+class Extension : mixins::Nonmovable<Extension> {
+  std::int8_t type_;
+  std::uint64_t size_;
+  const void *data_;
+
+public:
+  /**
+   * Creates a new Extension object.
+   * @param type Extension type.
+   * @param size Number of bytes of the data.
+   * @param data Pointer of raw data.
+   */
+  Extension(
+      std::int8_t type,
+      std::uint64_t size,
+      const void *data) : type_(type), size_(size), data_(data) {}
+
+  /**
+   * Retrieves the type of this extension.
+   * @return Type of this extension.
+   */
+  std::int8_t type() const { return type_; }
+
+  /**
+   * Retrieves the size of the data.
+   * @return Size of the data.
+   */
+  std::uint64_t size() const { return size_; }
+
+  /**
+   * Retrieves the inner pointer.
+   * @return Inner pointer.
+   */
+  const void *data() const { return data_; }
+};
+
 }  // namespace writer_objects
 
 #define UC(expr) static_cast<char>(expr)
@@ -215,6 +254,66 @@ public:
       THROW_ERROR(
           "MessagePack: Can't store more than 2^32 - 1 bytes "
           "in one bin message.");
+    }
+    os_.write(reinterpret_cast<const char *>(x.data()), size);
+    return *this;
+  }
+
+  Writer &operator<<(const writer_objects::Extension &x) {
+    const std::int8_t type = x.type();
+    const std::uint64_t size = x.size();
+    if (size < (1ull << 8)) {
+      switch (size) {
+        case 1:
+          {
+            const char buf[2] { UC(0xd4), type };
+            os_.write(buf, 2);
+            break;
+          }
+        case 2:
+          {
+            const char buf[2] { UC(0xd5), type };
+            os_.write(buf, 2);
+            break;
+          }
+        case 4:
+          {
+            const char buf[2] { UC(0xd6), type };
+            os_.write(buf, 2);
+            break;
+          }
+        case 8:
+          {
+            const char buf[2] { UC(0xd7), type };
+            os_.write(buf, 2);
+            break;
+          }
+        case 16:
+          {
+            const char buf[2] { UC(0xd8), type };
+            os_.write(buf, 2);
+            break;
+          }
+        default:
+          {
+            const char buf[3] { UC(0xc7), UC(size), type };
+            os_.write(buf, 3);
+          }
+      }
+    } else if (size < (1ull << 16)) {
+      const char buf[4] { UC(0xc8), UC(size >> 8), UC(size), type };
+      os_.write(buf, 4);
+    } else if (size < (1ull << 32)) {
+      const char buf[6] {
+        UC(0xc9),
+        UC(size >> 24), UC(size >> 16), UC(size >> 8), UC(size),
+        type,
+      };
+      os_.write(buf, 6);
+    } else {
+      THROW_ERROR(
+          "MessagePack: Can't store more than 2^32 - 1 bytes "
+          "in one ext message.");
     }
     os_.write(reinterpret_cast<const char *>(x.data()), size);
     return *this;

@@ -111,8 +111,8 @@ TEST_F(WriterTest, CheckString_0) {
 }
 
 TEST_F(WriterTest, CheckString_1) {
-  writer << "a";
-  match_str({ 0xa1 }, "a");
+  writer << "x";
+  match_str({ 0xa1 }, "x");
 }
 
 TEST_F(WriterTest, CheckString_31) {
@@ -128,29 +128,25 @@ TEST_F(WriterTest, CheckString_32) {
 }
 
 TEST_F(WriterTest, CheckString_0xff) {
-  vector<char> buf(0xff, 'a');
-  const string data(buf.begin(), buf.end());
+  const string data(0xff, 'a');
   writer << data;
   match_str({ 0xd9, 0xff }, data);
 }
 
 TEST_F(WriterTest, CheckString_0x100) {
-  vector<char> buf(0x100, 'a');
-  const string data(buf.begin(), buf.end());
+  const string data(0x100, 'b');
   writer << data;
   match_str({ 0xda, 0x01, 0x00 }, data);
 }
 
 TEST_F(WriterTest, CheckString_0xffff) {
-  vector<char> buf(0xffff, 'a');
-  const string data(buf.begin(), buf.end());
+  const string data(0xffff, 'c');
   writer << data;
   match_str({ 0xda, 0xff, 0xff }, data);
 }
 
 TEST_F(WriterTest, CheckString_0x10000) {
-  vector<char> buf(0x10000, 'a');
-  const string data(buf.begin(), buf.end());
+  const string data(0x10000, 'd');
   writer << data;
   match_str({ 0xdb, 0x00, 0x01, 0x00, 0x00 }, data);
 }
@@ -161,36 +157,86 @@ TEST_F(WriterTest, CheckBinary_0) {
 }
 
 TEST_F(WriterTest, CheckBinary_1) {
-  writer << writer_objects::Binary(1, "a");
-  match_str({ 0xc4, 0x01 }, "a");
+  writer << writer_objects::Binary(1, "x");
+  match_str({ 0xc4, 0x01 }, "x");
 }
 
 TEST_F(WriterTest, CheckBinary_0xff) {
-  vector<char> buf(0xff, 'a');
-  const string data(buf.begin(), buf.end());
+  const string data(0xff, 'a');
   writer << writer_objects::Binary(0xff, data.c_str());
   match_str({ 0xc4, 0xff }, data);
 }
 
 TEST_F(WriterTest, CheckBinary_0x100) {
-  vector<char> buf(0x100, 'a');
-  const string data(buf.begin(), buf.end());
+  const string data(0x100, 'b');
   writer << writer_objects::Binary(0x100, data.c_str());
   match_str({ 0xc5, 0x01, 0x00 }, data);
 }
 
 TEST_F(WriterTest, CheckBinary_0xffff) {
-  vector<char> buf(0xffff, 'a');
-  const string data(buf.begin(), buf.end());
+  const string data(0xffff, 'c');
   writer << writer_objects::Binary(0xffff, data.c_str());
   match_str({ 0xc5, 0xff, 0xff }, data);
 }
 
 TEST_F(WriterTest, CheckBinary_0x10000) {
-  vector<char> buf(0x10000, 'a');
-  const string data(buf.begin(), buf.end());
+  const string data(0x10000, 'd');
   writer << writer_objects::Binary(0x10000, data.c_str());
   match_str({ 0xc6, 0x00, 0x01, 0x00, 0x00 }, data);
+}
+
+TEST_F(WriterTest, CheckExtension_0) {
+  writer << writer_objects::Extension('X', 0, "");
+  match({ 0xc7, 0x00, 'X' });
+}
+
+TEST_F(WriterTest, CheckExtension_1) {
+  writer << writer_objects::Extension('X', 1, "1");
+  match({ 0xd4, 'X', '1' });
+}
+
+TEST_F(WriterTest, CheckExtension_2) {
+  writer << writer_objects::Extension('X', 2, "12");
+  match({ 0xd5, 'X', '1', '2' });
+}
+
+TEST_F(WriterTest, CheckExtension_4) {
+  writer << writer_objects::Extension('X', 4, "1234");
+  match({ 0xd6, 'X', '1', '2', '3', '4' });
+}
+
+TEST_F(WriterTest, CheckExtension_8) {
+  writer << writer_objects::Extension('X', 8, "12345678");
+  match_str({ 0xd7, 'X' }, "12345678");
+}
+
+TEST_F(WriterTest, CheckExtension_16) {
+  writer << writer_objects::Extension('X', 16, "1234567890123456");
+  match_str({ 0xd8, 'X' }, "1234567890123456");
+}
+
+TEST_F(WriterTest, CheckExtension_0xff) {
+  const string data(0xff, 'a');
+  writer << writer_objects::Extension('A', 0xff, data.c_str());
+  match_str({ 0xc7, 0xff, 'A' }, data);
+}
+
+TEST_F(WriterTest, CheckExtension_0x100) {
+  const string data(0x100, 'b');
+  writer << writer_objects::Extension('B', 0x100, data.c_str());
+  match_str({ 0xc8, 0x01, 0x00, 'B' }, data);
+}
+
+TEST_F(WriterTest, CheckExtension_0xffff) {
+  const string data(0xffff, 'c');
+  writer << writer_objects::Extension('C', 0xffff, data.c_str());
+  match_str({ 0xc8, 0xff, 0xff, 'C' }, data);
+}
+
+TEST_F(WriterTest, CheckExtension_0x10000) {
+  const string data(0x10000, 'd');
+  writer << writer_objects::Extension('D', 0x10000, data.c_str());
+  match_str({ 0xc9, 0x00, 0x01, 0x00, 0x00, 'D' }, data);
 }
 
 TEST_F(WriterTest, CheckVector_Nil_0) {
@@ -207,30 +253,26 @@ TEST_F(WriterTest, CheckVector_Nil_1) {
 
 TEST_F(WriterTest, CheckVector_Nil_15) {
   vector<std::nullptr_t> vec(15);
-  vector<char> buf(15, 0xc0);
   writer << vec;
-  match_str({ 0x9f }, string(buf.begin(), buf.end()));
+  match_str({ 0x9f }, string(15, 0xc0));
 }
 
 TEST_F(WriterTest, CheckVector_Nil_16) {
   vector<std::nullptr_t> vec(16);
-  vector<char> buf(16, 0xc0);
   writer << vec;
-  match_str({ 0xdc, 0x00, 0x10 }, string(buf.begin(), buf.end()));
+  match_str({ 0xdc, 0x00, 0x10 }, string(16, 0xc0));
 }
 
 TEST_F(WriterTest, CheckVector_Nil_0xffff) {
   vector<std::nullptr_t> vec(0xffff);
-  vector<char> buf(0xffff, 0xc0);
   writer << vec;
-  match_str({ 0xdc, 0xff, 0xff }, string(buf.begin(), buf.end()));
+  match_str({ 0xdc, 0xff, 0xff }, string(0xffff, 0xc0));
 }
 
 TEST_F(WriterTest, CheckVector_Nil_0x10000) {
   vector<std::nullptr_t> vec(0x10000);
-  vector<char> buf(0x10000, 0xc0);
   writer << vec;
-  match_str({ 0xdd, 0x00, 0x01, 0x00, 0x00 }, string(buf.begin(), buf.end()));
+  match_str({ 0xdd, 0x00, 0x01, 0x00, 0x00 }, string(0x10000, 0xc0));
 }
 
 TEST_F(WriterTest, CheckVector_UInt8_3) {
