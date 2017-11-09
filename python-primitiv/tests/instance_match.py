@@ -35,25 +35,25 @@ class ArgumentTest(unittest.TestCase):
         dev = Device.get_default()
         self.assertIs(dev, self.device)
 
-        tensor = tF.input([0], Shape([]))
-        dev = tensor.device()
-        self.assertIs(dev, self.device)
+        tensor = tF.raw_input([], [0])
+        #dev = tensor.device()
+        #self.assertIs(dev, self.device)
 
-        node = F.input([0], Shape([]))
+        node = F.raw_input([], [0])
         dev = node.device()
         self.assertIs(dev, self.device)
 
         my_device = Naive()
         self.assertIsNot(my_device, self.device)
 
-        node = F.input([0], Shape([]), device=my_device)
+        node = F.raw_input([], [0], device=my_device)
         dev = node.device()
         self.assertIs(dev, my_device)
 
         dev = self.graph.get_device(node)
         self.assertIs(dev, my_device)
 
-        param = Parameter(Shape([]), [0])
+        param = Parameter([], I.Constant(1))
         dev = param.device()
         self.assertIs(dev, self.device)
 
@@ -61,12 +61,12 @@ class ArgumentTest(unittest.TestCase):
         g = Graph.get_default()
         self.assertIs(g, self.graph)
 
-        node = F.input([0], Shape([]))
+        node = F.raw_input([], [0])
         g = node.graph()
         self.assertIs(g, self.graph)
 
     def test_tensor_instance(self):
-        param = Parameter(Shape([]), [0])
+        param = Parameter([], I.Constant(1))
         t_origin = param.gradient
         t = param.gradient
         self.assertIs(t, t_origin)
