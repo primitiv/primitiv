@@ -305,17 +305,13 @@ TEST_F(ReaderTest, CheckString_0x10000) {
 }
 
 TEST_F(ReaderTest, CheckBinary_0) {
-  const string expected;  // empty data
   prepare({ 0xc4, 0x00 });
   objects::Binary x;
   EXPECT_NO_THROW(*reader >> x);
   EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
 
   ASSERT_NO_THROW(x.check_valid());
-  const std::size_t size = x.size();
-  const char *data = x.data();
-  EXPECT_EQ(0u, size);
-  EXPECT_EQ(expected, string(data, size));
+  EXPECT_EQ(0u, x.size());
 }
 
 TEST_F(ReaderTest, CheckBinary_1) {
@@ -382,6 +378,152 @@ TEST_F(ReaderTest, CheckBinary_0x10000) {
   EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
 
   ASSERT_NO_THROW(x.check_valid());
+  const std::size_t size = x.size();
+  const char *data = x.data();
+  EXPECT_EQ(0x10000u, size);
+  EXPECT_EQ(expected, string(data, size));
+}
+
+TEST_F(ReaderTest, CheckExtension_0) {
+  prepare({ 0xc7, 0x00, 'X' });
+  objects::Extension x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+
+  ASSERT_NO_THROW(x.check_valid());
+  EXPECT_EQ('X', x.type());
+  EXPECT_EQ(0u, x.size());
+}
+
+TEST_F(ReaderTest, CheckExtension_1) {
+  const string expected = "1";
+  prepare_str({ 0xd4, 'X' }, expected);
+  objects::Extension x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+
+  ASSERT_NO_THROW(x.check_valid());
+  EXPECT_EQ('X', x.type());
+  const std::size_t size = x.size();
+  const char *data = x.data();
+  EXPECT_EQ(1u, size);
+  EXPECT_EQ(expected, string(data, size));
+}
+
+TEST_F(ReaderTest, CheckExtension_2) {
+  const string expected = "12";
+  prepare_str({ 0xd5, 'X' }, expected);
+  objects::Extension x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+
+  ASSERT_NO_THROW(x.check_valid());
+  EXPECT_EQ('X', x.type());
+  const std::size_t size = x.size();
+  const char *data = x.data();
+  EXPECT_EQ(2u, size);
+  EXPECT_EQ(expected, string(data, size));
+}
+
+TEST_F(ReaderTest, CheckExtension_4) {
+  const string expected = "1234";
+  prepare_str({ 0xd6, 'X' }, expected);
+  objects::Extension x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+
+  ASSERT_NO_THROW(x.check_valid());
+  EXPECT_EQ('X', x.type());
+  const std::size_t size = x.size();
+  const char *data = x.data();
+  EXPECT_EQ(4u, size);
+  EXPECT_EQ(expected, string(data, size));
+}
+
+TEST_F(ReaderTest, CheckExtension_8) {
+  const string expected = "12345678";
+  prepare_str({ 0xd7, 'X' }, expected);
+  objects::Extension x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+
+  ASSERT_NO_THROW(x.check_valid());
+  EXPECT_EQ('X', x.type());
+  const std::size_t size = x.size();
+  const char *data = x.data();
+  EXPECT_EQ(8u, size);
+  EXPECT_EQ(expected, string(data, size));
+}
+
+TEST_F(ReaderTest, CheckExtension_16) {
+  const string expected = "1234567890123456";
+  prepare_str({ 0xd8, 'X' }, expected);
+  objects::Extension x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+
+  ASSERT_NO_THROW(x.check_valid());
+  EXPECT_EQ('X', x.type());
+  const std::size_t size = x.size();
+  const char *data = x.data();
+  EXPECT_EQ(16u, size);
+  EXPECT_EQ(expected, string(data, size));
+}
+
+TEST_F(ReaderTest, CheckExtension_0xff) {
+  const string expected(0xff, 'a');
+  prepare_str({ 0xc7, 0xff, 'A' }, expected);
+  objects::Extension x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+
+  ASSERT_NO_THROW(x.check_valid());
+  EXPECT_EQ('A', x.type());
+  const std::size_t size = x.size();
+  const char *data = x.data();
+  EXPECT_EQ(0xffu, size);
+  EXPECT_EQ(expected, string(data, size));
+}
+
+TEST_F(ReaderTest, CheckExtension_0x100) {
+  const string expected(0x100, 'b');
+  prepare_str({ 0xc8, 0x01, 0x00, 'B' }, expected);
+  objects::Extension x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+
+  ASSERT_NO_THROW(x.check_valid());
+  EXPECT_EQ('B', x.type());
+  const std::size_t size = x.size();
+  const char *data = x.data();
+  EXPECT_EQ(0x100u, size);
+  EXPECT_EQ(expected, string(data, size));
+}
+
+TEST_F(ReaderTest, CheckExtension_0xffff) {
+  const string expected(0xffff, 'c');
+  prepare_str({ 0xc8, 0xff, 0xff, 'C' }, expected);
+  objects::Extension x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+
+  ASSERT_NO_THROW(x.check_valid());
+  EXPECT_EQ('C', x.type());
+  const std::size_t size = x.size();
+  const char *data = x.data();
+  EXPECT_EQ(0xffffu, size);
+  EXPECT_EQ(expected, string(data, size));
+}
+
+TEST_F(ReaderTest, CheckExtension_0x10000) {
+  const string expected(0x10000, 'd');
+  prepare_str({ 0xc9, 0x00, 0x01, 0x00, 0x00, 'D' }, expected);
+  objects::Extension x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+
+  ASSERT_NO_THROW(x.check_valid());
+  EXPECT_EQ('D', x.type());
   const std::size_t size = x.size();
   const char *data = x.data();
   EXPECT_EQ(0x10000u, size);

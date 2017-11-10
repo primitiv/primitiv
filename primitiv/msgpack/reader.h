@@ -208,7 +208,29 @@ public:
             "MessagePack: Next object does not have the 'bin' type. "
             "observed: " << type);
     }
-    read(static_cast<char *>(x.allocate(size)), size);
+    read(x.allocate(size), size);
+    return *this;
+  }
+
+  Reader &operator>>(objects::Extension &x) {
+    static_assert(sizeof(std::size_t) >= sizeof(std::uint32_t), "");
+    const std::uint8_t type = get_uint8();
+    std::size_t size;
+    switch (type) {
+      case 0xd4: size = 1; break;
+      case 0xd5: size = 2; break;
+      case 0xd6: size = 4; break;
+      case 0xd7: size = 8; break;
+      case 0xd8: size = 16; break;
+      case 0xc7: size = get_uint8(); break;
+      case 0xc8: size = get_uint16(); break;
+      case 0xc9: size = get_uint32(); break;
+      default:
+        THROW_ERROR(
+            "MessagePack: Next object does not have the 'ext' type. "
+            "observed: " << type);
+    }
+    read(x.allocate(get_uint8(), size), size);
     return *this;
   }
 };
