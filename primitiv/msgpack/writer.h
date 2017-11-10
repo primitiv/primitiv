@@ -19,7 +19,7 @@ namespace msgpack {
 #define UC(expr) static_cast<char>(expr)
 
 /**
- * IOStream-like MessagePack writer.
+ * ostream-like MessagePack writer.
  */
 class Writer : mixins::Nonmovable<Writer> {
   std::ostream &os_;
@@ -55,7 +55,7 @@ public:
    * Creates a new Writer object.
    * @param os Target output stream.
    */
-  Writer(std::ostream &os) : os_(os) {};
+  Writer(std::ostream &os) : os_(os) {}
 
   Writer &operator<<(std::nullptr_t x) {
     const char buf[1] { UC(0xc0) };
@@ -130,9 +130,9 @@ public:
   }
 
   Writer &operator<<(float x) {
-    static_assert(sizeof(std::uint32_t) == sizeof(float), "");
+    static_assert(sizeof(float) == sizeof(std::uint32_t), "");
     std::uint32_t y;
-    std::memcpy(&y, &x, sizeof(std::uint32_t));
+    std::memcpy(&y, &x, sizeof(float));
     const char buf[5] {
       UC(0xca), UC(y >> 24), UC(y >> 16), UC(y >> 8), UC(y),
     };
@@ -141,9 +141,9 @@ public:
   }
 
   Writer &operator<<(double x) {
-    static_assert(sizeof(std::uint64_t) == sizeof(double), "");
+    static_assert(sizeof(double) == sizeof(std::uint64_t), "");
     std::uint64_t y;
-    std::memcpy(&y, &x, sizeof(std::uint64_t));
+    std::memcpy(&y, &x, sizeof(double));
     const char buf[9] {
       UC(0xcb),
       UC(y >> 56), UC(y >> 48), UC(y >> 40), UC(y >> 32),
