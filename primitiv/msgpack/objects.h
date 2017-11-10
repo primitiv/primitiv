@@ -19,8 +19,8 @@ class Binary : mixins::Nonmovable<Binary> {
 
   // NOTE(odashi):
   // Only one of eigher `ex_data_` or `in_data_` could be a valid pointer.
-  const void *ex_data_;
-  std::uint8_t *in_data_;
+  const char *ex_data_;
+  char *in_data_;
 
 public:
   /**
@@ -33,7 +33,7 @@ public:
    * @param size Number of bytes of the data.
    * @param data Pointer of raw data.
    */
-  Binary(std::size_t size, const void *data)
+  Binary(std::size_t size, const char *data)
     : size_(size), ex_data_(data), in_data_(nullptr) {}
 
   ~Binary() {
@@ -67,7 +67,7 @@ public:
    * Retrieves the inner pointer.
    * @return Inner pointer.
    */
-  const void *data() const {
+  const char *data() const {
     check_valid();
     return ex_data_ ? ex_data_ : in_data_;
   }
@@ -78,12 +78,12 @@ public:
    * @remarks Allocated memory is managed by `Binary` object itself.
    *          Users must not delete memory returned by this function.
    */
-  void *allocate(std::size_t size) {
+  char *allocate(std::size_t size) {
     if (valid()) THROW_ERROR("MessagePack: 'Binary' object is already valid.");
 
     // NOTE(odashi):
     // Allocation should be done at first (it may throws).
-    in_data_ = new std::uint8_t[size];
+    in_data_ = new char[size];
 
     size_ = size;
     return in_data_;
@@ -99,8 +99,8 @@ class Extension : mixins::Nonmovable<Extension> {
 
   // NOTE(odashi):
   // Only one of eigher `ex_data_` or `in_data_` could be a valid pointer.
-  const void *ex_data_;
-  std::uint8_t *in_data_;
+  const char *ex_data_;
+  char *in_data_;
 
 public:
   /**
@@ -114,7 +114,7 @@ public:
    * @param size Number of bytes of the data.
    * @param data Pointer of raw data.
    */
-  Extension(std::int8_t type, std::size_t size, const void *data)
+  Extension(std::int8_t type, std::size_t size, const char *data)
     : type_(type), size_(size), ex_data_(data), in_data_(nullptr) {}
 
   ~Extension() {
@@ -157,7 +157,7 @@ public:
    * Retrieves the inner pointer.
    * @return Inner pointer.
    */
-  const void *data() const {
+  const char *data() const {
     check_valid();
     return ex_data_ ? ex_data_ : in_data_;
   }
@@ -169,12 +169,12 @@ public:
    * @remarks Allocated memory is managed by `Extension` object itself.
    *          Users must not delete memory returned by this function.
    */
-  void *allocate(std::int8_t type, std::size_t size) {
+  char *allocate(std::int8_t type, std::size_t size) {
     if (valid()) THROW_ERROR("MessagePack: 'Extension' object is already valid.");
 
     // NOTE(odashi):
     // Allocation should be done at first (it may throws).
-    in_data_ = new std::uint8_t[size];
+    in_data_ = new char[size];
 
     type_ = type;
     size_ = size;

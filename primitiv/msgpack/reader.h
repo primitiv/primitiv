@@ -174,8 +174,9 @@ public:
   }
 
   Reader &operator>>(std::string &x) {
+    static_assert(sizeof(std::size_t) >= sizeof(std::uint32_t), "");
     const std::uint8_t type = get_uint8();
-    size_t size;
+    std::size_t size;
     if ((type & 0xe0) == 0xa0) {
       size = type & 0x1f;
     } else {
@@ -191,6 +192,23 @@ public:
     }
     x.resize(size);
     read(&x[0], size);
+    return *this;
+  }
+
+  Reader &operator>>(objects::Binary &x) {
+    static_assert(sizeof(std::size_t) >= sizeof(std::uint32_t), "");
+    const std::uint8_t type = get_uint8();
+    std::size_t size;
+    switch (type) {
+      case 0xc4: size = get_uint8(); break;
+      case 0xc5: size = get_uint16(); break;
+      case 0xc6: size = get_uint32(); break;
+      default:
+        THROW_ERROR(
+            "MessagePack: Next object does not have the 'bin' type. "
+            "observed: " << type);
+    }
+    read(static_cast<char *>(x.allocate(size)), size);
     return *this;
   }
 };

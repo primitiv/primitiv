@@ -304,5 +304,89 @@ TEST_F(ReaderTest, CheckString_0x10000) {
   EXPECT_EQ(data, x);
 }
 
+TEST_F(ReaderTest, CheckBinary_0) {
+  const string expected;  // empty data
+  prepare({ 0xc4, 0x00 });
+  objects::Binary x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+
+  ASSERT_NO_THROW(x.check_valid());
+  const std::size_t size = x.size();
+  const char *data = x.data();
+  EXPECT_EQ(0u, size);
+  EXPECT_EQ(expected, string(data, size));
+}
+
+TEST_F(ReaderTest, CheckBinary_1) {
+  const string expected = "x";
+  prepare({ 0xc4, 0x01, 'x' });
+  objects::Binary x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+
+  ASSERT_NO_THROW(x.check_valid());
+  const std::size_t size = x.size();
+  const char *data = x.data();
+  EXPECT_EQ(1u, size);
+  EXPECT_EQ(expected, string(data, size));
+}
+
+TEST_F(ReaderTest, CheckBinary_0xff) {
+  const string expected(0xff, 'a');
+  prepare_str({ 0xc4, 0xff }, expected);
+  objects::Binary x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+
+  ASSERT_NO_THROW(x.check_valid());
+  const std::size_t size = x.size();
+  const char *data = x.data();
+  EXPECT_EQ(0xffu, size);
+  EXPECT_EQ(expected, string(data, size));
+}
+
+TEST_F(ReaderTest, CheckBinary_0x100) {
+  const string expected(0x100, 'b');
+  prepare_str({ 0xc5, 0x01, 0x00 }, expected);
+  objects::Binary x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+
+  ASSERT_NO_THROW(x.check_valid());
+  const std::size_t size = x.size();
+  const char *data = x.data();
+  EXPECT_EQ(0x100u, size);
+  EXPECT_EQ(expected, string(data, size));
+}
+
+TEST_F(ReaderTest, CheckBinary_0xffff) {
+  const string expected(0xffff, 'c');
+  prepare_str({ 0xc5, 0xff, 0xff }, expected);
+  objects::Binary x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+
+  ASSERT_NO_THROW(x.check_valid());
+  const std::size_t size = x.size();
+  const char *data = x.data();
+  EXPECT_EQ(0xffffu, size);
+  EXPECT_EQ(expected, string(data, size));
+}
+
+TEST_F(ReaderTest, CheckBinary_0x10000) {
+  const string expected(0x10000, 'd');
+  prepare_str({ 0xc6, 0x00, 0x01, 0x00, 0x00 }, expected);
+  objects::Binary x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+
+  ASSERT_NO_THROW(x.check_valid());
+  const std::size_t size = x.size();
+  const char *data = x.data();
+  EXPECT_EQ(0x10000u, size);
+  EXPECT_EQ(expected, string(data, size));
+}
+
 }  // namespace msgpack
 }  // namespace primitiv
