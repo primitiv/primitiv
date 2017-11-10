@@ -40,12 +40,12 @@ class _operators:
             data = [data]
         if isinstance(data, list):
             if len(data) == 0:
-                raise TypeError("list is given but it contains no item")
+                raise TypeError("`data` contains no item.")
             if not isinstance(data[0], np.ndarray):
-                raise TypeError("list contains items but it is not np.ndarray")
+                raise TypeError("`data` contains other objects than numpy.ndarray.")
             shape = _Shape(data[0].shape, len(data))
         else:
-            raise TypeError("Argument 'data' has incorrect type (list of np.ndarray, or np.ndarray)")
+            raise TypeError("`data` has incorrect type.")
         return _operators.raw_input(shape, ndarrays_to_vector(data), device, g)
 
 
@@ -117,7 +117,7 @@ class _operators:
         elif isinstance(x, _Node) and isinstance(k, _Node):
             return wrapNode(op_pow((<_Node> x).wrapped, (<_Node> k).wrapped))
         else:
-            raise TypeError("Argument 'x' or 'k' has incorrect type (Node or float or int)")
+            raise TypeError("`x` or `k` has incorrect type.")
 
     @staticmethod
     def tanh(_Node x):
@@ -208,7 +208,7 @@ class _operators:
         elif isinstance(t, list):
             return wrapNode(op_softmax_cross_entropy(x.wrapped, <vector[unsigned]> t, dim))
         else:
-            raise TypeError("Argument 't' has incorrect type (list or Node)")
+            raise TypeError("`t` has incorrect type.")
 
     @staticmethod
     def constant(shape, float k, _Device device = None, _Graph g = None):
@@ -323,23 +323,23 @@ class _tensor_operators:
     # instead of a vector.
     @staticmethod
     def input(data, _Device device = None):
-        # NOTE(vbkaisetsu)
-        # In this function, we don't check whether an ndarray contains elements or not.
-        # When an ndarray contains no element, the ndarray's shape becomes (0,).
-        # primitiv.Shape does not allow (0,) and raises an error.
-        #
-        # In this function, we don't check whether each ndarray object has same shape or not.
+        # NOTE(vbkaisetsu, odashi):
+        # In this function, we don't check whether each ndarray is empty
+        # (i.e., it doesn't have any elements) or not.
+        # When the ndarray contains no element, its shape becomes (0,),
+        # and primitiv.Shape will reject the shape and raises an exception.
+        # In addition, we also don't check whether each ndarray has the same shape or not.
         # This condition will be checked in ndarrays_to_vector().
         if isinstance(data, np.ndarray):
             data = [data]
         if isinstance(data, list):
             if len(data) == 0:
-                raise TypeError("list is given but it contains no item")
+                raise TypeError("`data` contains no item.")
             if not isinstance(data[0], np.ndarray):
-                raise TypeError("list contains items but it is not np.ndarray")
+                raise TypeError("`data` contains other objects than numpy.ndarray.")
             shape = _Shape(data[0].shape, len(data))
         else:
-            raise TypeError("Argument 'data' has incorrect type (list of np.ndarray, or np.ndarray)")
+            raise TypeError("`data` has incorrect type.")
         return _tensor_operators.raw_input(shape, ndarrays_to_vector(data), device)
 
     @staticmethod
@@ -407,7 +407,7 @@ class _tensor_operators:
         elif isinstance(x, _Tensor) and isinstance(k, _Tensor):
             return _Tensor.get_wrapper_with_new(new CppTensor(op_pow((<_Tensor> x).wrapped[0], (<_Tensor> k).wrapped[0])))
         else:
-            raise TypeError("Argument 'x' or 'k' has incorrect type (Node or float or int)")
+            raise TypeError("`x` or `k` has incorrect type.")
 
     @staticmethod
     def tanh(_Tensor x):
@@ -498,7 +498,7 @@ class _tensor_operators:
         elif isinstance(t, list):
             return _Tensor.get_wrapper_with_new(new CppTensor(op_softmax_cross_entropy(x.wrapped[0], <vector[unsigned]> t, dim)))
         else:
-            raise TypeError("Argument 't' has incorrect type (list or Node)")
+            raise TypeError("`t` has incorrect type.")
 
     @staticmethod
     def constant(shape, float k, _Device device = None):
