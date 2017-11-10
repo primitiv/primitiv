@@ -50,21 +50,21 @@ TEST_F(ReaderTest, CheckNil) {
 
 TEST_F(ReaderTest, CheckBoolFalse) {
   prepare({ 0xc2 });
-  bool x;
+  bool x = true;
   EXPECT_NO_THROW(*reader >> x);
   EXPECT_FALSE(x);
 }
 
 TEST_F(ReaderTest, CheckBoolTrue) {
   prepare({ 0xc3 });
-  bool x;
+  bool x = false;
   EXPECT_NO_THROW(*reader >> x);
   EXPECT_TRUE(x);
 }
 
 TEST_F(ReaderTest, CheckUInt8) {
   prepare({ 0xcc, 0x00, 0xcc, 0x7f, 0xcc, 0x80, 0xcc, 0xff, 0xcc, 0x42 });
-  std::uint8_t x[5];
+  std::uint8_t x[5] { 1, 2, 3, 4, 5 };
   EXPECT_NO_THROW(*reader >> x[0] >> x[1] >> x[2] >> x[3] >> x[4]);
   EXPECT_EQ(0x00, x[0]);
   EXPECT_EQ(0x7f, x[1]);
@@ -78,7 +78,7 @@ TEST_F(ReaderTest, CheckUInt16) {
       0xcd, 0x00, 0x00, 0xcd, 0x7f, 0xff, 0xcd, 0x80, 0x00,
       0xcd, 0xff, 0xff, 0xcd, 0x12, 0x34,
   });
-  std::uint16_t x[5];
+  std::uint16_t x[5] { 1, 2, 3, 4, 5 };
   EXPECT_NO_THROW(*reader >> x[0] >> x[1] >> x[2] >> x[3] >> x[4]);
   EXPECT_EQ(0x0000, x[0]);
   EXPECT_EQ(0x7fff, x[1]);
@@ -93,7 +93,7 @@ TEST_F(ReaderTest, CheckUInt32) {
       0xce, 0x80, 0x00, 0x00, 0x00, 0xce, 0xff, 0xff, 0xff, 0xff,
       0xce, 0xde, 0xad, 0xbe, 0xef,
   });
-  std::uint32_t x[5];
+  std::uint32_t x[5] {1, 2, 3, 4, 5};
   EXPECT_NO_THROW(*reader >> x[0] >> x[1] >> x[2] >> x[3] >> x[4]);
   EXPECT_EQ(0x00000000, x[0]);
   EXPECT_EQ(0x7fffffff, x[1]);
@@ -110,7 +110,7 @@ TEST_F(ReaderTest, CheckUInt64) {
       0xcf, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
       0xcf, 0xde, 0xad, 0xbe, 0xef, 0xfe, 0xe1, 0xde, 0xad,
   });
-  std::uint64_t x[5];
+  std::uint64_t x[5] {1, 2, 3, 4, 5};
   EXPECT_NO_THROW(*reader >> x[0] >> x[1] >> x[2] >> x[3] >> x[4]);
   EXPECT_EQ(0x0000000000000000ull, x[0]);
   EXPECT_EQ(0x7fffffffffffffffull, x[1]);
@@ -121,7 +121,7 @@ TEST_F(ReaderTest, CheckUInt64) {
 
 TEST_F(ReaderTest, CheckInt8) {
   prepare({ 0xd0, 0x00, 0xd0, 0x7f, 0xd0, 0x80, 0xd0, 0xff, 0xd0, 0x42 });
-  std::int8_t x[5];
+  std::int8_t x[5] { 1, 2, 3, 4, 5 };
   EXPECT_NO_THROW(*reader >> x[0] >> x[1] >> x[2] >> x[3] >> x[4]);
   EXPECT_EQ(static_cast<std::int8_t>(0x00), x[0]);
   EXPECT_EQ(static_cast<std::int8_t>(0x7f), x[1]);
@@ -135,7 +135,7 @@ TEST_F(ReaderTest, CheckInt16) {
       0xd1, 0x00, 0x00, 0xd1, 0x7f, 0xff, 0xd1, 0x80, 0x00,
       0xd1, 0xff, 0xff, 0xd1, 0x12, 0x34,
   });
-  std::int16_t x[5];
+  std::int16_t x[5] { 1, 2, 3, 4, 5 };
   EXPECT_NO_THROW(*reader >> x[0] >> x[1] >> x[2] >> x[3] >> x[4]);
   EXPECT_EQ(static_cast<std::int16_t>(0x0000), x[0]);
   EXPECT_EQ(static_cast<std::int16_t>(0x7fff), x[1]);
@@ -150,7 +150,7 @@ TEST_F(ReaderTest, CheckInt32) {
       0xd2, 0x80, 0x00, 0x00, 0x00, 0xd2, 0xff, 0xff, 0xff, 0xff,
       0xd2, 0xde, 0xad, 0xbe, 0xef,
   });
-  std::int32_t x[5];
+  std::int32_t x[5] { 1, 2, 3, 4, 5 };
   EXPECT_NO_THROW(*reader >> x[0] >> x[1] >> x[2] >> x[3] >> x[4]);
   EXPECT_EQ(0x00000000, x[0]);
   EXPECT_EQ(0x7fffffff, x[1]);
@@ -167,7 +167,7 @@ TEST_F(ReaderTest, CheckInt64) {
       0xd3, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
       0xd3, 0xde, 0xad, 0xbe, 0xef, 0xfe, 0xe1, 0xde, 0xad,
   });
-  std::int64_t x[5];
+  std::int64_t x[5] { 1, 2, 3, 4, 5 };
   EXPECT_NO_THROW(*reader >> x[0] >> x[1] >> x[2] >> x[3] >> x[4]);
   EXPECT_EQ(0x0000000000000000ll, x[0]);
   EXPECT_EQ(0x7fffffffffffffffll, x[1]);
@@ -182,7 +182,7 @@ TEST_F(ReaderTest, CheckFloat) {
       0xca, 0x3f, 0x80, 0x00, 0x00,
       0xca, 0xc0, 0x40, 0x00, 0x00,
   });
-  float x[3];
+  float x[3] { 1e10f, 1e10f, 1e10f };
   EXPECT_NO_THROW(*reader >> x[0] >> x[1] >> x[2]);
 
   // x[i] should be completely equal to the left-hand side.
@@ -197,7 +197,7 @@ TEST_F(ReaderTest, CheckDouble) {
       0xcb, 0x3f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0xcb, 0xc0, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   });
-  double x[3];
+  double x[3] { 1e10, 1e10, 1e10 };
   EXPECT_NO_THROW(*reader >> x[0] >> x[1] >> x[2]);
 
   // x[i] should be completely equal to the left-hand side.
