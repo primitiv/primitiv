@@ -23,21 +23,27 @@ class Reader : mixins::Nonmovable<Reader> {
   std::istream &is_;
 
 private:
+  void check_eof() {
+    if (!is_) THROW_ERROR("MessagePack: Stream reached EOF.");
+  }
+
   std::uint8_t get_uint8() {
     const std::uint8_t c = is_.get();
-    if (!is_) THROW_ERROR("MessagePack: Stream reached EOF.");
+    check_eof();
     return c;
   }
 
   std::uint16_t get_uint16() {
     std::uint8_t c[2];
     is_.read(reinterpret_cast<char *>(c), 2);
+    check_eof();
     return (c[0] << 8) | c[1];
   }
 
   std::uint32_t get_uint32() {
     std::uint8_t c[4];
     is_.read(reinterpret_cast<char *>(c), 4);
+    check_eof();
     return (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | c[3];
   }
 
@@ -45,17 +51,23 @@ private:
   std::uint64_t get_uint64() {
     std::uint8_t c[8];
     is_.read(reinterpret_cast<char *>(c), 8);
+    check_eof();
     return (ULL(c[0]) << 56) | (ULL(c[1]) << 48) | (ULL(c[2]) << 40) |
       (ULL(c[3]) << 32) | (ULL(c[4]) << 24) | (ULL(c[5]) << 16) |
       (ULL(c[6]) << 8) | ULL(c[7]);
   }
 #undef ULL
 
+  void read(char *ptr, std::size_t size) {
+    is_.read(ptr, size);
+    check_eof();
+  }
+
   std::uint8_t check_type(std::uint8_t expected) {
     std::uint8_t observed = get_uint8();
     if (observed != expected) {
       THROW_ERROR(
-          "MessagePack: Stream has different object type. "
+          "MessagePack: Next object does not have a correct type. "
           "expected: " << std::hex << expected
           << ", observed: " << std::hex << observed);
     }
@@ -66,7 +78,7 @@ private:
     std::uint8_t observed = get_uint8();
     if ((observed & filter) != expected) {
       THROW_ERROR(
-          "MessagePack: Stream has different object type. "
+          "MessagePack: Next object does not have a correct type. "
           "expected: " << std::hex << expected
           << ", observed (w/ filter): " << std::hex << (observed & filter));
     }
@@ -152,6 +164,27 @@ public:
     check_type(0xcb);
     const std::uint64_t y = get_uint64();
     std::memcpy(&x, &y, sizeof(double));
+    return *this;
+  }
+
+  Reader &operator>>(std::string &x) {
+    const std::uint8_t type = get_uint8();
+    size_t size;
+    if ((type & 0xe0) == 0xa0) {
+      size = type & 0x1f;
+    } else {
+      switch (type) {
+        case 0xd9: size = get_uint8(); break;
+        case 0xda: size = get_uint16(); break;
+        case 0xdb: size = get_uint32(); break;
+        default:
+          THROW_ERROR(
+              "MessagePack: Next object does not have the 'str' type. "
+              "observed: " << type);
+      }
+    }
+    x.resize(size);
+    read(&x[0], size);
     return *this;
   }
 };
