@@ -24,7 +24,13 @@ class Reader : mixins::Nonmovable<Reader> {
 
 private:
   void check_eof() {
-    if (!is_) THROW_ERROR("MessagePack: Stream reached EOF.");
+    if (!is_) {
+      if (is_.eof()) {
+        THROW_ERROR("MessagePack: Stream reached EOF.");
+      } else {
+        THROW_ERROR("MessagePack: An error occurred while reading the stream.");
+      }
+    }
   }
 
   std::uint8_t get_uint8() {
