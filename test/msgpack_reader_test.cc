@@ -1,5 +1,6 @@
 #include <config.h>
 
+#include <cstddef>
 #include <cstdint>
 #include <initializer_list>
 #include <sstream>
@@ -13,6 +14,7 @@
 using std::string;
 using std::unordered_map;
 using std::vector;
+using test_utils::vector_match;
 
 namespace primitiv {
 namespace msgpack {
@@ -528,6 +530,75 @@ TEST_F(ReaderTest, CheckExtension_0x10000) {
   const char *data = x.data();
   EXPECT_EQ(0x10000u, size);
   EXPECT_EQ(expected, string(data, size));
+}
+
+TEST_F(ReaderTest, CheckVector_Nil_0) {
+  prepare({ 0x90 });
+  vector<std::nullptr_t> x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+  EXPECT_TRUE(x.empty());
+}
+
+TEST_F(ReaderTest, CheckVector_Nil_1) {
+  prepare({ 0x91, 0xc0 });
+  vector<std::nullptr_t> x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+  EXPECT_EQ(1u, x.size());
+  for (const std::nullptr_t y : x) EXPECT_EQ(nullptr, y);
+}
+
+TEST_F(ReaderTest, CheckVector_Nil_15) {
+  prepare_str({ 0x9f }, string(15, 0xc0));
+  vector<std::nullptr_t> x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+  EXPECT_EQ(15u, x.size());
+  for (const std::nullptr_t y : x) EXPECT_EQ(nullptr, y);
+}
+
+TEST_F(ReaderTest, CheckVector_Nil_16) {
+  prepare_str({ 0xdc, 0x00, 0x10 }, string(16, 0xc0));
+  vector<std::nullptr_t> x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+  EXPECT_EQ(16u, x.size());
+  for (const std::nullptr_t y : x) EXPECT_EQ(nullptr, y);
+}
+
+TEST_F(ReaderTest, CheckVector_Nil_0xffff) {
+  prepare_str({ 0xdc, 0xff, 0xff }, string(0xffff, 0xc0));
+  vector<std::nullptr_t> x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+  EXPECT_EQ(0xffffu, x.size());
+  for (const std::nullptr_t y : x) EXPECT_EQ(nullptr, y);
+}
+
+TEST_F(ReaderTest, CheckVector_Nil_0x10000) {
+  prepare_str({ 0xdd, 0x00, 0x01, 0x00, 0x00 }, string(0x10000, 0xc0));
+  vector<std::nullptr_t> x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+  EXPECT_EQ(0x10000u, x.size());
+  for (const std::nullptr_t y : x) EXPECT_EQ(nullptr, y);
+}
+
+TEST_F(ReaderTest, CheckVector_UInt8_3) {
+  prepare({ 0x93, 0xcc, 0x11, 0xcc, 0x22, 0xcc, 0x33 });
+  vector<std::uint8_t> x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+  EXPECT_TRUE(vector_match(vector<std::uint8_t> { 0x11, 0x22, 0x33 }, x));
+}
+
+TEST_F(ReaderTest, CheckVector_String_2) {
+  prepare({ 0x92, 0xa3, 'f', 'o', 'o', 0xa3, 'b', 'a', 'r' });
+  vector<string> x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+  EXPECT_TRUE(vector_match(vector<string> { "foo", "bar" }, x));
 }
 
 }  // namespace msgpack

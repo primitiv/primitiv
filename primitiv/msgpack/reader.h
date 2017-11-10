@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <utility>
 
 #include <primitiv/error.h>
 #include <primitiv/mixins.h>
@@ -69,7 +70,7 @@ private:
     check_eof();
   }
 
-  std::uint8_t check_type(std::uint8_t expected) {
+  void check_type(std::uint8_t expected) {
     std::uint8_t observed = get_uint8();
     if (observed != expected) {
       THROW_ERROR(
@@ -77,18 +78,6 @@ private:
           "expected: " << std::hex << expected
           << ", observed: " << std::hex << observed);
     }
-    return observed;
-  }
-
-  std::uint8_t check_type(std::uint8_t expected, std::uint8_t filter) {
-    std::uint8_t observed = get_uint8();
-    if ((observed & filter) != expected) {
-      THROW_ERROR(
-          "MessagePack: Next object does not have a correct type. "
-          "expected: " << std::hex << expected
-          << ", observed (w/ filter): " << std::hex << (observed & filter));
-    }
-    return observed;
   }
 
 public:
@@ -105,7 +94,14 @@ public:
   }
 
   Reader &operator>>(bool &x) {
-    x = check_type(0xc2, 0xfe) == 0xc3;
+    const std::uint8_t type = get_uint8();
+    if ((type & 0xfe) == 0xc2) {
+      x = static_cast<bool>(type & 0x01);
+    } else {
+      THROW_ERROR(
+          "MessagePack: Next object does not have the 'bool' type. "
+          "observed: " << type);
+    }
     return *this;
   }
 
@@ -190,8 +186,9 @@ public:
               "observed: " << type);
       }
     }
-    x.resize(size);
-    read(&x[0], size);
+    std::string ret(size, 0);
+    read(&ret[0], size);
+    x = std::move(ret);
     return *this;
   }
 
@@ -208,7 +205,9 @@ public:
             "MessagePack: Next object does not have the 'bin' type. "
             "observed: " << type);
     }
-    read(x.allocate(size), size);
+    objects::Binary ret;
+    read(ret.allocate(size), size);
+    x = std::move(ret);
     return *this;
   }
 
@@ -230,7 +229,32 @@ public:
             "MessagePack: Next object does not have the 'ext' type. "
             "observed: " << type);
     }
-    read(x.allocate(get_uint8(), size), size);
+    objects::Extension ret;
+    read(ret.allocate(get_uint8(), size), size);
+    x = std::move(ret);
+    return *this;
+  }
+
+  template<typename T>
+  Reader &operator>>(std::vector<T> &x) {
+    static_assert(sizeof(std::size_t) >= sizeof(std::uint32_t), "");
+    const std::uint8_t type = get_uint8();
+    std::size_t size;
+    if ((type & 0xf0) == 0x90) {
+      size = type & 0x0f;
+    } else {
+      switch (type) {
+        case 0xdc: size = get_uint16(); break;
+        case 0xdd: size = get_uint32(); break;
+        default:
+          THROW_ERROR(
+              "MessagePack: Next object does not have the 'array' type. "
+              "observed: " << type);
+      }
+    }
+    std::vector<T> ret(size);
+    for (size_t i = 0; i < size; ++i) *this >> ret[i];
+    x = std::move(ret);
     return *this;
   }
 };
