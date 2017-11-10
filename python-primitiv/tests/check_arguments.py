@@ -53,26 +53,16 @@ class ArgumentTest(unittest.TestCase):
         self.assertEqual(x.to_list(), self.list_data)
         self.assertEqual(x.shape(), Shape([4, 3], 2))
 
-        # list[ndarray] w/ shape
-        x = F.input(self.ndarray_data, Shape([2, 3], 4))
-        self.assertEqual(x.to_list(), self.list_data)
-        self.assertEqual(x.shape(), Shape([2, 3], 4))
-
         # ndarray w/o shape
         x = F.input(self.ndarray_data[0])
         self.assertEqual(x.to_list(), self.list_data[:12])
         self.assertEqual(x.shape(), Shape([4, 3], 1))
 
-        # ndarray w/ shape
-        x = F.input(self.ndarray_data[0], Shape([2, 3], 2))
-        self.assertEqual(x.to_list(), self.list_data[:12])
-        self.assertEqual(x.shape(), Shape([2, 3], 2))
-
         # list[float] w/o shape
         self.assertRaises(TypeError, lambda: F.input(self.list_data))
 
         # list[float] w/ shape
-        x = F.input(self.list_data, shape=Shape([4, 3], 2))
+        x = F.raw_input(Shape([4, 3], 2), self.list_data)
         self.assertEqual(x.to_list(), self.list_data)
         self.assertEqual(x.shape(), Shape([4, 3], 2))
 
@@ -85,21 +75,3 @@ class ArgumentTest(unittest.TestCase):
         p = Parameter(Shape([4, 3]), I.Constant(1))
         self.assertEqual(p.shape(), Shape([4, 3]))
         self.assertEqual(p.value.to_list(), [1] * 12)
-
-        # shape w/ list[float]
-        p = Parameter(Shape([4, 3]), self.list_data[:12])
-        self.assertEqual(p.shape(), Shape([4, 3]))
-        self.assertEqual(p.value.to_list(), self.list_data[:12])
-
-        # ndarray w/o shape
-        p = Parameter(initializer=self.ndarray_data[0])
-        self.assertEqual(p.shape(), Shape([4, 3]))
-        self.assertEqual(p.value.to_list(), self.list_data[:12])
-
-        # ndarray w/ shape
-        p = Parameter(Shape([2, 6]), initializer=self.ndarray_data[0])
-        self.assertEqual(p.shape(), Shape([2, 6]))
-        self.assertEqual(p.value.to_list(), self.list_data[:12])
-
-        # list[float] w/o shape
-        self.assertRaises(TypeError, lambda: Parameter(initializer=self.list_data[:12]))
