@@ -29,10 +29,10 @@ class _operators:
     # instead of a vector.
     @staticmethod
     def input(data, _Device device = None, _Graph g = None):
-        cdef vector[float] vec
         # NOTE(vbkaisetsu)
-        # Shape does not allow an empty matrix.
-        # This function does not check it.
+        # When data contains no element, its shape becomes (0,).
+        # primitiv.Shape does not allow (0,) and raises an error, so this
+        # function does not check item existence of a given data.
         if isinstance(data, np.ndarray):
             data = [data]
         if isinstance(data, list):
@@ -320,10 +320,10 @@ class _tensor_operators:
     # instead of a vector.
     @staticmethod
     def input(data, _Device device = None):
-        cdef vector[float] vec
         # NOTE(vbkaisetsu)
-        # Shape does not allow an empty matrix.
-        # This function does not check it.
+        # When data contains no element, its shape becomes (0,).
+        # primitiv.Shape does not allow (0,) and raises an error, so this
+        # function does not check item existence of a given data.
         if isinstance(data, np.ndarray):
             data = [data]
         if isinstance(data, list):
