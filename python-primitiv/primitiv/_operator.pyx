@@ -30,9 +30,12 @@ class _operators:
     @staticmethod
     def input(data, _Device device = None, _Graph g = None):
         # NOTE(vbkaisetsu)
-        # When data contains no element, its shape becomes (0,).
-        # primitiv.Shape does not allow (0,) and raises an error, so this
-        # function does not check item existence of a given data.
+        # In this function, we don't check whether an ndarray contains elements or not.
+        # When an ndarray contains no element, the ndarray's shape becomes (0,).
+        # primitiv.Shape does not allow (0,) and raises an error.
+        #
+        # In this function, we don't check whether each ndarray object has same shape or not.
+        # This condition will be checked in ndarrays_to_vector().
         if isinstance(data, np.ndarray):
             data = [data]
         if isinstance(data, list):
@@ -321,9 +324,12 @@ class _tensor_operators:
     @staticmethod
     def input(data, _Device device = None):
         # NOTE(vbkaisetsu)
-        # When data contains no element, its shape becomes (0,).
-        # primitiv.Shape does not allow (0,) and raises an error, so this
-        # function does not check item existence of a given data.
+        # In this function, we don't check whether an ndarray contains elements or not.
+        # When an ndarray contains no element, the ndarray's shape becomes (0,).
+        # primitiv.Shape does not allow (0,) and raises an error.
+        #
+        # In this function, we don't check whether each ndarray object has same shape or not.
+        # This condition will be checked in ndarrays_to_vector().
         if isinstance(data, np.ndarray):
             data = [data]
         if isinstance(data, list):
