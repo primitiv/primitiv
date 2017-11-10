@@ -29,12 +29,12 @@ class _operators:
     # instead of a vector.
     @staticmethod
     def input(data, _Device device = None, _Graph g = None):
-        # NOTE(vbkaisetsu)
-        # In this function, we don't check whether an ndarray contains elements or not.
-        # When an ndarray contains no element, the ndarray's shape becomes (0,).
-        # primitiv.Shape does not allow (0,) and raises an error.
-        #
-        # In this function, we don't check whether each ndarray object has same shape or not.
+        # NOTE(vbkaisetsu, odashi):
+        # In this function, we don't check whether each ndarray is empty
+        # (i.e., it doesn't have any elements) or not.
+        # When the ndarray contains no element, its shape becomes (0,),
+        # and primitiv.Shape will reject the shape and raises an exception.
+        # In addition, we also don't check whether each ndarray has the same shape or not.
         # This condition will be checked in ndarrays_to_vector().
         if isinstance(data, np.ndarray):
             data = [data]
