@@ -29,14 +29,22 @@ class _operators:
     # instead of a vector.
     @staticmethod
     def input(data, _Device device = None, _Graph g = None):
+        cdef vector[float] vec
+        # NOTE(vbkaisetsu)
+        # Shape does not allow an empty matrix.
+        # This function does not check it.
         if isinstance(data, np.ndarray):
             data = [data]
-        if len(data) == 0:
-            raise TypeError("list is given but it contains no item")
-        if not isinstance(data[0], np.ndarray):
-            raise TypeError("list does not contain np.ndarray")
-        shape = _Shape(data[0].shape, len(data))
+        if isinstance(data, list):
+            if len(data) == 0:
+                raise TypeError("list is given but it contains no item")
+            if not isinstance(data[0], np.ndarray):
+                raise TypeError("list contains items but it is not np.ndarray")
+            shape = _Shape(data[0].shape, len(data))
+        else:
+            raise TypeError("Argument 'data' has incorrect type (list of np.ndarray, or np.ndarray)")
         return _operators.raw_input(shape, ndarrays_to_vector(data), device, g)
+
 
     @staticmethod
     def parameter(_Parameter param, _Graph g = None):
@@ -312,13 +320,20 @@ class _tensor_operators:
     # instead of a vector.
     @staticmethod
     def input(data, _Device device = None):
+        cdef vector[float] vec
+        # NOTE(vbkaisetsu)
+        # Shape does not allow an empty matrix.
+        # This function does not check it.
         if isinstance(data, np.ndarray):
             data = [data]
-        if len(data) == 0:
-            raise TypeError("list is given but it contains no item")
-        if not isinstance(data[0], np.ndarray):
-            raise TypeError("list does not contain np.ndarray")
-        shape = _Shape(data[0].shape, len(data))
+        if isinstance(data, list):
+            if len(data) == 0:
+                raise TypeError("list is given but it contains no item")
+            if not isinstance(data[0], np.ndarray):
+                raise TypeError("list contains items but it is not np.ndarray")
+            shape = _Shape(data[0].shape, len(data))
+        else:
+            raise TypeError("Argument 'data' has incorrect type (list of np.ndarray, or np.ndarray)")
         return _tensor_operators.raw_input(shape, ndarrays_to_vector(data), device)
 
     @staticmethod
