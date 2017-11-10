@@ -14,7 +14,7 @@ namespace objects {
 /**
  * Container to represent a binary object.
  */
-class Binary : mixins::Nonmovable<Binary> {
+class Binary : mixins::Noncopyable<Binary> {
   std::size_t size_;
 
   // NOTE(odashi):
@@ -27,6 +27,34 @@ public:
    * Creates a placeholder object.
    */
   Binary() : size_(0), ex_data_(nullptr), in_data_(nullptr) {}
+
+  /**
+   * Move constructor.
+   */
+  Binary(Binary &&src)
+    : size_(src.size_)
+    , ex_data_(src.ex_data_)
+    , in_data_(src.in_data_) {
+      src.size_ = 0;
+      src.ex_data_ = nullptr;
+      src.in_data_ = nullptr;
+    }
+
+  /**
+   * Move assignment.
+   */
+  Binary &operator=(Binary &&src) {
+    if (&src != this) {
+      delete in_data_;
+      size_ = src.size_;
+      ex_data_ = src.ex_data_;
+      in_data_ = src.in_data_;
+      src.size_ = 0;
+      src.ex_data_ = nullptr;
+      src.in_data_ = nullptr;
+    }
+    return *this;
+  }
 
   /**
    * Creates a new `Binary` object with an external memory.
@@ -93,7 +121,7 @@ public:
 /**
  * Container to represent an extension object.
  */
-class Extension : mixins::Nonmovable<Extension> {
+class Extension : mixins::Noncopyable<Extension> {
   std::int8_t type_;
   std::size_t size_;
 
@@ -107,6 +135,38 @@ public:
    * Creates a placeholder object.
    */
   Extension() : type_(0), size_(0), ex_data_(nullptr), in_data_(nullptr) {}
+
+  /**
+   * Move constructor.
+   */
+  Extension(Extension &&src)
+    : type_(src.type_)
+    , size_(src.size_)
+    , ex_data_(src.ex_data_)
+    , in_data_(src.in_data_) {
+      src.type_ = 0;
+      src.size_ = 0;
+      src.ex_data_ = nullptr;
+      src.in_data_ = nullptr;
+    }
+
+  /**
+   * Move assignment.
+   */
+  Extension &operator=(Extension &&src) {
+    if (&src != this) {
+      delete in_data_;
+      type_ = src.type_;
+      size_ = src.size_;
+      ex_data_ = src.ex_data_;
+      in_data_ = src.in_data_;
+      src.type_ = 0;
+      src.size_ = 0;
+      src.ex_data_ = nullptr;
+      src.in_data_ = nullptr;
+    }
+    return *this;
+  }
 
   /**
    * Creates a new `Extension` object with an external memory.

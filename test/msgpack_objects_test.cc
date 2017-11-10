@@ -1,5 +1,6 @@
 #include <config.h>
 
+#include <utility>
 #include <gtest/gtest.h>
 #include <primitiv/msgpack/objects.h>
 
@@ -37,6 +38,52 @@ TEST_F(BinaryTest, CheckInternalData) {
   EXPECT_THROW(obj.allocate(123), Error);
 }
 
+TEST_F(BinaryTest, CheckMoveCtorWithExternalData) {
+  char data[] = "1234567890";
+  Binary org(10, data);
+
+  Binary moved = std::move(org);
+  ASSERT_FALSE(org.valid());
+  ASSERT_TRUE(moved.valid());
+  EXPECT_EQ(10, moved.size());
+  EXPECT_EQ(data, moved.data());
+}
+
+TEST_F(BinaryTest, CheckMoveAssignWithExternalData) {
+  char data[] = "1234567890";
+  Binary org(10, data);
+
+  Binary moved;
+  moved = std::move(org);
+  ASSERT_FALSE(org.valid());
+  ASSERT_TRUE(moved.valid());
+  EXPECT_EQ(10, moved.size());
+  EXPECT_EQ(data, moved.data());
+}
+
+TEST_F(BinaryTest, CheckMoveCtorWithInternalData) {
+  Binary org;
+  const char *data = org.allocate(42);
+
+  Binary moved = std::move(org);
+  ASSERT_FALSE(org.valid());
+  ASSERT_TRUE(moved.valid());
+  EXPECT_EQ(42, moved.size());
+  EXPECT_EQ(data, moved.data());
+}
+
+TEST_F(BinaryTest, CheckMoveAssignWithInternalData) {
+  Binary org;
+  const char *data = org.allocate(42);
+
+  Binary moved;
+  moved = std::move(org);
+  ASSERT_FALSE(org.valid());
+  ASSERT_TRUE(moved.valid());
+  EXPECT_EQ(42, moved.size());
+  EXPECT_EQ(data, moved.data());
+}
+
 class ExtensionTest : public testing::Test {};
 
 TEST_F(ExtensionTest, CheckInvalid) {
@@ -68,6 +115,56 @@ TEST_F(ExtensionTest, CheckInternalData) {
   EXPECT_EQ(42, obj.size());
   EXPECT_NE(nullptr, obj.data());
   EXPECT_THROW(obj.allocate('Z', 123), Error);
+}
+
+TEST_F(ExtensionTest, CheckMoveCtorWithExternalData) {
+  char data[] = "1234567890";
+  Extension org('X', 10, data);
+
+  Extension moved = std::move(org);
+  ASSERT_FALSE(org.valid());
+  ASSERT_TRUE(moved.valid());
+  EXPECT_EQ('X', moved.type());
+  EXPECT_EQ(10, moved.size());
+  EXPECT_EQ(data, moved.data());
+}
+
+TEST_F(ExtensionTest, CheckMoveAssignWithExternalData) {
+  char data[] = "1234567890";
+  Extension org('X', 10, data);
+
+  Extension moved;
+  moved = std::move(org);
+  ASSERT_FALSE(org.valid());
+  ASSERT_TRUE(moved.valid());
+  EXPECT_EQ('X', moved.type());
+  EXPECT_EQ(10, moved.size());
+  EXPECT_EQ(data, moved.data());
+}
+
+TEST_F(ExtensionTest, CheckMoveCtorWithInternalData) {
+  Extension org;
+  const char *data = org.allocate('X', 42);
+
+  Extension moved = std::move(org);
+  ASSERT_FALSE(org.valid());
+  ASSERT_TRUE(moved.valid());
+  EXPECT_EQ('X', moved.type());
+  EXPECT_EQ(42, moved.size());
+  EXPECT_EQ(data, moved.data());
+}
+
+TEST_F(ExtensionTest, CheckMoveAssignWithInternalData) {
+  Extension org;
+  const char *data = org.allocate('X', 42);
+
+  Extension moved;
+  moved = std::move(org);
+  ASSERT_FALSE(org.valid());
+  ASSERT_TRUE(moved.valid());
+  EXPECT_EQ('X', moved.type());
+  EXPECT_EQ(42, moved.size());
+  EXPECT_EQ(data, moved.data());
 }
 
 }  // namespace objects
