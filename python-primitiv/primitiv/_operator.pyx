@@ -16,28 +16,38 @@ import numpy as np
 class _operators:
 
     @staticmethod
-    def input(data, shape = None, _Device device = None, _Graph g = None):
-        cdef vector[float] data_vector
+    def raw_input(shape, vector[float] data, _Device device = None, _Graph g = None):
         if device is None:
             device = _Device.get_default()
+        if g is not None:
+            return wrapNode(Node_input_vector(normShape(shape).wrapped, data, device.wrapped[0], g.wrapped[0]))
+        else:
+            return wrapNode(Node_input_vector(normShape(shape).wrapped, data, device.wrapped[0]))
+
+    # NOTE(vbkaisetsu)
+    # This function takes an np.ndarray or a list of np.ndarray
+    # instead of a vector.
+    @staticmethod
+    def input(data, _Device device = None, _Graph g = None):
+        # NOTE(vbkaisetsu, odashi):
+        # In this function, we don't check whether each ndarray is empty
+        # (i.e., it doesn't have any elements) or not.
+        # When the ndarray contains no element, its shape becomes (0,),
+        # and primitiv.Shape will reject the shape and raises an exception.
+        # In addition, we also don't check whether each ndarray has the same shape or not.
+        # This condition will be checked in ndarrays_to_vector().
         if isinstance(data, np.ndarray):
             data = [data]
-        elif not isinstance(data, list):
-            raise TypeError("Argument 'data' has incorrect type (list or numpy.ndarray)")
-        if len(data) == 0:
-            raise TypeError("data is a list, but it contains no item")
-        if isinstance(data[0], (float, int)):
-            if shape is None:
-                raise TypeError("shape is required when data contains scalars")
-            data_vector = <vector[float]> data
+        if isinstance(data, list):
+            if len(data) == 0:
+                raise TypeError("`data` contains no item.")
+            if not isinstance(data[0], np.ndarray):
+                raise TypeError("`data` contains other objects than numpy.ndarray.")
+            shape = _Shape(data[0].shape, len(data))
         else:
-            if shape is None:
-                shape = _Shape(data[0].shape, len(data))
-            data_vector = ndarrays_to_vector(data)
-        if g is not None:
-            return wrapNode(Node_input_vector(normShape(shape).wrapped, data_vector, device.wrapped[0], g.wrapped[0]))
-        else:
-            return wrapNode(Node_input_vector(normShape(shape).wrapped, data_vector, device.wrapped[0]))
+            raise TypeError("`data` has incorrect type.")
+        return _operators.raw_input(shape, ndarrays_to_vector(data), device, g)
+
 
     @staticmethod
     def parameter(_Parameter param, _Graph g = None):
@@ -107,7 +117,7 @@ class _operators:
         elif isinstance(x, _Node) and isinstance(k, _Node):
             return wrapNode(op_pow((<_Node> x).wrapped, (<_Node> k).wrapped))
         else:
-            raise TypeError("Argument 'x' or 'k' has incorrect type (Node or float or int)")
+            raise TypeError("`x` or `k` has incorrect type.")
 
     @staticmethod
     def tanh(_Node x):
@@ -198,7 +208,7 @@ class _operators:
         elif isinstance(t, list):
             return wrapNode(op_softmax_cross_entropy(x.wrapped, <vector[unsigned]> t, dim))
         else:
-            raise TypeError("Argument 't' has incorrect type (list or Node)")
+            raise TypeError("`t` has incorrect type.")
 
     @staticmethod
     def constant(shape, float k, _Device device = None, _Graph g = None):
@@ -303,25 +313,34 @@ class _operators:
 class _tensor_operators:
 
     @staticmethod
-    def input(data, shape = None, _Device device = None):
-        cdef vector[float] data_vector
+    def raw_input(shape, vector[float] data, _Device device = None):
         if device is None:
             device = _Device.get_default()
+        return _Tensor.get_wrapper_with_new(new CppTensor(Tensor_input_vector(normShape(shape).wrapped, data, device.wrapped[0])))
+
+    # NOTE(vbkaisetsu)
+    # This function takes an np.ndarray or a list of np.ndarray
+    # instead of a vector.
+    @staticmethod
+    def input(data, _Device device = None):
+        # NOTE(vbkaisetsu, odashi):
+        # In this function, we don't check whether each ndarray is empty
+        # (i.e., it doesn't have any elements) or not.
+        # When the ndarray contains no element, its shape becomes (0,),
+        # and primitiv.Shape will reject the shape and raises an exception.
+        # In addition, we also don't check whether each ndarray has the same shape or not.
+        # This condition will be checked in ndarrays_to_vector().
         if isinstance(data, np.ndarray):
             data = [data]
-        elif not isinstance(data, list):
-            raise TypeError("Argument 'data' has incorrect type (list or numpy.ndarray)")
-        if len(data) == 0:
-            raise TypeError("data is a list, but it contains no item")
-        if isinstance(data[0], (float, int)):
-            if shape is None:
-                raise TypeError("shape is required when data contains scalars")
-            data_vector = <vector[float]> data
+        if isinstance(data, list):
+            if len(data) == 0:
+                raise TypeError("`data` contains no item.")
+            if not isinstance(data[0], np.ndarray):
+                raise TypeError("`data` contains other objects than numpy.ndarray.")
+            shape = _Shape(data[0].shape, len(data))
         else:
-            if shape is None:
-                shape = _Shape(data[0].shape, len(data))
-            data_vector = ndarrays_to_vector(data)
-        return _Tensor.get_wrapper_with_new(new CppTensor(Tensor_input_vector(normShape(shape).wrapped, data_vector, device.wrapped[0])))
+            raise TypeError("`data` has incorrect type.")
+        return _tensor_operators.raw_input(shape, ndarrays_to_vector(data), device)
 
     @staticmethod
     def parameter(_Parameter param):
@@ -388,7 +407,7 @@ class _tensor_operators:
         elif isinstance(x, _Tensor) and isinstance(k, _Tensor):
             return _Tensor.get_wrapper_with_new(new CppTensor(op_pow((<_Tensor> x).wrapped[0], (<_Tensor> k).wrapped[0])))
         else:
-            raise TypeError("Argument 'x' or 'k' has incorrect type (Node or float or int)")
+            raise TypeError("`x` or `k` has incorrect type.")
 
     @staticmethod
     def tanh(_Tensor x):
@@ -479,7 +498,7 @@ class _tensor_operators:
         elif isinstance(t, list):
             return _Tensor.get_wrapper_with_new(new CppTensor(op_softmax_cross_entropy(x.wrapped[0], <vector[unsigned]> t, dim)))
         else:
-            raise TypeError("Argument 't' has incorrect type (list or Node)")
+            raise TypeError("`t` has incorrect type.")
 
     @staticmethod
     def constant(shape, float k, _Device device = None):
