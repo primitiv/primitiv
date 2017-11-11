@@ -8,7 +8,12 @@ namespace primitiv {
 
 class FileFormat {
 public:
-  static const std::uint32_t CURRENT_VERSION = 0x00000000;
+  class CurrentVersion {
+  public:
+    static const std::uint32_t MAJOR = 0;
+    static const std::uint32_t MINOR = 1;
+  };
+
   enum class DataType : std::uint32_t {
     SHAPE     = 0x0,
     TENSOR    = 0x100,
@@ -17,12 +22,13 @@ public:
     TRAINER   = 0x400,
   };
 
-  static void check_version(std::uint32_t version) {
-    if (version != CURRENT_VERSION) {
+  static void check_version(std::uint32_t major, std::uint32_t minor) {
+    if (major != CurrentVersion::MAJOR || minor != CurrentVersion::MINOR) {
       THROW_ERROR(
-          "File version mismatched. "
-          "required: " << std::hex << CURRENT_VERSION
-          << ", observed: " << std::hex << version);
+          "File version mismatched. required: "
+          << CurrentVersion::MAJOR << "." << CurrentVersion::MINOR
+          << ", observed: "
+          << major << "." << minor);
     }
   }
 };

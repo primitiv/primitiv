@@ -20,9 +20,9 @@ void Trainer::load(const std::string &path) {
   }
   msgpack::Reader reader(ifs);
 
-  std::uint32_t version;
-  reader >> version;
-  FileFormat::check_version(version);
+  std::uint32_t major, minor;
+  reader >> major >> minor;
+  FileFormat::check_version(major, minor);
 
   const std::uint32_t required_datatype = static_cast<std::uint32_t>(
       FileFormat::DataType::TRAINER);
@@ -52,7 +52,8 @@ void Trainer::save(const std::string &path) const {
   }
   msgpack::Writer writer(ofs);
 
-  writer << FileFormat::CURRENT_VERSION;
+  writer << FileFormat::CurrentVersion::MAJOR;
+  writer << FileFormat::CurrentVersion::MINOR;
   writer << static_cast<std::uint32_t>(FileFormat::DataType::TRAINER);
   writer << uint_configs << float_configs;
 }
