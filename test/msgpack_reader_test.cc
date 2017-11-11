@@ -14,6 +14,7 @@
 using std::string;
 using std::unordered_map;
 using std::vector;
+using test_utils::bin_to_str;
 using test_utils::vector_match;
 
 namespace primitiv {
@@ -36,15 +37,14 @@ protected:
 
   void prepare(std::initializer_list<int> data) {
     // Always adds 0xc0 (Nil) as the sentinel.
-    ss = new std::istringstream(
-        test_utils::bin_to_str(data) + static_cast<char>(0xc0));
+    ss = new std::istringstream(bin_to_str(data) + static_cast<char>(0xc0));
     reader = new Reader(*ss);
   }
 
   void prepare_str(std::initializer_list<int> header, const string &data) {
     // Always adds 0xc0 (Nil) as the sentinel.
     ss = new std::istringstream(
-        test_utils::bin_to_str(header) + data + static_cast<char>(0xc0));
+        bin_to_str(header) + data + static_cast<char>(0xc0));
     reader = new Reader(*ss);
   }
 };
@@ -599,6 +599,94 @@ TEST_F(ReaderTest, CheckVector_String_2) {
   EXPECT_NO_THROW(*reader >> x);
   EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
   EXPECT_TRUE(vector_match(vector<string> { "foo", "bar" }, x));
+}
+
+TEST_F(ReaderTest, CheckMap_Bool_Nil_0) {
+  prepare({ 0x80 });
+  unordered_map<bool, std::nullptr_t> x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+  EXPECT_TRUE(x.empty());
+}
+
+TEST_F(ReaderTest, CheckMap_Bool_Nil_1) {
+  prepare({ 0x81, 0xc2, 0xc0 });
+  unordered_map<bool, std::nullptr_t> x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+  EXPECT_EQ(1u, x.size());
+  EXPECT_EQ(nullptr, x.at(false));
+}
+
+TEST_F(ReaderTest, CheckMap_UInt8_Nil_15) {
+  std::ostringstream ss;
+  for (int i = 0; i < 15; ++i) ss << bin_to_str({ 0xcc, i, 0xc0 });
+  prepare_str({ 0x8f }, ss.str());
+  unordered_map<std::uint8_t, std::nullptr_t> x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+  EXPECT_EQ(15u, x.size());
+  for (int i = 0; i < 15; ++i) EXPECT_EQ(nullptr, x.at(i));
+}
+
+TEST_F(ReaderTest, CheckMap_UInt8_Nil_16) {
+  std::ostringstream ss;
+  for (int i = 0; i < 16; ++i) ss << bin_to_str({ 0xcc, i, 0xc0 });
+  prepare_str({ 0xde, 0x00, 0x10 }, ss.str());
+  unordered_map<std::uint8_t, std::nullptr_t> x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+  EXPECT_EQ(16u, x.size());
+  for (int i = 0; i < 15; ++i) EXPECT_EQ(nullptr, x.at(i));
+}
+
+TEST_F(ReaderTest, CheckMap_UInt32_Nil_0xffff) {
+  std::ostringstream ss;
+  for (int i = 0; i < 0xffff; ++i) {
+    ss << bin_to_str({
+        0xce, i >> 24, (i >> 16) & 0xff, (i >> 8) & 0xff, i & 0xff, 0xc0,
+    });
+  }
+  prepare_str({ 0xde, 0xff, 0xff }, ss.str());
+  unordered_map<std::uint32_t, std::nullptr_t> x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+  EXPECT_EQ(0xffffu, x.size());
+  for (int i = 0; i < 0xffff; ++i) EXPECT_EQ(nullptr, x.at(i));
+}
+
+TEST_F(ReaderTest, CheckMap_UInt32_Nil_0x10000) {
+  std::ostringstream ss;
+  for (int i = 0; i < 0x10000; ++i) {
+    ss << bin_to_str({
+        0xce, i >> 24, (i >> 16) & 0xff, (i >> 8) & 0xff, i & 0xff, 0xc0,
+    });
+  }
+  prepare_str({ 0xdf, 0x00, 0x01, 0x00, 0x00 }, ss.str());
+  unordered_map<std::uint32_t, std::nullptr_t> x;
+  EXPECT_NO_THROW(*reader >> x);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+  EXPECT_EQ(0x10000u, x.size());
+  for (int i = 0; i < 0x10000; ++i) EXPECT_EQ(nullptr, x.at(i));
+}
+
+TEST_F(ReaderTest, CheckUserSequence) {
+  prepare({
+      0xc0,  // nullptr
+      0xc3,  // true
+      0xcd, 0x12, 0x34,  // uint16_t
+      0xca, 0x3f, 0x80, 0x00, 0x00,  // float
+  });
+  std::nullptr_t x1 = nullptr;
+  bool x2 = false;
+  std::uint16_t x3 = 0;
+  float x4 = 0.f;
+  EXPECT_NO_THROW(*reader >> x1 >> x2 >> x3 >> x4);
+  EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
+  EXPECT_EQ(nullptr, x1);
+  EXPECT_EQ(true, x2);
+  EXPECT_EQ(0x1234, x3);
+  EXPECT_EQ(1.f, x4);
 }
 
 }  // namespace msgpack

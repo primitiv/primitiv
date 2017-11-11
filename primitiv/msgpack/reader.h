@@ -75,8 +75,8 @@ private:
     if (observed != expected) {
       THROW_ERROR(
           "MessagePack: Next object does not have a correct type. "
-          "expected: " << std::hex << expected
-          << ", observed: " << std::hex << observed);
+          "expected: " << std::hex << static_cast<int>(expected)
+          << ", observed: " << std::hex << static_cast<int>(observed));
     }
   }
 
@@ -254,6 +254,35 @@ public:
     }
     std::vector<T> ret(size);
     for (size_t i = 0; i < size; ++i) *this >> ret[i];
+    x = std::move(ret);
+    return *this;
+  }
+
+  template<typename T, typename U>
+  Reader &operator>>(std::unordered_map<T, U> &x) {
+    static_assert(sizeof(std::size_t) >= sizeof(std::uint32_t), "");
+    const std::uint8_t type = get_uint8();
+    std::size_t size;
+    if ((type & 0xf0) == 0x80) {
+      size = type & 0x0f;
+    } else {
+      switch (type) {
+        case 0xde: size = get_uint16(); break;
+        case 0xdf: size = get_uint32(); break;
+        default:
+          THROW_ERROR(
+              "MessagePack: Next object does not have the 'map' type. "
+              "observed: " << type);
+      }
+    }
+    std::unordered_map<T, U> ret;
+    T key = T();
+    U value = U();
+    for (size_t i = 0; i < size; ++i) {
+      *this >> key;
+      *this >> value;
+      ret.emplace(std::move(key), std::move(value));
+    }
     x = std::move(ret);
     return *this;
   }
