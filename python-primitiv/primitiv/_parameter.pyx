@@ -72,6 +72,9 @@ cdef class _Parameter:
             if shape is None:
                 raise TypeError("shape is required when initializer is a list")
             self.wrapped.init(normShape(shape).wrapped, <vector[float]> initializer, device.wrapped[0])
+        elif initializer is None:
+            if shape is not None:
+                raise TypeError("shape is given but initializer is not given")
         else:
             raise TypeError("Argument 'initializer' has incorrect type (list, Initializer, or numpy.ndarray)")
         return
