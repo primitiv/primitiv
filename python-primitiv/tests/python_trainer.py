@@ -95,7 +95,7 @@ def train_func(trainer):
 
     for i in range(10):
         g.clear()
-        x = F.input(input_data, Shape([2], 4))
+        x = F.raw_input(Shape([2], 4), input_data)
         w1 = F.parameter(pw1)
         b1 = F.parameter(pb1)
         w2 = F.parameter(pw2)
@@ -103,7 +103,7 @@ def train_func(trainer):
         h = F.tanh(w1 @ x + b1)
         y = w2 @ h + b2
 
-        t = F.input(output_data, Shape([], 4))
+        t = F.raw_input(Shape([], 4), output_data)
         diff = t - y
         loss = F.batch.mean(diff * diff)
 
@@ -189,7 +189,7 @@ class PythonTrainerTest(unittest.TestCase):
         dev = D.Naive()
         Device.set_default(dev)
         trainer = ExceptionTrainer()
-        p = Parameter(Shape([]), [0])
+        p = Parameter()
         with self.assertRaises(TestException) as ctx:
             trainer.add_parameter(p)
         self.assertEqual(str(ctx.exception), "configure_parameter")
@@ -211,7 +211,7 @@ class PythonTrainerTest(unittest.TestCase):
         dev = D.Naive()
         Device.set_default(dev)
         trainer = IncompleteTrainer()
-        p = Parameter(Shape([]), [0])
+        p = Parameter()
         with self.assertRaises(NotImplementedError):
             trainer.add_parameter(p)
         with self.assertRaises(NotImplementedError):
