@@ -221,9 +221,9 @@ Tensor Concat::forward(const std::vector<const Tensor *> &args) {
 void Concat::backward(
     const Tensor &y, const Tensor &gy,
     const vector<const Tensor *> &x, const vector<Tensor *> &gx) const {
-  unsigned offset = 0;
+  std::uint32_t offset = 0;
   for (Tensor *gxi : gx) {
-    const unsigned span = gxi->shape()[dim_];
+    const std::uint32_t span = gxi->shape()[dim_];
     *gxi += operators::slice(gy, dim_, offset, offset + span);
     offset += span;
   }
@@ -471,7 +471,7 @@ BACKWARD(MatrixMultiply) { gy.device().matmul_bw(*x[0], *x[1], y, gy, *gx[0], *g
 BACKWARD(Sum) { *gx[0] += operators::broadcast(gy, dim_, x[0]->shape()[dim_]); }
 BACKWARD(LogSumExp) {
   // NOTE(odashi): dy/dx = softmax(x) = exp(x - y)
-  const unsigned n = x[0]->shape()[dim_];
+  const std::uint32_t n = x[0]->shape()[dim_];
   *gx[0] +=
     operators::exp(*x[0] - operators::broadcast(y, dim_, n)) * operators::broadcast(gy, dim_, n);
 }

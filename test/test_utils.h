@@ -39,7 +39,7 @@ testing::AssertionResult vector_match(
       << "expected.size(): " << expected.size()
       << " != actual.size(): " << actual.size();
   }
-  for (unsigned i = 0; i < expected.size(); ++i) {
+  for (std::uint32_t i = 0; i < expected.size(); ++i) {
     if (expected[i] != actual[i]) {
       return testing::AssertionFailure()
         << "expected[" << i << "]: " << expected[i]
@@ -59,7 +59,7 @@ testing::AssertionResult vector_match(
       << "expected.size(): " << expected.size()
       << " != actual.size(): " << actual.size();
   }
-  for (unsigned i = 0; i < expected.size(); ++i) {
+  for (std::uint32_t i = 0; i < expected.size(); ++i) {
     if (!test_utils::float_eq(expected[i], actual[i])) {
       return testing::AssertionFailure()
         << "expected[" << i << "]: " << expected[i]
@@ -79,7 +79,7 @@ testing::AssertionResult vector_near(
       << "expected.size(): " << expected.size()
       << " != actual.size(): " << actual.size();
   }
-  for (unsigned i = 0; i < expected.size(); ++i) {
+  for (std::uint32_t i = 0; i < expected.size(); ++i) {
     if (!test_utils::float_near(expected[i], actual[i], err)) {
       return testing::AssertionFailure()
         << "expected[" << i << "]: " << expected[i]

@@ -63,7 +63,7 @@ Node Graph::add_function(
   // Gathers information of args.
   vector<Address> arg_addrs(args.size());
   vector<const Shape *> arg_shapes(args.size());
-  for (unsigned i = 0; i < args.size(); ++i) {
+  for (std::uint32_t i = 0; i < args.size(); ++i) {
     const Node &arg = args[i];
     CHECK_NODE(arg);
     arg_addrs[i] = { arg.fid_, arg.vid_ };
@@ -89,11 +89,11 @@ Node Graph::add_function(
   // Makes nodes of return values.
   vector<NodeInfo> rets;
   rets.emplace_back(NodeInfo {
-      move(ret_shape), *ret_device, Tensor(), Tensor(), vector<unsigned>(),
+      move(ret_shape), *ret_device, Tensor(), Tensor(), vector<std::uint32_t>(),
   });
 
   // Updates the graph.
-  const unsigned ret_fid = funcs_.size();
+  const std::uint32_t ret_fid = funcs_.size();
   for (const Address &arg_addr : arg_addrs) {
     funcs_[arg_addr.fid].rets[arg_addr.vid].sinks.emplace_back(ret_fid);
   }
@@ -105,8 +105,8 @@ Node Graph::add_function(
 const Tensor &Graph::forward(const Node &node) {
   CHECK_NODE(node);
 
-  std::function<const Tensor *(unsigned)> forward_recursive = [&](
-      unsigned fid) -> const Tensor * {
+  std::function<const Tensor *(std::uint32_t)> forward_recursive = [&](
+      std::uint32_t fid) -> const Tensor * {
     FunctionInfo &cur_f = funcs_[fid];
     NodeInfo &cur_n = cur_f.rets[0];
 
@@ -160,7 +160,7 @@ void Graph::backward(const Node &node) {
   // NOTE(odashi):
   // In the current implementation, the node ID corresponds to the inverse
   // topological order of the computation graph.
-  for (int fid = node.fid_; fid >= 0; --fid) {
+  for (std::int32_t fid = node.fid_; fid >= 0; --fid) {
     FunctionInfo &cur_f = funcs_[fid];
     NodeInfo &cur_n = cur_f.rets[0];
     const Tensor *cur_v = cur_n.value.valid()
@@ -171,12 +171,12 @@ void Graph::backward(const Node &node) {
     if (!cur_n.grad.valid()) continue;
 
     // Gathers argument value/gradient tensors.
-    const unsigned arg_size = cur_f.args.size();
+    const std::uint32_t arg_size = cur_f.args.size();
     vector<const Tensor *> arg_values;
     vector<Tensor *> arg_grads;
     arg_values.reserve(arg_size);
     arg_grads.reserve(arg_size);
-    for (unsigned i = 0; i < arg_size; ++i) {
+    for (std::uint32_t i = 0; i < arg_size; ++i) {
       const Address &arg = cur_f.args[i];
       FunctionInfo &arg_f = funcs_[arg.fid];
       NodeInfo &arg_n = arg_f.rets[arg.vid];
@@ -227,14 +227,14 @@ std::string Graph::dump(const std::string &format) const {
     fontname = "Courier",
   ];)";
 
-  for (unsigned i = 0; i < funcs_.size(); ++i) {
+  for (std::uint32_t i = 0; i < funcs_.size(); ++i) {
     const FunctionInfo &f = funcs_[i];
     ss << "  " << i << " [label = \"" << f.func->name() << "\"];\n";
   }
 
-  for (unsigned i = 0; i < funcs_.size(); ++i) {
+  for (std::uint32_t i = 0; i < funcs_.size(); ++i) {
     const FunctionInfo &f = funcs_[i];
-    for (unsigned j = 0; j < f.args.size(); ++j) {
+    for (std::uint32_t j = 0; j < f.args.size(); ++j) {
       const Shape &s = funcs_[f.args[j].fid].rets[f.args[j].vid].shape;
       ss << "  "
          << f.args[j].fid << " -> " << i

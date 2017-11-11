@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_TENSOR_H_
 #define PRIMITIV_TENSOR_H_
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 #include <primitiv/error.h>
@@ -105,14 +106,14 @@ public:
    * @param dim A specified axis.
    * @return A list of integers that indicates positions of the maximum values.
    */
-  std::vector<unsigned> argmax(unsigned dim) const;
+  std::vector<std::uint32_t> argmax(std::uint32_t dim) const;
 
   /**
    * Retrieves argmin indices along an axis.
    * @param dim A specified axis.
    * @return A list of integers that indicates positions of the minimum values.
    */
-  std::vector<unsigned> argmin(unsigned dim) const;
+  std::vector<std::uint32_t> argmin(std::uint32_t dim) const;
 
   /**
    * Reset internal values using a constant.

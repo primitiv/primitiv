@@ -64,8 +64,8 @@ TEST_F(GraphTest, CheckMoveNode) {
 
   Node x1 = operators::zeros<Node>({2, 2});
   ASSERT_TRUE(x1.valid());
-  const unsigned fid = x1.function_id();
-  const unsigned vid = x1.value_id();
+  const std::uint32_t fid = x1.function_id();
+  const std::uint32_t vid = x1.value_id();
 
   // c-tor
   Node x2 = std::move(x1);
@@ -193,7 +193,7 @@ TEST_F(GraphTest, CheckForwardBackward) {
     Shape({2, 2}, 3),
     Shape({1, 2}, 3), Shape({}, 3), {},
   };
-  for (unsigned i = 0; i < nodes.size(); ++i) {
+  for (std::uint32_t i = 0; i < nodes.size(); ++i) {
     EXPECT_EQ(expected_shapes[i], nodes[i].shape());
     EXPECT_EQ(&dev, &nodes[i].device());
   }
@@ -213,7 +213,7 @@ TEST_F(GraphTest, CheckForwardBackward) {
     {18, 4, -10},
     {12},
   };
-  for (unsigned i = 0; i < nodes.size(); ++i) {
+  for (std::uint32_t i = 0; i < nodes.size(); ++i) {
     // This forward method has no effect and only returns the reference to the
     // inner value.
     const Tensor &val = g.forward(nodes[i]);
@@ -238,7 +238,7 @@ TEST_F(GraphTest, CheckForwardBackward) {
     {1, 1, 1}, // 1
     {1}, // 1
   };
-  for (unsigned i = 0; i < nodes.size(); ++i) {
+  for (std::uint32_t i = 0; i < nodes.size(); ++i) {
     const Tensor &val = g.get_gradient(nodes[i]);
     ASSERT_TRUE(val.valid());
     EXPECT_TRUE(vector_match(expected_grads[i], val.to_vector()));
@@ -311,7 +311,7 @@ TEST_F(GraphTest, CheckXor) {
     {h3 * h3, h7 * h7, h7 * h7, h3 * h3},
     {2 * (h3 * h3 + h7 * h7)},
   };
-  for (unsigned i = 0; i < nodes.size(); ++i) {
+  for (std::uint32_t i = 0; i < nodes.size(); ++i) {
     const Tensor &val = g.forward(nodes[i]);
     ASSERT_TRUE(val.valid());
     EXPECT_TRUE(vector_match(expected_values[i], val.to_vector()));
@@ -405,7 +405,7 @@ TEST_F(GraphTest, CheckLSTM) {
     std::cout << name << ": shape=" << value.shape().to_string()
       << ", values=[";
     const vector<float> data = value.to_vector();
-    for (unsigned i = 0; i < data.size(); ++i) {
+    for (std::uint32_t i = 0; i < data.size(); ++i) {
       if (i > 0) std::cout << ',';
       std::cout << data[i];
     }
@@ -504,7 +504,7 @@ TEST_F(GraphTest, CheckConcatLSTM) {
     std::cout << name << ": shape=" << value.shape().to_string()
       << ", values=[";
     const vector<float> data = value.to_vector();
-    for (unsigned i = 0; i < data.size(); ++i) {
+    for (std::uint32_t i = 0; i < data.size(); ++i) {
       if (i > 0) std::cout << ',';
       std::cout << data[i];
     }

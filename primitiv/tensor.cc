@@ -20,12 +20,12 @@ std::vector<float> Tensor::to_vector() const {
   return device_->tensor_to_vector(*this);
 }
 
-std::vector<unsigned> Tensor::argmax(unsigned dim) const {
+std::vector<std::uint32_t> Tensor::argmax(std::uint32_t dim) const {
   if (!valid()) THROW_ERROR("Invalid tensor.");
   return device_->argmax(*this, dim);
 }
 
-std::vector<unsigned> Tensor::argmin(unsigned dim) const {
+std::vector<std::uint32_t> Tensor::argmin(std::uint32_t dim) const {
   if (!valid()) THROW_ERROR("Invalid tensor.");
   return device_->argmin(*this, dim);
 }

@@ -11,6 +11,7 @@ from primitiv.config cimport pystr_to_cppstr
 from weakref import WeakValueDictionary
 
 import numpy as np
+cimport numpy as np
 import weakref
 
 # NOTE(vbkaisetsu):
@@ -45,11 +46,12 @@ cdef class _Parameter:
     def __cinit__(self):
         self.stats = _ParameterStatistics(self)
 
-    def __init__(self, shape = None, initializer = None, _Device device = None):
+    def __init__(self, *args, **kwargs):
         if self.wrapped is not NULL:
             raise TypeError("__init__() has already been called.")
         self.wrapped = new CppParameter()
-        self.init(shape, initializer, device)
+        if len(args) != 0 or len(kwargs) != 0:
+            self.init(*args, **kwargs)
         _Parameter.register_wrapper(self.wrapped, self)
 
     def __dealloc__(self):
@@ -57,24 +59,12 @@ cdef class _Parameter:
             del self.wrapped
             self.wrapped = NULL
 
-    def init(self, shape = None, initializer = None, _Device device = None):
+    # NOTE(vbkaisetsu):
+    # Python's Parameter.init only takes shape+Initializer arguments.
+    def init(self, shape, _Initializer initializer, _Device device = None):
         if device is None:
             device = _Device.get_default()
-        if isinstance(initializer, np.ndarray):
-            if shape is None:
-                shape = _Shape(initializer.shape, 1)
-            self.wrapped.init(normShape(shape).wrapped, ndarrays_to_vector([initializer]), device.wrapped[0])
-        elif isinstance(initializer, _Initializer):
-            if shape is None:
-                raise TypeError("shape is required when initializer is an Initializer")
-            self.wrapped.init(normShape(shape).wrapped, (<_Initializer> initializer).wrapped[0], device.wrapped[0])
-        elif isinstance(initializer, list):
-            if shape is None:
-                raise TypeError("shape is required when initializer is a list")
-            self.wrapped.init(normShape(shape).wrapped, <vector[float]> initializer, device.wrapped[0])
-        else:
-            raise TypeError("Argument 'initializer' has incorrect type (list, Initializer, or numpy.ndarray)")
-        return
+        self.wrapped.init(normShape(shape).wrapped, initializer.wrapped[0], device.wrapped[0])
 
     def load(self, str path, bool with_stats = True, _Device device = None):
         if device is None:

@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_GRAPH_H_
 #define PRIMITIV_GRAPH_H_
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 #include <primitiv/function.h>
@@ -59,7 +60,7 @@ public:
    * Returns the function ID.
    * @return Function ID.
    */
-  unsigned function_id() const {
+  std::uint32_t function_id() const {
     if (!valid()) THROW_ERROR("Invalid node.");
     return fid_;
   }
@@ -68,7 +69,7 @@ public:
    * Returns the value ID of the function.
    * @return Value ID.
    */
-  unsigned value_id() const {
+  std::uint32_t value_id() const {
     if (!valid()) THROW_ERROR("Invalid node.");
     return vid_;
   }
@@ -106,14 +107,14 @@ public:
    * @param dim A specified axis.
    * @return A list of integers that indicates positions of the maximum values.
    */
-  std::vector<unsigned> argmax(unsigned dim) const;
+  std::vector<std::uint32_t> argmax(std::uint32_t dim) const;
 
   /**
    * Returns argmin indices along an axis of this node.
    * @param dim A specified axis.
    * @return A list of integers that indicates positions of the minimum values.
    */
-  std::vector<unsigned> argmin(unsigned dim) const;
+  std::vector<std::uint32_t> argmin(std::uint32_t dim) const;
 
   /**
    * Executes the backward operation from this node.
@@ -127,11 +128,11 @@ private:
    * @param fid Function ID.
    * @param vid Value ID.
    */
-  Node(Graph &g, unsigned fid, unsigned vid) : g_(&g), fid_(fid), vid_(vid) {}
+  Node(Graph &g, std::uint32_t fid, std::uint32_t vid) : g_(&g), fid_(fid), vid_(vid) {}
 
   Graph *g_;
-  unsigned fid_;
-  unsigned vid_;
+  std::uint32_t fid_;
+  std::uint32_t vid_;
 };
 
 /**
@@ -207,15 +208,15 @@ public:
    * Returns the number of functions in the computation graph.
    * @return Number of nodes.
    */
-  unsigned num_functions() const { return funcs_.size(); }
+  std::uint32_t num_functions() const { return funcs_.size(); }
 
 private:
   /**
    * Tuple of values to determine the location of the node.
    */
   struct Address {
-    unsigned fid;
-    unsigned vid;
+    std::uint32_t fid;
+    std::uint32_t vid;
   };
 
   /**
@@ -226,7 +227,7 @@ private:
     Device &device;
     Tensor value;
     Tensor grad;
-    std::vector<unsigned> sinks;
+    std::vector<std::uint32_t> sinks;
   };
 
   /**
@@ -263,12 +264,12 @@ inline std::vector<float> Node::to_vector() const {
   return g_->forward(*this).to_vector();
 }
 
-inline std::vector<unsigned> Node::argmax(unsigned dim) const {
+inline std::vector<std::uint32_t> Node::argmax(std::uint32_t dim) const {
   if (!valid()) THROW_ERROR("Invalid node.");
   return g_->forward(*this).argmax(dim);
 }
 
-inline std::vector<unsigned> Node::argmin(unsigned dim) const {
+inline std::vector<std::uint32_t> Node::argmin(std::uint32_t dim) const {
   if (!valid()) THROW_ERROR("Invalid node.");
   return g_->forward(*this).argmin(dim);
 }

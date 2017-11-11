@@ -17,9 +17,9 @@ void store_shape(const primitiv::Shape &src, primitiv::messages::Shape &dest) {
   dest.Clear();
 
   auto &dims = *dest.mutable_dims();
-  const unsigned dims_size = src.depth();
+  const std::uint32_t dims_size = src.depth();
   dims.Reserve(dims_size);
-  for (unsigned i = 0; i < dims_size; ++i) {
+  for (std::uint32_t i = 0; i < dims_size; ++i) {
     dims.AddAlreadyReserved(src[i]);
   }
   dest.set_batch(src.batch());
@@ -34,9 +34,9 @@ void store_tensor(const primitiv::Tensor &src, primitiv::messages::Tensor &dest)
   ::store_shape(src.shape(), *dest.mutable_shape());
   auto &data = *dest.mutable_data();
   const vector<float> src_data = src.to_vector();
-  const unsigned data_size = src_data.size();
+  const std::uint32_t data_size = src_data.size();
   data.Reserve(data_size);
-  for (unsigned i = 0; i < data_size; ++i) {
+  for (std::uint32_t i = 0; i < data_size; ++i) {
     data.AddAlreadyReserved(src_data[i]);
   }
 }
@@ -44,7 +44,7 @@ void store_tensor(const primitiv::Tensor &src, primitiv::messages::Tensor &dest)
 // Parses Shape data in the proto message.
 primitiv::Shape parse_shape(const primitiv::messages::Shape &src) {
   return primitiv::Shape(
-      vector<unsigned>(src.dims().begin(), src.dims().end()),
+      vector<std::uint32_t>(src.dims().begin(), src.dims().end()),
       src.batch());
 }
 
@@ -55,7 +55,7 @@ primitiv::Tensor parse_tensor(const primitiv::messages::Tensor &src, primitiv::D
   }
 
   primitiv::Shape shape = ::parse_shape(src.shape());
-  if (static_cast<unsigned>(src.data_size()) != shape.size()) {
+  if (static_cast<std::uint32_t>(src.data_size()) != shape.size()) {
     THROW_ERROR(
         "Invalid Tensor message: data sizes mismatched."
         << " src.data_size(): " << std::to_string(src.data_size())

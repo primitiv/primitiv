@@ -21,64 +21,64 @@ namespace {
 #define IDX (threadIdx.x + blockIdx.x * blockDim.x)
 #define IDY (threadIdx.y + blockIdx.y * blockDim.y)
 
-__global__ void set_const_dev(float k, unsigned size, float *py) {
-  const unsigned i = IDX;
+__global__ void set_const_dev(float k, std::uint32_t size, float *py) {
+  const std::uint32_t i = IDX;
   if (i < size) py[i] = k;
 }
 
-__global__ void set_identity_dev(unsigned size, unsigned skip, float *py) {
-  const unsigned i = IDX;
+__global__ void set_identity_dev(std::uint32_t size, std::uint32_t skip, float *py) {
+  const std::uint32_t i = IDX;
   if (i < size) py[i] = !(i % skip);
 }
 
 __global__ void rand_bernoulli_dev(float p, float size, float *py) {
-  const unsigned i = IDX;
+  const std::uint32_t i = IDX;
   if (i < size) py[i] = (float)(py[i] <= p);
 }
 
 __global__ void rand_affine_dev(
-    float shift, float scale, unsigned size, float *py) {
-  const unsigned i = IDX;
+    float shift, float scale, std::uint32_t size, float *py) {
+  const std::uint32_t i = IDX;
   if (i < size) py[i] = py[i] * scale + shift;
 }
 
 __global__ void pick_fw_dev(
-    const float *px, const unsigned *pi,
-    unsigned wx, unsigned wy, unsigned sx, unsigned si, unsigned sy,
+    const float *px, const std::uint32_t *pi,
+    std::uint32_t wx, std::uint32_t wy, std::uint32_t sx, std::uint32_t si, std::uint32_t sy,
     float *py) {
-  const unsigned t = IDX;
-  const unsigned ox = blockIdx.y * sx + pi[blockIdx.y * si] * wy;
-  const unsigned oy = blockIdx.y * sy;
+  const std::uint32_t t = IDX;
+  const std::uint32_t ox = blockIdx.y * sx + pi[blockIdx.y * si] * wy;
+  const std::uint32_t oy = blockIdx.y * sy;
   if (t < sy) py[oy + t] = px[ox + (t / wy) * wx + (t % wy)];
 }
 
 __global__ void slice_fw_dev(
-    const float *px, unsigned span, unsigned skip, unsigned size, float *py) {
-  const unsigned i = IDX;
+    const float *px, std::uint32_t span, std::uint32_t skip, std::uint32_t size, float *py) {
+  const std::uint32_t i = IDX;
   if (i < size) py[i] = px[(i / span) * skip + (i % span)];
 }
 
 __global__ void concat_fw_dev(
-    const float *px, unsigned span, unsigned skip, unsigned x_size,
-    unsigned y_size, float *py) {
-  const unsigned i = IDX;
+    const float *px, std::uint32_t span, std::uint32_t skip, std::uint32_t x_size,
+    std::uint32_t y_size, float *py) {
+  const std::uint32_t i = IDX;
   if (i < y_size) py[(i / span) * skip + (i % span)] = px[i % x_size];
 }
 
 __global__ void pick_bw_dev(
-    const float *pgy, const unsigned *pi,
-    unsigned wx, unsigned wy, unsigned sx, unsigned si, unsigned sy,
+    const float *pgy, const std::uint32_t *pi,
+    std::uint32_t wx, std::uint32_t wy, std::uint32_t sx, std::uint32_t si, std::uint32_t sy,
     float *pgx) {
-  const unsigned t = IDX;
-  const unsigned ox = blockIdx.y * sx + pi[blockIdx.y * si] * wy;
-  const unsigned oy = blockIdx.y * sy;
+  const std::uint32_t t = IDX;
+  const std::uint32_t ox = blockIdx.y * sx + pi[blockIdx.y * si] * wy;
+  const std::uint32_t oy = blockIdx.y * sy;
   if (t < sy) ::atomicAdd(pgx + ox + (t / wy) * wx + (t % wy), pgy[oy + t]);
 }
 
 __global__ void slice_bw_dev(
-    const float *pgy, unsigned wx, unsigned wy, unsigned nx, unsigned ny,
+    const float *pgy, std::uint32_t wx, std::uint32_t wy, std::uint32_t nx, std::uint32_t ny,
     float *pgx) {
-  const unsigned i = IDX;
+  const std::uint32_t i = IDX;
   if (i < wy * ::max(nx, ny)) {
     ::atomicAdd(
         pgx + ((i / wy) * wx + (i % wy)) % (wx * nx), pgy[i % (wy * ny)]);
@@ -86,62 +86,62 @@ __global__ void slice_bw_dev(
 }
 
 #define CUDADEV_KERNEL_FW_X(name, op) \
-__global__ void name##_fw_dev(const float *px, unsigned size, float *py) { \
-  const unsigned i = IDX; \
+__global__ void name##_fw_dev(const float *px, std::uint32_t size, float *py) { \
+  const std::uint32_t i = IDX; \
   if (i < size) py[i] = (op); \
 }
 
 #define CUDADEV_KERNEL_BW_X(name, op) \
 __global__ void name##_bw_dev( \
-    const float *px, const float *py, const float *pgy, unsigned size, \
+    const float *px, const float *py, const float *pgy, std::uint32_t size, \
     float *pgx) { \
   static_cast<void>(px); \
   static_cast<void>(py); \
-  const unsigned i = IDX; \
+  const std::uint32_t i = IDX; \
   if (i < size) pgx[i] += (op); \
 }
 
 #define CUDADEV_KERNEL_FW_X_CONST(name, op) \
 __global__ void name##_fw_dev( \
-    const float *px, float k, unsigned size, float *py) { \
-  const unsigned i = IDX; \
+    const float *px, float k, std::uint32_t size, float *py) { \
+  const std::uint32_t i = IDX; \
   if (i < size) py[i] = (op); \
 }
 
 #define CUDADEV_KERNEL_BW_X_CONST(name, op) \
 __global__ void name##_bw_dev( \
     const float *px, const float *py, const float *pgy, float k, \
-    unsigned size, float *pgx) { \
+    std::uint32_t size, float *pgx) { \
   static_cast<void>(px); \
   static_cast<void>(py); \
-  const unsigned i = IDX; \
+  const std::uint32_t i = IDX; \
   if (i < size) pgx[i] += (op); \
 }
 
 #define CUDADEV_KERNEL_FW_X_SCALAR_R(name, op) \
 __global__ void name##_fw_dev( \
-    const float *px, const float *pk, unsigned size, unsigned mbx, \
-    unsigned mbk, float *py) { \
-  const unsigned i = IDX; \
-  const unsigned shift = blockIdx.y * size; \
+    const float *px, const float *pk, std::uint32_t size, std::uint32_t mbx, \
+    std::uint32_t mbk, float *py) { \
+  const std::uint32_t i = IDX; \
+  const std::uint32_t shift = blockIdx.y * size; \
   if (i < size) py[i + shift] = op(px[i + mbx * shift], pk[mbk * blockIdx.y]); \
 }
 
 #define CUDADEV_KERNEL_FW_X_SCALAR_L(name, op) \
 __global__ void name##_fw_dev( \
-    const float *px, const float *pk, unsigned size, unsigned mbx, \
-    unsigned mbk, float *py) { \
-  const unsigned i = IDX; \
-  const unsigned shift = blockIdx.y * size; \
+    const float *px, const float *pk, std::uint32_t size, std::uint32_t mbx, \
+    std::uint32_t mbk, float *py) { \
+  const std::uint32_t i = IDX; \
+  const std::uint32_t shift = blockIdx.y * size; \
   if (i < size) py[i + shift] = op(pk[mbk * blockIdx.y], px[i + mbx * shift]); \
 }
 
 #define CUDADEV_KERNEL_FW_AB(name, op) \
 __global__ void name##_fw_dev( \
-    const float *pa, const float *pb, unsigned size, unsigned mba, \
-    unsigned mbb, float *py) { \
-  const unsigned i = IDX; \
-  const unsigned shift = blockIdx.y * size; \
+    const float *pa, const float *pb, std::uint32_t size, std::uint32_t mba, \
+    std::uint32_t mbb, float *py) { \
+  const std::uint32_t i = IDX; \
+  const std::uint32_t shift = blockIdx.y * size; \
   if (i < size) py[i + shift] = op(pa[i + mba * shift], pb[i + mbb * shift]); \
 }
 
@@ -209,9 +209,9 @@ CUDADEV_KERNEL_FW_AB(divide, ::__fdiv_rn);
 
 __global__ void add_bw_dev(
     const float *, const float *, const float *, const float *pgy,
-    unsigned size, unsigned mba, unsigned mbb, float *pga, float *pgb) {
-  const unsigned i = IDX;
-  const unsigned shift = blockIdx.y * size;
+    std::uint32_t size, std::uint32_t mba, std::uint32_t mbb, float *pga, float *pgb) {
+  const std::uint32_t i = IDX;
+  const std::uint32_t shift = blockIdx.y * size;
   if (i < size) {
     const float gy = pgy[i + shift];
     ::atomicAdd(pga + i + mba * shift, gy);
@@ -221,9 +221,9 @@ __global__ void add_bw_dev(
 
 __global__ void subtract_bw_dev(
     const float *, const float *, const float *, const float *pgy,
-    unsigned size, unsigned mba, unsigned mbb, float *pga, float *pgb) {
-  const unsigned i = IDX;
-  const unsigned shift = blockIdx.y * size;
+    std::uint32_t size, std::uint32_t mba, std::uint32_t mbb, float *pga, float *pgb) {
+  const std::uint32_t i = IDX;
+  const std::uint32_t shift = blockIdx.y * size;
   if (i < size) {
     const float gy = pgy[i + shift];
     ::atomicAdd(pga + i + mba * shift, gy);
@@ -233,13 +233,13 @@ __global__ void subtract_bw_dev(
 
 __global__ void multiply_bw_dev(
     const float *pa, const float *pb, const float *, const float *pgy,
-    unsigned size, unsigned mba, unsigned mbb, float *pga, float *pgb) {
-  const unsigned i = IDX;
-  const unsigned shift = blockIdx.y * size;
+    std::uint32_t size, std::uint32_t mba, std::uint32_t mbb, float *pga, float *pgb) {
+  const std::uint32_t i = IDX;
+  const std::uint32_t shift = blockIdx.y * size;
   if (i < size) {
     const float gy = pgy[i + shift];
-    const unsigned a_ofs = i + mba * shift;
-    const unsigned b_ofs = i + mbb * shift;
+    const std::uint32_t a_ofs = i + mba * shift;
+    const std::uint32_t b_ofs = i + mbb * shift;
     ::atomicAdd(pga + a_ofs, gy * pb[b_ofs]);
     ::atomicAdd(pgb + b_ofs, gy * pa[a_ofs]);
   }
@@ -247,12 +247,12 @@ __global__ void multiply_bw_dev(
 
 __global__ void divide_bw_dev(
     const float *, const float *pb, const float *py, const float *pgy,
-    unsigned size, unsigned mba, unsigned mbb, float *pga, float *pgb) {
-  const unsigned i = IDX;
-  const unsigned shift = blockIdx.y * size;
+    std::uint32_t size, std::uint32_t mba, std::uint32_t mbb, float *pga, float *pgb) {
+  const std::uint32_t i = IDX;
+  const std::uint32_t shift = blockIdx.y * size;
   if (i < size) {
-    const unsigned b_ofs = i + mbb * shift;
-    const unsigned y_ofs = i + shift;
+    const std::uint32_t b_ofs = i + mbb * shift;
+    const std::uint32_t y_ofs = i + shift;
     const float k = pgy[y_ofs] / pb[b_ofs];
     ::atomicAdd(pga + i + mba * shift, k);
     ::atomicAdd(pgb + b_ofs, -k * py[y_ofs]);
@@ -260,30 +260,30 @@ __global__ void divide_bw_dev(
 }
 
 __global__ void transpose_fw_dev(
-    const float *px, unsigned rows, unsigned cols, float *py) {
-  const unsigned i = IDX;
-  const unsigned j = IDY;
-  unsigned ofs = blockIdx.z * rows * cols;
+    const float *px, std::uint32_t rows, std::uint32_t cols, float *py) {
+  const std::uint32_t i = IDX;
+  const std::uint32_t j = IDY;
+  std::uint32_t ofs = blockIdx.z * rows * cols;
   if (i < rows && j < cols) py[ofs + j + i * cols] = px[ofs + i + j * rows];
 }
 
 __global__ void transpose_bw_dev(
-    const float *py, unsigned rows, unsigned cols, float *px) {
-  const unsigned i = IDX;
-  const unsigned j = IDY;
-  unsigned ofs = blockIdx.z * rows * cols;
+    const float *py, std::uint32_t rows, std::uint32_t cols, float *px) {
+  const std::uint32_t i = IDX;
+  const std::uint32_t j = IDY;
+  std::uint32_t ofs = blockIdx.z * rows * cols;
   if (i < rows && j < cols) px[ofs + i + j * rows] += py[ofs + j + i * cols];
 }
 
-template<unsigned BLOCK_SIZE>
+template<std::uint32_t BLOCK_SIZE>
 __global__ void sum_fw_dev(
-    const float *px, unsigned skip, unsigned n, float *py) {
+    const float *px, std::uint32_t skip, std::uint32_t n, float *py) {
   __shared__ float temp[BLOCK_SIZE];
-  const unsigned bid = blockIdx.x;
-  const unsigned tid = threadIdx.x;
+  const std::uint32_t bid = blockIdx.x;
+  const std::uint32_t tid = threadIdx.x;
   px += bid % skip + (bid / skip) * skip * n;
   temp[tid] = 0;
-  for (unsigned i = tid; i < n; i += BLOCK_SIZE) temp[tid] += px[i * skip];
+  for (std::uint32_t i = tid; i < n; i += BLOCK_SIZE) temp[tid] += px[i * skip];
   __syncthreads();
 #define REDUCE(k) \
   if (BLOCK_SIZE >= k << 1) { \
@@ -310,15 +310,15 @@ __device__ float logsumexp2_fw_dev(float a, float b) {
     : b + ::log(1.f + ::exp(a - b));
 }
 
-template<unsigned BLOCK_SIZE>
+template<std::uint32_t BLOCK_SIZE>
 __global__ void logsumexp_fw_dev(
-    const float *px, unsigned skip, unsigned n, float *py) {
+    const float *px, std::uint32_t skip, std::uint32_t n, float *py) {
   __shared__ float temp[BLOCK_SIZE];
-  const unsigned bid = blockIdx.x;
-  const unsigned tid = threadIdx.x;
+  const std::uint32_t bid = blockIdx.x;
+  const std::uint32_t tid = threadIdx.x;
   px += bid % skip + (bid / skip) * skip * n;
   temp[tid] = -1e38;  // NOTE(odashi): Near the minimum of the float.
-  for (unsigned i = tid; i < n; i += BLOCK_SIZE) {
+  for (std::uint32_t i = tid; i < n; i += BLOCK_SIZE) {
     temp[tid] = ::logsumexp2_fw_dev(temp[tid], px[i * skip]);
   }
   __syncthreads();
@@ -341,16 +341,16 @@ __global__ void logsumexp_fw_dev(
   if (tid == 0) py[bid] = temp[0];
 }
 
-template<unsigned BLOCK_SIZE>
+template<std::uint32_t BLOCK_SIZE>
 __global__ void argmax_dev(
-    const float *px, unsigned skip, unsigned n, unsigned *py) {
+    const float *px, std::uint32_t skip, std::uint32_t n, std::uint32_t *py) {
   __shared__ float max_val[BLOCK_SIZE];
-  __shared__ unsigned argmax_val[BLOCK_SIZE];
-  const unsigned bid = blockIdx.x;
-  const unsigned tid = threadIdx.x;
+  __shared__ std::uint32_t argmax_val[BLOCK_SIZE];
+  const std::uint32_t bid = blockIdx.x;
+  const std::uint32_t tid = threadIdx.x;
   px += bid % skip + (bid / skip) * skip * n;
   max_val[tid] = -1e38;  // NOTE(odashi): Near the minimum of the float.
-  for (unsigned i = tid; i < n; i += BLOCK_SIZE) {
+  for (std::uint32_t i = tid; i < n; i += BLOCK_SIZE) {
     const float val = px[i * skip];
     if (val > max_val[tid]) {
       max_val[tid] = val;
@@ -382,16 +382,16 @@ __global__ void argmax_dev(
   if (tid == 0) py[bid] = argmax_val[0];
 }
 
-template<unsigned BLOCK_SIZE>
+template<std::uint32_t BLOCK_SIZE>
 __global__ void argmin_dev(
-    const float *px, unsigned skip, unsigned n, unsigned *py) {
+    const float *px, std::uint32_t skip, std::uint32_t n, std::uint32_t *py) {
   __shared__ float min_val[BLOCK_SIZE];
-  __shared__ unsigned argmin_val[BLOCK_SIZE];
-  const unsigned bid = blockIdx.x;
-  const unsigned tid = threadIdx.x;
+  __shared__ std::uint32_t argmin_val[BLOCK_SIZE];
+  const std::uint32_t bid = blockIdx.x;
+  const std::uint32_t tid = threadIdx.x;
   px += bid % skip + (bid / skip) * skip * n;
   min_val[tid] = 1e38;  // NOTE(odashi): Near the maximum of the float.
-  for (unsigned i = tid; i < n; i += BLOCK_SIZE) {
+  for (std::uint32_t i = tid; i < n; i += BLOCK_SIZE) {
     const float val = px[i * skip];
     if (val < min_val[tid]) {
       min_val[tid] = val;
@@ -424,18 +424,18 @@ __global__ void argmin_dev(
 }
 
 __global__ void broadcast_fw_dev(
-    const float *px, unsigned skip1, unsigned skip2, unsigned size, float *py) {
-  const unsigned i = IDX;
+    const float *px, std::uint32_t skip1, std::uint32_t skip2, std::uint32_t size, float *py) {
+  const std::uint32_t i = IDX;
   if (i < size) py[i] = px[i % skip1 + (i / skip2) * skip1];
 }
 
 __global__ void batch_sum_fw_dev(
-    const float *px, unsigned size, unsigned batch, float *py) {
-  const unsigned i = IDX;
+    const float *px, std::uint32_t size, std::uint32_t batch, float *py) {
+  const std::uint32_t i = IDX;
   if (i < size) {
     float temp = .0f;
     px += i;
-    for (unsigned j = 0; j < batch; ++j, px += size) {
+    for (std::uint32_t j = 0; j < batch; ++j, px += size) {
       temp += *px;
     }
     py[i] = temp;
@@ -443,22 +443,22 @@ __global__ void batch_sum_fw_dev(
 }
 
 __global__ void inplace_multiply_const_dev(
-    float k, unsigned size, float *px) {
-  const unsigned i = IDX;
+    float k, std::uint32_t size, float *px) {
+  const std::uint32_t i = IDX;
   if (i < size) px[i] *= k;
 }
 
 __global__ void inplace_add_dev(
-    const float *px, unsigned size, unsigned mbx, unsigned mby, float *py) {
-  const unsigned i = IDX;
-  const unsigned shift = blockIdx.y * size;
+    const float *px, std::uint32_t size, std::uint32_t mbx, std::uint32_t mby, float *py) {
+  const std::uint32_t i = IDX;
+  const std::uint32_t shift = blockIdx.y * size;
   if (i < size) ::atomicAdd(py + i + mby * shift, px[i + mbx * shift]);
 }
 
 __global__ void inplace_subtract_dev(
-    const float *px, unsigned size, unsigned mbx, unsigned mby, float *py) {
-  const unsigned i = IDX;
-  const unsigned shift = blockIdx.y * size;
+    const float *px, std::uint32_t size, std::uint32_t mbx, std::uint32_t mby, float *py) {
+  const std::uint32_t i = IDX;
+  const std::uint32_t shift = blockIdx.y * size;
   if (i < size) ::atomicAdd(py + i + mby * shift, -px[i + mbx * shift]);
 }
 
@@ -480,7 +480,7 @@ private:
   CUBLASHandle &operator=(CUBLASHandle &&) = delete;
 
 public:
-  explicit CUBLASHandle(unsigned dev_id) {
+  explicit CUBLASHandle(std::uint32_t dev_id) {
     CUDA_CALL(::cudaSetDevice(dev_id));
     CUBLAS_CALL(::cublasCreate(&handle_));
     //cerr << "CUBLAS initialized at device " << dev_id << '.' << endl;
@@ -508,7 +508,7 @@ private:
   CURANDHandle &operator=(CURANDHandle &&) = delete;
 
 public:
-  CURANDHandle(unsigned dev_id, unsigned rng_seed) {
+  CURANDHandle(std::uint32_t dev_id, std::uint32_t rng_seed) {
     CUDA_CALL(::cudaSetDevice(dev_id));
     CURAND_CALL(::curandCreateGenerator(&handle_, CURAND_RNG_PSEUDO_DEFAULT));
     CURAND_CALL(::curandSetPseudoRandomGeneratorSeed(handle_, rng_seed));
@@ -535,14 +535,14 @@ namespace devices {
  * Hidden objects of CUDA device.
  */
 struct CUDAInternalState {
-  CUDAInternalState(unsigned dev_id, unsigned rng_seed)
+  CUDAInternalState(std::uint32_t dev_id, std::uint32_t rng_seed)
     : cublas(dev_id) , curand(dev_id, rng_seed) {}
   ::CUBLASHandle cublas;
   ::CURANDHandle curand;
   ::cudaDeviceProp prop;
 };
 
-unsigned CUDA::num_devices() {
+std::uint32_t CUDA::num_devices() {
   int ret;
   CUDA_CALL(::cudaGetDeviceCount(&ret));
   return ret;
@@ -566,7 +566,7 @@ void CUDA::initialize() {
   // Calculates size of dims to be used in CUDA kernels.
   dim1_x_ = 1;
   while (dim1_x_ < 1024 &&
-      dim1_x_ < static_cast<unsigned>(prop.maxThreadsPerBlock)) {
+      dim1_x_ < static_cast<std::uint32_t>(prop.maxThreadsPerBlock)) {
     dim1_x_ <<= 1;
   }
   dim2_y_ = dim1_x_;
@@ -582,17 +582,17 @@ void CUDA::initialize() {
   state_->prop = prop;
 
   // Initializes the device pointer for integer IDs.
-  ids_ptr_ = pool_.allocate(sizeof(unsigned) * max_batch_);
+  ids_ptr_ = pool_.allocate(sizeof(std::uint32_t) * max_batch_);
 }
 
-CUDA::CUDA(unsigned device_id)
+CUDA::CUDA(std::uint32_t device_id)
 : dev_id_(device_id)
 , rng_seed_(std::random_device()())
 , pool_(device_id) {
   initialize();
 }
 
-CUDA::CUDA(unsigned device_id, unsigned rng_seed)
+CUDA::CUDA(std::uint32_t device_id, std::uint32_t rng_seed)
 : dev_id_(device_id)
 , rng_seed_(rng_seed)
 , pool_(device_id) {
@@ -639,7 +639,7 @@ std::shared_ptr<void> CUDA::new_handle(const Shape &shape) {
 #define CDATA(x) static_cast<const float *>((x).data())
 
 std::vector<float> CUDA::tensor_to_vector_impl(const Tensor &x) {
-  const unsigned size = x.shape().size();
+  const std::uint32_t size = x.shape().size();
   std::vector<float> ret(size);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CUDA_CALL(::cudaMemcpy(
@@ -647,19 +647,19 @@ std::vector<float> CUDA::tensor_to_vector_impl(const Tensor &x) {
   return ret;
 }
 
-std::vector<unsigned> CUDA::argmax_impl(const Tensor &x, unsigned dim) {
+std::vector<std::uint32_t> CUDA::argmax_impl(const Tensor &x, std::uint32_t dim) {
   const Shape &shape = x.shape();
-  const unsigned n = shape[dim];
-  const unsigned r = shape.size() / n;
-  const unsigned s = shape.lower_volume(dim);
-  unsigned block_size = dim1_x_;
+  const std::uint32_t n = shape[dim];
+  const std::uint32_t r = shape.size() / n;
+  const std::uint32_t s = shape.lower_volume(dim);
+  std::uint32_t block_size = dim1_x_;
   while (block_size >> 1 >= n) block_size >>= 1;
-  std::shared_ptr<void> py = pool_.allocate(sizeof(unsigned) * r);
+  std::shared_ptr<void> py = pool_.allocate(sizeof(std::uint32_t) * r);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   switch (block_size) {
 #define CASE(k) \
     case k: ::argmax_dev<k><<<r, k>>>( \
-        CDATA(x), s, n, static_cast<unsigned *>(py.get())); break
+        CDATA(x), s, n, static_cast<std::uint32_t *>(py.get())); break
     CASE(1024);
     CASE(512);
     CASE(256);
@@ -673,25 +673,25 @@ std::vector<unsigned> CUDA::argmax_impl(const Tensor &x, unsigned dim) {
     CASE(1);
 #undef CASE
   }
-  std::vector<unsigned> ret(r);
+  std::vector<std::uint32_t> ret(r);
   CUDA_CALL(::cudaMemcpy(
-        &ret[0], py.get(), sizeof(unsigned) * r, cudaMemcpyDeviceToHost));
+        &ret[0], py.get(), sizeof(std::uint32_t) * r, cudaMemcpyDeviceToHost));
   return ret;
 }
 
-std::vector<unsigned> CUDA::argmin_impl(const Tensor &x, unsigned dim) {
+std::vector<std::uint32_t> CUDA::argmin_impl(const Tensor &x, std::uint32_t dim) {
   const Shape &shape = x.shape();
-  const unsigned n = shape[dim];
-  const unsigned r = shape.size() / n;
-  const unsigned s = shape.lower_volume(dim);
-  unsigned block_size = dim1_x_;
+  const std::uint32_t n = shape[dim];
+  const std::uint32_t r = shape.size() / n;
+  const std::uint32_t s = shape.lower_volume(dim);
+  std::uint32_t block_size = dim1_x_;
   while (block_size >> 1 >= n) block_size >>= 1;
-  std::shared_ptr<void> py = pool_.allocate(sizeof(unsigned) * r);
+  std::shared_ptr<void> py = pool_.allocate(sizeof(std::uint32_t) * r);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   switch (block_size) {
 #define CASE(k) \
     case k: ::argmin_dev<k><<<r, k>>>( \
-        CDATA(x), s, n, static_cast<unsigned *>(py.get())); break
+        CDATA(x), s, n, static_cast<std::uint32_t *>(py.get())); break
     CASE(1024);
     CASE(512);
     CASE(256);
@@ -705,21 +705,21 @@ std::vector<unsigned> CUDA::argmin_impl(const Tensor &x, unsigned dim) {
     CASE(1);
 #undef CASE
   }
-  std::vector<unsigned> ret(r);
+  std::vector<std::uint32_t> ret(r);
   CUDA_CALL(::cudaMemcpy(
-        &ret[0], py.get(), sizeof(unsigned) * r, cudaMemcpyDeviceToHost));
+        &ret[0], py.get(), sizeof(std::uint32_t) * r, cudaMemcpyDeviceToHost));
   return ret;
 }
 
 void CUDA::reset_tensor_impl(float k, Tensor &x) {
-  const unsigned size = x.shape().size();
-  const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
+  const std::uint32_t size = x.shape().size();
+  const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::set_const_dev<<<num_blocks, dim1_x_>>>(k, size, DATA(x));
 }
 
 void CUDA::reset_tensor_by_array_impl(const float values[], Tensor &x) {
-  const unsigned size = x.shape().size();
+  const std::uint32_t size = x.shape().size();
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CUDA_CALL(::cudaMemcpy(
         x.data(), values, sizeof(float) * size, cudaMemcpyHostToDevice));
@@ -746,24 +746,24 @@ void CUDA::copy_tensor_impl(const Tensor &x, Tensor &y) {
 }
 
 void CUDA::identity_impl(Tensor &y) {
-  const unsigned size = y.shape().size();
-  const unsigned skip = y.shape()[0] + 1;
-  const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
+  const std::uint32_t size = y.shape().size();
+  const std::uint32_t skip = y.shape()[0] + 1;
+  const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::set_identity_dev<<<num_blocks, dim1_x_>>>(size, skip, DATA(y));
 }
 
 void CUDA::random_bernoulli_impl(float p, Tensor &y) {
-  const unsigned size = y.shape().size();
-  const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
+  const std::uint32_t size = y.shape().size();
+  const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CURAND_CALL(::curandGenerateUniform(state_->curand.get(), DATA(y), size));
   ::rand_bernoulli_dev<<<num_blocks, dim1_x_>>>(p, size, DATA(y));
 }
 
 void CUDA::random_uniform_impl(float lower, float upper, Tensor &y) {
-  const unsigned size = y.shape().size();
-  const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
+  const std::uint32_t size = y.shape().size();
+  const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
   const float scale = upper - lower;
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CURAND_CALL(::curandGenerateUniform(state_->curand.get(), DATA(y), size));
@@ -783,49 +783,49 @@ void CUDA::random_log_normal_impl(float mean, float sd, Tensor &y) {
 }
 
 void CUDA::pick_fw_impl(
-    const Tensor &x, const std::vector<unsigned> &ids, unsigned dim,
+    const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim,
     Tensor &y) {
-  const unsigned wy = y.shape().lower_volume(dim);
-  const unsigned sy = y.shape().volume();
-  const unsigned g1 = GRID_SIZE(sy, dim1_x_);
-  const unsigned bs = y.shape().batch();
+  const std::uint32_t wy = y.shape().lower_volume(dim);
+  const std::uint32_t sy = y.shape().volume();
+  const std::uint32_t g1 = GRID_SIZE(sy, dim1_x_);
+  const std::uint32_t bs = y.shape().batch();
 
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CUDA_CALL(::cudaMemcpy(
-        ids_ptr_.get(), ids.data(), sizeof(unsigned) * ids.size(),
+        ids_ptr_.get(), ids.data(), sizeof(std::uint32_t) * ids.size(),
         cudaMemcpyHostToDevice));
   ::pick_fw_dev<<<dim3(g1, bs), dim1_x_>>>(
-      CDATA(x), static_cast<const unsigned *>(ids_ptr_.get()),
+      CDATA(x), static_cast<const std::uint32_t *>(ids_ptr_.get()),
       wy * x.shape()[dim], wy,
       x.shape().has_batch() * x.shape().volume(), ids.size() > 1, sy,
       DATA(y));
 }
 
 void CUDA::slice_fw_impl(
-    const Tensor &x, unsigned dim, unsigned offset, Tensor &y) {
-  const unsigned base = y.shape().lower_volume(dim);
-  const unsigned span = base * y.shape()[dim];
-  const unsigned skip = base * x.shape()[dim];
-  const unsigned size = y.shape().size();
-  const unsigned num_blocks = GRID_SIZE(size, dim1_x_);
+    const Tensor &x, std::uint32_t dim, std::uint32_t offset, Tensor &y) {
+  const std::uint32_t base = y.shape().lower_volume(dim);
+  const std::uint32_t span = base * y.shape()[dim];
+  const std::uint32_t skip = base * x.shape()[dim];
+  const std::uint32_t size = y.shape().size();
+  const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::slice_fw_dev<<<num_blocks, dim1_x_>>>(
       CDATA(x) + base * offset, span, skip, size, DATA(y));
 }
 
 void CUDA::concat_fw_impl(
-    const std::vector<const Tensor *> &xs, unsigned dim, Tensor &y) {
-  const unsigned new_bs = y.shape().batch();
-  const unsigned base = y.shape().lower_volume(dim);
-  const unsigned skip = base * y.shape()[dim];
-  unsigned repeat = y.shape().volume() / skip;
+    const std::vector<const Tensor *> &xs, std::uint32_t dim, Tensor &y) {
+  const std::uint32_t new_bs = y.shape().batch();
+  const std::uint32_t base = y.shape().lower_volume(dim);
+  const std::uint32_t skip = base * y.shape()[dim];
+  std::uint32_t repeat = y.shape().volume() / skip;
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  unsigned offset = 0;
+  std::uint32_t offset = 0;
   for (const Tensor *x : xs) {
-    const unsigned span = base * x->shape()[dim];
-    const unsigned x_size = span * repeat * x->shape().batch();
-    const unsigned y_size = span * repeat * new_bs;
-    const unsigned num_blocks = GRID_SIZE(y_size, dim1_x_);
+    const std::uint32_t span = base * x->shape()[dim];
+    const std::uint32_t x_size = span * repeat * x->shape().batch();
+    const std::uint32_t y_size = span * repeat * new_bs;
+    const std::uint32_t num_blocks = GRID_SIZE(y_size, dim1_x_);
     ::concat_fw_dev<<<num_blocks, dim1_x_>>>(
        CDATA(*x), span, skip, x_size, y_size, DATA(y) + offset);
     offset += span;
@@ -833,44 +833,44 @@ void CUDA::concat_fw_impl(
 }
 
 void CUDA::pick_bw_impl(
-    const Tensor &gy, const std::vector<unsigned>& ids, unsigned dim,
+    const Tensor &gy, const std::vector<std::uint32_t>& ids, std::uint32_t dim,
     Tensor &gx) {
-  const unsigned wy = gy.shape().lower_volume(dim);
-  const unsigned sy = gy.shape().volume();
-  const unsigned g1 = GRID_SIZE(sy, dim1_x_);
-  const unsigned bs = gy.shape().batch();
+  const std::uint32_t wy = gy.shape().lower_volume(dim);
+  const std::uint32_t sy = gy.shape().volume();
+  const std::uint32_t g1 = GRID_SIZE(sy, dim1_x_);
+  const std::uint32_t bs = gy.shape().batch();
 
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CUDA_CALL(::cudaMemcpy(
-        ids_ptr_.get(), ids.data(), sizeof(unsigned) * ids.size(),
+        ids_ptr_.get(), ids.data(), sizeof(std::uint32_t) * ids.size(),
         cudaMemcpyHostToDevice));
   ::pick_bw_dev<<<dim3(g1, bs), dim1_x_>>>(
-      CDATA(gy), static_cast<const unsigned *>(ids_ptr_.get()),
+      CDATA(gy), static_cast<const std::uint32_t *>(ids_ptr_.get()),
       wy *gx.shape()[dim], wy,
       gx.shape().has_batch() * gx.shape().volume(), ids.size() > 1, sy,
       DATA(gx));
 }
 
 void CUDA::slice_bw_impl(
-    const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) {
+    const Tensor &gy, std::uint32_t dim, std::uint32_t offset, Tensor &gx) {
   const Shape &sx = gx.shape();
   const Shape &sy = gy.shape();
-  const unsigned base = sx.lower_volume(dim);
-  const unsigned ox = base * offset;
-  const unsigned wx = base * sx[dim];
-  const unsigned wy = base * sy[dim];
-  const unsigned repeat = sx.volume() / wx;
-  const unsigned nx = repeat * sx.batch();
-  const unsigned ny = repeat * sy.batch();
-  const unsigned g1 = GRID_SIZE(wy * std::max(nx, ny), dim1_x_);
+  const std::uint32_t base = sx.lower_volume(dim);
+  const std::uint32_t ox = base * offset;
+  const std::uint32_t wx = base * sx[dim];
+  const std::uint32_t wy = base * sy[dim];
+  const std::uint32_t repeat = sx.volume() / wx;
+  const std::uint32_t nx = repeat * sx.batch();
+  const std::uint32_t ny = repeat * sy.batch();
+  const std::uint32_t g1 = GRID_SIZE(wy * std::max(nx, ny), dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::slice_bw_dev<<<g1, dim1_x_>>>(CDATA(gy), wx, wy, nx, ny, DATA(gx) + ox);
 }
 
 #define CUDADEV_FW_X(name) \
 void CUDA::name##_fw_impl(const Tensor &x, Tensor &y) { \
-  const unsigned size = x.shape().size(); \
-  const unsigned num_blocks = GRID_SIZE(size, dim1_x_); \
+  const std::uint32_t size = x.shape().size(); \
+  const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_); \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_fw_dev<<<num_blocks, dim1_x_>>>(CDATA(x), size, DATA(y)); \
 }
@@ -878,8 +878,8 @@ void CUDA::name##_fw_impl(const Tensor &x, Tensor &y) { \
 #define CUDADEV_BW_X(name) \
 void CUDA::name##_bw_impl( \
     const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) { \
-  const unsigned size = x.shape().size(); \
-  const unsigned num_blocks = GRID_SIZE(size, dim1_x_); \
+  const std::uint32_t size = x.shape().size(); \
+  const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_); \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_bw_dev<<<num_blocks, dim1_x_>>>( \
       CDATA(x), CDATA(y), CDATA(gy), size, DATA(gx)); \
@@ -887,8 +887,8 @@ void CUDA::name##_bw_impl( \
 
 #define CUDADEV_FW_X_CONST(name) \
 void CUDA::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
-  const unsigned size = x.shape().size(); \
-  const unsigned num_blocks = GRID_SIZE(size,dim1_x_); \
+  const std::uint32_t size = x.shape().size(); \
+  const std::uint32_t num_blocks = GRID_SIZE(size,dim1_x_); \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_fw_dev<<<num_blocks, dim1_x_>>>(CDATA(x), k, size, DATA(y)); \
 }
@@ -896,8 +896,8 @@ void CUDA::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
 #define CUDADEV_BW_X_CONST(name) \
 void CUDA::name##_bw_impl( \
     const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) { \
-  const unsigned size = x.shape().size(); \
-  const unsigned num_blocks = GRID_SIZE(size, dim1_x_); \
+  const std::uint32_t size = x.shape().size(); \
+  const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_); \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_bw_dev<<<num_blocks, dim1_x_>>>( \
       CDATA(x), CDATA(y), CDATA(gy), k, size, DATA(gx)); \
@@ -905,9 +905,9 @@ void CUDA::name##_bw_impl( \
 
 #define CUDADEV_FW_X_SCALAR(name) \
 void CUDA::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
-  const unsigned size = y.shape().volume(); \
-  const unsigned g1 = GRID_SIZE(size, dim1_x_); \
-  const unsigned g2 = y.shape().batch(); \
+  const std::uint32_t size = y.shape().volume(); \
+  const std::uint32_t g1 = GRID_SIZE(size, dim1_x_); \
+  const std::uint32_t g2 = y.shape().batch(); \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_fw_dev<<<dim3(g1, g2, 1), dim1_x_>>>( \
       CDATA(x), CDATA(k), size, \
@@ -916,9 +916,9 @@ void CUDA::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
 
 #define CUDADEV_FW_AB(name) \
 void CUDA::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
-  const unsigned size = y.shape().volume(); \
-  const unsigned g1 = GRID_SIZE(size, dim1_x_); \
-  const unsigned g2 = y.shape().batch(); \
+  const std::uint32_t size = y.shape().volume(); \
+  const std::uint32_t g1 = GRID_SIZE(size, dim1_x_); \
+  const std::uint32_t g2 = y.shape().batch(); \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_fw_dev<<<dim3(g1, g2, 1), dim1_x_>>>( \
       CDATA(a), CDATA(b), size, \
@@ -929,9 +929,9 @@ void CUDA::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
 void CUDA::name##_bw_impl( \
     const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy, \
     Tensor &ga, Tensor &gb) { \
-  const unsigned size = y.shape().volume(); \
-  const unsigned g1 = GRID_SIZE(size, dim1_x_); \
-  const unsigned g2 = y.shape().batch(); \
+  const std::uint32_t size = y.shape().volume(); \
+  const std::uint32_t g1 = GRID_SIZE(size, dim1_x_); \
+  const std::uint32_t g2 = y.shape().batch(); \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_bw_dev<<<dim3(g1, g2, 1), dim1_x_>>>( \
       CDATA(a), CDATA(b), CDATA(y), CDATA(gy), size, \
@@ -1003,30 +1003,30 @@ CUDADEV_BW_AB(divide);
 #undef CUDADEV_BW_AB
 
 void CUDA::transpose_fw_impl(const Tensor &x, Tensor &y) {
-  const unsigned rows = x.shape()[0];
-  const unsigned cols = x.shape()[1];
-  const unsigned bs = x.shape().batch();
-  const unsigned g1 = GRID_SIZE(rows, dim2_x_);
-  const unsigned g2 = GRID_SIZE(cols, dim2_y_);
+  const std::uint32_t rows = x.shape()[0];
+  const std::uint32_t cols = x.shape()[1];
+  const std::uint32_t bs = x.shape().batch();
+  const std::uint32_t g1 = GRID_SIZE(rows, dim2_x_);
+  const std::uint32_t g2 = GRID_SIZE(cols, dim2_y_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::transpose_fw_dev<<<dim3(g1, g2, bs), dim3(dim2_x_, dim2_y_, 1)>>>(
       CDATA(x), rows, cols, DATA(y));
 }
 
 void CUDA::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
-  const unsigned di = a.shape()[0];
-  const unsigned dj = a.shape()[1];
-  const unsigned dk = b.shape()[1];
+  const std::uint32_t di = a.shape()[0];
+  const std::uint32_t dj = a.shape()[1];
+  const std::uint32_t dk = b.shape()[1];
   float alpha = 1.;
   float beta = 0.;
   CUDA_CALL(::cudaSetDevice(dev_id_));
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
-    const unsigned a_skip = di * dj;
-    const unsigned b_skip = b.shape().has_batch() * dj * dk;
-    const unsigned y_skip = di * dk;
-    const unsigned bs = a.shape().batch();
-    for (unsigned n = 0; n < bs; ++n) {
+    const std::uint32_t a_skip = di * dj;
+    const std::uint32_t b_skip = b.shape().has_batch() * dj * dk;
+    const std::uint32_t y_skip = di * dk;
+    const std::uint32_t bs = a.shape().batch();
+    for (std::uint32_t n = 0; n < bs; ++n) {
       CUBLAS_CALL(::cublasSgemm(
             state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_N,
             di, dk, dj,
@@ -1045,11 +1045,11 @@ void CUDA::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
 
 void CUDA::transpose_bw_impl(
     const Tensor &, const Tensor &, const Tensor &gy, Tensor &gx) {
-  const unsigned rows = gx.shape()[0];
-  const unsigned cols = gx.shape()[1];
-  const unsigned bs = gx.shape().batch();
-  const unsigned g1 = GRID_SIZE(rows, dim2_x_);
-  const unsigned g2 = GRID_SIZE(cols, dim2_y_);
+  const std::uint32_t rows = gx.shape()[0];
+  const std::uint32_t cols = gx.shape()[1];
+  const std::uint32_t bs = gx.shape().batch();
+  const std::uint32_t g1 = GRID_SIZE(rows, dim2_x_);
+  const std::uint32_t g2 = GRID_SIZE(cols, dim2_y_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::transpose_bw_dev<<<dim3(g1, g2, bs), dim3(dim2_x_, dim2_y_, 1)>>>(
       CDATA(gy), rows, cols, DATA(gx));
@@ -1060,19 +1060,19 @@ void CUDA::matmul_bw_impl(
     Tensor &ga, Tensor &gb) {
   // ga += gy . b^T
   // gb += a^T . gy
-  const unsigned di = a.shape()[0];
-  const unsigned dj = a.shape()[1];
-  const unsigned dk = b.shape()[1];
+  const std::uint32_t di = a.shape()[0];
+  const std::uint32_t dj = a.shape()[1];
+  const std::uint32_t dk = b.shape()[1];
   float alpha = 1.;
   float beta = 1.;
   CUDA_CALL(::cudaSetDevice(dev_id_));
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
-    const unsigned a_skip = di * dj;
-    const unsigned b_skip = b.shape().has_batch() * dj * dk;
-    const unsigned y_skip = di * dk;
-    const unsigned bs = a.shape().batch();
-    for (unsigned n = 0; n < bs; ++n) {
+    const std::uint32_t a_skip = di * dj;
+    const std::uint32_t b_skip = b.shape().has_batch() * dj * dk;
+    const std::uint32_t y_skip = di * dk;
+    const std::uint32_t bs = a.shape().batch();
+    for (std::uint32_t n = 0; n < bs; ++n) {
       CUBLAS_CALL(::cublasSgemm(
             state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_T,
             di, dj, dk,
@@ -1099,11 +1099,11 @@ void CUDA::matmul_bw_impl(
   }
 }
 
-void CUDA::sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
-  const unsigned n = x.shape()[dim];
-  const unsigned r = y.shape().size();
-  const unsigned s = y.shape().lower_volume(dim);
-  unsigned block_size = dim1_x_;
+void CUDA::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
+  const std::uint32_t n = x.shape()[dim];
+  const std::uint32_t r = y.shape().size();
+  const std::uint32_t s = y.shape().lower_volume(dim);
+  std::uint32_t block_size = dim1_x_;
   while (block_size >> 1 >= n) block_size >>= 1;
   CUDA_CALL(::cudaSetDevice(dev_id_));
   switch (block_size) {
@@ -1124,11 +1124,11 @@ void CUDA::sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
   }
 }
 
-void CUDA::logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
-  const unsigned n = x.shape()[dim];
-  const unsigned r = y.shape().size();
-  const unsigned s = y.shape().lower_volume(dim);
-  unsigned block_size = dim1_x_;
+void CUDA::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
+  const std::uint32_t n = x.shape()[dim];
+  const std::uint32_t r = y.shape().size();
+  const std::uint32_t s = y.shape().lower_volume(dim);
+  std::uint32_t block_size = dim1_x_;
   while (block_size >> 1 >= n) block_size >>= 1;
   CUDA_CALL(::cudaSetDevice(dev_id_));
   switch (block_size) {
@@ -1150,43 +1150,43 @@ void CUDA::logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
 }
 
 void CUDA::broadcast_fw_impl(
-    const Tensor &x, unsigned dim, unsigned size, Tensor &y) {
-  const unsigned skip1 = y.shape().lower_volume(dim);
-  const unsigned skip2 = skip1 * size;
-  const unsigned total = y.shape().size();
-  const unsigned g1 = GRID_SIZE(total, dim1_x_);
+    const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) {
+  const std::uint32_t skip1 = y.shape().lower_volume(dim);
+  const std::uint32_t skip2 = skip1 * size;
+  const std::uint32_t total = y.shape().size();
+  const std::uint32_t g1 = GRID_SIZE(total, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::broadcast_fw_dev<<<g1, dim1_x_>>>(CDATA(x), skip1, skip2, total, DATA(y));
 }
 
 void CUDA::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
-  const unsigned size = y.shape().size();
-  const unsigned g1 = GRID_SIZE(size, dim1_x_);
+  const std::uint32_t size = y.shape().size();
+  const std::uint32_t g1 = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::batch_sum_fw_dev<<<g1, dim1_x_>>>(
       CDATA(x), size, x.shape().batch(), DATA(y));
 }
 
 void CUDA::inplace_multiply_const_impl(float k, Tensor &x) {
-  const unsigned size = x.shape().size();
-  const unsigned g1 = GRID_SIZE(size, dim1_x_);
+  const std::uint32_t size = x.shape().size();
+  const std::uint32_t g1 = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::inplace_multiply_const_dev<<<g1, dim1_x_>>>(k, size, DATA(x));
 }
 
 void CUDA::inplace_add_impl(const Tensor &x, Tensor &y) {
-  const unsigned size = y.shape().volume();
-  const unsigned g1 = GRID_SIZE(size, dim1_x_);
-  const unsigned bs = std::max(x.shape().batch(), y.shape().batch());
+  const std::uint32_t size = y.shape().volume();
+  const std::uint32_t g1 = GRID_SIZE(size, dim1_x_);
+  const std::uint32_t bs = std::max(x.shape().batch(), y.shape().batch());
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::inplace_add_dev<<<dim3(g1, bs, 1), dim1_x_>>>(
       CDATA(x), size, x.shape().has_batch(), y.shape().has_batch(), DATA(y));
 }
 
 void CUDA::inplace_subtract_impl(const Tensor &x, Tensor &y) {
-  const unsigned size = y.shape().volume();
-  const unsigned g1 = GRID_SIZE(size, dim1_x_);
-  const unsigned bs = std::max(x.shape().batch(), y.shape().batch());
+  const std::uint32_t size = y.shape().volume();
+  const std::uint32_t g1 = GRID_SIZE(size, dim1_x_);
+  const std::uint32_t bs = std::max(x.shape().batch(), y.shape().batch());
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::inplace_subtract_dev<<<dim3(g1, bs, 1), dim1_x_>>>(
       CDATA(x), size, x.shape().has_batch(), y.shape().has_batch(), DATA(y));

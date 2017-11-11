@@ -41,7 +41,7 @@ TEST_F(InitializerImplTest, CheckUniform) {
     {-1, 0, -.5, 1./12},
     {-.70710678, .70710678, 0, 2./12},
   };
-  const unsigned N = 768;
+  const std::uint32_t N = 768;
 
   for (const auto &tc : test_cases) {
     const Uniform init(tc.lower, tc.upper);
@@ -73,7 +73,7 @@ TEST_F(InitializerImplTest, CheckNormal) {
     {3, 2}, {-3, 2},
     {3, .5}, {-3, .5},
   };
-  const unsigned N = 768;
+  const std::uint32_t N = 768;
 
   for (const auto &tc : test_cases) {
     const Normal init(tc.mean, tc.sd);
@@ -94,12 +94,12 @@ TEST_F(InitializerImplTest, CheckNormal) {
 }
 
 TEST_F(InitializerImplTest, CheckIdentity) {
-  const unsigned N = 768;
+  const std::uint32_t N = 768;
   Tensor x = dev.new_tensor_by_constant({N, N}, 0);
   const Identity init;
   init.apply(x);
   const std::vector<float> values = x.to_vector();
-  for (unsigned i = 0; i < N * N; ++i) {
+  for (std::uint32_t i = 0; i < N * N; ++i) {
     EXPECT_EQ(!(i % (N + 1)), values[i]);
   }
 }
@@ -114,7 +114,7 @@ TEST_F(InitializerImplTest, CheckInvalidIdentity) {
 }
 
 TEST_F(InitializerImplTest, CheckXavierUniform) {
-  const unsigned N = 768;
+  const std::uint32_t N = 768;
   Tensor x = dev.new_tensor_by_constant({N, N}, 0);
 
   for (float scale : {.5f, 1.f, 2.f}) {
@@ -151,7 +151,7 @@ TEST_F(InitializerImplTest, CheckInvalidXavierUniform) {
 
 TEST_F(InitializerImplTest, CheckXavierNormal) {
   // NOTE(odashi): This test checks only mean and SD.
-  const unsigned N = 768;
+  const std::uint32_t N = 768;
   Tensor x = dev.new_tensor_by_constant({N, N}, 0);
 
   for (float scale : {.5f, 1.f, 2.f}) {
