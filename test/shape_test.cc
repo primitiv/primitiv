@@ -54,7 +54,7 @@ TEST_F(ShapeTest, CheckNewByInitializerList) {
 
 TEST_F(ShapeTest, CheckNewByVector) {
   {
-    const Shape shape(vector<unsigned> {});
+    const Shape shape(vector<std::uint32_t> {});
     EXPECT_EQ(1u, shape[0]);
     EXPECT_EQ(1u, shape[1]);
     EXPECT_EQ(1u, shape[100]);
@@ -64,7 +64,7 @@ TEST_F(ShapeTest, CheckNewByVector) {
     EXPECT_EQ(1u, shape.size());
   }
   {
-    const Shape shape(vector<unsigned> {1, 2, 3}, 4);
+    const Shape shape(vector<std::uint32_t> {1, 2, 3}, 4);
     EXPECT_EQ(1u, shape[0]);
     EXPECT_EQ(2u, shape[1]);
     EXPECT_EQ(3u, shape[2]);
@@ -87,8 +87,8 @@ TEST_F(ShapeTest, CheckInvalidNew) {
   EXPECT_THROW(Shape({}, 0), Error);
   EXPECT_NO_THROW(Shape({1, 2, 3, 4, 5, 6, 7, 8}, 10));
   EXPECT_THROW(Shape({1, 2, 3, 4, 5, 6, 7, 8, 9}, 10), Error);
-  EXPECT_NO_THROW(Shape(vector<unsigned> {1, 2, 3, 4, 5, 6, 7, 8}, 10));
-  EXPECT_THROW(Shape(vector<unsigned> {1, 2, 3, 4, 5, 6, 7, 8, 9}, 10), Error);
+  EXPECT_NO_THROW(Shape(vector<std::uint32_t> {1, 2, 3, 4, 5, 6, 7, 8}, 10));
+  EXPECT_THROW(Shape(vector<std::uint32_t> {1, 2, 3, 4, 5, 6, 7, 8, 9}, 10), Error);
 }
 
 TEST_F(ShapeTest, CheckNumElementsUnderRank) {

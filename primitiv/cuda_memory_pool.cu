@@ -11,10 +11,10 @@ using std::make_pair;
 
 namespace primitiv {
 
-std::uint64_t CUDAMemoryPool::next_pool_id_ = 0;
-std::unordered_map<std::uint64_t, CUDAMemoryPool *> CUDAMemoryPool::pools_;
+std::size_t CUDAMemoryPool::next_pool_id_ = 0;
+std::unordered_map<std::size_t, CUDAMemoryPool *> CUDAMemoryPool::pools_;
 
-CUDAMemoryPool::CUDAMemoryPool(unsigned device_id)
+CUDAMemoryPool::CUDAMemoryPool(std::uint32_t device_id)
 : pool_id_(next_pool_id_++)
 , dev_id_(device_id)
 , reserved_(64)
@@ -22,7 +22,7 @@ CUDAMemoryPool::CUDAMemoryPool(unsigned device_id)
   // Retrieves device properties.
   int max_devs;
   CUDA_CALL(::cudaGetDeviceCount(&max_devs));
-  if (dev_id_ >= static_cast<unsigned>(max_devs)) {
+  if (dev_id_ >= static_cast<std::uint32_t>(max_devs)) {
     THROW_ERROR(
         "Invalid CUDA device ID. given: " << dev_id_
         << " >= #devices: " << max_devs);
@@ -45,9 +45,9 @@ CUDAMemoryPool::~CUDAMemoryPool() {
   release_reserved_blocks();
 }
 
-std::shared_ptr<void> CUDAMemoryPool::allocate(std::uint64_t size) {
-  static const unsigned MAX_SCALE = 63;
-  unsigned scale = 0;
+std::shared_ptr<void> CUDAMemoryPool::allocate(std::size_t size) {
+  static const std::uint32_t MAX_SCALE = 63;
+  std::uint32_t scale = 0;
   while (1ull << scale < size) {
     if (scale == MAX_SCALE) {
       THROW_ERROR(
@@ -77,7 +77,7 @@ std::shared_ptr<void> CUDAMemoryPool::allocate(std::uint64_t size) {
   return std::shared_ptr<void>(ptr, CUDAMemoryDeleter(pool_id_));
 }
 
-void CUDAMemoryPool::free(std::uint64_t pool_id, void *ptr) {
+void CUDAMemoryPool::free(std::size_t pool_id, void *ptr) {
   auto it = pools_.find(pool_id);
   if (it != pools_.end()) {
     // Found a corresponding pool object, delete ptr.

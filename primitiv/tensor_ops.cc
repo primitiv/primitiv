@@ -117,23 +117,23 @@ Tensor copy(const Tensor &x, Device &dev) {
 }
 
 template<>
-Tensor pick(const Tensor &x, const std::vector<unsigned> &ids, unsigned dim) {
+Tensor pick(const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim) {
   return x.device().pick_fw(x, ids, dim);
 }
 
 template<>
-Tensor slice(const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
+Tensor slice(const Tensor &x, std::uint32_t dim, std::uint32_t lower, std::uint32_t upper) {
   return x.device().slice_fw(x, dim, lower, upper);
 }
 
 template<>
-Tensor concat(const std::vector<const Tensor *> &xs, unsigned dim) {
+Tensor concat(const std::vector<const Tensor *> &xs, std::uint32_t dim) {
   if (xs.empty()) THROW_ERROR("No tensors to be concatenated.");
   return xs[0]->device().concat_fw(xs, dim);
 }
 
 template<>
-Tensor concat(const std::vector<Tensor> &xs, unsigned dim) {
+Tensor concat(const std::vector<Tensor> &xs, std::uint32_t dim) {
   return concat(::obj_to_ptr(xs), dim);
 }
 
@@ -223,38 +223,38 @@ Tensor elu(const Tensor &x, float a) {
 }
 
 template<>
-Tensor sum(const Tensor &x, unsigned dim) {
+Tensor sum(const Tensor &x, std::uint32_t dim) {
   return x.device().sum_fw(x, dim);
 }
 
 template<>
-Tensor broadcast(const Tensor &x, unsigned dim, unsigned size) {
+Tensor broadcast(const Tensor &x, std::uint32_t dim, std::uint32_t size) {
   return x.device().broadcast_fw(x, dim, size);
 }
 
 template<>
-Tensor logsumexp(const Tensor &x, unsigned dim) {
+Tensor logsumexp(const Tensor &x, std::uint32_t dim) {
   return x.device().logsumexp_fw(x, dim);
 }
 
 template<>
-Tensor log_softmax(const Tensor &x, unsigned dim) {
+Tensor log_softmax(const Tensor &x, std::uint32_t dim) {
   return x - broadcast(logsumexp(x, dim), dim, x.shape()[dim]);
 }
 
 template<>
-Tensor softmax(const Tensor &x, unsigned dim) {
+Tensor softmax(const Tensor &x, std::uint32_t dim) {
   return exp(log_softmax(x, dim));
 }
 
 template<>
-Tensor softmax_cross_entropy(const Tensor &x, const Tensor &t, unsigned dim) {
+Tensor softmax_cross_entropy(const Tensor &x, const Tensor &t, std::uint32_t dim) {
   return -sum(t * log_softmax(x, dim), dim);
 }
 
 template<>
 Tensor softmax_cross_entropy(
-    const Tensor &x, const std::vector<unsigned> &ids, unsigned dim) {
+    const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim) {
   return pick(-log_softmax(x, dim), ids, dim);
 }
 
@@ -273,7 +273,7 @@ Tensor constant<Tensor>(const Shape &shape, float k, Device &dev) {
 }
 
 template<>
-Tensor identity<Tensor>(unsigned size, Device &dev) {
+Tensor identity<Tensor>(std::uint32_t size, Device &dev) {
   return dev.identity(size);
 }
 

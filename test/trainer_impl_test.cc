@@ -128,7 +128,7 @@ TEST_F(TrainerImplTest, CheckSGDGetConfigs) {
   trainer.set_weight_decay(4);
   trainer.set_gradient_clipping(5);
 
-  std::unordered_map<std::string, unsigned> uint_configs;
+  std::unordered_map<std::string, std::uint32_t> uint_configs;
   std::unordered_map<std::string, float> float_configs;
   trainer.get_configs(uint_configs, float_configs);
 
@@ -148,7 +148,7 @@ TEST_F(TrainerImplTest, CheckSGDSetConfigs) {
   trainer.set_weight_decay(0);
   trainer.set_gradient_clipping(0);
 
-  std::unordered_map<std::string, unsigned> uint_configs {
+  std::unordered_map<std::string, std::uint32_t> uint_configs {
     std::make_pair("Trainer.epoch", 2),
   };
   std::unordered_map<std::string, float> float_configs {
@@ -183,7 +183,7 @@ TEST_F(TrainerImplTest, CheckSGDUpdate) {
     {9.5099005e-01, 1.9019801e+00, 2.8529701e+00, 3.8039602e+00},
   };
 
-  for (unsigned i = 0; i < 5; ++i) {
+  for (std::uint32_t i = 0; i < 5; ++i) {
     trainer.reset_gradients();
     EXPECT_TRUE(vector_match(
           vector<float>(4, 0), param.gradient().to_vector()));
@@ -223,7 +223,7 @@ TEST_F(TrainerImplTest, CheckMomentumSGDGetConfigs) {
   trainer.set_weight_decay(5);
   trainer.set_gradient_clipping(6);
 
-  std::unordered_map<std::string, unsigned> uint_configs;
+  std::unordered_map<std::string, std::uint32_t> uint_configs;
   std::unordered_map<std::string, float> float_configs;
   trainer.get_configs(uint_configs, float_configs);
 
@@ -244,7 +244,7 @@ TEST_F(TrainerImplTest, CheckMomentumSGDSetConfigs) {
   trainer.set_weight_decay(0);
   trainer.set_gradient_clipping(0);
 
-  std::unordered_map<std::string, unsigned> uint_configs {
+  std::unordered_map<std::string, std::uint32_t> uint_configs {
     std::make_pair("Trainer.epoch", 3),
   };
   std::unordered_map<std::string, float> float_configs {
@@ -290,7 +290,7 @@ TEST_F(TrainerImplTest, CheckMomentumSGDUpdate) {
     {-4.0779430e-03, -8.1558859e-03, -1.2233829e-02, -1.6311772e-02},
   };
 
-  for (unsigned i = 0; i < 5; ++i) {
+  for (std::uint32_t i = 0; i < 5; ++i) {
     trainer.reset_gradients();
     EXPECT_TRUE(vector_match(
           vector<float>(4, 0), param.gradient().to_vector()));
@@ -332,7 +332,7 @@ TEST_F(TrainerImplTest, CheckAdaGradGetConfigs) {
   trainer.set_weight_decay(5);
   trainer.set_gradient_clipping(6);
 
-  std::unordered_map<std::string, unsigned> uint_configs;
+  std::unordered_map<std::string, std::uint32_t> uint_configs;
   std::unordered_map<std::string, float> float_configs;
   trainer.get_configs(uint_configs, float_configs);
 
@@ -353,7 +353,7 @@ TEST_F(TrainerImplTest, CheckAdaGradSetConfigs) {
   trainer.set_weight_decay(0);
   trainer.set_gradient_clipping(0);
 
-  std::unordered_map<std::string, unsigned> uint_configs {
+  std::unordered_map<std::string, std::uint32_t> uint_configs {
     std::make_pair("Trainer.epoch", 3),
   };
   std::unordered_map<std::string, float> float_configs {
@@ -400,7 +400,7 @@ TEST_F(TrainerImplTest, CheckAdaGradUpdate) {
     {4.9984450e+00, 1.9996889e+01, 4.4995335e+01, 7.9993774e+01}
   };
 
-  for (unsigned i = 0; i < 5; ++i) {
+  for (std::uint32_t i = 0; i < 5; ++i) {
     trainer.reset_gradients();
     EXPECT_TRUE(vector_match(
           vector<float>(4, 0), param.gradient().to_vector()));
@@ -443,7 +443,7 @@ TEST_F(TrainerImplTest, CheckRMSPropGetConfigs) {
   trainer.set_weight_decay(6);
   trainer.set_gradient_clipping(7);
 
-  std::unordered_map<std::string, unsigned> uint_configs;
+  std::unordered_map<std::string, std::uint32_t> uint_configs;
   std::unordered_map<std::string, float> float_configs;
   trainer.get_configs(uint_configs, float_configs);
 
@@ -465,7 +465,7 @@ TEST_F(TrainerImplTest, CheckRMSPropSetConfigs) {
   trainer.set_weight_decay(0);
   trainer.set_gradient_clipping(0);
 
-  std::unordered_map<std::string, unsigned> uint_configs {
+  std::unordered_map<std::string, std::uint32_t> uint_configs {
     std::make_pair("Trainer.epoch", 4),
   };
   std::unordered_map<std::string, float> float_configs {
@@ -514,7 +514,7 @@ TEST_F(TrainerImplTest, CheckRMSPropUpdate) {
     {4.0504143e-01, 1.6290820e+00, 3.6721420e+00, 6.5342226e+00}
   };
 
-  for (unsigned i = 0; i < 5; ++i) {
+  for (std::uint32_t i = 0; i < 5; ++i) {
     trainer.reset_gradients();
     EXPECT_TRUE(vector_match(
           vector<float>(4, 0), param.gradient().to_vector()));
@@ -556,7 +556,7 @@ TEST_F(TrainerImplTest, CheckAdaDeltaGetConfigs) {
   trainer.set_weight_decay(5);
   trainer.set_gradient_clipping(6);
 
-  std::unordered_map<std::string, unsigned> uint_configs;
+  std::unordered_map<std::string, std::uint32_t> uint_configs;
   std::unordered_map<std::string, float> float_configs;
   trainer.get_configs(uint_configs, float_configs);
 
@@ -577,7 +577,7 @@ TEST_F(TrainerImplTest, CheckAdaDeltaSetConfigs) {
   trainer.set_weight_decay(0);
   trainer.set_gradient_clipping(0);
 
-  std::unordered_map<std::string, unsigned> uint_configs {
+  std::unordered_map<std::string, std::uint32_t> uint_configs {
     std::make_pair("Trainer.epoch", 3),
   };
   std::unordered_map<std::string, float> float_configs {
@@ -634,7 +634,7 @@ TEST_F(TrainerImplTest, CheckAdaDeltaUpdate) {
     {2.2578933e-01, 9.0401638e-01, 2.0346815e+00, 3.6177848e+00},
   };
 
-  for (unsigned i = 0; i < 5; ++i) {
+  for (std::uint32_t i = 0; i < 5; ++i) {
     trainer.reset_gradients();
     EXPECT_TRUE(vector_match(
           vector<float>(4, 0), param.gradient().to_vector()));
@@ -680,7 +680,7 @@ TEST_F(TrainerImplTest, CheckAdamGetConfigs) {
   trainer.set_weight_decay(7);
   trainer.set_gradient_clipping(8);
 
-  std::unordered_map<std::string, unsigned> uint_configs;
+  std::unordered_map<std::string, std::uint32_t> uint_configs;
   std::unordered_map<std::string, float> float_configs;
   trainer.get_configs(uint_configs, float_configs);
 
@@ -703,7 +703,7 @@ TEST_F(TrainerImplTest, CheckAdamSetConfigs) {
   trainer.set_weight_decay(0);
   trainer.set_gradient_clipping(0);
 
-  std::unordered_map<std::string, unsigned> uint_configs {
+  std::unordered_map<std::string, std::uint32_t> uint_configs {
     std::make_pair("Trainer.epoch", 5),
   };
   std::unordered_map<std::string, float> float_configs {
@@ -764,7 +764,7 @@ TEST_F(TrainerImplTest, CheckAdamUpdate) {
     {4.9880123e-03, 1.9956044e-02, 4.4904096e-02, 7.9832168e-02},
   };
 
-  for (unsigned i = 0; i < 5; ++i) {
+  for (std::uint32_t i = 0; i < 5; ++i) {
     trainer.reset_gradients();
     EXPECT_TRUE(vector_match(
           vector<float>(4, 0), param.gradient().to_vector()));

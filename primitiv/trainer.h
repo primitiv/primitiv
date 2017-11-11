@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_TRAINER_H_
 #define PRIMITIV_TRAINER_H_
 
+#include <cstdint>
 #include <memory>
 #include <unordered_set>
 #include <primitiv/error.h>
@@ -36,13 +37,13 @@ public:
    * Retrieves current epoch.
    * @return Current epoch.
    */
-  unsigned get_epoch() const { return epoch_; }
+  std::uint32_t get_epoch() const { return epoch_; }
 
   /**
    * Sets current epoch.
    * @param epoch New epoch.
    */
-  void set_epoch(unsigned epoch) { epoch_ = epoch; }
+  void set_epoch(std::uint32_t epoch) { epoch_ = epoch; }
 
   /**
    * Retrieves current learning rate scaling factor.
@@ -119,24 +120,24 @@ public:
 
   /**
    * Gathers configuration values.
-   * @param uint_configs Configurations with unsigned type.
+   * @param uint_configs Configurations with std::uint32_t type.
    * @param float_configs Configurations with float type.
    */
   virtual void get_configs(
-      std::unordered_map<std::string, unsigned> &uint_configs,
+      std::unordered_map<std::string, std::uint32_t> &uint_configs,
       std::unordered_map<std::string, float> &float_configs) const;
 
   /**
    * Sets configuration values.
-   * @param uint_configs Configurations with unsigned type.
+   * @param uint_configs Configurations with std::uint32_t type.
    * @param float_configs Configurations with float type.
    */
   virtual void set_configs(
-      const std::unordered_map<std::string, unsigned> &uint_configs,
+      const std::unordered_map<std::string, std::uint32_t> &uint_configs,
       const std::unordered_map<std::string, float> &float_configs);
 
 private:
-  unsigned epoch_;
+  std::uint32_t epoch_;
   float lr_scale_;
   float l2_strength_;
   float clip_threshold_;

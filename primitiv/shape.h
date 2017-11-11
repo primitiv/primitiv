@@ -2,6 +2,7 @@
 #define PRIMITIV_SHAPE_H_
 
 #include <array>
+#include <cstdint>
 #include <initializer_list>
 #include <string>
 #include <vector>
@@ -20,7 +21,7 @@ namespace primitiv {
  */
 class Shape {
 public:
-  static const unsigned MAX_DEPTH = 8;
+  static const std::uint32_t MAX_DEPTH = 8;
 
   Shape(const Shape &) = default;
   Shape(Shape &&) = default;
@@ -37,49 +38,49 @@ public:
    * @param dims List of the dimension sizes.
    * @param batch Batch size.
    */
-  Shape(std::initializer_list<unsigned> dims, unsigned batch = 1);
+  Shape(std::initializer_list<std::uint32_t> dims, std::uint32_t batch = 1);
 
   /**
    * Creates a new Shape object.
    * @param dims List of the dimension sizes.
    * @param batch Batch size.
    */
-  Shape(const std::vector<unsigned> &dims, unsigned batch = 1);
+  Shape(const std::vector<std::uint32_t> &dims, std::uint32_t batch = 1);
 
   /**
    * Returns the size of the i-th dimension.
    * @param i Dimension number to check.
    * @return Size of the i-th dimension.
    */
-  unsigned operator[](unsigned i) const { return i < depth_ ? dims_[i] : 1; }
+  std::uint32_t operator[](std::uint32_t i) const { return i < depth_ ? dims_[i] : 1; }
 
   /**
    * Returns the depth (length of non-1 dimensions) of the shape.
    * @return The depth of the shape.
    */
-  unsigned depth() const { return depth_; }
+  std::uint32_t depth() const { return depth_; }
 
   /**
    * Returns the batch size.
    * @return Batch size.
    */
-  unsigned batch() const { return batch_; }
+  std::uint32_t batch() const { return batch_; }
 
   /**
    * Returns the number of elements in each sample.
    * This value is equal to the product of all dimensions.
    * @return Number of elements.
    */
-  unsigned volume() const { return volume_; }
+  std::uint32_t volume() const { return volume_; }
 
   /**
    * Returns the number of elements in 1 to specified dim.
    * @param dim Upper bound of the dimension.
    * @return `dims[0] * dims[1] * ... * dims[dim-1]`
    */
-  unsigned lower_volume(unsigned dim) const {
-    unsigned ret = 1, lim = std::min(dim, depth_);
-    for (unsigned i = 0; i < lim; ++i) ret *= dims_[i];
+  std::uint32_t lower_volume(std::uint32_t dim) const {
+    std::uint32_t ret = 1, lim = std::min(dim, depth_);
+    for (std::uint32_t i = 0; i < lim; ++i) ret *= dims_[i];
     return ret;
   }
 
@@ -88,7 +89,7 @@ public:
    * This value is equal to `batch() * volume()`.
    * @return Number of elements.
    */
-  unsigned size() const { return batch_ * volume_; }
+  std::uint32_t size() const { return batch_ * volume_; }
 
   /**
    * Returns a string representation of the shape.
@@ -153,7 +154,7 @@ public:
    */
   bool has_same_dims(const Shape &rhs) const {
     bool ok = true;
-    for (unsigned i = 0; i < depth_; ++i) ok = ok && dims_[i] == rhs.dims_[i];
+    for (std::uint32_t i = 0; i < depth_; ++i) ok = ok && dims_[i] == rhs.dims_[i];
     return ok && depth_ == rhs.depth_;
   }
 
@@ -165,7 +166,7 @@ public:
    * @return true if both shape have same dimensions regardless the dimension
    *         `dim`, false otherwise.
    */
-  bool has_same_loo_dims(const Shape &rhs, unsigned dim) const;
+  bool has_same_loo_dims(const Shape &rhs, std::uint32_t dim) const;
 
   /**
    * Creates a new shape which have one different dimension.
@@ -173,33 +174,33 @@ public:
    * @param m New size of the dimension `dim`.
    * @return New shape.
    */
-  Shape resize_dim(unsigned dim, unsigned m) const;
+  Shape resize_dim(std::uint32_t dim, std::uint32_t m) const;
 
   /**
    * Creates a new shape which have specified batch size.
    * @param batch New batch size.
    * @return New shape.
    */
-  Shape resize_batch(unsigned batch) const;
+  Shape resize_batch(std::uint32_t batch) const;
 
   /**
    * Directly updates a specified dimension.
    * @param dim Dimension to be updated.
    * @param m New size of the dimension `dim`.
    */
-  void update_dim(unsigned dim, unsigned m);
+  void update_dim(std::uint32_t dim, std::uint32_t m);
 
   /**
    * Directly updates the batch size.
    * @param batch New batch size.
    */
-  void update_batch(unsigned batch);
+  void update_batch(std::uint32_t batch);
 
 private:
-  std::array<unsigned, MAX_DEPTH> dims_;
-  unsigned depth_;
-  unsigned batch_;
-  unsigned volume_;
+  std::array<std::uint32_t, MAX_DEPTH> dims_;
+  std::uint32_t depth_;
+  std::uint32_t batch_;
+  std::uint32_t volume_;
 };
 
 }  // namespace primitiv

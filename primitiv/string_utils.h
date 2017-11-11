@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_STRING_UTILS_H_
 #define PRIMITIV_STRING_UTILS_H_
 
+#include <cstdint>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -23,7 +24,7 @@ std::string join(
   if (strs.empty()) return std::string();
   std::stringstream ss;
   ss << strs[0];
-  for (unsigned i = 1; i < strs.size(); ++i) ss << delim << strs[i];
+  for (std::uint32_t i = 1; i < strs.size(); ++i) ss << delim << strs[i];
   return ss.str();
 }
 

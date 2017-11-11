@@ -23,7 +23,7 @@ public:
    * Creates a Naive object.
    * @param rng_seed The seed value of internal random number generator.
    */
-  explicit Naive(unsigned rng_seed) : rng_(rng_seed) {}
+  explicit Naive(std::uint32_t rng_seed) : rng_(rng_seed) {}
 
   ~Naive() override = default;
 
@@ -34,8 +34,8 @@ private:
   std::shared_ptr<void> new_handle(const Shape &shape) override;
 
   std::vector<float> tensor_to_vector_impl(const Tensor &x) override;
-  std::vector<unsigned> argmax_impl(const Tensor &x, unsigned dim) override;
-  std::vector<unsigned> argmin_impl(const Tensor &x, unsigned dim) override;
+  std::vector<std::uint32_t> argmax_impl(const Tensor &x, std::uint32_t dim) override;
+  std::vector<std::uint32_t> argmin_impl(const Tensor &x, std::uint32_t dim) override;
 
   void reset_tensor_impl(float k, Tensor &x) override;
   void reset_tensor_by_array_impl(const float values[], Tensor &x) override;
@@ -49,12 +49,12 @@ private:
   void random_normal_impl(float mean, float sd, Tensor &y) override;
   void random_log_normal_impl(float mean, float sd, Tensor &y) override;
 
-  void pick_fw_impl(const Tensor &x, const std::vector<unsigned> &ids, unsigned dim, Tensor &y) override;
-  void slice_fw_impl(const Tensor &x, unsigned dim, unsigned offset, Tensor &y) override;
-  void concat_fw_impl(const std::vector<const Tensor *> &xs, unsigned dim, Tensor &y) override;
+  void pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &y) override;
+  void slice_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t offset, Tensor &y) override;
+  void concat_fw_impl(const std::vector<const Tensor *> &xs, std::uint32_t dim, Tensor &y) override;
 
-  void pick_bw_impl(const Tensor &gy, const std::vector<unsigned> &ids, unsigned dim, Tensor &gx) override;
-  void slice_bw_impl(const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) override;
+  void pick_bw_impl(const Tensor &gy, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &gx) override;
+  void slice_bw_impl(const Tensor &gy, std::uint32_t dim, std::uint32_t offset, Tensor &gx) override;
 
   void negate_fw_impl(const Tensor &x, Tensor &y) override;
   void sqrt_fw_impl(const Tensor &x, Tensor &y) override;
@@ -126,9 +126,9 @@ private:
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
       Tensor &ga, Tensor &gb) override;
 
-  void sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) override;
-  void logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) override;
-  void broadcast_fw_impl(const Tensor &x, unsigned dim, unsigned size, Tensor &y) override;
+  void sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) override;
+  void logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) override;
+  void broadcast_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) override;
   void batch_sum_fw_impl(const Tensor &x, Tensor &y) override;
 
   void inplace_multiply_const_impl(float k, Tensor &x) override;

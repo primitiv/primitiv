@@ -60,7 +60,7 @@ TEST_F(CUDADeviceTest, CheckDanglingTensor) {
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
 TEST_F(CUDADeviceTest, CheckRandomBernoulli) {
   vector<vector<float>> history;
-  for (unsigned i = 0; i < 10; ++i) {
+  for (std::uint32_t i = 0; i < 10; ++i) {
     devices::CUDA dev(0);
     const Tensor x = dev.random_bernoulli(Shape({3, 3}, 3), 0.3);
     const vector<float> x_val = x.to_vector();
@@ -97,7 +97,7 @@ TEST_F(CUDADeviceTest, CheckRandomBernoulliWithSeed) {
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
 TEST_F(CUDADeviceTest, CheckRandomUniform) {
   vector<vector<float>> history;
-  for (unsigned i = 0; i < 10; ++i) {
+  for (std::uint32_t i = 0; i < 10; ++i) {
     devices::CUDA dev(0);
     const Tensor x = dev.random_uniform(Shape({2, 2}, 2), -9, 9);
     const vector<float> x_val = x.to_vector();
@@ -132,7 +132,7 @@ TEST_F(CUDADeviceTest, CheckRandomUniformWithSeed) {
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
 TEST_F(CUDADeviceTest, CheckRandomNormal) {
   vector<vector<float>> history;
-  for (unsigned i = 0; i < 10; ++i) {
+  for (std::uint32_t i = 0; i < 10; ++i) {
     devices::CUDA dev(0);
     const Tensor x = dev.random_normal(Shape({2, 2}, 2), 1, 3);
     const vector<float> x_val = x.to_vector();
@@ -167,7 +167,7 @@ TEST_F(CUDADeviceTest, CheckRandomNormalWithSeed) {
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
 TEST_F(CUDADeviceTest, CheckRandomLogNormal) {
   vector<vector<float>> history;
-  for (unsigned i = 0; i < 10; ++i) {
+  for (std::uint32_t i = 0; i < 10; ++i) {
     devices::CUDA dev(0);
     const Tensor x = dev.random_log_normal(Shape({2, 2}, 2), 1, 3);
     const vector<float> x_val = x.to_vector();

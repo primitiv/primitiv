@@ -2,6 +2,7 @@
 #define PRIMITIV_OPERATORS_H_
 
 #include <cmath>
+#include <cstdint>
 #include <initializer_list>
 #include <limits>
 #include <vector>
@@ -82,41 +83,41 @@ type_traits::Identity<Var> copy(
 
 template<typename Var>
 type_traits::Identity<Var> pick(
-    const Var &x, const std::vector<unsigned> &ids, unsigned dim);
+    const Var &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim);
 
 template<typename Var>
 type_traits::Identity<Var> slice(
-    const Var &x, unsigned dim, unsigned lower, unsigned upper);
+    const Var &x, std::uint32_t dim, std::uint32_t lower, std::uint32_t upper);
 
 template<typename Var>
-type_traits::Identity<Var> concat(const std::vector<Var> &xs, unsigned dim);
-
-template<typename Var>
-type_traits::Identity<Var> concat(
-    const std::vector<const Var *> &xs, unsigned dim);
+type_traits::Identity<Var> concat(const std::vector<Var> &xs, std::uint32_t dim);
 
 template<typename Var>
 type_traits::Identity<Var> concat(
-    const std::initializer_list<Var> xs, unsigned dim) {
+    const std::vector<const Var *> &xs, std::uint32_t dim);
+
+template<typename Var>
+type_traits::Identity<Var> concat(
+    const std::initializer_list<Var> xs, std::uint32_t dim) {
   return concat(std::vector<Var>(xs), dim);
 }
 
 template<typename Var>
 type_traits::Identity<Var> concat(
-    const std::initializer_list<const Var *> xs, unsigned dim) {
+    const std::initializer_list<const Var *> xs, std::uint32_t dim) {
   return concat(std::vector<const Var *>(xs), dim);
 }
 
 template<typename Container>
 inline type_traits::Reduce<Container> concat(
-    const Container &xs, unsigned dim) {
+    const Container &xs, std::uint32_t dim) {
   using Var = type_traits::Reduce<Container>;
   return concat(std::vector<Var>(xs.begin(), xs.end()), dim);
 }
 
 template<typename Container>
 inline type_traits::ReducePtr<Container> concat(
-    const Container &xs, unsigned dim) {
+    const Container &xs, std::uint32_t dim) {
   using Var = type_traits::ReducePtr<Container>;
   return concat(std::vector<const Var *>(xs.begin(), xs.end()), dim);
 }
@@ -196,7 +197,7 @@ inline type_traits::Identity<Var> selu(
 }
 
 template<typename Var>
-type_traits::Identity<Var> sum(const Var &x, unsigned dim);
+type_traits::Identity<Var> sum(const Var &x, std::uint32_t dim);
 
 template<typename Container>
 inline type_traits::Reduce<Container> sum(const Container &xs) {
@@ -219,7 +220,7 @@ inline type_traits::ReducePtr<Container> sum(const Container &xs) {
 }
 
 template<typename Var>
-inline type_traits::Identity<Var> mean(const Var &x, unsigned dim) {
+inline type_traits::Identity<Var> mean(const Var &x, std::uint32_t dim) {
   return sum(x, dim) / x.shape()[dim];
 }
 
@@ -234,24 +235,24 @@ inline type_traits::ReducePtr<Container> mean(const Container &xs) {
 }
 
 template<typename Var>
-type_traits::Identity<Var> broadcast(const Var &x, unsigned dim, unsigned size);
+type_traits::Identity<Var> broadcast(const Var &x, std::uint32_t dim, std::uint32_t size);
 
 template<typename Var>
-type_traits::Identity<Var> logsumexp(const Var &x, unsigned dim);
+type_traits::Identity<Var> logsumexp(const Var &x, std::uint32_t dim);
 
 template<typename Var>
-type_traits::Identity<Var> log_softmax(const Var &x, unsigned dim);
+type_traits::Identity<Var> log_softmax(const Var &x, std::uint32_t dim);
 
 template<typename Var>
-type_traits::Identity<Var> softmax(const Var &x, unsigned dim);
-
-template<typename Var>
-type_traits::Identity<Var> softmax_cross_entropy(
-    const Var &x, const Var &t, unsigned dim);
+type_traits::Identity<Var> softmax(const Var &x, std::uint32_t dim);
 
 template<typename Var>
 type_traits::Identity<Var> softmax_cross_entropy(
-    const Var &x, const std::vector<unsigned> &ids, unsigned dim);
+    const Var &x, const Var &t, std::uint32_t dim);
+
+template<typename Var>
+type_traits::Identity<Var> softmax_cross_entropy(
+    const Var &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim);
 
 namespace batch {
 
@@ -266,7 +267,7 @@ inline type_traits::Identity<Var> mean(const Var &x) {
 template<typename Var>
 inline type_traits::Identity<Var> normalize(const Var &x) {
   if (!x.shape().has_batch()) return x;  // No meaning of normalization.
-  const unsigned b = x.shape().batch();
+  const std::uint32_t b = x.shape().batch();
   const float scale = b / (b - 1.);
   const Var m = mean(x);
   const Var v = scale * (mean(x * x) - m * m);
@@ -285,7 +286,7 @@ inline Node ones(const Shape &shape, Device &dev, Graph &g) {
   return constant(shape, 1, dev, g);
 }
 
-Node identity(unsigned size, Device &dev, Graph &g);
+Node identity(std::uint32_t size, Device &dev, Graph &g);
 
 template<typename Var>
 type_traits::Identity<Var> constant(
@@ -308,19 +309,19 @@ inline type_traits::Identity<Var> ones(
 
 template<typename Var>
 type_traits::Identity<Var> identity(
-    unsigned size,
+    std::uint32_t size,
     Device &dev = Device::get_default());
 
 template<typename Var>
-inline type_traits::Identity<Var> ipow(const Var &x, int k) {
+inline type_traits::Identity<Var> ipow(const Var &x, std::int32_t k) {
   /*
    * NOTE(odashi):
    * std::abs(-0x800..000) generates undefined behavior under 2's complement
    * systems. However, this value should be also evaluated as 0x800..000 by
-   * directly casting to unsigned integers.
+   * directly casting to std::uint32_t.
    */
-  const int min_k = std::numeric_limits<int>::min();
-  unsigned idx = (k == min_k) ? min_k : std::abs(k);
+  const std::int32_t min_k = std::numeric_limits<std::int32_t>::min();
+  std::uint32_t idx = (k == min_k) ? min_k : std::abs(k);
   /*
    * NOTE(odashi):
    * This function is implemented based on an exponentation-by-squaring method

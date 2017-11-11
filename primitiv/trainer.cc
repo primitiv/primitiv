@@ -48,7 +48,7 @@ namespace primitiv {
 void Trainer::load(const std::string &path) {
   messages::Trainer msg;
   ::read_proto(path, msg);
-  std::unordered_map<std::string, unsigned> uint_configs(
+  std::unordered_map<std::string, std::uint32_t> uint_configs(
       msg.uint_configs().begin(), msg.uint_configs().end());
   std::unordered_map<std::string, float> float_configs(
       msg.float_configs().begin(), msg.float_configs().end());
@@ -58,7 +58,7 @@ void Trainer::load(const std::string &path) {
 void Trainer::save(const std::string &path) const {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-  std::unordered_map<std::string, unsigned> uint_configs;
+  std::unordered_map<std::string, std::uint32_t> uint_configs;
   std::unordered_map<std::string, float> float_configs;
   get_configs(uint_configs, float_configs);
 
@@ -119,7 +119,7 @@ void Trainer::update() {
 }
 
 void Trainer::get_configs(
-    std::unordered_map<std::string, unsigned> &uint_configs,
+    std::unordered_map<std::string, std::uint32_t> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
   uint_configs.insert(std::make_pair("Trainer.epoch", epoch_));
   float_configs.insert(std::make_pair("Trainer.lr_scale", lr_scale_));
@@ -128,7 +128,7 @@ void Trainer::get_configs(
 }
 
 void Trainer::set_configs(
-    const std::unordered_map<std::string, unsigned> &uint_configs,
+    const std::unordered_map<std::string, std::uint32_t> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
 #define SET_CONFIG(dest, cfg, key) { \
   const auto it = cfg.find(key); \

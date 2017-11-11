@@ -54,12 +54,12 @@ vector<float> Device::tensor_to_vector(const Tensor &x) {
   return tensor_to_vector_impl(x);
 }
 
-vector<unsigned> Device::argmax(const Tensor &x, unsigned dim) {
+vector<std::uint32_t> Device::argmax(const Tensor &x, std::uint32_t dim) {
   CHECK_DEVICE(x);
   return argmax_impl(x, dim);
 }
 
-vector<unsigned> Device::argmin(const Tensor &x, unsigned dim) {
+vector<std::uint32_t> Device::argmin(const Tensor &x, std::uint32_t dim) {
   CHECK_DEVICE(x);
   return argmin_impl(x, dim);
 }
@@ -96,7 +96,7 @@ Tensor Device::copy_tensor(const Tensor &x) {
   return y;
 }
 
-Tensor Device::identity(unsigned size) {
+Tensor Device::identity(std::uint32_t size) {
   if (size == 0) {
     THROW_ERROR("Invalid size of the identity matrix: " << size);
   }
@@ -149,7 +149,7 @@ Tensor Device::random_log_normal(const Shape &shape, float mean, float sd) {
 }
 
 Tensor Device::pick_fw(
-    const Tensor &x, const vector<unsigned> &ids, unsigned dim) {
+    const Tensor &x, const vector<std::uint32_t> &ids, std::uint32_t dim) {
   CHECK_DEVICE(x);
   Tensor y = new_raw_tensor(shape_ops::pick(x.shape(), ids, dim));
   pick_fw_impl(x, ids, dim, y);
@@ -157,17 +157,17 @@ Tensor Device::pick_fw(
 }
 
 Tensor Device::slice_fw(
-    const Tensor &x, unsigned dim, unsigned lower, unsigned upper) {
+    const Tensor &x, std::uint32_t dim, std::uint32_t lower, std::uint32_t upper) {
   CHECK_DEVICE(x);
   Tensor y = new_raw_tensor(shape_ops::slice(x.shape(), dim, lower, upper));
   slice_fw_impl(x, dim, lower, y);
   return y;
 }
 
-Tensor Device::concat_fw(const vector<const Tensor *> &xs, unsigned dim) {
+Tensor Device::concat_fw(const vector<const Tensor *> &xs, std::uint32_t dim) {
   if (xs.empty()) THROW_ERROR("No tensors to concat.");
   vector<const Shape *> shapes(xs.size());
-  for (unsigned i = 0; i < xs.size(); ++i) {
+  for (std::uint32_t i = 0; i < xs.size(); ++i) {
     CHECK_DEVICE(*xs[i]);
     shapes[i] = &xs[i]->shape();
   }
@@ -177,7 +177,7 @@ Tensor Device::concat_fw(const vector<const Tensor *> &xs, unsigned dim) {
 }
 
 void Device::pick_bw(
-    const Tensor &gy, const std::vector<unsigned> &ids, unsigned dim,
+    const Tensor &gy, const std::vector<std::uint32_t> &ids, std::uint32_t dim,
     Tensor &gx) {
   CHECK_DEVICE(gy);
   CHECK_DEVICE(gx);
@@ -191,7 +191,7 @@ void Device::pick_bw(
 }
 
 void Device::slice_bw(
-    const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) {
+    const Tensor &gy, std::uint32_t dim, std::uint32_t offset, Tensor &gx) {
   CHECK_DEVICE(gy);
   CHECK_DEVICE(gx);
   const Shape &sy = gy.shape();
@@ -364,21 +364,21 @@ DEV_BW_AB(matmul, shape_ops::matmul);
 #undef DEV_FW_AB
 #undef DEV_BW_AB
 
-Tensor Device::sum_fw(const Tensor &x, unsigned dim) {
+Tensor Device::sum_fw(const Tensor &x, std::uint32_t dim) {
   CHECK_DEVICE(x);
   Tensor y = new_raw_tensor(x.shape().resize_dim(dim, 1));
   sum_fw_impl(x, dim, y);
   return y;
 }
 
-Tensor Device::logsumexp_fw(const Tensor &x, unsigned dim) {
+Tensor Device::logsumexp_fw(const Tensor &x, std::uint32_t dim) {
   CHECK_DEVICE(x);
   Tensor y = new_raw_tensor(x.shape().resize_dim(dim, 1));
   logsumexp_fw_impl(x, dim, y);
   return y;
 }
 
-Tensor Device::broadcast_fw(const Tensor &x, unsigned dim, unsigned size) {
+Tensor Device::broadcast_fw(const Tensor &x, std::uint32_t dim, std::uint32_t size) {
   CHECK_DEVICE(x);
   Tensor y = new_raw_tensor(shape_ops::broadcast(x.shape(), dim, size));
   broadcast_fw_impl(x, dim, size, y);
