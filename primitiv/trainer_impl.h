@@ -9,10 +9,10 @@ namespace trainers {
 #define DECL_DEFAULTS \
 public: \
   void get_configs( \
-      std::unordered_map<std::string, unsigned> &uint_configs, \
+      std::unordered_map<std::string, std::uint32_t> &uint_configs, \
       std::unordered_map<std::string, float> &float_configs) const override; \
   void set_configs( \
-      const std::unordered_map<std::string, unsigned> &uint_configs, \
+      const std::unordered_map<std::string, std::uint32_t> &uint_configs, \
       const std::unordered_map<std::string, float> &float_configs) override; \
 private: \
   void configure_parameter(Parameter &param) override; \

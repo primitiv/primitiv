@@ -8,6 +8,7 @@ set(primitiv_base_HDRS
   ${primitiv_proto_HDRS}
   device.h
   error.h
+  file_format.h
   function.h
   function_impl.h
   graph.h

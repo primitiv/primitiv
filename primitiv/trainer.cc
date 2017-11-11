@@ -3,69 +3,58 @@
 #include <cmath>
 #include <fstream>
 #include <primitiv/error.h>
-#include <primitiv/messages.pb.h>
+#include <primitiv/file_format.h>
 #include <primitiv/model.h>
+#include <primitiv/msgpack/reader.h>
+#include <primitiv/msgpack/writer.h>
 #include <primitiv/operators.h>
 #include <primitiv/parameter.h>
 #include <primitiv/trainer.h>
 
-namespace {
+namespace primitiv {
 
-void read_proto(
-    const std::string &path,
-    primitiv::messages::Trainer &msg) {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
+void Trainer::load(const std::string &path) {
   std::ifstream ifs(path);
   if (!ifs.is_open()) {
     THROW_ERROR("Could not open file: " << path);
   }
+  msgpack::Reader reader(ifs);
 
-  if (!msg.ParseFromIstream(&ifs)) {
-    THROW_ERROR("Failed to read Trainer message: " << path);
+  std::uint32_t version;
+  reader >> version;
+  FileFormat::check_version(version);
+
+  const std::uint32_t required_datatype = static_cast<std::uint32_t>(
+      FileFormat::DataType::TRAINER);
+  std::uint32_t datatype;
+  reader >> datatype;
+  if (datatype != required_datatype) {
+    THROW_ERROR(
+        "Data type mismatched. "
+        "required: " << std::hex << required_datatype
+        << ", observed: " << std::hex << datatype);
   }
+
+  std::unordered_map<std::string, std::uint32_t> uint_configs;
+  std::unordered_map<std::string, float> float_configs;
+  reader >> uint_configs >> float_configs;
+  set_configs(uint_configs, float_configs);
 }
 
-void write_proto(
-    const std::string &path,
-    const primitiv::messages::Trainer &msg) {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
+void Trainer::save(const std::string &path) const {
+  std::unordered_map<std::string, std::uint32_t> uint_configs;
+  std::unordered_map<std::string, float> float_configs;
+  get_configs(uint_configs, float_configs);
 
   std::ofstream ofs(path);
   if (!ofs.is_open()) {
     THROW_ERROR("Could not open file: " << path);
   }
+  msgpack::Writer writer(ofs);
 
-  if (!msg.SerializeToOstream(&ofs)) {
-    THROW_ERROR("Failed to write Trainer message: " << path);
-  }
-}
-
-}  // namespace
-
-namespace primitiv {
-
-void Trainer::load(const std::string &path) {
-  messages::Trainer msg;
-  ::read_proto(path, msg);
-  std::unordered_map<std::string, unsigned> uint_configs(
-      msg.uint_configs().begin(), msg.uint_configs().end());
-  std::unordered_map<std::string, float> float_configs(
-      msg.float_configs().begin(), msg.float_configs().end());
-  set_configs(uint_configs, float_configs);
-}
-
-void Trainer::save(const std::string &path) const {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  std::unordered_map<std::string, unsigned> uint_configs;
-  std::unordered_map<std::string, float> float_configs;
-  get_configs(uint_configs, float_configs);
-
-  messages::Trainer msg;
-  msg.mutable_uint_configs()->insert(uint_configs.begin(), uint_configs.end());
-  msg.mutable_float_configs()->insert(float_configs.begin(), float_configs.end());
-  ::write_proto(path, msg);
+  writer << FileFormat::CURRENT_VERSION;
+  writer << static_cast<std::uint32_t>(FileFormat::DataType::TRAINER);
+  writer << uint_configs << float_configs;
 }
 
 void Trainer::add_parameter(Parameter &param) {
@@ -119,7 +108,7 @@ void Trainer::update() {
 }
 
 void Trainer::get_configs(
-    std::unordered_map<std::string, unsigned> &uint_configs,
+    std::unordered_map<std::string, std::uint32_t> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
   uint_configs.insert(std::make_pair("Trainer.epoch", epoch_));
   float_configs.insert(std::make_pair("Trainer.lr_scale", lr_scale_));
@@ -128,7 +117,7 @@ void Trainer::get_configs(
 }
 
 void Trainer::set_configs(
-    const std::unordered_map<std::string, unsigned> &uint_configs,
+    const std::unordered_map<std::string, std::uint32_t> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
 #define SET_CONFIG(dest, cfg, key) { \
   const auto it = cfg.find(key); \
