@@ -2,8 +2,8 @@
 set -xe
 
 # before_install
-docker pull ubuntu:rolling
-docker run --name travis-ci -v $TRAVIS_BUILD_DIR:/primitiv -td ubuntu:rolling /bin/bash
+docker pull debian:stable
+docker run --name travis-ci -v $TRAVIS_BUILD_DIR:/primitiv -td debian:stable /bin/bash
 
 # install
 docker exec travis-ci bash -c "apt update"
