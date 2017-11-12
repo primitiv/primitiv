@@ -31,6 +31,16 @@ public:
           << major << "." << minor);
     }
   }
+
+  static void check_datatype(DataType required, std::uint32_t observed) {
+    if (observed != static_cast<std::uint32_t>(required)) {
+      THROW_ERROR(
+          "Data type mismatched. required: "
+          << std::hex << static_cast<std::uint32_t>(required)
+          << ", observed: "
+          << observed);
+    }
+  }
 };
 
 }  // namespace primitiv

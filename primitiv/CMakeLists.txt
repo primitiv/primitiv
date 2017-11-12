@@ -1,11 +1,7 @@
 # Build rules of the primitiv core library.
 
-# Builds Protobuf messages.
-protobuf_generate_cpp(primitiv_proto_SRCS primitiv_proto_HDRS messages.proto)
-
 # Core headers.
 set(primitiv_base_HDRS
-  ${primitiv_proto_HDRS}
   device.h
   error.h
   file_format.h
@@ -35,7 +31,6 @@ set(primitiv_base_HDRS
 
 # Core sources.
 set(primitiv_base_SRCS
-  ${primitiv_proto_SRCS}
   device.cc
   function_impl.cc
   graph.cc

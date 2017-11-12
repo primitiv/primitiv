@@ -24,16 +24,9 @@ void Trainer::load(const std::string &path) {
   reader >> major >> minor;
   FileFormat::check_version(major, minor);
 
-  const std::uint32_t required_datatype = static_cast<std::uint32_t>(
-      FileFormat::DataType::TRAINER);
   std::uint32_t datatype;
   reader >> datatype;
-  if (datatype != required_datatype) {
-    THROW_ERROR(
-        "Data type mismatched. "
-        "required: " << std::hex << required_datatype
-        << ", observed: " << std::hex << datatype);
-  }
+  FileFormat::check_datatype(FileFormat::DataType::TRAINER, datatype);
 
   std::unordered_map<std::string, std::uint32_t> uint_configs;
   std::unordered_map<std::string, float> float_configs;
