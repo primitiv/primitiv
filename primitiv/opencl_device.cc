@@ -83,7 +83,6 @@ OpenCL::OpenCL(std::uint32_t platform, std::uint32_t dev_id) {
     ss << "sum_fw_kernel_" << (1 << i);
     sum_fw_kernel_[i] = cl::Kernel(program, ss.str().c_str(), &error);
   }
-  dim1_x_ = 1024;
 }
 
 OpenCL::~OpenCL() {
@@ -131,7 +130,7 @@ void OpenCL::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   std::uint32_t n = x.shape()[dim];
   const std::uint32_t r = y.shape().size();
   std::uint32_t s = y.shape().lower_volume(dim);
-  std::uint32_t block_size = dim1_x_;
+  std::uint32_t block_size = sum_fw_kernel_[0].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
   cl_int error = CL_SUCCESS;
   while (block_size >> 1 >= n) block_size >>= 1;
   cl::CommandQueue queue(context_, device_, 0, &error);
