@@ -76,11 +76,17 @@ const Model &Model::get_submodel(const std::vector<std::string> &names) const {
   return *it->second;
 }
 
-std::vector<Parameter *> Model::get_trainable_parameters() const {
-  std::vector<Parameter *> params(param_set_.begin(), param_set_.end());
-  for (const Model *sm : submodel_set_) {
-    const auto sm_params = sm->get_trainable_parameters();
-    params.insert(params.end(), sm_params.begin(), sm_params.end());
+std::map<std::vector<std::string>, Parameter *> Model::get_all_parameters() const {
+  std::map<std::vector<std::string>, Parameter *> params;
+  for (const auto &kv : param_kv_) {
+    params.emplace(std::vector<std::string> { kv.first }, kv.second);
+  }
+  for (const auto &sm_kv : submodel_kv_) {
+    for (const auto &p_kv : sm_kv.second->get_all_parameters()) {
+      std::vector<std::string> key { sm_kv.first };
+      key.insert(key.end(), p_kv.first.begin(), p_kv.first.end());
+      params.emplace(key, p_kv.second);
+    }
   }
   return params;
 }

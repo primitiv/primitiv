@@ -1,13 +1,13 @@
 #include <config.h>
 
-#include <algorithm>
+#include <map>
 #include <string>
 #include <vector>
 #include <gtest/gtest.h>
 #include <primitiv/model.h>
 #include <primitiv/parameter.h>
 
-using std::set;
+using std::map;
 using std::string;
 using std::vector;
 
@@ -244,17 +244,55 @@ TEST_F(ModelTest, CheckGetSubmodelRecursiveByVector) {
   EXPECT_THROW(rm.get_submodel(vector<string> {"x"}), Error);
 }
 
+TEST_F(ModelTest, CheckGetAllParameters) {
+  Model m;
+  Parameter p1, p2, p3;
+  m.add_parameter("p1", p1);
+  m.add_parameter("p2", p2);
+  m.add_parameter("p3", p3);
+  const map<vector<string>, Parameter *> params = m.get_all_parameters();
+  EXPECT_EQ(3u, params.size());
+  EXPECT_EQ(&p1, params.at(vector<string> { "p1" }));
+  EXPECT_EQ(&p2, params.at(vector<string> { "p2" }));
+  EXPECT_EQ(&p3, params.at(vector<string> { "p3" }));
+}
+
+TEST_F(ModelTest, CheckGetAllParametersWithSubmodels) {
+  Model m1, m2, m3;
+  Parameter p1, p2, p3;
+  m1.add_parameter("p", p1);
+  m2.add_parameter("p", p2);
+  m3.add_parameter("p", p3);
+  m1.add_submodel("sm", m2);
+  m2.add_submodel("sm", m3);
+
+  const map<vector<string>, Parameter *> params1 = m1.get_all_parameters();
+  EXPECT_EQ(3u, params1.size());
+  EXPECT_EQ(&p1, params1.at(vector<string> { "p" }));
+  EXPECT_EQ(&p2, params1.at(vector<string> { "sm", "p" }));
+  EXPECT_EQ(&p3, params1.at(vector<string> { "sm", "sm", "p" }));
+
+  const map<vector<string>, Parameter *> params2 = m2.get_all_parameters();
+  EXPECT_EQ(2u, params2.size());
+  EXPECT_EQ(&p2, params2.at(vector<string> { "p" }));
+  EXPECT_EQ(&p3, params2.at(vector<string> { "sm", "p" }));
+
+  const map<vector<string>, Parameter *> params3 = m3.get_all_parameters();
+  EXPECT_EQ(1u, params3.size());
+  EXPECT_EQ(&p3, params3.at(vector<string> { "p" }));
+}
+
 TEST_F(ModelTest, CheckGetTrainableParameters) {
   Model m;
   Parameter p1, p2, p3;
   m.add_parameter("p1", p1);
   m.add_parameter("p2", p2);
   m.add_parameter("p3", p3);
-  const vector<Parameter *> params = m.get_trainable_parameters();
+  const map<vector<string>, Parameter *> params = m.get_trainable_parameters();
   EXPECT_EQ(3u, params.size());
-  EXPECT_NE(params.end(), std::find(params.begin(), params.end(), &p1));
-  EXPECT_NE(params.end(), std::find(params.begin(), params.end(), &p2));
-  EXPECT_NE(params.end(), std::find(params.begin(), params.end(), &p3));
+  EXPECT_EQ(&p1, params.at(vector<string> { "p1" }));
+  EXPECT_EQ(&p2, params.at(vector<string> { "p2" }));
+  EXPECT_EQ(&p3, params.at(vector<string> { "p3" }));
 }
 
 TEST_F(ModelTest, CheckGetTrainableParametersWithSubmodels) {
@@ -266,20 +304,20 @@ TEST_F(ModelTest, CheckGetTrainableParametersWithSubmodels) {
   m1.add_submodel("sm", m2);
   m2.add_submodel("sm", m3);
 
-  const vector<Parameter *> params1 = m1.get_trainable_parameters();
+  const map<vector<string>, Parameter *> params1 = m1.get_trainable_parameters();
   EXPECT_EQ(3u, params1.size());
-  EXPECT_NE(params1.end(), std::find(params1.begin(), params1.end(), &p1));
-  EXPECT_NE(params1.end(), std::find(params1.begin(), params1.end(), &p2));
-  EXPECT_NE(params1.end(), std::find(params1.begin(), params1.end(), &p3));
+  EXPECT_EQ(&p1, params1.at(vector<string> { "p" }));
+  EXPECT_EQ(&p2, params1.at(vector<string> { "sm", "p" }));
+  EXPECT_EQ(&p3, params1.at(vector<string> { "sm", "sm", "p" }));
 
-  const vector<Parameter *> params2 = m2.get_trainable_parameters();
+  const map<vector<string>, Parameter *> params2 = m2.get_trainable_parameters();
   EXPECT_EQ(2u, params2.size());
-  EXPECT_NE(params2.end(), std::find(params2.begin(), params2.end(), &p2));
-  EXPECT_NE(params2.end(), std::find(params2.begin(), params2.end(), &p3));
+  EXPECT_EQ(&p2, params2.at(vector<string> { "p" }));
+  EXPECT_EQ(&p3, params2.at(vector<string> { "sm", "p" }));
 
-  const vector<Parameter *> params3 = m3.get_trainable_parameters();
+  const map<vector<string>, Parameter *> params3 = m3.get_trainable_parameters();
   EXPECT_EQ(1u, params3.size());
-  EXPECT_NE(params3.end(), std::find(params3.begin(), params3.end(), &p3));
+  EXPECT_EQ(&p3, params3.at(vector<string> { "p" }));
 }
 
 }  // namespace primitiv
