@@ -11,6 +11,10 @@ enable_cuda = False
 if "--enable-cuda" in sys.argv:
     enable_cuda = True
     sys.argv.remove("--enable-cuda")
+enable_opencl = False
+if "--enable-opencl" in sys.argv:
+    enable_opencl = True
+    sys.argv.remove("--enable-opencl")
 
 def extension_common_args(*args, **kwargs):
     return Extension(*args, **kwargs,
@@ -29,8 +33,6 @@ ext_modules = [
                           sources=["primitiv/_device.pyx"]),
     extension_common_args("primitiv.devices._naive_device",
                           sources=["primitiv/devices/_naive_device.pyx"]),
-    extension_common_args("primitiv.devices._opencl_device",
-                          sources=["primitiv/devices/_opencl_device.pyx"]),
     extension_common_args("primitiv._parameter",
                           sources=["primitiv/_parameter.pyx"]),
     extension_common_args("primitiv._initializer",
@@ -52,6 +54,9 @@ ext_modules = [
 if enable_cuda:
     ext_modules.append(extension_common_args("primitiv.devices._cuda_device",
                                              sources=["primitiv/devices/_cuda_device.pyx"]))
+if enable_opencl:
+    ext_modules.append(extension_common_args("primitiv.devices._opencl_device",
+                                             sources=["primitiv/devices/_opencl_device.pyx"]))
 
 setup(
     name = "primitiv",
