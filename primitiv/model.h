@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/mixins.h>
 
@@ -22,6 +23,23 @@ class Model : mixins::Nonmovable<Model> {
 public:
   Model() = default;
   virtual ~Model() = default;
+
+  /**
+   * Loads all parameters from a file.
+   * @param path Path of the file.
+   * @param with_stats Whether or not to load all additional statistics.
+   * @param device Device object to manage parameters.
+   */
+  void load(const std::string &path,
+      bool with_stats = true,
+      Device &device = Device::get_default());
+
+  /**
+   * Saves all parameters to a file.
+   * @param path Path of the file.
+   * @param with_stats Whether or not to save all additional statistics.
+   */
+  void save(const std::string &path, bool with_stats = true) const;
 
   /**
    * Registers a new parameter.

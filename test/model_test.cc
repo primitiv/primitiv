@@ -1,19 +1,30 @@
 #include <config.h>
 
+#include <cstdio>
 #include <map>
 #include <string>
 #include <vector>
 #include <gtest/gtest.h>
 #include <primitiv/model.h>
+#include <primitiv/naive_device.h>
 #include <primitiv/parameter.h>
+#include <test_utils.h>
 
 using std::map;
 using std::string;
 using std::vector;
+using test_utils::vector_match;
 
 namespace primitiv {
 
-class ModelTest : public testing::Test {};
+class ModelTest : public testing::Test {
+  devices::Naive dev;
+
+protected:
+  void SetUp() override {
+    Device::set_default(dev);
+  }
+};
 
 TEST_F(ModelTest, CheckAddParameter) {
   Model m;
@@ -318,6 +329,202 @@ TEST_F(ModelTest, CheckGetTrainableParametersWithSubmodels) {
   const map<vector<string>, Parameter *> params3 = m3.get_trainable_parameters();
   EXPECT_EQ(1u, params3.size());
   EXPECT_EQ(&p3, params3.at(vector<string> { "p" }));
+}
+
+TEST_F(ModelTest, CheckSaveLoad) {
+  const Shape shape {2, 2};
+  const vector<float> values1 {1, 2, 3, 4};
+  const vector<float> values2 {5, 6, 7, 8};
+  const string path = "/tmp/primitiv_ModelTest_CheckSaveLoad.data";
+
+  {
+    Model m1, m2;
+    Parameter p1(shape, values1), p2(shape, values2);
+    m1.add_parameter("p", p1);
+    m2.add_parameter("p", p2);
+    m1.add_submodel("sm", m2);
+
+    ASSERT_NO_THROW(m1.save(path));
+  }
+
+  // NOTE(odashi):
+  // Model should covers the same structure with that in the file.
+
+  // Same structure (correct):
+  {
+    Model m1, m2;
+    Parameter p1, p2;
+    m1.add_parameter("p", p1);
+    m2.add_parameter("p", p2);
+    m1.add_submodel("sm", m2);
+
+    EXPECT_NO_THROW(m1.load(path));
+
+    ASSERT_TRUE(p1.valid());
+    ASSERT_TRUE(p2.valid());
+    EXPECT_EQ(shape, p1.shape());
+    EXPECT_EQ(shape, p2.shape());
+    EXPECT_TRUE(vector_match(values1, p1.value().to_vector()));
+    EXPECT_TRUE(vector_match(values2, p2.value().to_vector()));
+  }
+
+  // Insufficient set of parameters (error):
+  {
+    Model m1, m2;
+    Parameter p1;
+    m1.add_parameter("p", p1);
+    m1.add_submodel("sm", m2);
+
+    EXPECT_THROW(m1.load(path), Error);
+  }
+
+  // Excessive parameters would not be initialized (correct):
+  {
+    Model m1, m2;
+    Parameter p1, p2, p3;
+    m1.add_parameter("p", p1);
+    m2.add_parameter("p", p2);
+    m2.add_parameter("pp", p3);
+    m1.add_submodel("sm", m2);
+
+    EXPECT_NO_THROW(m1.load(path));
+
+    ASSERT_TRUE(p1.valid());
+    ASSERT_TRUE(p2.valid());
+    ASSERT_FALSE(p3.valid());
+    EXPECT_EQ(shape, p1.shape());
+    EXPECT_EQ(shape, p2.shape());
+    EXPECT_TRUE(vector_match(values1, p1.value().to_vector()));
+    EXPECT_TRUE(vector_match(values2, p2.value().to_vector()));
+  }
+}
+
+TEST_F(ModelTest, CheckSaveLoadWithStats) {
+  const Shape shape {2, 2};
+  const vector<float> values1 {1, 2, 3, 4};
+  const vector<float> values2 {5, 6, 7, 8};
+  const vector<float> stats1 {10, 20, 30, 40};
+  const vector<float> stats2 {50, 60, 70, 80};
+  const string path = "/tmp/primitiv_ModelTest_CheckSaveLoadWithStats.data";
+
+  {
+    Model m1, m2;
+    Parameter p1(shape, values1), p2(shape, values2);
+    p1.add_stats("a", shape);
+    p2.add_stats("b", shape);
+    p1.stats("a").reset_by_vector(stats1);
+    p2.stats("b").reset_by_vector(stats2);
+    m1.add_parameter("p", p1);
+    m2.add_parameter("p", p2);
+    m1.add_submodel("sm", m2);
+
+    ASSERT_NO_THROW(m1.save(path));
+  }
+
+  {
+    Model m1, m2;
+    Parameter p1, p2;
+    m1.add_parameter("p", p1);
+    m2.add_parameter("p", p2);
+    m1.add_submodel("sm", m2);
+
+    EXPECT_NO_THROW(m1.load(path));
+
+    ASSERT_TRUE(p1.valid());
+    ASSERT_TRUE(p2.valid());
+    EXPECT_EQ(shape, p1.shape());
+    EXPECT_EQ(shape, p2.shape());
+    EXPECT_TRUE(vector_match(values1, p1.value().to_vector()));
+    EXPECT_TRUE(vector_match(values2, p2.value().to_vector()));
+    ASSERT_TRUE(p1.has_stats("a"));
+    ASSERT_TRUE(p2.has_stats("b"));
+    EXPECT_TRUE(vector_match(stats1, p1.stats("a").to_vector()));
+    EXPECT_TRUE(vector_match(stats2, p2.stats("b").to_vector()));
+  }
+}
+
+TEST_F(ModelTest, CheckSaveWithoutStats) {
+  const Shape shape {2, 2};
+  const vector<float> values1 {1, 2, 3, 4};
+  const vector<float> values2 {5, 6, 7, 8};
+  const vector<float> stats1 {10, 20, 30, 40};
+  const vector<float> stats2 {50, 60, 70, 80};
+  const string path = "/tmp/primitiv_ModelTest_CheckSaveWithoutStats.data";
+
+  {
+    Model m1, m2;
+    Parameter p1(shape, values1), p2(shape, values2);
+    p1.add_stats("a", shape);
+    p2.add_stats("b", shape);
+    p1.stats("a").reset_by_vector(stats1);
+    p2.stats("b").reset_by_vector(stats2);
+    m1.add_parameter("p", p1);
+    m2.add_parameter("p", p2);
+    m1.add_submodel("sm", m2);
+
+    ASSERT_NO_THROW(m1.save(path, false));
+  }
+
+  {
+    Model m1, m2;
+    Parameter p1, p2;
+    m1.add_parameter("p", p1);
+    m2.add_parameter("p", p2);
+    m1.add_submodel("sm", m2);
+
+    EXPECT_NO_THROW(m1.load(path));
+
+    ASSERT_TRUE(p1.valid());
+    ASSERT_TRUE(p2.valid());
+    EXPECT_EQ(shape, p1.shape());
+    EXPECT_EQ(shape, p2.shape());
+    EXPECT_TRUE(vector_match(values1, p1.value().to_vector()));
+    EXPECT_TRUE(vector_match(values2, p2.value().to_vector()));
+    EXPECT_FALSE(p1.has_stats("a"));
+    EXPECT_FALSE(p2.has_stats("b"));
+  }
+}
+
+TEST_F(ModelTest, CheckLoadWithoutStats) {
+  const Shape shape {2, 2};
+  const vector<float> values1 {1, 2, 3, 4};
+  const vector<float> values2 {5, 6, 7, 8};
+  const vector<float> stats1 {10, 20, 30, 40};
+  const vector<float> stats2 {50, 60, 70, 80};
+  const string path = "/tmp/primitiv_ModelTest_CheckLoadWithoutStats.data";
+
+  {
+    Model m1, m2;
+    Parameter p1(shape, values1), p2(shape, values2);
+    p1.add_stats("a", shape);
+    p2.add_stats("b", shape);
+    p1.stats("a").reset_by_vector(stats1);
+    p2.stats("b").reset_by_vector(stats2);
+    m1.add_parameter("p", p1);
+    m2.add_parameter("p", p2);
+    m1.add_submodel("sm", m2);
+
+    ASSERT_NO_THROW(m1.save(path));
+  }
+
+  {
+    Model m1, m2;
+    Parameter p1, p2;
+    m1.add_parameter("p", p1);
+    m2.add_parameter("p", p2);
+    m1.add_submodel("sm", m2);
+
+    EXPECT_NO_THROW(m1.load(path, false));
+
+    ASSERT_TRUE(p1.valid());
+    ASSERT_TRUE(p2.valid());
+    EXPECT_EQ(shape, p1.shape());
+    EXPECT_EQ(shape, p2.shape());
+    EXPECT_TRUE(vector_match(values1, p1.value().to_vector()));
+    EXPECT_TRUE(vector_match(values2, p2.value().to_vector()));
+    EXPECT_FALSE(p1.has_stats("a"));
+    EXPECT_FALSE(p2.has_stats("b"));
+  }
 }
 
 }  // namespace primitiv
