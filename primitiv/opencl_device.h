@@ -34,8 +34,8 @@ private:
   std::shared_ptr<void> new_handle(const Shape &shape) override;
 
   std::vector<float> tensor_to_vector_impl(const Tensor &x) override;
-  std::vector<std::uint32_t> argmax_impl(const Tensor &x, std::uint32_t dim) override {return {};}
-  std::vector<std::uint32_t> argmin_impl(const Tensor &x, std::uint32_t dim) override {return {};}
+  std::vector<std::uint32_t> argmax_impl(const Tensor &x, std::uint32_t dim) override;
+  std::vector<std::uint32_t> argmin_impl(const Tensor &x, std::uint32_t dim) override;
 
   void reset_tensor_impl(float k, Tensor &x) override { THROW_ERROR("not implemented"); }
   void reset_tensor_by_array_impl(const float values[], Tensor &x) override;
@@ -143,6 +143,8 @@ private:
   std::uint32_t dim1_x_;
 
   std::array<cl::Kernel, 11> sum_fw_kernel_;
+  std::array<cl::Kernel, 11> argmax_kernel_;
+  std::array<cl::Kernel, 11> argmin_kernel_;
 };
 
 }  // namespace devices
