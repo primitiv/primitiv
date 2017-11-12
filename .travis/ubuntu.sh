@@ -7,7 +7,7 @@ docker run --name travis-ci -v $TRAVIS_BUILD_DIR:/primitiv -td ubuntu:rolling /b
 
 # install
 docker exec travis-ci bash -c "apt update"
-docker exec travis-ci bash -c "apt install -y build-essential cmake libprotobuf-dev protobuf-compiler googletest python3-dev python3-pip python3-numpy"
+docker exec travis-ci bash -c "apt install -y build-essential cmake googletest python3-dev python3-pip python3-numpy"
 docker exec travis-ci bash -c "pip3 install cython"
 
 # script
