@@ -45,7 +45,7 @@ TEST_F(TensorBackwardTest, CheckSliceNN_1) {
   const vector<float> b_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
   const vector<float> y_data {1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6};
   for (Device *dev : devices) {
-    for (unsigned i : {0, 1, 2, 5, 10}) {
+    for (std::uint32_t i : {0, 1, 2, 5, 10}) {
       Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
       const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
       dev->slice_bw(b, i, 0, a);
@@ -59,7 +59,7 @@ TEST_F(TensorBackwardTest, CheckSliceNN_2) {
   const vector<float> b_data {1, 1, 2, 2, 3, 3};
   struct TestCase {
     Shape shape;
-    unsigned dim, offset;
+    std::uint32_t dim, offset;
     vector<float> y_data;
   };
   vector<TestCase> test_cases {
@@ -83,7 +83,7 @@ TEST_F(TensorBackwardTest, CheckSlice1N_1) {
   const vector<float> b_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
   const vector<float> y_data {6, 7, 8, 9};
   for (Device *dev : devices) {
-    for (unsigned i : {0, 1, 2, 5, 10}) {
+    for (std::uint32_t i : {0, 1, 2, 5, 10}) {
       Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
       const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
       dev->slice_bw(b, i, 0, a);
@@ -97,7 +97,7 @@ TEST_F(TensorBackwardTest, CheckSlice1N_2) {
   const vector<float> b_data {1, 1, 2, 2, 3, 3};
   struct TestCase {
     Shape shape;
-    unsigned dim, offset;
+    std::uint32_t dim, offset;
     vector<float> y_data;
   };
   vector<TestCase> test_cases {
@@ -121,7 +121,7 @@ TEST_F(TensorBackwardTest, CheckSliceN1_1) {
   const vector<float> b_data {-1, -2, -3, -4};
   const vector<float> y_data {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
   for (Device *dev : devices) {
-    for (unsigned i : {0, 1, 2, 5, 10}) {
+    for (std::uint32_t i : {0, 1, 2, 5, 10}) {
       Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
       const Tensor b = dev->new_tensor_by_vector({2, 2}, b_data);
       dev->slice_bw(b, i, 0, a);
@@ -135,7 +135,7 @@ TEST_F(TensorBackwardTest, CheckSliceN1_2) {
   const vector<float> b_data {-1, -2};
   struct TestCase {
     Shape shape;
-    unsigned dim, offset;
+    std::uint32_t dim, offset;
     vector<float> y_data;
   };
   vector<TestCase> test_cases {
@@ -157,7 +157,7 @@ TEST_F(TensorBackwardTest, CheckSliceN1_2) {
 TEST_F(TensorBackwardTest, CheckInvalidSlice) {
   struct TestCase {
     Shape a_shape, b_shape;
-    unsigned dim, offset;
+    std::uint32_t dim, offset;
     bool ok;
   };
   vector<TestCase> test_cases {
@@ -198,7 +198,7 @@ TEST_F(TensorBackwardTest, CheckCopyAndSlice) {
   const vector<float> b_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
   const vector<float> y_data {1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6};
   for (Device *dev : devices) {
-    for (unsigned i : {0, 1, 2, 5, 10}) {
+    for (std::uint32_t i : {0, 1, 2, 5, 10}) {
       Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
       const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
 
@@ -218,8 +218,8 @@ TEST_F(TensorBackwardTest, CheckPickNN) {
   struct TestCase {
     Shape b_shape;
     vector<float> b_data;
-    unsigned dim;
-    vector<unsigned> ids;
+    std::uint32_t dim;
+    vector<std::uint32_t> ids;
     vector<float> y_data;
   };
   const vector<TestCase> test_cases {
@@ -257,8 +257,8 @@ TEST_F(TensorBackwardTest, CheckPickN1) {
   struct TestCase {
     Shape b_shape;
     vector<float> b_data;
-    unsigned dim;
-    vector<unsigned> ids;
+    std::uint32_t dim;
+    vector<std::uint32_t> ids;
     vector<float> y_data;
   };
   const vector<TestCase> test_cases {
@@ -288,8 +288,8 @@ TEST_F(TensorBackwardTest, CheckPick1N) {
   struct TestCase {
     Shape b_shape;
     vector<float> b_data;
-    unsigned dim;
-    vector<unsigned> ids;
+    std::uint32_t dim;
+    vector<std::uint32_t> ids;
     vector<float> y_data;
   };
   const vector<TestCase> test_cases {
@@ -325,8 +325,8 @@ TEST_F(TensorBackwardTest, CheckPick1N) {
 TEST_F(TensorBackwardTest, CheckInvalidPick) {
   struct TestCase {
     Shape a_shape, b_shape;
-    unsigned dim;
-    vector<unsigned> ids;
+    std::uint32_t dim;
+    vector<std::uint32_t> ids;
   };
   vector<TestCase> test_cases {
     // Out-of-range IDs.

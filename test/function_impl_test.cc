@@ -271,7 +271,7 @@ TEST_F(FunctionImplTest, CheckConstant) {
 
 TEST_F(FunctionImplTest, CheckIdentity) {
   struct TestCase {
-    unsigned size;
+    std::uint32_t size;
     Shape shape;
     vector<float> data;
   };
@@ -478,8 +478,8 @@ TEST_F(FunctionImplTest, CheckRandomLogNormal) {
 
 TEST_F(FunctionImplTest, CheckPick) {
   struct TestCase {
-    unsigned dim;
-    vector<unsigned> ids;
+    std::uint32_t dim;
+    vector<std::uint32_t> ids;
     Shape ret_shape;
     vector<float> ret_data;
     vector<float> bw_grad;
@@ -519,7 +519,7 @@ TEST_F(FunctionImplTest, CheckPick) {
 
 TEST_F(FunctionImplTest, CheckSlice) {
   struct TestCase {
-    unsigned dim, lower, upper;
+    std::uint32_t dim, lower, upper;
     Shape ret_shape;
     vector<float> ret_data;
     vector<float> bw_grad;
@@ -571,7 +571,7 @@ TEST_F(FunctionImplTest, CheckSlice) {
 
 TEST_F(FunctionImplTest, CheckConcat) {
   struct TestCase {
-    unsigned dim;
+    std::uint32_t dim;
     Shape ret_shape;
     vector<float> cur_value_data;
     vector<float> cur_grad_data;
@@ -1127,7 +1127,7 @@ TEST_F(FunctionImplTest, CheckSum) {
   // dy/dx = broadcast(1, dim, x.shape[dim])
   setup_1arg();
   struct TestCase {
-    unsigned dim;
+    std::uint32_t dim;
     Shape ret_shape;
     vector<float> ret_data;
   };
@@ -1156,7 +1156,7 @@ TEST_F(FunctionImplTest, CheckLogSumExp) {
   // dy/dx = softmax(x, dim)
   setup_1arg();
   struct TestCase {
-    unsigned dim;
+    std::uint32_t dim;
     Shape ret_shape;
     vector<float> ret_data;
     vector<float> bw_grad;
@@ -1200,7 +1200,7 @@ TEST_F(FunctionImplTest, CheckBroadcast) {
   // dy/dx = sum(1, dim)
   setup_1arg();
   struct TestCase {
-    unsigned dim, size;
+    std::uint32_t dim, size;
     Shape ret_shape;
     vector<float> ret_data;
   };
@@ -1278,8 +1278,8 @@ TEST_F(FunctionImplTest, CheckSoftmaxCrossEntropy) {
 
 TEST_F(FunctionImplTest, CheckSparseSoftmaxCrossEntropy) {
   struct TestCase {
-    unsigned dim;
-    vector<unsigned> ids;
+    std::uint32_t dim;
+    vector<std::uint32_t> ids;
     Shape ret_shape;
     vector<float> ret_data;
     vector<float> bw_grad;

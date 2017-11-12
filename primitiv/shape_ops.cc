@@ -39,7 +39,7 @@ Shape elementwise(const Shape &a, const Shape &b) {
   return a.resize_batch(std::max(a.batch(), b.batch()));
 }
 
-Shape slice(const Shape &x, unsigned dim, unsigned lower, unsigned upper) {
+Shape slice(const Shape &x, std::uint32_t dim, std::uint32_t lower, std::uint32_t upper) {
   if (lower >= upper || upper > x[dim]) {
     THROW_ERROR(
         "Invalid slice operation. shape: " << x.to_string()
@@ -49,19 +49,19 @@ Shape slice(const Shape &x, unsigned dim, unsigned lower, unsigned upper) {
   return dim >= x.depth() ? x : x.resize_dim(dim, upper - lower);
 }
 
-Shape concat(const std::vector<const Shape *> &xs, unsigned dim) {
+Shape concat(const std::vector<const Shape *> &xs, std::uint32_t dim) {
   if (xs.empty()) {
     THROW_ERROR("No tensors to be concatenated.");
   }
 
   Shape s0 = *xs[0];
-  unsigned sum = s0[dim];
+  std::uint32_t sum = s0[dim];
 
-  for (unsigned i = 1; i < xs.size(); ++i) {
+  for (std::uint32_t i = 1; i < xs.size(); ++i) {
     const Shape &s = *xs[i];
     if (!s0.has_same_loo_dims(s, dim) || !s0.has_compatible_batch(s)) {
       std::string dims_str = xs[0]->to_string();
-      for (unsigned i = 1; i < xs.size(); ++i) {
+      for (std::uint32_t i = 1; i < xs.size(); ++i) {
         dims_str += ", " + xs[i]->to_string();
       }
       THROW_ERROR("Invalid shapes to concatenate: " << dims_str);
@@ -74,7 +74,7 @@ Shape concat(const std::vector<const Shape *> &xs, unsigned dim) {
   return s0;
 }
 
-Shape broadcast(const Shape &x, unsigned dim, unsigned size) {
+Shape broadcast(const Shape &x, std::uint32_t dim, std::uint32_t size) {
   if (x[dim] != 1 || size == 0) {
     THROW_ERROR(
         "Invalid broadcasting. x: "
@@ -83,15 +83,15 @@ Shape broadcast(const Shape &x, unsigned dim, unsigned size) {
   return x.resize_dim(dim, size);
 }
 
-Shape pick(const Shape &x, const std::vector<unsigned> &ids, unsigned dim) {
-  const unsigned n = x[dim];
-  const unsigned bi = ids.size();
+Shape pick(const Shape &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim) {
+  const std::uint32_t n = x[dim];
+  const std::uint32_t bi = ids.size();
   if (bi == 0 || (x.batch() != bi && x.has_batch() && bi > 1)) {
     THROW_ERROR(
         "Invalid IDs to pick. shape: " << x.to_string()
         << ", ids.size(): " << ids.size());
   }
-  for (unsigned i = 0; i < bi; ++i) {
+  for (std::uint32_t i = 0; i < bi; ++i) {
     if (ids[i] >= n) {
       THROW_ERROR(
           "Invalid IDs to pick. shape: " << x.to_string()

@@ -69,7 +69,7 @@ TEST_F(TensorOpsTest, CheckInputByParameter) {
 
 TEST_F(TensorOpsTest, CheckCopy) {
   vector<float> data(12);
-  unsigned i = 0;
+  std::uint32_t i = 0;
   for (Device *dev : devices) {
     for (Device *dev2 : devices) {
       // Sets different (count-up) data to be copied every time.
@@ -94,7 +94,7 @@ TEST_F(TensorOpsTest, CheckInvalidCopy) {
 
 TEST_F(TensorOpsTest, CheckIdentity) {
   struct TestCase {
-    unsigned size;
+    std::uint32_t size;
     Shape shape;
     vector<float> values;
   };
@@ -124,8 +124,8 @@ TEST_F(TensorOpsTest, CheckInvalidIdentity) {
 TEST_F(TensorOpsTest, CheckPickNN) {
   struct TestCase {
     Shape x_shape;
-    unsigned dim;
-    vector<unsigned> ids;
+    std::uint32_t dim;
+    vector<std::uint32_t> ids;
     Shape y_shape;
     vector<float> values;
   };
@@ -153,7 +153,7 @@ TEST_F(TensorOpsTest, CheckPickNN) {
     for (const TestCase &tc : test_cases) {
       std::cerr << "x_shape=" << tc.x_shape.to_string()
         << ", dim=" << tc.dim << ", ids=[";
-      for (unsigned i = 0; i < tc.ids.size(); ++i) {
+      for (std::uint32_t i = 0; i < tc.ids.size(); ++i) {
         if (i > 0) std::cerr << ',';
         std::cerr << tc.ids[i];
       }
@@ -170,8 +170,8 @@ TEST_F(TensorOpsTest, CheckPickNN) {
 
 TEST_F(TensorOpsTest, CheckInvalidPick) {
   struct TestCase {
-    unsigned dim;
-    vector<unsigned> ids;
+    std::uint32_t dim;
+    vector<std::uint32_t> ids;
   };
   const vector<TestCase> test_cases {
      {0, {}},
@@ -194,7 +194,7 @@ TEST_F(TensorOpsTest, CheckSlice) {
   vector<float> x_data(3 * 3 * 2 * 4);
   std::iota(x_data.begin(), x_data.end(), 0);
   struct TestCase {
-    unsigned dim, lower, upper;
+    std::uint32_t dim, lower, upper;
     Shape shape;
     vector<float> values;
   };
@@ -258,7 +258,7 @@ TEST_F(TensorOpsTest, CheckSlice) {
 }
 
 TEST_F(TensorOpsTest, CheckInvalidSlice) {
-  struct TestCase { unsigned dim, lower, upper; };
+  struct TestCase { std::uint32_t dim, lower, upper; };
   const vector<TestCase> test_cases {
     {0, 0, 0}, {0, 1, 0}, {0, 0, 4}, {0, 3, 4},
     {1, 0, 0}, {1, 1, 0}, {1, 0, 4}, {1, 3, 4},
@@ -303,7 +303,7 @@ TEST_F(TensorOpsTest, CheckConcat5x4) {
     const Tensor b = dev->new_tensor_by_vector({5}, {2, 2, 2, 2, 2});
     const Tensor c = dev->new_tensor_by_vector({5}, {3, 3, 3, 3, 3});
     const Tensor d = dev->new_tensor_by_vector({5}, {4, 4, 4, 4, 4});
-    for (const unsigned i : {0, 1, 2}) {
+    for (const std::uint32_t i : {0, 1, 2}) {
       const Tensor y1 = concat({a, b, c, d}, i);
       const Tensor y2 = concat({&a, &b, &c, &d}, i);
       EXPECT_EQ(shapes[i], y1.shape());
@@ -341,7 +341,7 @@ TEST_F(TensorOpsTest, CheckConcat2_2_2x2) {
   for (Device *dev : devices) {
     const Tensor a = dev->new_tensor_by_vector(Shape({2, 2, 2}, 2), a_data);
     const Tensor b = dev->new_tensor_by_vector(Shape({2, 2, 2}, 2), b_data);
-    for (const unsigned i : {0, 1, 2, 3, 4}) {
+    for (const std::uint32_t i : {0, 1, 2, 3, 4}) {
       const Tensor y1 = concat({a, b}, i);
       const Tensor y2 = concat({&a, &b}, i);
       EXPECT_EQ(shapes[i], y1.shape());
@@ -915,7 +915,7 @@ TEST_F(TensorOpsTest, CheckInvalidArithmeticOps) {
     Shape({2, 2}, 3), Shape({3, 3}, 2), Shape({3, 3}, 3),
   };
   for (Device *dev : devices) {
-    for (unsigned i = 0; i < sa.size(); ++i) {
+    for (std::uint32_t i = 0; i < sa.size(); ++i) {
       const Tensor a = dev->new_tensor_by_vector(
           sa[i], vector<float>(sa[i].size()));
       const Tensor b = dev->new_tensor_by_vector(
@@ -1457,7 +1457,7 @@ TEST_F(TensorOpsTest, CheckSum) {
   };
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 2, 2}, 2), x_data);
-    for (unsigned i = 0; i < 4; ++i) {
+    for (std::uint32_t i = 0; i < 4; ++i) {
       const Tensor y = sum(x, i);
       EXPECT_EQ(shape[i], y.shape());
       EXPECT_TRUE(vector_match(y_data[i], y.to_vector()));
@@ -1466,11 +1466,11 @@ TEST_F(TensorOpsTest, CheckSum) {
 }
 
 TEST_F(TensorOpsTest, CheckSum2) {
-  const vector<unsigned> ns {
+  const vector<std::uint32_t> ns {
     1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025, 65535, 65536, 65537,
   };
   for (Device *dev : devices) {
-    for (const unsigned n : ns) {
+    for (const std::uint32_t n : ns) {
       const Tensor x = dev->new_tensor_by_constant({n}, 1);
       const Tensor y = sum(x, 0);
       EXPECT_EQ(Shape(), y.shape());
@@ -1501,7 +1501,7 @@ TEST_F(TensorOpsTest, CheckLogSumExp) {
   };
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 2, 2}, 2), x_data);
-    for (unsigned i = 0; i < 4; ++i) {
+    for (std::uint32_t i = 0; i < 4; ++i) {
       const Tensor y = logsumexp(x, i);
       EXPECT_EQ(shape[i], y.shape());
       EXPECT_TRUE(vector_match(y_data[i], y.to_vector()));
@@ -1510,11 +1510,11 @@ TEST_F(TensorOpsTest, CheckLogSumExp) {
 }
 
 TEST_F(TensorOpsTest, CheckLogSumExp2) {
-  const vector<unsigned> ns {
+  const vector<std::uint32_t> ns {
     1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025, 65535, 65536, 65537,
   };
   for (Device *dev : devices) {
-    for (const unsigned n : ns) {
+    for (const std::uint32_t n : ns) {
       for (const float k : {-5, -1, 0, 1, 5}) {
         const Tensor x = dev->new_tensor_by_constant({n}, k);
         const Tensor y = logsumexp(x, 0);
@@ -1548,7 +1548,7 @@ TEST_F(TensorOpsTest, CheckLogSoftmax) {
   };
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 2, 2}, 2), x_data);
-    for (unsigned i = 0; i < 4; ++i) {
+    for (std::uint32_t i = 0; i < 4; ++i) {
       const Tensor y = log_softmax(x, i);
       EXPECT_EQ(Shape({2, 2, 2}, 2), y.shape());
       EXPECT_TRUE(vector_near(y_data[i], y.to_vector(), 1e-6));
@@ -1557,11 +1557,11 @@ TEST_F(TensorOpsTest, CheckLogSoftmax) {
 }
 
 TEST_F(TensorOpsTest, CheckLogSoftmax2) {
-  const vector<unsigned> ns {
+  const vector<std::uint32_t> ns {
     1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025, 65535, 65536, 65537,
   };
   for (Device *dev : devices) {
-    for (const unsigned n : ns) {
+    for (const std::uint32_t n : ns) {
       for (const float k : {-5, -1, 0, 1, 5}) {
         const Tensor x = dev->new_tensor_by_constant({n}, k);
         const Tensor y = log_softmax(x, 0);
@@ -1595,7 +1595,7 @@ TEST_F(TensorOpsTest, CheckSoftmax) {
   };
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 2, 2}, 2), x_data);
-    for (unsigned i = 0; i < 4; ++i) {
+    for (std::uint32_t i = 0; i < 4; ++i) {
       const Tensor y = softmax(x, i);
       EXPECT_EQ(Shape({2, 2, 2}, 2), y.shape());
       EXPECT_TRUE(vector_near(y_data[i], y.to_vector(), 1e-6));
@@ -1604,11 +1604,11 @@ TEST_F(TensorOpsTest, CheckSoftmax) {
 }
 
 TEST_F(TensorOpsTest, CheckSoftmax2) {
-  const vector<unsigned> ns {
+  const vector<std::uint32_t> ns {
     1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025, 65535, 65536, 65537,
   };
   for (Device *dev : devices) {
-    for (const unsigned n : ns) {
+    for (const std::uint32_t n : ns) {
       for (const float k : {-5, -1, 0, 1, 5}) {
         const Tensor x = dev->new_tensor_by_constant({n}, k);
         const Tensor y = softmax(x, 0);
@@ -1622,7 +1622,7 @@ TEST_F(TensorOpsTest, CheckSoftmax2) {
 
 TEST_F(TensorOpsTest, CheckBroadcast) {
   struct TestCase {
-    unsigned dim, size;
+    std::uint32_t dim, size;
     Shape shape;
     vector<float> values;
   };
@@ -1644,7 +1644,7 @@ TEST_F(TensorOpsTest, CheckBroadcast) {
 
 TEST_F(TensorOpsTest, CheckBroadcast2) {
   struct TestCase {
-    unsigned dim, size;
+    std::uint32_t dim, size;
     Shape shape;
     vector<float> values;
   };
@@ -1666,7 +1666,7 @@ TEST_F(TensorOpsTest, CheckBroadcast2) {
 
 TEST_F(TensorOpsTest, CheckBroadcast3) {
   struct TestCase {
-    unsigned dim, size;
+    std::uint32_t dim, size;
     Shape shape;
     vector<float> values;
   };
@@ -1737,7 +1737,7 @@ TEST_F(TensorOpsTest, CheckSoftmaxCrossEntropy) {
   };
   const vector<Shape> shape {{1, 3}, {3}};
   for (Device *dev : devices) {
-    for (const unsigned dim : {0, 1}) {
+    for (const std::uint32_t dim : {0, 1}) {
       const Tensor x = dev->new_tensor_by_vector({3, 3}, x_data[dim]);
       const Tensor t = dev->new_tensor_by_vector({3, 3}, t_data[dim]);
       const Tensor y = softmax_cross_entropy(x, t, dim);
@@ -1795,8 +1795,8 @@ TEST_F(TensorOpsTest, CheckInvalidSoftmaxCrossEntropy) {
 TEST_F(TensorOpsTest, CheckSparseSoftmaxCrossEntropy) {
   struct TestCase {
     vector<float> x_data;
-    unsigned dim;
-    vector<unsigned> ids;
+    std::uint32_t dim;
+    vector<std::uint32_t> ids;
     Shape x_shape, y_shape;
     vector<float> y_data;
   };
@@ -1841,14 +1841,14 @@ TEST_F(TensorOpsTest, CheckInvalidSparseSoftmaxCrossEntropy) {
   for (Device *dev : devices) {
     {
       const Tensor x = dev->new_tensor_by_constant({2, 2}, .5);
-      const vector<unsigned> t {2};
+      const vector<std::uint32_t> t {2};
       EXPECT_THROW(softmax_cross_entropy(x, t, 0), Error);
       EXPECT_THROW(softmax_cross_entropy(x, t, 1), Error);
       EXPECT_THROW(softmax_cross_entropy(x, t, 2), Error);
     }
     {
       const Tensor x = dev->new_tensor_by_constant(Shape({2, 2}, 2), .5);
-      const vector<unsigned> t {0, 0, 0};
+      const vector<std::uint32_t> t {0, 0, 0};
       EXPECT_THROW(softmax_cross_entropy(x, t, 0), Error);
       EXPECT_THROW(softmax_cross_entropy(x, t, 1), Error);
       EXPECT_THROW(softmax_cross_entropy(x, t, 2), Error);

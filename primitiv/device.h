@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_DEVICE_H_
 #define PRIMITIV_DEVICE_H_
 
+#include <cstdint>
 #include <memory>
 #include <primitiv/mixins.h>
 #include <primitiv/shape.h>
@@ -84,7 +85,7 @@ public:
   Tensor copy_tensor(const Tensor &x);
 
   // Provides an identity matrix.
-  Tensor identity(unsigned size);
+  Tensor identity(std::uint32_t size);
 
   // Random value generators.
   Tensor random_bernoulli(const Shape &shape, float p);
@@ -93,12 +94,12 @@ public:
   Tensor random_log_normal(const Shape &shape, float mean, float sd);
 
   // Tensor manipulations.
-  Tensor pick_fw(const Tensor &x, const std::vector<unsigned> &ids, unsigned dim);
-  Tensor slice_fw(const Tensor &x, unsigned dim, unsigned lower, unsigned upper);
-  Tensor concat_fw(const std::vector<const Tensor *> &xs, unsigned dim);
+  Tensor pick_fw(const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim);
+  Tensor slice_fw(const Tensor &x, std::uint32_t dim, std::uint32_t lower, std::uint32_t upper);
+  Tensor concat_fw(const std::vector<const Tensor *> &xs, std::uint32_t dim);
 
-  void pick_bw(const Tensor &gy, const std::vector<unsigned> &ids, unsigned dim, Tensor &gx);
-  void slice_bw(const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx);
+  void pick_bw(const Tensor &gy, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &gx);
+  void slice_bw(const Tensor &gy, std::uint32_t dim, std::uint32_t offset, Tensor &gx);
 
   // Unary operations.
   Tensor negate_fw(const Tensor &x);
@@ -175,9 +176,9 @@ public:
       Tensor &ga, Tensor &gb);
 
   // Dimension operations.
-  Tensor sum_fw(const Tensor &x, unsigned dim);
-  Tensor logsumexp_fw(const Tensor &x, unsigned dim);
-  Tensor broadcast_fw(const Tensor &x, unsigned dim, unsigned size);
+  Tensor sum_fw(const Tensor &x, std::uint32_t dim);
+  Tensor logsumexp_fw(const Tensor &x, std::uint32_t dim);
+  Tensor broadcast_fw(const Tensor &x, std::uint32_t dim, std::uint32_t size);
   Tensor batch_sum_fw(const Tensor &x);
 
   /**
@@ -225,7 +226,7 @@ private:
    * @param dim A specified axis.
    * @return A list of integers that indicates positions of the maximum values.
    */
-  std::vector<unsigned> argmax(const Tensor &x, unsigned dim);
+  std::vector<std::uint32_t> argmax(const Tensor &x, std::uint32_t dim);
 
   /**
    * Retrieves argmin indices along an axis.
@@ -233,7 +234,7 @@ private:
    * @param dim A specified axis.
    * @return A list of integers that indicates positions of the minimum values.
    */
-  std::vector<unsigned> argmin(const Tensor &x, unsigned dim);
+  std::vector<std::uint32_t> argmin(const Tensor &x, std::uint32_t dim);
 
 protected:
   /**
@@ -269,8 +270,8 @@ private:
   virtual std::shared_ptr<void> new_handle(const Shape &shape) = 0;
 
   virtual std::vector<float> tensor_to_vector_impl(const Tensor &x) = 0;
-  virtual std::vector<unsigned> argmax_impl(const Tensor &x, unsigned dim) = 0;
-  virtual std::vector<unsigned> argmin_impl(const Tensor &x, unsigned dim) = 0;
+  virtual std::vector<std::uint32_t> argmax_impl(const Tensor &x, std::uint32_t dim) = 0;
+  virtual std::vector<std::uint32_t> argmin_impl(const Tensor &x, std::uint32_t dim) = 0;
 
   virtual void reset_tensor_impl(float k, Tensor &x) = 0;
   virtual void reset_tensor_by_array_impl(const float values[], Tensor &x) = 0;
@@ -284,12 +285,12 @@ private:
   virtual void random_normal_impl(float mean, float sd, Tensor &y) = 0;
   virtual void random_log_normal_impl(float mean, float sd, Tensor &y) = 0;
 
-  virtual void pick_fw_impl(const Tensor &x, const std::vector<unsigned> &ids, unsigned dim, Tensor &y) = 0;
-  virtual void slice_fw_impl(const Tensor &x, unsigned dim, unsigned offset, Tensor &y) = 0;
-  virtual void concat_fw_impl(const std::vector<const Tensor *> &xs, unsigned dim, Tensor &y) = 0;
+  virtual void pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &y) = 0;
+  virtual void slice_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t offset, Tensor &y) = 0;
+  virtual void concat_fw_impl(const std::vector<const Tensor *> &xs, std::uint32_t dim, Tensor &y) = 0;
 
-  virtual void pick_bw_impl(const Tensor &gy, const std::vector<unsigned> &ids, unsigned dim, Tensor &gx) = 0;
-  virtual void slice_bw_impl(const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) = 0;
+  virtual void pick_bw_impl(const Tensor &gy, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &gx) = 0;
+  virtual void slice_bw_impl(const Tensor &gy, std::uint32_t dim, std::uint32_t offset, Tensor &gx) = 0;
 
   virtual void negate_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void sqrt_fw_impl(const Tensor &x, Tensor &y) = 0;
@@ -361,9 +362,9 @@ private:
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
       Tensor &ga, Tensor &gb) = 0;
 
-  virtual void sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) = 0;
-  virtual void logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) = 0;
-  virtual void broadcast_fw_impl(const Tensor &x, unsigned dim, unsigned size, Tensor &y) = 0;
+  virtual void sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
+  virtual void logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
+  virtual void broadcast_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) = 0;
   virtual void batch_sum_fw_impl(const Tensor &x, Tensor &y) = 0;
 
   virtual void inplace_multiply_const_impl(float k, Tensor &x) = 0;

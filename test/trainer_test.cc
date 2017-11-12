@@ -103,7 +103,7 @@ TEST_F(TrainerTest, CheckAddModelWithSubmodels) {
 TEST_F(TrainerTest, CheckEpoch) {
   trainers::SGD trainer;
   ASSERT_EQ(0u, trainer.get_epoch());
-  for (unsigned i = 1; i < 10; ++i) {
+  for (std::uint32_t i = 1; i < 10; ++i) {
     trainer.update();
     EXPECT_EQ(i, trainer.get_epoch());
   }
