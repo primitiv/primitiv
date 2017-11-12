@@ -37,104 +37,104 @@ private:
   std::vector<std::uint32_t> argmax_impl(const Tensor &x, std::uint32_t dim) override {return {};}
   std::vector<std::uint32_t> argmin_impl(const Tensor &x, std::uint32_t dim) override {return {};}
 
-  void reset_tensor_impl(float k, Tensor &x) override {std::cout << " a " << std::endl;}
+  void reset_tensor_impl(float k, Tensor &x) override { THROW_ERROR("not implemented"); }
   void reset_tensor_by_array_impl(const float values[], Tensor &x) override;
 
-  void copy_tensor_impl(const Tensor &x, Tensor &y) override {std::cout << " a " << std::endl;}
+  void copy_tensor_impl(const Tensor &x, Tensor &y) override { THROW_ERROR("not implemented"); }
 
-  void identity_impl(Tensor &y) override {std::cout << " a " << std::endl;}
+  void identity_impl(Tensor &y) override { THROW_ERROR("not implemented"); }
 
-  void random_bernoulli_impl(float p, Tensor &y) override {std::cout << " a " << std::endl;}
-  void random_uniform_impl(float lower, float upper, Tensor &y) override {std::cout << " a " << std::endl;}
-  void random_normal_impl(float mean, float sd, Tensor &y) override {std::cout << " a " << std::endl;}
-  void random_log_normal_impl(float mean, float sd, Tensor &y) override {std::cout << " a " << std::endl;}
+  void random_bernoulli_impl(float p, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void random_uniform_impl(float lower, float upper, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void random_normal_impl(float mean, float sd, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void random_log_normal_impl(float mean, float sd, Tensor &y) override { THROW_ERROR("not implemented"); }
 
-  void pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &y) override {std::cout << " a " << std::endl;}
-  void slice_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t offset, Tensor &y) override {std::cout << " a " << std::endl;}
-  void concat_fw_impl(const std::vector<const Tensor *> &xs, std::uint32_t dim, Tensor &y) override {std::cout << " a " << std::endl;}
+  void pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void slice_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t offset, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void concat_fw_impl(const std::vector<const Tensor *> &xs, std::uint32_t dim, Tensor &y) override { THROW_ERROR("not implemented"); }
 
-  void pick_bw_impl(const Tensor &gy, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &gx) override {std::cout << " a " << std::endl;}
-  void slice_bw_impl(const Tensor &gy, std::uint32_t dim, std::uint32_t offset, Tensor &gx) override {std::cout << " a " << std::endl;}
+  void pick_bw_impl(const Tensor &gy, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &gx) override { THROW_ERROR("not implemented"); }
+  void slice_bw_impl(const Tensor &gy, std::uint32_t dim, std::uint32_t offset, Tensor &gx) override { THROW_ERROR("not implemented"); }
 
-  void negate_fw_impl(const Tensor &x, Tensor &y) override {std::cout << " a " << std::endl;}
-  void sqrt_fw_impl(const Tensor &x, Tensor &y) override {std::cout << " a " << std::endl;}
-  void exp_fw_impl(const Tensor &x, Tensor &y) override {std::cout << " a " << std::endl;}
-  void log_fw_impl(const Tensor &x, Tensor &y) override {std::cout << " a " << std::endl;}
-  void tanh_fw_impl(const Tensor &x, Tensor &y) override {std::cout << " a " << std::endl;}
-  void sigmoid_fw_impl(const Tensor &x, Tensor &y) override {std::cout << " a " << std::endl;}
-  void softplus_fw_impl(const Tensor &x, Tensor &y) override {std::cout << " a " << std::endl;}
-  void sin_fw_impl(const Tensor &x, Tensor &y) override {std::cout << " a " << std::endl;}
-  void cos_fw_impl(const Tensor &x, Tensor &y) override {std::cout << " a " << std::endl;}
-  void tan_fw_impl(const Tensor &x, Tensor &y) override {std::cout << " a " << std::endl;}
-  void transpose_fw_impl(const Tensor &x, Tensor &y) override {std::cout << " a " << std::endl;}
+  void negate_fw_impl(const Tensor &x, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void sqrt_fw_impl(const Tensor &x, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void exp_fw_impl(const Tensor &x, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void log_fw_impl(const Tensor &x, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void tanh_fw_impl(const Tensor &x, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void sigmoid_fw_impl(const Tensor &x, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void softplus_fw_impl(const Tensor &x, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void sin_fw_impl(const Tensor &x, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void cos_fw_impl(const Tensor &x, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void tan_fw_impl(const Tensor &x, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void transpose_fw_impl(const Tensor &x, Tensor &y) override { THROW_ERROR("not implemented"); }
 
-  void sqrt_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override {std::cout << " a " << std::endl;}
-  void exp_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override {std::cout << " a " << std::endl;}
-  void log_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override {std::cout << " a " << std::endl;}
-  void tanh_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override {std::cout << " a " << std::endl;}
-  void sigmoid_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override {std::cout << " a " << std::endl;}
-  void softplus_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override {std::cout << " a " << std::endl;}
-  void sin_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override {std::cout << " a " << std::endl;}
-  void cos_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override {std::cout << " a " << std::endl;}
-  void tan_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override {std::cout << " a " << std::endl;}
-  void transpose_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override {std::cout << " a " << std::endl;}
+  void sqrt_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override { THROW_ERROR("not implemented"); }
+  void exp_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override { THROW_ERROR("not implemented"); }
+  void log_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override { THROW_ERROR("not implemented"); }
+  void tanh_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override { THROW_ERROR("not implemented"); }
+  void sigmoid_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override { THROW_ERROR("not implemented"); }
+  void softplus_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override { THROW_ERROR("not implemented"); }
+  void sin_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override { THROW_ERROR("not implemented"); }
+  void cos_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override { THROW_ERROR("not implemented"); }
+  void tan_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override { THROW_ERROR("not implemented"); }
+  void transpose_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override { THROW_ERROR("not implemented"); }
 
-  void add_const_fw_impl(const Tensor &x, float k, Tensor &y) override {std::cout << " a " << std::endl;}
-  void subtract_const_r_fw_impl(const Tensor &x, float k, Tensor &y) override {std::cout << " a " << std::endl;}
-  void subtract_const_l_fw_impl(const Tensor &x, float k, Tensor &y) override {std::cout << " a " << std::endl;}
-  void multiply_const_fw_impl(const Tensor &x, float k, Tensor &y) override {std::cout << " a " << std::endl;}
-  void divide_const_r_fw_impl(const Tensor &x, float k, Tensor &y) override {std::cout << " a " << std::endl;}
-  void divide_const_l_fw_impl(const Tensor &x, float k, Tensor &y) override {std::cout << " a " << std::endl;}
-  void prelu_fw_impl(const Tensor &x, float k, Tensor &y) override {std::cout << " a " << std::endl;}
-  void elu_fw_impl(const Tensor &x, float k, Tensor &y) override {std::cout << " a " << std::endl;}
+  void add_const_fw_impl(const Tensor &x, float k, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void subtract_const_r_fw_impl(const Tensor &x, float k, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void subtract_const_l_fw_impl(const Tensor &x, float k, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void multiply_const_fw_impl(const Tensor &x, float k, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void divide_const_r_fw_impl(const Tensor &x, float k, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void divide_const_l_fw_impl(const Tensor &x, float k, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void prelu_fw_impl(const Tensor &x, float k, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void elu_fw_impl(const Tensor &x, float k, Tensor &y) override { THROW_ERROR("not implemented"); }
 
-  void add_const_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override {std::cout << " a " << std::endl;}
-  void subtract_const_r_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override {std::cout << " a " << std::endl;}
-  void subtract_const_l_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override {std::cout << " a " << std::endl;}
-  void multiply_const_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override {std::cout << " a " << std::endl;}
-  void divide_const_r_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override {std::cout << " a " << std::endl;}
-  void divide_const_l_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override {std::cout << " a " << std::endl;}
-  void prelu_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override {std::cout << " a " << std::endl;}
-  void elu_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override {std::cout << " a " << std::endl;}
+  void add_const_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override { THROW_ERROR("not implemented"); }
+  void subtract_const_r_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override { THROW_ERROR("not implemented"); }
+  void subtract_const_l_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override { THROW_ERROR("not implemented"); }
+  void multiply_const_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override { THROW_ERROR("not implemented"); }
+  void divide_const_r_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override { THROW_ERROR("not implemented"); }
+  void divide_const_l_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override { THROW_ERROR("not implemented"); }
+  void prelu_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override { THROW_ERROR("not implemented"); }
+  void elu_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override { THROW_ERROR("not implemented"); }
 
-  void add_scalar_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override {std::cout << " a " << std::endl;}
-  void subtract_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override {std::cout << " a " << std::endl;}
-  void subtract_scalar_l_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override {std::cout << " a " << std::endl;}
-  void multiply_scalar_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override {std::cout << " a " << std::endl;}
-  void divide_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override {std::cout << " a " << std::endl;}
-  void divide_scalar_l_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override {std::cout << " a " << std::endl;}
+  void add_scalar_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void subtract_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void subtract_scalar_l_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void multiply_scalar_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void divide_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void divide_scalar_l_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override { THROW_ERROR("not implemented"); }
 
-  void add_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override {std::cout << " a " << std::endl;}
-  void subtract_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override {std::cout << " a " << std::endl;}
-  void multiply_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override {std::cout << " a " << std::endl;}
-  void divide_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override {std::cout << " a " << std::endl;}
-  void matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override {std::cout << " a " << std::endl;}
+  void add_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void subtract_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void multiply_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void divide_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override { THROW_ERROR("not implemented"); }
 
   void add_bw_impl(
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
-      Tensor &ga, Tensor &gb) override {std::cout << " a " << std::endl;}
+      Tensor &ga, Tensor &gb) override { THROW_ERROR("not implemented"); }
   void subtract_bw_impl(
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
-      Tensor &ga, Tensor &gb) override {std::cout << " a " << std::endl;}
+      Tensor &ga, Tensor &gb) override { THROW_ERROR("not implemented"); }
   void multiply_bw_impl(
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
-      Tensor &ga, Tensor &gb) override {std::cout << " a " << std::endl;}
+      Tensor &ga, Tensor &gb) override { THROW_ERROR("not implemented"); }
   void divide_bw_impl(
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
-      Tensor &ga, Tensor &gb) override {std::cout << " a " << std::endl;}
+      Tensor &ga, Tensor &gb) override { THROW_ERROR("not implemented"); }
   void matmul_bw_impl(
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
-      Tensor &ga, Tensor &gb) override {std::cout << " a " << std::endl;}
+      Tensor &ga, Tensor &gb) override { THROW_ERROR("not implemented"); }
 
   void sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) override;
-  void logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) override {std::cout << " a " << std::endl;}
-  void broadcast_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) override {std::cout << " a " << std::endl;}
-  void batch_sum_fw_impl(const Tensor &x, Tensor &y) override {std::cout << " a " << std::endl;}
+  void logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void broadcast_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void batch_sum_fw_impl(const Tensor &x, Tensor &y) override { THROW_ERROR("not implemented"); }
 
-  void inplace_multiply_const_impl(float k, Tensor &x) override {std::cout << " a " << std::endl;}
+  void inplace_multiply_const_impl(float k, Tensor &x) override { THROW_ERROR("not implemented"); }
 
-  void inplace_add_impl(const Tensor &x, Tensor &y) override {std::cout << " a " << std::endl;}
-  void inplace_subtract_impl(const Tensor &x, Tensor &y) override {std::cout << " a " << std::endl;}
+  void inplace_add_impl(const Tensor &x, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void inplace_subtract_impl(const Tensor &x, Tensor &y) override { THROW_ERROR("not implemented"); }
 
 private:
   cl::Device device_;
