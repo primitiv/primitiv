@@ -5,10 +5,12 @@
 #include <gtest/gtest.h>
 #include <primitiv/error.h>
 #include <primitiv/shape.h>
+#include <test_utils.h>
 
 using std::pair;
 using std::string;
 using std::vector;
+using test_utils::vector_match;
 
 namespace primitiv {
 
@@ -20,6 +22,7 @@ TEST_F(ShapeTest, CheckNewDefault) {
     EXPECT_EQ(1u, shape[0]);
     EXPECT_EQ(1u, shape[1]);
     EXPECT_EQ(1u, shape[100]);
+    EXPECT_TRUE(vector_match(vector<std::uint32_t> {}, shape.dims()));
     EXPECT_EQ(0u, shape.depth());
     EXPECT_EQ(1u, shape.batch());
     EXPECT_EQ(1u, shape.volume());
@@ -33,6 +36,7 @@ TEST_F(ShapeTest, CheckNewByInitializerList) {
     EXPECT_EQ(1u, shape[0]);
     EXPECT_EQ(1u, shape[1]);
     EXPECT_EQ(1u, shape[100]);
+    EXPECT_TRUE(vector_match(vector<std::uint32_t> {}, shape.dims()));
     EXPECT_EQ(0u, shape.depth());
     EXPECT_EQ(1u, shape.batch());
     EXPECT_EQ(1u, shape.volume());
@@ -45,6 +49,7 @@ TEST_F(ShapeTest, CheckNewByInitializerList) {
     EXPECT_EQ(3u, shape[2]);
     EXPECT_EQ(1u, shape[3]);
     EXPECT_EQ(1u, shape[100]);
+    EXPECT_TRUE(vector_match(vector<std::uint32_t> { 1, 2, 3 }, shape.dims()));
     EXPECT_EQ(3u, shape.depth());
     EXPECT_EQ(4u, shape.batch());
     EXPECT_EQ(6u, shape.volume());
@@ -58,6 +63,7 @@ TEST_F(ShapeTest, CheckNewByVector) {
     EXPECT_EQ(1u, shape[0]);
     EXPECT_EQ(1u, shape[1]);
     EXPECT_EQ(1u, shape[100]);
+    EXPECT_TRUE(vector_match(vector<std::uint32_t> {}, shape.dims()));
     EXPECT_EQ(0u, shape.depth());
     EXPECT_EQ(1u, shape.batch());
     EXPECT_EQ(1u, shape.volume());
@@ -70,6 +76,7 @@ TEST_F(ShapeTest, CheckNewByVector) {
     EXPECT_EQ(3u, shape[2]);
     EXPECT_EQ(1u, shape[3]);
     EXPECT_EQ(1u, shape[100]);
+    EXPECT_TRUE(vector_match(vector<std::uint32_t> { 1, 2, 3 }, shape.dims()));
     EXPECT_EQ(3u, shape.depth());
     EXPECT_EQ(4u, shape.batch());
     EXPECT_EQ(6u, shape.volume());
