@@ -23,6 +23,7 @@ std::string OpenCL::kernel_code_generator() {
           "  __constant unsigned skip = skip_p[0];"
           "  __constant unsigned n = n_p[0];"
           "  __local float temp[BLOCK_SIZE];"
+          "  px += bid % skip + (bid / skip) * skip * n;"
           "  temp[tid] = 0;"
           "  for (unsigned i = tid; i < n; i += BLOCK_SIZE) temp[tid] += px[i * skip];"
           "  work_group_barrier(CLK_LOCAL_MEM_FENCE);\n"
@@ -147,7 +148,6 @@ void OpenCL::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
       sum_fw_kernel_[m].setArg(1, mem_s); \
       sum_fw_kernel_[m].setArg(2, mem_n); \
       sum_fw_kernel_[m].setArg(3, DATA(y)); \
-      sum_fw_kernel_[m].setArg(4, sizeof(float) * k, NULL); \
       queue.enqueueNDRangeKernel(sum_fw_kernel_[m], cl::NullRange, cl::NDRange(r * k), cl::NDRange(k), NULL, NULL); \
       queue.finish();; break;
     CASE(1024, 10);
