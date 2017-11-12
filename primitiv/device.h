@@ -24,6 +24,7 @@ public:
   enum DeviceType {
     DEVICE_TYPE_CPU = 0x0,
     DEVICE_TYPE_CUDA = 0x10000,
+    DEVICE_TYPE_OPENCL = 0x20000,
   };
 
   Device() = default;

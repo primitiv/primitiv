@@ -92,6 +92,18 @@ if(PRIMITIV_USE_CUDA)
   list(APPEND primitiv_HDRS ${primitiv_cuda_HDRS})
 endif()
 
+# Build rules of the OpenCL backend.
+if(PRIMITIV_USE_OPEN_CL)
+  set(primitiv_opencl_HDRS
+    opencl_device.h)
+  set(primitiv_opencl_SRCS
+    opencl_device.cc)
+  add_library(primitiv_opencl OBJECT ${primitiv_base_HDRS} ${primitiv_opencl_HDRS} ${primitiv_opencl_SRCS})
+  list(APPEND primitiv_HDRS ${primitiv_opencl_HDRS})
+  list(APPEND primitiv_OBJS $<TARGET_OBJECTS:primitiv_opencl>)
+  list(APPEND primitiv_DEPS ${OpenCL_LIBRARIES})
+endif()
+
 # Builds the integrated binary.
 if(PRIMITIV_BUILD_STATIC_LIBRARY)
   add_library(primitiv STATIC ${primitiv_OBJS})

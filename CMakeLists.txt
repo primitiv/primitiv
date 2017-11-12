@@ -42,6 +42,10 @@ if(PRIMITIV_USE_CUDA)
   find_package(CUDA REQUIRED)
 endif()
 
+if(PRIMITIV_USE_OPEN_CL)
+  find_package(OpenCL REQUIRED)
+endif()
+
 # Include directories.
 include_directories(
   ${PROJECT_SOURCE_DIR}

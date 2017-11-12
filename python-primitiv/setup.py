@@ -29,6 +29,8 @@ ext_modules = [
                           sources=["primitiv/_device.pyx"]),
     extension_common_args("primitiv.devices._naive_device",
                           sources=["primitiv/devices/_naive_device.pyx"]),
+    extension_common_args("primitiv.devices._opencl_device",
+                          sources=["primitiv/devices/_opencl_device.pyx"]),
     extension_common_args("primitiv._parameter",
                           sources=["primitiv/_parameter.pyx"]),
     extension_common_args("primitiv._initializer",
