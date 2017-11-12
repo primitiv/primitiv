@@ -331,11 +331,11 @@ TEST_F(ModelTest, CheckGetTrainableParametersWithSubmodels) {
   EXPECT_EQ(&p3, params3.at(vector<string> { "p" }));
 }
 
-TEST_F(ModelTest, CheckSaveLoad) {
+TEST_F(ModelTest, CheckSaveLoad_Same) {
   const Shape shape {2, 2};
   const vector<float> values1 {1, 2, 3, 4};
   const vector<float> values2 {5, 6, 7, 8};
-  const string path = "/tmp/primitiv_ModelTest_CheckSaveLoad.data";
+  const string path = "/tmp/primitiv_ModelTest_CheckSaveLoad_Same.data";
 
   {
     Model m1, m2;
@@ -347,10 +347,6 @@ TEST_F(ModelTest, CheckSaveLoad) {
     ASSERT_NO_THROW(m1.save(path));
   }
 
-  // NOTE(odashi):
-  // Model should covers the same structure with that in the file.
-
-  // Same structure (correct):
   {
     Model m1, m2;
     Parameter p1, p2;
@@ -359,6 +355,7 @@ TEST_F(ModelTest, CheckSaveLoad) {
     m1.add_submodel("sm", m2);
 
     EXPECT_NO_THROW(m1.load(path));
+    std::remove(path.c_str());
 
     ASSERT_TRUE(p1.valid());
     ASSERT_TRUE(p2.valid());
@@ -367,8 +364,24 @@ TEST_F(ModelTest, CheckSaveLoad) {
     EXPECT_TRUE(vector_match(values1, p1.value().to_vector()));
     EXPECT_TRUE(vector_match(values2, p2.value().to_vector()));
   }
+}
 
-  // Insufficient set of parameters (error):
+TEST_F(ModelTest, CheckSaveLoad_Insufficient) {
+  const Shape shape {2, 2};
+  const vector<float> values1 {1, 2, 3, 4};
+  const vector<float> values2 {5, 6, 7, 8};
+  const string path = "/tmp/primitiv_ModelTest_CheckSaveLoad_Insufficient.data";
+
+  {
+    Model m1, m2;
+    Parameter p1(shape, values1), p2(shape, values2);
+    m1.add_parameter("p", p1);
+    m2.add_parameter("p", p2);
+    m1.add_submodel("sm", m2);
+
+    ASSERT_NO_THROW(m1.save(path));
+  }
+
   {
     Model m1, m2;
     Parameter p1;
@@ -376,9 +389,26 @@ TEST_F(ModelTest, CheckSaveLoad) {
     m1.add_submodel("sm", m2);
 
     EXPECT_THROW(m1.load(path), Error);
+    std::remove(path.c_str());
+  }
+}
+
+TEST_F(ModelTest, CheckSaveLoad_Excessive) {
+  const Shape shape {2, 2};
+  const vector<float> values1 {1, 2, 3, 4};
+  const vector<float> values2 {5, 6, 7, 8};
+  const string path = "/tmp/primitiv_ModelTest_CheckSaveLoad_Excessive.data";
+
+  {
+    Model m1, m2;
+    Parameter p1(shape, values1), p2(shape, values2);
+    m1.add_parameter("p", p1);
+    m2.add_parameter("p", p2);
+    m1.add_submodel("sm", m2);
+
+    ASSERT_NO_THROW(m1.save(path));
   }
 
-  // Excessive parameters would not be initialized (correct):
   {
     Model m1, m2;
     Parameter p1, p2, p3;
@@ -388,6 +418,7 @@ TEST_F(ModelTest, CheckSaveLoad) {
     m1.add_submodel("sm", m2);
 
     EXPECT_NO_THROW(m1.load(path));
+    std::remove(path.c_str());
 
     ASSERT_TRUE(p1.valid());
     ASSERT_TRUE(p2.valid());
@@ -429,6 +460,7 @@ TEST_F(ModelTest, CheckSaveLoadWithStats) {
     m1.add_submodel("sm", m2);
 
     EXPECT_NO_THROW(m1.load(path));
+    std::remove(path.c_str());
 
     ASSERT_TRUE(p1.valid());
     ASSERT_TRUE(p2.valid());
@@ -473,6 +505,7 @@ TEST_F(ModelTest, CheckSaveWithoutStats) {
     m1.add_submodel("sm", m2);
 
     EXPECT_NO_THROW(m1.load(path));
+    std::remove(path.c_str());
 
     ASSERT_TRUE(p1.valid());
     ASSERT_TRUE(p2.valid());
@@ -515,6 +548,7 @@ TEST_F(ModelTest, CheckLoadWithoutStats) {
     m1.add_submodel("sm", m2);
 
     EXPECT_NO_THROW(m1.load(path, false));
+    std::remove(path.c_str());
 
     ASSERT_TRUE(p1.valid());
     ASSERT_TRUE(p2.valid());
