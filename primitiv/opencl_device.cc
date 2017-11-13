@@ -10,7 +10,7 @@
 namespace primitiv {
 namespace devices {
 
-#define DATA(x) *((cl::Buffer *) ((x).data()))
+#define CDATA(x) *(static_cast<const cl::Buffer *>((x).data()))
 
 std::string OpenCL::kernel_code_generator() {
   std::ostringstream ss;
@@ -238,8 +238,8 @@ std::vector<float> OpenCL::tensor_to_vector_impl(const Tensor &x) {
   const std::uint32_t num_elements = x.shape().size();
   std::vector<float> ret(num_elements);
   cl::CommandQueue queue(context_, device_, 0, &error);
-  queue.enqueueReadBuffer(*((cl::Buffer *) x.data()), CL_TRUE, 0,
-            sizeof(cl_float) * num_elements, &ret.at(0), NULL, NULL);
+  queue.enqueueReadBuffer(CDATA(x), CL_TRUE, 0,
+            sizeof(cl_float) * num_elements, ret.data(), NULL, NULL);
   return ret;
 }
 
@@ -272,7 +272,7 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(const Tensor &x, std::uint32_t di
   switch (group_size) {
 #define CASE(k, m) \
     case k: \
-      argmax_kernel_[m].setArg(0, DATA(x)); \
+      argmax_kernel_[m].setArg(0, CDATA(x)); \
       argmax_kernel_[m].setArg(1, mem_s); \
       argmax_kernel_[m].setArg(2, mem_n); \
       argmax_kernel_[m].setArg(3, py); \
@@ -293,7 +293,7 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(const Tensor &x, std::uint32_t di
   }
   std::vector<std::uint32_t> ret(r);
   queue.enqueueReadBuffer(py, CL_TRUE, 0,
-            sizeof(cl_uint) * r, &ret.at(0), NULL, NULL);
+            sizeof(cl_uint) * r, ret.data(), NULL, NULL);
   return ret;
 }
 
@@ -318,7 +318,7 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(const Tensor &x, std::uint32_t di
   switch (group_size) {
 #define CASE(k, m) \
     case k: \
-      argmin_kernel_[m].setArg(0, DATA(x)); \
+      argmin_kernel_[m].setArg(0, CDATA(x)); \
       argmin_kernel_[m].setArg(1, mem_s); \
       argmin_kernel_[m].setArg(2, mem_n); \
       argmin_kernel_[m].setArg(3, py); \
@@ -339,7 +339,7 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(const Tensor &x, std::uint32_t di
   }
   std::vector<std::uint32_t> ret(r);
   queue.enqueueReadBuffer(py, CL_TRUE, 0,
-            sizeof(cl_uint) * r, &ret.at(0), NULL, NULL);
+            sizeof(cl_uint) * r, ret.data(), NULL, NULL);
   return ret;
 }
 
@@ -360,10 +360,10 @@ void OpenCL::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   switch (group_size) {
 #define CASE(k, m) \
     case k: \
-      sum_fw_kernel_[m].setArg(0, DATA(x)); \
+      sum_fw_kernel_[m].setArg(0, CDATA(x)); \
       sum_fw_kernel_[m].setArg(1, mem_s); \
       sum_fw_kernel_[m].setArg(2, mem_n); \
-      sum_fw_kernel_[m].setArg(3, DATA(y)); \
+      sum_fw_kernel_[m].setArg(3, CDATA(y)); \
       queue.enqueueNDRangeKernel(sum_fw_kernel_[m], cl::NullRange, cl::NDRange(r * k), cl::NDRange(k), NULL, NULL); \
       queue.finish();; break;
     CASE(1024, 10);
