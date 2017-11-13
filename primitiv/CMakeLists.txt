@@ -16,6 +16,7 @@ set(primitiv_base_HDRS
   msgpack/reader.h
   msgpack/writer.h
   naive_device.h
+  numeric_utils.h
   operators.h
   parameter.h
   primitiv.h
