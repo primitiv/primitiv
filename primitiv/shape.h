@@ -55,6 +55,14 @@ public:
   std::uint32_t operator[](std::uint32_t i) const { return i < depth_ ? dims_[i] : 1; }
 
   /**
+   * Returns the dimension array.
+   * @reutrn Copy of the dimension array.
+   */
+  const std::vector<std::uint32_t> dims() const {
+    return std::vector<std::uint32_t>(&dims_[0], &dims_[depth_]);
+  }
+
+  /**
    * Returns the depth (length of non-1 dimensions) of the shape.
    * @return The depth of the shape.
    */

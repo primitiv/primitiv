@@ -1,22 +1,26 @@
+#ifndef PRIMITIV_TEST_UTILS_H_
+#define PRIMITIV_TEST_UTILS_H_
+
+#include <cstdint>
+#include <cstring>
+#include <initializer_list>
+#include <string>
 #include <vector>
 #include <gtest/gtest.h>
 
 namespace test_utils {
 
-// float <-> int32_t bits converter.
-union f2i32 {
-  float f;
-  int32_t i;
-};
-
 // check whether or not two float values are near than the ULP-based threshold.
 bool float_eq(const float a, const float b) {
+  static_assert(sizeof(std::int32_t) == sizeof(float), "");
   static const int MAX_ULPS = 4;
-  int ai = reinterpret_cast<const f2i32 *>(&a)->i;
+  std::int32_t ai;
+  std::memcpy(&ai, &a, sizeof(std::int32_t));
   if (ai < 0) ai = 0x80000000 - ai;
-  int bi = reinterpret_cast<const f2i32 *>(&b)->i;
+  std::int32_t bi;
+  std::memcpy(&bi, &b, sizeof(std::int32_t));
   if (bi < 0) bi = 0x80000000 - bi;
-  const int diff = ai > bi ? ai - bi : bi - ai;
+  const std::int32_t diff = ai > bi ? ai - bi : bi - ai;
   return (diff <= MAX_ULPS);
 }
 
@@ -85,4 +89,11 @@ testing::AssertionResult vector_near(
   return testing::AssertionSuccess();
 }
 
+// helper to generate std::string from a byte array.
+std::string bin_to_str(const std::initializer_list<int> data) {
+  return std::string(data.begin(), data.end());
+}
+
 }  // namespace test_utils
+
+#endif  // PRIMITIV_TEST_UTILS_H_
