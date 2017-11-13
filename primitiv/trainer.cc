@@ -60,8 +60,8 @@ void Trainer::add_parameter(Parameter &param) {
 }
 
 void Trainer::add_model(const Model &model) {
-  for (Parameter *param : model.get_trainable_parameters()) {
-    add_parameter(*param);
+  for (const auto &kv : model.get_trainable_parameters()) {
+    add_parameter(*kv.second);
   }
 }
 
