@@ -230,7 +230,7 @@ std::shared_ptr<void> OpenCL::new_handle(const Shape &shape) {
   if (error != CL_SUCCESS) {
     THROW_ERROR("Memory allocation failed. Requested size: " << mem_size);
   }
-  return std::shared_ptr<void>(data);
+  return std::shared_ptr<void>(data, [](cl::Buffer *buffer){delete buffer;});
 }
 
 std::vector<float> OpenCL::tensor_to_vector_impl(const Tensor &x) {
