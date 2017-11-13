@@ -32,27 +32,28 @@ public:
 private:
   static std::string kernel_code_generator();
 
+private:
   std::shared_ptr<void> new_handle(const Shape &shape) override;
 
   std::vector<float> tensor_to_vector_impl(const Tensor &x) override;
   std::vector<std::uint32_t> argmax_impl(const Tensor &x, std::uint32_t dim) override;
   std::vector<std::uint32_t> argmin_impl(const Tensor &x, std::uint32_t dim) override;
 
-  void reset_tensor_impl(float k, Tensor &x) override { THROW_ERROR("not implemented"); }
+  void reset_tensor_impl(float k, Tensor &x) override;
   void reset_tensor_by_array_impl(const float values[], Tensor &x) override;
 
-  void copy_tensor_impl(const Tensor &x, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void copy_tensor_impl(const Tensor &x, Tensor &y) override;
 
-  void identity_impl(Tensor &y) override { THROW_ERROR("not implemented"); }
+  void identity_impl(Tensor &y) override;
 
   void random_bernoulli_impl(float p, Tensor &y) override { THROW_ERROR("not implemented"); }
   void random_uniform_impl(float lower, float upper, Tensor &y) override { THROW_ERROR("not implemented"); }
   void random_normal_impl(float mean, float sd, Tensor &y) override { THROW_ERROR("not implemented"); }
   void random_log_normal_impl(float mean, float sd, Tensor &y) override { THROW_ERROR("not implemented"); }
 
-  void pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &y) override { THROW_ERROR("not implemented"); }
-  void slice_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t offset, Tensor &y) override { THROW_ERROR("not implemented"); }
-  void concat_fw_impl(const std::vector<const Tensor *> &xs, std::uint32_t dim, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &y) override;
+  void slice_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t offset, Tensor &y) override;
+  void concat_fw_impl(const std::vector<const Tensor *> &xs, std::uint32_t dim, Tensor &y) override;
 
   void pick_bw_impl(const Tensor &gy, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &gx) override { THROW_ERROR("not implemented"); }
   void slice_bw_impl(const Tensor &gy, std::uint32_t dim, std::uint32_t offset, Tensor &gx) override { THROW_ERROR("not implemented"); }
@@ -143,9 +144,13 @@ private:
   std::uint32_t dev_id_;
   std::uint32_t dim1_x_;
 
-  std::array<cl::Kernel, 11> sum_fw_kernel_;
   std::array<cl::Kernel, 11> argmax_kernel_;
   std::array<cl::Kernel, 11> argmin_kernel_;
+  cl::Kernel set_identity_kernel_;
+  cl::Kernel pick_fw_kernel_;
+  cl::Kernel slice_fw_kernel_;
+  cl::Kernel concat_fw_kernel_;
+  std::array<cl::Kernel, 11> sum_fw_kernel_;
 };
 
 }  // namespace devices
