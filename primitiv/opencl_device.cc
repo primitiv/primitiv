@@ -14,128 +14,134 @@ namespace devices {
 
 std::string OpenCL::kernel_code_generator() {
   std::ostringstream ss;
-  for(std::uint32_t block_size = 1; block_size <= 1024; block_size <<= 1) {
-    ss << "__kernel void sum_fw_kernel_" << block_size <<
-          "(__constant float *px, __constant unsigned *skip_p, __constant unsigned *n_p, __global float *py) {\n"
-          "#define BLOCK_SIZE " << block_size << "\n"
-          "  unsigned bid = get_group_id(0);"
-          "  unsigned tid = get_local_id(0);"
-          "  unsigned skip = skip_p[0];"
-          "  unsigned n = n_p[0];"
-          "  __local float temp[BLOCK_SIZE];"
-          "  px += bid % skip + (bid / skip) * skip * n;"
-          "  temp[tid] = 0;"
-          "  for (unsigned i = tid; i < n; i += BLOCK_SIZE) temp[tid] += px[i * skip];"
-          "  work_group_barrier(CLK_LOCAL_MEM_FENCE);\n"
-          "#define REDUCE(k)"
-          "  if (BLOCK_SIZE >= k << 1) {"
-          "    if (tid < k) temp[tid] += temp[tid + k];"
-          "    work_group_barrier(CLK_LOCAL_MEM_FENCE);"
-          "  }\n"
-          "  REDUCE(512)"
-          "  REDUCE(256)"
-          "  REDUCE(128)"
-          "  REDUCE(64)"
-          "  REDUCE(32)"
-          "  REDUCE(16)"
-          "  REDUCE(8)"
-          "  REDUCE(4)"
-          "  REDUCE(2)"
-          "  REDUCE(1)\n"
-          "#undef REDUCE\n"
-          "  if (tid == 0) py[bid] = temp[0];\n"
-          "#undef BLOCK_SIZE\n"
-          "}\n";
+  for(std::uint32_t group_size = 1; group_size <= 1024; group_size <<= 1) {
+    ss <<
+"kernel void sum_fw_kernel_" << group_size <<
+"(constant float *px, constant unsigned *skip_p, constant unsigned *n_p, global float *py) {\n"
+"#define GROUP_SIZE " << group_size << R"EOS(
+  unsigned bid = get_group_id(0);
+  unsigned tid = get_local_id(0);
+  unsigned skip = skip_p[0];
+  unsigned n = n_p[0];
+  local float temp[GROUP_SIZE];
+  px += bid % skip + (bid / skip) * skip * n;
+  temp[tid] = 0;
+  for (unsigned i = tid; i < n; i += GROUP_SIZE) temp[tid] += px[i * skip];
+  work_group_barrier(CLK_LOCAL_MEM_FENCE);
+#define REDUCE(k) \
+  if (GROUP_SIZE >= k << 1) { \
+    if (tid < k) temp[tid] += temp[tid + k]; \
+    work_group_barrier(CLK_LOCAL_MEM_FENCE); \
   }
-  for(std::uint32_t block_size = 1; block_size <= 1024; block_size <<= 1) {
-    ss << "__kernel void argmax_kernel_" << block_size <<
-          "(__constant float *px, __constant unsigned *skip_p, __constant unsigned *n_p, __global unsigned *py) {\n"
-          "#define BLOCK_SIZE " << block_size << "\n"
-          "  unsigned bid = get_group_id(0);"
-          "  unsigned tid = get_local_id(0);"
-          "  unsigned skip = skip_p[0];"
-          "  unsigned n = n_p[0];"
-          "  __local float max_val[BLOCK_SIZE];"
-          "  __local unsigned argmax_val[BLOCK_SIZE];"
-          "  px += bid % skip + (bid / skip) * skip * n;"
-          "  max_val[tid] = -1e38;"
-          "  for (unsigned i = tid; i < n; i += BLOCK_SIZE) {"
-          "    float val = px[i * skip];"
-          "    if (val > max_val[tid]) {"
-          "      max_val[tid] = val;"
-          "      argmax_val[tid] = i;"
-          "    }"
-          "  }"
-          "  work_group_barrier(CLK_LOCAL_MEM_FENCE);\n"
-          "#define REDUCE(k)"
-          "  if (BLOCK_SIZE >= k << 1) {"
-          "    if (tid < k) {"
-          "      if (max_val[tid + k] > max_val[tid]) {"
-          "        max_val[tid] = max_val[tid + k];"
-          "        argmax_val[tid] = argmax_val[tid + k];"
-          "      }"
-          "    }"
-          "    work_group_barrier(CLK_LOCAL_MEM_FENCE);"
-          "  }\n"
-          "  REDUCE(512)"
-          "  REDUCE(256)"
-          "  REDUCE(128)"
-          "  REDUCE(64)"
-          "  REDUCE(32)"
-          "  REDUCE(16)"
-          "  REDUCE(8)"
-          "  REDUCE(4)"
-          "  REDUCE(2)"
-          "  REDUCE(1)\n"
-          "#undef REDUCE\n"
-          "  if (tid == 0) py[bid] = argmax_val[0];\n"
-          "#undef BLOCK_SIZE\n"
-          "}\n";
+  REDUCE(512)
+  REDUCE(256)
+  REDUCE(128)
+  REDUCE(64)
+  REDUCE(32)
+  REDUCE(16)
+  REDUCE(8)
+  REDUCE(4)
+  REDUCE(2)
+  REDUCE(1)
+#undef REDUCE
+  if (tid == 0) py[bid] = temp[0];
+#undef GROUP_SIZE
+}
+)EOS";
   }
-  for(std::uint32_t block_size = 1; block_size <= 1024; block_size <<= 1) {
-    ss << "__kernel void argmin_kernel_" << block_size <<
-          "(__constant float *px, __constant unsigned *skip_p, __constant unsigned *n_p, __global unsigned *py) {\n"
-          "#define BLOCK_SIZE " << block_size << "\n"
-          "  unsigned bid = get_group_id(0);"
-          "  unsigned tid = get_local_id(0);"
-          "  unsigned skip = skip_p[0];"
-          "  unsigned n = n_p[0];"
-          "  __local float max_val[BLOCK_SIZE];"
-          "  __local unsigned argmax_val[BLOCK_SIZE];"
-          "  px += bid % skip + (bid / skip) * skip * n;"
-          "  max_val[tid] = 1e38;"
-          "  for (unsigned i = tid; i < n; i += BLOCK_SIZE) {"
-          "    float val = px[i * skip];"
-          "    if (val < max_val[tid]) {"
-          "      max_val[tid] = val;"
-          "      argmax_val[tid] = i;"
-          "    }"
-          "  }"
-          "  work_group_barrier(CLK_LOCAL_MEM_FENCE);\n"
-          "#define REDUCE(k)"
-          "  if (BLOCK_SIZE >= k << 1) {"
-          "    if (tid < k) {"
-          "      if (max_val[tid + k] < max_val[tid]) {"
-          "        max_val[tid] = max_val[tid + k];"
-          "        argmax_val[tid] = argmax_val[tid + k];"
-          "      }"
-          "    }"
-          "    work_group_barrier(CLK_LOCAL_MEM_FENCE);"
-          "  }\n"
-          "  REDUCE(512)"
-          "  REDUCE(256)"
-          "  REDUCE(128)"
-          "  REDUCE(64)"
-          "  REDUCE(32)"
-          "  REDUCE(16)"
-          "  REDUCE(8)"
-          "  REDUCE(4)"
-          "  REDUCE(2)"
-          "  REDUCE(1)\n"
-          "#undef REDUCE\n"
-          "  if (tid == 0) py[bid] = argmax_val[0];\n"
-          "#undef BLOCK_SIZE\n"
-          "}\n";
+  for(std::uint32_t group_size = 1; group_size <= 1024; group_size <<= 1) {
+    ss <<
+"kernel void argmax_kernel_" << group_size <<
+"(constant float *px, constant unsigned *skip_p, constant unsigned *n_p, global unsigned *py) {\n"
+"#define GROUP_SIZE " << group_size << R"EOS(
+  unsigned bid = get_group_id(0);
+  unsigned tid = get_local_id(0);
+  unsigned skip = skip_p[0];
+  unsigned n = n_p[0];
+  local float max_val[GROUP_SIZE];
+  local unsigned argmax_val[GROUP_SIZE];
+  px += bid % skip + (bid / skip) * skip * n;
+  max_val[tid] = -1e38;
+  for (unsigned i = tid; i < n; i += GROUP_SIZE) {
+    float val = px[i * skip];
+    if (val > max_val[tid]) {
+      max_val[tid] = val;
+      argmax_val[tid] = i;
+    }
+  }
+  work_group_barrier(CLK_LOCAL_MEM_FENCE);
+#define REDUCE(k) \
+  if (GROUP_SIZE >= k << 1) { \
+    if (tid < k) { \
+      if (max_val[tid + k] > max_val[tid]) { \
+        max_val[tid] = max_val[tid + k]; \
+        argmax_val[tid] = argmax_val[tid + k]; \
+      } \
+    } \
+    work_group_barrier(CLK_LOCAL_MEM_FENCE); \
+  }
+  REDUCE(512)
+  REDUCE(256)
+  REDUCE(128)
+  REDUCE(64)
+  REDUCE(32)
+  REDUCE(16)
+  REDUCE(8)
+  REDUCE(4)
+  REDUCE(2)
+  REDUCE(1)
+#undef REDUCE
+  if (tid == 0) py[bid] = argmax_val[0];
+#undef GROUP_SIZE
+}
+)EOS";
+  }
+  for(std::uint32_t group_size = 1; group_size <= 1024; group_size <<= 1) {
+    ss <<
+"kernel void argmin_kernel_" << group_size <<
+"(constant float *px, constant unsigned *skip_p, constant unsigned *n_p, global unsigned *py) {\n"
+"#define GROUP_SIZE " << group_size << R"EOS(
+  unsigned bid = get_group_id(0);
+  unsigned tid = get_local_id(0);
+  unsigned skip = skip_p[0];
+  unsigned n = n_p[0];
+  local float max_val[GROUP_SIZE];
+  local unsigned argmax_val[GROUP_SIZE];
+  px += bid % skip + (bid / skip) * skip * n;
+  max_val[tid] = 1e38;
+  for (unsigned i = tid; i < n; i += GROUP_SIZE) {
+    float val = px[i * skip];
+    if (val < max_val[tid]) {
+      max_val[tid] = val;
+      argmax_val[tid] = i;
+    }
+  }
+  work_group_barrier(CLK_LOCAL_MEM_FENCE);
+#define REDUCE(k) \
+  if (GROUP_SIZE >= k << 1) { \
+    if (tid < k) { \
+      if (max_val[tid + k] < max_val[tid]) { \
+        max_val[tid] = max_val[tid + k]; \
+        argmax_val[tid] = argmax_val[tid + k]; \
+      } \
+    } \
+    work_group_barrier(CLK_LOCAL_MEM_FENCE); \
+  }
+  REDUCE(512)
+  REDUCE(256)
+  REDUCE(128)
+  REDUCE(64)
+  REDUCE(32)
+  REDUCE(16)
+  REDUCE(8)
+  REDUCE(4)
+  REDUCE(2)
+  REDUCE(1)
+#undef REDUCE
+  if (tid == 0) py[bid] = argmax_val[0];
+#undef GROUP_SIZE
+}
+)EOS";
   }
   return ss.str();
 }
@@ -250,9 +256,9 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(const Tensor &x, std::uint32_t di
   std::uint32_t n = shape[dim];
   const std::uint32_t r = shape.size() / n;
   std::uint32_t s = shape.lower_volume(dim);
-  std::uint32_t block_size = argmax_kernel_[0].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
+  std::uint32_t group_size = argmax_kernel_[0].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
   cl_int error = CL_SUCCESS;
-  while (block_size >> 1 >= n) block_size >>= 1;
+  while (group_size >> 1 >= n) group_size >>= 1;
   cl::CommandQueue queue(context_, device_, 0, &error);
   cl::Buffer mem_s = cl::Buffer(context_,
       CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
@@ -263,7 +269,7 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(const Tensor &x, std::uint32_t di
   cl::Buffer py = cl::Buffer(context_,
       CL_MEM_WRITE_ONLY,
       sizeof(cl_uint) * r, NULL, &error);
-  switch (block_size) {
+  switch (group_size) {
 #define CASE(k, m) \
     case k: \
       argmax_kernel_[m].setArg(0, DATA(x)); \
@@ -296,9 +302,9 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(const Tensor &x, std::uint32_t di
   std::uint32_t n = shape[dim];
   const std::uint32_t r = shape.size() / n;
   std::uint32_t s = shape.lower_volume(dim);
-  std::uint32_t block_size = argmin_kernel_[0].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
+  std::uint32_t group_size = argmin_kernel_[0].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
   cl_int error = CL_SUCCESS;
-  while (block_size >> 1 >= n) block_size >>= 1;
+  while (group_size >> 1 >= n) group_size >>= 1;
   cl::CommandQueue queue(context_, device_, 0, &error);
   cl::Buffer mem_s = cl::Buffer(context_,
       CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
@@ -309,7 +315,7 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(const Tensor &x, std::uint32_t di
   cl::Buffer py = cl::Buffer(context_,
       CL_MEM_WRITE_ONLY,
       sizeof(cl_uint) * r, NULL, &error);
-  switch (block_size) {
+  switch (group_size) {
 #define CASE(k, m) \
     case k: \
       argmin_kernel_[m].setArg(0, DATA(x)); \
@@ -341,9 +347,9 @@ void OpenCL::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   std::uint32_t n = x.shape()[dim];
   const std::uint32_t r = y.shape().size();
   std::uint32_t s = y.shape().lower_volume(dim);
-  std::uint32_t block_size = sum_fw_kernel_[0].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
+  std::uint32_t group_size = sum_fw_kernel_[0].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
   cl_int error = CL_SUCCESS;
-  while (block_size >> 1 >= n) block_size >>= 1;
+  while (group_size >> 1 >= n) group_size >>= 1;
   cl::CommandQueue queue(context_, device_, 0, &error);
   cl::Buffer mem_s = cl::Buffer(context_,
       CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
@@ -351,7 +357,7 @@ void OpenCL::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   cl::Buffer mem_n = cl::Buffer(context_,
       CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
       sizeof(cl_uint), &n, &error);
-  switch (block_size) {
+  switch (group_size) {
 #define CASE(k, m) \
     case k: \
       sum_fw_kernel_[m].setArg(0, DATA(x)); \
