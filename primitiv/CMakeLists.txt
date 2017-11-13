@@ -13,6 +13,7 @@ set(primitiv_base_HDRS
   mixins.h
   model.h
   naive_device.h
+  numeric_utils.h
   operators.h
   parameter.h
   primitiv.h
