@@ -4,8 +4,6 @@
 #include <primitiv/error.h>
 #include <primitiv/file_format.h>
 #include <primitiv/initializer.h>
-#include <primitiv/msgpack/reader.h>
-#include <primitiv/msgpack/writer.h>
 #include <primitiv/operators.h>
 #include <primitiv/parameter.h>
 
@@ -128,21 +126,8 @@ void Parameter::init(
   stats_.clear();
 }
 
-void Parameter::load(const string &path, bool with_stats, Device &device) {
-  std::ifstream ifs(path);
-  if (!ifs.is_open()) {
-    THROW_ERROR("Could not open file: " << path);
-  }
-  msgpack::Reader reader(ifs);
-
-  std::uint32_t major, minor;
-  reader >> major >> minor;
-  FileFormat::check_version(major, minor);
-
-  std::uint32_t datatype;
-  reader >> datatype;
-  FileFormat::check_datatype(FileFormat::DataType::PARAMETER, datatype);
-
+void Parameter::load_inner(
+    msgpack::Reader &reader, bool with_stats, Device &device) {
   Tensor value_temp = ::read_tensor(reader, device);
 
   std::uint32_t num_stats;
@@ -170,18 +155,7 @@ void Parameter::load(const string &path, bool with_stats, Device &device) {
   stats_ = std::move(stats);
 }
 
-void Parameter::save(const string &path, bool with_stats) const  {
-  if (!valid()) THROW_ERROR("Attempted to save an invalid Parameter object.");
-
-  std::ofstream ofs(path);
-  if (!ofs.is_open()) {
-    THROW_ERROR("Could not open file: " << path);
-  }
-  msgpack::Writer writer(ofs);
-
-  writer << FileFormat::CurrentVersion::MAJOR;
-  writer << FileFormat::CurrentVersion::MINOR;
-  writer << static_cast<std::uint32_t>(FileFormat::DataType::PARAMETER);
+void Parameter::save_inner(msgpack::Writer &writer, bool with_stats) const {
   ::write_tensor(value_, writer);
 
   if (with_stats) {
@@ -197,6 +171,40 @@ void Parameter::save(const string &path, bool with_stats) const  {
   } else {
     writer << std::uint32_t(0);
   }
+}
+
+void Parameter::load(const string &path, bool with_stats, Device &device) {
+  std::ifstream ifs(path);
+  if (!ifs.is_open()) {
+    THROW_ERROR("Could not open file: " << path);
+  }
+  msgpack::Reader reader(ifs);
+
+  std::uint32_t major, minor;
+  reader >> major >> minor;
+  FileFormat::check_version(major, minor);
+
+  std::uint32_t datatype;
+  reader >> datatype;
+  FileFormat::check_datatype(FileFormat::DataType::PARAMETER, datatype);
+
+  load_inner(reader, with_stats, device);
+}
+
+void Parameter::save(const string &path, bool with_stats) const  {
+  if (!valid()) THROW_ERROR("Attempted to save an invalid Parameter object.");
+
+  std::ofstream ofs(path);
+  if (!ofs.is_open()) {
+    THROW_ERROR("Could not open file: " << path);
+  }
+  msgpack::Writer writer(ofs);
+
+  writer << FileFormat::CurrentVersion::MAJOR;
+  writer << FileFormat::CurrentVersion::MINOR;
+  writer << static_cast<std::uint32_t>(FileFormat::DataType::PARAMETER);
+
+  save_inner(writer, with_stats);
 }
 
 void Parameter::reset_gradient() {

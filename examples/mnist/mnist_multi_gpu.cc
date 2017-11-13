@@ -92,7 +92,7 @@ int main() {
   // Parameters on GPU 0.
   Parameter pw1({NUM_HIDDEN_UNITS, NUM_INPUT_UNITS}, I::XavierUniform(), dev0);
   Parameter pb1({NUM_HIDDEN_UNITS}, I::Constant(0), dev0);
-  
+
   // Parameters on GPU 1.
   Parameter pw2({NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, I::XavierUniform(), dev1);
   Parameter pb2({NUM_OUTPUT_UNITS}, I::Constant(0), dev1);
