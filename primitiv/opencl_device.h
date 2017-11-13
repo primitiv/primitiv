@@ -18,7 +18,8 @@ class OpenCL : public Device {
   OpenCL() = delete;
 
 public:
-//   static std::uint32_t num_devices();
+  static std::uint32_t num_platforms();
+  static std::uint32_t num_devices();
 
 //   explicit OpenCL(std::uint32_t platform_id, std::uint32_t device_id);
   OpenCL(std::uint32_t platform_id, std::uint32_t device_id);
