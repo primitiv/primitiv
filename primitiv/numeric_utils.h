@@ -7,11 +7,11 @@ namespace primitiv {
 namespace numeric_utils {
 
 /**
- * Calculates the minimum number of shifts `s`
- * that satisfies `(1 << s) >= x`.
+ * Calculates the minimum number of shifts `s` that satisfies `(1 << s) >= x`,
+ * or formally same as `ceil(log2(x))`.
  * @param x The input number `x`.
  * @return The number of shifts `s`.
- * @remarks This function returns 0 if `x == 0`.
+ * @remarks This function returns 64 if `x == 0`.
  */
 inline std::uint64_t calculate_shifts(std::uint64_t x) {
   if (x == 0) return 64;  // Not supported
