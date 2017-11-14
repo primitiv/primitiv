@@ -1,7 +1,7 @@
 from libcpp.string cimport string
 
 
-cdef class _SGD(_Trainer):
+cdef class _SGD(_Optimizer):
 
     def __init__(self, float eta = 0.1):
         if self.wrapped is not NULL:
@@ -12,7 +12,7 @@ cdef class _SGD(_Trainer):
         return (<CppSGD*> self.wrapped).eta()
 
 
-cdef class _MomentumSGD(_Trainer):
+cdef class _MomentumSGD(_Optimizer):
 
     def __init__(self, float eta = 0.01, float momentum = 0.9):
         if self.wrapped is not NULL:
@@ -26,7 +26,7 @@ cdef class _MomentumSGD(_Trainer):
         return (<CppMomentumSGD*> self.wrapped).momentum()
 
 
-cdef class _AdaGrad(_Trainer):
+cdef class _AdaGrad(_Optimizer):
 
     def __init__(self, float eta = 0.001, float eps = 1e-8):
         if self.wrapped is not NULL:
@@ -40,7 +40,7 @@ cdef class _AdaGrad(_Trainer):
         return (<CppAdaGrad*> self.wrapped).eps()
 
 
-cdef class _RMSProp(_Trainer):
+cdef class _RMSProp(_Optimizer):
 
     def __init__(self, float eta = 0.01, float alpha = 0.9, float eps = 1e-8):
         if self.wrapped is not NULL:
@@ -57,7 +57,7 @@ cdef class _RMSProp(_Trainer):
         return (<CppRMSProp*> self.wrapped).eps()
 
 
-cdef class _AdaDelta(_Trainer):
+cdef class _AdaDelta(_Optimizer):
 
     def __init__(self, float rho = 0.95, float eps = 1e-6):
         if self.wrapped is not NULL:
@@ -71,7 +71,7 @@ cdef class _AdaDelta(_Trainer):
         return (<CppAdaDelta*> self.wrapped).eps()
 
 
-cdef class _Adam(_Trainer):
+cdef class _Adam(_Optimizer):
 
     def __init__(self, float alpha = 0.001, float beta1 = 0.9, float beta2 = 0.999, float eps = 1e-8):
         if self.wrapped is not NULL:

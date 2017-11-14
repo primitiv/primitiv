@@ -1,11 +1,11 @@
-from primitiv import trainers as T
-from primitiv import Trainer
+from primitiv import optimizers as T
+from primitiv import Optimizer
 
 import unittest
 import tempfile
 
 
-class TrainerVirtualFuncTest(unittest.TestCase):
+class OptimizerVirtualFuncTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -23,80 +23,80 @@ class TrainerVirtualFuncTest(unittest.TestCase):
 
     def test_sgd_virtual(self):
         t = T.SGD()
-        uint_configs = {'Trainer.epoch': 1}
+        uint_configs = {'Optimizer.epoch': 1}
         float_configs = {'SGD.eta': 0.0,
-                         'Trainer.clip_threshold': 0.0,
-                         'Trainer.lr_scale': 1.0,
-                         'Trainer.l2_strength': 0.0,
+                         'Optimizer.clip_threshold': 0.0,
+                         'Optimizer.lr_scale': 1.0,
+                         'Optimizer.l2_strength': 0.0,
         }
         t.set_configs(uint_configs, float_configs)
         uint_configs, float_configs = t.get_configs()
-        self.assertEqual(uint_configs['Trainer.epoch'], 1)
+        self.assertEqual(uint_configs['Optimizer.epoch'], 1)
 
     def test_momentum_sgd_virtual(self):
         t = T.MomentumSGD()
-        uint_configs = {'Trainer.epoch': 1}
+        uint_configs = {'Optimizer.epoch': 1}
         float_configs = {'MomentumSGD.momentum': 1.0,
                          'MomentumSGD.eta': 0.0,
-                         'Trainer.clip_threshold': 0.0,
-                         'Trainer.lr_scale': 1.0,
-                         'Trainer.l2_strength': 0.0,
+                         'Optimizer.clip_threshold': 0.0,
+                         'Optimizer.lr_scale': 1.0,
+                         'Optimizer.l2_strength': 0.0,
         }
         t.set_configs(uint_configs, float_configs)
         uint_configs, float_configs = t.get_configs()
-        self.assertEqual(uint_configs['Trainer.epoch'], 1)
+        self.assertEqual(uint_configs['Optimizer.epoch'], 1)
 
     def test_adagrad_virtual(self):
         t = T.AdaGrad()
-        uint_configs = {'Trainer.epoch': 1}
+        uint_configs = {'Optimizer.epoch': 1}
         float_configs = {'AdaGrad.eps': 0.0,
                          'AdaGrad.eta': 0.0,
-                         'Trainer.clip_threshold': 0.0,
-                         'Trainer.lr_scale': 1.0,
-                         'Trainer.l2_strength': 0.0,
+                         'Optimizer.clip_threshold': 0.0,
+                         'Optimizer.lr_scale': 1.0,
+                         'Optimizer.l2_strength': 0.0,
         }
         t.set_configs(uint_configs, float_configs)
         uint_configs, float_configs = t.get_configs()
-        self.assertEqual(uint_configs['Trainer.epoch'], 1)
+        self.assertEqual(uint_configs['Optimizer.epoch'], 1)
 
     def test_rmsprop_virtual(self):
         t = T.RMSProp()
-        uint_configs = {'Trainer.epoch': 1}
+        uint_configs = {'Optimizer.epoch': 1}
         float_configs = {'RMSProp.eta': 2.0,
                          'RMSProp.alpha': 3.0,
                          'RMSProp.eps': 4.0,
-                         'Trainer.clip_threshold': 0.0,
-                         'Trainer.lr_scale': 1.0,
-                         'Trainer.l2_strength': 0.0,
+                         'Optimizer.clip_threshold': 0.0,
+                         'Optimizer.lr_scale': 1.0,
+                         'Optimizer.l2_strength': 0.0,
         }
         t.set_configs(uint_configs, float_configs)
         uint_configs, float_configs = t.get_configs()
-        self.assertEqual(uint_configs['Trainer.epoch'], 1)
+        self.assertEqual(uint_configs['Optimizer.epoch'], 1)
 
     def test_adadelta_virtual(self):
         t = T.AdaDelta()
-        uint_configs = {'Trainer.epoch': 1}
+        uint_configs = {'Optimizer.epoch': 1}
         float_configs = {'AdaDelta.rho': 2.0,
                          'AdaDelta.eps': 3.0,
-                         'Trainer.clip_threshold': 0.0,
-                         'Trainer.lr_scale': 1.0,
-                         'Trainer.l2_strength': 0.0,
+                         'Optimizer.clip_threshold': 0.0,
+                         'Optimizer.lr_scale': 1.0,
+                         'Optimizer.l2_strength': 0.0,
         }
         t.set_configs(uint_configs, float_configs)
         uint_configs, float_configs = t.get_configs()
-        self.assertEqual(uint_configs['Trainer.epoch'], 1)
+        self.assertEqual(uint_configs['Optimizer.epoch'], 1)
 
     def test_adam_virtual(self):
         t = T.Adam()
-        uint_configs = {'Trainer.epoch': 1}
-        float_configs = {'Trainer.lr_scale': 1.0,
+        uint_configs = {'Optimizer.epoch': 1}
+        float_configs = {'Optimizer.lr_scale': 1.0,
                          'Adam.beta2': 1.0,
                          'Adam.eps': 0.0,
-                         'Trainer.clip_threshold': 0.0,
+                         'Optimizer.clip_threshold': 0.0,
                          'Adam.alpha': 0.0,
-                         'Trainer.l2_strength': 0.0,
+                         'Optimizer.l2_strength': 0.0,
                          'Adam.beta1': 1.0,
         }
         t.set_configs(uint_configs, float_configs)
         uint_configs, float_configs = t.get_configs()
-        self.assertEqual(uint_configs['Trainer.epoch'], 1)
+        self.assertEqual(uint_configs['Optimizer.epoch'], 1)

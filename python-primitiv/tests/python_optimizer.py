@@ -1,5 +1,5 @@
-from primitiv import trainers as T
-from primitiv import Trainer, Parameter, Device, Graph, Shape
+from primitiv import optimizers as T
+from primitiv import Optimizer, Parameter, Device, Graph, Shape
 from primitiv import initializers as I
 from primitiv import devices as D
 from primitiv import operators as F
@@ -11,7 +11,7 @@ import tempfile
 import numpy as np
 
 
-class TestAdam(Trainer):
+class TestAdam(Optimizer):
     def __init__(self, alpha, beta1, beta2, eps):
         super().__init__()
         self.alpha_ = np.float32(alpha)
@@ -55,7 +55,7 @@ class TestException(Exception):
     pass
 
 
-class ExceptionTrainer(Trainer):
+class ExceptionOptimizer(Optimizer):
 
     def configure_parameter(self, param):
         raise TestException("configure_parameter")
@@ -70,11 +70,11 @@ class ExceptionTrainer(Trainer):
         raise TestException("set_configs")
 
 
-class IncompleteTrainer(Trainer):
+class IncompleteOptimizer(Optimizer):
     pass
 
 
-def train_func(trainer):
+def train_func(optimizer):
     dev = D.Naive(12345)
     Device.set_default(dev)
     g = Graph()
@@ -85,10 +85,10 @@ def train_func(trainer):
     pw2 = Parameter([1, 8], I.XavierUniform())
     pb2 = Parameter([1], I.Constant(0))
 
-    trainer.add_parameter(pw1)
-    trainer.add_parameter(pb1)
-    trainer.add_parameter(pw2)
-    trainer.add_parameter(pb2)
+    optimizer.add_parameter(pw1)
+    optimizer.add_parameter(pb1)
+    optimizer.add_parameter(pw2)
+    optimizer.add_parameter(pb2)
 
     input_data = [1, 1, 1, -1, -1, 1, -1, -1]
     output_data = [1, -1, -1, 1]
@@ -107,9 +107,9 @@ def train_func(trainer):
         diff = t - y
         loss = F.batch.mean(diff * diff)
 
-        trainer.reset_gradients()
+        optimizer.reset_gradients()
         loss.backward()
-        trainer.update()
+        optimizer.update()
 
     return [pw1.value.to_list(),
             pb1.value.to_list(),
@@ -117,7 +117,7 @@ def train_func(trainer):
             pb2.value.to_list()]
 
 
-class PythonTrainerTest(unittest.TestCase):
+class PythonOptimizerTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -133,18 +133,18 @@ class PythonTrainerTest(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_pytrainer_get_set_config(self):
-        uint_configs, float_configs = Trainer.get_configs(self.t)
-        self.assertAlmostEqual(uint_configs['Trainer.epoch'], 0)
+    def test_pyoptimizer_get_set_config(self):
+        uint_configs, float_configs = Optimizer.get_configs(self.t)
+        self.assertAlmostEqual(uint_configs['Optimizer.epoch'], 0)
         self.assertAlmostEqual(float_configs['TestAdam.alpha'], 0.001)
         self.assertAlmostEqual(float_configs['TestAdam.beta1'], 0.9)
         self.assertAlmostEqual(float_configs['TestAdam.beta2'], 0.999)
         self.assertAlmostEqual(float_configs['TestAdam.eps'], 1e-8, places=10)
         float_configs['TestAdam.beta1'] = 200
-        Trainer.set_configs(self.t, uint_configs, float_configs)
+        Optimizer.set_configs(self.t, uint_configs, float_configs)
         self.assertEqual(self.t.beta1_, 200)
 
-    def test_pytrainer_parameter(self):
+    def test_pyoptimizer_parameter(self):
         dev = D.Naive()
         Device.set_default(dev)
         pw1 = Parameter([8, 2], I.XavierUniform())
@@ -152,26 +152,26 @@ class PythonTrainerTest(unittest.TestCase):
         self.assertIn("testadam-m1", pw1.stats)
         self.assertIn("testadam-m2", pw1.stats)
 
-    def test_pytrainer_compare_with_cpp(self):
-        c_trainer = T.Adam(alpha = 0.001, beta1 = 0.9, beta2 = 0.999, eps = 1e-8)
+    def test_pyoptimizer_compare_with_cpp(self):
+        c_optimizer = T.Adam(alpha = 0.001, beta1 = 0.9, beta2 = 0.999, eps = 1e-8)
         py_params = train_func(self.t)
-        c_params = train_func(c_trainer)
-        py_uint_configs, py_float_configs = Trainer.get_configs(self.t)
-        c_uint_configs, c_float_configs = c_trainer.get_configs()
-        self.assertEqual(py_uint_configs["Trainer.epoch"], c_uint_configs["Trainer.epoch"])
+        c_params = train_func(c_optimizer)
+        py_uint_configs, py_float_configs = Optimizer.get_configs(self.t)
+        c_uint_configs, c_float_configs = c_optimizer.get_configs()
+        self.assertEqual(py_uint_configs["Optimizer.epoch"], c_uint_configs["Optimizer.epoch"])
         self.assertEqual(py_float_configs["TestAdam.alpha"], c_float_configs["Adam.alpha"])
         self.assertEqual(py_float_configs["TestAdam.beta1"], c_float_configs["Adam.beta1"])
         self.assertEqual(py_float_configs["TestAdam.beta2"], c_float_configs["Adam.beta2"])
         self.assertEqual(py_float_configs["TestAdam.eps"], c_float_configs["Adam.eps"])
-        self.assertEqual(py_float_configs["Trainer.clip_threshold"], c_float_configs["Trainer.clip_threshold"])
-        self.assertEqual(py_float_configs["Trainer.l2_strength"], c_float_configs["Trainer.l2_strength"])
-        self.assertEqual(py_float_configs["Trainer.lr_scale"], c_float_configs["Trainer.lr_scale"])
+        self.assertEqual(py_float_configs["Optimizer.clip_threshold"], c_float_configs["Optimizer.clip_threshold"])
+        self.assertEqual(py_float_configs["Optimizer.l2_strength"], c_float_configs["Optimizer.l2_strength"])
+        self.assertEqual(py_float_configs["Optimizer.lr_scale"], c_float_configs["Optimizer.lr_scale"])
         self.assertTrue(np.isclose(py_params[0], c_params[0]).all())
         self.assertTrue(np.isclose(py_params[1], c_params[1]).all())
         self.assertTrue(np.isclose(py_params[2], c_params[2]).all())
         self.assertTrue(np.isclose(py_params[3], c_params[3]).all())
 
-    def test_pytrainer_loadsave(self):
+    def test_pyoptimizer_loadsave(self):
         t_loaded = TestAdam(alpha = 0, beta1 = 0, beta2 = 0, eps = 0)
         self.assertEqual(t_loaded.alpha_, 0)
         self.assertEqual(t_loaded.beta1_, 0)
@@ -185,41 +185,41 @@ class PythonTrainerTest(unittest.TestCase):
         self.assertAlmostEqual(t_loaded.beta2_, 0.999)
         self.assertAlmostEqual(t_loaded.eps_, 1e-8, places=10)
 
-    def test_pytrainer_propagate_exception(self):
+    def test_pyoptimizer_propagate_exception(self):
         dev = D.Naive()
         Device.set_default(dev)
-        trainer = ExceptionTrainer()
+        optimizer = ExceptionOptimizer()
         p = Parameter()
         with self.assertRaises(TestException) as ctx:
-            trainer.add_parameter(p)
+            optimizer.add_parameter(p)
         self.assertEqual(str(ctx.exception), "configure_parameter")
         with self.assertRaises(TestException) as ctx:
-            trainer.update()
+            optimizer.update()
         self.assertEqual(str(ctx.exception), "update_parameter")
         with self.assertRaises(TestException) as ctx:
-            Trainer.get_configs(trainer)
+            Optimizer.get_configs(optimizer)
         self.assertEqual(str(ctx.exception), "get_configs")
         with self.assertRaises(TestException) as ctx:
-            Trainer.set_configs(trainer, {'Trainer.epoch': 1},
-                                         {'Trainer.clip_threshold': 0.0,
-                                          'Trainer.lr_scale': 1.0,
-                                          'Trainer.l2_strength': 0.0})
+            Optimizer.set_configs(optimizer, {'Optimizer.epoch': 1},
+                                         {'Optimizer.clip_threshold': 0.0,
+                                          'Optimizer.lr_scale': 1.0,
+                                          'Optimizer.l2_strength': 0.0})
         self.assertEqual(str(ctx.exception), "set_configs")
 
 
-    def test_pytrainer_not_implemented(self):
+    def test_pyoptimizer_not_implemented(self):
         dev = D.Naive()
         Device.set_default(dev)
-        trainer = IncompleteTrainer()
+        optimizer = IncompleteOptimizer()
         p = Parameter()
         with self.assertRaises(NotImplementedError):
-            trainer.add_parameter(p)
+            optimizer.add_parameter(p)
         with self.assertRaises(NotImplementedError):
-            trainer.update()
+            optimizer.update()
         with self.assertRaises(NotImplementedError):
-            Trainer.get_configs(trainer)
+            Optimizer.get_configs(optimizer)
         with self.assertRaises(NotImplementedError):
-            Trainer.set_configs(trainer, {'Trainer.epoch': 1},
-                                         {'Trainer.clip_threshold': 0.0,
-                                          'Trainer.lr_scale': 1.0,
-                                          'Trainer.l2_strength': 0.0})
+            Optimizer.set_configs(optimizer, {'Optimizer.epoch': 1},
+                                         {'Optimizer.clip_threshold': 0.0,
+                                          'Optimizer.lr_scale': 1.0,
+                                          'Optimizer.l2_strength': 0.0})

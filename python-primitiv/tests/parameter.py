@@ -1,5 +1,5 @@
-from primitiv import trainers as T
-from primitiv import Trainer, Parameter, Device, Graph, Shape
+from primitiv import optimizers as T
+from primitiv import Optimizer, Parameter, Device, Graph, Shape
 from primitiv import initializers as I
 from primitiv import devices as D
 from primitiv import operators as F
