@@ -1,9 +1,14 @@
-from primitiv import Trainer, Parameter, Device, Model
+from primitiv import Trainer, Parameter, Device, Model, Shape
 from primitiv import devices as D
+from primitiv import initializers as I
 from primitiv._model import _ModelParameter
 from primitiv._model import _ModelSubModel
+from primitiv import tensor_operators as tF
+
+import numpy as np
 
 import unittest
+import tempfile
 
 
 class TestModel(Model):
@@ -27,6 +32,38 @@ class ModelTest(unittest.TestCase):
 
     def tearDown(self):
          pass
+
+    def test_model_load_save(self):
+        submodel = TestModel()
+        submodel.sp1 = Parameter([2, 4], I.Constant(0))
+        submodel.sp1.value = tF.input(np.array([[0,1,2,3],[4,5,6,7]]))
+        submodel.sp2 = Parameter([2, 4], I.Constant(0))
+        submodel.sp2.value = tF.input(np.array([[9,8,7,6],[5,4,3,2]]))
+        submodel.auto_add_attributes()
+        parentmodel = TestModel()
+        parentmodel.p1 = Parameter([4, 2], I.Constant(0))
+        parentmodel.p1.value = tF.input(np.array([[0,1],[2,3],[4,5],[6,7]]))
+        parentmodel.p2 = Parameter([4, 2], I.Constant(0))
+        parentmodel.p2.value = tF.input(np.array([[9,8],[7,6],[5,4],[3,2]]))
+        parentmodel.sub = submodel
+        parentmodel.auto_add_attributes()
+        submodel_load = TestModel()
+        submodel_load.sp1 = Parameter()
+        submodel_load.sp2 = Parameter()
+        submodel_load.auto_add_attributes()
+        parentmodel_load = TestModel()
+        parentmodel_load.p1 = Parameter()
+        parentmodel_load.p2 = Parameter()
+        parentmodel_load.sub = submodel_load
+        parentmodel_load.auto_add_attributes()
+        with tempfile.NamedTemporaryFile() as fp:
+            parentmodel.save(fp.name)
+            parentmodel_load.load(fp.name)
+        print(parentmodel_load.p1.value.to_ndarrays()[0])
+        self.assertTrue((parentmodel_load.p1.value.to_ndarrays()[0] == np.array([[0,1],[2,3],[4,5],[6,7]])).all())
+        self.assertTrue((parentmodel_load.p2.value.to_ndarrays()[0] == np.array([[9,8],[7,6],[5,4],[3,2]])).all())
+        self.assertTrue((parentmodel_load.sub.sp1.value.to_ndarrays()[0] == np.array([[0,1,2,3],[4,5,6,7]])).all())
+        self.assertTrue((parentmodel_load.sub.sp2.value.to_ndarrays()[0] == np.array([[9,8,7,6],[5,4,3,2]])).all())
 
     def test_model_parameter(self):
         model = TestModel()

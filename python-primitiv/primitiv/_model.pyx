@@ -1,7 +1,9 @@
+from libcpp.pair cimport pair
 from libc.stdint cimport uintptr_t
 
+from primitiv._device cimport _Device
 from primitiv._parameter cimport _Parameter
-from primitiv.config cimport pystr_to_cppstr
+from primitiv.config cimport pystr_to_cppstr, cppstr_to_pystr
 
 from weakref import WeakValueDictionary
 import weakref
@@ -73,6 +75,14 @@ cdef class _Model:
             del self.wrapped
             self.wrapped = NULL
 
+    def load(self, str path, bool with_stats = True, _Device device = None):
+        if device is None:
+            device = _Device.get_default()
+        self.wrapped.load(pystr_to_cppstr(path), with_stats, device.wrapped[0])
+
+    def save(self, str path, bool with_stats = True):
+        self.wrapped.save(pystr_to_cppstr(path), with_stats)
+
     def add_parameter(self, str name, _Parameter param):
         self.wrapped.add_parameter(pystr_to_cppstr(name), param.wrapped[0])
         self.added_parameters.append(param)
@@ -110,6 +120,20 @@ cdef class _Model:
 
     # NOTE(vbkaisetsu):
     # get_submodel is replaced with `submodels` variable.
+
+    def get_all_parameters(self):
+        cdef pair[vector[string], CppParameter*] p
+        result = {}
+        for p in self.wrapped.get_all_parameters():
+            result[tuple(cppstr_to_pystr(s) for s in p.first)] = _Parameter.get_wrapper(p.second)
+        return result
+
+    def get_trainable_parameters(self):
+        cdef pair[vector[string], CppParameter*] p
+        result = {}
+        for p in self.wrapped.get_trainable_parameters():
+            result[tuple(cppstr_to_pystr(s) for s in p.first)] = _Parameter.get_wrapper(p.second)
+        return result
 
     @staticmethod
     cdef void register_wrapper(CppModel *ptr, _Model wrapper):
