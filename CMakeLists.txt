@@ -37,7 +37,6 @@ configure_file(
 )
 
 # External packages.
-find_package(Protobuf REQUIRED)
 if(PRIMITIV_USE_CUDA)
   find_package(CUDA REQUIRED)
 endif()
@@ -45,8 +44,7 @@ endif()
 # Include directories.
 include_directories(
   ${PROJECT_SOURCE_DIR}
-  ${PROJECT_BINARY_DIR}
-  ${PROTOBUF_INCLUDE_DIR})
+  ${PROJECT_BINARY_DIR})
 if(PRIMITIV_USE_CUDA)
   include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
 endif()

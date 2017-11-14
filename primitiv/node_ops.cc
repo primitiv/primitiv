@@ -120,24 +120,24 @@ Node copy(const Node &x, Device &dev) {
 }
 
 template<>
-Node pick(const Node &x, const std::vector<unsigned> &ids, unsigned dim) {
+Node pick(const Node &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim) {
   return REGX(x, Pick(ids, dim), x);
 }
 
 template<>
-Node slice(const Node &x, unsigned dim, unsigned lower, unsigned upper) {
+Node slice(const Node &x, std::uint32_t dim, std::uint32_t lower, std::uint32_t upper) {
   return REGX(x, Slice(dim, lower, upper), x);
 }
 
 template<>
-Node concat(const std::vector<Node> &xs, unsigned dim) {
+Node concat(const std::vector<Node> &xs, std::uint32_t dim) {
   if (xs.empty()) THROW_ERROR("No nodes to concat.");
   return xs[0].graph().add_function(
       std::unique_ptr<Function>(new F::Concat(dim)), xs);
 }
 
 template<>
-Node concat(const std::vector<const Node *> &xs, unsigned dim) {
+Node concat(const std::vector<const Node *> &xs, std::uint32_t dim) {
   return concat(::ptr_to_obj(xs), dim);
 }
 
@@ -227,37 +227,37 @@ Node elu(const Node &x, float a) {
 }
 
 template<>
-Node sum(const Node &x, unsigned dim) {
+Node sum(const Node &x, std::uint32_t dim) {
   return REGX(x, Sum(dim), x);
 }
 
 template<>
-Node broadcast(const Node &x, unsigned dim, unsigned size) {
+Node broadcast(const Node &x, std::uint32_t dim, std::uint32_t size) {
   return REGX(x, Broadcast(dim, size), x);
 }
 
 template<>
-Node logsumexp(const Node &x, unsigned dim) {
+Node logsumexp(const Node &x, std::uint32_t dim) {
   return REGX(x, LogSumExp(dim), x);
 }
 
 template<>
-Node log_softmax(const Node &x, unsigned dim) {
+Node log_softmax(const Node &x, std::uint32_t dim) {
   return x - broadcast(logsumexp(x, dim), dim, x.shape()[dim]);
 }
 
 template<>
-Node softmax(const Node &x, unsigned dim) {
+Node softmax(const Node &x, std::uint32_t dim) {
   return exp(log_softmax(x, dim));
 }
 
 template<>
-Node softmax_cross_entropy(const Node &x, const Node &t, unsigned dim) {
+Node softmax_cross_entropy(const Node &x, const Node &t, std::uint32_t dim) {
   return REGX(x, SoftmaxCrossEntropy(dim), x, t);
 }
 
 template<>
-Node softmax_cross_entropy(const Node &x, const std::vector<unsigned> &ids, unsigned dim) {
+Node softmax_cross_entropy(const Node &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim) {
   return REGX(x, SparseSoftmaxCrossEntropy(ids, dim), x);
 }
 
@@ -274,7 +274,7 @@ Node constant(const Shape &shape, float k, Device &dev, Graph &g) {
   return REG(g, Constant(shape, k, dev));
 }
 
-Node identity(unsigned size, Device &dev, Graph &g) {
+Node identity(std::uint32_t size, Device &dev, Graph &g) {
   return REG(g, IdentityMatrix(size, dev));
 }
 
@@ -284,7 +284,7 @@ Node constant<Node>(const Shape &shape, float k, Device &dev) {
 }
 
 template<>
-Node identity<Node>(unsigned size, Device &dev) {
+Node identity<Node>(std::uint32_t size, Device &dev) {
   return identity(size, dev, Graph::get_default());
 }
 

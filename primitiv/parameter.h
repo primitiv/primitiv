@@ -7,6 +7,8 @@
 #include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/mixins.h>
+#include <primitiv/msgpack/reader.h>
+#include <primitiv/msgpack/writer.h>
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
 
@@ -18,6 +20,24 @@ class Initializer;
  * Class to manage a trainable tensor parameter.
  */
 class Parameter : mixins::Nonmovable<Parameter> {
+  friend class Model;
+
+private:
+  /**
+   * Loads parameters from msgpack::Reader w/o checking the header.
+   * @param reader msgpack::Reader object.
+   * @param with_stats Whether or not to load all additional statistics.
+   * @param device Device object to manage the parameter.
+   */
+  void load_inner(msgpack::Reader &reader, bool with_stats, Device &device);
+
+  /**
+   * Saves parameters to msgpack::Writer.
+   * @param writer msgpack::Writer object.
+   * @param with_stats Whether or not to save all additional statistics.
+   */
+  void save_inner(msgpack::Writer &writer, bool with_stats) const;
+
 public:
   /**
    * Creates an invalid parameter object.

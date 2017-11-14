@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_FUNCTION_IMPL_H_
 #define PRIMITIV_FUNCTION_IMPL_H_
 
+#include <cstdint>
 #include <primitiv/function.h>
 #include <primitiv/parameter.h>
 #include <primitiv/shape.h>
@@ -77,14 +78,14 @@ private:
 class IdentityMatrix : public primitiv::Function {
   NO_CTOR_CLASS_DECL(IdentityMatrix);
 public:
-  IdentityMatrix(unsigned size, Device &device)
+  IdentityMatrix(std::uint32_t size, Device &device)
     : size_(size), device_(device) {}
   Device *get_device() const override { return &device_; }
   std::string name() const override {
     return "IdentityMatrix(" + std::to_string(size_) + ')';
   }
 private:
-  unsigned size_;
+  std::uint32_t size_;
   Device &device_;
 };
 
@@ -160,40 +161,40 @@ private:
 class Pick : public primitiv::Function {
   NO_CTOR_CLASS_DECL(Pick);
 public:
-  Pick(const std::vector<unsigned> &ids, unsigned dim)
+  Pick(const std::vector<std::uint32_t> &ids, std::uint32_t dim)
     : ids_(ids), dim_(dim) {}
   std::string name() const override {
     return "Pick(" + std::to_string(dim_) + ')';
   };
 private:
-  std::vector<unsigned> ids_;
-  unsigned dim_;
+  std::vector<std::uint32_t> ids_;
+  std::uint32_t dim_;
 };
 
 class Slice : public primitiv::Function {
   NO_CTOR_CLASS_DECL(Slice);
 public:
-  Slice(unsigned dim, unsigned lower, unsigned upper)
+  Slice(std::uint32_t dim, std::uint32_t lower, std::uint32_t upper)
     : dim_(dim), lower_(lower), upper_(upper) {}
   std::string name() const override {
     return "Slice(" + std::to_string(dim_) +
       ',' + std::to_string(lower_) + ':' + std::to_string(upper_) + ')';
   }
 private:
-  unsigned dim_;
-  unsigned lower_;
-  unsigned upper_;
+  std::uint32_t dim_;
+  std::uint32_t lower_;
+  std::uint32_t upper_;
 };
 
 class Concat : public primitiv::Function {
   NO_CTOR_CLASS_DECL(Concat);
 public:
-  Concat(unsigned dim) : dim_(dim) {}
+  Concat(std::uint32_t dim) : dim_(dim) {}
   std::string name() const override {
     return "Concat(" + std::to_string(dim_) + ')';
   }
 private:
-  unsigned dim_;
+  std::uint32_t dim_;
 };
 
 class Reshape : public primitiv::Function {
@@ -210,60 +211,60 @@ private:
 class Sum : public Function {
   NO_CTOR_CLASS_DECL(Sum);
 public:
-  explicit Sum(unsigned dim) : dim_(dim) {}
+  explicit Sum(std::uint32_t dim) : dim_(dim) {}
   std::string name() const override {
     return "Sum(" + std::to_string(dim_) + ')';
   }
 private:
-  unsigned dim_;
+  std::uint32_t dim_;
 };
 
 class LogSumExp : public Function {
   NO_CTOR_CLASS_DECL(LogSumExp);
 public:
-  explicit LogSumExp(unsigned dim) : dim_(dim) {}
+  explicit LogSumExp(std::uint32_t dim) : dim_(dim) {}
   std::string name() const override {
     return "LogSumExp(" + std::to_string(dim_) + ')';
   }
 private:
-  unsigned dim_;
+  std::uint32_t dim_;
 };
 
 class Broadcast : public Function {
   NO_CTOR_CLASS_DECL(Broadcast);
 public:
-  Broadcast(unsigned dim, unsigned size) : dim_(dim), size_(size) {}
+  Broadcast(std::uint32_t dim, std::uint32_t size) : dim_(dim), size_(size) {}
   std::string name() const override {
     return "Broadcast(" + std::to_string(dim_)
       + ',' + std::to_string(size_) + ')';
   }
 private:
-  unsigned dim_;
-  unsigned size_;
+  std::uint32_t dim_;
+  std::uint32_t size_;
 };
 
 class SoftmaxCrossEntropy : public Function {
   NO_CTOR_CLASS_DECL(SoftmaxCrossEntropy);
 public:
-  explicit SoftmaxCrossEntropy(unsigned dim) : dim_(dim) {}
+  explicit SoftmaxCrossEntropy(std::uint32_t dim) : dim_(dim) {}
   std::string name() const override {
     return "SoftmaxCrossEntropy(" + std::to_string(dim_) + ')';
   }
 private:
-  unsigned dim_;
+  std::uint32_t dim_;
 };
 
 class SparseSoftmaxCrossEntropy : public Function {
   NO_CTOR_CLASS_DECL(SparseSoftmaxCrossEntropy);
 public:
   explicit SparseSoftmaxCrossEntropy(
-      const std::vector<unsigned> ids, unsigned dim) : ids_(ids), dim_(dim) {}
+      const std::vector<std::uint32_t> ids, std::uint32_t dim) : ids_(ids), dim_(dim) {}
   std::string name() const override {
     return "SparseSoftmaxCrossEntropy(" + std::to_string(dim_) + ')';
   }
 private:
-  std::vector<unsigned> ids_;
-  unsigned dim_;
+  std::vector<std::uint32_t> ids_;
+  std::uint32_t dim_;
   Tensor log_softmax_x_;  // Only used when PRIMITIV_USE_CACHE=ON
 };
 

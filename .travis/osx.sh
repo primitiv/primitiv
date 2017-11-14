@@ -3,7 +3,7 @@ set -xe
 
 # install
 brew update
-brew install python3 protobuf
+brew install python3
 pip3 install cython numpy
 git clone https://github.com/google/googletest.git $TRAVIS_BUILD_DIR/googletest
 

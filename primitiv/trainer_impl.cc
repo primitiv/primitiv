@@ -24,14 +24,14 @@ void SGD::update_parameter(float scale, Parameter &param) {
 }
 
 void SGD::get_configs(
-    std::unordered_map<std::string, unsigned> &uint_configs,
+    std::unordered_map<std::string, std::uint32_t> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
   Trainer::get_configs(uint_configs, float_configs);
   float_configs.insert(std::make_pair("SGD.eta", eta_));
 }
 
 void SGD::set_configs(
-    const std::unordered_map<std::string, unsigned> &uint_configs,
+    const std::unordered_map<std::string, std::uint32_t> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
   Trainer::set_configs(uint_configs, float_configs);
   SET_CONFIG(eta_, float_configs, "SGD.eta");
@@ -52,7 +52,7 @@ void MomentumSGD::update_parameter(float scale, Parameter &param) {
 }
 
 void MomentumSGD::get_configs(
-    std::unordered_map<std::string, unsigned> &uint_configs,
+    std::unordered_map<std::string, std::uint32_t> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
   Trainer::get_configs(uint_configs, float_configs);
   float_configs.insert(std::make_pair("MomentumSGD.eta", eta_));
@@ -60,7 +60,7 @@ void MomentumSGD::get_configs(
 }
 
 void MomentumSGD::set_configs(
-    const std::unordered_map<std::string, unsigned> &uint_configs,
+    const std::unordered_map<std::string, std::uint32_t> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
   Trainer::set_configs(uint_configs, float_configs);
   SET_CONFIG(eta_, float_configs, "MomentumSGD.eta");
@@ -82,7 +82,7 @@ void AdaGrad::update_parameter(float scale, Parameter &param) {
 }
 
 void AdaGrad::get_configs(
-    std::unordered_map<std::string, unsigned> &uint_configs,
+    std::unordered_map<std::string, std::uint32_t> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
   Trainer::get_configs(uint_configs, float_configs);
   float_configs.insert(std::make_pair("AdaGrad.eta", eta_));
@@ -90,7 +90,7 @@ void AdaGrad::get_configs(
 }
 
 void AdaGrad::set_configs(
-    const std::unordered_map<std::string, unsigned> &uint_configs,
+    const std::unordered_map<std::string, std::uint32_t> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
   Trainer::set_configs(uint_configs, float_configs);
   SET_CONFIG(eta_, float_configs, "AdaGrad.eta");
@@ -112,7 +112,7 @@ void RMSProp::update_parameter(float scale, Parameter &param) {
 }
 
 void RMSProp::get_configs(
-    std::unordered_map<std::string, unsigned> &uint_configs,
+    std::unordered_map<std::string, std::uint32_t> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
   Trainer::get_configs(uint_configs, float_configs);
   float_configs.insert(std::make_pair("RMSProp.eta", eta_));
@@ -121,7 +121,7 @@ void RMSProp::get_configs(
 }
 
 void RMSProp::set_configs(
-    const std::unordered_map<std::string, unsigned> &uint_configs,
+    const std::unordered_map<std::string, std::uint32_t> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
   Trainer::set_configs(uint_configs, float_configs);
   SET_CONFIG(eta_, float_configs, "RMSProp.eta");
@@ -150,7 +150,7 @@ void AdaDelta::update_parameter(float scale, Parameter &param) {
 }
 
 void AdaDelta::get_configs(
-    std::unordered_map<std::string, unsigned> &uint_configs,
+    std::unordered_map<std::string, std::uint32_t> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
   Trainer::get_configs(uint_configs, float_configs);
   float_configs.insert(std::make_pair("AdaDelta.rho", rho_));
@@ -158,7 +158,7 @@ void AdaDelta::get_configs(
 }
 
 void AdaDelta::set_configs(
-    const std::unordered_map<std::string, unsigned> &uint_configs,
+    const std::unordered_map<std::string, std::uint32_t> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
   Trainer::set_configs(uint_configs, float_configs);
   SET_CONFIG(rho_, float_configs, "AdaDelta.rho");
@@ -174,7 +174,7 @@ void Adam::configure_parameter(Parameter &param) {
 }
 
 void Adam::update_parameter(float scale, Parameter &param) {
-  const unsigned epoch = get_epoch() + 1;
+  const std::uint32_t epoch = get_epoch() + 1;
   const Tensor &g = param.gradient();
   Tensor &m1 = param.stats("adam-m1");
   Tensor &m2 = param.stats("adam-m2");
@@ -186,7 +186,7 @@ void Adam::update_parameter(float scale, Parameter &param) {
 }
 
 void Adam::get_configs(
-    std::unordered_map<std::string, unsigned> &uint_configs,
+    std::unordered_map<std::string, std::uint32_t> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
   Trainer::get_configs(uint_configs, float_configs);
   float_configs.insert(std::make_pair("Adam.alpha", alpha_));
@@ -196,7 +196,7 @@ void Adam::get_configs(
 }
 
 void Adam::set_configs(
-    const std::unordered_map<std::string, unsigned> &uint_configs,
+    const std::unordered_map<std::string, std::uint32_t> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
   Trainer::set_configs(uint_configs, float_configs);
   SET_CONFIG(alpha_, float_configs, "Adam.alpha");

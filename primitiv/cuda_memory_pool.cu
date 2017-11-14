@@ -4,6 +4,7 @@
 #include <primitiv/cuda_memory_pool.h>
 #include <primitiv/cuda_utils.h>
 #include <primitiv/error.h>
+#include <primitiv/numeric_utils.h>
 
 using std::cerr;
 using std::endl;
@@ -11,10 +12,10 @@ using std::make_pair;
 
 namespace primitiv {
 
-std::uint64_t CUDAMemoryPool::next_pool_id_ = 0;
-std::unordered_map<std::uint64_t, CUDAMemoryPool *> CUDAMemoryPool::pools_;
+std::size_t CUDAMemoryPool::next_pool_id_ = 0;
+std::unordered_map<std::size_t, CUDAMemoryPool *> CUDAMemoryPool::pools_;
 
-CUDAMemoryPool::CUDAMemoryPool(unsigned device_id)
+CUDAMemoryPool::CUDAMemoryPool(std::uint32_t device_id)
 : pool_id_(next_pool_id_++)
 , dev_id_(device_id)
 , reserved_(64)
@@ -22,14 +23,14 @@ CUDAMemoryPool::CUDAMemoryPool(unsigned device_id)
   // Retrieves device properties.
   int max_devs;
   CUDA_CALL(::cudaGetDeviceCount(&max_devs));
-  if (dev_id_ >= static_cast<unsigned>(max_devs)) {
+  if (dev_id_ >= static_cast<std::uint32_t>(max_devs)) {
     THROW_ERROR(
         "Invalid CUDA device ID. given: " << dev_id_
         << " >= #devices: " << max_devs);
   }
 
   // Registers this object.
-  pools_.insert(std::make_pair(pool_id_, this));
+  pools_.emplace(pool_id_, this);
 }
 
 CUDAMemoryPool::~CUDAMemoryPool() {
@@ -45,39 +46,35 @@ CUDAMemoryPool::~CUDAMemoryPool() {
   release_reserved_blocks();
 }
 
-std::shared_ptr<void> CUDAMemoryPool::allocate(std::uint64_t size) {
-  static const unsigned MAX_SCALE = 63;
-  unsigned scale = 0;
-  while (1ull << scale < size) {
-    if (scale == MAX_SCALE) {
-      THROW_ERROR(
-          "Attempted to allocate more than 2^" << MAX_SCALE << " bytes.");
-    }
-    ++scale;
-  }
+std::shared_ptr<void> CUDAMemoryPool::allocate(std::size_t size) {
+  static_assert(sizeof(std::size_t) <= sizeof(std::uint64_t), "");
+
+  static const std::uint64_t MAX_SHIFTS = 63;
+  const std::uint64_t shift = numeric_utils::calculate_shifts(size);
+  if (shift > MAX_SHIFTS) THROW_ERROR("Invalid memory size: " << size);
 
   void *ptr;
-  if (reserved_[scale].empty()) {
+  if (reserved_[shift].empty()) {
     // Allocates a new block.
     CUDA_CALL(::cudaSetDevice(dev_id_));
-    if (::cudaMalloc(&ptr, 1ull << scale) != ::cudaSuccess) {
+    if (::cudaMalloc(&ptr, 1ull << shift) != ::cudaSuccess) {
       // Maybe out-of-memory.
       // Release other blocks and try allocation again.
       release_reserved_blocks();
-      CUDA_CALL(::cudaMalloc(&ptr, 1ull << scale));
+      CUDA_CALL(::cudaMalloc(&ptr, 1ull << shift));
     }
-    supplied_.insert(make_pair(ptr, scale));
+    supplied_.emplace(ptr, shift);
   } else {
     // Returns an existing block.
-    ptr = reserved_[scale].back();
-    reserved_[scale].pop_back();
-    supplied_.insert(make_pair(ptr, scale));
+    ptr = reserved_[shift].back();
+    reserved_[shift].pop_back();
+    supplied_.emplace(ptr, shift);
   }
 
   return std::shared_ptr<void>(ptr, CUDAMemoryDeleter(pool_id_));
 }
 
-void CUDAMemoryPool::free(std::uint64_t pool_id, void *ptr) {
+void CUDAMemoryPool::free(std::size_t pool_id, void *ptr) {
   auto it = pools_.find(pool_id);
   if (it != pools_.end()) {
     // Found a corresponding pool object, delete ptr.

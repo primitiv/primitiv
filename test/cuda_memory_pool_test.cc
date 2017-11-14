@@ -27,24 +27,24 @@ TEST_F(CUDAMemoryPoolTest, CheckInvalidNew) {
 
 TEST_F(CUDAMemoryPoolTest, CheckPoolIDs) {
   CUDAMemoryPool pool0(0);
-  std::uint64_t base = pool0.get_pool_id();
+  std::uint64_t base_id = pool0.get_pool_id();
 
   CUDAMemoryPool pool1(0);
-  EXPECT_EQ(base + 1, pool1.get_pool_id());
+  EXPECT_EQ(base_id + 1, pool1.get_pool_id());
   CUDAMemoryPool(0);
   CUDAMemoryPool(0);
   CUDAMemoryPool pool2(0);
-  EXPECT_EQ(base + 4, pool2.get_pool_id());
+  EXPECT_EQ(base_id + 4, pool2.get_pool_id());
   {
     CUDAMemoryPool pool3(0);
-    EXPECT_EQ(base + 5, pool3.get_pool_id());
+    EXPECT_EQ(base_id + 5, pool3.get_pool_id());
     CUDAMemoryPool(0);
     CUDAMemoryPool(0);
     CUDAMemoryPool pool4(0);
-    EXPECT_EQ(base + 8, pool4.get_pool_id());
+    EXPECT_EQ(base_id + 8, pool4.get_pool_id());
   }
   CUDAMemoryPool pool5(0);
-  EXPECT_EQ(base + 9, pool5.get_pool_id());
+  EXPECT_EQ(base_id + 9, pool5.get_pool_id());
 }
 
 TEST_F(CUDAMemoryPoolTest, CheckAllocate) {
@@ -95,7 +95,7 @@ TEST_F(CUDAMemoryPoolTest, CheckInvalidAllocate) {
   CUDA_CALL(::cudaGetDeviceProperties(&prop, 0));
 
   // Calculates the half or more size of the whole memory.
-  std::uint64_t size = 1llu;
+  std::size_t size = 1llu;
   while (size < prop.totalGlobalMem >> 1) size <<= 1;
 
   // rvalue shared pointers immediately releases the raw pointers, so that the
@@ -120,9 +120,9 @@ TEST_F(CUDAMemoryPoolTest, CheckReleaseReservedBlocks) {
   std::cerr << "Total size: " << prop.totalGlobalMem << std::endl;
 
   // Calculates chunk sizes and number of chunks.
-  std::uint64_t size = 1llu;
+  std::size_t size = 1llu;
   while (size < prop.totalGlobalMem >> 3) size <<= 1;
-  unsigned n = 0;
+  std::uint32_t n = 0;
   while (n * size < prop.totalGlobalMem) ++n;
   std::cerr << "Chunk size: " << size << std::endl;
   std::cerr << "#Chunks: " << n << std::endl;
@@ -130,7 +130,7 @@ TEST_F(CUDAMemoryPoolTest, CheckReleaseReservedBlocks) {
 
   // Reserves n-4 chunks.
   std::vector<std::shared_ptr<void>> reserved;
-  for (unsigned i = 0; i < n - 4; ++i) {
+  for (std::uint32_t i = 0; i < n - 4; ++i) {
     EXPECT_NO_THROW(reserved.emplace_back(pool.allocate(size)));
   }
 

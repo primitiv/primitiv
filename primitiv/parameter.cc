@@ -2,8 +2,8 @@
 
 #include <fstream>
 #include <primitiv/error.h>
+#include <primitiv/file_format.h>
 #include <primitiv/initializer.h>
-#include <primitiv/messages.pb.h>
 #include <primitiv/operators.h>
 #include <primitiv/parameter.h>
 
@@ -12,58 +12,41 @@ using std::vector;
 
 namespace {
 
-// Stores Shape data to the proto message.
-void store_shape(const primitiv::Shape &src, primitiv::messages::Shape &dest) {
-  dest.Clear();
-
-  auto &dims = *dest.mutable_dims();
-  const unsigned dims_size = src.depth();
-  dims.Reserve(dims_size);
-  for (unsigned i = 0; i < dims_size; ++i) {
-    dims.AddAlreadyReserved(src[i]);
-  }
-  dest.set_batch(src.batch());
+// Reads Shape data.
+primitiv::Shape read_shape(primitiv::msgpack::Reader &reader) {
+  std::vector<std::uint32_t> dims;
+  std::uint32_t batch;
+  reader >> dims >> batch;
+  return primitiv::Shape(dims, batch);
 }
 
-// Stores Tensor data to the proto message.
-void store_tensor(const primitiv::Tensor &src, primitiv::messages::Tensor &dest) {
-  if (!src.valid()) THROW_ERROR("Attempted to save an invalid Tensor object.");
-
-  dest.Clear();
-
-  ::store_shape(src.shape(), *dest.mutable_shape());
-  auto &data = *dest.mutable_data();
-  const vector<float> src_data = src.to_vector();
-  const unsigned data_size = src_data.size();
-  data.Reserve(data_size);
-  for (unsigned i = 0; i < data_size; ++i) {
-    data.AddAlreadyReserved(src_data[i]);
-  }
-}
-
-// Parses Shape data in the proto message.
-primitiv::Shape parse_shape(const primitiv::messages::Shape &src) {
-  return primitiv::Shape(
-      vector<unsigned>(src.dims().begin(), src.dims().end()),
-      src.batch());
-}
-
-// Parses Tensor data in the proto message.
-primitiv::Tensor parse_tensor(const primitiv::messages::Tensor &src, primitiv::Device &device) {
-  if (!src.has_shape()) {
-    THROW_ERROR("Invalid Tensor message: message has no 'shape' member.");
-  }
-
-  primitiv::Shape shape = ::parse_shape(src.shape());
-  if (static_cast<unsigned>(src.data_size()) != shape.size()) {
+// Reads Tensor data.
+primitiv::Tensor read_tensor(primitiv::msgpack::Reader &reader, primitiv::Device &device) {
+  primitiv::Shape shape = ::read_shape(reader);
+  primitiv::msgpack::objects::Binary data;
+  reader >> data;
+  if (data.size() != shape.size() * sizeof(float)) {
     THROW_ERROR(
-        "Invalid Tensor message: data sizes mismatched."
-        << " src.data_size(): " << std::to_string(src.data_size())
-        << " != shape: " << shape.to_string()
-        << " (size: " << std::to_string(shape.size()) << ')');
+        "Shape and data length mismatched. "
+        "shape.size() * sizeof(float): " << (shape.size() * sizeof(float))
+        << " != data.size(): " << data.size());
   }
+  return device.new_tensor_by_array(shape, reinterpret_cast<const float *>(data.data()));
+}
 
-  return device.new_tensor_by_array(shape, src.data().data());
+// Writes Shape data.
+void write_shape(const primitiv::Shape &src, primitiv::msgpack::Writer &writer) {
+  writer << src.dims() << src.batch();
+}
+
+// Writes Tensor data.
+void write_tensor(const primitiv::Tensor &src, primitiv::msgpack::Writer &writer) {
+  const primitiv::Shape &shape = src.shape();
+  const std::vector<float> raw_data = src.to_vector();
+  primitiv::msgpack::objects::Binary data(
+      shape.size() * sizeof(float), reinterpret_cast<const char *>(raw_data.data()));
+  ::write_shape(shape, writer);
+  writer << data;
 }
 
 void check_shape(
@@ -143,31 +126,23 @@ void Parameter::init(
   stats_.clear();
 }
 
-void Parameter::load(const string &path, bool with_stats, Device &device) {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
+void Parameter::load_inner(
+    msgpack::Reader &reader, bool with_stats, Device &device) {
+  Tensor value_temp = ::read_tensor(reader, device);
 
-  messages::Parameter src;
-
-  std::ifstream ifs(path);
-  if (!ifs.is_open()) {
-    THROW_ERROR("Could not open file: " << path);
-  }
-  if (!src.ParseFromIstream(&ifs)) {
-    THROW_ERROR("Failed to read Parameter message: " << path);
-  }
-  if (!src.has_value()) {
-    THROW_ERROR("Invalid Parameter message: message has no 'value' member.");
-  }
+  std::uint32_t num_stats;
+  reader >> num_stats;
 
   std::unordered_map<string, Tensor> stats;
-  if (with_stats) {
-    for (const auto &kv : src.stats()) {
-      stats.emplace(std::make_pair(
-            kv.first, ::parse_tensor(kv.second, device)));
+  for (std::uint32_t i = 0; i < num_stats; ++i) {
+    std::string key;
+    reader >> key;
+    Tensor value = ::read_tensor(reader, device);
+    if (with_stats) {
+      stats.emplace(std::move(key), std::move(value));
     }
   }
 
-  Tensor value_temp = ::parse_tensor(src.value(), device);
   const Shape &shape_temp = value_temp.shape();
   Tensor grad_temp = operators::zeros<Tensor>(shape_temp, device);
   ::check_shape(value_temp, grad_temp);
@@ -180,27 +155,56 @@ void Parameter::load(const string &path, bool with_stats, Device &device) {
   stats_ = std::move(stats);
 }
 
+void Parameter::save_inner(msgpack::Writer &writer, bool with_stats) const {
+  ::write_tensor(value_, writer);
+
+  if (with_stats) {
+    if (stats_.size() > 0xffffffffull) {
+      THROW_ERROR(
+          "Could not store more than 2^32 - 1 stats in one parameter file.");
+    }
+    writer << static_cast<std::uint32_t>(stats_.size());
+    for (const auto &kv : stats_) {
+      writer << kv.first;
+      ::write_tensor(kv.second, writer);
+    }
+  } else {
+    writer << std::uint32_t(0);
+  }
+}
+
+void Parameter::load(const string &path, bool with_stats, Device &device) {
+  std::ifstream ifs(path);
+  if (!ifs.is_open()) {
+    THROW_ERROR("Could not open file: " << path);
+  }
+  msgpack::Reader reader(ifs);
+
+  std::uint32_t major, minor;
+  reader >> major >> minor;
+  FileFormat::check_version(major, minor);
+
+  std::uint32_t datatype;
+  reader >> datatype;
+  FileFormat::check_datatype(FileFormat::DataType::PARAMETER, datatype);
+
+  load_inner(reader, with_stats, device);
+}
+
 void Parameter::save(const string &path, bool with_stats) const  {
   if (!valid()) THROW_ERROR("Attempted to save an invalid Parameter object.");
-
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  messages::Parameter dest;
-  ::store_tensor(value_, *dest.mutable_value());
-  if (with_stats) {
-    auto &dest_stats = *dest.mutable_stats();
-    for (const auto &kv : stats_) {
-      ::store_tensor(kv.second, dest_stats[kv.first]);
-    }
-  }
 
   std::ofstream ofs(path);
   if (!ofs.is_open()) {
     THROW_ERROR("Could not open file: " << path);
   }
-  if (!dest.SerializeToOstream(&ofs)) {
-    THROW_ERROR("Failed to write Parameter message: " << path);
-  }
+  msgpack::Writer writer(ofs);
+
+  writer << FileFormat::CurrentVersion::MAJOR;
+  writer << FileFormat::CurrentVersion::MINOR;
+  writer << static_cast<std::uint32_t>(FileFormat::DataType::PARAMETER);
+
+  save_inner(writer, with_stats);
 }
 
 void Parameter::reset_gradient() {

@@ -1,10 +1,72 @@
 #include <config.h>
 
+#include <fstream>
 #include <primitiv/error.h>
+#include <primitiv/file_format.h>
 #include <primitiv/model.h>
+#include <primitiv/msgpack/reader.h>
+#include <primitiv/msgpack/writer.h>
+#include <primitiv/parameter.h>
 #include <primitiv/string_utils.h>
 
 namespace primitiv {
+
+void Model::load(
+    const std::string &path, bool with_stats, Device &device) {
+  std::ifstream ifs(path);
+  if (!ifs.is_open()) {
+    THROW_ERROR("Could not open file: " << path);
+  }
+  msgpack::Reader reader(ifs);
+
+  std::uint32_t major, minor;
+  reader >> major >> minor;
+  FileFormat::check_version(major, minor);
+
+  std::uint32_t datatype;
+  reader >> datatype;
+  FileFormat::check_datatype(FileFormat::DataType::MODEL, datatype);
+
+  std::uint32_t num_params;
+  reader >> num_params;
+
+  const auto params = get_all_parameters();
+  for (std::uint32_t i = 0; i < num_params; ++i) {
+    std::vector<std::string> key;
+    reader >> key;
+    const auto it = params.find(key);
+    if (it == params.end()) {
+      THROW_ERROR(
+          "Model does not have a parameter with name: '"
+          << string_utils::join(key, ".") << "'");
+    }
+    it->second->load_inner(reader, with_stats, device);
+  }
+}
+
+void Model::save(const std::string &path, bool with_stats) const {
+  std::ofstream ofs(path);
+  if (!ofs.is_open()) {
+    THROW_ERROR("Could not open file: " << path);
+  }
+  msgpack::Writer writer(ofs);
+
+  writer << FileFormat::CurrentVersion::MAJOR;
+  writer << FileFormat::CurrentVersion::MINOR;
+  writer << static_cast<std::uint32_t>(FileFormat::DataType::MODEL);
+
+  const auto params = get_all_parameters();
+  if (params.size() > 0xffffffffull) {
+    THROW_ERROR(
+        "Could not store more than 2^32 - 1 parameters in one model file.");
+  }
+  writer << static_cast<std::uint32_t>(params.size());
+
+  for (const auto &kv : params) {
+    writer << kv.first;
+    kv.second->save_inner(writer, with_stats);
+  }
+}
 
 void Model::add_parameter(const std::string &name, Parameter &param) {
   if (name_set_.find(name) != name_set_.end()) {
@@ -76,11 +138,17 @@ const Model &Model::get_submodel(const std::vector<std::string> &names) const {
   return *it->second;
 }
 
-std::vector<Parameter *> Model::get_trainable_parameters() const {
-  std::vector<Parameter *> params(param_set_.begin(), param_set_.end());
-  for (const Model *sm : submodel_set_) {
-    const auto sm_params = sm->get_trainable_parameters();
-    params.insert(params.end(), sm_params.begin(), sm_params.end());
+std::map<std::vector<std::string>, Parameter *> Model::get_all_parameters() const {
+  std::map<std::vector<std::string>, Parameter *> params;
+  for (const auto &kv : param_kv_) {
+    params.emplace(std::vector<std::string> { kv.first }, kv.second);
+  }
+  for (const auto &sm_kv : submodel_kv_) {
+    for (const auto &p_kv : sm_kv.second->get_all_parameters()) {
+      std::vector<std::string> key { sm_kv.first };
+      key.insert(key.end(), p_kv.first.begin(), p_kv.first.end());
+      params.emplace(key, p_kv.second);
+    }
   }
   return params;
 }
