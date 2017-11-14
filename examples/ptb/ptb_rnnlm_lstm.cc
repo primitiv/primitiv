@@ -26,7 +26,7 @@
 
 using primitiv::initializers::Constant;
 using primitiv::initializers::Uniform;
-using primitiv::trainers::SGD;
+using primitiv::optimizers::SGD;
 namespace F = primitiv::operators;
 using namespace primitiv;
 using namespace std;
@@ -117,11 +117,11 @@ class Affine {
   Var w_, b_;
 
 public:
-  Affine(unsigned in_size, unsigned out_size, Trainer &trainer)
+  Affine(unsigned in_size, unsigned out_size, Optimizer &optimizer)
     : pw_({out_size, in_size}, Uniform(-0.1, 0.1))
     , pb_({out_size}, Constant(0)) {
-      trainer.add_parameter(pw_);
-      trainer.add_parameter(pb_);
+      optimizer.add_parameter(pw_);
+      optimizer.add_parameter(pb_);
     }
 
   // Initializes internal values.
@@ -151,14 +151,14 @@ class LSTM {
   Var wxh_, whh_, bh_, h_, c_;
 
 public:
-  LSTM(unsigned in_size, unsigned out_size, Trainer &trainer)
+  LSTM(unsigned in_size, unsigned out_size, Optimizer &optimizer)
     : out_size_(out_size)
     , pwxh_({4 * out_size, in_size}, Uniform(-0.1, 0.1))
     , pwhh_({4 * out_size, out_size}, Uniform(-0.1, 0.1))
     , pbh_({4 * out_size}, Constant(0)) {
-      trainer.add_parameter(pwxh_);
-      trainer.add_parameter(pwhh_);
-      trainer.add_parameter(pbh_);
+      optimizer.add_parameter(pwxh_);
+      optimizer.add_parameter(pwhh_);
+      optimizer.add_parameter(pbh_);
     }
 
   // Initializes internal values.
@@ -191,13 +191,13 @@ class RNNLM {
   Affine<Var> hy_;
 
 public:
-  RNNLM(unsigned vocab_size, unsigned eos_id, Trainer &trainer)
+  RNNLM(unsigned vocab_size, unsigned eos_id, Optimizer &optimizer)
     : eos_id_(eos_id)
     , plookup_({NUM_HIDDEN_UNITS, vocab_size}, Uniform(-0.1, 0.1))
-    , rnn1_(NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS, trainer)
-    , rnn2_(NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS, trainer)
-    , hy_(NUM_HIDDEN_UNITS, vocab_size, trainer) {
-      trainer.add_parameter(plookup_);
+    , rnn1_(NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS, optimizer)
+    , rnn2_(NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS, optimizer)
+    , hy_(NUM_HIDDEN_UNITS, vocab_size, optimizer) {
+      optimizer.add_parameter(plookup_);
     }
 
   // Forward function of RNNLM. Input data should be arranged below:
@@ -266,13 +266,13 @@ int main() {
   Graph g;
   Graph::set_default(g);
 
-  // Trainer.
-  SGD trainer(1);
-  //trainer.set_weight_decay(1e-6);
-  trainer.set_gradient_clipping(5);
+  // Optimizer.
+  SGD optimizer(1);
+  //optimizer.set_weight_decay(1e-6);
+  optimizer.set_gradient_clipping(5);
 
   // Our LM.
-  ::RNNLM<Node> lm(vocab.size(), eos_id, trainer);
+  ::RNNLM<Node> lm(vocab.size(), eos_id, optimizer);
 
   // Batch randomizer.
   random_device rd;
@@ -306,9 +306,9 @@ int main() {
       const auto loss = lm.loss(outputs, batch);
       train_loss += loss.to_float() * batch_ids.size();
 
-      trainer.reset_gradients();
+      optimizer.reset_gradients();
       loss.backward();
-      trainer.update();
+      optimizer.update();
 
       cout << ofs << '\r' << flush;
     }
@@ -340,9 +340,9 @@ int main() {
       best_valid_ppl = valid_ppl;
       cout << "  BEST" << endl;
     } else {
-      const float old_lr = trainer.get_learning_rate_scaling();
+      const float old_lr = optimizer.get_learning_rate_scaling();
       const float new_lr = 0.5 * old_lr;
-      trainer.set_learning_rate_scaling(new_lr);
+      optimizer.set_learning_rate_scaling(new_lr);
       cout << "  learning rate scaled: " << old_lr << " -> " << new_lr << endl;
     }
   }

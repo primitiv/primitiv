@@ -28,7 +28,7 @@
 #include <primitiv/primitiv_cuda.h>
 
 using primitiv::initializers::XavierUniform;
-using primitiv::trainers::Adam;
+using primitiv::optimizers::Adam;
 namespace F = primitiv::operators;
 using namespace primitiv;
 using namespace std;
@@ -112,14 +112,14 @@ vector<vector<unsigned>> make_batch(
 
 class RNNLM {
 public:
-  RNNLM(unsigned vocab_size, unsigned eos_id, Trainer &trainer)
+  RNNLM(unsigned vocab_size, unsigned eos_id, Optimizer &optimizer)
     : eos_id_(eos_id)
     , pwlookup_({NUM_HIDDEN_UNITS, vocab_size}, XavierUniform())
     , pwxs_({NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS}, XavierUniform())
     , pwsy_({vocab_size, NUM_HIDDEN_UNITS}, XavierUniform()) {
-      trainer.add_parameter(pwlookup_);
-      trainer.add_parameter(pwxs_);
-      trainer.add_parameter(pwsy_);
+      optimizer.add_parameter(pwlookup_);
+      optimizer.add_parameter(pwxs_);
+      optimizer.add_parameter(pwsy_);
     }
 
   // Forward function of RNNLM. Input data should be arranged below:
@@ -189,13 +189,13 @@ int main() {
   Graph g;
   Graph::set_default(g);
 
-  // Trainer.
-  Adam trainer;
-  trainer.set_weight_decay(1e-6);
-  trainer.set_gradient_clipping(5);
+  // Optimizer.
+  Adam optimizer;
+  optimizer.set_weight_decay(1e-6);
+  optimizer.set_gradient_clipping(5);
 
   // Our LM.
-  ::RNNLM lm(vocab.size(), eos_id, trainer);
+  ::RNNLM lm(vocab.size(), eos_id, optimizer);
 
   // Batch randomizer.
   random_device rd;
@@ -227,9 +227,9 @@ int main() {
       const auto loss = lm.forward_loss(outputs, batch);
       train_loss += loss.to_float() * batch_ids.size();
 
-      trainer.reset_gradients();
+      optimizer.reset_gradients();
       loss.backward();
-      trainer.update();
+      optimizer.update();
 
       cout << ofs << '\r' << flush;
     }

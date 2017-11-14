@@ -27,7 +27,7 @@ using namespace std;
 using namespace primitiv;
 namespace F = primitiv::operators;
 namespace I = primitiv::initializers;
-namespace T = primitiv::trainers;
+namespace O = primitiv::optimizers;
 
 namespace {
 
@@ -97,12 +97,12 @@ int main() {
   Parameter pw2({NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS}, I::XavierUniform(), dev1);
   Parameter pb2({NUM_OUTPUT_UNITS}, I::Constant(0), dev1);
 
-  // Trainer
-  T::SGD trainer(.1);
-  trainer.add_parameter(pw1);
-  trainer.add_parameter(pb1);
-  trainer.add_parameter(pw2);
-  trainer.add_parameter(pb2);
+  // Optimizer
+  O::SGD optimizer(.1);
+  optimizer.add_parameter(pw1);
+  optimizer.add_parameter(pb1);
+  optimizer.add_parameter(pw2);
+  optimizer.add_parameter(pb2);
 
   // Helper lambda to construct the predictor network.
   auto make_graph = [&](const vector<float> &inputs) {
@@ -152,9 +152,9 @@ int main() {
       Node avg_loss = F::batch::mean(loss);
 
       // Implicit forward, backward, and updates parameters.
-      trainer.reset_gradients();
+      optimizer.reset_gradients();
       avg_loss.backward();
-      trainer.update();
+      optimizer.update();
     }
 
     unsigned match = 0;
