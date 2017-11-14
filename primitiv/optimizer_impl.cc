@@ -38,14 +38,14 @@ void SGD::set_configs(
 }
 
 void MomentumSGD::configure_parameter(Parameter &param) {
-  const std::string name = "momentumsgd-m";
+  const std::string name = "MomentumSGD.m";
   if (!param.has_stats(name)) {
     param.add_stats(name, param.shape());
   }
 }
 
 void MomentumSGD::update_parameter(float scale, Parameter &param) {
-  Tensor &m = param.stats("momentumsgd-m");
+  Tensor &m = param.stats("MomentumSGD.m");
   m *= momentum_;
   m -= (scale * eta_) * param.gradient();
   param.value() += m;
@@ -68,7 +68,7 @@ void MomentumSGD::set_configs(
 }
 
 void AdaGrad::configure_parameter(Parameter &param) {
-  const std::string name = "adagrad-m";
+  const std::string name = "AdaGrad.m";
   if (!param.has_stats(name)) {
     param.add_stats(name, param.shape());
   }
@@ -76,7 +76,7 @@ void AdaGrad::configure_parameter(Parameter &param) {
 
 void AdaGrad::update_parameter(float scale, Parameter &param) {
   const Tensor &g = param.gradient();
-  Tensor &m = param.stats("adagrad-m");
+  Tensor &m = param.stats("AdaGrad.m");
   m += g * g;
   param.value() -= (scale * eta_) * g / (operators::sqrt(m) + eps_);
 }
@@ -98,7 +98,7 @@ void AdaGrad::set_configs(
 }
 
 void RMSProp::configure_parameter(Parameter &param) {
-  const std::string name = "rmsprop-m";
+  const std::string name = "RMSProp.m";
   if (!param.has_stats(name)) {
     param.add_stats(name, param.shape());
   }
@@ -106,7 +106,7 @@ void RMSProp::configure_parameter(Parameter &param) {
 
 void RMSProp::update_parameter(float scale, Parameter &param) {
   const Tensor &g = param.gradient();
-  Tensor &m = param.stats("rmsprop-m");
+  Tensor &m = param.stats("RMSProp.m");
   m = alpha_ * m + (1 - alpha_) * g * g;
   param.value() -= (scale * eta_) * g / (operators::sqrt(m) + eps_);
 }
@@ -130,7 +130,7 @@ void RMSProp::set_configs(
 }
 
 void AdaDelta::configure_parameter(Parameter &param) {
-  for (const char *name : {"adadelta-m1", "adadelta-m2"}) {
+  for (const char *name : {"AdaDelta.m1", "AdaDelta.m2"}) {
     if (!param.has_stats(name)) {
       param.add_stats(name, param.shape());
     }
@@ -139,8 +139,8 @@ void AdaDelta::configure_parameter(Parameter &param) {
 
 void AdaDelta::update_parameter(float scale, Parameter &param) {
   const Tensor &g = param.gradient();
-  Tensor &m1 = param.stats("adadelta-m1");
-  Tensor &m2 = param.stats("adadelta-m2");
+  Tensor &m1 = param.stats("AdaDelta.m1");
+  Tensor &m2 = param.stats("AdaDelta.m2");
   m2 *= rho_;
   m2 += (1 - rho_) * g * g;
   const Tensor dx = operators::sqrt((m1 + eps_) / (m2 + eps_)) * g;
@@ -166,7 +166,7 @@ void AdaDelta::set_configs(
 }
 
 void Adam::configure_parameter(Parameter &param) {
-  for (const char *name : {"adam-m1", "adam-m2"}) {
+  for (const char *name : {"Adam.m1", "Adam.m2"}) {
     if (!param.has_stats(name)) {
       param.add_stats(name, param.shape());
     }
@@ -176,8 +176,8 @@ void Adam::configure_parameter(Parameter &param) {
 void Adam::update_parameter(float scale, Parameter &param) {
   const std::uint32_t epoch = get_epoch() + 1;
   const Tensor &g = param.gradient();
-  Tensor &m1 = param.stats("adam-m1");
-  Tensor &m2 = param.stats("adam-m2");
+  Tensor &m1 = param.stats("Adam.m1");
+  Tensor &m2 = param.stats("Adam.m2");
   m1 = beta1_ * m1 + (1 - beta1_) * g;
   m2 = beta2_ * m2 + (1 - beta2_) * g * g;
   const Tensor mm1 = m1 / (1 - std::pow(beta1_, epoch));

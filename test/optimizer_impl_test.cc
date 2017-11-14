@@ -272,8 +272,9 @@ TEST_F(OptimizerImplTest, CheckMomentumSGDUpdate) {
   MomentumSGD optimizer;
   optimizer.set_learning_rate_scaling(.1);
   optimizer.add_parameter(param);
-  ASSERT_TRUE(vector_match(
-        vector<float>(4, 0), param.stats("momentumsgd-m").to_vector()));
+  ASSERT_TRUE(param.has_stats("MomentumSGD.m"));
+  EXPECT_TRUE(vector_match(
+        vector<float>(4, 0), param.stats("MomentumSGD.m").to_vector()));
 
   const vector<vector<float>> expected_v {
     {9.9900000e-01, 1.9980000e+00, 2.9970000e+00, 3.9960000e+00},
@@ -299,7 +300,7 @@ TEST_F(OptimizerImplTest, CheckMomentumSGDUpdate) {
     optimizer.update();
     EXPECT_TRUE(vector_match(expected_v[i], param.value().to_vector()));
     EXPECT_TRUE(vector_match(
-          expected_m[i], param.stats("momentumsgd-m").to_vector()));
+          expected_m[i], param.stats("MomentumSGD.m").to_vector()));
   }
 }
 
@@ -381,9 +382,9 @@ TEST_F(OptimizerImplTest, CheckAdaGradUpdate) {
   AdaGrad optimizer;
   optimizer.set_learning_rate_scaling(.1);
   optimizer.add_parameter(param);
-  ASSERT_TRUE(param.has_stats("adagrad-m"));
+  ASSERT_TRUE(param.has_stats("AdaGrad.m"));
   EXPECT_TRUE(vector_match(
-        vector<float>(4, 0), param.stats("adagrad-m").to_vector()));
+        vector<float>(4, 0), param.stats("AdaGrad.m").to_vector()));
 
   const vector<vector<float>> expected_v {
     {9.9989998e-01, 1.9999000e+00, 2.9999001e+00, 3.9999001e+00},
@@ -409,7 +410,7 @@ TEST_F(OptimizerImplTest, CheckAdaGradUpdate) {
     optimizer.update();
     EXPECT_TRUE(vector_match(expected_v[i], param.value().to_vector()));
     EXPECT_TRUE(vector_match(
-          expected_m[i], param.stats("adagrad-m").to_vector()));
+          expected_m[i], param.stats("AdaGrad.m").to_vector()));
   }
 }
 
@@ -495,9 +496,9 @@ TEST_F(OptimizerImplTest, CheckRMSPropUpdate) {
   RMSProp optimizer;
   optimizer.set_learning_rate_scaling(.1);
   optimizer.add_parameter(param);
-  ASSERT_TRUE(param.has_stats("rmsprop-m"));
+  ASSERT_TRUE(param.has_stats("RMSProp.m"));
   EXPECT_TRUE(vector_match(
-        vector<float>(4, 0), param.stats("rmsprop-m").to_vector()));
+        vector<float>(4, 0), param.stats("RMSProp.m").to_vector()));
 
   const vector<vector<float>> expected_v {
     {9.9683774e-01, 1.9968377e+00, 2.9968376e+00, 3.9968376e+00},
@@ -523,7 +524,7 @@ TEST_F(OptimizerImplTest, CheckRMSPropUpdate) {
     optimizer.update();
     EXPECT_TRUE(vector_match(expected_v[i], param.value().to_vector()));
     EXPECT_TRUE(vector_match(
-          expected_m[i], param.stats("rmsprop-m").to_vector()));
+          expected_m[i], param.stats("RMSProp.m").to_vector()));
   }
 }
 
@@ -605,12 +606,12 @@ TEST_F(OptimizerImplTest, CheckAdaDeltaUpdate) {
   AdaDelta optimizer;
   optimizer.set_learning_rate_scaling(.1);
   optimizer.add_parameter(param);
-  ASSERT_TRUE(param.has_stats("adadelta-m1"));
-  ASSERT_TRUE(param.has_stats("adadelta-m2"));
+  ASSERT_TRUE(param.has_stats("AdaDelta.m1"));
+  ASSERT_TRUE(param.has_stats("AdaDelta.m2"));
   EXPECT_TRUE(vector_match(
-        vector<float>(4, 0), param.stats("adadelta-m1").to_vector()));
+        vector<float>(4, 0), param.stats("AdaDelta.m1").to_vector()));
   EXPECT_TRUE(vector_match(
-        vector<float>(4, 0), param.stats("adadelta-m2").to_vector()));
+        vector<float>(4, 0), param.stats("AdaDelta.m2").to_vector()));
 
   const vector<vector<float>> expected_v {
     {9.9955279e-01, 1.9995528e+00, 2.9995528e+00, 3.9995528e+00},
@@ -643,9 +644,9 @@ TEST_F(OptimizerImplTest, CheckAdaDeltaUpdate) {
     optimizer.update();
     EXPECT_TRUE(vector_match(expected_v[i], param.value().to_vector()));
     EXPECT_TRUE(vector_match(
-          expected_m1[i], param.stats("adadelta-m1").to_vector()));
+          expected_m1[i], param.stats("AdaDelta.m1").to_vector()));
     EXPECT_TRUE(vector_match(
-          expected_m2[i], param.stats("adadelta-m2").to_vector()));
+          expected_m2[i], param.stats("AdaDelta.m2").to_vector()));
   }
 }
 
@@ -735,12 +736,12 @@ TEST_F(OptimizerImplTest, CheckAdamUpdate) {
   Adam optimizer;
   optimizer.set_learning_rate_scaling(.1);
   optimizer.add_parameter(param);
-  ASSERT_TRUE(param.has_stats("adam-m1"));
-  ASSERT_TRUE(param.has_stats("adam-m2"));
+  ASSERT_TRUE(param.has_stats("Adam.m1"));
+  ASSERT_TRUE(param.has_stats("Adam.m2"));
   EXPECT_TRUE(vector_match(
-        vector<float>(4, 0), param.stats("adam-m1").to_vector()));
+        vector<float>(4, 0), param.stats("Adam.m1").to_vector()));
   EXPECT_TRUE(vector_match(
-        vector<float>(4, 0), param.stats("adam-m2").to_vector()));
+        vector<float>(4, 0), param.stats("Adam.m2").to_vector()));
 
   const vector<vector<float>> expected_v {
     {9.9990000e-01, 1.9999000e+00, 2.9999000e+00, 3.9999000e+00},
@@ -774,9 +775,9 @@ TEST_F(OptimizerImplTest, CheckAdamUpdate) {
     EXPECT_TRUE(vector_near(
           expected_v[i], param.value().to_vector(), 1e-5));
     EXPECT_TRUE(vector_near(
-          expected_m1[i], param.stats("adam-m1").to_vector(), 1e-5));
+          expected_m1[i], param.stats("Adam.m1").to_vector(), 1e-5));
     EXPECT_TRUE(vector_near(
-          expected_m2[i], param.stats("adam-m2").to_vector(), 1e-5));
+          expected_m2[i], param.stats("Adam.m2").to_vector(), 1e-5));
   }
 }
 
