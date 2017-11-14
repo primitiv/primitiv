@@ -206,7 +206,7 @@ kernel void slice_bw_kernel(constant float *pgy, constant unsigned *wx_p, consta
   unsigned ny = ny_p[0];
   unsigned shift = shift_p[0];
   unsigned i = get_global_id(0);
-  if (i < wy * max(nx, ny)) atomic_add_float(pgx + ((i / wy) * wx + (i % wy)) % (wx * nx), pgy[i % (wy * ny)]);
+  if (i < wy * max(nx, ny)) atomic_add_float(pgx + shift + ((i / wy) * wx + (i % wy)) % (wx * nx), pgy[i % (wy * ny)]);
 }
 )EOS";
 
@@ -339,6 +339,78 @@ OPENCLDEV_KERNEL_FW_AB_INFIX("divide", "/");
 #undef CUDADEV_KERNEL_FW_AB
 
   ss << R"EOS(
+kernel void add_bw_kernel(constant float *pa, constant float *pb, constant float *py, constant float *pgy,
+                          constant unsigned *size_p, constant unsigned *mba_p, constant unsigned *mbb_p, global float *pga, global float *pgb) {
+  unsigned size = size_p[0];
+  unsigned mba = mba_p[0];
+  unsigned mbb = mbb_p[0];
+  unsigned i = get_global_id(0);
+  unsigned bid_y = get_group_id(1);
+  unsigned shift = bid_y * size;
+  if (i < size) {
+    float gy = pgy[i + shift];
+    atomic_add_float(pga + i + mba * shift, gy);
+    atomic_add_float(pgb + i + mbb * shift, gy);
+  }
+}
+)EOS";
+
+  ss << R"EOS(
+kernel void subtract_bw_kernel(constant float *pa, constant float *pb, constant float *py, constant float *pgy,
+                               constant unsigned *size_p, constant unsigned *mba_p, constant unsigned *mbb_p, global float *pga, global float *pgb) {
+  unsigned size = size_p[0];
+  unsigned mba = mba_p[0];
+  unsigned mbb = mbb_p[0];
+  unsigned i = get_global_id(0);
+  unsigned bid_y = get_group_id(1);
+  unsigned shift = bid_y * size;
+  if (i < size) {
+    float gy = pgy[i + shift];
+    atomic_add_float(pga + i + mba * shift, gy);
+    atomic_add_float(pgb + i + mbb * shift, -gy);
+  }
+}
+)EOS";
+
+  ss << R"EOS(
+kernel void multiply_bw_kernel(constant float *pa, constant float *pb, constant float *py, constant float *pgy,
+                               constant unsigned *size_p, constant unsigned *mba_p, constant unsigned *mbb_p, global float *pga, global float *pgb) {
+  unsigned size = size_p[0];
+  unsigned mba = mba_p[0];
+  unsigned mbb = mbb_p[0];
+  unsigned i = get_global_id(0);
+  unsigned bid_y = get_group_id(1);
+  unsigned shift = bid_y * size;
+  if (i < size) {
+    float gy = pgy[i + shift];
+    unsigned a_ofs = i + mba * shift;
+    unsigned b_ofs = i + mbb * shift;
+    atomic_add_float(pga + a_ofs, gy * pb[b_ofs]);
+    atomic_add_float(pgb + b_ofs, gy * pa[a_ofs]);
+  }
+}
+)EOS";
+
+  ss << R"EOS(
+kernel void divide_bw_kernel(constant float *pa, constant float *pb, constant float *py, constant float *pgy,
+                             constant unsigned *size_p, constant unsigned *mba_p, constant unsigned *mbb_p, global float *pga, global float *pgb) {
+  unsigned size = size_p[0];
+  unsigned mba = mba_p[0];
+  unsigned mbb = mbb_p[0];
+  unsigned i = get_global_id(0);
+  unsigned bid_y = get_group_id(1);
+  unsigned shift = bid_y * size;
+  if (i < size) {
+    unsigned b_ofs = i + mbb * shift;
+    unsigned y_ofs = i + shift;
+    float k = pgy[y_ofs] / pb[b_ofs];
+    atomic_add_float(pga + i + mba * shift, k);
+    atomic_add_float(pgb + b_ofs, -k * py[y_ofs]);
+  }
+}
+)EOS";
+
+  ss << R"EOS(
 kernel void transpose_fw_kernel(constant float *px, constant unsigned *rows_p, constant unsigned *cols_p, global float *py) {
   unsigned rows = rows_p[0];
   unsigned cols = cols_p[0];
@@ -357,7 +429,7 @@ kernel void transpose_bw_kernel(constant float *py, constant unsigned *rows_p, c
   unsigned j = get_global_id(1);
   unsigned bid_z = get_group_id(2);
   unsigned ofs = bid_z * rows * cols;
-  if (i < rows && j < cols) px[ofs + i + j * cols] = py[ofs + j + i * rows];
+  if (i < rows && j < cols) px[ofs + i + j * cols] += py[ofs + j + i * rows];
 }
 )EOS";
 
@@ -933,7 +1005,7 @@ void OpenCL::slice_bw_impl(const Tensor &gy, std::uint32_t dim, std::uint32_t of
   SET_ARG_HOST_SCALAR(slice_bw_kernel_, 2, cl_uint, wy)
   SET_ARG_HOST_SCALAR(slice_bw_kernel_, 3, cl_uint, nx)
   SET_ARG_HOST_SCALAR(slice_bw_kernel_, 4, cl_uint, ny)
-  slice_bw_kernel_.setArg(5, CDATA(gy));
+  slice_bw_kernel_.setArg(5, CDATA(gx));
   SET_ARG_HOST_SCALAR(slice_bw_kernel_, 6, cl_uint, ox)
   queue.enqueueNDRangeKernel(slice_bw_kernel_, cl::NullRange, cl::NDRange(g1 * group_size), cl::NDRange(group_size), NULL, NULL);
   queue.finish();
@@ -960,9 +1032,9 @@ void OpenCL::name##_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, 
   const std::uint32_t group_size = name##_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_); \
   const std::uint32_t num_blocks = GRID_SIZE(size, group_size); \
   cl::CommandQueue queue(context_, device_, 0, &error); \
-  name##_fw_kernel_.setArg(0, CDATA(x)); \
-  name##_fw_kernel_.setArg(1, CDATA(y)); \
-  name##_fw_kernel_.setArg(2, CDATA(gy)); \
+  name##_bw_kernel_.setArg(0, CDATA(x)); \
+  name##_bw_kernel_.setArg(1, CDATA(y)); \
+  name##_bw_kernel_.setArg(2, CDATA(gy)); \
   SET_ARG_HOST_SCALAR(name##_bw_kernel_, 3, cl_uint, size) \
   name##_bw_kernel_.setArg(4, CDATA(gx)); \
   queue.enqueueNDRangeKernel(name##_bw_kernel_, cl::NullRange, cl::NDRange(num_blocks * group_size), cl::NDRange(group_size), NULL, NULL); \
@@ -1045,7 +1117,7 @@ void OpenCL::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
 void OpenCL::name##_bw_impl(const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy, Tensor &ga, Tensor &gb) { \
   cl_int error = CL_SUCCESS; \
   std::uint32_t size = y.shape().volume(); \
-  const std::uint32_t group_size = name##_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_); \
+  const std::uint32_t group_size = name##_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_); \
   const std::uint32_t g1 = GRID_SIZE(size, group_size); \
   const std::uint32_t g2 = y.shape().batch(); \
   std::uint32_t mba = a.shape().has_batch(); \
