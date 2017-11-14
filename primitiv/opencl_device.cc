@@ -429,7 +429,7 @@ kernel void transpose_bw_kernel(constant float *py, constant unsigned *rows_p, c
   unsigned j = get_global_id(1);
   unsigned bid_z = get_group_id(2);
   unsigned ofs = bid_z * rows * cols;
-  if (i < rows && j < cols) px[ofs + i + j * cols] += py[ofs + j + i * rows];
+  if (i < rows && j < cols) px[ofs + i + j * rows] += py[ofs + j + i * cols];
 }
 )EOS";
 
