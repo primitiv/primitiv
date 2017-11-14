@@ -1,4 +1,4 @@
-from primitiv import optimizers as T
+from primitiv import optimizers as O
 from primitiv import Optimizer, Parameter, Device, Graph, Shape
 from primitiv import initializers as I
 from primitiv import devices as D
@@ -153,7 +153,7 @@ class PythonOptimizerTest(unittest.TestCase):
         self.assertIn("testadam-m2", pw1.stats)
 
     def test_pyoptimizer_compare_with_cpp(self):
-        c_optimizer = T.Adam(alpha = 0.001, beta1 = 0.9, beta2 = 0.999, eps = 1e-8)
+        c_optimizer = O.Adam(alpha = 0.001, beta1 = 0.9, beta2 = 0.999, eps = 1e-8)
         py_params = train_func(self.t)
         c_params = train_func(c_optimizer)
         py_uint_configs, py_float_configs = Optimizer.get_configs(self.t)

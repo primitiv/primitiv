@@ -1,4 +1,4 @@
-from primitiv import optimizers as T
+from primitiv import optimizers as O
 from primitiv import Optimizer
 
 import unittest
@@ -22,7 +22,7 @@ class OptimizerVirtualFuncTest(unittest.TestCase):
         pass
 
     def test_sgd_virtual(self):
-        t = T.SGD()
+        t = O.SGD()
         uint_configs = {'Optimizer.epoch': 1}
         float_configs = {'SGD.eta': 0.0,
                          'Optimizer.clip_threshold': 0.0,
@@ -34,7 +34,7 @@ class OptimizerVirtualFuncTest(unittest.TestCase):
         self.assertEqual(uint_configs['Optimizer.epoch'], 1)
 
     def test_momentum_sgd_virtual(self):
-        t = T.MomentumSGD()
+        t = O.MomentumSGD()
         uint_configs = {'Optimizer.epoch': 1}
         float_configs = {'MomentumSGD.momentum': 1.0,
                          'MomentumSGD.eta': 0.0,
@@ -47,7 +47,7 @@ class OptimizerVirtualFuncTest(unittest.TestCase):
         self.assertEqual(uint_configs['Optimizer.epoch'], 1)
 
     def test_adagrad_virtual(self):
-        t = T.AdaGrad()
+        t = O.AdaGrad()
         uint_configs = {'Optimizer.epoch': 1}
         float_configs = {'AdaGrad.eps': 0.0,
                          'AdaGrad.eta': 0.0,
@@ -60,7 +60,7 @@ class OptimizerVirtualFuncTest(unittest.TestCase):
         self.assertEqual(uint_configs['Optimizer.epoch'], 1)
 
     def test_rmsprop_virtual(self):
-        t = T.RMSProp()
+        t = O.RMSProp()
         uint_configs = {'Optimizer.epoch': 1}
         float_configs = {'RMSProp.eta': 2.0,
                          'RMSProp.alpha': 3.0,
@@ -74,7 +74,7 @@ class OptimizerVirtualFuncTest(unittest.TestCase):
         self.assertEqual(uint_configs['Optimizer.epoch'], 1)
 
     def test_adadelta_virtual(self):
-        t = T.AdaDelta()
+        t = O.AdaDelta()
         uint_configs = {'Optimizer.epoch': 1}
         float_configs = {'AdaDelta.rho': 2.0,
                          'AdaDelta.eps': 3.0,
@@ -87,7 +87,7 @@ class OptimizerVirtualFuncTest(unittest.TestCase):
         self.assertEqual(uint_configs['Optimizer.epoch'], 1)
 
     def test_adam_virtual(self):
-        t = T.Adam()
+        t = O.Adam()
         uint_configs = {'Optimizer.epoch': 1}
         float_configs = {'Optimizer.lr_scale': 1.0,
                          'Adam.beta2': 1.0,

@@ -1,4 +1,3 @@
-from primitiv import optimizers as T
 from primitiv._parameter cimport _Parameter
 from primitiv.config cimport pystr_to_cppstr, cppstr_to_pystr
 

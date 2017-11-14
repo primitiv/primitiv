@@ -1,4 +1,3 @@
-from primitiv import optimizers as T
 from primitiv import Optimizer, Parameter, Device, Graph, Shape
 from primitiv import initializers as I
 from primitiv import devices as D
