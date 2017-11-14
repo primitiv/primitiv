@@ -1,5 +1,5 @@
-#ifndef PRIMITIV_TRAINER_H_
-#define PRIMITIV_TRAINER_H_
+#ifndef PRIMITIV_OPTIMIZER_H_
+#define PRIMITIV_OPTIMIZER_H_
 
 #include <cstdint>
 #include <memory>
@@ -15,21 +15,21 @@ class Parameter;
 /**
  * Abstract class for parameter optimizers.
  */
-class Trainer : mixins::Nonmovable<Trainer> {
+class Optimizer : mixins::Nonmovable<Optimizer> {
 public:
-  Trainer() : epoch_(0), lr_scale_(1), l2_strength_(0), clip_threshold_(0) {}
+  Optimizer() : epoch_(0), lr_scale_(1), l2_strength_(0), clip_threshold_(0) {}
 
-  virtual ~Trainer() = default;
+  virtual ~Optimizer() = default;
 
   /**
    * Loads configurations from a file.
-   * @param path Path of the trainer parameter file.
+   * @param path Path of the optimizer parameter file.
    */
   void load(const std::string &path);
 
   /**
    * Saves current configurations to a file.
-   * @param path Path of the file that will store trainer parameters.
+   * @param path Path of the file that will store optimizer parameters.
    */
   void save(const std::string &path) const;
 
@@ -163,4 +163,4 @@ private:
 
 }  // namespace primitiv
 
-#endif  // PRIMITIV_TRAINER_H_
+#endif  // PRIMITIV_OPTIMIZER_H_

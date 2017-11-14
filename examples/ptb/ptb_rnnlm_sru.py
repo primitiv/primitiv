@@ -7,7 +7,7 @@ import math
 from primitiv import initializers as I
 from primitiv import operators as F
 from primitiv import devices as D
-from primitiv import trainers as T
+from primitiv import optimizers as O
 from primitiv import Device, Graph, Parameter, Shape
 
 NUM_HIDDEN_UNITS = 650
@@ -67,11 +67,11 @@ def make_batch(corpus, sent_ids, eos_id):
 #   y = W . x + b
 class Affine(object):
 
-    def __init__(self, in_size, out_size, trainer):
+    def __init__(self, in_size, out_size, optimizer):
         self.pw_ = Parameter([out_size, in_size], I.Uniform(-0.1, 0.1))
         self.pb_ = Parameter([out_size], I.Constant(0))
-        trainer.add_parameter(self.pw_)
-        trainer.add_parameter(self.pb_)
+        optimizer.add_parameter(self.pw_)
+        optimizer.add_parameter(self.pb_)
 
     # Initializes internal values.
     def init(self):
@@ -92,14 +92,14 @@ class Affine(object):
 #   h[t] = r[t] * tanh(c[t]) + (1 - r[t]) * x[t]
 class SRU(object):
 
-    def __init__(self, in_size, out_size, trainer):
+    def __init__(self, in_size, out_size, optimizer):
         self.out_size_ = out_size
         self.pw_ = Parameter([3 * out_size, in_size], I.Uniform(-0.1, 0.1))
         self.pbf_ = Parameter([out_size], I.Constant(0))
         self.pbr_ = Parameter([out_size], I.Constant(0))
-        trainer.add_parameter(self.pw_)
-        trainer.add_parameter(self.pbf_)
-        trainer.add_parameter(self.pbr_)
+        optimizer.add_parameter(self.pw_)
+        optimizer.add_parameter(self.pbf_)
+        optimizer.add_parameter(self.pbr_)
 
     # Initializes internal values.
     def init(self):
@@ -133,13 +133,13 @@ class SRU(object):
 # Language model using above SRU.
 class RNNLM(object):
 
-    def __init__(self, vocab_size, eos_id, trainer):
+    def __init__(self, vocab_size, eos_id, optimizer):
         self.eos_id_ = eos_id
         self.plookup_ = Parameter([NUM_HIDDEN_UNITS, vocab_size], I.Uniform(-0.1, 0.1))
-        self.rnn1_ = SRU(NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS, trainer)
-        self.rnn2_ = SRU(NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS, trainer)
-        self.hy_ = Affine(NUM_HIDDEN_UNITS, vocab_size, trainer)
-        trainer.add_parameter(self.plookup_)
+        self.rnn1_ = SRU(NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS, optimizer)
+        self.rnn2_ = SRU(NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS, optimizer)
+        self.hy_ = Affine(NUM_HIDDEN_UNITS, vocab_size, optimizer)
+        optimizer.add_parameter(self.plookup_)
 
 
     # Forward function of RNNLM. Input data should be arranged below:
@@ -191,13 +191,13 @@ def main():
     dev = D.CUDA(0)
     Device.set_default(dev)
 
-    # Trainer.
-    trainer = T.SGD(1)
-    #trainer.set_weight_decay(1e-6)
-    trainer.set_gradient_clipping(5)
+    # Optimizer.
+    optimizer = O.SGD(1)
+    #optimizer.set_weight_decay(1e-6)
+    optimizer.set_gradient_clipping(5)
 
     # Our LM.
-    lm = RNNLM(len(vocab), eos_id, trainer)
+    lm = RNNLM(len(vocab), eos_id, optimizer)
 
     # Sentence IDs.
     train_ids = list(range(num_train_sents))
@@ -226,14 +226,12 @@ def main():
             loss = lm.loss(outputs, batch)
             train_loss += loss.to_float() * len(batch_ids)
 
-            trainer.reset_gradients()
+            optimizer.reset_gradients()
             loss.backward()
-            trainer.update()
+            optimizer.update()
 
-            print("\r%d" % ofs, end="")
+            print("%d" % ofs, end="\r")
             sys.stdout.flush()
-
-        print()
 
         train_ppl = math.exp(train_loss / num_train_labels)
         print("  train ppl =", train_ppl)
@@ -249,10 +247,8 @@ def main():
             outputs = lm.forward(batch, False)
             loss = lm.loss(outputs, batch)
             valid_loss += loss.to_float() * len(batch_ids)
-            print("\r%d" % ofs, end="")
+            print("%d" % ofs, end="\r")
             sys.stdout.flush()
-
-        print()
 
         valid_ppl = math.exp(valid_loss / num_valid_labels)
         print("  valid ppl =", valid_ppl)
@@ -261,9 +257,9 @@ def main():
             best_valid_ppl = valid_ppl
             print("  BEST")
         else:
-            old_lr = trainer.get_learning_rate_scaling()
+            old_lr = optimizer.get_learning_rate_scaling()
             new_lr = 0.5 * old_lr
-            trainer.set_learning_rate_scaling(new_lr)
+            optimizer.set_learning_rate_scaling(new_lr)
             print("  learning rate scaled:", old_lr, "->", new_lr)
 
 
