@@ -4,15 +4,15 @@
 #include <cmath>
 #include <primitiv/operators.h>
 #include <primitiv/parameter.h>
-#include <primitiv/trainer_impl.h>
+#include <primitiv/optimizer_impl.h>
 
 namespace primitiv {
-namespace trainers {
+namespace optimizers {
 
 #define SET_CONFIG(dest, cfg, key) { \
   const auto it = cfg.find(key); \
   if (it == cfg.end()) { \
-    THROW_ERROR("Key not found in the trainer config: " << key); \
+    THROW_ERROR("Key not found in the optimizer config: " << key); \
   } \
   dest = it->second; \
 }
@@ -26,14 +26,14 @@ void SGD::update_parameter(float scale, Parameter &param) {
 void SGD::get_configs(
     std::unordered_map<std::string, std::uint32_t> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
-  Trainer::get_configs(uint_configs, float_configs);
+  Optimizer::get_configs(uint_configs, float_configs);
   float_configs.insert(std::make_pair("SGD.eta", eta_));
 }
 
 void SGD::set_configs(
     const std::unordered_map<std::string, std::uint32_t> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
-  Trainer::set_configs(uint_configs, float_configs);
+  Optimizer::set_configs(uint_configs, float_configs);
   SET_CONFIG(eta_, float_configs, "SGD.eta");
 }
 
@@ -54,7 +54,7 @@ void MomentumSGD::update_parameter(float scale, Parameter &param) {
 void MomentumSGD::get_configs(
     std::unordered_map<std::string, std::uint32_t> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
-  Trainer::get_configs(uint_configs, float_configs);
+  Optimizer::get_configs(uint_configs, float_configs);
   float_configs.insert(std::make_pair("MomentumSGD.eta", eta_));
   float_configs.insert(std::make_pair("MomentumSGD.momentum", momentum_));
 }
@@ -62,7 +62,7 @@ void MomentumSGD::get_configs(
 void MomentumSGD::set_configs(
     const std::unordered_map<std::string, std::uint32_t> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
-  Trainer::set_configs(uint_configs, float_configs);
+  Optimizer::set_configs(uint_configs, float_configs);
   SET_CONFIG(eta_, float_configs, "MomentumSGD.eta");
   SET_CONFIG(momentum_, float_configs, "MomentumSGD.momentum");
 }
@@ -84,7 +84,7 @@ void AdaGrad::update_parameter(float scale, Parameter &param) {
 void AdaGrad::get_configs(
     std::unordered_map<std::string, std::uint32_t> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
-  Trainer::get_configs(uint_configs, float_configs);
+  Optimizer::get_configs(uint_configs, float_configs);
   float_configs.insert(std::make_pair("AdaGrad.eta", eta_));
   float_configs.insert(std::make_pair("AdaGrad.eps", eps_));
 }
@@ -92,7 +92,7 @@ void AdaGrad::get_configs(
 void AdaGrad::set_configs(
     const std::unordered_map<std::string, std::uint32_t> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
-  Trainer::set_configs(uint_configs, float_configs);
+  Optimizer::set_configs(uint_configs, float_configs);
   SET_CONFIG(eta_, float_configs, "AdaGrad.eta");
   SET_CONFIG(eps_, float_configs, "AdaGrad.eps");
 }
@@ -114,7 +114,7 @@ void RMSProp::update_parameter(float scale, Parameter &param) {
 void RMSProp::get_configs(
     std::unordered_map<std::string, std::uint32_t> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
-  Trainer::get_configs(uint_configs, float_configs);
+  Optimizer::get_configs(uint_configs, float_configs);
   float_configs.insert(std::make_pair("RMSProp.eta", eta_));
   float_configs.insert(std::make_pair("RMSProp.alpha", alpha_));
   float_configs.insert(std::make_pair("RMSProp.eps", eps_));
@@ -123,7 +123,7 @@ void RMSProp::get_configs(
 void RMSProp::set_configs(
     const std::unordered_map<std::string, std::uint32_t> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
-  Trainer::set_configs(uint_configs, float_configs);
+  Optimizer::set_configs(uint_configs, float_configs);
   SET_CONFIG(eta_, float_configs, "RMSProp.eta");
   SET_CONFIG(alpha_, float_configs, "RMSProp.alpha");
   SET_CONFIG(eps_, float_configs, "RMSProp.eps");
@@ -152,7 +152,7 @@ void AdaDelta::update_parameter(float scale, Parameter &param) {
 void AdaDelta::get_configs(
     std::unordered_map<std::string, std::uint32_t> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
-  Trainer::get_configs(uint_configs, float_configs);
+  Optimizer::get_configs(uint_configs, float_configs);
   float_configs.insert(std::make_pair("AdaDelta.rho", rho_));
   float_configs.insert(std::make_pair("AdaDelta.eps", eps_));
 }
@@ -160,7 +160,7 @@ void AdaDelta::get_configs(
 void AdaDelta::set_configs(
     const std::unordered_map<std::string, std::uint32_t> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
-  Trainer::set_configs(uint_configs, float_configs);
+  Optimizer::set_configs(uint_configs, float_configs);
   SET_CONFIG(rho_, float_configs, "AdaDelta.rho");
   SET_CONFIG(eps_, float_configs, "AdaDelta.eps");
 }
@@ -188,7 +188,7 @@ void Adam::update_parameter(float scale, Parameter &param) {
 void Adam::get_configs(
     std::unordered_map<std::string, std::uint32_t> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
-  Trainer::get_configs(uint_configs, float_configs);
+  Optimizer::get_configs(uint_configs, float_configs);
   float_configs.insert(std::make_pair("Adam.alpha", alpha_));
   float_configs.insert(std::make_pair("Adam.beta1", beta1_));
   float_configs.insert(std::make_pair("Adam.beta2", beta2_));
@@ -198,7 +198,7 @@ void Adam::get_configs(
 void Adam::set_configs(
     const std::unordered_map<std::string, std::uint32_t> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
-  Trainer::set_configs(uint_configs, float_configs);
+  Optimizer::set_configs(uint_configs, float_configs);
   SET_CONFIG(alpha_, float_configs, "Adam.alpha");
   SET_CONFIG(beta1_, float_configs, "Adam.beta1");
   SET_CONFIG(beta2_, float_configs, "Adam.beta2");
@@ -207,5 +207,5 @@ void Adam::set_configs(
 
 #undef SET_CONFIG
 
-}  // namespace trainers
+}  // namespace optimizers
 }  // namespace primitiv

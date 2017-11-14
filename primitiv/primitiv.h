@@ -13,6 +13,6 @@
 #include <primitiv/parameter.h>
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
-#include <primitiv/trainer_impl.h>
+#include <primitiv/optimizer_impl.h>
 
 #endif  // PRIMITIV_PRIMITIV_H_
