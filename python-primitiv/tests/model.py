@@ -59,7 +59,6 @@ class ModelTest(unittest.TestCase):
         with tempfile.NamedTemporaryFile() as fp:
             parentmodel.save(fp.name)
             parentmodel_load.load(fp.name)
-        print(parentmodel_load.p1.value.to_ndarrays()[0])
         self.assertTrue((parentmodel_load.p1.value.to_ndarrays()[0] == np.array([[0,1],[2,3],[4,5],[6,7]])).all())
         self.assertTrue((parentmodel_load.p2.value.to_ndarrays()[0] == np.array([[9,8],[7,6],[5,4],[3,2]])).all())
         self.assertTrue((parentmodel_load.sub.sp1.value.to_ndarrays()[0] == np.array([[0,1,2,3],[4,5,6,7]])).all())
@@ -143,3 +142,19 @@ class ModelTest(unittest.TestCase):
             del model1.params["p"]
         with self.assertRaises(TypeError):
             del model1.submodels["m"]
+
+    def test_model_get_all_parameters(self):
+        submodel = TestModel()
+        submodel.sp1 = Parameter()
+        submodel.sp2 = Parameter()
+        submodel.auto_add_attributes()
+        parentmodel = TestModel()
+        parentmodel.p1 = Parameter()
+        parentmodel.p2 = Parameter()
+        parentmodel.sub = submodel
+        parentmodel.auto_add_attributes()
+        params = parentmodel.get_all_parameters()
+        self.assertIs(params[("p1",)], parentmodel.p1)
+        self.assertIs(params[("p2",)], parentmodel.p2)
+        self.assertIs(params[("sub", "sp1")], parentmodel.sub.sp1)
+        self.assertIs(params[("sub", "sp2")], parentmodel.sub.sp2)
