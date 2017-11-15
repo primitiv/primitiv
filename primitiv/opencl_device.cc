@@ -168,24 +168,23 @@ kernel void concat_fw_kernel(constant float *px, constant unsigned *span_p, cons
 }
 )EOS";
   ss << R"EOS(
-inline void atomic_add_float(volatile global float *source, const float operand) {
+inline void atomic_add_float(global float *source, const float operand) {
   union {
-    unsigned i;
+    unsigned u;
     float f;
-  } nval;
-  union {
-    unsigned i;
-    float f;
-  } pval;
-  do {
-    pval.f = *source;
-    nval.f = pval.f + operand;
-  } while (atomic_cmpxchg((volatile global unsigned *) source, pval.i, nval.i) != pval.i);
+  } oldval, newval;
+  unsigned readback;
+  oldval.f = *source;
+  newval.f = oldval.f + operand;
+  while ((readback = atomic_cmpxchg((global unsigned *) source, oldval.u, newval.u)) != oldval.u) {
+    oldval.u = readback;
+    newval.f = oldval.f + operand;
+  }
 }
 )EOS";
   ss << R"EOS(
 kernel void pick_bw_kernel(constant float *pgy, constant unsigned *pi, constant unsigned *wx_p, constant unsigned *wy_p,
-                           constant unsigned *sx_p, constant unsigned *si_p, constant unsigned *sy_p, volatile global float *pgx) {
+                           constant unsigned *sx_p, constant unsigned *si_p, constant unsigned *sy_p, global float *pgx) {
   unsigned wx = wx_p[0];
   unsigned wy = wy_p[0];
   unsigned sx = sx_p[0];
@@ -200,7 +199,7 @@ kernel void pick_bw_kernel(constant float *pgy, constant unsigned *pi, constant 
 )EOS";
   ss << R"EOS(
 kernel void slice_bw_kernel(constant float *pgy, constant unsigned *wx_p, constant unsigned *wy_p,
-                            constant unsigned *nx_p, constant unsigned *ny_p, volatile global float *pgx, constant unsigned *shift_p) {
+                            constant unsigned *nx_p, constant unsigned *ny_p, global float *pgx, constant unsigned *shift_p) {
   unsigned wx = wx_p[0];
   unsigned wy = wy_p[0];
   unsigned nx = nx_p[0];
