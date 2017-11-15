@@ -1,5 +1,7 @@
 #include <config.h>
 
+#define __CL_ENABLE_EXCEPTIONS
+
 #include <CL/cl.hpp>
 #include <clBLAS.h>
 
@@ -17,13 +19,13 @@ namespace devices {
 #define SET_ARG_HOST_SCALAR(kernel, idx, type, var) \
   cl::Buffer opencl_mem_##var = cl::Buffer(context_, \
       CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, \
-      sizeof(type), const_cast<type*>(&var), &error); \
+      sizeof(type), const_cast<type*>(&var)); \
   kernel.setArg(idx, opencl_mem_##var);
 
 #define SET_ARG_HOST_VECTOR(kernel, idx, type, var) \
   cl::Buffer opencl_mem_##var = cl::Buffer(context_, \
       CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, \
-      sizeof(type) * var.size(), const_cast<type*>(var.data()), &error); \
+      sizeof(type) * var.size(), const_cast<type*>(var.data())); \
   kernel.setArg(idx, opencl_mem_##var);
 
 std::string OpenCL::kernel_code_generator() {
@@ -593,7 +595,6 @@ std::uint32_t num_devices(std::uint32_t platform_id) {\
 }
 
 OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id) {
-  std::int32_t error = CL_SUCCESS;
   std::vector<cl::Platform> all_platforms;
   cl::Platform::get(&all_platforms);
   if (all_platforms.size() == 0) {
@@ -618,57 +619,54 @@ OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id) {
 
   sources.push_back({kernel_code.c_str(), kernel_code.length()});
   cl::Program program(context_, sources);
-  if (program.build({device_}, "-cl-std=CL1.2 -Werror") != CL_SUCCESS) {
-    std::cerr << " Error building: " << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device_) << std::endl;
-    THROW_ERROR("Error!");
-  }
+  program.build({device_}, "-cl-std=CL1.2 -Werror");
   for (std::uint32_t i = 0; i <= 10; ++i) {
     std::ostringstream ss;
     ss << "argmax_kernel_" << (1 << i);
-    argmax_kernel_[i] = cl::Kernel(program, ss.str().c_str(), &error);
+    argmax_kernel_[i] = cl::Kernel(program, ss.str().c_str());
   }
   argmax_kernel_group_size_ = argmax_kernel_[0].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
   for (std::uint32_t i = 0; i <= 10; ++i) {
     std::ostringstream ss;
     ss << "argmin_kernel_" << (1 << i);
-    argmin_kernel_[i] = cl::Kernel(program, ss.str().c_str(), &error);
+    argmin_kernel_[i] = cl::Kernel(program, ss.str().c_str());
   }
   argmin_kernel_group_size_ = argmin_kernel_[0].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
 
-  set_identity_kernel_ = cl::Kernel(program, "set_identity_kernel", &error);
+  set_identity_kernel_ = cl::Kernel(program, "set_identity_kernel");
   set_identity_kernel_group_size_ = set_identity_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  pick_fw_kernel_ = cl::Kernel(program, "pick_fw_kernel", &error);
+  pick_fw_kernel_ = cl::Kernel(program, "pick_fw_kernel");
   pick_fw_kernel_group_size_ = pick_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  slice_fw_kernel_ = cl::Kernel(program, "slice_fw_kernel", &error);
+  slice_fw_kernel_ = cl::Kernel(program, "slice_fw_kernel");
   slice_fw_kernel_group_size_ = slice_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  concat_fw_kernel_ = cl::Kernel(program, "concat_fw_kernel", &error);
+  concat_fw_kernel_ = cl::Kernel(program, "concat_fw_kernel");
   concat_fw_kernel_group_size_ = concat_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  pick_bw_kernel_ = cl::Kernel(program, "pick_bw_kernel", &error);
+  pick_bw_kernel_ = cl::Kernel(program, "pick_bw_kernel");
   pick_bw_kernel_group_size_ = pick_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  slice_bw_kernel_ = cl::Kernel(program, "slice_bw_kernel", &error);
+  slice_bw_kernel_ = cl::Kernel(program, "slice_bw_kernel");
   slice_bw_kernel_group_size_ = slice_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
 
-  negate_fw_kernel_ = cl::Kernel(program, "negate_fw_kernel", &error);
+  negate_fw_kernel_ = cl::Kernel(program, "negate_fw_kernel");
   negate_fw_kernel_group_size_ = negate_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  sqrt_fw_kernel_ = cl::Kernel(program, "sqrt_fw_kernel", &error);
+  sqrt_fw_kernel_ = cl::Kernel(program, "sqrt_fw_kernel");
   sqrt_fw_kernel_group_size_ = sqrt_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  exp_fw_kernel_ = cl::Kernel(program, "exp_fw_kernel", &error);
+  exp_fw_kernel_ = cl::Kernel(program, "exp_fw_kernel");
   exp_fw_kernel_group_size_ = exp_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  log_fw_kernel_ = cl::Kernel(program, "log_fw_kernel", &error);
+  log_fw_kernel_ = cl::Kernel(program, "log_fw_kernel");
   log_fw_kernel_group_size_ = log_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  tanh_fw_kernel_ = cl::Kernel(program, "tanh_fw_kernel", &error);
+  tanh_fw_kernel_ = cl::Kernel(program, "tanh_fw_kernel");
   tanh_fw_kernel_group_size_ = tanh_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  sigmoid_fw_kernel_ = cl::Kernel(program, "sigmoid_fw_kernel", &error);
+  sigmoid_fw_kernel_ = cl::Kernel(program, "sigmoid_fw_kernel");
   sigmoid_fw_kernel_group_size_ = sigmoid_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  softplus_fw_kernel_ = cl::Kernel(program, "softplus_fw_kernel", &error);
+  softplus_fw_kernel_ = cl::Kernel(program, "softplus_fw_kernel");
   softplus_fw_kernel_group_size_ = softplus_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  sin_fw_kernel_ = cl::Kernel(program, "sin_fw_kernel", &error);
+  sin_fw_kernel_ = cl::Kernel(program, "sin_fw_kernel");
   sin_fw_kernel_group_size_ = sin_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  cos_fw_kernel_ = cl::Kernel(program, "cos_fw_kernel", &error);
+  cos_fw_kernel_ = cl::Kernel(program, "cos_fw_kernel");
   cos_fw_kernel_group_size_ = cos_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  tan_fw_kernel_ = cl::Kernel(program, "tan_fw_kernel", &error);
+  tan_fw_kernel_ = cl::Kernel(program, "tan_fw_kernel");
   tan_fw_kernel_group_size_ = tan_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  transpose_fw_kernel_ = cl::Kernel(program, "transpose_fw_kernel", &error);
+  transpose_fw_kernel_ = cl::Kernel(program, "transpose_fw_kernel");
   transpose_fw_kernel_group_size_ = transpose_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
   transpose_fw_kernel_group_size_y_ = transpose_fw_kernel_group_size_;
   transpose_fw_kernel_group_size_x_ = 1;
@@ -677,25 +675,25 @@ OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id) {
     transpose_fw_kernel_group_size_y_ >>= 1;
   }
 
-  sqrt_bw_kernel_ = cl::Kernel(program, "sqrt_bw_kernel", &error);
+  sqrt_bw_kernel_ = cl::Kernel(program, "sqrt_bw_kernel");
   sqrt_bw_kernel_group_size_ = sqrt_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  exp_bw_kernel_ = cl::Kernel(program, "exp_bw_kernel", &error);
+  exp_bw_kernel_ = cl::Kernel(program, "exp_bw_kernel");
   exp_bw_kernel_group_size_ = exp_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  log_bw_kernel_ = cl::Kernel(program, "log_bw_kernel", &error);
+  log_bw_kernel_ = cl::Kernel(program, "log_bw_kernel");
   log_bw_kernel_group_size_ = log_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  tanh_bw_kernel_ = cl::Kernel(program, "tanh_bw_kernel", &error);
+  tanh_bw_kernel_ = cl::Kernel(program, "tanh_bw_kernel");
   tanh_bw_kernel_group_size_ = tanh_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  sigmoid_bw_kernel_ = cl::Kernel(program, "sigmoid_bw_kernel", &error);
+  sigmoid_bw_kernel_ = cl::Kernel(program, "sigmoid_bw_kernel");
   sigmoid_bw_kernel_group_size_ = sigmoid_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  softplus_bw_kernel_ = cl::Kernel(program, "softplus_bw_kernel", &error);
+  softplus_bw_kernel_ = cl::Kernel(program, "softplus_bw_kernel");
   softplus_bw_kernel_group_size_ = softplus_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  sin_bw_kernel_ = cl::Kernel(program, "sin_bw_kernel", &error);
+  sin_bw_kernel_ = cl::Kernel(program, "sin_bw_kernel");
   sin_bw_kernel_group_size_ = sin_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  cos_bw_kernel_ = cl::Kernel(program, "cos_bw_kernel", &error);
+  cos_bw_kernel_ = cl::Kernel(program, "cos_bw_kernel");
   cos_bw_kernel_group_size_ = cos_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  tan_bw_kernel_ = cl::Kernel(program, "tan_bw_kernel", &error);
+  tan_bw_kernel_ = cl::Kernel(program, "tan_bw_kernel");
   tan_bw_kernel_group_size_ = tan_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  transpose_bw_kernel_ = cl::Kernel(program, "transpose_bw_kernel", &error);
+  transpose_bw_kernel_ = cl::Kernel(program, "transpose_bw_kernel");
   transpose_bw_kernel_group_size_ = transpose_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
   transpose_bw_kernel_group_size_y_ = transpose_bw_kernel_group_size_;
   transpose_bw_kernel_group_size_x_ = 1;
@@ -703,95 +701,95 @@ OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id) {
     transpose_bw_kernel_group_size_x_ <<= 1;
     transpose_bw_kernel_group_size_y_ >>= 1;
   }
-  add_const_fw_kernel_ = cl::Kernel(program, "add_const_fw_kernel", &error);
+  add_const_fw_kernel_ = cl::Kernel(program, "add_const_fw_kernel");
   add_const_fw_kernel_group_size_ = add_const_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  subtract_const_r_fw_kernel_ = cl::Kernel(program, "subtract_const_r_fw_kernel", &error);
+  subtract_const_r_fw_kernel_ = cl::Kernel(program, "subtract_const_r_fw_kernel");
   subtract_const_r_fw_kernel_group_size_ = subtract_const_r_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  subtract_const_l_fw_kernel_ = cl::Kernel(program, "subtract_const_l_fw_kernel", &error);
+  subtract_const_l_fw_kernel_ = cl::Kernel(program, "subtract_const_l_fw_kernel");
   subtract_const_l_fw_kernel_group_size_ = subtract_const_l_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  multiply_const_fw_kernel_ = cl::Kernel(program, "multiply_const_fw_kernel", &error);
+  multiply_const_fw_kernel_ = cl::Kernel(program, "multiply_const_fw_kernel");
   multiply_const_fw_kernel_group_size_ = multiply_const_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  divide_const_r_fw_kernel_ = cl::Kernel(program, "divide_const_r_fw_kernel", &error);
+  divide_const_r_fw_kernel_ = cl::Kernel(program, "divide_const_r_fw_kernel");
   divide_const_r_fw_kernel_group_size_ = divide_const_r_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  divide_const_l_fw_kernel_ = cl::Kernel(program, "divide_const_l_fw_kernel", &error);
+  divide_const_l_fw_kernel_ = cl::Kernel(program, "divide_const_l_fw_kernel");
   divide_const_l_fw_kernel_group_size_ = divide_const_l_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  prelu_fw_kernel_ = cl::Kernel(program, "prelu_fw_kernel", &error);
+  prelu_fw_kernel_ = cl::Kernel(program, "prelu_fw_kernel");
   prelu_fw_kernel_group_size_ = prelu_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  elu_fw_kernel_ = cl::Kernel(program, "elu_fw_kernel", &error);
+  elu_fw_kernel_ = cl::Kernel(program, "elu_fw_kernel");
   elu_fw_kernel_group_size_ = elu_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
 
-  add_const_bw_kernel_ = cl::Kernel(program, "add_const_bw_kernel", &error);
+  add_const_bw_kernel_ = cl::Kernel(program, "add_const_bw_kernel");
   add_const_bw_kernel_group_size_ = add_const_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  subtract_const_r_bw_kernel_ = cl::Kernel(program, "subtract_const_r_bw_kernel", &error);
+  subtract_const_r_bw_kernel_ = cl::Kernel(program, "subtract_const_r_bw_kernel");
   subtract_const_r_bw_kernel_group_size_ = subtract_const_r_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  subtract_const_l_bw_kernel_ = cl::Kernel(program, "subtract_const_l_bw_kernel", &error);
+  subtract_const_l_bw_kernel_ = cl::Kernel(program, "subtract_const_l_bw_kernel");
   subtract_const_l_bw_kernel_group_size_ = subtract_const_l_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  multiply_const_bw_kernel_ = cl::Kernel(program, "multiply_const_bw_kernel", &error);
+  multiply_const_bw_kernel_ = cl::Kernel(program, "multiply_const_bw_kernel");
   multiply_const_bw_kernel_group_size_ = multiply_const_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  divide_const_r_bw_kernel_ = cl::Kernel(program, "divide_const_r_bw_kernel", &error);
+  divide_const_r_bw_kernel_ = cl::Kernel(program, "divide_const_r_bw_kernel");
   divide_const_r_bw_kernel_group_size_ = divide_const_r_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  divide_const_l_bw_kernel_ = cl::Kernel(program, "divide_const_l_bw_kernel", &error);
+  divide_const_l_bw_kernel_ = cl::Kernel(program, "divide_const_l_bw_kernel");
   divide_const_l_bw_kernel_group_size_ = divide_const_l_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  prelu_bw_kernel_ = cl::Kernel(program, "prelu_bw_kernel", &error);
+  prelu_bw_kernel_ = cl::Kernel(program, "prelu_bw_kernel");
   prelu_bw_kernel_group_size_ = prelu_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  elu_bw_kernel_ = cl::Kernel(program, "elu_bw_kernel", &error);
+  elu_bw_kernel_ = cl::Kernel(program, "elu_bw_kernel");
   elu_bw_kernel_group_size_ = elu_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
 
-  add_scalar_fw_kernel_ = cl::Kernel(program, "add_scalar_fw_kernel", &error);
+  add_scalar_fw_kernel_ = cl::Kernel(program, "add_scalar_fw_kernel");
   add_scalar_fw_kernel_group_size_ = add_scalar_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  subtract_scalar_r_fw_kernel_ = cl::Kernel(program, "subtract_scalar_r_fw_kernel", &error);
+  subtract_scalar_r_fw_kernel_ = cl::Kernel(program, "subtract_scalar_r_fw_kernel");
   subtract_scalar_r_fw_kernel_group_size_ = subtract_scalar_r_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  subtract_scalar_l_fw_kernel_ = cl::Kernel(program, "subtract_scalar_l_fw_kernel", &error);
+  subtract_scalar_l_fw_kernel_ = cl::Kernel(program, "subtract_scalar_l_fw_kernel");
   subtract_scalar_l_fw_kernel_group_size_ = subtract_scalar_l_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  multiply_scalar_fw_kernel_ = cl::Kernel(program, "multiply_scalar_fw_kernel", &error);
+  multiply_scalar_fw_kernel_ = cl::Kernel(program, "multiply_scalar_fw_kernel");
   multiply_scalar_fw_kernel_group_size_ = multiply_scalar_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  divide_scalar_r_fw_kernel_ = cl::Kernel(program, "divide_scalar_r_fw_kernel", &error);
+  divide_scalar_r_fw_kernel_ = cl::Kernel(program, "divide_scalar_r_fw_kernel");
   divide_scalar_r_fw_kernel_group_size_ = divide_scalar_r_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  divide_scalar_l_fw_kernel_ = cl::Kernel(program, "divide_scalar_l_fw_kernel", &error);
+  divide_scalar_l_fw_kernel_ = cl::Kernel(program, "divide_scalar_l_fw_kernel");
   divide_scalar_l_fw_kernel_group_size_ = divide_scalar_l_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
 
-  add_fw_kernel_ = cl::Kernel(program, "add_fw_kernel", &error);
+  add_fw_kernel_ = cl::Kernel(program, "add_fw_kernel");
   add_fw_kernel_group_size_ = add_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  subtract_fw_kernel_ = cl::Kernel(program, "subtract_fw_kernel", &error);
+  subtract_fw_kernel_ = cl::Kernel(program, "subtract_fw_kernel");
   subtract_fw_kernel_group_size_ = subtract_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  multiply_fw_kernel_ = cl::Kernel(program, "multiply_fw_kernel", &error);
+  multiply_fw_kernel_ = cl::Kernel(program, "multiply_fw_kernel");
   multiply_fw_kernel_group_size_ = multiply_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  divide_fw_kernel_ = cl::Kernel(program, "divide_fw_kernel", &error);
+  divide_fw_kernel_ = cl::Kernel(program, "divide_fw_kernel");
   divide_fw_kernel_group_size_ = divide_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
 
-  add_bw_kernel_ = cl::Kernel(program, "add_bw_kernel", &error);
+  add_bw_kernel_ = cl::Kernel(program, "add_bw_kernel");
   add_bw_kernel_group_size_ = add_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  subtract_bw_kernel_ = cl::Kernel(program, "subtract_bw_kernel", &error);
+  subtract_bw_kernel_ = cl::Kernel(program, "subtract_bw_kernel");
   subtract_bw_kernel_group_size_ = subtract_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  multiply_bw_kernel_ = cl::Kernel(program, "multiply_bw_kernel", &error);
+  multiply_bw_kernel_ = cl::Kernel(program, "multiply_bw_kernel");
   multiply_bw_kernel_group_size_ = multiply_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  divide_bw_kernel_ = cl::Kernel(program, "divide_bw_kernel", &error);
+  divide_bw_kernel_ = cl::Kernel(program, "divide_bw_kernel");
   divide_bw_kernel_group_size_ = divide_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
 
   for (std::uint32_t i = 0; i <= 10; ++i) {
     std::ostringstream ss;
     ss << "sum_fw_kernel_" << (1 << i);
-    sum_fw_kernel_[i] = cl::Kernel(program, ss.str().c_str(), &error);
+    sum_fw_kernel_[i] = cl::Kernel(program, ss.str().c_str());
   }
   sum_fw_kernel_group_size_ = sum_fw_kernel_[0].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
   for (std::uint32_t i = 0; i <= 10; ++i) {
     std::ostringstream ss;
     ss << "logsumexp_fw_kernel_" << (1 << i);
-    logsumexp_fw_kernel_[i] = cl::Kernel(program, ss.str().c_str(), &error);
+    logsumexp_fw_kernel_[i] = cl::Kernel(program, ss.str().c_str());
   }
   logsumexp_fw_kernel_group_size_ = logsumexp_fw_kernel_[0].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
 
-  broadcast_fw_kernel_ = cl::Kernel(program, "broadcast_fw_kernel", &error);
+  broadcast_fw_kernel_ = cl::Kernel(program, "broadcast_fw_kernel");
   broadcast_fw_kernel_group_size_ = broadcast_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  batch_sum_fw_kernel_ = cl::Kernel(program, "batch_sum_fw_kernel", &error);
+  batch_sum_fw_kernel_ = cl::Kernel(program, "batch_sum_fw_kernel");
   batch_sum_fw_kernel_group_size_ = batch_sum_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
 
-  inplace_multiply_const_kernel_ = cl::Kernel(program, "inplace_multiply_const_kernel", &error);
+  inplace_multiply_const_kernel_ = cl::Kernel(program, "inplace_multiply_const_kernel");
   inplace_multiply_const_kernel_group_size_ = inplace_multiply_const_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
 
-  inplace_add_kernel_ = cl::Kernel(program, "inplace_add_kernel", &error);
+  inplace_add_kernel_ = cl::Kernel(program, "inplace_add_kernel");
   inplace_add_kernel_group_size_ = inplace_add_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  inplace_subtract_kernel_ = cl::Kernel(program, "inplace_subtract_kernel", &error);
+  inplace_subtract_kernel_ = cl::Kernel(program, "inplace_subtract_kernel");
   inplace_subtract_kernel_group_size_ = inplace_subtract_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
 }
 
@@ -819,46 +817,40 @@ void OpenCL::dump_description() const {
 }
 
 std::shared_ptr<void> OpenCL::new_handle(const Shape &shape) {
-  cl_int error = CL_SUCCESS;
   const std::uint32_t mem_size = sizeof(float) * shape.size();
   cl::Buffer *data = new cl::Buffer(context_,
             CL_MEM_READ_WRITE,
             mem_size,
-            NULL, &error);
-  if (error != CL_SUCCESS) {
-    THROW_ERROR("Memory allocation failed. Requested size: " << mem_size);
-  }
+            NULL);
   return std::shared_ptr<void>(data, [](cl::Buffer *buffer){delete buffer;});
 }
 
 std::vector<float> OpenCL::tensor_to_vector_impl(const Tensor &x) {
-  cl_int error = CL_SUCCESS;
   const std::uint32_t num_elements = x.shape().size();
   std::vector<float> ret(num_elements);
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   queue.enqueueReadBuffer(CDATA(x), CL_TRUE, 0,
             sizeof(cl_float) * num_elements, ret.data(), NULL, NULL);
   return ret;
 }
 
 std::vector<std::uint32_t> OpenCL::argmax_impl(const Tensor &x, std::uint32_t dim) {
-  cl_int error = CL_SUCCESS;
   const Shape &shape = x.shape();
   const std::uint32_t n = shape[dim];
   const std::uint32_t r = shape.size() / n;
   const std::uint32_t s = shape.lower_volume(dim);
   std::uint32_t group_size = argmax_kernel_[0].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
   while (group_size >> 1 >= n) group_size >>= 1;
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   cl::Buffer mem_s = cl::Buffer(context_,
       CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      sizeof(cl_uint), const_cast<cl_uint*>(&s), &error);
+      sizeof(cl_uint), const_cast<cl_uint*>(&s));
   cl::Buffer mem_n = cl::Buffer(context_,
       CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      sizeof(cl_uint), const_cast<cl_uint*>(&n), &error);
+      sizeof(cl_uint), const_cast<cl_uint*>(&n));
   cl::Buffer py = cl::Buffer(context_,
       CL_MEM_WRITE_ONLY,
-      sizeof(cl_uint) * r, NULL, &error);
+      sizeof(cl_uint) * r, NULL);
   switch (group_size) {
 #define CASE(k, m) \
     case k: \
@@ -888,23 +880,22 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(const Tensor &x, std::uint32_t di
 }
 
 std::vector<std::uint32_t> OpenCL::argmin_impl(const Tensor &x, std::uint32_t dim) {
-  cl_int error = CL_SUCCESS;
   const Shape &shape = x.shape();
   const std::uint32_t n = shape[dim];
   const std::uint32_t r = shape.size() / n;
   const std::uint32_t s = shape.lower_volume(dim);
   std::uint32_t group_size = argmin_kernel_[0].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
   while (group_size >> 1 >= n) group_size >>= 1;
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   cl::Buffer mem_s = cl::Buffer(context_,
       CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      sizeof(cl_uint), const_cast<cl_uint*>(&s), &error);
+      sizeof(cl_uint), const_cast<cl_uint*>(&s));
   cl::Buffer mem_n = cl::Buffer(context_,
       CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      sizeof(cl_uint), const_cast<cl_uint*>(&n), &error);
+      sizeof(cl_uint), const_cast<cl_uint*>(&n));
   cl::Buffer py = cl::Buffer(context_,
       CL_MEM_WRITE_ONLY,
-      sizeof(cl_uint) * r, NULL, &error);
+      sizeof(cl_uint) * r, NULL);
   switch (group_size) {
 #define CASE(k, m) \
     case k: \
@@ -934,17 +925,15 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(const Tensor &x, std::uint32_t di
 }
 
 void OpenCL::reset_tensor_impl(float k, Tensor &x) {
-  std::int32_t error = CL_SUCCESS;
   const std::uint32_t size = x.shape().size();
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   queue.enqueueFillBuffer<float>(CDATA(x), k, 0, sizeof(float) * size);
   queue.finish();
 }
 
 void OpenCL::reset_tensor_by_array_impl(const float values[], Tensor &x) {
-  std::int32_t error = CL_SUCCESS;
   const std::uint32_t size = x.shape().size();
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   queue.enqueueWriteBuffer(CDATA(x), CL_TRUE, 0,
             sizeof(float) * size, values, NULL, NULL);
 }
@@ -956,9 +945,8 @@ void OpenCL::copy_tensor_impl(const Tensor &x, Tensor &y) {
       break;
     case Device::DEVICE_TYPE_OPENCL:
       {
-        std::int32_t error = CL_SUCCESS;
         const std::uint32_t size = x.shape().size();
-        cl::CommandQueue queue(context_, device_, 0, &error);
+        cl::CommandQueue queue(context_, device_, 0);
         queue.enqueueCopyBuffer(CDATA(x), CDATA(y), 0, 0, sizeof(float) * size);
         queue.finish();
       }
@@ -969,11 +957,10 @@ void OpenCL::copy_tensor_impl(const Tensor &x, Tensor &y) {
 }
 
 void OpenCL::identity_impl(Tensor &y) {
-  cl_int error = CL_SUCCESS;
   const std::uint32_t size = y.shape().size();
   const std::uint32_t skip = y.shape()[0] + 1;
   const std::uint32_t num_blocks = GRID_SIZE(size, set_identity_kernel_group_size_);
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   SET_ARG_HOST_SCALAR(set_identity_kernel_, 0, cl_uint, size)
   SET_ARG_HOST_SCALAR(set_identity_kernel_, 1, cl_uint, skip)
   set_identity_kernel_.setArg(2, CDATA(y));
@@ -984,7 +971,6 @@ void OpenCL::identity_impl(Tensor &y) {
 }
 
 void OpenCL::pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &y) {
-  cl_int error = CL_SUCCESS;
   const std::uint32_t wy = y.shape().lower_volume(dim);
   const std::uint32_t wx = wy * x.shape()[dim];
   const std::uint32_t sx = x.shape().has_batch() * x.shape().volume();
@@ -992,7 +978,7 @@ void OpenCL::pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids
   const std::uint32_t sy = y.shape().volume();
   const std::uint32_t g1 = GRID_SIZE(sy, pick_fw_kernel_group_size_);
   const std::uint32_t bs = y.shape().batch();
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   pick_fw_kernel_.setArg(0, CDATA(x));
   SET_ARG_HOST_VECTOR(pick_fw_kernel_, 1, cl_uint, ids)
   SET_ARG_HOST_SCALAR(pick_fw_kernel_, 2, cl_uint, wx)
@@ -1008,14 +994,13 @@ void OpenCL::pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids
 }
 
 void OpenCL::slice_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t offset, Tensor &y) {
-  cl_int error = CL_SUCCESS;
   const std::uint32_t base = y.shape().lower_volume(dim);
   const std::uint32_t shift = base * offset;
   const std::uint32_t span = base * y.shape()[dim];
   const std::uint32_t skip = base * x.shape()[dim];
   const std::uint32_t size = y.shape().size();
   const std::uint32_t num_blocks = GRID_SIZE(size, slice_fw_kernel_group_size_);
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   slice_fw_kernel_.setArg(0, CDATA(x));
   SET_ARG_HOST_SCALAR(slice_fw_kernel_, 1, cl_uint, shift)
   SET_ARG_HOST_SCALAR(slice_fw_kernel_, 2, cl_uint, span)
@@ -1029,12 +1014,11 @@ void OpenCL::slice_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t off
 }
 
 void OpenCL::concat_fw_impl(const std::vector<const Tensor *> &xs, std::uint32_t dim, Tensor &y) {
-  cl_int error = CL_SUCCESS;
   const std::uint32_t new_bs = y.shape().batch();
   const std::uint32_t base = y.shape().lower_volume(dim);
   const std::uint32_t skip = base * y.shape()[dim];
   const std::uint32_t repeat = y.shape().volume() / skip;
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   std::uint32_t offset = 0;
   for (const Tensor *x : xs) {
     std::uint32_t span = base * x->shape()[dim];
@@ -1057,7 +1041,6 @@ void OpenCL::concat_fw_impl(const std::vector<const Tensor *> &xs, std::uint32_t
 }
 
 void OpenCL::pick_bw_impl(const Tensor &gy, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &gx) {
-  cl_int error = CL_SUCCESS;
   const std::uint32_t wy = gy.shape().lower_volume(dim);
   const std::uint32_t wx = wy * gx.shape()[dim];
   const std::uint32_t sx = gx.shape().has_batch() * gx.shape().volume();
@@ -1065,7 +1048,7 @@ void OpenCL::pick_bw_impl(const Tensor &gy, const std::vector<std::uint32_t> &id
   const std::uint32_t sy = gy.shape().volume();
   const std::uint32_t g1 = GRID_SIZE(sy, concat_fw_kernel_group_size_);
   const std::uint32_t bs = gy.shape().batch();
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   pick_bw_kernel_.setArg(0, CDATA(gy));
   SET_ARG_HOST_VECTOR(pick_bw_kernel_, 1, cl_uint, ids)
   SET_ARG_HOST_SCALAR(pick_bw_kernel_, 2, cl_uint, wx)
@@ -1081,7 +1064,6 @@ void OpenCL::pick_bw_impl(const Tensor &gy, const std::vector<std::uint32_t> &id
 }
 
 void OpenCL::slice_bw_impl(const Tensor &gy, std::uint32_t dim, std::uint32_t offset, Tensor &gx) {
-  cl_int error = CL_SUCCESS;
   const Shape &sx = gx.shape();
   const Shape &sy = gy.shape();
   const std::uint32_t base = sx.lower_volume(dim);
@@ -1092,7 +1074,7 @@ void OpenCL::slice_bw_impl(const Tensor &gy, std::uint32_t dim, std::uint32_t of
   const std::uint32_t nx = repeat * sx.batch();
   const std::uint32_t ny = repeat * sy.batch();
   const std::uint32_t g1 = GRID_SIZE(wy * std::max(nx, ny), slice_bw_kernel_group_size_);
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   slice_bw_kernel_.setArg(0, CDATA(gy));
   SET_ARG_HOST_SCALAR(slice_bw_kernel_, 1, cl_uint, wx)
   SET_ARG_HOST_SCALAR(slice_bw_kernel_, 2, cl_uint, wy)
@@ -1108,10 +1090,9 @@ void OpenCL::slice_bw_impl(const Tensor &gy, std::uint32_t dim, std::uint32_t of
 
 #define OPENCLDEV_FW_X(name) \
 void OpenCL::name##_fw_impl(const Tensor &x, Tensor &y) { \
-  cl_int error = CL_SUCCESS; \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = GRID_SIZE(size, name##_fw_kernel_group_size_); \
-  cl::CommandQueue queue(context_, device_, 0, &error); \
+  cl::CommandQueue queue(context_, device_, 0); \
   name##_fw_kernel_.setArg(0, CDATA(x)); \
   SET_ARG_HOST_SCALAR(name##_fw_kernel_, 1, cl_uint, size) \
   name##_fw_kernel_.setArg(2, CDATA(y)); \
@@ -1123,10 +1104,9 @@ void OpenCL::name##_fw_impl(const Tensor &x, Tensor &y) { \
 
 #define OPENCLDEV_BW_X(name) \
 void OpenCL::name##_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) { \
-  cl_int error = CL_SUCCESS; \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = GRID_SIZE(size, name##_bw_kernel_group_size_); \
-  cl::CommandQueue queue(context_, device_, 0, &error); \
+  cl::CommandQueue queue(context_, device_, 0); \
   name##_bw_kernel_.setArg(0, CDATA(x)); \
   name##_bw_kernel_.setArg(1, CDATA(y)); \
   name##_bw_kernel_.setArg(2, CDATA(gy)); \
@@ -1140,10 +1120,9 @@ void OpenCL::name##_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, 
 
 #define OPENCLDEV_FW_X_CONST(name) \
 void OpenCL::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
-  cl_int error = CL_SUCCESS; \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = GRID_SIZE(size, name##_fw_kernel_group_size_); \
-  cl::CommandQueue queue(context_, device_, 0, &error); \
+  cl::CommandQueue queue(context_, device_, 0); \
   name##_fw_kernel_.setArg(0, CDATA(x)); \
   SET_ARG_HOST_SCALAR(name##_fw_kernel_, 1, cl_float, k) \
   SET_ARG_HOST_SCALAR(name##_fw_kernel_, 2, cl_uint, size) \
@@ -1156,10 +1135,9 @@ void OpenCL::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
 
 #define OPENCLDEV_BW_X_CONST(name) \
 void OpenCL::name##_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) { \
-  cl_int error = CL_SUCCESS; \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = GRID_SIZE(size, name##_bw_kernel_group_size_); \
-  cl::CommandQueue queue(context_, device_, 0, &error); \
+  cl::CommandQueue queue(context_, device_, 0); \
   name##_bw_kernel_.setArg(0, CDATA(x)); \
   name##_bw_kernel_.setArg(1, CDATA(y)); \
   name##_bw_kernel_.setArg(2, CDATA(gy)); \
@@ -1174,13 +1152,12 @@ void OpenCL::name##_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, 
 
 #define OPENCLDEV_FW_X_SCALAR(name) \
 void OpenCL::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
-  cl_int error = CL_SUCCESS; \
   const std::uint32_t size = y.shape().volume(); \
   const std::uint32_t g1 = GRID_SIZE(size, name##_fw_kernel_group_size_); \
   const std::uint32_t g2 = y.shape().batch(); \
   const std::uint32_t mbx = x.shape().has_batch(); \
   const std::uint32_t mbk = k.shape().has_batch(); \
-  cl::CommandQueue queue(context_, device_, 0, &error); \
+  cl::CommandQueue queue(context_, device_, 0); \
   name##_fw_kernel_.setArg(0, CDATA(x)); \
   name##_fw_kernel_.setArg(1, CDATA(k)); \
   SET_ARG_HOST_SCALAR(name##_fw_kernel_, 2, cl_uint, size) \
@@ -1195,13 +1172,12 @@ void OpenCL::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
 
 #define OPENCLDEV_FW_AB(name) \
 void OpenCL::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
-  cl_int error = CL_SUCCESS; \
   const std::uint32_t size = y.shape().volume(); \
   const std::uint32_t g1 = GRID_SIZE(size, name##_fw_kernel_group_size_); \
   const std::uint32_t g2 = y.shape().batch(); \
   const std::uint32_t mba = a.shape().has_batch(); \
   const std::uint32_t mbb = b.shape().has_batch(); \
-  cl::CommandQueue queue(context_, device_, 0, &error); \
+  cl::CommandQueue queue(context_, device_, 0); \
   name##_fw_kernel_.setArg(0, CDATA(a)); \
   name##_fw_kernel_.setArg(1, CDATA(b)); \
   SET_ARG_HOST_SCALAR(name##_fw_kernel_, 2, cl_uint, size) \
@@ -1216,13 +1192,12 @@ void OpenCL::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
 
 #define OPENCLDEV_BW_AB(name) \
 void OpenCL::name##_bw_impl(const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy, Tensor &ga, Tensor &gb) { \
-  cl_int error = CL_SUCCESS; \
   const std::uint32_t size = y.shape().volume(); \
   const std::uint32_t g1 = GRID_SIZE(size, name##_bw_kernel_group_size_); \
   const std::uint32_t g2 = y.shape().batch(); \
   const std::uint32_t mba = a.shape().has_batch(); \
   const std::uint32_t mbb = b.shape().has_batch(); \
-  cl::CommandQueue queue(context_, device_, 0, &error); \
+  cl::CommandQueue queue(context_, device_, 0); \
   name##_bw_kernel_.setArg(0, CDATA(a)); \
   name##_bw_kernel_.setArg(1, CDATA(b)); \
   name##_bw_kernel_.setArg(2, CDATA(y)); \
@@ -1303,13 +1278,12 @@ OPENCLDEV_BW_AB(divide);
 #undef OPENCLDEV_BW_AB
 
 void OpenCL::transpose_fw_impl(const Tensor &x, Tensor &y) {
-  cl_int error = CL_SUCCESS;
   const std::uint32_t rows = x.shape()[0];
   const std::uint32_t cols = x.shape()[1];
   const std::uint32_t bs = x.shape().batch();
   const std::uint32_t g1 = GRID_SIZE(rows, transpose_fw_kernel_group_size_x_);
   const std::uint32_t g2 = GRID_SIZE(cols, transpose_fw_kernel_group_size_y_);
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   transpose_fw_kernel_.setArg(0, CDATA(x));
   SET_ARG_HOST_SCALAR(transpose_fw_kernel_, 1, cl_uint, rows)
   SET_ARG_HOST_SCALAR(transpose_fw_kernel_, 2, cl_uint, cols)
@@ -1321,13 +1295,12 @@ void OpenCL::transpose_fw_impl(const Tensor &x, Tensor &y) {
 }
 
 void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
-  cl_int error = CL_SUCCESS;
   const std::uint32_t di = a.shape()[0];
   const std::uint32_t dj = a.shape()[1];
   const std::uint32_t dk = b.shape()[1];
   float alpha = 1.;
   float beta = 0.;
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
     const std::uint32_t a_skip = di * dj;
@@ -1335,7 +1308,7 @@ void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
     const std::uint32_t y_skip = di * dk;
     const std::uint32_t bs = a.shape().batch();
     for (std::uint32_t n = 0; n < bs; ++n) {
-      error = clblasSgemm(clblasColumnMajor, clblasNoTrans, clblasNoTrans,
+      clblasSgemm(clblasColumnMajor, clblasNoTrans, clblasNoTrans,
                       di, dk, dj,
                       alpha, CDATA(a)(), n * a_skip, di, CDATA(b)(), n * b_skip, dj,
                       beta, CDATA(y)(), n * y_skip, di,
@@ -1343,7 +1316,7 @@ void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
     }
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
-    error = clblasSgemm(clblasColumnMajor, clblasNoTrans, clblasNoTrans,
+    clblasSgemm(clblasColumnMajor, clblasNoTrans, clblasNoTrans,
                     di, dk * b.shape().batch(), dj,
                     alpha, CDATA(a)(), 0, di, CDATA(b)(), 0, dj,
                     beta, CDATA(y)(), 0, di,
@@ -1352,13 +1325,12 @@ void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
 }
 
 void OpenCL::transpose_bw_impl(const Tensor &, const Tensor &, const Tensor &gy, Tensor &gx) {
-  cl_int error = CL_SUCCESS;
   const std::uint32_t rows = gx.shape()[0];
   const std::uint32_t cols = gx.shape()[1];
   const std::uint32_t bs = gx.shape().batch();
   const std::uint32_t g1 = GRID_SIZE(rows, transpose_bw_kernel_group_size_x_);
   const std::uint32_t g2 = GRID_SIZE(cols, transpose_bw_kernel_group_size_y_);
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   transpose_bw_kernel_.setArg(0, CDATA(gy));
   SET_ARG_HOST_SCALAR(transpose_bw_kernel_, 1, cl_uint, rows)
   SET_ARG_HOST_SCALAR(transpose_bw_kernel_, 2, cl_uint, cols)
@@ -1370,7 +1342,6 @@ void OpenCL::transpose_bw_impl(const Tensor &, const Tensor &, const Tensor &gy,
 }
 
 void OpenCL::matmul_bw_impl(const Tensor &a, const Tensor &b, const Tensor &, const Tensor &gy, Tensor &ga, Tensor &gb) {
-  cl_int error = CL_SUCCESS;
   // ga += gy . b^T
   // gb += a^T . gy
   const std::uint32_t di = a.shape()[0];
@@ -1378,7 +1349,7 @@ void OpenCL::matmul_bw_impl(const Tensor &a, const Tensor &b, const Tensor &, co
   const std::uint32_t dk = b.shape()[1];
   float alpha = 1.;
   float beta = 1.;
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
     const std::uint32_t a_skip = di * dj;
@@ -1386,12 +1357,12 @@ void OpenCL::matmul_bw_impl(const Tensor &a, const Tensor &b, const Tensor &, co
     const std::uint32_t y_skip = di * dk;
     const std::uint32_t bs = a.shape().batch();
     for (std::uint32_t n = 0; n < bs; ++n) {
-      error = clblasSgemm(clblasColumnMajor, clblasNoTrans, clblasTrans,
+      clblasSgemm(clblasColumnMajor, clblasNoTrans, clblasTrans,
                       di, dj, dk,
                       alpha, CDATA(gy)(), n * y_skip, di, CDATA(b)(), n * b_skip, dj,
                       beta, CDATA(ga)(), n * a_skip, di,
                       1, &queue(), 0, NULL, NULL);
-      error = clblasSgemm(clblasColumnMajor, clblasTrans, clblasNoTrans,
+      clblasSgemm(clblasColumnMajor, clblasTrans, clblasNoTrans,
                       dj, dk, di,
                       alpha, CDATA(a)(), n * a_skip, di, CDATA(gy)(), n * y_skip, di,
                       beta, CDATA(gb)(), n * b_skip, dj,
@@ -1399,12 +1370,12 @@ void OpenCL::matmul_bw_impl(const Tensor &a, const Tensor &b, const Tensor &, co
     }
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
-    error = clblasSgemm(clblasColumnMajor, clblasNoTrans, clblasTrans,
+    clblasSgemm(clblasColumnMajor, clblasNoTrans, clblasTrans,
                     di, dj, dk * b.shape().batch(),
                     alpha, CDATA(gy)(), 0, di, CDATA(b)(), 0, dj,
                     beta, CDATA(ga)(), 0, di,
                     1, &queue(), 0, NULL, NULL);
-    error = clblasSgemm(clblasColumnMajor, clblasTrans, clblasNoTrans,
+    clblasSgemm(clblasColumnMajor, clblasTrans, clblasNoTrans,
                     dj, dk * b.shape().batch(), di,
                     alpha, CDATA(a)(), 0, di, CDATA(gy)(), 0, di,
                     beta, CDATA(gb)(), 0, dj,
@@ -1413,19 +1384,18 @@ void OpenCL::matmul_bw_impl(const Tensor &a, const Tensor &b, const Tensor &, co
 }
 
 void OpenCL::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
-  cl_int error = CL_SUCCESS;
   const std::uint32_t n = x.shape()[dim];
   const std::uint32_t r = y.shape().size();
   const std::uint32_t s = y.shape().lower_volume(dim);
   std::uint32_t group_size = sum_fw_kernel_group_size_;
   while (group_size >> 1 >= n) group_size >>= 1;
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   cl::Buffer mem_s = cl::Buffer(context_,
       CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      sizeof(cl_uint), const_cast<cl_uint*>(&s), &error);
+      sizeof(cl_uint), const_cast<cl_uint*>(&s));
   cl::Buffer mem_n = cl::Buffer(context_,
       CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      sizeof(cl_uint), const_cast<cl_uint*>(&n), &error);
+      sizeof(cl_uint), const_cast<cl_uint*>(&n));
   switch (group_size) {
 #define CASE(k, m) \
     case k: \
@@ -1451,19 +1421,18 @@ void OpenCL::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
 }
 
 void OpenCL::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
-  cl_int error = CL_SUCCESS;
   const std::uint32_t n = x.shape()[dim];
   const std::uint32_t r = y.shape().size();
   const std::uint32_t s = y.shape().lower_volume(dim);
   std::uint32_t group_size = logsumexp_fw_kernel_group_size_;
   while (group_size >> 1 >= n) group_size >>= 1;
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   cl::Buffer mem_s = cl::Buffer(context_,
       CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      sizeof(cl_uint), const_cast<cl_uint*>(&s), &error);
+      sizeof(cl_uint), const_cast<cl_uint*>(&s));
   cl::Buffer mem_n = cl::Buffer(context_,
       CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      sizeof(cl_uint), const_cast<cl_uint*>(&n), &error);
+      sizeof(cl_uint), const_cast<cl_uint*>(&n));
   switch (group_size) {
 #define CASE(k, m) \
     case k: \
@@ -1489,12 +1458,11 @@ void OpenCL::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
 }
 
 void OpenCL::broadcast_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) {
-  cl_int error = CL_SUCCESS;
   const std::uint32_t skip1 = y.shape().lower_volume(dim);
   const std::uint32_t skip2 = skip1 * size;
   const std::uint32_t total = y.shape().size();
   const std::uint32_t g1 = GRID_SIZE(total, broadcast_fw_kernel_group_size_);
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   broadcast_fw_kernel_.setArg(0, CDATA(x));
   SET_ARG_HOST_SCALAR(broadcast_fw_kernel_, 1, cl_uint, skip1)
   SET_ARG_HOST_SCALAR(broadcast_fw_kernel_, 2, cl_uint, skip2)
@@ -1507,11 +1475,10 @@ void OpenCL::broadcast_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t
 }
 
 void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
-  cl_int error = CL_SUCCESS;
   const std::uint32_t size = y.shape().size();
   const std::uint32_t batch = x.shape().batch();
   const std::uint32_t g1 = GRID_SIZE(size, batch_sum_fw_kernel_group_size_);
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   batch_sum_fw_kernel_.setArg(0, CDATA(x));
   SET_ARG_HOST_SCALAR(batch_sum_fw_kernel_, 1, cl_uint, size)
   SET_ARG_HOST_SCALAR(batch_sum_fw_kernel_, 2, cl_uint, batch)
@@ -1523,10 +1490,9 @@ void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
 }
 
 void OpenCL::inplace_multiply_const_impl(float k, Tensor &x) {
-  cl_int error = CL_SUCCESS;
   const std::uint32_t size = x.shape().size();
   const std::uint32_t g1 = GRID_SIZE(size, inplace_multiply_const_kernel_group_size_);
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   SET_ARG_HOST_SCALAR(inplace_multiply_const_kernel_, 0, cl_float, k)
   SET_ARG_HOST_SCALAR(inplace_multiply_const_kernel_, 1, cl_uint, size)
   inplace_multiply_const_kernel_.setArg(2, CDATA(x));
@@ -1537,13 +1503,12 @@ void OpenCL::inplace_multiply_const_impl(float k, Tensor &x) {
 }
 
 void OpenCL::inplace_add_impl(const Tensor &x, Tensor &y) {
-  cl_int error = CL_SUCCESS;
   const std::uint32_t size = y.shape().volume();
   const std::uint32_t mbx = x.shape().has_batch();
   const std::uint32_t mby = y.shape().has_batch();
   const std::uint32_t g1 = GRID_SIZE(size, inplace_add_kernel_group_size_);
   const std::uint32_t bs = std::max(x.shape().batch(), y.shape().batch());
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   inplace_add_kernel_.setArg(0, CDATA(x));
   SET_ARG_HOST_SCALAR(inplace_add_kernel_, 1, cl_uint, size)
   SET_ARG_HOST_SCALAR(inplace_add_kernel_, 2, cl_uint, mbx)
@@ -1556,13 +1521,12 @@ void OpenCL::inplace_add_impl(const Tensor &x, Tensor &y) {
 }
 
 void OpenCL::inplace_subtract_impl(const Tensor &x, Tensor &y) {
-  cl_int error = CL_SUCCESS;
   const std::uint32_t size = y.shape().volume();
   const std::uint32_t mbx = x.shape().has_batch();
   const std::uint32_t mby = y.shape().has_batch();
   const std::uint32_t g1 = GRID_SIZE(size, inplace_subtract_kernel_group_size_);
   const std::uint32_t bs = std::max(x.shape().batch(), y.shape().batch());
-  cl::CommandQueue queue(context_, device_, 0, &error);
+  cl::CommandQueue queue(context_, device_, 0);
   inplace_subtract_kernel_.setArg(0, CDATA(x));
   SET_ARG_HOST_SCALAR(inplace_subtract_kernel_, 1, cl_uint, size)
   SET_ARG_HOST_SCALAR(inplace_subtract_kernel_, 2, cl_uint, mbx)
