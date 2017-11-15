@@ -599,7 +599,8 @@ OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id) {
   if (all_platforms.size() == 0) {
     THROW_ERROR("No platforms found. Check OpenCL installation!");
   }
-  cl::Platform platform = all_platforms[platform_id];
+  plat_id_ = platform_id;
+  cl::Platform platform = all_platforms[plat_id_];
   std::cout << "Using platform: " << platform.getInfo<CL_PLATFORM_NAME>() << std::endl;
 
   std::vector<cl::Device> all_devices;
@@ -801,7 +802,20 @@ OpenCL::~OpenCL() {
 void OpenCL::dump_description() const {
   std::cerr << "Device " << this << ':' << std::endl;
   std::cerr << "  Type: OpenCL" << std::endl;
-  // TODO
+
+  const cl_uint dim = device_.getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>();
+  std::cerr << "  Platform: " << plat_id_ << ':' << std::endl;
+  std::cerr << "  Physical Device: " << dev_id_ << ':' << std::endl;
+  std::cerr << "    Vendor ............... " << device_.getInfo<CL_DEVICE_VENDOR>() << std::endl;
+  std::cerr << "    Name ................. " << device_.getInfo<CL_DEVICE_NAME>() << std::endl;
+  std::cerr << "    Global Memory ........ " << device_.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() << std::endl;
+  std::cerr << "    Local Memory ......... " << device_.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>() << std::endl;
+  std::cerr << "    Max Work Group ....... " << device_.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
+  std::cerr << "    Max Work Item dim .... " << dim << std::endl;
+  std::cerr << "    Max Work Item size ... ";
+  std::vector<size_t> item_size = device_.getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>();
+  for (auto s : item_size) std::cerr << s << ",";
+  std::cerr << std::endl;
 }
 
 std::shared_ptr<void> OpenCL::new_handle(const Shape &shape) {

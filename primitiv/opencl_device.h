@@ -141,6 +141,7 @@ private:
 private:
   cl::Device device_;
   cl::Context context_;
+  std::uint32_t plat_id_;
   std::uint32_t dev_id_;
 
   std::array<cl::Kernel, 11> argmax_kernel_;
