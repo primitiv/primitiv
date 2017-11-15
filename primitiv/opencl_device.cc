@@ -48,7 +48,7 @@ std::string OpenCL::kernel_code_generator() {
       argmax_val[tid] = i;
     }
   }
-  work_group_barrier(CLK_LOCAL_MEM_FENCE);
+  barrier(CLK_LOCAL_MEM_FENCE);
 #define REDUCE(k) \
   if (GROUP_SIZE >= k << 1) { \
     if (tid < k) { \
@@ -57,7 +57,7 @@ std::string OpenCL::kernel_code_generator() {
         argmax_val[tid] = argmax_val[tid + k]; \
       } \
     } \
-    work_group_barrier(CLK_LOCAL_MEM_FENCE); \
+    barrier(CLK_LOCAL_MEM_FENCE); \
   }
   REDUCE(512)
   REDUCE(256)
@@ -95,7 +95,7 @@ std::string OpenCL::kernel_code_generator() {
       argmax_val[tid] = i;
     }
   }
-  work_group_barrier(CLK_LOCAL_MEM_FENCE);
+  barrier(CLK_LOCAL_MEM_FENCE);
 #define REDUCE(k) \
   if (GROUP_SIZE >= k << 1) { \
     if (tid < k) { \
@@ -104,7 +104,7 @@ std::string OpenCL::kernel_code_generator() {
         argmax_val[tid] = argmax_val[tid + k]; \
       } \
     } \
-    work_group_barrier(CLK_LOCAL_MEM_FENCE); \
+    barrier(CLK_LOCAL_MEM_FENCE); \
   }
   REDUCE(512)
   REDUCE(256)
@@ -446,11 +446,11 @@ kernel void transpose_bw_kernel(constant float *py, constant unsigned *rows_p, c
   px += bid % skip + (bid / skip) * skip * n;
   temp[tid] = 0;
   for (unsigned i = tid; i < n; i += GROUP_SIZE) temp[tid] += px[i * skip];
-  work_group_barrier(CLK_LOCAL_MEM_FENCE);
+  barrier(CLK_LOCAL_MEM_FENCE);
 #define REDUCE(k) \
   if (GROUP_SIZE >= k << 1) { \
     if (tid < k) temp[tid] += temp[tid + k]; \
-    work_group_barrier(CLK_LOCAL_MEM_FENCE); \
+    barrier(CLK_LOCAL_MEM_FENCE); \
   }
   REDUCE(512)
   REDUCE(256)
@@ -490,11 +490,11 @@ inline float logsumexp2_fw_kernel(float a, float b) {
   for (unsigned i = tid; i < n; i += GROUP_SIZE) {
     temp[tid] = logsumexp2_fw_kernel(temp[tid], px[i * skip]);
   }
-  work_group_barrier(CLK_LOCAL_MEM_FENCE);
+  barrier(CLK_LOCAL_MEM_FENCE);
 #define REDUCE(k) \
   if (GROUP_SIZE >= k << 1) { \
     if (tid < k) temp[tid] = logsumexp2_fw_kernel(temp[tid], temp[tid + k]); \
-    work_group_barrier(CLK_LOCAL_MEM_FENCE); \
+    barrier(CLK_LOCAL_MEM_FENCE); \
   }
   REDUCE(512)
   REDUCE(256)
@@ -618,7 +618,7 @@ OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id) {
 
   sources.push_back({kernel_code.c_str(), kernel_code.length()});
   cl::Program program(context_, sources);
-  if (program.build({device_}, "-cl-std=CL2.0 -Werror") != CL_SUCCESS) {
+  if (program.build({device_}, "-cl-std=CL1.2 -Werror") != CL_SUCCESS) {
     std::cerr << " Error building: " << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device_) << std::endl;
     THROW_ERROR("Error!");
   }
