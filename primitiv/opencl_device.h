@@ -144,87 +144,159 @@ private:
   std::uint32_t dev_id_;
 
   std::array<cl::Kernel, 11> argmax_kernel_;
+  std::uint32_t argmax_kernel_group_size_;
   std::array<cl::Kernel, 11> argmin_kernel_;
+  std::uint32_t argmin_kernel_group_size_;
 
   cl::Kernel set_identity_kernel_;
+  std::uint32_t set_identity_kernel_group_size_;
 
   cl::Kernel pick_fw_kernel_;
+  std::uint32_t pick_fw_kernel_group_size_;
   cl::Kernel slice_fw_kernel_;
+  std::uint32_t slice_fw_kernel_group_size_;
   cl::Kernel concat_fw_kernel_;
+  std::uint32_t concat_fw_kernel_group_size_;
 
   cl::Kernel pick_bw_kernel_;
+  std::uint32_t pick_bw_kernel_group_size_;
   cl::Kernel slice_bw_kernel_;
+  std::uint32_t slice_bw_kernel_group_size_;
 
   cl::Kernel negate_fw_kernel_;
+  std::uint32_t negate_fw_kernel_group_size_;
   cl::Kernel sqrt_fw_kernel_;
+  std::uint32_t sqrt_fw_kernel_group_size_;
   cl::Kernel exp_fw_kernel_;
+  std::uint32_t exp_fw_kernel_group_size_;
   cl::Kernel log_fw_kernel_;
+  std::uint32_t log_fw_kernel_group_size_;
   cl::Kernel tanh_fw_kernel_;
+  std::uint32_t tanh_fw_kernel_group_size_;
   cl::Kernel sigmoid_fw_kernel_;
+  std::uint32_t sigmoid_fw_kernel_group_size_;
   cl::Kernel softplus_fw_kernel_;
+  std::uint32_t softplus_fw_kernel_group_size_;
   cl::Kernel sin_fw_kernel_;
+  std::uint32_t sin_fw_kernel_group_size_;
   cl::Kernel cos_fw_kernel_;
+  std::uint32_t cos_fw_kernel_group_size_;
   cl::Kernel tan_fw_kernel_;
+  std::uint32_t tan_fw_kernel_group_size_;
   cl::Kernel transpose_fw_kernel_;
+  std::uint32_t transpose_fw_kernel_group_size_;
+  std::uint32_t transpose_fw_kernel_group_size_y_;
+  std::uint32_t transpose_fw_kernel_group_size_x_;
 
   cl::Kernel sqrt_bw_kernel_;
+  std::uint32_t sqrt_bw_kernel_group_size_;
   cl::Kernel exp_bw_kernel_;
+  std::uint32_t exp_bw_kernel_group_size_;
   cl::Kernel log_bw_kernel_;
+  std::uint32_t log_bw_kernel_group_size_;
   cl::Kernel tanh_bw_kernel_;
+  std::uint32_t tanh_bw_kernel_group_size_;
   cl::Kernel sigmoid_bw_kernel_;
+  std::uint32_t sigmoid_bw_kernel_group_size_;
   cl::Kernel softplus_bw_kernel_;
+  std::uint32_t softplus_bw_kernel_group_size_;
   cl::Kernel sin_bw_kernel_;
+  std::uint32_t sin_bw_kernel_group_size_;
   cl::Kernel cos_bw_kernel_;
+  std::uint32_t cos_bw_kernel_group_size_;
   cl::Kernel tan_bw_kernel_;
+  std::uint32_t tan_bw_kernel_group_size_;
   cl::Kernel transpose_bw_kernel_;
+  std::uint32_t transpose_bw_kernel_group_size_;
+  std::uint32_t transpose_bw_kernel_group_size_y_;
+  std::uint32_t transpose_bw_kernel_group_size_x_;
 
   cl::Kernel add_const_fw_kernel_;
+  std::uint32_t add_const_fw_kernel_group_size_;
   cl::Kernel subtract_const_r_fw_kernel_;
+  std::uint32_t subtract_const_r_fw_kernel_group_size_;
   cl::Kernel subtract_const_l_fw_kernel_;
+  std::uint32_t subtract_const_l_fw_kernel_group_size_;
   cl::Kernel multiply_const_fw_kernel_;
+  std::uint32_t multiply_const_fw_kernel_group_size_;
   cl::Kernel divide_const_r_fw_kernel_;
+  std::uint32_t divide_const_r_fw_kernel_group_size_;
   cl::Kernel divide_const_l_fw_kernel_;
+  std::uint32_t divide_const_l_fw_kernel_group_size_;
   cl::Kernel prelu_fw_kernel_;
+  std::uint32_t prelu_fw_kernel_group_size_;
   cl::Kernel elu_fw_kernel_;
+  std::uint32_t elu_fw_kernel_group_size_;
 
   cl::Kernel add_const_bw_kernel_;
+  std::uint32_t add_const_bw_kernel_group_size_;
   cl::Kernel subtract_const_r_bw_kernel_;
+  std::uint32_t subtract_const_r_bw_kernel_group_size_;
   cl::Kernel subtract_const_l_bw_kernel_;
+  std::uint32_t subtract_const_l_bw_kernel_group_size_;
   cl::Kernel multiply_const_bw_kernel_;
+  std::uint32_t multiply_const_bw_kernel_group_size_;
   cl::Kernel divide_const_r_bw_kernel_;
+  std::uint32_t divide_const_r_bw_kernel_group_size_;
   cl::Kernel divide_const_l_bw_kernel_;
+  std::uint32_t divide_const_l_bw_kernel_group_size_;
   cl::Kernel prelu_bw_kernel_;
+  std::uint32_t prelu_bw_kernel_group_size_;
   cl::Kernel elu_bw_kernel_;
+  std::uint32_t elu_bw_kernel_group_size_;
 
   cl::Kernel add_scalar_fw_kernel_;
+  std::uint32_t add_scalar_fw_kernel_group_size_;
   cl::Kernel subtract_scalar_r_fw_kernel_;
+  std::uint32_t subtract_scalar_r_fw_kernel_group_size_;
   cl::Kernel subtract_scalar_l_fw_kernel_;
+  std::uint32_t subtract_scalar_l_fw_kernel_group_size_;
   cl::Kernel multiply_scalar_fw_kernel_;
+  std::uint32_t multiply_scalar_fw_kernel_group_size_;
   cl::Kernel divide_scalar_r_fw_kernel_;
+  std::uint32_t divide_scalar_r_fw_kernel_group_size_;
   cl::Kernel divide_scalar_l_fw_kernel_;
+  std::uint32_t divide_scalar_l_fw_kernel_group_size_;
 
   cl::Kernel add_fw_kernel_;
+  std::uint32_t add_fw_kernel_group_size_;
   cl::Kernel subtract_fw_kernel_;
+  std::uint32_t subtract_fw_kernel_group_size_;
   cl::Kernel multiply_fw_kernel_;
+  std::uint32_t multiply_fw_kernel_group_size_;
   cl::Kernel divide_fw_kernel_;
+  std::uint32_t divide_fw_kernel_group_size_;
   cl::Kernel matmul_fw_kernel_;
+  std::uint32_t matmul_fw_kernel_group_size_;
 
   cl::Kernel add_bw_kernel_;
+  std::uint32_t add_bw_kernel_group_size_;
   cl::Kernel subtract_bw_kernel_;
+  std::uint32_t subtract_bw_kernel_group_size_;
   cl::Kernel multiply_bw_kernel_;
+  std::uint32_t multiply_bw_kernel_group_size_;
   cl::Kernel divide_bw_kernel_;
+  std::uint32_t divide_bw_kernel_group_size_;
   cl::Kernel matmul_bw_kernel_;
+  std::uint32_t matmul_bw_kernel_group_size_;
 
   std::array<cl::Kernel, 11> sum_fw_kernel_;
+  std::uint32_t sum_fw_kernel_group_size_;
   std::array<cl::Kernel, 11> logsumexp_fw_kernel_;
+  std::uint32_t logsumexp_fw_kernel_group_size_;
 
   cl::Kernel broadcast_fw_kernel_;
+  std::uint32_t broadcast_fw_kernel_group_size_;
   cl::Kernel batch_sum_fw_kernel_;
+  std::uint32_t batch_sum_fw_kernel_group_size_;
 
   cl::Kernel inplace_multiply_const_kernel_;
+  std::uint32_t inplace_multiply_const_kernel_group_size_;
 
   cl::Kernel inplace_add_kernel_;
+  std::uint32_t inplace_add_kernel_group_size_;
   cl::Kernel inplace_subtract_kernel_;
+  std::uint32_t inplace_subtract_kernel_group_size_;
 };
 
 }  // namespace devices
