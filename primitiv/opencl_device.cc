@@ -540,9 +540,9 @@ kernel void batch_sum_fw_kernel(constant float *px, constant unsigned *size_p,
 )EOS";
   ss << R"EOS(
 kernel void inplace_multiply_const_kernel(constant float *k_p, constant unsigned *size_p, global float *px) {
-  unsigned k = k_p[0];
+  float k = k_p[0];
   unsigned size = size_p[0];
-  unsigned i = get_global_id(0);;
+  unsigned i = get_global_id(0);
   if (i < size) px[i] *= k;
 }
 )EOS";
@@ -710,13 +710,13 @@ OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id) {
     logsumexp_fw_kernel_[i] = cl::Kernel(program, ss.str().c_str(), &error);
   }
 
-  cl::Kernel broadcast_fw_kernel_ = cl::Kernel(program, "broadcast_fw_kernel", &error);
-  cl::Kernel batch_sum_fw_kernel_ = cl::Kernel(program, "batch_sum_fw_kernel", &error);
+  broadcast_fw_kernel_ = cl::Kernel(program, "broadcast_fw_kernel", &error);
+  batch_sum_fw_kernel_ = cl::Kernel(program, "batch_sum_fw_kernel", &error);
 
-  cl::Kernel inplace_multiply_const_kernel_ = cl::Kernel(program, "inplace_multiply_const_kernel", &error);
+  inplace_multiply_const_kernel_ = cl::Kernel(program, "inplace_multiply_const_kernel", &error);
 
-  cl::Kernel inplace_add_kernel_ = cl::Kernel(program, "inplace_add_kernel", &error);
-  cl::Kernel inplace_subtract_kernel_ = cl::Kernel(program, "inplace_subtract_kernel", &error);
+  inplace_add_kernel_ = cl::Kernel(program, "inplace_add_kernel", &error);
+  inplace_subtract_kernel_ = cl::Kernel(program, "inplace_subtract_kernel", &error);
 }
 
 OpenCL::~OpenCL() {
@@ -1367,7 +1367,7 @@ void OpenCL::inplace_multiply_const_impl(float k, Tensor &x) {
 
 void OpenCL::inplace_add_impl(const Tensor &x, Tensor &y) {
   cl_int error = CL_SUCCESS;
-  std::uint32_t size = y.shape().size();
+  std::uint32_t size = y.shape().volume();
   std::uint32_t mbx = x.shape().has_batch();
   std::uint32_t mby = y.shape().has_batch();
   const std::uint32_t group_size = inplace_add_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
@@ -1385,7 +1385,7 @@ void OpenCL::inplace_add_impl(const Tensor &x, Tensor &y) {
 
 void OpenCL::inplace_subtract_impl(const Tensor &x, Tensor &y) {
   cl_int error = CL_SUCCESS;
-  std::uint32_t size = y.shape().size();
+  std::uint32_t size = y.shape().volume();
   std::uint32_t mbx = x.shape().has_batch();
   std::uint32_t mby = y.shape().has_batch();
   const std::uint32_t group_size = inplace_subtract_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
