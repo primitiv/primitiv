@@ -1,6 +1,7 @@
 #include <config.h>
 
 #include <CL/cl.hpp>
+#include <clBLAS.h>
 
 #include <iostream>
 #include <random>
@@ -11,7 +12,7 @@ namespace primitiv {
 namespace devices {
 
 #define GRID_SIZE(x, threads) (((x) + (threads) - 1) / (threads))
-#define CDATA(x) *(static_cast<const cl::Buffer *>((x).data()))
+#define CDATA(x) (*(static_cast<const cl::Buffer *>((x).data())))
 
 #define SET_ARG_HOST_SCALAR(kernel, idx, type, var) \
   cl::Buffer opencl_mem_##var = cl::Buffer(context_, \
@@ -757,8 +758,6 @@ OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id) {
   multiply_fw_kernel_group_size_ = multiply_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
   divide_fw_kernel_ = cl::Kernel(program, "divide_fw_kernel", &error);
   divide_fw_kernel_group_size_ = divide_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  matmul_fw_kernel_ = cl::Kernel(program, "matmul_fw_kernel", &error);
-  matmul_fw_kernel_group_size_ = matmul_fw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
 
   add_bw_kernel_ = cl::Kernel(program, "add_bw_kernel", &error);
   add_bw_kernel_group_size_ = add_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
@@ -768,8 +767,6 @@ OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id) {
   multiply_bw_kernel_group_size_ = multiply_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
   divide_bw_kernel_ = cl::Kernel(program, "divide_bw_kernel", &error);
   divide_bw_kernel_group_size_ = divide_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
-  matmul_bw_kernel_ = cl::Kernel(program, "matmul_bw_kernel", &error);
-  matmul_bw_kernel_group_size_ = matmul_bw_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
 
   for (std::uint32_t i = 0; i <= 10; ++i) {
     std::ostringstream ss;
@@ -1310,6 +1307,37 @@ void OpenCL::transpose_fw_impl(const Tensor &x, Tensor &y) {
   queue.finish();
 }
 
+void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
+  cl_int error = CL_SUCCESS;
+  const std::uint32_t di = a.shape()[0];
+  const std::uint32_t dj = a.shape()[1];
+  const std::uint32_t dk = b.shape()[1];
+  float alpha = 1.;
+  float beta = 0.;
+  cl::CommandQueue queue(context_, device_, 0, &error);
+  if (a.shape().has_batch()) {
+    // Do gemm multiple times.
+    const std::uint32_t a_skip = di * dj;
+    const std::uint32_t b_skip = b.shape().has_batch() * dj * dk;
+    const std::uint32_t y_skip = di * dk;
+    const std::uint32_t bs = a.shape().batch();
+    for (std::uint32_t n = 0; n < bs; ++n) {
+      error = clblasSgemm(clblasColumnMajor, clblasNoTrans, clblasNoTrans,
+                      di, dk, dj,
+                      alpha, CDATA(a)(), n * a_skip, di, CDATA(b)(), n * b_skip, dj,
+                      beta, CDATA(y)(), n * y_skip, di,
+                      1, &queue(), 0, NULL, NULL);
+    }
+  } else {
+    // Do gemm only once to calculate the product with a combined matrix.
+    error = clblasSgemm(clblasColumnMajor, clblasNoTrans, clblasNoTrans,
+                    di, dk * b.shape().batch(), dj,
+                    alpha, CDATA(a)(), 0, di, CDATA(b)(), 0, dj,
+                    beta, CDATA(y)(), 0, di,
+                    1, &queue(), 0, NULL, NULL);
+  }
+}
+
 void OpenCL::transpose_bw_impl(const Tensor &, const Tensor &, const Tensor &gy, Tensor &gx) {
   cl_int error = CL_SUCCESS;
   std::uint32_t rows = gx.shape()[0];
@@ -1326,6 +1354,49 @@ void OpenCL::transpose_bw_impl(const Tensor &, const Tensor &, const Tensor &gy,
                              cl::NDRange(g1 * transpose_bw_kernel_group_size_x_, g2 * transpose_bw_kernel_group_size_y_, bs),
                              cl::NDRange(transpose_bw_kernel_group_size_x_, transpose_bw_kernel_group_size_y_, 1), NULL, NULL);
   queue.finish();
+}
+
+void OpenCL::matmul_bw_impl(const Tensor &a, const Tensor &b, const Tensor &, const Tensor &gy, Tensor &ga, Tensor &gb) {
+  cl_int error = CL_SUCCESS;
+  // ga += gy . b^T
+  // gb += a^T . gy
+  const std::uint32_t di = a.shape()[0];
+  const std::uint32_t dj = a.shape()[1];
+  const std::uint32_t dk = b.shape()[1];
+  float alpha = 1.;
+  float beta = 1.;
+  cl::CommandQueue queue(context_, device_, 0, &error);
+  if (a.shape().has_batch()) {
+    // Do gemm multiple times.
+    const std::uint32_t a_skip = di * dj;
+    const std::uint32_t b_skip = b.shape().has_batch() * dj * dk;
+    const std::uint32_t y_skip = di * dk;
+    const std::uint32_t bs = a.shape().batch();
+    for (std::uint32_t n = 0; n < bs; ++n) {
+      error = clblasSgemm(clblasColumnMajor, clblasNoTrans, clblasTrans,
+                      di, dj, dk,
+                      alpha, CDATA(gy)(), n * y_skip, di, CDATA(b)(), n * b_skip, dj,
+                      beta, CDATA(ga)(), n * a_skip, di,
+                      1, &queue(), 0, NULL, NULL);
+      error = clblasSgemm(clblasColumnMajor, clblasTrans, clblasNoTrans,
+                      dj, dk, di,
+                      alpha, CDATA(a)(), n * a_skip, di, CDATA(gy)(), n * y_skip, di,
+                      beta, CDATA(gb)(), n * b_skip, dj,
+                      1, &queue(), 0, NULL, NULL);
+    }
+  } else {
+    // Do gemm only once to calculate the product with a combined matrix.
+    error = clblasSgemm(clblasColumnMajor, clblasNoTrans, clblasTrans,
+                    di, dj, dk * b.shape().batch(),
+                    alpha, CDATA(gy)(), 0, di, CDATA(b)(), 0, dj,
+                    beta, CDATA(ga)(), 0, di,
+                    1, &queue(), 0, NULL, NULL);
+    error = clblasSgemm(clblasColumnMajor, clblasTrans, clblasNoTrans,
+                    dj, dk * b.shape().batch(), di,
+                    alpha, CDATA(a)(), 0, di, CDATA(gy)(), 0, di,
+                    beta, CDATA(gb)(), 0, dj,
+                    1, &queue(), 0, NULL, NULL);
+  }
 }
 
 void OpenCL::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {

@@ -100,7 +100,7 @@ if(PRIMITIV_USE_OPEN_CL)
   add_library(primitiv_opencl OBJECT ${primitiv_base_HDRS} ${primitiv_opencl_HDRS} ${primitiv_opencl_SRCS})
   list(APPEND primitiv_HDRS ${primitiv_opencl_HDRS})
   list(APPEND primitiv_OBJS $<TARGET_OBJECTS:primitiv_opencl>)
-  list(APPEND primitiv_DEPS ${OpenCL_LIBRARIES})
+  list(APPEND primitiv_DEPS ${OpenCL_LIBRARIES} ${CLBLAS_LIBRARIES})
 endif()
 
 # Builds the integrated binary.

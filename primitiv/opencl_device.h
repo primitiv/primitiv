@@ -110,7 +110,7 @@ private:
   void subtract_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override;
   void multiply_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override;
   void divide_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override;
-  void matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override;
 
   void add_bw_impl(
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
@@ -126,7 +126,7 @@ private:
       Tensor &ga, Tensor &gb) override;
   void matmul_bw_impl(
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
-      Tensor &ga, Tensor &gb) override { THROW_ERROR("not implemented"); }
+      Tensor &ga, Tensor &gb) override;
 
   void sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) override;
   void logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) override;
@@ -266,8 +266,6 @@ private:
   std::uint32_t multiply_fw_kernel_group_size_;
   cl::Kernel divide_fw_kernel_;
   std::uint32_t divide_fw_kernel_group_size_;
-  cl::Kernel matmul_fw_kernel_;
-  std::uint32_t matmul_fw_kernel_group_size_;
 
   cl::Kernel add_bw_kernel_;
   std::uint32_t add_bw_kernel_group_size_;
@@ -277,8 +275,6 @@ private:
   std::uint32_t multiply_bw_kernel_group_size_;
   cl::Kernel divide_bw_kernel_;
   std::uint32_t divide_bw_kernel_group_size_;
-  cl::Kernel matmul_bw_kernel_;
-  std::uint32_t matmul_bw_kernel_group_size_;
 
   std::array<cl::Kernel, 11> sum_fw_kernel_;
   std::uint32_t sum_fw_kernel_group_size_;
