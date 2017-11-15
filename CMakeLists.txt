@@ -9,7 +9,8 @@ option(PRIMITIV_BUILD_TESTS "Builds test binaries." OFF)
 option(PRIMITIV_BUILD_TESTS_PROBABILISTIC "Builds test cases that probabilistically fails." OFF)
 option(PRIMITIV_GTEST_SOURCE_DIR "Source directory of Google Test library." "")
 option(PRIMITIV_USE_CACHE "Enables cached values in some functions but needs more memory." OFF)
-option(PRIMITIV_USE_CUDA "Finds CUDA library ant use it." OFF)
+option(PRIMITIV_USE_CUDA "Enables the CUDA backend." OFF)
+option(PRIMITIV_USE_OPENCL "Enables the OpenCL backend." OFF)
 
 # C++ version
 set(CMAKE_CXX_STANDARD 11)
@@ -41,8 +42,8 @@ if(PRIMITIV_USE_CUDA)
   find_package(CUDA REQUIRED)
 endif()
 
-if(PRIMITIV_USE_OPEN_CL)
-  find_package(OpenCL REQUIRED)
+if(PRIMITIV_USE_OPENCL)
+  find_package(CLHPP REQUIRED)
   find_package(clBLAS REQUIRED)
 endif()
 
@@ -52,6 +53,9 @@ include_directories(
   ${PROJECT_BINARY_DIR})
 if(PRIMITIV_USE_CUDA)
   include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
+endif()
+if(PRIMITIV_USE_OPENCL)
+  include_directories(${CLHPP_INCLUDE_DIR})
 endif()
 
 # core library

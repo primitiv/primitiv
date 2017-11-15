@@ -92,7 +92,7 @@ if(PRIMITIV_USE_CUDA)
 endif()
 
 # Build rules of the OpenCL backend.
-if(PRIMITIV_USE_OPEN_CL)
+if(PRIMITIV_USE_OPENCL)
   set(primitiv_opencl_HDRS
     opencl_device.h)
   set(primitiv_opencl_SRCS
