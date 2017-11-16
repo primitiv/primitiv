@@ -20,6 +20,7 @@ set(primitiv_base_HDRS
   parameter.h
   primitiv.h
   primitiv_cuda.h
+  random.h
   shape.h
   shape_ops.h
   string_utils.h

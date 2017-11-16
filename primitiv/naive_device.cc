@@ -119,34 +119,19 @@ void Naive::identity_impl(Tensor &y) {
 }
 
 void Naive::random_bernoulli_impl(float p, Tensor &y) {
-  std::bernoulli_distribution dist(p);
-  float *dest = DATA(y);
-  const std::uint32_t size = y.shape().size();
-  REPEAT_OP(i, size, dest[i] = dist(rng_));
+  randomizer_.fill_bernoulli(p, y.shape().size(), DATA(y));
 }
 
 void Naive::random_uniform_impl(float lower, float upper, Tensor &y) {
-  std::uniform_real_distribution<float> dist(lower, upper);
-  float *dest = DATA(y);
-  const std::uint32_t size = y.shape().size();
-  for (std::uint32_t i = 0; i < size; ++i) {
-    const float x = dist(rng_);
-    dest[i] = x == lower ? upper : x;
-  }
+  randomizer_.fill_uniform(lower, upper, y.shape().size(), DATA(y));
 }
 
 void Naive::random_normal_impl(float mean, float sd, Tensor &y) {
-  std::normal_distribution<float> dist(mean, sd);
-  float *dest = DATA(y);
-  const std::uint32_t size = y.shape().size();
-  REPEAT_OP(i, size, dest[i] = dist(rng_));
+  randomizer_.fill_normal(mean, sd, y.shape().size(), DATA(y));
 }
 
 void Naive::random_log_normal_impl(float mean, float sd, Tensor &y) {
-  std::lognormal_distribution<float> dist(mean, sd);
-  float *dest = DATA(y);
-  const std::uint32_t size = y.shape().size();
-  REPEAT_OP(i, size, dest[i] = dist(rng_));
+  randomizer_.fill_log_normal(mean, sd, y.shape().size(), DATA(y));
 }
 
 void Naive::pick_fw_impl(

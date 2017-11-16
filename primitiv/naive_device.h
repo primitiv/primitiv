@@ -1,8 +1,8 @@
 #ifndef PRIMITIV_NAIVE_DEVICE_H_
 #define PRIMITIV_NAIVE_DEVICE_H_
 
-#include <random>
 #include <primitiv/device.h>
+#include <primitiv/random.h>
 
 namespace primitiv {
 namespace devices {
@@ -14,16 +14,14 @@ class Naive : public Device {
 public:
   /**
    * Creates a Naive object.
-   * @remarks The internal random number generator is initialized by
-   *          `std::random_device`.
    */
-  Naive() : rng_(std::random_device()()) {}
+  Naive() = default;
 
   /**
    * Creates a Naive object.
-   * @param rng_seed The seed value of internal random number generator.
+   * @param seed The seed value of internal random number generator.
    */
-  explicit Naive(std::uint32_t rng_seed) : rng_(rng_seed) {}
+  explicit Naive(std::uint32_t seed) : randomizer_(seed) {}
 
   ~Naive() override = default;
 
@@ -137,7 +135,7 @@ private:
   void inplace_subtract_impl(const Tensor &x, Tensor &y) override;
 
 private:
-  std::mt19937 rng_;
+  DefaultRandomizer randomizer_;
 };
 
 }  // namespace devices
