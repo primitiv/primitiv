@@ -598,13 +598,12 @@ std::uint32_t OpenCL::num_devices(std::uint32_t platform_id) {
   return all_devices.size();
 }
 
-OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id) {
+void OpenCL::initialize() {
   std::vector<cl::Platform> all_platforms;
   cl::Platform::get(&all_platforms);
   if (all_platforms.size() == 0) {
     THROW_ERROR("No platforms found. Check OpenCL installation!");
   }
-  plat_id_ = platform_id;
   cl::Platform platform = all_platforms.at(plat_id_);
 
   std::vector<cl::Device> all_devices;
@@ -612,7 +611,6 @@ OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id) {
   if(all_devices.size() == 0){
     THROW_ERROR("No devices found. Check OpenCL installation!");
   }
-  dev_id_ = device_id;
   device_ = all_devices.at(dev_id_);
   context_ = cl::Context({device_});
 
@@ -790,6 +788,20 @@ OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id) {
   inplace_subtract_kernel_group_size_ = inplace_subtract_kernel_.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
 }
 
+OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id)
+: plat_id_(platform_id)
+, dev_id_(device_id)
+, randomizer_(std::random_device()()) {
+  initialize();
+}
+
+OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id, std::uint32_t rng_seed)
+: plat_id_(platform_id)
+, dev_id_(device_id)
+, randomizer_(rng_seed) {
+  initialize();
+}
+
 OpenCL::~OpenCL() {
   // Nothing to do for now.
 }
@@ -798,7 +810,6 @@ void OpenCL::dump_description() const {
   std::cerr << "Device " << this << ':' << std::endl;
   std::cerr << "  Type: OpenCL" << std::endl;
 
-  const cl_uint dim = device_.getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>();
   std::cerr << "  Platform: " << plat_id_ << ':' << std::endl;
   std::cerr << "  Physical Device: " << dev_id_ << ':' << std::endl;
   std::cerr << "    Vendor ............... " << device_.getInfo<CL_DEVICE_VENDOR>() << std::endl;
@@ -806,7 +817,7 @@ void OpenCL::dump_description() const {
   std::cerr << "    Global Memory ........ " << device_.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() << std::endl;
   std::cerr << "    Local Memory ......... " << device_.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>() << std::endl;
   std::cerr << "    Max Work Group ....... " << device_.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
-  std::cerr << "    Max Work Item dim .... " << dim << std::endl;
+  std::cerr << "    Max Work Item dim .... " << device_.getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>() << std::endl;
   std::cerr << "    Max Work Item size ... ";
   std::vector<size_t> item_size = device_.getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>();
   for (auto s : item_size) std::cerr << s << ",";
@@ -967,6 +978,42 @@ void OpenCL::identity_impl(Tensor &y) {
                              cl::NDRange(num_blocks * set_identity_kernel_group_size_),
                              cl::NDRange(set_identity_kernel_group_size_));
   queue.finish();
+}
+
+void OpenCL::random_bernoulli_impl(float p, Tensor &y) {
+  const std::uint32_t num_elements = y.shape().size();
+  std::vector<float> vec(num_elements);
+  randomizer_.fill_bernoulli(p, num_elements, vec.data());
+  cl::CommandQueue queue(context_, device_, 0);
+  queue.enqueueWriteBuffer(CDATA(y), CL_TRUE, 0,
+            sizeof(float) * num_elements, vec.data());
+}
+
+void OpenCL::random_uniform_impl(float lower, float upper, Tensor &y) {
+  const std::uint32_t num_elements = y.shape().size();
+  std::vector<float> vec(num_elements);
+  randomizer_.fill_uniform(lower, upper, num_elements, vec.data());
+  cl::CommandQueue queue(context_, device_, 0);
+  queue.enqueueWriteBuffer(CDATA(y), CL_TRUE, 0,
+            sizeof(float) * num_elements, vec.data());
+}
+
+void OpenCL::random_normal_impl(float mean, float sd, Tensor &y) {
+  const std::uint32_t num_elements = y.shape().size();
+  std::vector<float> vec(num_elements);
+  randomizer_.fill_normal(mean, sd, num_elements, vec.data());
+  cl::CommandQueue queue(context_, device_, 0);
+  queue.enqueueWriteBuffer(CDATA(y), CL_TRUE, 0,
+            sizeof(float) * num_elements, vec.data());
+}
+
+void OpenCL::random_log_normal_impl(float mean, float sd, Tensor &y) {
+  const std::uint32_t num_elements = y.shape().size();
+  std::vector<float> vec(num_elements);
+  randomizer_.fill_log_normal(mean, sd, num_elements, vec.data());
+  cl::CommandQueue queue(context_, device_, 0);
+  queue.enqueueWriteBuffer(CDATA(y), CL_TRUE, 0,
+            sizeof(float) * num_elements, vec.data());
 }
 
 void OpenCL::pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &y) {

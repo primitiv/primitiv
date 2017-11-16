@@ -7,6 +7,7 @@
 
 #include <CL/cl2.hpp>
 #include <primitiv/device.h>
+#include <primitiv/random.h>
 
 #include <iostream>
 
@@ -23,8 +24,8 @@ public:
   static std::uint32_t num_platforms();
   static std::uint32_t num_devices(std::uint32_t platform_id);
 
-//   explicit OpenCL(std::uint32_t platform_id, std::uint32_t device_id);
   OpenCL(std::uint32_t platform_id, std::uint32_t device_id);
+  OpenCL(std::uint32_t platform_id, std::uint32_t device_id, std::uint32_t rng_seed);
 
   ~OpenCL() override;
 
@@ -48,10 +49,10 @@ private:
 
   void identity_impl(Tensor &y) override;
 
-  void random_bernoulli_impl(float p, Tensor &y) override { THROW_ERROR("not implemented"); }
-  void random_uniform_impl(float lower, float upper, Tensor &y) override { THROW_ERROR("not implemented"); }
-  void random_normal_impl(float mean, float sd, Tensor &y) override { THROW_ERROR("not implemented"); }
-  void random_log_normal_impl(float mean, float sd, Tensor &y) override { THROW_ERROR("not implemented"); }
+  void random_bernoulli_impl(float p, Tensor &y) override;
+  void random_uniform_impl(float lower, float upper, Tensor &y) override;
+  void random_normal_impl(float mean, float sd, Tensor &y) override;
+  void random_log_normal_impl(float mean, float sd, Tensor &y) override;
 
   void pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &y) override;
   void slice_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t offset, Tensor &y) override;
@@ -140,11 +141,17 @@ private:
   void inplace_add_impl(const Tensor &x, Tensor &y) override;
   void inplace_subtract_impl(const Tensor &x, Tensor &y) override;
 
+  /**
+   * Internal method to initialize the object.
+   */
+  void initialize();
+
 private:
   cl::Device device_;
   cl::Context context_;
   std::uint32_t plat_id_;
   std::uint32_t dev_id_;
+  DefaultRandomizer randomizer_;
 
   std::array<cl::Kernel, 11> argmax_kernel_;
   std::uint32_t argmax_kernel_group_size_;
