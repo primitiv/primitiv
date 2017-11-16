@@ -57,7 +57,9 @@ set(primitiv_core_HDRS ${primitiv_base_HDRS} ${primitiv_msgpack_HDRS})
 set(primitiv_core_SRCS ${primitiv_base_SRCS})
 
 # Builds core library.
-add_library(primitiv_core_OBJS OBJECT ${primitiv_core_HDRS} ${primitiv_core_SRCS})
+add_library(primitiv_core_OBJS OBJECT
+  ${primitiv_core_HDRS}
+  ${primitiv_core_SRCS})
 set(primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_core_OBJS>)
 set(primitiv_all_DEPS)
 
@@ -104,10 +106,16 @@ if(PRIMITIV_USE_OPENCL)
     opencl_device.h)
   set(primitiv_opencl_SRCS
     opencl_device.cc)
-  add_library(primitiv_opencl OBJECT ${primitiv_base_HDRS} ${primitiv_opencl_HDRS} ${primitiv_opencl_SRCS})
-  list(APPEND primitiv_HDRS ${primitiv_opencl_HDRS})
-  list(APPEND primitiv_OBJS $<TARGET_OBJECTS:primitiv_opencl>)
-  list(APPEND primitiv_DEPS ${OpenCL_LIBRARIES} ${CLBLAS_LIBRARIES})
+  install(FILES ${primitiv_opencl_HDRS} DESTINATION include/primitiv)
+
+  add_library(primitiv_opencl_OBJS OBJECT
+    ${primitiv_base_HDRS}
+    ${primitiv_opencl_HDRS}
+    ${primitiv_opencl_SRCS})
+  list(APPEND primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_opencl_OBJS>)
+  list(APPEND primitiv_all_DEPS
+    ${OpenCL_LIBRARIES}
+    ${CLBLAS_LIBRARIES})
 endif()
 
 # Builds the integrated binary.
