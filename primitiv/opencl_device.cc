@@ -87,24 +87,24 @@ std::string OpenCL::kernel_code_generator() {
   const unsigned n = n_p[0];
   const unsigned bid = get_group_id(0);
   const unsigned tid = get_local_id(0);
-  local float max_val[GROUP_SIZE];
-  local unsigned argmax_val[GROUP_SIZE];
+  local float min_val[GROUP_SIZE];
+  local unsigned argmin_val[GROUP_SIZE];
   px += bid % skip + (bid / skip) * skip * n;
-  max_val[tid] = 1e38;
+  min_val[tid] = 1e38;
   for (unsigned i = tid; i < n; i += GROUP_SIZE) {
     const float val = px[i * skip];
-    if (val < max_val[tid]) {
-      max_val[tid] = val;
-      argmax_val[tid] = i;
+    if (val < min_val[tid]) {
+      min_val[tid] = val;
+      argmin_val[tid] = i;
     }
   }
   barrier(CLK_LOCAL_MEM_FENCE);
 #define REDUCE(k) \
   if (GROUP_SIZE >= k << 1) { \
     if (tid < k) { \
-      if (max_val[tid + k] < max_val[tid]) { \
-        max_val[tid] = max_val[tid + k]; \
-        argmax_val[tid] = argmax_val[tid + k]; \
+      if (min_val[tid + k] < min_val[tid]) { \
+        min_val[tid] = min_val[tid + k]; \
+        argmin_val[tid] = argmin_val[tid + k]; \
       } \
     } \
     barrier(CLK_LOCAL_MEM_FENCE); \
@@ -120,7 +120,7 @@ std::string OpenCL::kernel_code_generator() {
   REDUCE(2)
   REDUCE(1)
 #undef REDUCE
-  if (tid == 0) py[bid] = argmax_val[0];
+  if (tid == 0) py[bid] = argmin_val[0];
 #undef GROUP_SIZE
 }
 )EOS";
@@ -1023,9 +1023,9 @@ void OpenCL::concat_fw_impl(const std::vector<const Tensor *> &xs, std::uint32_t
   cl::CommandQueue queue(context_, device_, 0);
   std::uint32_t offset = 0;
   for (const Tensor *x : xs) {
-    std::uint32_t span = base * x->shape()[dim];
-    std::uint32_t x_size = span * repeat * x->shape().batch();
-    std::uint32_t y_size = span * repeat * new_bs;
+    const std::uint32_t span = base * x->shape()[dim];
+    const std::uint32_t x_size = span * repeat * x->shape().batch();
+    const std::uint32_t y_size = span * repeat * new_bs;
     const std::uint32_t num_blocks = GRID_SIZE(y_size, concat_fw_kernel_group_size_);
     concat_fw_kernel_.setArg(0, CDATA(*x));
     SET_ARG_HOST_SCALAR(concat_fw_kernel_, 1, cl_uint, span)
