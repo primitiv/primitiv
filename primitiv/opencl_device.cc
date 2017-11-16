@@ -5,6 +5,7 @@
 #include <CL/cl.hpp>
 #include <clBLAS.h>
 
+#include <algorithm>
 #include <iostream>
 #include <random>
 #include <primitiv/error.h>
@@ -838,7 +839,7 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(const Tensor &x, std::uint32_t di
   const std::uint32_t n = shape[dim];
   const std::uint32_t r = shape.size() / n;
   const std::uint32_t s = shape.lower_volume(dim);
-  std::uint32_t group_size = argmax_kernel_[0].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
+  std::uint32_t group_size = std::min(argmax_kernel_group_size_, (std::uint32_t) 1024);
   while (group_size >> 1 >= n) group_size >>= 1;
   cl::CommandQueue queue(context_, device_, 0);
   cl::Buffer mem_s = cl::Buffer(context_,
@@ -883,7 +884,7 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(const Tensor &x, std::uint32_t di
   const std::uint32_t n = shape[dim];
   const std::uint32_t r = shape.size() / n;
   const std::uint32_t s = shape.lower_volume(dim);
-  std::uint32_t group_size = argmin_kernel_[0].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
+  std::uint32_t group_size = std::min(argmin_kernel_group_size_, (std::uint32_t) 1024);
   while (group_size >> 1 >= n) group_size >>= 1;
   cl::CommandQueue queue(context_, device_, 0);
   cl::Buffer mem_s = cl::Buffer(context_,
@@ -1388,7 +1389,7 @@ void OpenCL::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   const std::uint32_t n = x.shape()[dim];
   const std::uint32_t r = y.shape().size();
   const std::uint32_t s = y.shape().lower_volume(dim);
-  std::uint32_t group_size = sum_fw_kernel_group_size_;
+  std::uint32_t group_size = std::min(sum_fw_kernel_group_size_, (std::uint32_t) 1024);
   while (group_size >> 1 >= n) group_size >>= 1;
   cl::CommandQueue queue(context_, device_, 0);
   cl::Buffer mem_s = cl::Buffer(context_,
@@ -1425,7 +1426,7 @@ void OpenCL::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   const std::uint32_t n = x.shape()[dim];
   const std::uint32_t r = y.shape().size();
   const std::uint32_t s = y.shape().lower_volume(dim);
-  std::uint32_t group_size = logsumexp_fw_kernel_group_size_;
+  std::uint32_t group_size = std::min(logsumexp_fw_kernel_group_size_, (std::uint32_t) 1024);
   while (group_size >> 1 >= n) group_size >>= 1;
   cl::CommandQueue queue(context_, device_, 0);
   cl::Buffer mem_s = cl::Buffer(context_,
