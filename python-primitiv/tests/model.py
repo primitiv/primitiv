@@ -12,7 +12,8 @@ import tempfile
 
 
 class TestModel(Model):
-    pass
+    def __init__(self):
+        pass
 
 
 class ModelTest(unittest.TestCase):
