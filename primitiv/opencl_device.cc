@@ -602,7 +602,6 @@ OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id) {
   }
   plat_id_ = platform_id;
   cl::Platform platform = all_platforms.at(plat_id_);
-  std::cout << "Using platform: " << platform.getInfo<CL_PLATFORM_NAME>() << std::endl;
 
   std::vector<cl::Device> all_devices;
   platform.getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
@@ -612,7 +611,6 @@ OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id) {
   dev_id_ = device_id;
   device_ = all_devices.at(dev_id_);
   context_ = cl::Context({device_});
-  std::cout << "Using device: " << device_.getInfo<CL_DEVICE_NAME>() << std::endl;
 
   cl::Program::Sources sources;
   std::string kernel_code = kernel_code_generator();
