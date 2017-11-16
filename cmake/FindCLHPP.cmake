@@ -18,7 +18,7 @@
 # Redistributing and using this script is allowed according to
 # the Apache License Version 2.
 
-find_path(CLHPP_INCLUDE_DIR NAMES CL/cl.hpp
+find_path(CLHPP_INCLUDE_DIR NAMES CL/cl2.hpp
   HINTS
   ENV CLHPP_ROOT
   ENV CLHPP_ROOT_DIR
@@ -27,9 +27,9 @@ find_path(CLHPP_INCLUDE_DIR NAMES CL/cl.hpp
 )
 
 if (CLHPP_INCLUDE_DIR)
-  message("-- Found OpenCL C++ headers: " ${CLHPP_INCLUDE_DIR})
+  message("-- Found OpenCL 2.0 C++ headers: " ${CLHPP_INCLUDE_DIR})
   set(CLHPP_FOUND ON)
 else()
-  message(STATUS "OpenCL C++ headers is not installed.")
+  message(STATUS "OpenCL 2.0 C++ headers is not installed.")
   set(CLHPP_FOUND OFF)
 endif()

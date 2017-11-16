@@ -1,8 +1,10 @@
 #include <config.h>
 
-#define __CL_ENABLE_EXCEPTIONS
+#define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#define CL_HPP_TARGET_OPENCL_VERSION 120
+#define CL_HPP_CL_1_2_DEFAULT_BUILD
 
-#include <CL/cl.hpp>
+#include <CL/cl2.hpp>
 #include <clBLAS.h>
 
 #include <algorithm>
@@ -614,12 +616,7 @@ OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id) {
   device_ = all_devices.at(dev_id_);
   context_ = cl::Context({device_});
 
-  cl::Program::Sources sources;
-  std::string kernel_code = kernel_code_generator();
-
-  sources.push_back({kernel_code.c_str(), kernel_code.length()});
-  cl::Program program(context_, sources);
-  program.build({device_}, "-cl-std=CL1.2 -Werror");
+  cl::Program program(context_, kernel_code_generator(), true);
   for (std::uint32_t i = 0; i <= 10; ++i) {
     std::ostringstream ss;
     ss << "argmax_kernel_" << (1 << i);
@@ -830,7 +827,7 @@ std::vector<float> OpenCL::tensor_to_vector_impl(const Tensor &x) {
   std::vector<float> ret(num_elements);
   cl::CommandQueue queue(context_, device_, 0);
   queue.enqueueReadBuffer(CDATA(x), CL_TRUE, 0,
-            sizeof(cl_float) * num_elements, ret.data(), NULL, NULL);
+            sizeof(cl_float) * num_elements, ret.data());
   return ret;
 }
 
@@ -858,7 +855,7 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(const Tensor &x, std::uint32_t di
       argmax_kernel_[m].setArg(1, mem_s); \
       argmax_kernel_[m].setArg(2, mem_n); \
       argmax_kernel_[m].setArg(3, py); \
-      queue.enqueueNDRangeKernel(argmax_kernel_[m], cl::NullRange, cl::NDRange(r * k), cl::NDRange(k), NULL, NULL); \
+      queue.enqueueNDRangeKernel(argmax_kernel_[m], cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
       queue.finish();; break;
     CASE(1024, 10);
     CASE(512, 9);
@@ -875,7 +872,7 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(const Tensor &x, std::uint32_t di
   }
   std::vector<std::uint32_t> ret(r);
   queue.enqueueReadBuffer(py, CL_TRUE, 0,
-            sizeof(cl_uint) * r, ret.data(), NULL, NULL);
+            sizeof(cl_uint) * r, ret.data());
   return ret;
 }
 
@@ -903,7 +900,7 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(const Tensor &x, std::uint32_t di
       argmin_kernel_[m].setArg(1, mem_s); \
       argmin_kernel_[m].setArg(2, mem_n); \
       argmin_kernel_[m].setArg(3, py); \
-      queue.enqueueNDRangeKernel(argmin_kernel_[m], cl::NullRange, cl::NDRange(r * k), cl::NDRange(k), NULL, NULL); \
+      queue.enqueueNDRangeKernel(argmin_kernel_[m], cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
       queue.finish();; break;
     CASE(1024, 10);
     CASE(512, 9);
@@ -920,7 +917,7 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(const Tensor &x, std::uint32_t di
   }
   std::vector<std::uint32_t> ret(r);
   queue.enqueueReadBuffer(py, CL_TRUE, 0,
-            sizeof(cl_uint) * r, ret.data(), NULL, NULL);
+            sizeof(cl_uint) * r, ret.data());
   return ret;
 }
 
@@ -935,7 +932,7 @@ void OpenCL::reset_tensor_by_array_impl(const float values[], Tensor &x) {
   const std::uint32_t size = x.shape().size();
   cl::CommandQueue queue(context_, device_, 0);
   queue.enqueueWriteBuffer(CDATA(x), CL_TRUE, 0,
-            sizeof(float) * size, values, NULL, NULL);
+            sizeof(float) * size, values);
 }
 
 void OpenCL::copy_tensor_impl(const Tensor &x, Tensor &y) {
@@ -968,7 +965,7 @@ void OpenCL::identity_impl(Tensor &y) {
   set_identity_kernel_.setArg(2, CDATA(y));
   queue.enqueueNDRangeKernel(set_identity_kernel_, cl::NullRange,
                              cl::NDRange(num_blocks * set_identity_kernel_group_size_),
-                             cl::NDRange(set_identity_kernel_group_size_), NULL, NULL);
+                             cl::NDRange(set_identity_kernel_group_size_));
   queue.finish();
 }
 
@@ -991,7 +988,7 @@ void OpenCL::pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids
   pick_fw_kernel_.setArg(7, CDATA(y));
   queue.enqueueNDRangeKernel(pick_fw_kernel_, cl::NullRange,
                              cl::NDRange(g1 * pick_fw_kernel_group_size_, bs),
-                             cl::NDRange(pick_fw_kernel_group_size_, 1), NULL, NULL);
+                             cl::NDRange(pick_fw_kernel_group_size_, 1));
   queue.finish();
 }
 
@@ -1011,7 +1008,7 @@ void OpenCL::slice_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t off
   slice_fw_kernel_.setArg(5, CDATA(y));
   queue.enqueueNDRangeKernel(slice_fw_kernel_, cl::NullRange,
                              cl::NDRange(num_blocks * slice_fw_kernel_group_size_),
-                             cl::NDRange(slice_fw_kernel_group_size_), NULL, NULL);
+                             cl::NDRange(slice_fw_kernel_group_size_));
   queue.finish();
 }
 
@@ -1061,7 +1058,7 @@ void OpenCL::pick_bw_impl(const Tensor &gy, const std::vector<std::uint32_t> &id
   pick_bw_kernel_.setArg(7, CDATA(gx));
   queue.enqueueNDRangeKernel(pick_bw_kernel_, cl::NullRange,
                              cl::NDRange(g1 * concat_fw_kernel_group_size_, bs),
-                             cl::NDRange(concat_fw_kernel_group_size_, 1), NULL, NULL);
+                             cl::NDRange(concat_fw_kernel_group_size_, 1));
   queue.finish();
 }
 
@@ -1086,7 +1083,7 @@ void OpenCL::slice_bw_impl(const Tensor &gy, std::uint32_t dim, std::uint32_t of
   SET_ARG_HOST_SCALAR(slice_bw_kernel_, 6, cl_uint, ox)
   queue.enqueueNDRangeKernel(slice_bw_kernel_, cl::NullRange,
                              cl::NDRange(g1 * slice_bw_kernel_group_size_),
-                             cl::NDRange(slice_bw_kernel_group_size_), NULL, NULL);
+                             cl::NDRange(slice_bw_kernel_group_size_));
   queue.finish();
 }
 
@@ -1100,7 +1097,7 @@ void OpenCL::name##_fw_impl(const Tensor &x, Tensor &y) { \
   name##_fw_kernel_.setArg(2, CDATA(y)); \
   queue.enqueueNDRangeKernel(name##_fw_kernel_, cl::NullRange, \
                              cl::NDRange(num_blocks * name##_fw_kernel_group_size_), \
-                             cl::NDRange(name##_fw_kernel_group_size_), NULL, NULL); \
+                             cl::NDRange(name##_fw_kernel_group_size_)); \
   queue.finish(); \
 }
 
@@ -1116,7 +1113,7 @@ void OpenCL::name##_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, 
   name##_bw_kernel_.setArg(4, CDATA(gx)); \
   queue.enqueueNDRangeKernel(name##_bw_kernel_, cl::NullRange, \
                              cl::NDRange(num_blocks * name##_bw_kernel_group_size_), \
-                             cl::NDRange(name##_bw_kernel_group_size_), NULL, NULL); \
+                             cl::NDRange(name##_bw_kernel_group_size_)); \
   queue.finish(); \
 }
 
@@ -1131,7 +1128,7 @@ void OpenCL::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
   name##_fw_kernel_.setArg(3, CDATA(y)); \
   queue.enqueueNDRangeKernel(name##_fw_kernel_, cl::NullRange, \
                              cl::NDRange(num_blocks * name##_fw_kernel_group_size_), \
-                             cl::NDRange(name##_fw_kernel_group_size_), NULL, NULL); \
+                             cl::NDRange(name##_fw_kernel_group_size_)); \
   queue.finish(); \
 }
 
@@ -1148,7 +1145,7 @@ void OpenCL::name##_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, 
   name##_bw_kernel_.setArg(5, CDATA(gx)); \
   queue.enqueueNDRangeKernel(name##_bw_kernel_, cl::NullRange, \
                              cl::NDRange(num_blocks * name##_bw_kernel_group_size_), \
-                             cl::NDRange(name##_bw_kernel_group_size_), NULL, NULL); \
+                             cl::NDRange(name##_bw_kernel_group_size_)); \
   queue.finish(); \
 }
 
@@ -1168,7 +1165,7 @@ void OpenCL::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
   name##_fw_kernel_.setArg(5, CDATA(y)); \
   queue.enqueueNDRangeKernel(name##_fw_kernel_, cl::NullRange, \
                              cl::NDRange(g1 * name##_fw_kernel_group_size_, g2, 1), \
-                             cl::NDRange(name##_fw_kernel_group_size_, 1, 1), NULL, NULL); \
+                             cl::NDRange(name##_fw_kernel_group_size_, 1, 1)); \
   queue.finish(); \
 }
 
@@ -1188,7 +1185,7 @@ void OpenCL::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
   name##_fw_kernel_.setArg(5, CDATA(y)); \
   queue.enqueueNDRangeKernel(name##_fw_kernel_, cl::NullRange, \
                              cl::NDRange(g1 * name##_fw_kernel_group_size_, g2, 1), \
-                             cl::NDRange(name##_fw_kernel_group_size_, 1, 1), NULL, NULL); \
+                             cl::NDRange(name##_fw_kernel_group_size_, 1, 1)); \
   queue.finish(); \
 }
 
@@ -1211,7 +1208,7 @@ void OpenCL::name##_bw_impl(const Tensor &a, const Tensor &b, const Tensor &y, c
   name##_bw_kernel_.setArg(8, CDATA(gb)); \
   queue.enqueueNDRangeKernel(name##_bw_kernel_, cl::NullRange, \
                              cl::NDRange(g1 * name##_bw_kernel_group_size_, g2, 1), \
-                             cl::NDRange(name##_bw_kernel_group_size_, 1, 1), NULL, NULL); \
+                             cl::NDRange(name##_bw_kernel_group_size_, 1, 1)); \
   queue.finish(); \
 }
 
@@ -1292,7 +1289,7 @@ void OpenCL::transpose_fw_impl(const Tensor &x, Tensor &y) {
   transpose_fw_kernel_.setArg(3, CDATA(y));
   queue.enqueueNDRangeKernel(transpose_fw_kernel_, cl::NullRange,
                              cl::NDRange(g1 * transpose_fw_kernel_group_size_x_, g2 * transpose_fw_kernel_group_size_y_, bs),
-                             cl::NDRange(transpose_fw_kernel_group_size_x_, transpose_fw_kernel_group_size_y_, 1), NULL, NULL);
+                             cl::NDRange(transpose_fw_kernel_group_size_x_, transpose_fw_kernel_group_size_y_, 1));
   queue.finish();
 }
 
@@ -1339,7 +1336,7 @@ void OpenCL::transpose_bw_impl(const Tensor &, const Tensor &, const Tensor &gy,
   transpose_bw_kernel_.setArg(3, CDATA(gx));
   queue.enqueueNDRangeKernel(transpose_bw_kernel_, cl::NullRange,
                              cl::NDRange(g1 * transpose_bw_kernel_group_size_x_, g2 * transpose_bw_kernel_group_size_y_, bs),
-                             cl::NDRange(transpose_bw_kernel_group_size_x_, transpose_bw_kernel_group_size_y_, 1), NULL, NULL);
+                             cl::NDRange(transpose_bw_kernel_group_size_x_, transpose_bw_kernel_group_size_y_, 1));
   queue.finish();
 }
 
@@ -1405,7 +1402,7 @@ void OpenCL::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
       sum_fw_kernel_[m].setArg(1, mem_s); \
       sum_fw_kernel_[m].setArg(2, mem_n); \
       sum_fw_kernel_[m].setArg(3, CDATA(y)); \
-      queue.enqueueNDRangeKernel(sum_fw_kernel_[m], cl::NullRange, cl::NDRange(r * k), cl::NDRange(k), NULL, NULL); \
+      queue.enqueueNDRangeKernel(sum_fw_kernel_[m], cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
       queue.finish();; break;
     CASE(1024, 10);
     CASE(512, 9);
@@ -1442,7 +1439,7 @@ void OpenCL::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
       logsumexp_fw_kernel_[m].setArg(1, mem_s); \
       logsumexp_fw_kernel_[m].setArg(2, mem_n); \
       logsumexp_fw_kernel_[m].setArg(3, CDATA(y)); \
-      queue.enqueueNDRangeKernel(logsumexp_fw_kernel_[m], cl::NullRange, cl::NDRange(r * k), cl::NDRange(k), NULL, NULL); \
+      queue.enqueueNDRangeKernel(logsumexp_fw_kernel_[m], cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
       queue.finish();; break;
     CASE(1024, 10);
     CASE(512, 9);
@@ -1472,7 +1469,7 @@ void OpenCL::broadcast_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t
   broadcast_fw_kernel_.setArg(4, CDATA(y));
   queue.enqueueNDRangeKernel(broadcast_fw_kernel_, cl::NullRange,
                              cl::NDRange(g1 * broadcast_fw_kernel_group_size_),
-                             cl::NDRange(broadcast_fw_kernel_group_size_), NULL, NULL);
+                             cl::NDRange(broadcast_fw_kernel_group_size_));
   queue.finish();
 }
 
@@ -1487,7 +1484,7 @@ void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   batch_sum_fw_kernel_.setArg(3, CDATA(y));
   queue.enqueueNDRangeKernel(batch_sum_fw_kernel_, cl::NullRange,
                              cl::NDRange(g1 * batch_sum_fw_kernel_group_size_),
-                             cl::NDRange(batch_sum_fw_kernel_group_size_), NULL, NULL);
+                             cl::NDRange(batch_sum_fw_kernel_group_size_));
   queue.finish();
 }
 
@@ -1500,7 +1497,7 @@ void OpenCL::inplace_multiply_const_impl(float k, Tensor &x) {
   inplace_multiply_const_kernel_.setArg(2, CDATA(x));
   queue.enqueueNDRangeKernel(inplace_multiply_const_kernel_, cl::NullRange,
                              cl::NDRange(g1 * inplace_multiply_const_kernel_group_size_),
-                             cl::NDRange(inplace_multiply_const_kernel_group_size_), NULL, NULL);
+                             cl::NDRange(inplace_multiply_const_kernel_group_size_));
   queue.finish();
 }
 
@@ -1518,7 +1515,7 @@ void OpenCL::inplace_add_impl(const Tensor &x, Tensor &y) {
   inplace_add_kernel_.setArg(4, CDATA(y));
   queue.enqueueNDRangeKernel(inplace_add_kernel_, cl::NullRange,
                              cl::NDRange(g1 * inplace_add_kernel_group_size_, bs, 1),
-                             cl::NDRange(inplace_add_kernel_group_size_, 1, 1), NULL, NULL);
+                             cl::NDRange(inplace_add_kernel_group_size_, 1, 1));
   queue.finish();
 }
 
@@ -1536,7 +1533,7 @@ void OpenCL::inplace_subtract_impl(const Tensor &x, Tensor &y) {
   inplace_subtract_kernel_.setArg(4, CDATA(y));
   queue.enqueueNDRangeKernel(inplace_subtract_kernel_, cl::NullRange,
                              cl::NDRange(g1 * inplace_subtract_kernel_group_size_, bs, 1),
-                             cl::NDRange(inplace_subtract_kernel_group_size_, 1, 1), NULL, NULL);
+                             cl::NDRange(inplace_subtract_kernel_group_size_, 1, 1));
   queue.finish();
 }
 
