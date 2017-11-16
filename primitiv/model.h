@@ -2,11 +2,13 @@
 #define PRIMITIV_MODEL_H_
 
 #include <initializer_list>
+#include <map>
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
 
+#include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/mixins.h>
 
@@ -21,6 +23,23 @@ class Model : mixins::Nonmovable<Model> {
 public:
   Model() = default;
   virtual ~Model() = default;
+
+  /**
+   * Loads all parameters from a file.
+   * @param path Path of the file.
+   * @param with_stats Whether or not to load all additional statistics.
+   * @param device Device object to manage parameters.
+   */
+  void load(const std::string &path,
+      bool with_stats = true,
+      Device &device = Device::get_default());
+
+  /**
+   * Saves all parameters to a file.
+   * @param path Path of the file.
+   * @param with_stats Whether or not to save all additional statistics.
+   */
+  void save(const std::string &path, bool with_stats = true) const;
 
   /**
    * Registers a new parameter.
@@ -171,10 +190,20 @@ public:
   }
 
   /**
-   * Retrieves all parameters in the model which are trainable.
-   * @return List of pointers of trainable parameters.
+   * Retrieves all parameters in the model.
+   * @return Dictionary of parameters.
    */
-  std::vector<Parameter *>get_trainable_parameters() const;
+  std::map<std::vector<std::string>, Parameter *> get_all_parameters() const;
+
+  /**
+   * Retrieves trainable parameters in the model.
+   * @return Dictionary of parameters.
+   */
+  std::map<std::vector<std::string>, Parameter *> get_trainable_parameters() const {
+    // NOTE(odashi):
+    // Currently this function returns all parameters.
+    return get_all_parameters();
+  }
 
 private:
   /**

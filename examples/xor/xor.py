@@ -7,7 +7,7 @@ from primitiv import Parameter
 from primitiv import devices as D
 from primitiv import initializers as I
 from primitiv import operators as F
-from primitiv import trainers as T
+from primitiv import optimizers as O
 
 import numpy as np
 
@@ -22,14 +22,14 @@ def main():
     pw2 = Parameter([1, 8], I.XavierUniform())
     pb2 = Parameter([], I.Constant(0))
 
-    # Trainer
-    trainer = T.SGD(0.1)
+    # Optimizer
+    optimizer = O.SGD(0.1)
 
     # Registers parameters.
-    trainer.add_parameter(pw1)
-    trainer.add_parameter(pb1)
-    trainer.add_parameter(pw2)
-    trainer.add_parameter(pb2)
+    optimizer.add_parameter(pw1)
+    optimizer.add_parameter(pb1)
+    optimizer.add_parameter(pw2)
+    optimizer.add_parameter(pb2)
 
     # Training data
     input_data = [
@@ -76,9 +76,9 @@ def main():
         print("  loss: ", loss_val)
 
         # Updates parameters.
-        trainer.reset_gradients()
+        optimizer.reset_gradients()
         loss.backward()
-        trainer.update()
+        optimizer.update()
 
 
 if __name__ == "__main__":

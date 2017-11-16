@@ -17,8 +17,8 @@ from primitiv import Parameter
 
 from primitiv import devices as D
 from primitiv import initializers as I
-from primitiv import trainers as T
 from primitiv import operators as F
+from primitiv import optimizers as O
 
 import random
 import sys
@@ -66,11 +66,11 @@ def main():
     pw2 = Parameter([NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS], I.XavierUniform())
     pb2 = Parameter([NUM_OUTPUT_UNITS], I.Constant(0))
 
-    trainer = T.SGD(.5)
-    trainer.add_parameter(pw1)
-    trainer.add_parameter(pb1)
-    trainer.add_parameter(pw2)
-    trainer.add_parameter(pb2)
+    optimizer = O.SGD(.5)
+    optimizer.add_parameter(pw1)
+    optimizer.add_parameter(pb1)
+    optimizer.add_parameter(pw2)
+    optimizer.add_parameter(pb2)
 
     def make_graph(inputs, train):
         x = F.input(inputs)
@@ -105,9 +105,9 @@ def main():
             loss = F.softmax_cross_entropy(y, labels, 0)
             avg_loss = F.batch.mean(loss)
 
-            trainer.reset_gradients()
+            optimizer.reset_gradients()
             avg_loss.backward()
-            trainer.update()
+            optimizer.update()
 
         print()
 

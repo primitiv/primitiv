@@ -60,20 +60,20 @@ E.g.:
 - `param_key == ["foo", "bar"]`: Parameter has the name `"bar"`, and is owned by the submodel `"foo"`.
 
 ```
-+---------+     +------------------+-----------------+
-| Trainer |  =  | map<str, uint32> | map<str, float> |
-|         |     | uint_configs     | float_configs   |
-+---------+     +------------------+-----------------+
++-----------+     +------------------+-----------------+
+| Optimizer |  =  | map<str, uint32> | map<str, float> |
+|           |     | uint_configs     | float_configs   |
++-----------+     +------------------+-----------------+
 ```
 
 File Format
 -----------
 
 ```
-+-----------+-----------+-----------+--------------------------------------+
-| uint32    | uint32    | uint32    | Shape|Tensor|Parameter|Model|Trainer |
-| ver_major | ver_minor | data_type | data                                 |
-+-----------+-----------+-----------+--------------------------------------+
++-----------+-----------+-----------+----------------------------------------+
+| uint32    | uint32    | uint32    | Shape|Tensor|Parameter|Model|Optimizer |
+| ver_major | ver_minor | data_type | data                                   |
++-----------+-----------+-----------+----------------------------------------+
 ```
 
 Version numbers are typically equal to following:
@@ -89,4 +89,4 @@ Following table shows the correspondence between `data_type` and `data`:
 | `0x100`     | Tensor    |
 | `0x200`     | Parameter |
 | `0x300`     | Model     |
-| `0x400`     | Trainer   |
+| `0x400`     | Optimizer |

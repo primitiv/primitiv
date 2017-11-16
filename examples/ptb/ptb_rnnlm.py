@@ -7,7 +7,7 @@ import math
 from primitiv import initializers as I
 from primitiv import operators as F
 from primitiv import devices as D
-from primitiv import trainers as T
+from primitiv import optimizers as O
 from primitiv import Device, Graph, Parameter, Shape
 
 NUM_HIDDEN_UNITS = 256
@@ -62,14 +62,14 @@ def make_batch(corpus, sent_ids, eos_id):
 
 class RNNLM(object):
 
-    def __init__(self, vocab_size, eos_id, trainer):
+    def __init__(self, vocab_size, eos_id, optimizer):
         self.eos_id_ = eos_id
         self.pwlookup_ = Parameter([NUM_HIDDEN_UNITS, vocab_size], I.XavierUniform())
         self.pwxs_ = Parameter([NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS], I.XavierUniform())
         self.pwsy_ = Parameter([vocab_size, NUM_HIDDEN_UNITS], I.XavierUniform())
-        trainer.add_parameter(self.pwlookup_)
-        trainer.add_parameter(self.pwxs_)
-        trainer.add_parameter(self.pwsy_)
+        optimizer.add_parameter(self.pwlookup_)
+        optimizer.add_parameter(self.pwxs_)
+        optimizer.add_parameter(self.pwsy_)
 
     # Forward function of RNNLM. Input data should be arranged below:
     # inputs = {
@@ -118,13 +118,13 @@ def main():
     dev = D.CUDA(0)
     Device.set_default(dev)
 
-    # Trainer.
-    trainer = T.Adam()
-    trainer.set_weight_decay(1e-6)
-    trainer.set_gradient_clipping(5)
+    # Optimizer.
+    optimizer = O.Adam()
+    optimizer.set_weight_decay(1e-6)
+    optimizer.set_gradient_clipping(5)
 
     # Our LM.
-    lm = RNNLM(len(vocab), eos_id, trainer)
+    lm = RNNLM(len(vocab), eos_id, optimizer)
 
     # Sentence IDs.
     train_ids = list(range(num_train_sents))
@@ -151,14 +151,12 @@ def main():
             loss = lm.forward_loss(outputs, batch)
             train_loss += loss.to_float() * len(batch_ids)
 
-            trainer.reset_gradients()
+            optimizer.reset_gradients()
             loss.backward()
-            trainer.update()
+            optimizer.update()
 
-            print("\r%d" % ofs, end="")
+            print("%d" % ofs, end="\r")
             sys.stdout.flush()
-
-        print()
 
         train_ppl = math.exp(train_loss / num_train_labels)
         print("  train ppl =", train_ppl)
@@ -174,10 +172,8 @@ def main():
             outputs = lm.forward(batch)
             loss = lm.forward_loss(outputs, batch)
             valid_loss += loss.to_float() * len(batch_ids)
-            print("\r%d" % ofs, end="")
+            print("%d" % ofs, end="\r")
             sys.stdout.flush()
-
-        print()
 
         valid_ppl = math.exp(valid_loss / num_valid_labels)
         print("  valid ppl =", valid_ppl)

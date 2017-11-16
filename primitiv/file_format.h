@@ -19,7 +19,7 @@ public:
     TENSOR    = 0x100,
     PARAMETER = 0x200,
     MODEL     = 0x300,
-    TRAINER   = 0x400,
+    OPTIMIZER = 0x400,
   };
 
   static void check_version(std::uint32_t major, std::uint32_t minor) {

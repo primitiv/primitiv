@@ -1,10 +1,10 @@
-#ifndef PRIMITIV_TRAINER_IMPL_H_
-#define PRIMITIV_TRAINER_IMPL_H_
+#ifndef PRIMITIV_OPTIMIZER_IMPL_H_
+#define PRIMITIV_OPTIMIZER_IMPL_H_
 
-#include <primitiv/trainer.h>
+#include <primitiv/optimizer.h>
 
 namespace primitiv {
-namespace trainers {
+namespace optimizers {
 
 #define DECL_DEFAULTS \
 public: \
@@ -21,7 +21,7 @@ private: \
 /**
  * Simple stochastic gradient descent.
  */
-class SGD : public primitiv::Trainer {
+class SGD : public primitiv::Optimizer {
   DECL_DEFAULTS;
 
 public:
@@ -44,7 +44,7 @@ private:
 /**
  * Stochastic gradient descent with momentum.
  */
-class MomentumSGD : public primitiv::Trainer {
+class MomentumSGD : public primitiv::Optimizer {
   DECL_DEFAULTS;
 
 public:
@@ -76,7 +76,7 @@ private:
 /**
  * AdaGrad optimizer.
  */
-class AdaGrad : public primitiv::Trainer {
+class AdaGrad : public primitiv::Optimizer {
   DECL_DEFAULTS;
 
 public:
@@ -108,7 +108,7 @@ private:
 /**
  * RMSProp Optimizer.
  */
-class RMSProp : public primitiv::Trainer {
+class RMSProp : public primitiv::Optimizer {
   DECL_DEFAULTS;
 
 public:
@@ -149,7 +149,7 @@ private:
  * AdaDelta optimizer.
  * https://arxiv.org/abs/1212.5701
  */
-class AdaDelta : public primitiv::Trainer {
+class AdaDelta : public primitiv::Optimizer {
   DECL_DEFAULTS;
 
 public:
@@ -182,7 +182,7 @@ private:
  * Adam optimizer.
  * https://arxiv.org/abs/1412.6980
  */
-class Adam : public primitiv::Trainer {
+class Adam : public primitiv::Optimizer {
   DECL_DEFAULTS;
 
 public:
@@ -231,7 +231,7 @@ private:
 
 #undef DECL_DEFAULTS
 
-}  // namespace trainers
+}  // namespace optimizers
 }  // namespace primitiv
 
-#endif  // PRIMITIV_TRAINER_IMPL_H_
+#endif  // PRIMITIV_OPTIMIZER_IMPL_H_

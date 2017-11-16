@@ -9,11 +9,11 @@
 #include <primitiv/msgpack/writer.h>
 #include <primitiv/operators.h>
 #include <primitiv/parameter.h>
-#include <primitiv/trainer.h>
+#include <primitiv/optimizer.h>
 
 namespace primitiv {
 
-void Trainer::load(const std::string &path) {
+void Optimizer::load(const std::string &path) {
   std::ifstream ifs(path);
   if (!ifs.is_open()) {
     THROW_ERROR("Could not open file: " << path);
@@ -26,7 +26,7 @@ void Trainer::load(const std::string &path) {
 
   std::uint32_t datatype;
   reader >> datatype;
-  FileFormat::check_datatype(FileFormat::DataType::TRAINER, datatype);
+  FileFormat::check_datatype(FileFormat::DataType::OPTIMIZER, datatype);
 
   std::unordered_map<std::string, std::uint32_t> uint_configs;
   std::unordered_map<std::string, float> float_configs;
@@ -34,7 +34,7 @@ void Trainer::load(const std::string &path) {
   set_configs(uint_configs, float_configs);
 }
 
-void Trainer::save(const std::string &path) const {
+void Optimizer::save(const std::string &path) const {
   std::unordered_map<std::string, std::uint32_t> uint_configs;
   std::unordered_map<std::string, float> float_configs;
   get_configs(uint_configs, float_configs);
@@ -47,11 +47,11 @@ void Trainer::save(const std::string &path) const {
 
   writer << FileFormat::CurrentVersion::MAJOR;
   writer << FileFormat::CurrentVersion::MINOR;
-  writer << static_cast<std::uint32_t>(FileFormat::DataType::TRAINER);
+  writer << static_cast<std::uint32_t>(FileFormat::DataType::OPTIMIZER);
   writer << uint_configs << float_configs;
 }
 
-void Trainer::add_parameter(Parameter &param) {
+void Optimizer::add_parameter(Parameter &param) {
   if (params_.find(&param) != params_.end()) {
     THROW_ERROR("Parameter '" << &param << "' is already registered.");
   }
@@ -59,19 +59,19 @@ void Trainer::add_parameter(Parameter &param) {
   configure_parameter(param);
 }
 
-void Trainer::add_model(const Model &model) {
-  for (Parameter *param : model.get_trainable_parameters()) {
-    add_parameter(*param);
+void Optimizer::add_model(const Model &model) {
+  for (const auto &kv : model.get_trainable_parameters()) {
+    add_parameter(*kv.second);
   }
 }
 
-void Trainer::reset_gradients() {
+void Optimizer::reset_gradients() {
   for (Parameter *param : params_) {
     param->reset_gradient();
   }
 }
 
-void Trainer::update() {
+void Optimizer::update() {
   if (l2_strength_ > 0) {
     // Weight decay
     for (Parameter *param : params_) {
@@ -101,29 +101,29 @@ void Trainer::update() {
   ++epoch_;
 }
 
-void Trainer::get_configs(
+void Optimizer::get_configs(
     std::unordered_map<std::string, std::uint32_t> &uint_configs,
     std::unordered_map<std::string, float> &float_configs) const {
-  uint_configs.insert(std::make_pair("Trainer.epoch", epoch_));
-  float_configs.insert(std::make_pair("Trainer.lr_scale", lr_scale_));
-  float_configs.insert(std::make_pair("Trainer.l2_strength", l2_strength_));
-  float_configs.insert(std::make_pair("Trainer.clip_threshold", clip_threshold_));
+  uint_configs.insert(std::make_pair("Optimizer.epoch", epoch_));
+  float_configs.insert(std::make_pair("Optimizer.lr_scale", lr_scale_));
+  float_configs.insert(std::make_pair("Optimizer.l2_strength", l2_strength_));
+  float_configs.insert(std::make_pair("Optimizer.clip_threshold", clip_threshold_));
 }
 
-void Trainer::set_configs(
+void Optimizer::set_configs(
     const std::unordered_map<std::string, std::uint32_t> &uint_configs,
     const std::unordered_map<std::string, float> &float_configs) {
 #define SET_CONFIG(dest, cfg, key) { \
   const auto it = cfg.find(key); \
   if (it == cfg.end()) { \
-    THROW_ERROR("Key not found in the trainer config: " << key); \
+    THROW_ERROR("Key not found in the optimizer config: " << key); \
   } \
   dest = it->second; \
 }
-  SET_CONFIG(epoch_, uint_configs, "Trainer.epoch");
-  SET_CONFIG(lr_scale_, float_configs, "Trainer.lr_scale");
-  SET_CONFIG(l2_strength_, float_configs, "Trainer.l2_strength");
-  SET_CONFIG(clip_threshold_, float_configs, "Trainer.clip_threshold");
+  SET_CONFIG(epoch_, uint_configs, "Optimizer.epoch");
+  SET_CONFIG(lr_scale_, float_configs, "Optimizer.lr_scale");
+  SET_CONFIG(l2_strength_, float_configs, "Optimizer.l2_strength");
+  SET_CONFIG(clip_threshold_, float_configs, "Optimizer.clip_threshold");
 #undef SET_CONFIG
 }
 
