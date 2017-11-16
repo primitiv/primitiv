@@ -165,8 +165,9 @@ kernel void concat_fw_kernel(constant float *px, constant unsigned *span_p, cons
   const unsigned skip = skip_p[0];
   const unsigned x_size = x_size_p[0];
   const unsigned y_size = y_size_p[0];
+  const unsigned shift = shift_p[0];
   const unsigned i = get_global_id(0);
-  if (i < y_size) py[(i / span) * skip + (i % span) + shift_p[0]] = px[i % x_size];
+  if (i < y_size) py[(i / span) * skip + (i % span) + shift] = px[i % x_size];
 }
 )EOS";
   ss << R"EOS(
@@ -1035,9 +1036,9 @@ void OpenCL::concat_fw_impl(const std::vector<const Tensor *> &xs, std::uint32_t
     queue.enqueueNDRangeKernel(concat_fw_kernel_, cl::NullRange,
                                cl::NDRange(num_blocks * concat_fw_kernel_group_size_),
                                cl::NDRange(concat_fw_kernel_group_size_), NULL, NULL);
+    queue.finish();
     offset += span;
   }
-  queue.finish();
 }
 
 void OpenCL::pick_bw_impl(const Tensor &gy, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &gx) {
