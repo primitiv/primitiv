@@ -19,12 +19,6 @@ namespace devices {
 #define GRID_SIZE(x, threads) (((x) + (threads) - 1) / (threads))
 #define CDATA(x) (*(static_cast<const cl::Buffer *>((x).data())))
 
-#define SET_ARG_HOST_SCALAR(kernel, idx, type, var) \
-  cl::Buffer opencl_mem_##var = cl::Buffer(context_, \
-      CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, \
-      sizeof(type), const_cast<type*>(&var)); \
-  kernel.setArg(idx, opencl_mem_##var);
-
 #define SET_ARG_HOST_VECTOR(kernel, idx, type, var) \
   cl::Buffer opencl_mem_##var = cl::Buffer(context_, \
       CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, \
@@ -36,10 +30,8 @@ std::string OpenCL::kernel_code_generator() {
   for(std::uint32_t group_size = 1; group_size <= 1024; group_size <<= 1) {
     ss <<
 "kernel void argmax_kernel_" << group_size <<
-"(constant float *px, constant unsigned *skip_p, constant unsigned *n_p, global unsigned *py) {\n"
+"(constant float *px, const unsigned skip, const unsigned n, global unsigned *py) {\n"
 "#define GROUP_SIZE " << group_size << R"EOS(
-  const unsigned skip = skip_p[0];
-  const unsigned n = n_p[0];
   const unsigned bid = get_group_id(0);
   const unsigned tid = get_local_id(0);
   local float max_val[GROUP_SIZE];
@@ -83,10 +75,8 @@ std::string OpenCL::kernel_code_generator() {
   for(std::uint32_t group_size = 1; group_size <= 1024; group_size <<= 1) {
     ss <<
 "kernel void argmin_kernel_" << group_size <<
-"(constant float *px, constant unsigned *skip_p, constant unsigned *n_p, global unsigned *py) {\n"
+"(constant float *px, const unsigned skip, const unsigned n, global unsigned *py) {\n"
 "#define GROUP_SIZE " << group_size << R"EOS(
-  const unsigned skip = skip_p[0];
-  const unsigned n = n_p[0];
   const unsigned bid = get_group_id(0);
   const unsigned tid = get_local_id(0);
   local float min_val[GROUP_SIZE];
@@ -128,22 +118,15 @@ std::string OpenCL::kernel_code_generator() {
 )EOS";
   }
   ss << R"EOS(
-kernel void set_identity_kernel(constant unsigned *size_p, constant unsigned *skip_p, global float *py) {
+kernel void set_identity_kernel(const unsigned size, const unsigned skip, global float *py) {
   const unsigned i = get_global_id(0);
-  const unsigned size = size_p[0];
-  const unsigned skip = skip_p[0];
   if (i < size) py[i] = !(i % skip);
 }
 )EOS";
   ss << R"EOS(
 kernel void pick_fw_kernel(constant float *px, constant unsigned *pi,
-                           constant unsigned *wx_p, constant unsigned *wy_p, constant unsigned *sx_p,
-                           constant unsigned *si_p, constant unsigned *sy_p, global float *py) {
-  const unsigned wx = wx_p[0];
-  const unsigned wy = wy_p[0];
-  const unsigned sx = sx_p[0];
-  const unsigned si = si_p[0];
-  const unsigned sy = sy_p[0];
+                           const unsigned wx, const unsigned wy, const unsigned sx,
+                           const unsigned si, const unsigned sy, global float *py) {
   const unsigned t = get_global_id(0);
   const unsigned bid_y = get_group_id(1);
   const unsigned ox = bid_y * sx + pi[bid_y * si] * wy;
@@ -152,23 +135,15 @@ kernel void pick_fw_kernel(constant float *px, constant unsigned *pi,
 }
 )EOS";
   ss << R"EOS(
-kernel void slice_fw_kernel(constant float *px, constant unsigned *shift_p, constant unsigned *span_p,
-                            constant unsigned *skip_p, constant unsigned *size_p, global float *py) {
-  const unsigned span = span_p[0];
-  const unsigned skip = skip_p[0];
-  const unsigned size = size_p[0];
+kernel void slice_fw_kernel(constant float *px, const unsigned shift, const unsigned span,
+                            const unsigned skip, const unsigned size, global float *py) {
   const unsigned i = get_global_id(0);
-  if (i < size) py[i] = px[(i / span) * skip + (i % span) + shift_p[0]];
+  if (i < size) py[i] = px[(i / span) * skip + (i % span) + shift];
 }
 )EOS";
   ss << R"EOS(
-kernel void concat_fw_kernel(constant float *px, constant unsigned *span_p, constant unsigned *skip_p,
-                             constant unsigned *x_size_p, constant unsigned *y_size_p, global float *py, constant unsigned *shift_p) {
-  const unsigned span = span_p[0];
-  const unsigned skip = skip_p[0];
-  const unsigned x_size = x_size_p[0];
-  const unsigned y_size = y_size_p[0];
-  const unsigned shift = shift_p[0];
+kernel void concat_fw_kernel(constant float *px, const unsigned span, const unsigned skip,
+                             const unsigned x_size, const unsigned y_size, global float *py, const unsigned shift) {
   const unsigned i = get_global_id(0);
   if (i < y_size) py[(i / span) * skip + (i % span) + shift] = px[i % x_size];
 }
@@ -189,13 +164,8 @@ inline void atomic_add_float(global float *source, const float operand) {
 }
 )EOS";
   ss << R"EOS(
-kernel void pick_bw_kernel(constant float *pgy, constant unsigned *pi, constant unsigned *wx_p, constant unsigned *wy_p,
-                           constant unsigned *sx_p, constant unsigned *si_p, constant unsigned *sy_p, global float *pgx) {
-  const unsigned wx = wx_p[0];
-  const unsigned wy = wy_p[0];
-  const unsigned sx = sx_p[0];
-  const unsigned si = si_p[0];
-  const unsigned sy = sy_p[0];
+kernel void pick_bw_kernel(constant float *pgy, constant unsigned *pi, const unsigned wx, const unsigned wy,
+                           const unsigned sx, const unsigned si, const unsigned sy, global float *pgx) {
   const unsigned t = get_global_id(0);
   const unsigned bid_y = get_group_id(1);
   const unsigned ox = bid_y * sx + pi[bid_y * si] * wy;
@@ -204,57 +174,43 @@ kernel void pick_bw_kernel(constant float *pgy, constant unsigned *pi, constant 
 }
 )EOS";
   ss << R"EOS(
-kernel void slice_bw_kernel(constant float *pgy, constant unsigned *wx_p, constant unsigned *wy_p,
-                            constant unsigned *nx_p, constant unsigned *ny_p, global float *pgx, constant unsigned *shift_p) {
-  const unsigned wx = wx_p[0];
-  const unsigned wy = wy_p[0];
-  const unsigned nx = nx_p[0];
-  const unsigned ny = ny_p[0];
-  const unsigned shift = shift_p[0];
+kernel void slice_bw_kernel(constant float *pgy, const unsigned wx, const unsigned wy,
+                            const unsigned nx, const unsigned ny, global float *pgx, const unsigned shift) {
   const unsigned i = get_global_id(0);
   if (i < wy * max(nx, ny)) atomic_add_float(pgx + shift + ((i / wy) * wx + (i % wy)) % (wx * nx), pgy[i % (wy * ny)]);
 }
 )EOS";
 
 #define OPENCLDEV_KERNEL_FW_X(name, op) \
-  ss << "kernel void " << name << "_fw_kernel(constant float *px, constant unsigned *size_p, global float *py) {" \
-        "  const unsigned size = size_p[0];" \
+  ss << "kernel void " << name << "_fw_kernel(constant float *px, const unsigned size, global float *py) {" \
         "  const unsigned i = get_global_id(0);" \
         "  if (i < size) py[i] = (" << op << ");" \
         "}\n";
 
 #define OPENCLDEV_KERNEL_BW_X(name, op) \
   ss << "kernel void " << name << "_bw_kernel(constant float *px, constant float *py, constant float *pgy," \
-        "                                     constant unsigned *size_p, global float *pgx) {" \
-        "  const unsigned size = size_p[0];" \
+        "                                     const unsigned size, global float *pgx) {" \
         "  const unsigned i = get_global_id(0);" \
         "  if (i < size) pgx[i] += (" << op << ");" \
         "}\n";
 
 #define OPENCLDEV_KERNEL_FW_X_CONST(name, op) \
-  ss << "kernel void " << name << "_fw_kernel(constant float *px, constant float *k_p," \
-        "                                     constant unsigned *size_p, global float *py) {" \
-        "  const float k = k_p[0];" \
-        "  const unsigned size = size_p[0];" \
+  ss << "kernel void " << name << "_fw_kernel(constant float *px, const float k," \
+        "                                     const unsigned size, global float *py) {" \
         "  const unsigned i = get_global_id(0);" \
         "  if (i < size) py[i] = (" << op << ");" \
         "}\n";
 
 #define OPENCLDEV_KERNEL_BW_X_CONST(name, op) \
   ss << "kernel void " << name << "_bw_kernel(constant float *px, constant float *py, constant float *pgy," \
-        "                                     constant float *k_p, constant unsigned *size_p, global float *pgx) {" \
-        "  const float k = k_p[0];" \
-        "  const unsigned size = size_p[0];" \
+        "                                     const float k, const unsigned size, global float *pgx) {" \
         "  const unsigned i = get_global_id(0);" \
         "  if (i < size) pgx[i] += (" << op << ");" \
         "}\n";
 
 #define OPENCLDEV_KERNEL_FW_X_SCALAR_R_INFIX(name, op) \
-  ss << "kernel void " << name << "_fw_kernel(constant float *px, constant float *pk, constant unsigned *size_p," \
-        "                                     constant unsigned *mbx_p, constant unsigned *mbk_p, global float *py) {" \
-        "  const unsigned size = size_p[0];" \
-        "  const unsigned mbx = mbx_p[0];" \
-        "  const unsigned mbk = mbk_p[0];" \
+  ss << "kernel void " << name << "_fw_kernel(constant float *px, constant float *pk, const unsigned size," \
+        "                                     const unsigned mbx, const unsigned mbk, global float *py) {" \
         "  const unsigned i = get_global_id(0);" \
         "  const unsigned bid_y = get_group_id(1);" \
         "  const unsigned shift = bid_y * size;" \
@@ -262,11 +218,8 @@ kernel void slice_bw_kernel(constant float *pgy, constant unsigned *wx_p, consta
         "}\n";
 
 #define OPENCLDEV_KERNEL_FW_X_SCALAR_L_INFIX(name, op) \
-  ss << "kernel void " << name << "_fw_kernel(constant float *px, constant float *pk, constant unsigned *size_p," \
-        "                                     constant unsigned *mbx_p, constant unsigned *mbk_p, global float *py) {" \
-        "  const unsigned size = size_p[0];" \
-        "  const unsigned mbx = mbx_p[0];" \
-        "  const unsigned mbk = mbk_p[0];" \
+  ss << "kernel void " << name << "_fw_kernel(constant float *px, constant float *pk, const unsigned size," \
+        "                                     const unsigned mbx, const unsigned mbk, global float *py) {" \
         "  const unsigned i = get_global_id(0);" \
         "  const unsigned bid_y = get_group_id(1);" \
         "  const unsigned shift = bid_y * size;" \
@@ -274,11 +227,8 @@ kernel void slice_bw_kernel(constant float *pgy, constant unsigned *wx_p, consta
         "}\n";
 
 #define OPENCLDEV_KERNEL_FW_AB_INFIX(name, op) \
-  ss << "kernel void " << name << "_fw_kernel(constant float *pa, constant float *pb, constant unsigned *size_p," \
-        "                                  constant unsigned *mba_p, constant unsigned *mbb_p, global float *py) {" \
-        "  const unsigned size = size_p[0];" \
-        "  const unsigned mba = mba_p[0];" \
-        "  const unsigned mbb = mbb_p[0];" \
+  ss << "kernel void " << name << "_fw_kernel(constant float *pa, constant float *pb, const unsigned size," \
+        "                                     const unsigned mba, const unsigned mbb, global float *py) {" \
         "  const unsigned i = get_global_id(0);" \
         "  const unsigned bid_y = get_group_id(1);" \
         "  const unsigned shift = bid_y * size;" \
@@ -346,10 +296,7 @@ OPENCLDEV_KERNEL_FW_AB_INFIX("divide", "/");
 
   ss << R"EOS(
 kernel void add_bw_kernel(constant float *pa, constant float *pb, constant float *py, constant float *pgy,
-                          constant unsigned *size_p, constant unsigned *mba_p, constant unsigned *mbb_p, global float *pga, global float *pgb) {
-  const unsigned size = size_p[0];
-  const unsigned mba = mba_p[0];
-  const unsigned mbb = mbb_p[0];
+                          const unsigned size, const unsigned mba, const unsigned mbb, global float *pga, global float *pgb) {
   const unsigned i = get_global_id(0);
   const unsigned bid_y = get_group_id(1);
   const unsigned shift = bid_y * size;
@@ -363,10 +310,7 @@ kernel void add_bw_kernel(constant float *pa, constant float *pb, constant float
 
   ss << R"EOS(
 kernel void subtract_bw_kernel(constant float *pa, constant float *pb, constant float *py, constant float *pgy,
-                               constant unsigned *size_p, constant unsigned *mba_p, constant unsigned *mbb_p, global float *pga, global float *pgb) {
-  const unsigned size = size_p[0];
-  const unsigned mba = mba_p[0];
-  const unsigned mbb = mbb_p[0];
+                               const unsigned size, const unsigned mba, const unsigned mbb, global float *pga, global float *pgb) {
   const unsigned i = get_global_id(0);
   const unsigned bid_y = get_group_id(1);
   const unsigned shift = bid_y * size;
@@ -380,10 +324,7 @@ kernel void subtract_bw_kernel(constant float *pa, constant float *pb, constant 
 
   ss << R"EOS(
 kernel void multiply_bw_kernel(constant float *pa, constant float *pb, constant float *py, constant float *pgy,
-                               constant unsigned *size_p, constant unsigned *mba_p, constant unsigned *mbb_p, global float *pga, global float *pgb) {
-  const unsigned size = size_p[0];
-  const unsigned mba = mba_p[0];
-  const unsigned mbb = mbb_p[0];
+                               const unsigned size, const unsigned mba, const unsigned mbb, global float *pga, global float *pgb) {
   const unsigned i = get_global_id(0);
   const unsigned bid_y = get_group_id(1);
   const unsigned shift = bid_y * size;
@@ -399,10 +340,7 @@ kernel void multiply_bw_kernel(constant float *pa, constant float *pb, constant 
 
   ss << R"EOS(
 kernel void divide_bw_kernel(constant float *pa, constant float *pb, constant float *py, constant float *pgy,
-                             constant unsigned *size_p, constant unsigned *mba_p, constant unsigned *mbb_p, global float *pga, global float *pgb) {
-  const unsigned size = size_p[0];
-  const unsigned mba = mba_p[0];
-  const unsigned mbb = mbb_p[0];
+                             const unsigned size, const unsigned mba, const unsigned mbb, global float *pga, global float *pgb) {
   const unsigned i = get_global_id(0);
   const unsigned bid_y = get_group_id(1);
   const unsigned shift = bid_y * size;
@@ -417,9 +355,7 @@ kernel void divide_bw_kernel(constant float *pa, constant float *pb, constant fl
 )EOS";
 
   ss << R"EOS(
-kernel void transpose_fw_kernel(constant float *px, constant unsigned *rows_p, constant unsigned *cols_p, global float *py) {
-  const unsigned rows = rows_p[0];
-  const unsigned cols = cols_p[0];
+kernel void transpose_fw_kernel(constant float *px, unsigned rows, unsigned cols, global float *py) {
   const unsigned i = get_global_id(0);
   const unsigned j = get_global_id(1);
   const unsigned bid_z = get_group_id(2);
@@ -428,9 +364,7 @@ kernel void transpose_fw_kernel(constant float *px, constant unsigned *rows_p, c
 }
 )EOS";
   ss << R"EOS(
-kernel void transpose_bw_kernel(constant float *py, constant unsigned *rows_p, constant unsigned *cols_p, global float *px) {
-  const unsigned rows = rows_p[0];
-  const unsigned cols = cols_p[0];
+kernel void transpose_bw_kernel(constant float *py, const unsigned rows, const unsigned cols, global float *px) {
   const unsigned i = get_global_id(0);
   const unsigned j = get_global_id(1);
   const unsigned bid_z = get_group_id(2);
@@ -442,10 +376,8 @@ kernel void transpose_bw_kernel(constant float *py, constant unsigned *rows_p, c
   for(std::uint32_t group_size = 1; group_size <= 1024; group_size <<= 1) {
     ss <<
 "kernel void sum_fw_kernel_" << group_size <<
-"(constant float *px, constant unsigned *skip_p, constant unsigned *n_p, global float *py) {\n"
+"(constant float *px, const unsigned skip, const unsigned n, global float *py) {\n"
 "#define GROUP_SIZE " << group_size << R"EOS(
-  const unsigned skip = skip_p[0];
-  const unsigned n = n_p[0];
   const unsigned bid = get_group_id(0);
   const unsigned tid = get_local_id(0);
   local float temp[GROUP_SIZE];
@@ -484,10 +416,8 @@ inline float logsumexp2_fw_kernel(float a, float b) {
   for(std::uint32_t group_size = 1; group_size <= 1024; group_size <<= 1) {
     ss <<
 "kernel void logsumexp_fw_kernel_" << group_size <<
-"(constant float *px, constant unsigned *skip_p, constant unsigned *n_p, global float *py) {\n"
+"(constant float *px, const unsigned skip, const unsigned n, global float *py) {\n"
 "#define GROUP_SIZE " << group_size << R"EOS(
-  const unsigned skip = skip_p[0];
-  const unsigned n = n_p[0];
   const unsigned bid = get_group_id(0);
   const unsigned tid = get_local_id(0);
   local float temp[GROUP_SIZE];
@@ -519,20 +449,15 @@ inline float logsumexp2_fw_kernel(float a, float b) {
 )EOS";
   }
   ss << R"EOS(
-kernel void broadcast_fw_kernel(constant float *px, constant unsigned *skip1_p, constant unsigned *skip2_p,
-                                constant unsigned *size_p, global float *py) {
-  const unsigned skip1 = skip1_p[0];
-  const unsigned skip2 = skip2_p[0];
-  const unsigned size = size_p[0];
+kernel void broadcast_fw_kernel(constant float *px, const unsigned skip1, const unsigned skip2,
+                                const unsigned size, global float *py) {
   const unsigned i = get_global_id(0);
   if (i < size) py[i] = px[i % skip1 + (i / skip2) * skip1];
 }
 )EOS";
   ss << R"EOS(
-kernel void batch_sum_fw_kernel(constant float *px, constant unsigned *size_p,
-                                constant unsigned *batch_p, global float *py) {
-  const unsigned size = size_p[0];
-  const unsigned batch = batch_p[0];
+kernel void batch_sum_fw_kernel(constant float *px, const unsigned size,
+                                const unsigned batch, global float *py) {
   const unsigned i = get_global_id(0);;
   if (i < size) {
     float temp = .0f;
@@ -545,19 +470,14 @@ kernel void batch_sum_fw_kernel(constant float *px, constant unsigned *size_p,
 }
 )EOS";
   ss << R"EOS(
-kernel void inplace_multiply_const_kernel(constant float *k_p, constant unsigned *size_p, global float *px) {
-  const float k = k_p[0];
-  const unsigned size = size_p[0];
+kernel void inplace_multiply_const_kernel(const float k, const unsigned size, global float *px) {\
   const unsigned i = get_global_id(0);
   if (i < size) px[i] *= k;
 }
 )EOS";
   ss << R"EOS(
-kernel void inplace_add_kernel(constant float *px, constant unsigned *size_p,
-                               constant unsigned *mbx_p, constant unsigned *mby_p, global float *py) {
-  const unsigned size = size_p[0];
-  const unsigned mbx = mbx_p[0];
-  const unsigned mby = mby_p[0];
+kernel void inplace_add_kernel(constant float *px, const unsigned size,
+                               const unsigned mbx, const unsigned mby, global float *py) {
   const unsigned i = get_global_id(0);
   const unsigned bid_y = get_group_id(1);
   const unsigned shift = bid_y * size;
@@ -565,11 +485,8 @@ kernel void inplace_add_kernel(constant float *px, constant unsigned *size_p,
 }
 )EOS";
   ss << R"EOS(
-kernel void inplace_subtract_kernel(constant float *px, constant unsigned *size_p,
-                                    constant unsigned *mbx_p, constant unsigned *mby_p, global float *py) {
-  const unsigned size = size_p[0];
-  const unsigned mbx = mbx_p[0];
-  const unsigned mby = mby_p[0];
+kernel void inplace_subtract_kernel(constant float *px, const unsigned size,
+                                    const unsigned mbx, const unsigned mby, global float *py) {
   const unsigned i = get_global_id(0);
   const unsigned bid_y = get_group_id(1);
   const unsigned shift = bid_y * size;
@@ -766,7 +683,7 @@ void OpenCL::initialize() {
     ss << "sum_fw_kernel_" << (1 << i);
     sum_fw_kernel_[i] = cl::Kernel(program, ss.str().c_str());
   }
-  sum_fw_kernel_group_size_ = sum_fw_kernel_[0].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
+  sum_fw_kernel_group_size_ = sum_fw_kernel_[10].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
   for (std::uint32_t i = 0; i <= 10; ++i) {
     std::ostringstream ss;
     ss << "logsumexp_fw_kernel_" << (1 << i);
@@ -850,12 +767,6 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(const Tensor &x, std::uint32_t di
   std::uint32_t group_size = std::min(argmax_kernel_group_size_, (std::uint32_t) 1024);
   while (group_size >> 1 >= n) group_size >>= 1;
   cl::CommandQueue queue(context_, device_, 0);
-  cl::Buffer mem_s = cl::Buffer(context_,
-      CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      sizeof(cl_uint), const_cast<cl_uint*>(&s));
-  cl::Buffer mem_n = cl::Buffer(context_,
-      CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      sizeof(cl_uint), const_cast<cl_uint*>(&n));
   cl::Buffer py = cl::Buffer(context_,
       CL_MEM_WRITE_ONLY,
       sizeof(cl_uint) * r, NULL);
@@ -863,8 +774,8 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(const Tensor &x, std::uint32_t di
 #define CASE(k, m) \
     case k: \
       argmax_kernel_[m].setArg(0, CDATA(x)); \
-      argmax_kernel_[m].setArg(1, mem_s); \
-      argmax_kernel_[m].setArg(2, mem_n); \
+      argmax_kernel_[m].setArg(1, s); \
+      argmax_kernel_[m].setArg(2, n); \
       argmax_kernel_[m].setArg(3, py); \
       queue.enqueueNDRangeKernel(argmax_kernel_[m], cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
       queue.finish();; break;
@@ -892,15 +803,9 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(const Tensor &x, std::uint32_t di
   const std::uint32_t n = shape[dim];
   const std::uint32_t r = shape.size() / n;
   const std::uint32_t s = shape.lower_volume(dim);
-  std::uint32_t group_size = std::min(argmin_kernel_group_size_, (std::uint32_t) 1024);
+  std::uint32_t group_size = std::min(argmin_kernel_group_size_, (std::uint32_t) 2);
   while (group_size >> 1 >= n) group_size >>= 1;
   cl::CommandQueue queue(context_, device_, 0);
-  cl::Buffer mem_s = cl::Buffer(context_,
-      CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      sizeof(cl_uint), const_cast<cl_uint*>(&s));
-  cl::Buffer mem_n = cl::Buffer(context_,
-      CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      sizeof(cl_uint), const_cast<cl_uint*>(&n));
   cl::Buffer py = cl::Buffer(context_,
       CL_MEM_WRITE_ONLY,
       sizeof(cl_uint) * r, NULL);
@@ -908,8 +813,8 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(const Tensor &x, std::uint32_t di
 #define CASE(k, m) \
     case k: \
       argmin_kernel_[m].setArg(0, CDATA(x)); \
-      argmin_kernel_[m].setArg(1, mem_s); \
-      argmin_kernel_[m].setArg(2, mem_n); \
+      argmin_kernel_[m].setArg(1, s); \
+      argmin_kernel_[m].setArg(2, n); \
       argmin_kernel_[m].setArg(3, py); \
       queue.enqueueNDRangeKernel(argmin_kernel_[m], cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
       queue.finish();; break;
@@ -971,8 +876,8 @@ void OpenCL::identity_impl(Tensor &y) {
   const std::uint32_t skip = y.shape()[0] + 1;
   const std::uint32_t num_blocks = GRID_SIZE(size, set_identity_kernel_group_size_);
   cl::CommandQueue queue(context_, device_, 0);
-  SET_ARG_HOST_SCALAR(set_identity_kernel_, 0, cl_uint, size)
-  SET_ARG_HOST_SCALAR(set_identity_kernel_, 1, cl_uint, skip)
+  set_identity_kernel_.setArg(0, size);
+  set_identity_kernel_.setArg(1, skip);
   set_identity_kernel_.setArg(2, CDATA(y));
   queue.enqueueNDRangeKernel(set_identity_kernel_, cl::NullRange,
                              cl::NDRange(num_blocks * set_identity_kernel_group_size_),
@@ -1027,11 +932,11 @@ void OpenCL::pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids
   cl::CommandQueue queue(context_, device_, 0);
   pick_fw_kernel_.setArg(0, CDATA(x));
   SET_ARG_HOST_VECTOR(pick_fw_kernel_, 1, cl_uint, ids)
-  SET_ARG_HOST_SCALAR(pick_fw_kernel_, 2, cl_uint, wx)
-  SET_ARG_HOST_SCALAR(pick_fw_kernel_, 3, cl_uint, wy)
-  SET_ARG_HOST_SCALAR(pick_fw_kernel_, 4, cl_uint, sx)
-  SET_ARG_HOST_SCALAR(pick_fw_kernel_, 5, cl_uint, si)
-  SET_ARG_HOST_SCALAR(pick_fw_kernel_, 6, cl_uint, sy)
+  pick_fw_kernel_.setArg(2, wx);
+  pick_fw_kernel_.setArg(3, wy);
+  pick_fw_kernel_.setArg(4, sx);
+  pick_fw_kernel_.setArg(5, si);
+  pick_fw_kernel_.setArg(6, sy);
   pick_fw_kernel_.setArg(7, CDATA(y));
   queue.enqueueNDRangeKernel(pick_fw_kernel_, cl::NullRange,
                              cl::NDRange(g1 * pick_fw_kernel_group_size_, bs),
@@ -1048,10 +953,10 @@ void OpenCL::slice_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t off
   const std::uint32_t num_blocks = GRID_SIZE(size, slice_fw_kernel_group_size_);
   cl::CommandQueue queue(context_, device_, 0);
   slice_fw_kernel_.setArg(0, CDATA(x));
-  SET_ARG_HOST_SCALAR(slice_fw_kernel_, 1, cl_uint, shift)
-  SET_ARG_HOST_SCALAR(slice_fw_kernel_, 2, cl_uint, span)
-  SET_ARG_HOST_SCALAR(slice_fw_kernel_, 3, cl_uint, skip)
-  SET_ARG_HOST_SCALAR(slice_fw_kernel_, 4, cl_uint, size)
+  slice_fw_kernel_.setArg(1, shift);
+  slice_fw_kernel_.setArg(2, span);
+  slice_fw_kernel_.setArg(3, skip);
+  slice_fw_kernel_.setArg(4, size);
   slice_fw_kernel_.setArg(5, CDATA(y));
   queue.enqueueNDRangeKernel(slice_fw_kernel_, cl::NullRange,
                              cl::NDRange(num_blocks * slice_fw_kernel_group_size_),
@@ -1072,12 +977,12 @@ void OpenCL::concat_fw_impl(const std::vector<const Tensor *> &xs, std::uint32_t
     const std::uint32_t y_size = span * repeat * new_bs;
     const std::uint32_t num_blocks = GRID_SIZE(y_size, concat_fw_kernel_group_size_);
     concat_fw_kernel_.setArg(0, CDATA(*x));
-    SET_ARG_HOST_SCALAR(concat_fw_kernel_, 1, cl_uint, span)
-    SET_ARG_HOST_SCALAR(concat_fw_kernel_, 2, cl_uint, skip)
-    SET_ARG_HOST_SCALAR(concat_fw_kernel_, 3, cl_uint, x_size)
-    SET_ARG_HOST_SCALAR(concat_fw_kernel_, 4, cl_uint, y_size)
+    concat_fw_kernel_.setArg(1, span);
+    concat_fw_kernel_.setArg(2, skip);
+    concat_fw_kernel_.setArg(3, x_size);
+    concat_fw_kernel_.setArg(4, y_size);
     concat_fw_kernel_.setArg(5, CDATA(y));
-    SET_ARG_HOST_SCALAR(concat_fw_kernel_, 6, cl_uint, offset)
+    concat_fw_kernel_.setArg(6, offset);
     queue.enqueueNDRangeKernel(concat_fw_kernel_, cl::NullRange,
                                cl::NDRange(num_blocks * concat_fw_kernel_group_size_),
                                cl::NDRange(concat_fw_kernel_group_size_), NULL, NULL);
@@ -1097,11 +1002,11 @@ void OpenCL::pick_bw_impl(const Tensor &gy, const std::vector<std::uint32_t> &id
   cl::CommandQueue queue(context_, device_, 0);
   pick_bw_kernel_.setArg(0, CDATA(gy));
   SET_ARG_HOST_VECTOR(pick_bw_kernel_, 1, cl_uint, ids)
-  SET_ARG_HOST_SCALAR(pick_bw_kernel_, 2, cl_uint, wx)
-  SET_ARG_HOST_SCALAR(pick_bw_kernel_, 3, cl_uint, wy)
-  SET_ARG_HOST_SCALAR(pick_bw_kernel_, 4, cl_uint, sx)
-  SET_ARG_HOST_SCALAR(pick_bw_kernel_, 5, cl_uint, si)
-  SET_ARG_HOST_SCALAR(pick_bw_kernel_, 6, cl_uint, sy)
+  pick_bw_kernel_.setArg(2, wx);
+  pick_bw_kernel_.setArg(3, wy);
+  pick_bw_kernel_.setArg(4, sx);
+  pick_bw_kernel_.setArg(5, si);
+  pick_bw_kernel_.setArg(6, sy);
   pick_bw_kernel_.setArg(7, CDATA(gx));
   queue.enqueueNDRangeKernel(pick_bw_kernel_, cl::NullRange,
                              cl::NDRange(g1 * concat_fw_kernel_group_size_, bs),
@@ -1122,12 +1027,12 @@ void OpenCL::slice_bw_impl(const Tensor &gy, std::uint32_t dim, std::uint32_t of
   const std::uint32_t g1 = GRID_SIZE(wy * std::max(nx, ny), slice_bw_kernel_group_size_);
   cl::CommandQueue queue(context_, device_, 0);
   slice_bw_kernel_.setArg(0, CDATA(gy));
-  SET_ARG_HOST_SCALAR(slice_bw_kernel_, 1, cl_uint, wx)
-  SET_ARG_HOST_SCALAR(slice_bw_kernel_, 2, cl_uint, wy)
-  SET_ARG_HOST_SCALAR(slice_bw_kernel_, 3, cl_uint, nx)
-  SET_ARG_HOST_SCALAR(slice_bw_kernel_, 4, cl_uint, ny)
+  slice_bw_kernel_.setArg(1, wx);
+  slice_bw_kernel_.setArg(2, wy);
+  slice_bw_kernel_.setArg(3, nx);
+  slice_bw_kernel_.setArg(4, ny);
   slice_bw_kernel_.setArg(5, CDATA(gx));
-  SET_ARG_HOST_SCALAR(slice_bw_kernel_, 6, cl_uint, ox)
+  slice_bw_kernel_.setArg(6, ox);
   queue.enqueueNDRangeKernel(slice_bw_kernel_, cl::NullRange,
                              cl::NDRange(g1 * slice_bw_kernel_group_size_),
                              cl::NDRange(slice_bw_kernel_group_size_));
@@ -1140,7 +1045,7 @@ void OpenCL::name##_fw_impl(const Tensor &x, Tensor &y) { \
   const std::uint32_t num_blocks = GRID_SIZE(size, name##_fw_kernel_group_size_); \
   cl::CommandQueue queue(context_, device_, 0); \
   name##_fw_kernel_.setArg(0, CDATA(x)); \
-  SET_ARG_HOST_SCALAR(name##_fw_kernel_, 1, cl_uint, size) \
+  name##_fw_kernel_.setArg(1, size); \
   name##_fw_kernel_.setArg(2, CDATA(y)); \
   queue.enqueueNDRangeKernel(name##_fw_kernel_, cl::NullRange, \
                              cl::NDRange(num_blocks * name##_fw_kernel_group_size_), \
@@ -1156,7 +1061,7 @@ void OpenCL::name##_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, 
   name##_bw_kernel_.setArg(0, CDATA(x)); \
   name##_bw_kernel_.setArg(1, CDATA(y)); \
   name##_bw_kernel_.setArg(2, CDATA(gy)); \
-  SET_ARG_HOST_SCALAR(name##_bw_kernel_, 3, cl_uint, size) \
+  name##_bw_kernel_.setArg(3, size); \
   name##_bw_kernel_.setArg(4, CDATA(gx)); \
   queue.enqueueNDRangeKernel(name##_bw_kernel_, cl::NullRange, \
                              cl::NDRange(num_blocks * name##_bw_kernel_group_size_), \
@@ -1170,8 +1075,8 @@ void OpenCL::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
   const std::uint32_t num_blocks = GRID_SIZE(size, name##_fw_kernel_group_size_); \
   cl::CommandQueue queue(context_, device_, 0); \
   name##_fw_kernel_.setArg(0, CDATA(x)); \
-  SET_ARG_HOST_SCALAR(name##_fw_kernel_, 1, cl_float, k) \
-  SET_ARG_HOST_SCALAR(name##_fw_kernel_, 2, cl_uint, size) \
+  name##_fw_kernel_.setArg(1, k); \
+  name##_fw_kernel_.setArg(2, size); \
   name##_fw_kernel_.setArg(3, CDATA(y)); \
   queue.enqueueNDRangeKernel(name##_fw_kernel_, cl::NullRange, \
                              cl::NDRange(num_blocks * name##_fw_kernel_group_size_), \
@@ -1187,8 +1092,8 @@ void OpenCL::name##_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, 
   name##_bw_kernel_.setArg(0, CDATA(x)); \
   name##_bw_kernel_.setArg(1, CDATA(y)); \
   name##_bw_kernel_.setArg(2, CDATA(gy)); \
-  SET_ARG_HOST_SCALAR(name##_bw_kernel_, 3, cl_float, k) \
-  SET_ARG_HOST_SCALAR(name##_bw_kernel_, 4, cl_uint, size) \
+  name##_bw_kernel_.setArg(3, k); \
+  name##_bw_kernel_.setArg(4, size); \
   name##_bw_kernel_.setArg(5, CDATA(gx)); \
   queue.enqueueNDRangeKernel(name##_bw_kernel_, cl::NullRange, \
                              cl::NDRange(num_blocks * name##_bw_kernel_group_size_), \
@@ -1206,9 +1111,9 @@ void OpenCL::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
   cl::CommandQueue queue(context_, device_, 0); \
   name##_fw_kernel_.setArg(0, CDATA(x)); \
   name##_fw_kernel_.setArg(1, CDATA(k)); \
-  SET_ARG_HOST_SCALAR(name##_fw_kernel_, 2, cl_uint, size) \
-  SET_ARG_HOST_SCALAR(name##_fw_kernel_, 3, cl_uint, mbx) \
-  SET_ARG_HOST_SCALAR(name##_fw_kernel_, 4, cl_uint, mbk) \
+  name##_fw_kernel_.setArg(2, size); \
+  name##_fw_kernel_.setArg(3, mbx); \
+  name##_fw_kernel_.setArg(4, mbk); \
   name##_fw_kernel_.setArg(5, CDATA(y)); \
   queue.enqueueNDRangeKernel(name##_fw_kernel_, cl::NullRange, \
                              cl::NDRange(g1 * name##_fw_kernel_group_size_, g2, 1), \
@@ -1226,9 +1131,9 @@ void OpenCL::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
   cl::CommandQueue queue(context_, device_, 0); \
   name##_fw_kernel_.setArg(0, CDATA(a)); \
   name##_fw_kernel_.setArg(1, CDATA(b)); \
-  SET_ARG_HOST_SCALAR(name##_fw_kernel_, 2, cl_uint, size) \
-  SET_ARG_HOST_SCALAR(name##_fw_kernel_, 3, cl_uint, mba) \
-  SET_ARG_HOST_SCALAR(name##_fw_kernel_, 4, cl_uint, mbb) \
+  name##_fw_kernel_.setArg(2, size); \
+  name##_fw_kernel_.setArg(3, mba); \
+  name##_fw_kernel_.setArg(4, mbb); \
   name##_fw_kernel_.setArg(5, CDATA(y)); \
   queue.enqueueNDRangeKernel(name##_fw_kernel_, cl::NullRange, \
                              cl::NDRange(g1 * name##_fw_kernel_group_size_, g2, 1), \
@@ -1248,9 +1153,9 @@ void OpenCL::name##_bw_impl(const Tensor &a, const Tensor &b, const Tensor &y, c
   name##_bw_kernel_.setArg(1, CDATA(b)); \
   name##_bw_kernel_.setArg(2, CDATA(y)); \
   name##_bw_kernel_.setArg(3, CDATA(gy)); \
-  SET_ARG_HOST_SCALAR(name##_bw_kernel_, 4, cl_uint, size) \
-  SET_ARG_HOST_SCALAR(name##_bw_kernel_, 5, cl_uint, mba) \
-  SET_ARG_HOST_SCALAR(name##_bw_kernel_, 6, cl_uint, mbb) \
+  name##_bw_kernel_.setArg(4, size); \
+  name##_bw_kernel_.setArg(5, mba); \
+  name##_bw_kernel_.setArg(6, mbb); \
   name##_bw_kernel_.setArg(7, CDATA(ga)); \
   name##_bw_kernel_.setArg(8, CDATA(gb)); \
   queue.enqueueNDRangeKernel(name##_bw_kernel_, cl::NullRange, \
@@ -1329,10 +1234,10 @@ void OpenCL::transpose_fw_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t bs = x.shape().batch();
   const std::uint32_t g1 = GRID_SIZE(rows, transpose_fw_kernel_group_size_x_);
   const std::uint32_t g2 = GRID_SIZE(cols, transpose_fw_kernel_group_size_y_);
-  cl::CommandQueue queue(context_, device_, 0);
-  transpose_fw_kernel_.setArg(0, CDATA(x));
-  SET_ARG_HOST_SCALAR(transpose_fw_kernel_, 1, cl_uint, rows)
-  SET_ARG_HOST_SCALAR(transpose_fw_kernel_, 2, cl_uint, cols)
+    cl::CommandQueue queue(context_, device_, 0);
+    transpose_fw_kernel_.setArg(0, CDATA(x));
+    transpose_fw_kernel_.setArg(1, rows);
+    transpose_fw_kernel_.setArg(2, cols);
   transpose_fw_kernel_.setArg(3, CDATA(y));
   queue.enqueueNDRangeKernel(transpose_fw_kernel_, cl::NullRange,
                              cl::NDRange(g1 * transpose_fw_kernel_group_size_x_, g2 * transpose_fw_kernel_group_size_y_, bs),
@@ -1378,8 +1283,8 @@ void OpenCL::transpose_bw_impl(const Tensor &, const Tensor &, const Tensor &gy,
   const std::uint32_t g2 = GRID_SIZE(cols, transpose_bw_kernel_group_size_y_);
   cl::CommandQueue queue(context_, device_, 0);
   transpose_bw_kernel_.setArg(0, CDATA(gy));
-  SET_ARG_HOST_SCALAR(transpose_bw_kernel_, 1, cl_uint, rows)
-  SET_ARG_HOST_SCALAR(transpose_bw_kernel_, 2, cl_uint, cols)
+  transpose_bw_kernel_.setArg(1, rows);
+  transpose_bw_kernel_.setArg(2, cols);
   transpose_bw_kernel_.setArg(3, CDATA(gx));
   queue.enqueueNDRangeKernel(transpose_bw_kernel_, cl::NullRange,
                              cl::NDRange(g1 * transpose_bw_kernel_group_size_x_, g2 * transpose_bw_kernel_group_size_y_, bs),
@@ -1436,18 +1341,12 @@ void OpenCL::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   std::uint32_t group_size = std::min(sum_fw_kernel_group_size_, (std::uint32_t) 1024);
   while (group_size >> 1 >= n) group_size >>= 1;
   cl::CommandQueue queue(context_, device_, 0);
-  cl::Buffer mem_s = cl::Buffer(context_,
-      CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      sizeof(cl_uint), const_cast<cl_uint*>(&s));
-  cl::Buffer mem_n = cl::Buffer(context_,
-      CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      sizeof(cl_uint), const_cast<cl_uint*>(&n));
   switch (group_size) {
 #define CASE(k, m) \
     case k: \
       sum_fw_kernel_[m].setArg(0, CDATA(x)); \
-      sum_fw_kernel_[m].setArg(1, mem_s); \
-      sum_fw_kernel_[m].setArg(2, mem_n); \
+      sum_fw_kernel_[m].setArg(1, s); \
+      sum_fw_kernel_[m].setArg(2, n); \
       sum_fw_kernel_[m].setArg(3, CDATA(y)); \
       queue.enqueueNDRangeKernel(sum_fw_kernel_[m], cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
       queue.finish();; break;
@@ -1473,18 +1372,12 @@ void OpenCL::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   std::uint32_t group_size = std::min(logsumexp_fw_kernel_group_size_, (std::uint32_t) 1024);
   while (group_size >> 1 >= n) group_size >>= 1;
   cl::CommandQueue queue(context_, device_, 0);
-  cl::Buffer mem_s = cl::Buffer(context_,
-      CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      sizeof(cl_uint), const_cast<cl_uint*>(&s));
-  cl::Buffer mem_n = cl::Buffer(context_,
-      CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      sizeof(cl_uint), const_cast<cl_uint*>(&n));
   switch (group_size) {
 #define CASE(k, m) \
     case k: \
       logsumexp_fw_kernel_[m].setArg(0, CDATA(x)); \
-      logsumexp_fw_kernel_[m].setArg(1, mem_s); \
-      logsumexp_fw_kernel_[m].setArg(2, mem_n); \
+      logsumexp_fw_kernel_[m].setArg(1, s); \
+      logsumexp_fw_kernel_[m].setArg(2, n); \
       logsumexp_fw_kernel_[m].setArg(3, CDATA(y)); \
       queue.enqueueNDRangeKernel(logsumexp_fw_kernel_[m], cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
       queue.finish();; break;
@@ -1510,9 +1403,9 @@ void OpenCL::broadcast_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t
   const std::uint32_t g1 = GRID_SIZE(total, broadcast_fw_kernel_group_size_);
   cl::CommandQueue queue(context_, device_, 0);
   broadcast_fw_kernel_.setArg(0, CDATA(x));
-  SET_ARG_HOST_SCALAR(broadcast_fw_kernel_, 1, cl_uint, skip1)
-  SET_ARG_HOST_SCALAR(broadcast_fw_kernel_, 2, cl_uint, skip2)
-  SET_ARG_HOST_SCALAR(broadcast_fw_kernel_, 3, cl_uint, total)
+  broadcast_fw_kernel_.setArg(1, skip1);
+  broadcast_fw_kernel_.setArg(2, skip2);
+  broadcast_fw_kernel_.setArg(3, total);
   broadcast_fw_kernel_.setArg(4, CDATA(y));
   queue.enqueueNDRangeKernel(broadcast_fw_kernel_, cl::NullRange,
                              cl::NDRange(g1 * broadcast_fw_kernel_group_size_),
@@ -1526,8 +1419,8 @@ void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t g1 = GRID_SIZE(size, batch_sum_fw_kernel_group_size_);
   cl::CommandQueue queue(context_, device_, 0);
   batch_sum_fw_kernel_.setArg(0, CDATA(x));
-  SET_ARG_HOST_SCALAR(batch_sum_fw_kernel_, 1, cl_uint, size)
-  SET_ARG_HOST_SCALAR(batch_sum_fw_kernel_, 2, cl_uint, batch)
+  batch_sum_fw_kernel_.setArg(1, size);
+  batch_sum_fw_kernel_.setArg(2, batch);
   batch_sum_fw_kernel_.setArg(3, CDATA(y));
   queue.enqueueNDRangeKernel(batch_sum_fw_kernel_, cl::NullRange,
                              cl::NDRange(g1 * batch_sum_fw_kernel_group_size_),
@@ -1539,8 +1432,8 @@ void OpenCL::inplace_multiply_const_impl(float k, Tensor &x) {
   const std::uint32_t size = x.shape().size();
   const std::uint32_t g1 = GRID_SIZE(size, inplace_multiply_const_kernel_group_size_);
   cl::CommandQueue queue(context_, device_, 0);
-  SET_ARG_HOST_SCALAR(inplace_multiply_const_kernel_, 0, cl_float, k)
-  SET_ARG_HOST_SCALAR(inplace_multiply_const_kernel_, 1, cl_uint, size)
+  inplace_multiply_const_kernel_.setArg(0, k);
+  inplace_multiply_const_kernel_.setArg(1, size);
   inplace_multiply_const_kernel_.setArg(2, CDATA(x));
   queue.enqueueNDRangeKernel(inplace_multiply_const_kernel_, cl::NullRange,
                              cl::NDRange(g1 * inplace_multiply_const_kernel_group_size_),
@@ -1556,9 +1449,9 @@ void OpenCL::inplace_add_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t bs = std::max(x.shape().batch(), y.shape().batch());
   cl::CommandQueue queue(context_, device_, 0);
   inplace_add_kernel_.setArg(0, CDATA(x));
-  SET_ARG_HOST_SCALAR(inplace_add_kernel_, 1, cl_uint, size)
-  SET_ARG_HOST_SCALAR(inplace_add_kernel_, 2, cl_uint, mbx)
-  SET_ARG_HOST_SCALAR(inplace_add_kernel_, 3, cl_uint, mby)
+  inplace_add_kernel_.setArg(1, size);
+  inplace_add_kernel_.setArg(2, mbx);
+  inplace_add_kernel_.setArg(3, mby);
   inplace_add_kernel_.setArg(4, CDATA(y));
   queue.enqueueNDRangeKernel(inplace_add_kernel_, cl::NullRange,
                              cl::NDRange(g1 * inplace_add_kernel_group_size_, bs, 1),
@@ -1574,9 +1467,9 @@ void OpenCL::inplace_subtract_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t bs = std::max(x.shape().batch(), y.shape().batch());
   cl::CommandQueue queue(context_, device_, 0);
   inplace_subtract_kernel_.setArg(0, CDATA(x));
-  SET_ARG_HOST_SCALAR(inplace_subtract_kernel_, 1, cl_uint, size)
-  SET_ARG_HOST_SCALAR(inplace_subtract_kernel_, 2, cl_uint, mbx)
-  SET_ARG_HOST_SCALAR(inplace_subtract_kernel_, 3, cl_uint, mby)
+  inplace_subtract_kernel_.setArg(1, size);
+  inplace_subtract_kernel_.setArg(2, mbx);
+  inplace_subtract_kernel_.setArg(3, mby);
   inplace_subtract_kernel_.setArg(4, CDATA(y));
   queue.enqueueNDRangeKernel(inplace_subtract_kernel_, cl::NullRange,
                              cl::NDRange(g1 * inplace_subtract_kernel_group_size_, bs, 1),
