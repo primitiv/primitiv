@@ -11,6 +11,10 @@ import unittest
 import tempfile
 
 
+class TestModel(Model):
+    pass
+
+
 class ModelTest(unittest.TestCase):
 
     @classmethod
@@ -34,23 +38,29 @@ class ModelTest(unittest.TestCase):
         submodel.sp1.value = tF.input(np.array([[0,1,2,3],[4,5,6,7]]))
         submodel.sp2 = Parameter([2, 4], I.Constant(0))
         submodel.sp2.value = tF.input(np.array([[9,8,7,6],[5,4,3,2]]))
-        submodel.auto_add_attributes()
+        submodel.add_parameter("sp1", submodel.sp1)
+        submodel.add_parameter("sp2", submodel.sp2)
         parentmodel = TestModel()
         parentmodel.p1 = Parameter([4, 2], I.Constant(0))
         parentmodel.p1.value = tF.input(np.array([[0,1],[2,3],[4,5],[6,7]]))
         parentmodel.p2 = Parameter([4, 2], I.Constant(0))
         parentmodel.p2.value = tF.input(np.array([[9,8],[7,6],[5,4],[3,2]]))
         parentmodel.sub = submodel
-        parentmodel.auto_add_attributes()
+        parentmodel.add_parameter("p1", parentmodel.p1)
+        parentmodel.add_parameter("p2", parentmodel.p2)
+        parentmodel.add_submodel("sub", parentmodel.sub)
         submodel_load = TestModel()
         submodel_load.sp1 = Parameter()
         submodel_load.sp2 = Parameter()
-        submodel_load.auto_add_attributes()
+        submodel_load.add_parameter("sp1", submodel_load.sp1)
+        submodel_load.add_parameter("sp2", submodel_load.sp2)
         parentmodel_load = TestModel()
         parentmodel_load.p1 = Parameter()
         parentmodel_load.p2 = Parameter()
         parentmodel_load.sub = submodel_load
-        parentmodel_load.auto_add_attributes()
+        parentmodel_load.add_parameter("p1", parentmodel_load.p1)
+        parentmodel_load.add_parameter("p2", parentmodel_load.p2)
+        parentmodel_load.add_submodel("sub", parentmodel_load.sub)
         with tempfile.NamedTemporaryFile() as fp:
             parentmodel.save(fp.name)
             parentmodel_load.load(fp.name)
@@ -114,12 +124,15 @@ class ModelTest(unittest.TestCase):
         submodel = TestModel()
         submodel.sp1 = Parameter()
         submodel.sp2 = Parameter()
-        submodel.auto_add_attributes()
+        submodel.add_parameter("sp1", submodel.sp1)
+        submodel.add_parameter("sp2", submodel.sp2)
         parentmodel = TestModel()
         parentmodel.p1 = Parameter()
         parentmodel.p2 = Parameter()
         parentmodel.sub = submodel
-        parentmodel.auto_add_attributes()
+        parentmodel.add_parameter("p1", parentmodel.p1)
+        parentmodel.add_parameter("p2", parentmodel.p2)
+        parentmodel.add_submodel("sub", parentmodel.sub)
         params = parentmodel.get_all_parameters()
         self.assertIs(params[("p1",)], parentmodel.p1)
         self.assertIs(params[("p2",)], parentmodel.p2)
