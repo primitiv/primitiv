@@ -67,8 +67,6 @@ cdef class _Model:
             raise TypeError("__init__() has already been called.")
         self.wrapped = new CppModel()
         _Model.register_wrapper(self.wrapped, self)
-        self.added_parameters = []
-        self.added_submodels = []
 
     def __dealloc__(self):
         if self.wrapped is not NULL:
@@ -85,35 +83,9 @@ cdef class _Model:
 
     def add_parameter(self, str name, _Parameter param):
         self.wrapped.add_parameter(pystr_to_cppstr(name), param.wrapped[0])
-        self.added_parameters.append(param)
 
     def add_submodel(self, str name, _Model model):
         self.wrapped.add_submodel(pystr_to_cppstr(name), model.wrapped[0])
-        self.added_submodels.append(model)
-
-    def auto_add_attributes(self):
-        param_to_add = {} # type: Dict[_Parameter, str]
-        for k, v in self.__dict__.items():
-            if not isinstance(v, _Parameter):
-                continue
-            if v in self.added_parameters:
-                continue
-            if v in param_to_add:
-                raise ValueError("A parameter assigned to %s is also assigned to %s." % (k, param_to_add[v]))
-            param_to_add[v] = k
-        model_to_add = {} # type: Dict[_Parameter, str]
-        for k, v in self.__dict__.items():
-            if not isinstance(v, _Model):
-                continue
-            if v in self.added_submodels:
-                continue
-            if v in model_to_add:
-                raise ValueError("A parameter assigned to %s is also assigned to %s." % (k, model_to_add[v]))
-            model_to_add[v] = k
-        for k, v in param_to_add.items():
-            self.add_parameter(v, k)
-        for k, v in model_to_add.items():
-            self.add_submodel(v, k)
 
     # NOTE(vbkaisetsu):
     # get_parameter is replaced with `params` variable.

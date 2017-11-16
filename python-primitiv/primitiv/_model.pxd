@@ -35,8 +35,6 @@ cdef class _Model:
     cdef object __weakref__
     cdef readonly _ModelParameter params
     cdef readonly _ModelSubModel submodels
-    cdef object added_parameters
-    cdef object added_submodels
     @staticmethod
     cdef void register_wrapper(CppModel *ptr, _Model wrapper)
     @staticmethod
