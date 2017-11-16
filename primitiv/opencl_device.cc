@@ -582,13 +582,13 @@ std::uint32_t OpenCL::num_platforms() {
   return all_platforms.size();
 }
 
-std::uint32_t OpenCL::num_devices(std::uint32_t platform_id) {\
+std::uint32_t OpenCL::num_devices(std::uint32_t platform_id) {
   std::vector<cl::Platform> all_platforms;
   cl::Platform::get(&all_platforms);
   if (all_platforms.size() == 0) {
     THROW_ERROR("No platforms found. Check OpenCL installation!");
   }
-  cl::Platform platform = all_platforms[platform_id];\
+  cl::Platform platform = all_platforms.at(platform_id);
   std::vector<cl::Device> all_devices;
   platform.getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
   return all_devices.size();
@@ -601,7 +601,7 @@ OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id) {
     THROW_ERROR("No platforms found. Check OpenCL installation!");
   }
   plat_id_ = platform_id;
-  cl::Platform platform = all_platforms[plat_id_];
+  cl::Platform platform = all_platforms.at(plat_id_);
   std::cout << "Using platform: " << platform.getInfo<CL_PLATFORM_NAME>() << std::endl;
 
   std::vector<cl::Device> all_devices;
@@ -610,7 +610,7 @@ OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id) {
     THROW_ERROR("No devices found. Check OpenCL installation!");
   }
   dev_id_ = device_id;
-  device_ = all_devices[dev_id_];
+  device_ = all_devices.at(dev_id_);
   context_ = cl::Context({device_});
   std::cout << "Using device: " << device_.getInfo<CL_DEVICE_NAME>() << std::endl;
 
