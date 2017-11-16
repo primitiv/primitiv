@@ -30,7 +30,7 @@ protected:
 #ifdef PRIMITIV_USE_CUDA
     devices.emplace_back(new devices::CUDA(0));
     devices.emplace_back(new devices::CUDA(0));  // other device on the same hardware
-    if (devices::CUDA::num_devices() > 2) {
+    if (devices::CUDA::num_devices() >= 2) {
       devices.emplace_back(new devices::CUDA(1));
     }
 #endif  // PRIMITIV_USE_CUDA
