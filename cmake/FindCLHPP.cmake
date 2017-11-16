@@ -27,9 +27,9 @@ find_path(CLHPP_INCLUDE_DIR NAMES CL/cl2.hpp
 )
 
 if (CLHPP_INCLUDE_DIR)
-  message("-- Found OpenCL 2.0 C++ headers: " ${CLHPP_INCLUDE_DIR})
+  message("-- Found OpenCL C++ header v2: " ${CLHPP_INCLUDE_DIR})
   set(CLHPP_FOUND ON)
 else()
-  message(STATUS "OpenCL 2.0 C++ headers is not installed.")
+  message(STATUS "OpenCL C++ header v2 is not installed.")
   set(CLHPP_FOUND OFF)
 endif()
