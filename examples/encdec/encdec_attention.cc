@@ -36,7 +36,7 @@
 #include <random>
 
 #include <primitiv/primitiv.h>
-//#include <primitiv/primitiv_cuda.h>
+#include <primitiv/primitiv_cuda.h>
 
 #include "lstm.h"
 #include "utils.h"
@@ -44,7 +44,6 @@
 using namespace primitiv;
 using namespace std;
 namespace F = primitiv::operators;
-namespace I = primitiv::initializers;
 
 static const unsigned SRC_VOCAB_SIZE = 4000;
 static const unsigned TRG_VOCAB_SIZE = 5000;
@@ -62,79 +61,42 @@ static const char *TRG_VALID_FILE = "data/dev.ja";
 
 // Encoder-decoder translation model with dot-attention.
 template<typename Var>
-class EncoderDecoder {
-  string name_;
-  unsigned embed_size_;
+class EncoderDecoder : public Model {
   float dropout_rate_;
   Parameter psrc_lookup_, ptrg_lookup_, pwhj_, pbj_, pwjy_, pby_;
   ::LSTM<Var> src_fw_lstm_, src_bw_lstm_, trg_lstm_;
   Var trg_lookup_, whj_, bj_, wjy_, by_, concat_fb_, t_concat_fb_, feed_;
 
 public:
-  EncoderDecoder(const string &name,
+  EncoderDecoder() : dropout_rate_(DROPOUT_RATE) {
+    add_parameter("src_lookup", psrc_lookup_);
+    add_parameter("trg_lookup", ptrg_lookup_);
+    add_parameter("whj", pwhj_);
+    add_parameter("bj", pbj_);
+    add_parameter("wjy", pwjy_);
+    add_parameter("by", pby_);
+    add_submodel("src_fw_lstm", src_fw_lstm_);
+    add_submodel("src_bw_lstm", src_bw_lstm_);
+    add_submodel("trg_lstm", trg_lstm_);
+  }
+
+  void init(
       unsigned src_vocab_size, unsigned trg_vocab_size,
-      unsigned embed_size, unsigned hidden_size, float dropout_rate)
-    : name_(name)
-    , embed_size_(embed_size)
-    , dropout_rate_(dropout_rate)
-    , psrc_lookup_({embed_size, src_vocab_size}, I::XavierUniform())
-    , ptrg_lookup_({embed_size, trg_vocab_size}, I::XavierUniform())
-    , pwhj_({embed_size, 2 * hidden_size}, I::XavierUniform())
-    , pbj_({embed_size}, I::Constant(0))
-    , pwjy_({trg_vocab_size, embed_size}, I::XavierUniform())
-    , pby_({trg_vocab_size}, I::Constant(0))
-    , src_fw_lstm_(name_ + "_src_fw_lstm", embed_size, hidden_size)
-    , src_bw_lstm_(name_ + "_src_bw_lstm", embed_size, hidden_size)
-    , trg_lstm_(name + "_trg_lstm", 2 * embed_size, hidden_size) {}
-
-  // Loads all parameters.
-  EncoderDecoder(const string &name, const string &prefix)
-    : name_(name)
-    , psrc_lookup_(Parameter::load(prefix + name_ + "_src_lookup.param"))
-    , ptrg_lookup_(Parameter::load(prefix + name_ + "_trg_lookup.param"))
-    , pwhj_(Parameter::load(prefix + name_ + "_whj.param"))
-    , pbj_(Parameter::load(prefix + name_ + "_bj.param"))
-    , pwjy_(Parameter::load(prefix + name_ + "_wjy.param"))
-    , pby_(Parameter::load(prefix + name_ + "_by.param"))
-    , src_fw_lstm_(name_ + "_src_fw_lstm", prefix)
-    , src_bw_lstm_(name_ + "_src_bw_lstm", prefix)
-    , trg_lstm_(name_ + "_trg_lstm", prefix) {
-      embed_size_ = pbj_.shape()[0];
-      ifstream ifs;
-      ::open_file(prefix + name_ + "_config.config", ifs);
-      ifs >> dropout_rate_;
-    }
-
-  // Saves all parameters.
-  void save(const string &prefix) const {
-    psrc_lookup_.save(prefix + name_ + "_src_lookup.param");
-    ptrg_lookup_.save(prefix + name_ + "_trg_lookup.param");
-    pwhj_.save(prefix + name_ + "_whj.param");
-    pbj_.save(prefix + name_ + "_bj.param");
-    pwjy_.save(prefix + name_ + "_wjy.param");
-    pby_.save(prefix + name_ + "_by.param");
-    src_fw_lstm_.save(prefix);
-    src_bw_lstm_.save(prefix);
-    trg_lstm_.save(prefix);
-    ofstream ofs;
-    ::open_file(prefix + name_ + "_config.config", ofs);
-    ofs << dropout_rate_ << endl;
+      unsigned embed_size, unsigned hidden_size) {
+    using initializers::XavierUniform;
+    using initializers::Constant;
+    psrc_lookup_.init({embed_size, src_vocab_size}, XavierUniform());
+    ptrg_lookup_.init({embed_size, trg_vocab_size}, XavierUniform());
+    pwhj_.init({embed_size, 2 * hidden_size}, XavierUniform());
+    pbj_ .init({embed_size}, Constant(0));
+    pwjy_.init({trg_vocab_size, embed_size}, XavierUniform());
+    pby_ .init({trg_vocab_size}, Constant(0));
+    src_fw_lstm_.init(embed_size, hidden_size);
+    src_bw_lstm_.init(embed_size, hidden_size);
+    trg_lstm_.init(2 * embed_size, hidden_size);
   }
 
-  // Adds parameters to the trainer.
-  void register_training(Trainer &trainer) {
-    trainer.add_parameter(psrc_lookup_);
-    trainer.add_parameter(ptrg_lookup_);
-    trainer.add_parameter(pwhj_);
-    trainer.add_parameter(pbj_);
-    trainer.add_parameter(pwjy_);
-    trainer.add_parameter(pby_);
-    src_fw_lstm_.register_training(trainer);
-    src_bw_lstm_.register_training(trainer);
-    trg_lstm_.register_training(trainer);
-  }
-
-  // Encodes source sentences and prepare internal states.
+  // Encodes source sentences and prepares internal states.
   void encode(const vector<vector<unsigned>> &src_batch, bool train) {
     // Embedding lookup.
     const Var src_lookup = F::parameter<Var>(psrc_lookup_);
@@ -145,7 +107,7 @@ public:
     }
 
     // Forward encoding.
-    src_fw_lstm_.init();
+    src_fw_lstm_.restart();
     vector<Var> f_list;
     for (const auto &e : e_list) {
       f_list.emplace_back(
@@ -153,7 +115,7 @@ public:
     }
 
     // Backward encoding.
-    src_bw_lstm_.init();
+    src_bw_lstm_.restart();
     vector<Var> b_list;
     for (auto it = e_list.rbegin(); it != e_list.rend(); ++it) {
       b_list.emplace_back(
@@ -170,13 +132,14 @@ public:
     t_concat_fb_ = F::transpose(concat_fb_);
 
     // Initializes decoder states.
+    const unsigned embed_size = psrc_lookup_.shape()[0];
     trg_lookup_ = F::parameter<Var>(ptrg_lookup_);
     whj_ = F::parameter<Var>(pwhj_);
     bj_ = F::parameter<Var>(pbj_);
     wjy_ = F::parameter<Var>(pwjy_);
     by_ = F::parameter<Var>(pby_);
-    feed_ = F::zeros<Var>({embed_size_});
-    trg_lstm_.init(
+    feed_ = F::zeros<Var>({embed_size});
+    trg_lstm_.restart(
         src_fw_lstm_.get_c() + src_bw_lstm_.get_c(),
         src_fw_lstm_.get_h() + src_bw_lstm_.get_h());
   }
@@ -206,10 +169,10 @@ public:
 
 // Training encoder decoder model.
 void train(
-    EncoderDecoder<Node> &encdec, Trainer &trainer, const string &prefix,
-    float best_valid_ppl) {
-  // Registers all parameters to the trainer.
-  encdec.register_training(trainer);
+    ::EncoderDecoder<Node> &encdec, Optimizer &optimizer,
+    const string &prefix, float best_valid_ppl) {
+  // Registers all parameters to the optimizer.
+  optimizer.add_model(encdec);
 
   // Loads vocab.
   const auto src_vocab = ::make_vocab(SRC_TRAIN_FILE, SRC_VOCAB_SIZE);
@@ -248,7 +211,7 @@ void train(
   // Train/valid loop.
   for (unsigned epoch = 0; epoch < MAX_EPOCH; ++epoch) {
     cout << "epoch " << (epoch + 1) << '/' << MAX_EPOCH
-         << ", lr_scale = " << trainer.get_learning_rate_scaling() << endl;
+         << ", lr_scale = " << optimizer.get_learning_rate_scaling() << endl;
     // Shuffles train sentence IDs.
     shuffle(begin(train_ids), end(train_ids), rng);
 
@@ -266,9 +229,9 @@ void train(
       const auto loss = encdec.loss(trg_batch, true);
       train_loss += loss.to_float() * batch_ids.size();
 
-      trainer.reset_gradients();
+      optimizer.reset_gradients();
       loss.backward();
-      trainer.update();
+      optimizer.update();
 
       cout << ofs << '\r' << flush;
     }
@@ -296,24 +259,24 @@ void train(
     const float valid_ppl = std::exp(valid_loss / num_valid_labels);
     cout << "  valid ppl = " << valid_ppl << endl;
 
-    // Saves best model/trainer.
+    // Saves best model/optimizer.
     if (valid_ppl < best_valid_ppl) {
       best_valid_ppl = valid_ppl;
-      cout << "  saving model/trainer ... " << flush;
-      encdec.save(prefix + '.');
-      trainer.save(prefix + ".trainer.config");
-      ::save_ppl(prefix + ".valid_ppl.config", best_valid_ppl);
+      cout << "  saving model/optimizer ... " << flush;
+      encdec.save(prefix + ".model");
+      optimizer.save(prefix + ".optimizer");
+      ::save_ppl(prefix + ".valid_ppl", best_valid_ppl);
       cout << "done." << endl;
     } else {
       // Learning rate decay by 1/sqrt(2)
-      const float new_scale = .7071 * trainer.get_learning_rate_scaling();
-      trainer.set_learning_rate_scaling(new_scale);
+      const float new_scale = .7071 * optimizer.get_learning_rate_scaling();
+      optimizer.set_learning_rate_scaling(new_scale);
     }
   }
 }
 
 // Generates translation by consuming stdin.
-void test(EncoderDecoder<Tensor> &encdec) {
+void test(::EncoderDecoder<Tensor> &encdec) {
   // Loads vocab.
   const auto src_vocab = ::make_vocab(SRC_TRAIN_FILE, SRC_VOCAB_SIZE);
   const auto trg_vocab = ::make_vocab(TRG_TRAIN_FILE, TRG_VOCAB_SIZE);
@@ -365,30 +328,32 @@ int main(const int argc, const char *argv[]) {
   }
 
   cerr << "initializing device ... " << flush;
-  devices::Naive dev;
-  //devices::CUDA dev(0);
+  //devices::Naive dev;
+  devices::CUDA dev(0);
   Device::set_default(dev);
   cerr << "done." << endl;
 
   if (mode == "train") {
-    ::EncoderDecoder<Node> encdec("encdec",
-        SRC_VOCAB_SIZE, TRG_VOCAB_SIZE,
-        NUM_EMBED_UNITS, NUM_HIDDEN_UNITS, DROPOUT_RATE);
-    trainers::Adam trainer;
-    trainer.set_weight_decay(1e-6);
-    trainer.set_gradient_clipping(5);
-    ::train(encdec, trainer, prefix, 1e10);
+    ::EncoderDecoder<Node> encdec;
+    encdec.init(
+        SRC_VOCAB_SIZE, TRG_VOCAB_SIZE, NUM_EMBED_UNITS, NUM_HIDDEN_UNITS);
+    optimizers::Adam optimizer;
+    optimizer.set_weight_decay(1e-6);
+    optimizer.set_gradient_clipping(5);
+    ::train(encdec, optimizer, prefix, 1e10);
   } else if (mode == "resume") {
-    cerr << "loading model/trainer ... " << flush;
-    ::EncoderDecoder<Node> encdec("encdec", prefix + '.');
-    trainers::Adam trainer;
-    trainer.load(prefix + ".trainer.config");
-    float valid_ppl = ::load_ppl(prefix + ".valid_ppl.config");
+    cerr << "loading model/optimizer ... " << flush;
+    ::EncoderDecoder<Node> encdec;
+    encdec.load(prefix + ".model");
+    optimizers::Adam optimizer;
+    optimizer.load(prefix + ".optimizer");
+    float valid_ppl = ::load_ppl(prefix + ".valid_ppl");
     cerr << "done." << endl;
-    ::train(encdec, trainer, prefix, valid_ppl);
+    ::train(encdec, optimizer, prefix, valid_ppl);
   } else {  // mode == "test"
     cerr << "loading model ... ";
-    ::EncoderDecoder<Tensor> encdec("encdec", prefix + '.');
+    ::EncoderDecoder<Tensor> encdec;
+    encdec.load(prefix + ".model");
     cerr << "done." << endl;
     ::test(encdec);
   }
