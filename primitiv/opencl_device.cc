@@ -942,11 +942,13 @@ void OpenCL::copy_tensor_impl(const Tensor &x, Tensor &y) {
       reset_tensor_by_array(static_cast<const float *>((x).data()), y);
       break;
     case Device::DEVICE_TYPE_OPENCL:
-      {
+      if(&x.device() == this) {
         const std::uint32_t size = x.shape().size();
         cl::CommandQueue queue(context_, device_, 0);
         queue.enqueueCopyBuffer(CDATA(x), CDATA(y), 0, 0, sizeof(float) * size);
         queue.finish();
+      } else {
+        reset_tensor_by_vector(x.to_vector(), y);
       }
       break;
     default:
