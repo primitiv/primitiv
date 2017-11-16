@@ -1,26 +1,25 @@
-from primitiv import trainers as T
 from primitiv._parameter cimport _Parameter
 from primitiv.config cimport pystr_to_cppstr, cppstr_to_pystr
 
 
-cdef class _Trainer:
+cdef class _Optimizer:
 
     # NOTE(vbkaisetsu):
     # This method should be called in the __init__() method of a
-    # custom Trainer class.
+    # custom Optimizer class.
     #
-    # Users can define custom trainers written in Python. This method
-    # generates an instance of a helper trainer called "PyTrainer" that
-    # can call methods implemented in child classes of Trainer.
+    # Users can define custom optimizers written in Python. This method
+    # generates an instance of a helper optimizer called "PyOptimizer" that
+    # can call methods implemented in child classes of Optimizer.
     def __init__(self):
         if self.wrapped is not NULL:
             raise TypeError("__init__() has already been called.")
-        self.wrapped = new CppPyTrainer(self)
+        self.wrapped = new CppPyOptimizer(self)
 
     # NOTE(vbkaisetsu):
     # This method is also used by child classes implemented in
-    # trainers/_trainer_impl.pyx
-    # Please be careful when you change behavior around pointer of PyTrainer.
+    # optimizers/_optimizer_impl.pyx
+    # Please be careful when you change behavior around pointer of PyOptimizer.
     def __dealloc__(self):
         # NOTE(vbkaisetsu):
         # DO NOT delete C++ instance without checking NULL.
@@ -97,7 +96,7 @@ cdef class _Trainer:
         raise NotImplementedError(type(self).__name__ + " does not support `__deepcopy__` for now.")
 
 
-cdef public api int python_primitiv_trainer_configure_parameter(
+cdef public api int python_primitiv_optimizer_configure_parameter(
                         object self,
                         CppParameter &param) except -1:
     # NOTE(vbkaisetsu):
@@ -110,7 +109,7 @@ cdef public api int python_primitiv_trainer_configure_parameter(
                                         % self.__class__.__name__)
 
 
-cdef public api int python_primitiv_trainer_update_parameter(
+cdef public api int python_primitiv_optimizer_update_parameter(
                         object self,
                         float scale,
                         CppParameter &param) except -1:
@@ -124,7 +123,7 @@ cdef public api int python_primitiv_trainer_update_parameter(
                                         % self.__class__.__name__)
 
 
-cdef public api int python_primitiv_trainer_get_configs(
+cdef public api int python_primitiv_optimizer_get_configs(
                         object self,
                         unordered_map[string, unsigned] &uint_configs,
                         unordered_map[string, float] &float_configs) except -1:
@@ -140,7 +139,7 @@ cdef public api int python_primitiv_trainer_get_configs(
                                         % self.__class__.__name__)
 
 
-cdef public api int python_primitiv_trainer_set_configs(
+cdef public api int python_primitiv_optimizer_set_configs(
                         object self,
                         const unordered_map[string, unsigned] &uint_configs,
                         const unordered_map[string, float] &float_configs) except -1:

@@ -9,10 +9,10 @@ from primitiv._shape cimport CppShape
 from primitiv._parameter cimport CppParameter, _Parameter
 
 
-cdef extern from "primitiv/trainer.h":
-    cdef cppclass CppTrainer "primitiv::Trainer":
-        CppTrainer(CppTrainer &&) except +
-        CppTrainer() except +
+cdef extern from "primitiv/optimizer.h":
+    cdef cppclass CppOptimizer "primitiv::Optimizer":
+        CppOptimizer(CppOptimizer &&) except +
+        CppOptimizer() except +
         void load(const string &path) except +
         void save(const string &path) except +
         unsigned get_epoch() except +
@@ -30,10 +30,10 @@ cdef extern from "primitiv/trainer.h":
         void set_configs(const unordered_map[string, unsigned] &uint_configs, const unordered_map[string, float] &float_configs) except +
 
 
-cdef class _Trainer:
-    cdef CppTrainer *wrapped
+cdef class _Optimizer:
+    cdef CppOptimizer *wrapped
 
 
-cdef extern from "pytrainer.h":
-    cdef cppclass CppPyTrainer "python_primitiv::PyTrainer" (CppTrainer):
-        CppPyTrainer(object obj) except +
+cdef extern from "py_optimizer.h":
+    cdef cppclass CppPyOptimizer "python_primitiv::PyOptimizer" (CppOptimizer):
+        CppPyOptimizer(object obj) except +

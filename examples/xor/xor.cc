@@ -22,7 +22,7 @@ using namespace std;
 using namespace primitiv;
 namespace F = primitiv::operators;
 namespace I = primitiv::initializers;
-namespace T = primitiv::trainers;
+namespace O = primitiv::optimizers;
 
 int main() {
   // Setups a computation backend.
@@ -45,12 +45,12 @@ int main() {
   Parameter pw2({1, 8}, I::XavierUniform());
   Parameter pb2({}, I::Constant(0));
 
-  // Trainer
-  T::SGD trainer(0.1);
-  trainer.add_parameter(pw1);
-  trainer.add_parameter(pb1);
-  trainer.add_parameter(pw2);
-  trainer.add_parameter(pb2);
+  // Optimizer
+  O::SGD optimizer(0.1);
+  optimizer.add_parameter(pw1);
+  optimizer.add_parameter(pb1);
+  optimizer.add_parameter(pw2);
+  optimizer.add_parameter(pb2);
 
   // Fixed input data
   const vector<float> input_data {
@@ -100,13 +100,13 @@ int main() {
     cout << "  loss: " << loss_val << endl;
 
     // Resets cumulative gradients of all registered parameters.
-    trainer.reset_gradients();
+    optimizer.reset_gradients();
 
     // Backpropagation
     loss.backward();
 
     // Updates parameters.
-    trainer.update();
+    optimizer.update();
   }
 
   return 0;

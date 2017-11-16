@@ -15,6 +15,8 @@ set(primitiv_base_HDRS
   naive_device.h
   numeric_utils.h
   operators.h
+  optimizer.h
+  optimizer_impl.h
   parameter.h
   primitiv.h
   primitiv_cuda.h
@@ -22,8 +24,6 @@ set(primitiv_base_HDRS
   shape_ops.h
   string_utils.h
   tensor.h
-  trainer.h
-  trainer_impl.h
   type_traits.h
 )
 set(primitiv_base_SRCS
@@ -34,13 +34,13 @@ set(primitiv_base_SRCS
   model.cc
   naive_device.cc
   node_ops.cc
+  optimizer.cc
+  optimizer_impl.cc
   parameter.cc
   shape.cc
   shape_ops.cc
   tensor.cc
   tensor_ops.cc
-  trainer.cc
-  trainer_impl.cc
 )
 install(FILES ${primitiv_base_HDRS} DESTINATION include/primitiv)
 

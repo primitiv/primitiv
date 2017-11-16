@@ -6,13 +6,13 @@ from primitiv._graph import _Node as Node
 from primitiv._parameter import _Parameter as Parameter
 from primitiv._shape import _Shape as Shape
 from primitiv._tensor import _Tensor as Tensor
-from primitiv._trainer import _Trainer as Trainer
+from primitiv._optimizer import _Optimizer as Optimizer
 
 from primitiv import devices
 from primitiv import initializers
 from primitiv._operator import _operators as operators
 from primitiv._operator import _tensor_operators as tensor_operators
-from primitiv import trainers
+from primitiv import optimizers
 from primitiv import config
 
 # NOTE(vbkaisetsu):
@@ -31,12 +31,12 @@ __all__ = [
     "Parameter",
     "Shape",
     "Tensor",
-    "Trainer",
+    "Optimizer",
 
     "devices",
     "initializers",
     "operators",
     "tensor_operators",
-    "trainers",
+    "optimizers",
     "config",
 ]
