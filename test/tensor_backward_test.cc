@@ -10,6 +10,9 @@
 #ifdef PRIMITIV_USE_CUDA
 #include <primitiv/cuda_device.h>
 #endif  // PRIMITIV_USE_CUDA
+#ifdef PRIMITIV_USE_OPENCL
+#include <primitiv/opencl_device.h>
+#endif  // PRIMITIV_USE_OPENCL
 
 using std::vector;
 using test_utils::vector_match;
@@ -19,26 +22,38 @@ namespace primitiv {
 
 class TensorBackwardTest : public testing::Test {
 protected:
-  vector<Device *> devices;
+  static vector<Device *> devices;
 
-  void SetUp() override {
+  static void SetUpTestCase() {
     devices.emplace_back(new devices::Naive());
-    devices.emplace_back(new devices::Naive()); // other device on the same hardware
+    devices.emplace_back(new devices::Naive());  // other device on the same hardware
 #ifdef PRIMITIV_USE_CUDA
     devices.emplace_back(new devices::CUDA(0));
-    devices.emplace_back(new devices::CUDA(0)); // other device on the same hardware
+    devices.emplace_back(new devices::CUDA(0));  // other device on the same hardware
     if (devices::CUDA::num_devices() > 2) {
       devices.emplace_back(new devices::CUDA(1));
     }
 #endif  // PRIMITIV_USE_CUDA
+#ifdef PRIMITIV_USE_OPENCL
+    const std::uint32_t num_pfs = devices::OpenCL::num_platforms();
+    for (std::uint32_t pfid = 0; pfid < num_pfs; ++pfid) {
+      devices.emplace_back(new devices::OpenCL(pfid, 0));
+      devices.emplace_back(new devices::OpenCL(pfid, 0));  // other device on the same hardware
+      if (devices::OpenCL::num_devices(pfid) >= 2) {
+        devices.emplace_back(new devices::OpenCL(pfid, 1));
+      }
+    }
+#endif  // PRIMITIV_USE_OPENCL
   }
 
-  void TearDown() override {
+  static void TearDownTestCase() {
     for (Device *dev : devices) {
       delete dev;
     }
   }
 };
+
+vector<Device *> TensorBackwardTest::devices;
 
 TEST_F(TensorBackwardTest, CheckSliceNN_1) {
   const vector<float> a_data {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};

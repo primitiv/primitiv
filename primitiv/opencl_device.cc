@@ -576,13 +576,13 @@ kernel void inplace_subtract_kernel(constant float *px, constant unsigned *size_
   return ss.str();
 }
 
-std::uint32_t num_platforms() {
+std::uint32_t OpenCL::num_platforms() {
   std::vector<cl::Platform> all_platforms;
   cl::Platform::get(&all_platforms);
   return all_platforms.size();
 }
 
-std::uint32_t num_devices(std::uint32_t platform_id) {\
+std::uint32_t OpenCL::num_devices(std::uint32_t platform_id) {\
   std::vector<cl::Platform> all_platforms;
   cl::Platform::get(&all_platforms);
   if (all_platforms.size() == 0) {
