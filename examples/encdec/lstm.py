@@ -7,65 +7,52 @@
 #   c[t] = i * j + f * c[t-1]
 #   h[t] = o * tanh(c[t])
 
+from primitiv import Model
 from primitiv import Node
 from primitiv import Parameter
 from primitiv import operators as F
 from primitiv import initializers as I
 
 
-class LSTM(object):
-    def __init__(self, name, in_size, out_size):
-        self.name_ = name
-        self.out_size_ = out_size
-        self.pwxh_ = Parameter([4 * out_size, in_size], I.XavierUniform())
-        self.pwhh_ = Parameter([4 * out_size, out_size], I.XavierUniform())
-        self.pbh_ = Parameter([4 * out_size], I.Constant(0))
+class LSTM(Model):
+    """LSTM cell."""
 
-    # Loads all parameters.
-    @staticmethod
-    def load(name, prefix):
-        lstm = LSTM.__new__(LSTM)
-        lstm.name_ = name
-        lstm.pwxh_ = Parameter.load(prefix + name + "_wxh.param")
-        lstm.pwhh_ = Parameter.load(prefix + name + "_whh.param")
-        lstm.pbh_ = Parameter.load(prefix + name + "_bh.param")
-        lstm.out_size_ = lstm.pbh_.shape()[0] / 4
-        return lstm
+    def __init__(self):
+        self._pwxh = Parameter(); self.add_parameter("wxh", self._pwxh)
+        self._pwhh = Parameter(); self.add_parameter("whh", self._pwhh)
+        self._pbh = Parameter(); self.add_parameter("bh", self._pbh)
 
-    # Saves all parameters.
-    def save(self, prefix):
-        self.pwxh_.save(prefix + self.name_ + "_wxh.param")
-        self.pwhh_.save(prefix + self.name_ + "_whh.param")
-        self.pbh_.save(prefix + self.name_ + "_bh.param")
+    def init(self, in_size, out_size):
+        """Creates a new LSTM."""
+        self._pwxh.init([4 * out_size, in_size], I.XavierUniform())
+        self._pwhh.init([4 * out_size, out_size], I.XavierUniform())
+        self._pbh.init([4 * out_size], I.Constant(0))
 
-    # Adds parameters to the trainer.
-    def register_training(self, trainer):
-        trainer.add_parameter(self.pwxh_)
-        trainer.add_parameter(self.pwhh_)
-        trainer.add_parameter(self.pbh_)
+    def reset(self, init_c = Node(), init_h = Node()):
+        """Initializes internal states."""
+        out_size = self._pwhh.shape()[1]
+        self._wxh = F.parameter(self._pwxh)
+        self._whh = F.parameter(self._pwhh)
+        self._bh = F.parameter(self._pbh)
+        self._c = init_c if init_c.valid() else F.zeros([out_size])
+        self._h = init_h if init_h.valid() else F.zeros([out_size])
 
-    # Initializes internal values.
-    def init(self, init_c = Node(), init_h = Node()):
-        self.wxh_ = F.parameter(self.pwxh_)
-        self.whh_ = F.parameter(self.pwhh_)
-        self.bh_ = F.parameter(self.pbh_)
-        self.c_ = init_c if init_c.valid() else F.zeros([self.out_size_])
-        self.h_ = init_h if init_h.valid() else F.zeros([self.out_size_])
-
-    # One step forwarding.
     def forward(self, x):
-        u = self.wxh_ @ x + self.whh_ @ self.h_ + self.bh_
-        i = F.sigmoid(F.slice(u, 0, 0, self.out_size_))
-        f = F.sigmoid(F.slice(u, 0, self.out_size_, 2 * self.out_size_));
-        o = F.sigmoid(F.slice(u, 0, 2 * self.out_size_, 3 * self.out_size_));
-        j = F.tanh(F.slice(u, 0, 3 * self.out_size_, 4 * self.out_size_));
-        self.c_ = i * j + f * self.c_;
-        self.h_ = o * F.tanh(self.c_);
-        return self.h_;
+        """One step forwarding."""
+        out_size = self._pwhh.shape()[1]
+        u = self._wxh @ x + self._whh @ self._h + self._bh
+        i = F.sigmoid(F.slice(u, 0, 0, out_size))
+        f = F.sigmoid(F.slice(u, 0, out_size, 2 * out_size));
+        o = F.sigmoid(F.slice(u, 0, 2 * out_size, 3 * out_size));
+        j = F.tanh(F.slice(u, 0, 3 * out_size, 4 * out_size));
+        self._c = i * j + f * self._c;
+        self._h = o * F.tanh(self._c);
+        return self._h;
 
-    # Retrieves current states.
     def get_c(self):
-        return self.c_
+        """Retrieves current internal cell state."""
+        return self._c
 
     def get_h(self):
-        return self.h_
+        """Retrieves current hidden value."""
+        return self._h
