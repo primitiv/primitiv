@@ -1,4 +1,4 @@
-from primitiv import Trainer, Parameter, Device, Model, Shape
+from primitiv import Parameter, Device, Model, Shape
 from primitiv import devices as D
 from primitiv import initializers as I
 from primitiv._model import _ModelParameter
