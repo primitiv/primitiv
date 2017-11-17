@@ -47,10 +47,9 @@ class EncoderDecoder(Model):
     def __init__(self):
         self._dropout_rate = DROPOUT_RATE
         self._psrc_lookup = Parameter(); self.add_parameter("src_lookup", self._psrc_lookup)
-        print("abcde")
         self._ptrg_lookup = Parameter(); self.add_parameter("trg_lookup", self._ptrg_lookup)
-        self._pwhy = Parameter(); self.add_parameter("why", self._why)
-        self._pby = Parameter(); self.add_parameter("by", self._by)
+        self._pwhy = Parameter(); self.add_parameter("why", self._pwhy)
+        self._pby = Parameter(); self.add_parameter("by", self._pby)
         self._src_lstm = LSTM(); self.add_submodel("src_lstm", self._src_lstm)
         self._trg_lstm = LSTM(); self.add_submodel("trg_lstm", self._trg_lstm)
 
@@ -67,7 +66,7 @@ class EncoderDecoder(Model):
         """Encodes source sentences and prepares internal states."""
         # Reversed encoding.
         src_lookup = F.parameter(self._psrc_lookup)
-        self._src_lstm.init()
+        self._src_lstm.restart()
         for it in src_batch:
             x = F.pick(src_lookup, it, 1)
             x = F.dropout(x, self._dropout_rate, train)
@@ -77,7 +76,7 @@ class EncoderDecoder(Model):
         self._trg_lookup = F.parameter(self._ptrg_lookup)
         self._why = F.parameter(self._pwhy)
         self._by = F.parameter(self._pby)
-        self._trg_lstm.init(self._src_lstm.get_c(), self._src_lstm.get_h())
+        self._trg_lstm.restart(self._src_lstm.get_c(), self._src_lstm.get_h())
 
     def decode_step(self, trg_words, train):
         """One step decoding."""
@@ -137,7 +136,7 @@ def train(encdec, optimizer, prefix, best_valid_ppl):
         random.shuffle(train_ids)
 
         # Training.
-        train_loss = 0;
+        train_loss = 0
         for ofs in range(0, num_train_sents, BATCH_SIZE):
             print("%d" % ofs, end="\r")
             sys.stdout.flush()
@@ -258,14 +257,12 @@ def main():
 
     print("initializing device ... ", end="", file=sys.stderr)
     sys.stderr.flush()
-
     dev = D.CUDA(0)
     Device.set_default(dev)
-
     print("done.", file=sys.stderr)
 
     if mode == "train":
-        encdec = EncoderDecoder();
+        encdec = EncoderDecoder()
         encdec.init(SRC_VOCAB_SIZE, TRG_VOCAB_SIZE, NUM_EMBED_UNITS, NUM_HIDDEN_UNITS)
         optimizer = O.Adam()
         optimizer.set_weight_decay(1e-6)
@@ -275,7 +272,7 @@ def main():
         print("loading model/optimizer ... ", end="", file=sys.stderr)
         sys.stderr.flush()
         encdec = EncoderDecoder()
-        encdec.load("encdec", prefix + ".model")
+        encdec.load(prefix + ".model")
         optimizer = O.Adam()
         optimizer.load(prefix + ".optimizer")
         valid_ppl = load_ppl(prefix + ".valid_ppl")
@@ -285,9 +282,9 @@ def main():
         print("loading model ... ", end="", file=sys.stderr)
         sys.stderr.flush()
         encdec = EncoderDecoder()
-        encdec.load("encdec", prefix + ".model");
+        encdec.load(prefix + ".model")
         print("done.", file=sys.stderr)
-        test(encdec);
+        test(encdec)
 
 
 if __name__ == "__main__":

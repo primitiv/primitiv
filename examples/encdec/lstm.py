@@ -28,7 +28,7 @@ class LSTM(Model):
         self._pwhh.init([4 * out_size, out_size], I.XavierUniform())
         self._pbh.init([4 * out_size], I.Constant(0))
 
-    def reset(self, init_c = Node(), init_h = Node()):
+    def restart(self, init_c = Node(), init_h = Node()):
         """Initializes internal states."""
         out_size = self._pwhh.shape()[1]
         self._wxh = F.parameter(self._pwxh)
