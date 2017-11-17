@@ -9,7 +9,7 @@ class OpenCLDeviceTest : public testing::Test {};
 
 TEST_F(OpenCLDeviceTest, CheckDeviceType) {
   devices::OpenCL dev(0, 0);
-  EXPECT_EQ(Device::DEVICE_TYPE_OPENCL, dev.type());
+  EXPECT_EQ(Device::DeviceType::OPENCL, dev.type());
 }
 
 //TODO(odashi): Add tests for OpenCL device.

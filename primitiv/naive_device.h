@@ -26,7 +26,7 @@ public:
   ~Naive() override = default;
 
   void dump_description() const override;
-  Device::DeviceType type() const override { return Device::DEVICE_TYPE_CPU; }
+  Device::DeviceType type() const override { return Device::DeviceType::CPU; }
 
 private:
   std::shared_ptr<void> new_handle(const Shape &shape) override;

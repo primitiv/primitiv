@@ -18,7 +18,8 @@ class CUDA : public Device {
   CUDA() = delete;
 
 public:
-  /** Retrieves the number of active hardwares.
+  /**
+   * Retrieves the number of active hardwares.
    * @return Number of active hardwares.
    */
   static std::uint32_t num_devices();
@@ -41,7 +42,7 @@ public:
   ~CUDA() override;
 
   void dump_description() const override;
-  Device::DeviceType type() const override { return Device::DEVICE_TYPE_CUDA; }
+  Device::DeviceType type() const override { return Device::DeviceType::CUDA; }
 
 private:
   std::shared_ptr<void> new_handle(const Shape &shape) override;

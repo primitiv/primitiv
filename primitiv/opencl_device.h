@@ -21,19 +21,46 @@ class OpenCL : public Device {
   OpenCL() = delete;
 
 public:
+  /**
+   * Retrieves the number of active platforms.
+   * @return Number of active platforms.
+   */
   static std::uint32_t num_platforms();
+
+  /**
+   * Retrieves the number of active devices on the specified platform.
+   * @param platform_id Platform ID.
+   *                    This value should be between 0 to num_platforms() - 1.
+   * @return Number of active devices.
+   */
   static std::uint32_t num_devices(std::uint32_t platform_id);
 
+  /**
+   * Creates a new OpenCL device.
+   * @param platform_id Platform ID.
+   * @param device_id Device ID on the selected platform.
+   */
   OpenCL(std::uint32_t platform_id, std::uint32_t device_id);
+
+  /**
+   * Creates a new OpenCL device.
+   * @param platform_id Platform ID.
+   * @param device_id Device ID on the selected platform.
+   * @param rng_seed Seed value of the random number generator.
+   */
   OpenCL(std::uint32_t platform_id, std::uint32_t device_id, std::uint32_t rng_seed);
 
   ~OpenCL() override;
 
   void dump_description() const override;
-  Device::DeviceType type() const override { return Device::DEVICE_TYPE_OPENCL; }
+  Device::DeviceType type() const override { return Device::DeviceType::OPENCL; }
 
 private:
-  static std::string kernel_code_generator();
+  /**
+   * Returns source code of all kernel functions.
+   * @return Source code of kernel functions.
+   */
+  static std::string generate_kernels();
 
 private:
   std::shared_ptr<void> new_handle(const Shape &shape) override;

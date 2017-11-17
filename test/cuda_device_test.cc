@@ -19,7 +19,7 @@ class CUDADeviceTest : public testing::Test {};
 
 TEST_F(CUDADeviceTest, CheckDeviceType) {
   devices::CUDA dev(0);
-  EXPECT_EQ(Device::DEVICE_TYPE_CUDA, dev.type());
+  EXPECT_EQ(Device::DeviceType::CUDA, dev.type());
 }
 
 TEST_F(CUDADeviceTest, CheckInvalidInit) {

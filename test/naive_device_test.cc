@@ -19,7 +19,7 @@ class NaiveDeviceTest : public testing::Test {};
 
 TEST_F(NaiveDeviceTest, CheckDeviceType) {
   devices::Naive dev;
-  EXPECT_EQ(Device::DEVICE_TYPE_CPU, dev.type());
+  EXPECT_EQ(Device::DeviceType::CPU, dev.type());
 }
 
 TEST_F(NaiveDeviceTest, CheckNewDelete) {

@@ -21,10 +21,10 @@ public:
   /**
    * Device type.
    */
-  enum DeviceType {
-    DEVICE_TYPE_CPU = 0x0,
-    DEVICE_TYPE_CUDA = 0x10000,
-    DEVICE_TYPE_OPENCL = 0x20000,
+  enum class DeviceType : std::uint32_t {
+    CPU = 0x0,
+    CUDA = 0x10000,
+    OPENCL = 0x20000,
   };
 
   Device() = default;

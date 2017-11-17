@@ -727,10 +727,10 @@ void CUDA::reset_tensor_by_array_impl(const float values[], Tensor &x) {
 
 void CUDA::copy_tensor_impl(const Tensor &x, Tensor &y) {
   switch (x.device().type()) {
-    case Device::DEVICE_TYPE_CPU:
+    case Device::DeviceType::CPU:
       reset_tensor_by_array(CDATA(x), y);
       break;
-    case Device::DEVICE_TYPE_CUDA:
+    case Device::DeviceType::CUDA:
       CUDA_CALL(::cudaSetDevice(dev_id_));
       // NOTE(odashi):
       // If source/destination devices use the unified memory space on the 64

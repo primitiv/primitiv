@@ -25,7 +25,7 @@ namespace devices {
       sizeof(type) * var.size(), const_cast<type*>(var.data())); \
   kernel.setArg(idx, opencl_mem_##var);
 
-std::string OpenCL::kernel_code_generator() {
+std::string OpenCL::generate_kernels() {
   std::ostringstream ss;
   for(std::uint32_t group_size = 1; group_size <= 1024; group_size <<= 1) {
     ss <<
@@ -532,7 +532,7 @@ void OpenCL::initialize() {
   context_ = cl::Context({device_});
   cmd_queue_ = cl::CommandQueue(context_, device_, 0);
 
-  cl::Program program(context_, kernel_code_generator(), true);
+  cl::Program program(context_, generate_kernels(), true);
   for (std::uint32_t i = 0; i <= 10; ++i) {
     std::ostringstream ss;
     ss << "argmax_kernel_" << (1 << i);
@@ -851,10 +851,10 @@ void OpenCL::reset_tensor_by_array_impl(const float values[], Tensor &x) {
 
 void OpenCL::copy_tensor_impl(const Tensor &x, Tensor &y) {
   switch (x.device().type()) {
-    case Device::DEVICE_TYPE_CPU:
+    case Device::DeviceType::CPU:
       reset_tensor_by_array(static_cast<const float *>((x).data()), y);
       break;
-    case Device::DEVICE_TYPE_OPENCL:
+    case Device::DeviceType::OPENCL:
       if(&x.device() == this) {
         const std::uint32_t size = x.shape().size();
         cmd_queue_.enqueueCopyBuffer(CDATA(x), CDATA(y), 0, 0, sizeof(float) * size);

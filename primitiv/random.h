@@ -18,7 +18,7 @@ public:
    * Creates a randomizer object using environment seeds.
    */
   DefaultRandomizer() : rng_(std::random_device()()) {}
-  
+
   /**
    * Creates a randomizer object using a user seed.
    * @param seed Seed value of the randomizer.
