@@ -7,12 +7,12 @@ import math
 
 import numpy as np
 
-from primitiv import Device, Parameter, Graph, Trainer
+from primitiv import Device, Graph, Model, Parameter, Optimizer
 
 from primitiv import devices as D
 from primitiv import operators as F
 from primitiv import initializers as I
-from primitiv import trainers as T
+from primitiv import optimizers as O
 
 from lstm import LSTM
 from utils import (
@@ -40,136 +40,102 @@ TRG_VALID_FILE = "data/dev.ja"
 SRC_TEST_FILE = "data/test.en"
 REF_TEST_FILE = "data/test.ja"
 
-# Encoder-decoder translation model with dot-attention.
-class EncoderDecoder(object):
-    def __init__(self, name, src_vocab_size, trg_vocab_size, embed_size, hidden_size, dropout_rate):
-        self.name_ = name
-        self.embed_size_ = embed_size
-        self.dropout_rate_ = dropout_rate
-        self.psrc_lookup_ = Parameter([embed_size, src_vocab_size], I.XavierUniform())
-        self.ptrg_lookup_ = Parameter([embed_size, trg_vocab_size], I.XavierUniform())
-        self.pwhj_ = Parameter([embed_size, 2*hidden_size], I.XavierUniform())
-        self.pbj_ = Parameter([embed_size], I.Constant(0))
-        self.pwjy_ = Parameter([trg_vocab_size, embed_size], I.XavierUniform())
-        self.pby_ = Parameter([trg_vocab_size], I.Constant(0))
-        self.src_fw_lstm_ = LSTM(name+"_src_fw_lstm", embed_size, hidden_size)
-        self.src_bw_lstm_ = LSTM(name+"_src_bw_lstm", embed_size, hidden_size)
-        self.trg_lstm_ = LSTM(name+"_trg_lstm", embed_size*2, hidden_size)
+class AttentionalEncoderDecoder(Model):
+    """Encoder-decoder translation model with dot-attention."""
+    
+    def __init__(self):
+        self._dropout_rate = DROPOUT_RATE
+        self._psrc_lookup = Parameter(); self.add_parameter("src_lookup", self._psrc_lookup)
+        self._ptrg_lookup = Parameter(); self.add_parameter("trg_lookup", self._ptrg_lookup)
+        self._pwhj = Parameter(); self.add_parameter("whj", self._pwhj)
+        self._pbj = Parameter(); self.add_parameter("bj", self._pbj)
+        self._pwjy = Parameter(); self.add_parameter("wjy", self._pwjy)
+        self._pby = Parameter(); self.add_parameter("by", self._pby)
+        self._src_fw_lstm = LSTM(); self.add_submodel("src_fw_lstm", self._src_fw_lstm)
+        self._src_bw_lstm = LSTM(); self.add_submodel("src_bw_lstm", self._src_bw_lstm)
+        self._trg_lstm = LSTM(); self.add_submodel("trg_lstm", self._trg_lstm)
 
-    # Loads all parameters.
-    @staticmethod
-    def load(name, prefix):
-        encdec = EncoderDecoder.__new__(EncoderDecoder)
-        encdec.name_ = name
-        encdec.psrc_lookup_ = Parameter.load(prefix+name+"_src_lookup.param")
-        encdec.ptrg_lookup_ = Parameter.load(prefix+name+"_trg_lookup.param")
-        encdec.pwhj_ = Parameter.load(prefix+name+"_whj.param")
-        encdec.pbj_ = Parameter.load(prefix+name+"_bj.param")
-        encdec.pwjy_ = Parameter.load(prefix+name+"_wjy.param")
-        encdec.pby_ = Parameter.load(prefix+name+"_by.param")
-        encdec.src_fw_lstm_ = LSTM.load(name+"_src_fw_lstm", prefix)
-        encdec.src_bw_lstm_ = LSTM.load(name+"_src_bw_lstm", prefix)
-        encdec.trg_lstm_ = LSTM.load(name+"_trg_lstm", prefix)
-        encdec.embed_size_ = encdec.pbj_.shape()[0]
-        with open(prefix+name+".config", "r", encoding="utf-8") as f:
-            encdec.dropout_rate_ = float(f.readline())
-        return encdec
+    def init(self, src_vocab_size, trg_vocab_size, embed_size, hidden_size):
+        """Creates a new AttentionalEncoderDecoder object."""
+        self._psrc_lookup.init([embed_size, src_vocab_size], I.XavierUniform())
+        self._ptrg_lookup.init([embed_size, trg_vocab_size], I.XavierUniform())
+        self._pwhj.init([embed_size, 2 * hidden_size], I.XavierUniform())
+        self._pbj.init([embed_size], I.Constant(0))
+        self._pwjy.init([trg_vocab_size, embed_size], I.XavierUniform())
+        self._pby.init([trg_vocab_size], I.Constant(0))
+        self._src_fw_lstm.init(embed_size, hidden_size)
+        self._src_bw_lstm.init(embed_size, hidden_size)
+        self._trg_lstm.init(2 * embed_size, hidden_size)
 
-    # Saves all parameters
-    def save(self, prefix):
-        self.psrc_lookup_.save(prefix+self.name_+"_src_lookup.param")
-        self.ptrg_lookup_.save(prefix+self.name_+"_trg_lookup.param")
-        self.pwhj_.save(prefix+self.name_+"_whj.param")
-        self.pbj_.save(prefix+self.name_+"_bj.param")
-        self.pwjy_.save(prefix+self.name_+"_wjy.param")
-        self.pby_.save(prefix+self.name_+"_by.param")
-        self.src_fw_lstm_.save(prefix)
-        self.src_bw_lstm_.save(prefix)
-        self.trg_lstm_.save(prefix)
-        with open(prefix+self.name_+".config", "w", encoding="utf-8") as f:
-            print(self.dropout_rate_, file=f)
-
-    # Adds parameters to the trainer
-    def register_training(self, trainer):
-        trainer.add_parameter(self.psrc_lookup_)
-        trainer.add_parameter(self.ptrg_lookup_)
-        trainer.add_parameter(self.pwhj_)
-        trainer.add_parameter(self.pbj_)
-        trainer.add_parameter(self.pwjy_)
-        trainer.add_parameter(self.pby_)
-        self.src_fw_lstm_.register_training(trainer)
-        self.src_bw_lstm_.register_training(trainer)
-        self.trg_lstm_.register_training(trainer)
-
-    # Encodes source sentences and prepare internal states.
     def encode(self, src_batch, train):
+        """Encodes source sentences and prepares internal states."""
         # Embedding lookup.
-        src_lookup = F.parameter(self.psrc_lookup_)
+        src_lookup = F.parameter(self._psrc_lookup)
         e_list = []
         for x in src_batch:
             e = F.pick(src_lookup, x, 1)
-            e = F.dropout(e, self.dropout_rate_, train)
+            e = F.dropout(e, self._dropout_rate, train)
             e_list.append(e)
 
         # Forward encoding
-        self.src_fw_lstm_.init()
+        self._src_fw_lstm.restart()
         f_list = []
         for e in e_list:
-            f = self.src_fw_lstm_.forward(e)
-            f = F.dropout(f, self.dropout_rate_, train)
+            f = self._src_fw_lstm.forward(e)
+            f = F.dropout(f, self._dropout_rate, train)
             f_list.append(f)
 
         # Backward encoding
-        self.src_bw_lstm_.init()
+        self._src_bw_lstm.restart()
         b_list = []
         for e in reversed(e_list):
-            b = self.src_bw_lstm_.forward(e)
-            b = F.dropout(b, self.dropout_rate_, train)
+            b = self._src_bw_lstm.forward(e)
+            b = F.dropout(b, self._dropout_rate, train)
             b_list.append(b)
 
         b_list.reverse()
 
         # Concatenates RNN states.
         fb_list = [f_list[i] + b_list[i] for i in range(len(src_batch))]
-        self.concat_fb_ = F.concat(fb_list, 1)
-        self.t_concat_fb_ = F.transpose(self.concat_fb_)
+        self._concat_fb = F.concat(fb_list, 1)
+        self._t_concat_fb = F.transpose(self._concat_fb)
 
         # Initializes decode states.
-        self.trg_lookup_ = F.parameter(self.ptrg_lookup_)
-        self.whj_ = F.parameter(self.pwhj_)
-        self.bj_ = F.parameter(self.pbj_)
-        self.wjy_ = F.parameter(self.pwjy_)
-        self.by_ = F.parameter(self.pby_)
-        self.feed_ = F.zeros([self.embed_size_])
-        self.trg_lstm_.init(
-            self.src_fw_lstm_.get_c() + self.src_bw_lstm_.get_c(),
-            self.src_fw_lstm_.get_h() + self.src_bw_lstm_.get_h())
+        embed_size = self._psrc_lookup.shape()[0]
+        self._trg_lookup = F.parameter(self._ptrg_lookup)
+        self._whj = F.parameter(self._pwhj)
+        self._bj = F.parameter(self._pbj)
+        self._wjy = F.parameter(self._pwjy)
+        self._by = F.parameter(self._pby)
+        self._feed = F.zeros([embed_size])
+        self._trg_lstm.restart(
+            self._src_fw_lstm.get_c() + self._src_bw_lstm.get_c(),
+            self._src_fw_lstm.get_h() + self._src_bw_lstm.get_h())
 
-    # One step decoding.
     def decode_step(self, trg_words, train):
-        e = F.pick(self.trg_lookup_, trg_words, 1)
-        e = F.dropout(e, self.dropout_rate_, train)
-        h = self.trg_lstm_.forward(F.concat([e, self.feed_], 0))
-        h = F.dropout(h, self.dropout_rate_, train)
-        atten_probs = F.softmax(self.t_concat_fb_ @ h, 0)
-        c = self.concat_fb_ @ atten_probs
-        self.feed_ = F.tanh(self.whj_ @ F.concat([h, c], 0) + self.bj_)
-        return self.wjy_ @ self.feed_ + self.by_
+        """One step decoding."""
+        e = F.pick(self._trg_lookup, trg_words, 1)
+        e = F.dropout(e, self._dropout_rate, train)
+        h = self._trg_lstm.forward(F.concat([e, self._feed], 0))
+        h = F.dropout(h, self._dropout_rate, train)
+        atten_probs = F.softmax(self._t_concat_fb @ h, 0)
+        c = self._concat_fb @ atten_probs
+        self._feed = F.tanh(self._whj @ F.concat([h, c], 0) + self._bj)
+        return self._wjy @ self._feed + self._by
 
-    # Calculates the loss function over given target sentences.
     def loss(self, trg_batch, train):
+        """Calculates loss values."""
         losses = []
         for i in range(len(trg_batch)-1):
             y = self.decode_step(trg_batch[i], train)
-            loss = F.softmax_cross_entropy(y, trg_batch[i+1], 0)
+            loss = F.softmax_cross_entropy(y, trg_batch[i + 1], 0)
             losses.append(loss)
         return F.batch.mean(F.sum(losses))
 
 
-# Training encode decode model.
-def train(encdec, trainer, prefix, best_valid_ppl):
-    # Registers all parameters to the trainer.
-    encdec.register_training(trainer)
+def train(encdec, optimizer, prefix, best_valid_ppl):
+    # Registers all parameters to the optimizer.
+    optimizer.add_model(encdec)
 
     # Loads vocab.
     src_vocab = make_vocab(SRC_TRAIN_FILE, SRC_VOCAB_SIZE)
@@ -204,7 +170,7 @@ def train(encdec, trainer, prefix, best_valid_ppl):
         Graph.set_default(g)
 
         print("epoch %d/%d:" % (epoch + 1, MAX_EPOCH))
-        print("  learning rate scale = %.4e" % trainer.get_learning_rate_scaling())
+        print("  learning rate scale = %.4e" % optimizer.get_learning_rate_scaling())
 
         # Shuffles train sentence IDs.
         random.shuffle(train_ids)
@@ -215,7 +181,7 @@ def train(encdec, trainer, prefix, best_valid_ppl):
             print("%d" % ofs, end="\r")
             sys.stdout.flush()
 
-            batch_ids = train_ids[ofs:min(ofs+BATCH_SIZE, num_train_sents)]
+            batch_ids = train_ids[ofs:min(ofs + BATCH_SIZE, num_train_sents)]
             src_batch = make_batch(train_src_corpus, batch_ids, src_vocab)
             trg_batch = make_batch(train_trg_corpus, batch_ids, trg_vocab)
 
@@ -224,9 +190,9 @@ def train(encdec, trainer, prefix, best_valid_ppl):
             loss = encdec.loss(trg_batch, True)
             train_loss += loss.to_float() * len(batch_ids)
 
-            trainer.reset_gradients()
+            optimizer.reset_gradients()
             loss.backward()
-            trainer.update()
+            optimizer.update()
 
         train_ppl = math.exp(train_loss / num_train_labels)
         print("  train PPL = %.4f" % train_ppl)
@@ -237,7 +203,7 @@ def train(encdec, trainer, prefix, best_valid_ppl):
             print("%d" % ofs, end="\r")
             sys.stdout.flush()
 
-            batch_ids = valid_ids[ofs:min(ofs+BATCH_SIZE, num_valid_sents)]
+            batch_ids = valid_ids[ofs:min(ofs + BATCH_SIZE, num_valid_sents)]
             src_batch = make_batch(valid_src_corpus, batch_ids, src_vocab)
             trg_batch = make_batch(valid_trg_corpus, batch_ids, trg_vocab)
 
@@ -266,19 +232,19 @@ def train(encdec, trainer, prefix, best_valid_ppl):
         bleu = calculate_bleu(stats)
         print("  test BLEU = %.2f" % (100 * bleu))
 
-        # Saves best model/trainer.
+        # Saves best model/optimizer.
         if valid_ppl < best_valid_ppl:
             best_valid_ppl = valid_ppl
-            print("  saving model/trainer ... ", end="")
+            print("  saving model/optimizer ... ", end="")
             sys.stdout.flush()
-            encdec.save(prefix+".")
-            trainer.save(prefix+".trainer.config")
-            save_ppl(prefix+".valid_ppl.config", best_valid_ppl)
+            encdec.save(prefix + ".model")
+            optimizer.save(prefix + ".optimizer")
+            save_ppl(prefix + ".valid_ppl", best_valid_ppl)
             print("done.")
         else:
             # Learning rate decay by 1/sqrt(2)
-            new_scale = .7071 * trainer.get_learning_rate_scaling()
-            trainer.set_learning_rate_scaling(new_scale)
+            new_scale = .7071 * optimizer.get_learning_rate_scaling()
+            optimizer.set_learning_rate_scaling(new_scale)
 
 
 def test_batch(encdec, src_vocab, trg_vocab, lines):
@@ -294,7 +260,7 @@ def test_batch(encdec, src_vocab, trg_vocab, lines):
     eos_id = trg_vocab["<eos>"]
     eos_ids = np.array([eos_id] * len(lines))
     while (trg_ids[-1] != eos_ids).any():
-        if len(trg_ids) > GENERATION_LIMIT+1:
+        if len(trg_ids) > GENERATION_LIMIT + 1:
             print("Warning: Sentence generation did not finish in",
                     GENERATION_LIMIT, "iterations.", file=sys.stderr)
             trg_ids.append(eos_ids)
@@ -305,7 +271,6 @@ def test_batch(encdec, src_vocab, trg_vocab, lines):
     return [hyp[:np.where(hyp == eos_id)[0][0]] for hyp in np.array(trg_ids[1:]).T]
 
 
-# Generates translation by consuming stdin.
 def test(encdec):
     # Loads vocab.
     src_vocab = make_vocab(SRC_TRAIN_FILE, SRC_VOCAB_SIZE)
@@ -320,8 +285,8 @@ def test(encdec):
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument("mode")
-    parser.add_argument("model_prefix")
+    parser.add_argument("mode", help="(train|resume|test)")
+    parser.add_argument("model_prefix", help="prefix of the model files.")
     args = parser.parse_args()
 
     mode = args.mode
@@ -335,32 +300,35 @@ def main():
 
     print("initializing device ... ", end="", file=sys.stderr)
     sys.stderr.flush()
-
-    dev = D.Naive() # = D.CUDA(0)
+    dev = D.CUDA(0)
     Device.set_default(dev)
     print("done.", file=sys.stderr)
 
     if mode == "train":
-        encdec = EncoderDecoder("encdec", SRC_VOCAB_SIZE, TRG_VOCAB_SIZE, NUM_EMBED_UNITS, NUM_HIDDEN_UNITS, DROPOUT_RATE)
-        trainer = T.Adam()
-        trainer.set_weight_decay(1e-6)
-        trainer.set_gradient_clipping(5)
-        train(encdec, trainer, prefix, 1e10)
+        encdec = AttentionalEncoderDecoder()
+        encdec.init(SRC_VOCAB_SIZE, TRG_VOCAB_SIZE, NUM_EMBED_UNITS, NUM_HIDDEN_UNITS)
+        optimizer = O.Adam()
+        optimizer.set_weight_decay(1e-6)
+        optimizer.set_gradient_clipping(5)
+        train(encdec, optimizer, prefix, 1e10)
     elif mode == "resume":
-        print("loading model/trainer ... ", end="", file=sys.stderr)
+        print("loading model/optimizer ... ", end="", file=sys.stderr)
         sys.stderr.flush()
-        encdec = EncoderDecoder.load("encdec", prefix+".")
-        trainer = T.Adam()
-        trainer.load(prefix + ".trainer.config")
-        valid_ppl = load_ppl(prefix + ".valid_ppl.config")
+        encdec = AttentionalEncoderDecoder()
+        encdec.load(prefix + ".model")
+        optimizer = O.Adam()
+        optimizer.load(prefix + ".optimizer")
+        valid_ppl = load_ppl(prefix + ".valid_ppl")
         print("done.", file=sys.stderr)
-        train(encdec, trainer, prefix, valid_ppl)
+        train(encdec, optimizer, prefix, valid_ppl)
     else:
         print("loading model ... ", end="", file=sys.stderr)
         sys.stderr.flush()
-        encdec = EncoderDecoder.load("encdec", prefix+".")
+        encdec = AttentionalEncoderDecoder()
+        encdec.load(prefix + ".model")
         print("done.", file=sys.stderr)
         test(encdec)
+
 
 if __name__ == "__main__":
     main()

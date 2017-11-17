@@ -61,14 +61,14 @@ static const char *TRG_VALID_FILE = "data/dev.ja";
 
 // Encoder-decoder translation model with dot-attention.
 template<typename Var>
-class EncoderDecoder : public Model {
+class AttentionalEncoderDecoder : public Model {
   float dropout_rate_;
   Parameter psrc_lookup_, ptrg_lookup_, pwhj_, pbj_, pwjy_, pby_;
   ::LSTM<Var> src_fw_lstm_, src_bw_lstm_, trg_lstm_;
   Var trg_lookup_, whj_, bj_, wjy_, by_, concat_fb_, t_concat_fb_, feed_;
 
 public:
-  EncoderDecoder() : dropout_rate_(DROPOUT_RATE) {
+  AttentionalEncoderDecoder() : dropout_rate_(DROPOUT_RATE) {
     add_parameter("src_lookup", psrc_lookup_);
     add_parameter("trg_lookup", ptrg_lookup_);
     add_parameter("whj", pwhj_);
@@ -169,7 +169,7 @@ public:
 
 // Training encoder decoder model.
 void train(
-    ::EncoderDecoder<Node> &encdec, Optimizer &optimizer,
+    ::AttentionalEncoderDecoder<Node> &encdec, Optimizer &optimizer,
     const string &prefix, float best_valid_ppl) {
   // Registers all parameters to the optimizer.
   optimizer.add_model(encdec);
@@ -276,7 +276,7 @@ void train(
 }
 
 // Generates translation by consuming stdin.
-void test(::EncoderDecoder<Tensor> &encdec) {
+void test(::AttentionalEncoderDecoder<Tensor> &encdec) {
   // Loads vocab.
   const auto src_vocab = ::make_vocab(SRC_TRAIN_FILE, SRC_VOCAB_SIZE);
   const auto trg_vocab = ::make_vocab(TRG_TRAIN_FILE, TRG_VOCAB_SIZE);
@@ -334,7 +334,7 @@ int main(const int argc, const char *argv[]) {
   cerr << "done." << endl;
 
   if (mode == "train") {
-    ::EncoderDecoder<Node> encdec;
+    ::AttentionalEncoderDecoder<Node> encdec;
     encdec.init(
         SRC_VOCAB_SIZE, TRG_VOCAB_SIZE, NUM_EMBED_UNITS, NUM_HIDDEN_UNITS);
     optimizers::Adam optimizer;
@@ -343,7 +343,7 @@ int main(const int argc, const char *argv[]) {
     ::train(encdec, optimizer, prefix, 1e10);
   } else if (mode == "resume") {
     cerr << "loading model/optimizer ... " << flush;
-    ::EncoderDecoder<Node> encdec;
+    ::AttentionalEncoderDecoder<Node> encdec;
     encdec.load(prefix + ".model");
     optimizers::Adam optimizer;
     optimizer.load(prefix + ".optimizer");
@@ -352,7 +352,7 @@ int main(const int argc, const char *argv[]) {
     ::train(encdec, optimizer, prefix, valid_ppl);
   } else {  // mode == "test"
     cerr << "loading model ... ";
-    ::EncoderDecoder<Tensor> encdec;
+    ::AttentionalEncoderDecoder<Tensor> encdec;
     encdec.load(prefix + ".model");
     cerr << "done." << endl;
     ::test(encdec);
