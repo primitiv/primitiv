@@ -42,12 +42,12 @@ class LSTM(Model):
         out_size = self._pwhh.shape()[1]
         u = self._wxh @ x + self._whh @ self._h + self._bh
         i = F.sigmoid(F.slice(u, 0, 0, out_size))
-        f = F.sigmoid(F.slice(u, 0, out_size, 2 * out_size));
-        o = F.sigmoid(F.slice(u, 0, 2 * out_size, 3 * out_size));
-        j = F.tanh(F.slice(u, 0, 3 * out_size, 4 * out_size));
-        self._c = i * j + f * self._c;
-        self._h = o * F.tanh(self._c);
-        return self._h;
+        f = F.sigmoid(F.slice(u, 0, out_size, 2 * out_size))
+        o = F.sigmoid(F.slice(u, 0, 2 * out_size, 3 * out_size))
+        j = F.tanh(F.slice(u, 0, 3 * out_size, 4 * out_size))
+        self._c = i * j + f * self._c
+        self._h = o * F.tanh(self._c)
+        return self._h
 
     def get_c(self):
         """Retrieves current internal cell state."""
