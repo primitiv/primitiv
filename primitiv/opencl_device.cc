@@ -21,7 +21,7 @@ namespace devices {
 
 #define SET_ARG_HOST_VECTOR(kernel, idx, type, var) \
   cl::Buffer opencl_mem_##var = cl::Buffer(context_, \
-      CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, \
+      CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR, \
       sizeof(type) * var.size(), const_cast<type*>(var.data())); \
   kernel.setArg(idx, opencl_mem_##var);
 
@@ -744,15 +744,15 @@ void OpenCL::dump_description() const {
 std::shared_ptr<void> OpenCL::new_handle(const Shape &shape) {
   const std::uint32_t mem_size = sizeof(float) * shape.size();
   cl::Buffer *data = new cl::Buffer(context_,
-            CL_MEM_READ_WRITE,
+            CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
             mem_size,
             NULL);
   return std::shared_ptr<void>(data, [](cl::Buffer *buffer){delete buffer;});
 }
 
 std::vector<float> OpenCL::tensor_to_vector_impl(const Tensor &x) {
-  const std::uint32_t num_elements = x.shape().size();
-  std::vector<float> ret(num_elements);
+  const std::uint32_t size = x.shape().size();
+  std::vector<float> ret(size);
   cl::CommandQueue queue(context_, device_, 0);
   queue.enqueueReadBuffer(CDATA(x), CL_TRUE, 0,
             sizeof(cl_float) * num_elements, ret.data());
@@ -769,7 +769,7 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(const Tensor &x, std::uint32_t di
   cl::CommandQueue queue(context_, device_, 0);
   cl::Buffer py = cl::Buffer(context_,
       CL_MEM_WRITE_ONLY,
-      sizeof(cl_uint) * r, NULL);
+      sizeof(std::uint32_t) * r, NULL);
   switch (group_size) {
 #define CASE(k, m) \
     case k: \
@@ -794,7 +794,7 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(const Tensor &x, std::uint32_t di
   }
   std::vector<std::uint32_t> ret(r);
   queue.enqueueReadBuffer(py, CL_TRUE, 0,
-            sizeof(cl_uint) * r, ret.data());
+            sizeof(std::uint32_t) * r, ret.data());
   return ret;
 }
 
@@ -808,7 +808,7 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(const Tensor &x, std::uint32_t di
   cl::CommandQueue queue(context_, device_, 0);
   cl::Buffer py = cl::Buffer(context_,
       CL_MEM_WRITE_ONLY,
-      sizeof(cl_uint) * r, NULL);
+      sizeof(std::uint32_t) * r, NULL);
   switch (group_size) {
 #define CASE(k, m) \
     case k: \
@@ -833,7 +833,7 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(const Tensor &x, std::uint32_t di
   }
   std::vector<std::uint32_t> ret(r);
   queue.enqueueReadBuffer(py, CL_TRUE, 0,
-            sizeof(cl_uint) * r, ret.data());
+            sizeof(std::uint32_t) * r, ret.data());
   return ret;
 }
 
@@ -886,39 +886,35 @@ void OpenCL::identity_impl(Tensor &y) {
 }
 
 void OpenCL::random_bernoulli_impl(float p, Tensor &y) {
-  const std::uint32_t num_elements = y.shape().size();
-  std::vector<float> vec(num_elements);
-  randomizer_.fill_bernoulli(p, num_elements, vec.data());
+  const std::uint32_t size = y.shape().size();
   cl::CommandQueue queue(context_, device_, 0);
-  queue.enqueueWriteBuffer(CDATA(y), CL_TRUE, 0,
-            sizeof(float) * num_elements, vec.data());
+  float *mapped_ptr = (float *) queue.enqueueMapBuffer(CDATA(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0);
+  randomizer_.fill_bernoulli(p, size, mapped_ptr);
+  queue.enqueueUnmapMemObject(CDATA(y), mapped_ptr);
 }
 
 void OpenCL::random_uniform_impl(float lower, float upper, Tensor &y) {
-  const std::uint32_t num_elements = y.shape().size();
-  std::vector<float> vec(num_elements);
-  randomizer_.fill_uniform(lower, upper, num_elements, vec.data());
+  const std::uint32_t size = y.shape().size();
   cl::CommandQueue queue(context_, device_, 0);
-  queue.enqueueWriteBuffer(CDATA(y), CL_TRUE, 0,
-            sizeof(float) * num_elements, vec.data());
+  float *mapped_ptr = (float *) queue.enqueueMapBuffer(CDATA(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0);
+  randomizer_.fill_uniform(lower, upper, size, mapped_ptr);
+  queue.enqueueUnmapMemObject(CDATA(y), mapped_ptr);
 }
 
 void OpenCL::random_normal_impl(float mean, float sd, Tensor &y) {
-  const std::uint32_t num_elements = y.shape().size();
-  std::vector<float> vec(num_elements);
-  randomizer_.fill_normal(mean, sd, num_elements, vec.data());
+  const std::uint32_t size = y.shape().size();
   cl::CommandQueue queue(context_, device_, 0);
-  queue.enqueueWriteBuffer(CDATA(y), CL_TRUE, 0,
-            sizeof(float) * num_elements, vec.data());
+  float *mapped_ptr = (float *) queue.enqueueMapBuffer(CDATA(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0);
+  randomizer_.fill_normal(mean, sd, size, mapped_ptr);
+  queue.enqueueUnmapMemObject(CDATA(y), mapped_ptr);
 }
 
 void OpenCL::random_log_normal_impl(float mean, float sd, Tensor &y) {
-  const std::uint32_t num_elements = y.shape().size();
-  std::vector<float> vec(num_elements);
-  randomizer_.fill_log_normal(mean, sd, num_elements, vec.data());
+  const std::uint32_t size = y.shape().size();
   cl::CommandQueue queue(context_, device_, 0);
-  queue.enqueueWriteBuffer(CDATA(y), CL_TRUE, 0,
-            sizeof(float) * num_elements, vec.data());
+  float *mapped_ptr = (float *) queue.enqueueMapBuffer(CDATA(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0);
+  randomizer_.fill_log_normal(mean, sd, size, mapped_ptr);
+  queue.enqueueUnmapMemObject(CDATA(y), mapped_ptr);
 }
 
 void OpenCL::pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &y) {
@@ -931,7 +927,7 @@ void OpenCL::pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids
   const std::uint32_t bs = y.shape().batch();
   cl::CommandQueue queue(context_, device_, 0);
   pick_fw_kernel_.setArg(0, CDATA(x));
-  SET_ARG_HOST_VECTOR(pick_fw_kernel_, 1, cl_uint, ids)
+  SET_ARG_HOST_VECTOR(pick_fw_kernel_, 1, std::uint32_t, ids)
   pick_fw_kernel_.setArg(2, wx);
   pick_fw_kernel_.setArg(3, wy);
   pick_fw_kernel_.setArg(4, sx);
@@ -1001,7 +997,7 @@ void OpenCL::pick_bw_impl(const Tensor &gy, const std::vector<std::uint32_t> &id
   const std::uint32_t bs = gy.shape().batch();
   cl::CommandQueue queue(context_, device_, 0);
   pick_bw_kernel_.setArg(0, CDATA(gy));
-  SET_ARG_HOST_VECTOR(pick_bw_kernel_, 1, cl_uint, ids)
+  SET_ARG_HOST_VECTOR(pick_bw_kernel_, 1, std::uint32_t, ids)
   pick_bw_kernel_.setArg(2, wx);
   pick_bw_kernel_.setArg(3, wy);
   pick_bw_kernel_.setArg(4, sx);
