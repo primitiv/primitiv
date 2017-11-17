@@ -59,14 +59,10 @@ cdef class _ModelSubModel:
 cdef class _Model:
 
     def __cinit__(self):
-        self.params = _ModelParameter(self)
-        self.submodels = _ModelSubModel(self)
-
-    def __init__(self):
-        if self.wrapped is not NULL:
-            raise TypeError("__init__() has already been called.")
         self.wrapped = new CppModel()
         _Model.register_wrapper(self.wrapped, self)
+        self.params = _ModelParameter(self)
+        self.submodels = _ModelSubModel(self)
 
     def __dealloc__(self):
         if self.wrapped is not NULL:
