@@ -755,7 +755,7 @@ std::vector<float> OpenCL::tensor_to_vector_impl(const Tensor &x) {
   const std::uint32_t size = x.shape().size();
   std::vector<float> ret(size);
   cmd_queue_.enqueueReadBuffer(CDATA(x), CL_TRUE, 0,
-            sizeof(cl_float) * num_elements, ret.data());
+            sizeof(cl_float) * size, ret.data());
   return ret;
 }
 
@@ -1235,7 +1235,7 @@ void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
                       di, dk, dj,
                       alpha, CDATA(a)(), n * a_skip, di, CDATA(b)(), n * b_skip, dj,
                       beta, CDATA(y)(), n * y_skip, di,
-                      1, &queue(), 0, NULL, NULL);
+                      1, &cmd_queue_(), 0, NULL, NULL);
     }
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
@@ -1243,7 +1243,7 @@ void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
                     di, dk * b.shape().batch(), dj,
                     alpha, CDATA(a)(), 0, di, CDATA(b)(), 0, dj,
                     beta, CDATA(y)(), 0, di,
-                    1, &queue(), 0, NULL, NULL);
+                    1, &cmd_queue_(), 0, NULL, NULL);
   }
 }
 
@@ -1282,12 +1282,12 @@ void OpenCL::matmul_bw_impl(const Tensor &a, const Tensor &b, const Tensor &, co
                       di, dj, dk,
                       alpha, CDATA(gy)(), n * y_skip, di, CDATA(b)(), n * b_skip, dj,
                       beta, CDATA(ga)(), n * a_skip, di,
-                      1, &queue(), 0, NULL, NULL);
+                      1, &cmd_queue_(), 0, NULL, NULL);
       clblasSgemm(clblasColumnMajor, clblasTrans, clblasNoTrans,
                       dj, dk, di,
                       alpha, CDATA(a)(), n * a_skip, di, CDATA(gy)(), n * y_skip, di,
                       beta, CDATA(gb)(), n * b_skip, dj,
-                      1, &queue(), 0, NULL, NULL);
+                      1, &cmd_queue_(), 0, NULL, NULL);
     }
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
@@ -1295,12 +1295,12 @@ void OpenCL::matmul_bw_impl(const Tensor &a, const Tensor &b, const Tensor &, co
                     di, dj, dk * b.shape().batch(),
                     alpha, CDATA(gy)(), 0, di, CDATA(b)(), 0, dj,
                     beta, CDATA(ga)(), 0, di,
-                    1, &queue(), 0, NULL, NULL);
+                    1, &cmd_queue_(), 0, NULL, NULL);
     clblasSgemm(clblasColumnMajor, clblasTrans, clblasNoTrans,
                     dj, dk * b.shape().batch(), di,
                     alpha, CDATA(a)(), 0, di, CDATA(gy)(), 0, di,
                     beta, CDATA(gb)(), 0, dj,
-                    1, &queue(), 0, NULL, NULL);
+                    1, &cmd_queue_(), 0, NULL, NULL);
   }
 }
 
