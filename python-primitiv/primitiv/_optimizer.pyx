@@ -1,3 +1,4 @@
+from primitiv._model cimport _Model
 from primitiv._parameter cimport _Parameter
 from primitiv.config cimport pystr_to_cppstr, cppstr_to_pystr
 
@@ -67,6 +68,10 @@ cdef class _Optimizer:
 
     def add_parameter(self, _Parameter param):
         self.wrapped.add_parameter(param.wrapped[0])
+        return
+
+    def add_model(self, _Model model):
+        self.wrapped.add_model(model.wrapped[0])
         return
 
     def reset_gradients(self):

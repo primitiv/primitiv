@@ -1,6 +1,7 @@
 from primitiv._device import _Device as Device
 from primitiv._graph import _Graph as Graph
 from primitiv._initializer import _Initializer as Initializer
+from primitiv._model import _Model as Model
 from primitiv._graph import _Node as Node
 from primitiv._parameter import _Parameter as Parameter
 from primitiv._shape import _Shape as Shape
@@ -25,6 +26,7 @@ __all__ = [
     "Device",
     "Graph",
     "Initializer",
+    "Model",
     "Node",
     "Parameter",
     "Shape",
