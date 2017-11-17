@@ -12,6 +12,11 @@ import tempfile
 
 
 class TestModel(Model):
+    # NOTE(vbkaisetsu):
+    # Custom models can be created without calling super().__init__()
+    # function.
+    # This override suppresses calling __init__() function of
+    # the parent Model class to simulate the actual model implementation.
     def __init__(self):
         pass
 
