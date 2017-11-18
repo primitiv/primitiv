@@ -28,19 +28,29 @@ protected:
     devices.emplace_back(new devices::Naive());
     devices.emplace_back(new devices::Naive());  // other device on the same hardware
 #ifdef PRIMITIV_USE_CUDA
-    devices.emplace_back(new devices::CUDA(0));
-    devices.emplace_back(new devices::CUDA(0));  // other device on the same hardware
-    if (devices::CUDA::num_devices() >= 2) {
-      devices.emplace_back(new devices::CUDA(1));
+    if (devices::CUDA::num_devices() >= 1) {
+      devices.emplace_back(new devices::CUDA(0));
+      devices.emplace_back(new devices::CUDA(0));  // other device on the same hardware
+      if (devices::CUDA::num_devices() >= 2) {
+        devices.emplace_back(new devices::CUDA(1));
+      }
+      std::cout << "Test CUDA device." << std::endl;
+    } else {
+      std::cout << "No CUDA device is installed. Skip tests for CUDA." << std::endl;
     }
 #endif  // PRIMITIV_USE_CUDA
 #ifdef PRIMITIV_USE_OPENCL
     const std::uint32_t num_pfs = devices::OpenCL::num_platforms();
     for (std::uint32_t pfid = 0; pfid < num_pfs; ++pfid) {
-      devices.emplace_back(new devices::OpenCL(pfid, 0));
-      devices.emplace_back(new devices::OpenCL(pfid, 0));  // other device on the same hardware
-      if (devices::OpenCL::num_devices(pfid) >= 2) {
-        devices.emplace_back(new devices::OpenCL(pfid, 1));
+      if (devices::OpenCL::num_devices(pfid) >= 1) {
+        devices.emplace_back(new devices::OpenCL(pfid, 0));
+        devices.emplace_back(new devices::OpenCL(pfid, 0));  // other device on the same hardware
+        if (devices::OpenCL::num_devices(pfid) >= 2) {
+          devices.emplace_back(new devices::OpenCL(pfid, 1));
+        }
+        std::cout << "Test OpenCL platform " << pfid << "." << std::endl;
+      } else {
+        std::cout << "No device is installed for platform " << pfid << ". Skip tests for platform" << pfid << "." << std::endl;
       }
     }
 #endif  // PRIMITIV_USE_OPENCL
