@@ -604,20 +604,20 @@ CUDA::~CUDA() {
 }
 
 void CUDA::dump_description() const {
-  cerr << "Device " << this << ':' << endl;
+  cerr << "Device " << this << endl;
   cerr << "  Type: CUDA" << endl;
 
   const ::cudaDeviceProp &prop = state_->prop;
-  cerr << "  Physical Device: " << dev_id_ << ':' << endl;
+  cerr << "  Device ID: " << dev_id_ << endl;
   cerr << "    Name ................. " << prop.name << endl;
   cerr << "    Global Memory ........ " << prop.totalGlobalMem << endl;
   cerr << "    Shared Memory ........ " << prop.sharedMemPerBlock << endl;
   cerr << "    Threads/block ........ " << prop.maxThreadsPerBlock << endl;
-  cerr << "    Threads dim .......... " << prop.maxThreadsDim[0] << ','
-                                      << prop.maxThreadsDim[1] << ','
+  cerr << "    Threads dim .......... " << prop.maxThreadsDim[0] << ", "
+                                      << prop.maxThreadsDim[1] << ", "
                                       << prop.maxThreadsDim[2] << endl;
-  cerr << "    Grid size ............ " << prop.maxGridSize[0] << ','
-                                      << prop.maxGridSize[1] << ','
+  cerr << "    Grid size ............ " << prop.maxGridSize[0] << ", "
+                                      << prop.maxGridSize[1] << ", "
                                       << prop.maxGridSize[2] << endl;
   cerr << "    Compute Capability ... " << prop.major << '.'
                                       << prop.minor << endl;

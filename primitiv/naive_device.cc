@@ -15,7 +15,7 @@ namespace primitiv {
 namespace devices {
 
 void Naive::dump_description() const {
-  cerr << "Device " << this << ':' << endl;
+  cerr << "Device " << this << endl;
   cerr << "  Type: Naive" << endl;
 }
 

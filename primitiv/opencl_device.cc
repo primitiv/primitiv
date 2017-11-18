@@ -769,11 +769,11 @@ OpenCL::OpenCL(
 }
 
 void OpenCL::dump_description() const {
-  std::cerr << "Device " << this << ':' << std::endl;
+  std::cerr << "Device " << this << std::endl;
   std::cerr << "  Type: OpenCL" << std::endl;
 
-  std::cerr << "  Platform: " << pf_id_ << std::endl;
-  std::cerr << "  Physical Device: " << dev_id_ << std::endl;
+  std::cerr << "  Platform ID: " << pf_id_ << std::endl;
+  std::cerr << "  Device ID: " << dev_id_ << std::endl;
   std::cerr << "    Vendor ................ "
             << device_.getInfo<CL_DEVICE_VENDOR>() << std::endl;
   std::cerr << "    Name .................. "
