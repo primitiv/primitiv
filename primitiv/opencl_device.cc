@@ -13,17 +13,31 @@
 #include <primitiv/error.h>
 #include <primitiv/opencl_device.h>
 
+namespace {
+
+/**
+ * Creates a readonly buffer using given vector.
+ * @param context OpenCL context object.
+ * @param data Target vector.
+ * @return New OpenCL buffer.
+ */
+template<typename T>
+cl::Buffer make_readonly_buffer(
+    const cl::Context &context, const std::vector<T> &data) {
+  return cl::Buffer(
+      context,
+      CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR,
+      sizeof(T) * data.size(),
+      const_cast<T *>(data.data()));
+}
+
+}  // namespace
+
 namespace primitiv {
 namespace devices {
 
 #define GRID_SIZE(x, threads) (((x) + (threads) - 1) / (threads))
 #define CDATA(x) (*(static_cast<const cl::Buffer *>((x).data())))
-
-#define SET_ARG_HOST_VECTOR(kernel, idx, type, var) \
-  cl::Buffer opencl_mem_##var = cl::Buffer(context_, \
-      CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR, \
-      sizeof(type) * var.size(), const_cast<type*>(var.data())); \
-  kernel.setArg(idx, opencl_mem_##var);
 
 std::string OpenCL::generate_kernels() {
   std::ostringstream ss;
@@ -917,8 +931,9 @@ void OpenCL::pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids
   const std::uint32_t sy = y.shape().volume();
   const std::uint32_t g1 = GRID_SIZE(sy, pick_fw_kernel_group_size_);
   const std::uint32_t bs = y.shape().batch();
+  cl::Buffer ids_buf = ::make_readonly_buffer(context_, ids);
   pick_fw_kernel_.setArg(0, CDATA(x));
-  SET_ARG_HOST_VECTOR(pick_fw_kernel_, 1, std::uint32_t, ids)
+  pick_fw_kernel_.setArg(1, ids_buf);
   pick_fw_kernel_.setArg(2, wx);
   pick_fw_kernel_.setArg(3, wy);
   pick_fw_kernel_.setArg(4, sx);
@@ -984,8 +999,9 @@ void OpenCL::pick_bw_impl(const Tensor &gy, const std::vector<std::uint32_t> &id
   const std::uint32_t sy = gy.shape().volume();
   const std::uint32_t g1 = GRID_SIZE(sy, concat_fw_kernel_group_size_);
   const std::uint32_t bs = gy.shape().batch();
+  cl::Buffer ids_buf = ::make_readonly_buffer(context_, ids);
   pick_bw_kernel_.setArg(0, CDATA(gy));
-  SET_ARG_HOST_VECTOR(pick_bw_kernel_, 1, std::uint32_t, ids)
+  pick_bw_kernel_.setArg(1, ids_buf);
   pick_bw_kernel_.setArg(2, wx);
   pick_bw_kernel_.setArg(3, wy);
   pick_bw_kernel_.setArg(4, sx);
@@ -1446,5 +1462,5 @@ void OpenCL::inplace_subtract_impl(const Tensor &x, Tensor &y) {
   cmd_queue_.finish();
 }
 
-}
-}
+}  // namespace devices
+}  // namespace primitiv

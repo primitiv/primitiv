@@ -160,9 +160,10 @@ private:
   CUDAMemoryPool pool_;
   std::unique_ptr<CUDAInternalState> state_;
 
-  // Reserved pointer to store integer IDs.
-  // This member holds a pointer provided from `pool_`, and should be declared
-  // after `pool_` due to the order of member destruction.
+  // Reserved pointer to store temporary integers given from indexing functions
+  // such as operators::input().
+  // This member is initialized by a pointer provided from `pool_` and should
+  // be declared after `pool_` due to the destruction order of class members.
   std::shared_ptr<void> ids_ptr_;
 
   /**
