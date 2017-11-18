@@ -29,23 +29,59 @@ protected:
   static vector<Device *> devices;
 
   static void SetUpTestCase() {
-    devices.emplace_back(new devices::Naive());
+    {
+      devices.emplace_back(new devices::Naive());
+      std::cout << "Add Naive device." << std::endl;
+      devices.emplace_back(new devices::Naive());
+      std::cout << "Add Naive device." << std::endl;
+    }
 #ifdef PRIMITIV_USE_CUDA
-    if (devices::CUDA::num_devices() >= 1) {
-      devices.emplace_back(new devices::CUDA(0));
-      std::cout << "Test CUDA device." << std::endl;
-    } else {
-      std::cout << "No CUDA device is installed. Skip tests for CUDA." << std::endl;
+    {
+      const std::uint32_t num_devs = devices::CUDA::num_devices();
+      if (num_devs > 0) {
+        for (std::uint32_t dev_id = 0; dev_id < num_devs; ++dev_id) {
+          devices.emplace_back(new devices::CUDA(dev_id));
+          std::cout <<
+            "Add CUDA device (device_id = " << dev_id << ")." << std::endl;
+          if (dev_id == 0) {
+            // Add another device object on the device 0.
+            devices.emplace_back(new devices::CUDA(dev_id));
+            std::cout <<
+              "Add CUDA device (device_id = " << dev_id << ")." << std::endl;
+          }
+        }
+      } else {
+        std::cout << "No CUDA devices are installed." << std::endl;
+      }
     }
 #endif  // PRIMITIV_USE_CUDA
 #ifdef PRIMITIV_USE_OPENCL
-    const std::uint32_t num_pfs = devices::OpenCL::num_platforms();
-    for (std::uint32_t pfid = 0; pfid < num_pfs; ++pfid) {
-      if (devices::OpenCL::num_devices(pfid) >= 1) {
-        devices.emplace_back(new devices::OpenCL(pfid, 0));
-        std::cout << "Test OpenCL platform " << pfid << "." << std::endl;
+    {
+      const std::uint32_t num_pfs = devices::OpenCL::num_platforms();
+      if (num_pfs > 0) {
+        for (std::uint32_t pf_id = 0; pf_id < num_pfs; ++pf_id) {
+          const std::uint32_t num_devs = devices::OpenCL::num_devices(pf_id);
+          if (num_devs > 0) {
+            for (std::uint32_t dev_id = 0; dev_id < num_devs; ++dev_id) {
+              devices.emplace_back(new devices::OpenCL(pf_id, dev_id));
+              std::cout <<
+                "Add OpenCL device (platform_id = " << pf_id <<
+                ", device_id = " << dev_id << ")." << std::endl;
+              if (dev_id == 0) {
+                // Add another device object on the device 0.
+                devices.emplace_back(new devices::OpenCL(pf_id, dev_id));
+                std::cout <<
+                  "Add OpenCL device (platform_id = " << pf_id <<
+                  ", device_id = " << dev_id << ")." << std::endl;
+              }
+            }
+          } else {
+            std::cout << "No OpenCL devices on the platform " << pf_id <<
+              " are installed." << std::endl;
+          }
+        }
       } else {
-        std::cout << "No device is installed for platform " << pfid << ". Skip tests for platform" << pfid << "." << std::endl;
+        std::cout << "No OpenCL platforms are installed." << std::endl;
       }
     }
 #endif  // PRIMITIV_USE_OPENCL
