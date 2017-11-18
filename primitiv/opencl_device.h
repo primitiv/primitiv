@@ -50,17 +50,10 @@ public:
    */
   OpenCL(std::uint32_t platform_id, std::uint32_t device_id, std::uint32_t rng_seed);
 
-  ~OpenCL() override;
+  ~OpenCL() override = default;
 
   void dump_description() const override;
   Device::DeviceType type() const override { return Device::DeviceType::OPENCL; }
-
-private:
-  /**
-   * Returns source code of all kernel functions.
-   * @return Source code of kernel functions.
-   */
-  static std::string generate_kernels();
 
 private:
   std::shared_ptr<void> new_handle(const Shape &shape) override;
@@ -178,7 +171,7 @@ private:
   cl::Context context_;
   cl::CommandQueue cmd_queue_;
 
-  std::uint32_t plat_id_;
+  std::uint32_t pf_id_;
   std::uint32_t dev_id_;
   DefaultRandomizer randomizer_;
 
