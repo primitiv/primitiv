@@ -623,183 +623,125 @@ void OpenCL::initialize() {
   context_ = cl::Context({device_});
   cmd_queue_ = cl::CommandQueue(context_, device_, 0);
 
+  cl::Program program(context_, ::generate_kernels(), true);
+
   auto get_kernel_group_size = [&](const cl::Kernel &kernel) {
     return kernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device_);
   };
 
-  cl::Program program(context_, ::generate_kernels(), true);
-  for (std::uint32_t i = 0; i <= 10; ++i) {
-    std::ostringstream ss;
-    ss << "argmax_kernel_" << (1 << i);
-    argmax_kernel_[i] = cl::Kernel(program, ss.str().c_str());
+#define CONFIGURE_KERNEL(name) \
+  { \
+    name##_kernel_ = cl::Kernel(program, #name "_kernel"); \
+    name##_kernel_group_size_ = get_kernel_group_size(name##_kernel_); \
   }
-  argmax_kernel_group_size_ = get_kernel_group_size(argmax_kernel_[0]);
 
-  for (std::uint32_t i = 0; i <= 10; ++i) {
-    std::ostringstream ss;
-    ss << "argmin_kernel_" << (1 << i);
-    argmin_kernel_[i] = cl::Kernel(program, ss.str().c_str());
+#define CONFIGURE_KERNEL_LIST(name) \
+  { \
+    for (std::uint32_t i = 0; i <= 10; ++i) { \
+      std::ostringstream ss; \
+      ss << #name "_kernel_" << (1 << i); \
+      name##_kernel_[i] = cl::Kernel(program, ss.str().c_str()); \
+    } \
+    name##_kernel_group_size_ = get_kernel_group_size(name##_kernel_[0]); \
   }
-  argmin_kernel_group_size_ = get_kernel_group_size(argmin_kernel_[0]);
 
-  set_identity_kernel_ = cl::Kernel(program, "set_identity_kernel");
-  set_identity_kernel_group_size_ = get_kernel_group_size(set_identity_kernel_);
-  pick_fw_kernel_ = cl::Kernel(program, "pick_fw_kernel");
-  pick_fw_kernel_group_size_ = get_kernel_group_size(pick_fw_kernel_);
-  slice_fw_kernel_ = cl::Kernel(program, "slice_fw_kernel");
-  slice_fw_kernel_group_size_ = get_kernel_group_size(slice_fw_kernel_);
-  concat_fw_kernel_ = cl::Kernel(program, "concat_fw_kernel");
-  concat_fw_kernel_group_size_ = get_kernel_group_size(concat_fw_kernel_);
-  pick_bw_kernel_ = cl::Kernel(program, "pick_bw_kernel");
-  pick_bw_kernel_group_size_ = get_kernel_group_size(pick_bw_kernel_);
-  slice_bw_kernel_ = cl::Kernel(program, "slice_bw_kernel");
-  slice_bw_kernel_group_size_ = get_kernel_group_size(slice_bw_kernel_);
+  CONFIGURE_KERNEL_LIST(argmax);
+  CONFIGURE_KERNEL_LIST(argmin);
 
-  negate_fw_kernel_ = cl::Kernel(program, "negate_fw_kernel");
-  negate_fw_kernel_group_size_ = get_kernel_group_size(negate_fw_kernel_);
-  sqrt_fw_kernel_ = cl::Kernel(program, "sqrt_fw_kernel");
-  sqrt_fw_kernel_group_size_ = get_kernel_group_size(sqrt_fw_kernel_);
-  exp_fw_kernel_ = cl::Kernel(program, "exp_fw_kernel");
-  exp_fw_kernel_group_size_ = get_kernel_group_size(exp_fw_kernel_);
-  log_fw_kernel_ = cl::Kernel(program, "log_fw_kernel");
-  log_fw_kernel_group_size_ = get_kernel_group_size(log_fw_kernel_);
-  tanh_fw_kernel_ = cl::Kernel(program, "tanh_fw_kernel");
-  tanh_fw_kernel_group_size_ = get_kernel_group_size(tanh_fw_kernel_);
-  sigmoid_fw_kernel_ = cl::Kernel(program, "sigmoid_fw_kernel");
-  sigmoid_fw_kernel_group_size_ = get_kernel_group_size(sigmoid_fw_kernel_);
-  softplus_fw_kernel_ = cl::Kernel(program, "softplus_fw_kernel");
-  softplus_fw_kernel_group_size_ = get_kernel_group_size(softplus_fw_kernel_);
-  sin_fw_kernel_ = cl::Kernel(program, "sin_fw_kernel");
-  sin_fw_kernel_group_size_ = get_kernel_group_size(sin_fw_kernel_);
-  cos_fw_kernel_ = cl::Kernel(program, "cos_fw_kernel");
-  cos_fw_kernel_group_size_ = get_kernel_group_size(cos_fw_kernel_);
-  tan_fw_kernel_ = cl::Kernel(program, "tan_fw_kernel");
-  tan_fw_kernel_group_size_ = get_kernel_group_size(tan_fw_kernel_);
-  transpose_fw_kernel_ = cl::Kernel(program, "transpose_fw_kernel");
-  transpose_fw_kernel_group_size_ = get_kernel_group_size(transpose_fw_kernel_);
+  CONFIGURE_KERNEL(set_identity);
+
+  CONFIGURE_KERNEL(pick_fw);
+  CONFIGURE_KERNEL(slice_fw);
+  CONFIGURE_KERNEL(concat_fw);
+
+  CONFIGURE_KERNEL(pick_bw);
+  CONFIGURE_KERNEL(slice_bw);
+
+  CONFIGURE_KERNEL(negate_fw);
+  CONFIGURE_KERNEL(sqrt_fw);
+  CONFIGURE_KERNEL(exp_fw);
+  CONFIGURE_KERNEL(log_fw);
+  CONFIGURE_KERNEL(tanh_fw);
+  CONFIGURE_KERNEL(sigmoid_fw);
+  CONFIGURE_KERNEL(softplus_fw);
+  CONFIGURE_KERNEL(sin_fw);
+  CONFIGURE_KERNEL(cos_fw);
+  CONFIGURE_KERNEL(tan_fw);
+
+  CONFIGURE_KERNEL(sqrt_bw);
+  CONFIGURE_KERNEL(exp_bw);
+  CONFIGURE_KERNEL(log_bw);
+  CONFIGURE_KERNEL(tanh_bw);
+  CONFIGURE_KERNEL(sigmoid_bw);
+  CONFIGURE_KERNEL(softplus_bw);
+  CONFIGURE_KERNEL(sin_bw);
+  CONFIGURE_KERNEL(cos_bw);
+  CONFIGURE_KERNEL(tan_bw);
+
+  CONFIGURE_KERNEL(transpose_fw);
+  CONFIGURE_KERNEL(transpose_bw);
+
   transpose_fw_kernel_group_size_y_ = transpose_fw_kernel_group_size_;
   transpose_fw_kernel_group_size_x_ = 1;
-  while (transpose_fw_kernel_group_size_x_ < transpose_fw_kernel_group_size_y_) {
+  while (
+      transpose_fw_kernel_group_size_x_ < transpose_fw_kernel_group_size_y_) {
     transpose_fw_kernel_group_size_x_ <<= 1;
     transpose_fw_kernel_group_size_y_ >>= 1;
   }
-
-  sqrt_bw_kernel_ = cl::Kernel(program, "sqrt_bw_kernel");
-  sqrt_bw_kernel_group_size_ = get_kernel_group_size(sqrt_bw_kernel_);
-  exp_bw_kernel_ = cl::Kernel(program, "exp_bw_kernel");
-  exp_bw_kernel_group_size_ = get_kernel_group_size(exp_bw_kernel_);
-  log_bw_kernel_ = cl::Kernel(program, "log_bw_kernel");
-  log_bw_kernel_group_size_ = get_kernel_group_size(log_bw_kernel_);
-  tanh_bw_kernel_ = cl::Kernel(program, "tanh_bw_kernel");
-  tanh_bw_kernel_group_size_ = get_kernel_group_size(tanh_bw_kernel_);
-  sigmoid_bw_kernel_ = cl::Kernel(program, "sigmoid_bw_kernel");
-  sigmoid_bw_kernel_group_size_ = get_kernel_group_size(sigmoid_bw_kernel_);
-  softplus_bw_kernel_ = cl::Kernel(program, "softplus_bw_kernel");
-  softplus_bw_kernel_group_size_ = get_kernel_group_size(softplus_bw_kernel_);
-  sin_bw_kernel_ = cl::Kernel(program, "sin_bw_kernel");
-  sin_bw_kernel_group_size_ = get_kernel_group_size(sin_bw_kernel_);
-  cos_bw_kernel_ = cl::Kernel(program, "cos_bw_kernel");
-  cos_bw_kernel_group_size_ = get_kernel_group_size(cos_bw_kernel_);
-  tan_bw_kernel_ = cl::Kernel(program, "tan_bw_kernel");
-  tan_bw_kernel_group_size_ = get_kernel_group_size(tan_bw_kernel_);
-  transpose_bw_kernel_ = cl::Kernel(program, "transpose_bw_kernel");
-  transpose_bw_kernel_group_size_ = get_kernel_group_size(transpose_bw_kernel_);
   transpose_bw_kernel_group_size_y_ = transpose_bw_kernel_group_size_;
   transpose_bw_kernel_group_size_x_ = 1;
-  while (transpose_bw_kernel_group_size_x_ < transpose_bw_kernel_group_size_y_) {
+  while (
+      transpose_bw_kernel_group_size_x_ < transpose_bw_kernel_group_size_y_) {
     transpose_bw_kernel_group_size_x_ <<= 1;
     transpose_bw_kernel_group_size_y_ >>= 1;
   }
-  add_const_fw_kernel_ = cl::Kernel(program, "add_const_fw_kernel");
-  add_const_fw_kernel_group_size_ = get_kernel_group_size(add_const_fw_kernel_);
-  subtract_const_r_fw_kernel_ = cl::Kernel(program, "subtract_const_r_fw_kernel");
-  subtract_const_r_fw_kernel_group_size_ = get_kernel_group_size(subtract_const_r_fw_kernel_);
-  subtract_const_l_fw_kernel_ = cl::Kernel(program, "subtract_const_l_fw_kernel");
-  subtract_const_l_fw_kernel_group_size_ = get_kernel_group_size(subtract_const_l_fw_kernel_);
-  multiply_const_fw_kernel_ = cl::Kernel(program, "multiply_const_fw_kernel");
-  multiply_const_fw_kernel_group_size_ = get_kernel_group_size(multiply_const_fw_kernel_);
-  divide_const_r_fw_kernel_ = cl::Kernel(program, "divide_const_r_fw_kernel");
-  divide_const_r_fw_kernel_group_size_ = get_kernel_group_size(divide_const_r_fw_kernel_);
-  divide_const_l_fw_kernel_ = cl::Kernel(program, "divide_const_l_fw_kernel");
-  divide_const_l_fw_kernel_group_size_ = get_kernel_group_size(divide_const_l_fw_kernel_);
-  prelu_fw_kernel_ = cl::Kernel(program, "prelu_fw_kernel");
-  prelu_fw_kernel_group_size_ = get_kernel_group_size(prelu_fw_kernel_);
-  elu_fw_kernel_ = cl::Kernel(program, "elu_fw_kernel");
-  elu_fw_kernel_group_size_ = get_kernel_group_size(elu_fw_kernel_);
 
-  add_const_bw_kernel_ = cl::Kernel(program, "add_const_bw_kernel");
-  add_const_bw_kernel_group_size_ = get_kernel_group_size(add_const_bw_kernel_);
-  subtract_const_r_bw_kernel_ = cl::Kernel(program, "subtract_const_r_bw_kernel");
-  subtract_const_r_bw_kernel_group_size_ = get_kernel_group_size(subtract_const_r_bw_kernel_);
-  subtract_const_l_bw_kernel_ = cl::Kernel(program, "subtract_const_l_bw_kernel");
-  subtract_const_l_bw_kernel_group_size_ = get_kernel_group_size(subtract_const_l_bw_kernel_);
-  multiply_const_bw_kernel_ = cl::Kernel(program, "multiply_const_bw_kernel");
-  multiply_const_bw_kernel_group_size_ = get_kernel_group_size(multiply_const_bw_kernel_);
-  divide_const_r_bw_kernel_ = cl::Kernel(program, "divide_const_r_bw_kernel");
-  divide_const_r_bw_kernel_group_size_ = get_kernel_group_size(divide_const_r_bw_kernel_);
-  divide_const_l_bw_kernel_ = cl::Kernel(program, "divide_const_l_bw_kernel");
-  divide_const_l_bw_kernel_group_size_ = get_kernel_group_size(divide_const_l_bw_kernel_);
-  prelu_bw_kernel_ = cl::Kernel(program, "prelu_bw_kernel");
-  prelu_bw_kernel_group_size_ = get_kernel_group_size(prelu_bw_kernel_);
-  elu_bw_kernel_ = cl::Kernel(program, "elu_bw_kernel");
-  elu_bw_kernel_group_size_ = get_kernel_group_size(elu_bw_kernel_);
+  CONFIGURE_KERNEL(add_const_fw);
+  CONFIGURE_KERNEL(subtract_const_r_fw);
+  CONFIGURE_KERNEL(subtract_const_l_fw);
+  CONFIGURE_KERNEL(multiply_const_fw);
+  CONFIGURE_KERNEL(divide_const_r_fw);
+  CONFIGURE_KERNEL(divide_const_l_fw);
 
-  add_scalar_fw_kernel_ = cl::Kernel(program, "add_scalar_fw_kernel");
-  add_scalar_fw_kernel_group_size_ = get_kernel_group_size(add_scalar_fw_kernel_);
-  subtract_scalar_r_fw_kernel_ = cl::Kernel(program, "subtract_scalar_r_fw_kernel");
-  subtract_scalar_r_fw_kernel_group_size_ = get_kernel_group_size(subtract_scalar_r_fw_kernel_);
-  subtract_scalar_l_fw_kernel_ = cl::Kernel(program, "subtract_scalar_l_fw_kernel");
-  subtract_scalar_l_fw_kernel_group_size_ = get_kernel_group_size(subtract_scalar_l_fw_kernel_);
-  multiply_scalar_fw_kernel_ = cl::Kernel(program, "multiply_scalar_fw_kernel");
-  multiply_scalar_fw_kernel_group_size_ = get_kernel_group_size(multiply_scalar_fw_kernel_);
-  divide_scalar_r_fw_kernel_ = cl::Kernel(program, "divide_scalar_r_fw_kernel");
-  divide_scalar_r_fw_kernel_group_size_ = get_kernel_group_size(divide_scalar_r_fw_kernel_);
-  divide_scalar_l_fw_kernel_ = cl::Kernel(program, "divide_scalar_l_fw_kernel");
-  divide_scalar_l_fw_kernel_group_size_ = get_kernel_group_size(divide_scalar_l_fw_kernel_);
+  CONFIGURE_KERNEL(add_const_bw);
+  CONFIGURE_KERNEL(subtract_const_r_bw);
+  CONFIGURE_KERNEL(subtract_const_l_bw);
+  CONFIGURE_KERNEL(multiply_const_bw);
+  CONFIGURE_KERNEL(divide_const_r_bw);
+  CONFIGURE_KERNEL(divide_const_l_bw);
 
-  add_fw_kernel_ = cl::Kernel(program, "add_fw_kernel");
-  add_fw_kernel_group_size_ = get_kernel_group_size(add_fw_kernel_);
-  subtract_fw_kernel_ = cl::Kernel(program, "subtract_fw_kernel");
-  subtract_fw_kernel_group_size_ = get_kernel_group_size(subtract_fw_kernel_);
-  multiply_fw_kernel_ = cl::Kernel(program, "multiply_fw_kernel");
-  multiply_fw_kernel_group_size_ = get_kernel_group_size(multiply_fw_kernel_);
-  divide_fw_kernel_ = cl::Kernel(program, "divide_fw_kernel");
-  divide_fw_kernel_group_size_ = get_kernel_group_size(divide_fw_kernel_);
+  CONFIGURE_KERNEL(prelu_fw);
+  CONFIGURE_KERNEL(elu_fw);
 
-  add_bw_kernel_ = cl::Kernel(program, "add_bw_kernel");
-  add_bw_kernel_group_size_ = get_kernel_group_size(add_bw_kernel_);
-  subtract_bw_kernel_ = cl::Kernel(program, "subtract_bw_kernel");
-  subtract_bw_kernel_group_size_ = get_kernel_group_size(subtract_bw_kernel_);
-  multiply_bw_kernel_ = cl::Kernel(program, "multiply_bw_kernel");
-  multiply_bw_kernel_group_size_ = get_kernel_group_size(multiply_bw_kernel_);
-  divide_bw_kernel_ = cl::Kernel(program, "divide_bw_kernel");
-  divide_bw_kernel_group_size_ = get_kernel_group_size(divide_bw_kernel_);
+  CONFIGURE_KERNEL(prelu_bw);
+  CONFIGURE_KERNEL(elu_bw);
 
-  for (std::uint32_t i = 0; i <= 10; ++i) {
-    std::ostringstream ss;
-    ss << "sum_fw_kernel_" << (1 << i);
-    sum_fw_kernel_[i] = cl::Kernel(program, ss.str().c_str());
-  }
-  sum_fw_kernel_group_size_ = get_kernel_group_size(sum_fw_kernel_[10]);
-  for (std::uint32_t i = 0; i <= 10; ++i) {
-    std::ostringstream ss;
-    ss << "logsumexp_fw_kernel_" << (1 << i);
-    logsumexp_fw_kernel_[i] = cl::Kernel(program, ss.str().c_str());
-  }
-  logsumexp_fw_kernel_group_size_ = get_kernel_group_size(logsumexp_fw_kernel_[0]);
+  CONFIGURE_KERNEL(add_scalar_fw);
+  CONFIGURE_KERNEL(subtract_scalar_r_fw);
+  CONFIGURE_KERNEL(subtract_scalar_l_fw);
+  CONFIGURE_KERNEL(multiply_scalar_fw);
+  CONFIGURE_KERNEL(divide_scalar_r_fw);
+  CONFIGURE_KERNEL(divide_scalar_l_fw);
 
-  broadcast_fw_kernel_ = cl::Kernel(program, "broadcast_fw_kernel");
-  broadcast_fw_kernel_group_size_ = get_kernel_group_size(broadcast_fw_kernel_);
-  batch_sum_fw_kernel_ = cl::Kernel(program, "batch_sum_fw_kernel");
-  batch_sum_fw_kernel_group_size_ = get_kernel_group_size(batch_sum_fw_kernel_);
+  CONFIGURE_KERNEL(add_fw);
+  CONFIGURE_KERNEL(subtract_fw);
+  CONFIGURE_KERNEL(multiply_fw);
+  CONFIGURE_KERNEL(divide_fw);
 
-  inplace_multiply_const_kernel_ = cl::Kernel(program, "inplace_multiply_const_kernel");
-  inplace_multiply_const_kernel_group_size_ = get_kernel_group_size(inplace_multiply_const_kernel_);
+  CONFIGURE_KERNEL(add_bw);
+  CONFIGURE_KERNEL(subtract_bw);
+  CONFIGURE_KERNEL(multiply_bw);
+  CONFIGURE_KERNEL(divide_bw);
 
-  inplace_add_kernel_ = cl::Kernel(program, "inplace_add_kernel");
-  inplace_add_kernel_group_size_ = get_kernel_group_size(inplace_add_kernel_);
-  inplace_subtract_kernel_ = cl::Kernel(program, "inplace_subtract_kernel");
-  inplace_subtract_kernel_group_size_ = get_kernel_group_size(inplace_subtract_kernel_);
+  CONFIGURE_KERNEL_LIST(sum_fw);
+  CONFIGURE_KERNEL_LIST(logsumexp_fw);
+
+  CONFIGURE_KERNEL(broadcast_fw);
+  CONFIGURE_KERNEL(batch_sum_fw);
+
+  CONFIGURE_KERNEL(inplace_multiply_const);
+  CONFIGURE_KERNEL(inplace_add);
+  CONFIGURE_KERNEL(inplace_subtract);
 }
 
 OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id)
