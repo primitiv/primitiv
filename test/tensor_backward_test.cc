@@ -81,6 +81,9 @@ protected:
       }
     }
 #endif  // PRIMITIV_USE_OPENCL
+    for (Device *dev : devices) {
+      dev->dump_description();
+    }
   }
 
   static void TearDownTestCase() {

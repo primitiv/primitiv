@@ -32,7 +32,16 @@ cl::Buffer make_readonly_buffer(
 }
 
 /**
- * Obtains cl::Buffer from Tensor.
+ * Obtains mutable cl::Buffer from Tensor.
+ * @param ptr Target Tensor object.
+ * @return cl::Buffer object which the tensor object holds.
+ */
+cl::Buffer &get_buffer(primitiv::Tensor &ptr) {
+  return *static_cast<cl::Buffer *>(ptr.data());
+}
+
+/**
+ * Obtains immutable cl::Buffer from Tensor.
  * @param ptr Target Tensor object.
  * @return cl::Buffer object which the tensor object holds.
  */
@@ -896,7 +905,7 @@ void OpenCL::reset_tensor_impl(float k, Tensor &x) {
 void OpenCL::reset_tensor_by_array_impl(const float values[], Tensor &x) {
   const std::uint32_t size = x.shape().size();
   cmd_queue_.enqueueWriteBuffer(
-      ::get_buffer(x), CL_TRUE, 0,sizeof(float) * size, values);
+      ::get_buffer(x), CL_TRUE, 0, sizeof(float) * size, values);
 }
 
 void OpenCL::copy_tensor_impl(const Tensor &x, Tensor &y) {
