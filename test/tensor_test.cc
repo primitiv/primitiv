@@ -63,13 +63,26 @@ protected:
           const std::uint32_t num_devs = devices::OpenCL::num_devices(pf_id);
           if (num_devs > 0) {
             for (std::uint32_t dev_id = 0; dev_id < num_devs; ++dev_id) {
-              devices.emplace_back(new devices::OpenCL(pf_id, dev_id));
+              devices::OpenCL *ocl_dev;
+              try {
+                ocl_dev = new devices::OpenCL(pf_id, dev_id);
+              } catch (Error e) {
+                std::cout << e.what() << std::endl;
+                continue;
+              }
+              devices.emplace_back(ocl_dev);
               std::cout <<
                 "Add OpenCL device (platform_id = " << pf_id <<
                 ", device_id = " << dev_id << ")." << std::endl;
               if (dev_id == 0) {
                 // Add another device object on the device 0.
-                devices.emplace_back(new devices::OpenCL(pf_id, dev_id));
+                try {
+                  ocl_dev = new devices::OpenCL(pf_id, dev_id);
+                } catch (Error e) {
+                  std::cout << e.what() << std::endl;
+                  continue;
+                }
+                devices.emplace_back(ocl_dev);
                 std::cout <<
                   "Add OpenCL device (platform_id = " << pf_id <<
                   ", device_id = " << dev_id << ")." << std::endl;

@@ -629,6 +629,28 @@ void OpenCL::initialize() {
   }
 
   device_ = all_devices.at(dev_id_);
+
+  std::uint32_t max_work_item_dim = device_.getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>();
+  if (max_work_item_dim < 3) {
+    THROW_ERROR("Device is not supported. (CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS = "
+		    << max_work_item_dim << " < 3)");
+  }
+  std::uint32_t work_item_size_min_y = device_.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
+  std::uint32_t work_item_size_min_x = 1;
+  while (
+      work_item_size_min_x < work_item_size_min_y) {
+    work_item_size_min_x <<= 1;
+    work_item_size_min_y >>= 1;
+  }
+  work_item_size_min_x = std::max(work_item_size_min_x, 16u);
+  work_item_size_min_y = std::max(work_item_size_min_y, 16u);
+  const auto sizes = device_.getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>();
+  if (sizes.at(0) < work_item_size_min_x || sizes.at(1) < work_item_size_min_y) {
+    THROW_ERROR("Device is not supported. (CL_DEVICE_MAX_WORK_ITEM_SIZES (X, Y) = ("
+		    << sizes.at(0) << ", " << sizes.at(1) << "), requires ("
+		    << work_item_size_min_x << ", " << work_item_size_min_y << "))");
+  }
+
   context_ = cl::Context({device_});
   cmd_queue_ = cl::CommandQueue(context_, device_, 0);
 
