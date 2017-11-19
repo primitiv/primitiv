@@ -513,6 +513,7 @@ void Naive::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
     for (std::uint32_t n = 0; n < dest_shift; ++n) {
       dest[n] = 0;
     }
+#pragma omp parallel for
     for (std::uint32_t k = 0; k < d3; k += 8) {
       const std::uint32_t ek = std::min(k + 8, d3);
       for (std::uint32_t i = 0; i < d1; i += 8) {
