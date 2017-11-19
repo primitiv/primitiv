@@ -808,8 +808,11 @@ std::shared_ptr<void> OpenCL::new_handle(const Shape &shape) {
 std::vector<float> OpenCL::tensor_to_vector_impl(const Tensor &x) {
   const std::uint32_t size = x.shape().size();
   std::vector<float> ret(size);
-  cmd_queue_.enqueueReadBuffer(
-      ::get_buffer(x), CL_TRUE, 0, sizeof(cl_float) * size, ret.data());
+  float *mapped_ptr = static_cast<float *>(
+      cmd_queue_.enqueueMapBuffer(
+        ::get_buffer(x), CL_TRUE, CL_MAP_READ, 0, sizeof(float) * size, 0));
+  std::memcpy(ret.data(), mapped_ptr, sizeof(float) * size);
+  cmd_queue_.enqueueUnmapMemObject(::get_buffer(x), mapped_ptr);
   return ret;
 }
 
@@ -904,8 +907,11 @@ void OpenCL::reset_tensor_impl(float k, Tensor &x) {
 
 void OpenCL::reset_tensor_by_array_impl(const float values[], Tensor &x) {
   const std::uint32_t size = x.shape().size();
-  cmd_queue_.enqueueWriteBuffer(
-      ::get_buffer(x), CL_TRUE, 0, sizeof(float) * size, values);
+  float *mapped_ptr = static_cast<float *>(
+      cmd_queue_.enqueueMapBuffer(
+        ::get_buffer(x), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0));
+  std::memcpy(mapped_ptr, values, sizeof(float) * size);
+  cmd_queue_.enqueueUnmapMemObject(::get_buffer(x), mapped_ptr);
 }
 
 void OpenCL::copy_tensor_impl(const Tensor &x, Tensor &y) {
