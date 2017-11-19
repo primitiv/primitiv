@@ -1114,6 +1114,36 @@ TEST_F(TensorOpsTest, CheckMatMulBatchBroadcastN1) {
   }
 }
 
+TEST_F(TensorOpsTest, CheckMatMulLarge) {
+  const std::uint32_t N = 123;
+  vector<float> a_data(N * N);
+  vector<float> b_data(N * N);
+  vector<float> y1_data(N * N);
+  vector<float> y2_data(N * N);
+  std::uint32_t k = 0;
+  for (std::uint32_t i = 0; i < N; ++i) {
+    k += i * i;
+  }
+  for (std::uint32_t i = 0; i < N; ++i) {
+    for (std::uint32_t j = 0; j < N; ++j) {
+      a_data[i + j * N] = i;
+      b_data[i + j * N] = j;
+      y1_data[i + j * N] = N * i * j;
+      y2_data[i + j * N] = k;
+    }
+  }
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector(Shape({N, N}), a_data);
+    const Tensor b = dev->new_tensor_by_vector({N, N}, b_data);
+    const Tensor y1 = matmul(a, b);
+    const Tensor y2 = matmul(b, a);
+    EXPECT_EQ(Shape({N, N}), y1.shape());
+    EXPECT_EQ(Shape({N, N}), y2.shape());
+    EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+    EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+  }
+}
+
 TEST_F(TensorOpsTest, CheckInvalidMatMul) {
   for (Device *dev : devices) {
     {
