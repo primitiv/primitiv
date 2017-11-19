@@ -67,7 +67,7 @@ std::string generate_kernels() {
   for(std::uint32_t group_size = 1; group_size <= 1024; group_size <<= 1) {
     ss <<
 "kernel void argmax_kernel_" << group_size << R"EOS((
-    constant float *px, const unsigned skip,
+    const global float *px, const unsigned skip,
     const unsigned n, global unsigned *py) {
 #define GROUP_SIZE )EOS" << group_size << R"EOS(
   const unsigned bid = get_group_id(0);
@@ -113,7 +113,7 @@ std::string generate_kernels() {
   for(std::uint32_t group_size = 1; group_size <= 1024; group_size <<= 1) {
     ss <<
 "kernel void argmin_kernel_" << group_size << R"EOS((
-    constant float *px, const unsigned skip,
+    const global float *px, const unsigned skip,
     const unsigned n, global unsigned *py) {
 #define GROUP_SIZE )EOS" << group_size << R"EOS(
   const unsigned bid = get_group_id(0);
@@ -165,7 +165,7 @@ kernel void set_identity_kernel(
 )EOS";
   ss << R"EOS(
 kernel void pick_fw_kernel(
-    constant float *px, constant unsigned *pi,
+    const global float *px, const global unsigned *pi,
     const unsigned wx, const unsigned wy, const unsigned sx,
     const unsigned si, const unsigned sy, global float *py) {
   const unsigned t = get_global_id(0);
@@ -177,7 +177,7 @@ kernel void pick_fw_kernel(
 )EOS";
   ss << R"EOS(
 kernel void slice_fw_kernel(
-    constant float *px, const unsigned shift, const unsigned span,
+    const global float *px, const unsigned shift, const unsigned span,
     const unsigned skip, const unsigned size, global float *py) {
   const unsigned i = get_global_id(0);
   if (i < size) py[i] = px[(i / span) * skip + (i % span) + shift];
@@ -185,7 +185,7 @@ kernel void slice_fw_kernel(
 )EOS";
   ss << R"EOS(
 kernel void concat_fw_kernel(
-    constant float *px, const unsigned span, const unsigned skip,
+    const global float *px, const unsigned span, const unsigned skip,
     const unsigned x_size, const unsigned y_size,
     global float *py, const unsigned shift) {
   const unsigned i = get_global_id(0);
@@ -210,7 +210,7 @@ inline void atomic_add_float(global float *source, const float operand) {
 )EOS";
   ss << R"EOS(
 kernel void pick_bw_kernel(
-    constant float *pgy, constant unsigned *pi,
+    const global float *pgy, const global unsigned *pi,
     const unsigned wx, const unsigned wy,
     const unsigned sx, const unsigned si, const unsigned sy,
     global float *pgx) {
@@ -225,7 +225,7 @@ kernel void pick_bw_kernel(
 )EOS";
   ss << R"EOS(
 kernel void slice_bw_kernel(
-    constant float *pgy, const unsigned wx, const unsigned wy,
+    const global float *pgy, const unsigned wx, const unsigned wy,
     const unsigned nx, const unsigned ny,
     global float *pgx, const unsigned shift) {
   const unsigned i = get_global_id(0);
@@ -239,14 +239,14 @@ kernel void slice_bw_kernel(
 
 #define OPENCLDEV_KERNEL_FW_X(name, op) \
   ss << "kernel void " << name << "_fw_kernel(" \
-        "   constant float *px, const unsigned size, global float *py) {" \
+        "   const global float *px, const unsigned size, global float *py) {" \
         " const unsigned i = get_global_id(0);" \
         " if (i < size) py[i] = (" << op << ");" \
         "}\n";
 
 #define OPENCLDEV_KERNEL_BW_X(name, op) \
   ss << "kernel void " << name << "_bw_kernel(" \
-        "   constant float *px, constant float *py, constant float *pgy," \
+        "   const global float *px, const global float *py, const global float *pgy," \
         "   const unsigned size, global float *pgx) {" \
         " const unsigned i = get_global_id(0);" \
         " if (i < size) pgx[i] += (" << op << ");" \
@@ -254,7 +254,7 @@ kernel void slice_bw_kernel(
 
 #define OPENCLDEV_KERNEL_FW_X_CONST(name, op) \
   ss << "kernel void " << name << "_fw_kernel(" \
-        "   constant float *px, const float k," \
+        "   const global float *px, const float k," \
         "   const unsigned size, global float *py) {" \
         " const unsigned i = get_global_id(0);" \
         " if (i < size) py[i] = (" << op << ");" \
@@ -262,7 +262,7 @@ kernel void slice_bw_kernel(
 
 #define OPENCLDEV_KERNEL_BW_X_CONST(name, op) \
   ss << "kernel void " << name << "_bw_kernel(" \
-        "   constant float *px, constant float *py, constant float *pgy," \
+        "   const global float *px, const global float *py, const global float *pgy," \
         "   const float k, const unsigned size, global float *pgx) {" \
         " const unsigned i = get_global_id(0);" \
         " if (i < size) pgx[i] += (" << op << ");" \
@@ -270,7 +270,7 @@ kernel void slice_bw_kernel(
 
 #define OPENCLDEV_KERNEL_FW_X_SCALAR_R_INFIX(name, op) \
   ss << "kernel void " << name << "_fw_kernel(" \
-        "   constant float *px, constant float *pk, const unsigned size," \
+        "   const global float *px, const global float *pk, const unsigned size," \
         "   const unsigned mbx, const unsigned mbk, global float *py) {" \
         " const unsigned i = get_global_id(0);" \
         " const unsigned bid_y = get_group_id(1);" \
@@ -282,7 +282,7 @@ kernel void slice_bw_kernel(
 
 #define OPENCLDEV_KERNEL_FW_X_SCALAR_L_INFIX(name, op) \
   ss << "kernel void " << name << "_fw_kernel(" \
-        "   constant float *px, constant float *pk, const unsigned size," \
+        "   const global float *px, const global float *pk, const unsigned size," \
         "   const unsigned mbx, const unsigned mbk, global float *py) {" \
         " const unsigned i = get_global_id(0);" \
         " const unsigned bid_y = get_group_id(1);" \
@@ -294,7 +294,7 @@ kernel void slice_bw_kernel(
 
 #define OPENCLDEV_KERNEL_FW_AB_INFIX(name, op) \
   ss << "kernel void " << name << "_fw_kernel(" \
-        "   constant float *pa, constant float *pb, const unsigned size," \
+        "   const global float *pa, const global float *pb, const unsigned size," \
         "   const unsigned mba, const unsigned mbb, global float *py) {" \
         " const unsigned i = get_global_id(0);" \
         " const unsigned bid_y = get_group_id(1);" \
@@ -370,8 +370,8 @@ OPENCLDEV_KERNEL_FW_AB_INFIX("divide", "/");
 
   ss << R"EOS(
 kernel void add_bw_kernel(
-    constant float *pa, constant float *pb,
-    constant float *py, constant float *pgy,
+    const global float *pa, const global float *pb,
+    const global float *py, const global float *pgy,
     const unsigned size, const unsigned mba, const unsigned mbb,
     global float *pga, global float *pgb) {
   const unsigned i = get_global_id(0);
@@ -387,8 +387,8 @@ kernel void add_bw_kernel(
 
   ss << R"EOS(
 kernel void subtract_bw_kernel(
-    constant float *pa, constant float *pb,
-    constant float *py, constant float *pgy,
+    const global float *pa, const global float *pb,
+    const global float *py, const global float *pgy,
     const unsigned size, const unsigned mba, const unsigned mbb,
     global float *pga, global float *pgb) {
   const unsigned i = get_global_id(0);
@@ -404,8 +404,8 @@ kernel void subtract_bw_kernel(
 
   ss << R"EOS(
 kernel void multiply_bw_kernel(
-    constant float *pa, constant float *pb,
-    constant float *py, constant float *pgy,
+    const global float *pa, const global float *pb,
+    const global float *py, const global float *pgy,
     const unsigned size, const unsigned mba, const unsigned mbb,
     global float *pga, global float *pgb) {
   const unsigned i = get_global_id(0);
@@ -423,8 +423,8 @@ kernel void multiply_bw_kernel(
 
   ss << R"EOS(
 kernel void divide_bw_kernel(
-    constant float *pa, constant float *pb,
-    constant float *py, constant float *pgy,
+    const global float *pa, const global float *pb,
+    const global float *py, const global float *pgy,
     const unsigned size, const unsigned mba, const unsigned mbb,
     global float *pga, global float *pgb) {
   const unsigned i = get_global_id(0);
@@ -442,7 +442,7 @@ kernel void divide_bw_kernel(
 
   ss << R"EOS(
 kernel void transpose_fw_kernel(
-    constant float *px, unsigned rows, unsigned cols, global float *py) {
+    const global float *px, unsigned rows, unsigned cols, global float *py) {
   const unsigned i = get_global_id(0);
   const unsigned j = get_global_id(1);
   const unsigned bid_z = get_group_id(2);
@@ -452,7 +452,7 @@ kernel void transpose_fw_kernel(
 )EOS";
   ss << R"EOS(
 kernel void transpose_bw_kernel(
-    constant float *py, const unsigned rows, const unsigned cols,
+    const global float *py, const unsigned rows, const unsigned cols,
     global float *px) {
   const unsigned i = get_global_id(0);
   const unsigned j = get_global_id(1);
@@ -465,7 +465,7 @@ kernel void transpose_bw_kernel(
   for(std::uint32_t group_size = 1; group_size <= 1024; group_size <<= 1) {
     ss <<
 "kernel void sum_fw_kernel_" << group_size << R"EOS((
-    constant float *px, const unsigned skip, const unsigned n,
+    const global float *px, const unsigned skip, const unsigned n,
     global float *py) {
 #define GROUP_SIZE )EOS" << group_size << R"EOS(
   const unsigned bid = get_group_id(0);
@@ -506,7 +506,7 @@ inline float logsumexp2_fw_kernel(float a, float b) {
   for(std::uint32_t group_size = 1; group_size <= 1024; group_size <<= 1) {
     ss <<
 "kernel void logsumexp_fw_kernel_" << group_size << R"EOS((
-    constant float *px, const unsigned skip, const unsigned n,
+    const global float *px, const unsigned skip, const unsigned n,
     global float *py) {
 #define GROUP_SIZE )EOS" << group_size << R"EOS(
   const unsigned bid = get_group_id(0);
@@ -541,7 +541,7 @@ inline float logsumexp2_fw_kernel(float a, float b) {
   }
   ss << R"EOS(
 kernel void broadcast_fw_kernel(
-    constant float *px, const unsigned skip1, const unsigned skip2,
+    const global float *px, const unsigned skip1, const unsigned skip2,
     const unsigned size, global float *py) {
   const unsigned i = get_global_id(0);
   if (i < size) py[i] = px[i % skip1 + (i / skip2) * skip1];
@@ -549,7 +549,7 @@ kernel void broadcast_fw_kernel(
 )EOS";
   ss << R"EOS(
 kernel void batch_sum_fw_kernel(
-    constant float *px, const unsigned size,
+    const global float *px, const unsigned size,
     const unsigned batch, global float *py) {
   const unsigned i = get_global_id(0);
   if (i < size) {
@@ -571,7 +571,7 @@ kernel void inplace_multiply_const_kernel(
 )EOS";
   ss << R"EOS(
 kernel void inplace_add_kernel(
-    constant float *px, const unsigned size,
+    const global float *px, const unsigned size,
     const unsigned mbx, const unsigned mby, global float *py) {
   const unsigned i = get_global_id(0);
   const unsigned bid_y = get_group_id(1);
@@ -581,7 +581,7 @@ kernel void inplace_add_kernel(
 )EOS";
   ss << R"EOS(
 kernel void inplace_subtract_kernel(
-    constant float *px, const unsigned size,
+    const global float *px, const unsigned size,
     const unsigned mbx, const unsigned mby, global float *py) {
   const unsigned i = get_global_id(0);
   const unsigned bid_y = get_group_id(1);
