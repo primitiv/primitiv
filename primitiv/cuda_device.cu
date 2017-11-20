@@ -550,18 +550,18 @@ void CUDA::assert_support(std::uint32_t device_id) {
   }
 
   ::cudaDeviceProp prop;
-  CUDA_CALL(::cudaGetDeviceProperties(&prop, dev_id_));
+  CUDA_CALL(::cudaGetDeviceProperties(&prop, device_id));
 
   // Checks compute capability
   static const int MIN_CC_MAJOR = 3;
   static const int MIN_CC_MINOR = 0;
-  if (prop.major < ::MIN_CC_MAJOR ||
-      (prop.major == ::MIN_CC_MAJOR && prop.minor < ::MIN_CC_MINOR)) {
+  if (prop.major < MIN_CC_MAJOR ||
+      (prop.major == MIN_CC_MAJOR && prop.minor < MIN_CC_MINOR)) {
     THROW_ERROR(
-        "CUDA Device " << dev_id_ << " does not satisfy the "
+        "CUDA Device " << device_id << " does not satisfy the "
         "minimum requirement of the compute capability: "
         << prop.major << '.' << prop.minor << " < "
-        << ::MIN_CC_MAJOR << '.' << ::MIN_CC_MINOR);
+        << MIN_CC_MAJOR << '.' << MIN_CC_MINOR);
   }
 
   // Checks other requirements.
@@ -569,7 +569,7 @@ void CUDA::assert_support(std::uint32_t device_id) {
   { \
     if (prop.name < (value)) { \
       THROW_ERROR( \
-          "CUDA Device " << dev_id_ << \
+          "CUDA Device " << device_id << \
           " does not satisfy the minimum requirement by primitiv: " \
           << "property: " << #name << ", " \
           << "value: " << prop.name << ", " \
@@ -580,7 +580,7 @@ void CUDA::assert_support(std::uint32_t device_id) {
   { \
     if (prop.name[index] < (value)) { \
       THROW_ERROR( \
-          "CUDA Device " << dev_id_ << \
+          "CUDA Device " << device_id << \
           " does not satisfy the minimum requirement by primitiv: " \
           << "property: " << #name << "[" << #index << "], " \
           << "value: " << prop.name[index] << ", " \
@@ -589,11 +589,11 @@ void CUDA::assert_support(std::uint32_t device_id) {
   }
 
   CHECK_REQUIREMENT(totalGlobalMem, 1ull * (1ull << 30));
-  CHECK_REQUIREMENT(sharedMemPerBlock, 1ull * (1ull << 30));
+  CHECK_REQUIREMENT(sharedMemPerBlock, 16ull * (1ull << 10));
   CHECK_REQUIREMENT(maxThreadsPerBlock, 1024);
-  CHECK_REQUIREMENT_VECTOR(maxThreadsPerBlock, 0, 1024);
-  CHECK_REQUIREMENT_VECTOR(maxThreadsPerBlock, 1, 1024);
-  CHECK_REQUIREMENT_VECTOR(maxThreadsPerBlock, 2, 64);
+  CHECK_REQUIREMENT_VECTOR(maxThreadsDim, 0, 1024);
+  CHECK_REQUIREMENT_VECTOR(maxThreadsDim, 1, 1024);
+  CHECK_REQUIREMENT_VECTOR(maxThreadsDim, 2, 64);
   CHECK_REQUIREMENT_VECTOR(maxGridSize, 0, 65535);
   CHECK_REQUIREMENT_VECTOR(maxGridSize, 1, 65535);
   CHECK_REQUIREMENT_VECTOR(maxGridSize, 2, 65535);
