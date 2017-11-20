@@ -465,10 +465,6 @@ __global__ void inplace_subtract_dev(
 #undef IDX
 #undef IDY
 
-// Minimum requirements of the compute capability.
-static const int MIN_CC_MAJOR = 3;
-static const int MIN_CC_MINOR = 0;
-
 /*
  * CUBLAS initializer/finalizer.
  */
@@ -548,12 +544,17 @@ std::uint32_t CUDA::num_devices() {
   return ret;
 }
 
-void CUDA::initialize() {
-  // Retrieves device properties.
+void CUDA::assert_support(std::uint32_t device_id) {
+  if (device_id >= num_devices()) {
+    THROW_ERROR("Invalid device ID: " << device_id);
+  }
+
   ::cudaDeviceProp prop;
   CUDA_CALL(::cudaGetDeviceProperties(&prop, dev_id_));
 
-  // Check compute capability requirements.
+  // Checks compute capability
+  static const int MIN_CC_MAJOR = 3;
+  static const int MIN_CC_MINOR = 0;
   if (prop.major < ::MIN_CC_MAJOR ||
       (prop.major == ::MIN_CC_MAJOR && prop.minor < ::MIN_CC_MINOR)) {
     THROW_ERROR(
@@ -562,6 +563,51 @@ void CUDA::initialize() {
         << prop.major << '.' << prop.minor << " < "
         << ::MIN_CC_MAJOR << '.' << ::MIN_CC_MINOR);
   }
+
+  // Checks other requirements.
+#define CHECK_REQUIREMENT(name, value) \
+  { \
+    if (prop.name < (value)) { \
+      THROW_ERROR( \
+          "CUDA Device " << dev_id_ << \
+          " does not satisfy the minimum requirement by primitiv: " \
+          << "property: " << #name << ", " \
+          << "value: " << prop.name << ", " \
+          << "required at least: " << (value)); \
+    } \
+  }
+#define CHECK_REQUIREMENT_VECTOR(name, index, value) \
+  { \
+    if (prop.name[index] < (value)) { \
+      THROW_ERROR( \
+          "CUDA Device " << dev_id_ << \
+          " does not satisfy the minimum requirement by primitiv: " \
+          << "property: " << #name << "[" << #index << "], " \
+          << "value: " << prop.name[index] << ", " \
+          << "required at least: " << (value)); \
+    } \
+  }
+
+  CHECK_REQUIREMENT(totalGlobalMem, 1ull * (1ull << 30));
+  CHECK_REQUIREMENT(sharedMemPerBlock, 1ull * (1ull << 30));
+  CHECK_REQUIREMENT(maxThreadsPerBlock, 1024);
+  CHECK_REQUIREMENT_VECTOR(maxThreadsPerBlock, 0, 1024);
+  CHECK_REQUIREMENT_VECTOR(maxThreadsPerBlock, 1, 1024);
+  CHECK_REQUIREMENT_VECTOR(maxThreadsPerBlock, 2, 64);
+  CHECK_REQUIREMENT_VECTOR(maxGridSize, 0, 65535);
+  CHECK_REQUIREMENT_VECTOR(maxGridSize, 1, 65535);
+  CHECK_REQUIREMENT_VECTOR(maxGridSize, 2, 65535);
+
+#undef CHECK_REQUIREMENT
+#undef CHECK_REQUIREMENT_VECTOR
+}
+
+void CUDA::initialize() {
+  assert_support(dev_id_);
+
+  // Retrieves device properties.
+  ::cudaDeviceProp prop;
+  CUDA_CALL(::cudaGetDeviceProperties(&prop, dev_id_));
 
   // Calculates size of dims to be used in CUDA kernels.
   dim1_x_ = 1;
@@ -609,18 +655,18 @@ void CUDA::dump_description() const {
 
   const ::cudaDeviceProp &prop = state_->prop;
   cerr << "  Device ID: " << dev_id_ << endl;
-  cerr << "    Name ................. " << prop.name << endl;
-  cerr << "    Global Memory ........ " << prop.totalGlobalMem << endl;
-  cerr << "    Shared Memory ........ " << prop.sharedMemPerBlock << endl;
-  cerr << "    Threads/block ........ " << prop.maxThreadsPerBlock << endl;
-  cerr << "    Threads dim .......... " << prop.maxThreadsDim[0] << ", "
-                                      << prop.maxThreadsDim[1] << ", "
-                                      << prop.maxThreadsDim[2] << endl;
-  cerr << "    Grid size ............ " << prop.maxGridSize[0] << ", "
-                                      << prop.maxGridSize[1] << ", "
-                                      << prop.maxGridSize[2] << endl;
-  cerr << "    Compute Capability ... " << prop.major << '.'
-                                      << prop.minor << endl;
+  cerr << "    Name .................. " << prop.name << endl;
+  cerr << "    Global memory ......... " << prop.totalGlobalMem << endl;
+  cerr << "    Shared memory/block ... " << prop.sharedMemPerBlock << endl;
+  cerr << "    Threads/block ......... " << prop.maxThreadsPerBlock << endl;
+  cerr << "    Block size ............ " << prop.maxThreadsDim[0] << ", "
+                                         << prop.maxThreadsDim[1] << ", "
+                                         << prop.maxThreadsDim[2] << endl;
+  cerr << "    Grid size ............. " << prop.maxGridSize[0] << ", "
+                                         << prop.maxGridSize[1] << ", "
+                                         << prop.maxGridSize[2] << endl;
+  cerr << "    Compute capability .... " << prop.major << '.'
+                                         << prop.minor << endl;
   /*
   cerr << "  Configurations:" << endl;
   cerr << "    1 dim ........... " << dim1_x_ << " threads" << endl;
