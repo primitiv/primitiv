@@ -44,10 +44,10 @@ void add_available_devices(std::vector<primitiv::Device *> &devs) {
     }
     if (num_avail_devs != num_devs) {
       std::cerr << (num_devs - num_avail_devs)
-        << " devices are not supported." << std::endl;
+        << " CUDA device(s) are not supported." << std::endl;
     }
     if (num_avail_devs == 0) {
-      std::cerr << "No available CUDA devices.";
+      std::cerr << "No available CUDA devices." << std::endl;
     }
   }
 #endif  // PRIMITIV_USE_CUDA
@@ -71,10 +71,10 @@ void add_available_devices(std::vector<primitiv::Device *> &devs) {
         }
         if (num_avail_devs != num_devs) {
           std::cerr << (num_devs - num_avail_devs)
-            << " devices are not supported." << std::endl;
+            << " OpenCL device(s) are not supported." << std::endl;
         }
         if (num_avail_devs == 0) {
-          std::cerr << "No available OpenCL devices.";
+          std::cerr << "No available OpenCL devices." << std::endl;
         }
       }
     } else {

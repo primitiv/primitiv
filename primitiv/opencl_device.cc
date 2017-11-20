@@ -760,7 +760,9 @@ void OpenCL::initialize() {
   CONFIGURE_KERNEL(transpose_fw);
   CONFIGURE_KERNEL(transpose_bw);
 
-  // helper to find sizes (x, y) that satisfies x*y <= size.
+  // helper to find two sizes (x, y) that satisfy:
+  // 1. x * y <= size
+  // 2. x / y == 1 or 2
   auto calc_dim2_sizes = [](
       std::uint32_t size, std::uint32_t &x, std::uint32_t &y) {
     x = y = 1;
