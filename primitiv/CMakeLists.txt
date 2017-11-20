@@ -19,7 +19,6 @@ set(primitiv_base_HDRS
   optimizer_impl.h
   parameter.h
   primitiv.h
-  primitiv_cuda.h
   random.h
   shape.h
   shape_ops.h
@@ -67,6 +66,7 @@ set(primitiv_all_DEPS)
 # Build rules of the CUDA backend.
 if(PRIMITIV_USE_CUDA)
   set(primitiv_cuda_HDRS
+    primitiv_cuda.h
     cuda_device.h
     cuda_memory_pool.h
     cuda_utils.h)
@@ -104,6 +104,7 @@ endif()
 # Build rules of the OpenCL backend.
 if(PRIMITIV_USE_OPENCL)
   set(primitiv_opencl_HDRS
+    primitiv_opencl.h
     opencl_device.h)
   set(primitiv_opencl_SRCS
     opencl_device.cc)
