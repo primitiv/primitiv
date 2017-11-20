@@ -22,11 +22,11 @@ void Optimizer::load(const std::string &path) {
 
   std::uint32_t major, minor;
   reader >> major >> minor;
-  FileFormat::check_version(major, minor);
+  FileFormat::assert_version(major, minor);
 
   std::uint32_t datatype;
   reader >> datatype;
-  FileFormat::check_datatype(FileFormat::DataType::OPTIMIZER, datatype);
+  FileFormat::assert_datatype(FileFormat::DataType::OPTIMIZER, datatype);
 
   std::unordered_map<std::string, std::uint32_t> uint_configs;
   std::unordered_map<std::string, float> float_configs;
