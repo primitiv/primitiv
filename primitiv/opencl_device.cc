@@ -875,7 +875,14 @@ std::shared_ptr<void> OpenCL::new_handle(const Shape &shape) {
   const std::size_t mem_size = sizeof(float) * shape.size();
   cl::Buffer *data = new cl::Buffer(
       context_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, mem_size, NULL);
-  return std::shared_ptr<void>(data, [](void *ptr) {
+  return std::shared_ptr<void>(data, [&](void *ptr) {
+      // NOTE(odashi):
+      // Deleting cl::Buffer does NOT block the process regardless whether the
+      // remaining kernel functions are still working or not.
+      // We have to manually wait for finishing all kernel functions to prevent
+      // memory corruption.
+      cmd_queue_.finish();
+      // Then, we can delete the buffer safely.
       delete static_cast<cl::Buffer *>(ptr);
   });
 }
