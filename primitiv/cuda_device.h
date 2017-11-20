@@ -27,14 +27,14 @@ public:
   /**
    * Checks whether the device corresponding to the specified ID is supported.
    * @param device_id Device ID to check.
-   * @throw primitiv::Error This class does not support the device.
+   * @throw primitiv::Error This class does not support the specified device.
    */
   static void assert_support(std::uint32_t device_id);
 
   /**
    * Checks whether the device corresponding to the specified ID is supported.
    * @param device_id Device ID to check.
-   * @return true if this class supports the device, false otherwise.
+   * @return true if this class supports the specified device, false otherwise.
    */
   static bool check_support(std::uint32_t device_id) {
     try { assert_support(device_id); } catch (...) { return false; }

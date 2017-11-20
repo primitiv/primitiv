@@ -42,12 +42,12 @@ void add_available_devices(std::vector<primitiv::Device *> &devs) {
         }
       }
     }
+    if (num_avail_devs != num_devs) {
+      std::cerr << (num_devs - num_avail_devs)
+        << " devices are not supported." << std::endl;
+    }
     if (num_avail_devs == 0) {
-      std::cout << "No available CUDA devices are installed";
-      if (num_devs > 0) {
-        std::cout << " (but found " << num_devs << " devices)";
-      }
-      std::cout << "." << std::endl;
+      std::cerr << "No available CUDA devices.";
     }
   }
 #endif  // PRIMITIV_USE_CUDA
@@ -58,34 +58,27 @@ void add_available_devices(std::vector<primitiv::Device *> &devs) {
     if (num_pfs > 0) {
       for (std::uint32_t pf_id = 0; pf_id < num_pfs; ++pf_id) {
         const std::uint32_t num_devs = OpenCL::num_devices(pf_id);
-        if (num_devs > 0) {
-          for (std::uint32_t dev_id = 0; dev_id < num_devs; ++dev_id) {
-            OpenCL *ocl_dev;
-            try {
-              ocl_dev = new OpenCL(pf_id, dev_id);
-            } catch (primitiv::Error e) {
-              std::cout << e.what() << std::endl;
-              continue;
-            }
-            devs.emplace_back(ocl_dev);
-            if (dev_id == 0) {
+        std::uint32_t num_avail_devs = 0;
+        for (std::uint32_t dev_id = 0; dev_id < num_devs; ++dev_id) {
+          if (OpenCL::check_support(pf_id, dev_id)) {
+            ++num_avail_devs;
+            devs.emplace_back(new OpenCL(pf_id, dev_id));
+            if (num_avail_devs == 1) {
               // Add another device object on the device 0.
-              try {
-                ocl_dev = new OpenCL(pf_id, dev_id);
-              } catch (primitiv::Error e) {
-                std::cout << e.what() << std::endl;
-                continue;
-              }
-              devs.emplace_back(ocl_dev);
+              devs.emplace_back(new OpenCL(pf_id, dev_id));
             }
           }
-        } else {
-          std::cout << "No OpenCL devices on the platform " << pf_id <<
-            " are installed." << std::endl;
+        }
+        if (num_avail_devs != num_devs) {
+          std::cerr << (num_devs - num_avail_devs)
+            << " devices are not supported." << std::endl;
+        }
+        if (num_avail_devs == 0) {
+          std::cerr << "No available OpenCL devices.";
         }
       }
     } else {
-      std::cout << "No OpenCL platforms are installed." << std::endl;
+      std::cerr << "No OpenCL platforms are installed." << std::endl;
     }
   }
 #endif  // PRIMITIV_USE_OPENCL

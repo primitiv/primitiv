@@ -564,13 +564,13 @@ void CUDA::assert_support(std::uint32_t device_id) {
         << MIN_CC_MAJOR << '.' << MIN_CC_MINOR);
   }
 
-  // Checks other requirements.
+  // Checks other minimum requirements.
 #define CHECK_REQUIREMENT(name, value) \
   { \
     if (prop.name < (value)) { \
       THROW_ERROR( \
-          "CUDA Device " << device_id << \
-          " does not satisfy the minimum requirement by primitiv. " \
+          "CUDA Device " << device_id \
+          << " does not satisfy the minimum requirement by primitiv. " \
           << "property: " << #name << ", " \
           << "value: " << prop.name << ", " \
           << "required at least: " << (value)); \
@@ -580,8 +580,8 @@ void CUDA::assert_support(std::uint32_t device_id) {
   { \
     if (prop.name[index] < (value)) { \
       THROW_ERROR( \
-          "CUDA Device " << device_id << \
-          " does not satisfy the minimum requirement by primitiv. " \
+          "CUDA Device " << device_id \
+          << " does not satisfy the minimum requirement by primitiv. " \
           << "property: " << #name << "[" << #index << "], " \
           << "value: " << prop.name[index] << ", " \
           << "required at least: " << (value)); \

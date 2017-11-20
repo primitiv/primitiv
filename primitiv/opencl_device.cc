@@ -593,67 +593,115 @@ kernel void inplace_subtract_kernel(
   return ss.str();
 }
 
+/**
+ * Returns the list of available platforms.
+ * @return List of available cl::Platform.
+ */
+std::vector<cl::Platform> get_all_platforms() {
+  std::vector<cl::Platform> ret;
+  cl::Platform::get(&ret);
+  return ret;
+}
+
+/**
+ * Returns the list of available devices on the specified platform.
+ * @param platform_id Platform ID.
+ * @return List of available cl::Device.
+ */
+std::vector<cl::Device> get_all_devices(std::uint32_t platform_id) {
+  const auto all_pfs = ::get_all_platforms();
+  if (platform_id >= all_pfs.size()) {
+    THROW_ERROR("Invalid platform ID: " << platform_id);
+  }
+  std::vector<cl::Device> ret;
+  all_pfs[platform_id].getDevices(CL_DEVICE_TYPE_ALL, &ret);
+  return ret;
+}
+
+/**
+ * Returns the cl::Device corresponding to the specified IDs.
+ * @param platform_id Platform ID.
+ * @param device_id Device ID.
+ * @return Corresponding cl::Device object.
+ */
+cl::Device get_device(std::uint32_t platform_id, std::uint32_t device_id) {
+  const auto all_devs = ::get_all_devices(platform_id);
+  if (device_id >= all_devs.size()) {
+    THROW_ERROR(
+        "Invalid device ID: " << device_id
+        << " (on the platform " << platform_id << ")");
+  }
+  return all_devs[device_id];
+}
+
 }  // namespace
 
 namespace primitiv {
 namespace devices {
 
 std::uint32_t OpenCL::num_platforms() {
-  std::vector<cl::Platform> all_platforms;
-  cl::Platform::get(&all_platforms);
-  return all_platforms.size();
+  return ::get_all_platforms().size();
 }
 
 std::uint32_t OpenCL::num_devices(std::uint32_t platform_id) {
-  std::vector<cl::Platform> all_platforms;
-  cl::Platform::get(&all_platforms);
-  if (platform_id >= all_platforms.size()) {
-    THROW_ERROR("Invalid platform ID: " << platform_id);
+  return ::get_all_devices(platform_id).size();
+}
+
+void OpenCL::assert_support(
+    std::uint32_t platform_id, std::uint32_t device_id) {
+  const cl::Device dev = ::get_device(platform_id, device_id);
+
+  // Checks whether the device is globally available.
+  if (!dev.getInfo<CL_DEVICE_AVAILABLE>()) {
+    THROW_ERROR(
+        "OpenCL Device " << device_id << " on the platform " << platform_id
+        << " is not available (CL_DEVICE_AVAILABLE == false).");
   }
-  std::vector<cl::Device> all_devices;
-  all_platforms[platform_id].getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
-  return all_devices.size();
+
+  // Checks other minimum requirements.
+#define CHECK_REQUIREMENT(name, value) \
+  { \
+    const auto actual = dev.getInfo<name>(); \
+    if (actual < (value)) { \
+      THROW_ERROR( \
+          "OpenCL Device " << device_id << " on the platform " << platform_id \
+          << " does not satisfy the minimum requirement by primitiv. " \
+          << "property: " << #name << ", " \
+          << "value: " << actual << ", " \
+          << "required at least: " << (value)); \
+    } \
+  }
+#define CHECK_REQUIREMENT_VECTOR(name, index, value) \
+  { \
+    const auto actual = dev.getInfo<name>()[index]; \
+    if (actual < (value)) { \
+      THROW_ERROR( \
+          "OpenCL Device " << device_id << " on the platform " << platform_id \
+          << " does not satisfy the minimum requirement by primitiv. " \
+          << "property: " << #name << "[" << #index << "], " \
+          << "value: " << actual << ", " \
+          << "required at least: " << (value)); \
+    } \
+  } \
+
+  CHECK_REQUIREMENT(CL_DEVICE_GLOBAL_MEM_SIZE, 1ull * (1ull << 30));
+  CHECK_REQUIREMENT(CL_DEVICE_LOCAL_MEM_SIZE, 16ull * (1ull << 10));
+  CHECK_REQUIREMENT(CL_DEVICE_MAX_WORK_GROUP_SIZE, 1024);
+  CHECK_REQUIREMENT_VECTOR(CL_DEVICE_MAX_WORK_ITEM_SIZES, 0, 1024);
+  CHECK_REQUIREMENT_VECTOR(CL_DEVICE_MAX_WORK_ITEM_SIZES, 1, 1024);
+  CHECK_REQUIREMENT_VECTOR(CL_DEVICE_MAX_WORK_ITEM_SIZES, 2, 64);
+  // NOTE(odashi): OpenCL does not support explicit grid sizes.
+
+#undef CHECK_REQUIREMENT
+#undef CHECK_REQUIREMENT_VECTOR
 }
 
 void OpenCL::initialize() {
-  std::vector<cl::Platform> all_platforms;
-  cl::Platform::get(&all_platforms);
-  if (pf_id_ >= all_platforms.size()) {
-    THROW_ERROR("Invalid platform ID: " << pf_id_);
-  }
-  std::vector<cl::Device> all_devices;
-  all_platforms[pf_id_].getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
-  if (dev_id_ >= all_devices.size()) {
-    THROW_ERROR(
-        "Invalid device ID on the platform " << pf_id_ << ": " << dev_id_);
-  }
+  assert_support(pf_id_, dev_id_);
 
-  device_ = all_devices.at(dev_id_);
-
-  std::uint32_t max_work_item_dim = device_.getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>();
-  if (max_work_item_dim < 3) {
-    THROW_ERROR("Device is not supported. (CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS = "
-		    << max_work_item_dim << " < 3)");
-  }
-  std::uint32_t work_item_size_min_y = device_.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
-  std::uint32_t work_item_size_min_x = 1;
-  while (
-      work_item_size_min_x < work_item_size_min_y) {
-    work_item_size_min_x <<= 1;
-    work_item_size_min_y >>= 1;
-  }
-  work_item_size_min_x = std::max(work_item_size_min_x, 16u);
-  work_item_size_min_y = std::max(work_item_size_min_y, 16u);
-  const auto sizes = device_.getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>();
-  if (sizes.at(0) < work_item_size_min_x || sizes.at(1) < work_item_size_min_y) {
-    THROW_ERROR("Device is not supported. (CL_DEVICE_MAX_WORK_ITEM_SIZES (X, Y) = ("
-		    << sizes.at(0) << ", " << sizes.at(1) << "), requires ("
-		    << work_item_size_min_x << ", " << work_item_size_min_y << "))");
-  }
-
+  device_ = ::get_device(pf_id_, dev_id_);
   context_ = cl::Context({device_});
   cmd_queue_ = cl::CommandQueue(context_, device_, 0);
-
   cl::Program program(context_, ::generate_kernels(), true);
 
   auto get_kernel_group_size = [&](const cl::Kernel &kernel) {
@@ -712,20 +760,23 @@ void OpenCL::initialize() {
   CONFIGURE_KERNEL(transpose_fw);
   CONFIGURE_KERNEL(transpose_bw);
 
-  transpose_fw_kernel_group_size_y_ = transpose_fw_kernel_group_size_;
-  transpose_fw_kernel_group_size_x_ = 1;
-  while (
-      transpose_fw_kernel_group_size_x_ < transpose_fw_kernel_group_size_y_) {
-    transpose_fw_kernel_group_size_x_ <<= 1;
-    transpose_fw_kernel_group_size_y_ >>= 1;
-  }
-  transpose_bw_kernel_group_size_y_ = transpose_bw_kernel_group_size_;
-  transpose_bw_kernel_group_size_x_ = 1;
-  while (
-      transpose_bw_kernel_group_size_x_ < transpose_bw_kernel_group_size_y_) {
-    transpose_bw_kernel_group_size_x_ <<= 1;
-    transpose_bw_kernel_group_size_y_ >>= 1;
-  }
+  // helper to find sizes (x, y) that satisfies x*y <= size.
+  auto calc_dim2_sizes = [](
+      std::uint32_t size, std::uint32_t &x, std::uint32_t &y) {
+    x = y = 1;
+    bool p = true;
+    while ((x * y) << 1 <= size) {
+      (p ? x : y) <<= 1;
+      p = !p;
+    }
+  };
+
+  calc_dim2_sizes(
+      transpose_fw_kernel_group_size_,
+      transpose_fw_kernel_group_size_x_, transpose_fw_kernel_group_size_y_);
+  calc_dim2_sizes(
+      transpose_bw_kernel_group_size_,
+      transpose_bw_kernel_group_size_x_, transpose_bw_kernel_group_size_y_);
 
   CONFIGURE_KERNEL(add_const_fw);
   CONFIGURE_KERNEL(subtract_const_r_fw);
@@ -773,6 +824,9 @@ void OpenCL::initialize() {
   CONFIGURE_KERNEL(inplace_multiply_const);
   CONFIGURE_KERNEL(inplace_add);
   CONFIGURE_KERNEL(inplace_subtract);
+
+#undef CONFIGURE_KERNEL
+#undef CONFIGURE_KERNEL_LIST
 }
 
 OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id)
@@ -796,20 +850,17 @@ void OpenCL::dump_description() const {
 
   std::cerr << "  Platform ID: " << pf_id_ << std::endl;
   std::cerr << "  Device ID: " << dev_id_ << std::endl;
-  std::cerr << "    Vendor ................ "
+  std::cerr << "    Vendor ............ "
             << device_.getInfo<CL_DEVICE_VENDOR>() << std::endl;
-  std::cerr << "    Name .................. "
+  std::cerr << "    Name .............. "
             << device_.getInfo<CL_DEVICE_NAME>() << std::endl;
-  std::cerr << "    Global Memory ......... "
+  std::cerr << "    Global memory ..... "
             << device_.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() << std::endl;
-  std::cerr << "    Local Memory .......... "
+  std::cerr << "    Local memory ...... "
             << device_.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>() << std::endl;
-  std::cerr << "    Max Work Group ........ "
+  std::cerr << "    Work group size ... "
             << device_.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
-  std::cerr << "    Max Work Item dim ..... "
-            << device_.getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>()
-            << std::endl;
-  std::cerr << "    Max Work Item sizes ... ";
+  std::cerr << "    Work item size .... ";
   const auto sizes = device_.getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>();
   for (std::size_t i = 0; i < sizes.size(); ++i) {
     if (i > 0) std::cerr << ", ";
