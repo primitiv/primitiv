@@ -7,13 +7,6 @@
 #include <primitiv/tensor.h>
 #include <test_utils.h>
 
-#ifdef PRIMITIV_USE_CUDA
-#include <primitiv/cuda_device.h>
-#endif  // PRIMITIV_USE_CUDA
-#ifdef PRIMITIV_USE_OPENCL
-#include <primitiv/opencl_device.h>
-#endif  // PRIMITIV_USE_OPENCL
-
 using std::vector;
 using test_utils::vector_match;
 using test_utils::vector_near;
@@ -25,78 +18,7 @@ protected:
   static vector<Device *> devices;
 
   static void SetUpTestCase() {
-    {
-      devices.emplace_back(new devices::Naive());
-      std::cout << "Add Naive device." << std::endl;
-      devices.emplace_back(new devices::Naive());
-      std::cout << "Add Naive device." << std::endl;
-    }
-#ifdef PRIMITIV_USE_CUDA
-    {
-      const std::uint32_t num_devs = devices::CUDA::num_devices();
-      if (num_devs > 0) {
-        for (std::uint32_t dev_id = 0; dev_id < num_devs; ++dev_id) {
-          devices.emplace_back(new devices::CUDA(dev_id));
-          std::cout <<
-            "Add CUDA device (device_id = " << dev_id << ")." << std::endl;
-          if (dev_id == 0) {
-            // Add another device object on the device 0.
-            devices.emplace_back(new devices::CUDA(dev_id));
-            std::cout <<
-              "Add CUDA device (device_id = " << dev_id << ")." << std::endl;
-          }
-        }
-      } else {
-        std::cout << "No CUDA devices are installed." << std::endl;
-      }
-    }
-#endif  // PRIMITIV_USE_CUDA
-#ifdef PRIMITIV_USE_OPENCL
-    {
-      const std::uint32_t num_pfs = devices::OpenCL::num_platforms();
-      if (num_pfs > 0) {
-        for (std::uint32_t pf_id = 0; pf_id < num_pfs; ++pf_id) {
-          const std::uint32_t num_devs = devices::OpenCL::num_devices(pf_id);
-          if (num_devs > 0) {
-            for (std::uint32_t dev_id = 0; dev_id < num_devs; ++dev_id) {
-              devices::OpenCL *ocl_dev;
-              try {
-                ocl_dev = new devices::OpenCL(pf_id, dev_id);
-              } catch (Error e) {
-                std::cout << e.what() << std::endl;
-                continue;
-              }
-              devices.emplace_back(ocl_dev);
-              std::cout <<
-                "Add OpenCL device (platform_id = " << pf_id <<
-                ", device_id = " << dev_id << ")." << std::endl;
-              if (dev_id == 0) {
-                // Add another device object on the device 0.
-                try {
-                  ocl_dev = new devices::OpenCL(pf_id, dev_id);
-                } catch (Error e) {
-                  std::cout << e.what() << std::endl;
-                  continue;
-                }
-                devices.emplace_back(ocl_dev);
-                std::cout <<
-                  "Add OpenCL device (platform_id = " << pf_id <<
-                  ", device_id = " << dev_id << ")." << std::endl;
-              }
-            }
-          } else {
-            std::cout << "No OpenCL devices on the platform " << pf_id <<
-              " are installed." << std::endl;
-          }
-        }
-      } else {
-        std::cout << "No OpenCL platforms are installed." << std::endl;
-      }
-    }
-#endif  // PRIMITIV_USE_OPENCL
-    for (Device *dev : devices) {
-      dev->dump_description();
-    }
+    test_utils::add_available_devices(devices);
   }
 
   static void TearDownTestCase() {

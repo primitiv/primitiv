@@ -29,7 +29,7 @@ include_directories(
 )
 
 function(primitiv_test name)
-  add_executable(${name}_test test_utils.h ${name}_test.cc)
+  add_executable(${name}_test test_utils.h ${name}_test.cc test_utils.cc)
   if(PRIMITIV_GTEST_SOURCE_DIR)
     add_dependencies(${name}_test GTest)
   endif()

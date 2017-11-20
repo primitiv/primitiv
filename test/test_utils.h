@@ -8,10 +8,12 @@
 #include <vector>
 #include <gtest/gtest.h>
 
+#include <primitiv/primitiv.h>
+
 namespace test_utils {
 
 // check whether or not two float values are near than the ULP-based threshold.
-bool float_eq(const float a, const float b) {
+inline bool float_eq(const float a, const float b) {
   static_assert(sizeof(std::int32_t) == sizeof(float), "");
   static const int MAX_ULPS = 4;
   std::int32_t ai;
@@ -25,13 +27,13 @@ bool float_eq(const float a, const float b) {
 }
 
 // check whether or not two float values are near than the given error.
-bool float_near(const float a, const float b, const float err) {
+inline bool float_near(const float a, const float b, const float err) {
   return (a > b ? a - b : b - a) <= err;
 }
 
 // helper to check vector equality.
 template<typename T>
-testing::AssertionResult vector_match(
+inline testing::AssertionResult vector_match(
     const std::vector<T> &expected,
     const std::vector<T> &actual) {
   if (expected.size() != actual.size()) {
@@ -51,7 +53,7 @@ testing::AssertionResult vector_match(
 
 // helper to check float vector equality.
 template<>
-testing::AssertionResult vector_match(
+inline testing::AssertionResult vector_match(
     const std::vector<float> &expected,
     const std::vector<float> &actual) {
   if (expected.size() != actual.size()) {
@@ -70,7 +72,7 @@ testing::AssertionResult vector_match(
 }
 
 // helper to check closeness of float vectors.
-testing::AssertionResult vector_near(
+inline testing::AssertionResult vector_near(
     const std::vector<float> &expected,
     const std::vector<float> &actual,
     const float err) {
@@ -90,9 +92,12 @@ testing::AssertionResult vector_near(
 }
 
 // helper to generate std::string from a byte array.
-std::string bin_to_str(const std::initializer_list<int> data) {
+inline std::string bin_to_str(const std::initializer_list<int> data) {
   return std::string(data.begin(), data.end());
 }
+
+// helper to add all available devices.
+void add_available_devices(std::vector<primitiv::Device *> &devices);
 
 }  // namespace test_utils
 
