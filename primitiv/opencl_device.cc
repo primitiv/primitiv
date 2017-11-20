@@ -1004,7 +1004,17 @@ void OpenCL::copy_tensor_impl(const Tensor &x, Tensor &y) {
         cmd_queue_.enqueueCopyBuffer(
             ::get_buffer(x), ::get_buffer(y), 0, 0, sizeof(float) * size);
       } else {
-        reset_tensor_by_vector(x.to_vector(), y);
+        const std::uint32_t size = x.shape().size();
+        cl::CommandQueue cmd_queue_x = static_cast<OpenCL *>(&x.device())->cmd_queue_;
+        float *mapped_ptr_x = static_cast<float *>(
+            cmd_queue_x.enqueueMapBuffer(
+              ::get_buffer(x), CL_TRUE, CL_MAP_READ, 0, sizeof(float) * size, 0));
+        float *mapped_ptr_y = static_cast<float *>(
+            cmd_queue_.enqueueMapBuffer(
+              ::get_buffer(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0));
+        std::memcpy(mapped_ptr_y, mapped_ptr_x, sizeof(float) * size);
+        cmd_queue_.enqueueUnmapMemObject(::get_buffer(x), mapped_ptr_x);
+        cmd_queue_.enqueueUnmapMemObject(::get_buffer(y), mapped_ptr_y);
       }
       break;
     default:
