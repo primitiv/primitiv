@@ -268,6 +268,18 @@ kernel void slice_bw_kernel(
         " if (i < size) pgx[i] += (" << op << ");" \
         "}\n";
 
+#define OPENCLDEV_KERNEL_FW_X_SCALAR_R(name, op) \
+  ss << "kernel void " << name << "_fw_kernel(" \
+        "   const global float *px, const global float *pk, const unsigned size," \
+        "   const unsigned mbx, const unsigned mbk, global float *py) {" \
+        " const unsigned i = get_global_id(0);" \
+        " const unsigned bid_y = get_group_id(1);" \
+        " const unsigned shift = bid_y * size;" \
+        " if (i < size) {" \
+        "   py[i + shift] = " << op << "(px[i + mbx * shift], pk[mbk * bid_y]);" \
+        " }" \
+        "}\n";
+
 #define OPENCLDEV_KERNEL_FW_X_SCALAR_R_INFIX(name, op) \
   ss << "kernel void " << name << "_fw_kernel(" \
         "   const global float *px, const global float *pk, const unsigned size," \
@@ -280,6 +292,18 @@ kernel void slice_bw_kernel(
         " }" \
         "}\n";
 
+#define OPENCLDEV_KERNEL_FW_X_SCALAR_L(name, op) \
+  ss << "kernel void " << name << "_fw_kernel(" \
+        "   const global float *px, const global float *pk, const unsigned size," \
+        "   const unsigned mbx, const unsigned mbk, global float *py) {" \
+        " const unsigned i = get_global_id(0);" \
+        " const unsigned bid_y = get_group_id(1);" \
+        " const unsigned shift = bid_y * size;" \
+        " if (i < size) {" \
+        "   py[i + shift] = " << op << "(pk[mbk * bid_y], px[i + mbx * shift]);" \
+        " }" \
+        "}\n";
+
 #define OPENCLDEV_KERNEL_FW_X_SCALAR_L_INFIX(name, op) \
   ss << "kernel void " << name << "_fw_kernel(" \
         "   const global float *px, const global float *pk, const unsigned size," \
@@ -289,6 +313,19 @@ kernel void slice_bw_kernel(
         " const unsigned shift = bid_y * size;" \
         " if (i < size) {" \
         "   py[i + shift] = pk[mbk * bid_y] " << op << " px[i + mbx * shift];" \
+        " }" \
+        "}\n";
+
+#define OPENCLDEV_KERNEL_FW_AB(name, op) \
+  ss << "kernel void " << name << "_fw_kernel(" \
+        "   const global float *pa, const global float *pb, const unsigned size," \
+        "   const unsigned mba, const unsigned mbb, global float *py) {" \
+        " const unsigned i = get_global_id(0);" \
+        " const unsigned bid_y = get_group_id(1);" \
+        " const unsigned shift = bid_y * size;" \
+        " if (i < size) {" \
+        "   py[i + shift] = " << op << \
+        "       (pa[i + mba * shift], pb[i + mbb * shift]);" \
         " }" \
         "}\n";
 
@@ -346,9 +383,17 @@ OPENCLDEV_KERNEL_FW_X("tan", "native_tan(px[i])");
 OPENCLDEV_KERNEL_FW_X("tan", "tan(px[i])");
 #endif
 
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
+OPENCLDEV_KERNEL_BW_X("sqrt", ".5f * native_divide(pgy[i], py[i])");
+#else
 OPENCLDEV_KERNEL_BW_X("sqrt", ".5f * pgy[i] / py[i]");
+#endif
 OPENCLDEV_KERNEL_BW_X("exp", "py[i] * pgy[i]");
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
+OPENCLDEV_KERNEL_BW_X("log", "native_divide(pgy[i], px[i])");
+#else
 OPENCLDEV_KERNEL_BW_X("log", "pgy[i] / px[i]");
+#endif
 OPENCLDEV_KERNEL_BW_X("tanh", "(1.f - py[i] * py[i]) * pgy[i]");
 OPENCLDEV_KERNEL_BW_X("sigmoid", "py[i] * (1.f - py[i]) * pgy[i]");
 OPENCLDEV_KERNEL_BW_X("softplus", "(.5f + .5f * tanh(.5f * px[i])) * pgy[i]");
@@ -368,8 +413,16 @@ OPENCLDEV_KERNEL_FW_X_CONST("add_const", "px[i] + k");
 OPENCLDEV_KERNEL_FW_X_CONST("subtract_const_r", "px[i] - k");
 OPENCLDEV_KERNEL_FW_X_CONST("subtract_const_l", "k - px[i]");
 OPENCLDEV_KERNEL_FW_X_CONST("multiply_const", "px[i] * k");
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
+OPENCLDEV_KERNEL_FW_X_CONST("divide_const_r", "native_divide(px[i], k)");
+#else
 OPENCLDEV_KERNEL_FW_X_CONST("divide_const_r", "px[i] / k");
+#endif
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
+OPENCLDEV_KERNEL_FW_X_CONST("divide_const_l", "native_divide(k, px[i])");
+#else
 OPENCLDEV_KERNEL_FW_X_CONST("divide_const_l", "k / px[i]");
+#endif
 OPENCLDEV_KERNEL_FW_X_CONST("prelu", "max(px[i], .0f) + k * min(px[i], .0f)");
 #ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
 OPENCLDEV_KERNEL_FW_X_CONST(
@@ -383,8 +436,16 @@ OPENCLDEV_KERNEL_BW_X_CONST("add_const", "pgy[i]");
 OPENCLDEV_KERNEL_BW_X_CONST("subtract_const_r", "pgy[i]");
 OPENCLDEV_KERNEL_BW_X_CONST("subtract_const_l", "-pgy[i]");
 OPENCLDEV_KERNEL_BW_X_CONST("multiply_const", "k * pgy[i]");
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
+OPENCLDEV_KERNEL_BW_X_CONST("divide_const_r", "native_divide(pgy[i], k)");
+#else
 OPENCLDEV_KERNEL_BW_X_CONST("divide_const_r", "pgy[i] / k");
+#endif
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
+OPENCLDEV_KERNEL_BW_X_CONST("divide_const_l", "-py[i] * native_divide(pgy[i], px[i])");
+#else
 OPENCLDEV_KERNEL_BW_X_CONST("divide_const_l", "-py[i] * pgy[i] / px[i]");
+#endif
 OPENCLDEV_KERNEL_BW_X_CONST(
     "prelu", "pgy[i] * ((px[i] > .0f) + k * (px[i] <= .0f))");
 OPENCLDEV_KERNEL_BW_X_CONST(
@@ -394,21 +455,35 @@ OPENCLDEV_KERNEL_FW_X_SCALAR_R_INFIX("add_scalar", "+");
 OPENCLDEV_KERNEL_FW_X_SCALAR_R_INFIX("subtract_scalar_r", "-");
 OPENCLDEV_KERNEL_FW_X_SCALAR_L_INFIX("subtract_scalar_l", "-");
 OPENCLDEV_KERNEL_FW_X_SCALAR_R_INFIX("multiply_scalar", "*");
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
+OPENCLDEV_KERNEL_FW_X_SCALAR_R("divide_scalar_r", "native_divide");
+#else
 OPENCLDEV_KERNEL_FW_X_SCALAR_R_INFIX("divide_scalar_r", "/");
+#endif
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
+OPENCLDEV_KERNEL_FW_X_SCALAR_L("divide_scalar_l", "native_divide");
+#else
 OPENCLDEV_KERNEL_FW_X_SCALAR_L_INFIX("divide_scalar_l", "/");
-
+#endif
 OPENCLDEV_KERNEL_FW_AB_INFIX("add", "+");
 OPENCLDEV_KERNEL_FW_AB_INFIX("subtract", "-");
 OPENCLDEV_KERNEL_FW_AB_INFIX("multiply", "*");
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
+OPENCLDEV_KERNEL_FW_AB("divide", "native_divide");
+#else
 OPENCLDEV_KERNEL_FW_AB_INFIX("divide", "/");
+#endif
 
 #undef OPENCLDEV_KERNEL_FW_X
 #undef OPENCLDEV_KERNEL_BW_X
 #undef OPENCLDEV_KERNEL_FW_X_CONST
 #undef OPENCLDEV_KERNEL_BW_X_CONST
 #undef CUDADEV_KERNEL_FW_X_SCALAR_R
+#undef CUDADEV_KERNEL_FW_X_SCALAR_R_INFIX
 #undef CUDADEV_KERNEL_FW_X_SCALAR_L
+#undef CUDADEV_KERNEL_FW_X_SCALAR_L_INFIX
 #undef CUDADEV_KERNEL_FW_AB
+#undef CUDADEV_KERNEL_FW_AB_INFIX
 
   ss << R"EOS(
 kernel void add_bw_kernel(
