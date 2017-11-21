@@ -528,7 +528,7 @@ namespace primitiv {
 namespace devices {
 
 /*
- * Hidden objects of CUDA device.
+ * Hidden objects of CUDA devices.
  */
 struct CUDAInternalState {
   CUDAInternalState(std::uint32_t dev_id, std::uint32_t rng_seed)
