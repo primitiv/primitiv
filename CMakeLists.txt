@@ -11,6 +11,7 @@ option(PRIMITIV_GTEST_SOURCE_DIR "Source directory of Google Test library." "")
 option(PRIMITIV_USE_CACHE "Enables cached values in some functions but needs more memory." OFF)
 option(PRIMITIV_USE_CUDA "Enables the CUDA backend." OFF)
 option(PRIMITIV_USE_OPENCL "Enables the OpenCL backend." OFF)
+option(PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS "Enables native functions of the OpenCL backend." OFF)
 
 # C++ version
 set(CMAKE_CXX_STANDARD 11)

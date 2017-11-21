@@ -63,7 +63,9 @@ Building Options
 - `PRIMITIV_USE_CUDA` (default=`OFF`)
   - Enables CUDA backend (`devices::CUDA` class).
 - `PRIMITIV_USE_OPENCL` (default=`OFF`)
-  - Enables OpenCL backend(`devices::OpenCL` class).
+  - Enables OpenCL backend (`devices::OpenCL` class).
+- `PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS` (default=`OFF`)
+  - Enables the vector versions of the math functions in OpenCL backend.
 - Other available options:
   - CMake standard options.
   - [FindGTest](https://cmake.org/cmake/help/v3.1/module/FindGTest.html) options.

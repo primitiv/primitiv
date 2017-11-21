@@ -306,16 +306,45 @@ kernel void slice_bw_kernel(
         "}\n";
 
 OPENCLDEV_KERNEL_FW_X("negate", "-px[i]");
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
 OPENCLDEV_KERNEL_FW_X("sqrt", "native_sqrt(px[i])");
+#else
+OPENCLDEV_KERNEL_FW_X("sqrt", "sqrt(px[i])");
+#endif
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
 OPENCLDEV_KERNEL_FW_X("exp", "native_exp(px[i])");
+#else
+OPENCLDEV_KERNEL_FW_X("exp", "exp(px[i])");
+#endif
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
 OPENCLDEV_KERNEL_FW_X("log", "native_log(px[i])");
+#else
+OPENCLDEV_KERNEL_FW_X("log", "log(px[i])");
+#endif
 OPENCLDEV_KERNEL_FW_X("tanh", "tanh(px[i])");
 OPENCLDEV_KERNEL_FW_X("sigmoid", ".5f + .5f * tanh(.5f * px[i])");
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
 OPENCLDEV_KERNEL_FW_X(
-    "softplus", "max(px[i], .0f) + log(1.f + native_exp(-fabs(px[i])))");
+    "softplus", "max(px[i], .0f) + native_log(1.f + native_exp(-fabs(px[i])))");
+#else
+OPENCLDEV_KERNEL_FW_X(
+    "softplus", "max(px[i], .0f) + log(1.f + exp(-fabs(px[i])))");
+#endif
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
 OPENCLDEV_KERNEL_FW_X("sin", "native_sin(px[i])");
+#else
+OPENCLDEV_KERNEL_FW_X("sin", "sin(px[i])");
+#endif
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
 OPENCLDEV_KERNEL_FW_X("cos", "native_cos(px[i])");
+#else
+OPENCLDEV_KERNEL_FW_X("cos", "cos(px[i])");
+#endif
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
 OPENCLDEV_KERNEL_FW_X("tan", "native_tan(px[i])");
+#else
+OPENCLDEV_KERNEL_FW_X("tan", "tan(px[i])");
+#endif
 
 OPENCLDEV_KERNEL_BW_X("sqrt", ".5f * pgy[i] / py[i]");
 OPENCLDEV_KERNEL_BW_X("exp", "py[i] * pgy[i]");
@@ -323,8 +352,16 @@ OPENCLDEV_KERNEL_BW_X("log", "pgy[i] / px[i]");
 OPENCLDEV_KERNEL_BW_X("tanh", "(1.f - py[i] * py[i]) * pgy[i]");
 OPENCLDEV_KERNEL_BW_X("sigmoid", "py[i] * (1.f - py[i]) * pgy[i]");
 OPENCLDEV_KERNEL_BW_X("softplus", "(.5f + .5f * tanh(.5f * px[i])) * pgy[i]");
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
 OPENCLDEV_KERNEL_BW_X("sin", "native_cos(px[i]) * pgy[i]");
+#else
+OPENCLDEV_KERNEL_BW_X("sin", "cos(px[i]) * pgy[i]");
+#endif
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
 OPENCLDEV_KERNEL_BW_X("cos", "-native_sin(px[i]) * pgy[i]");
+#else
+OPENCLDEV_KERNEL_BW_X("cos", "-sin(px[i]) * pgy[i]");
+#endif
 OPENCLDEV_KERNEL_BW_X("tan", "(1.f + py[i] * py[i]) * pgy[i]");
 
 OPENCLDEV_KERNEL_FW_X_CONST("add_const", "px[i] + k");
@@ -334,8 +371,13 @@ OPENCLDEV_KERNEL_FW_X_CONST("multiply_const", "px[i] * k");
 OPENCLDEV_KERNEL_FW_X_CONST("divide_const_r", "px[i] / k");
 OPENCLDEV_KERNEL_FW_X_CONST("divide_const_l", "k / px[i]");
 OPENCLDEV_KERNEL_FW_X_CONST("prelu", "max(px[i], .0f) + k * min(px[i], .0f)");
+#ifdef PRIMITIV_USE_OPENCL_NATIVE_FUNCTIONS
 OPENCLDEV_KERNEL_FW_X_CONST(
     "elu", "max(px[i], .0f) + k * (native_exp(min(px[i], .0f)) - 1.0f)");
+#else
+OPENCLDEV_KERNEL_FW_X_CONST(
+    "elu", "max(px[i], .0f) + k * (exp(min(px[i], .0f)) - 1.0f)");
+#endif
 
 OPENCLDEV_KERNEL_BW_X_CONST("add_const", "pgy[i]");
 OPENCLDEV_KERNEL_BW_X_CONST("subtract_const_r", "pgy[i]");
