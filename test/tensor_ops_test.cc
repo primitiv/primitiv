@@ -15,6 +15,7 @@
 using std::vector;
 using test_utils::vector_match;
 using test_utils::vector_near;
+using test_utils::vector_near_relative;
 
 namespace primitiv {
 namespace operators {
@@ -1329,7 +1330,7 @@ TEST_F(TensorOpsTest, CheckSoftplus) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
     const Tensor y = softplus(x);
     EXPECT_EQ(Shape({2, 3}, 2), y.shape());
-    EXPECT_TRUE(vector_near(y_data, y.to_vector(), 1e-6));
+    EXPECT_TRUE(vector_near_relative(y_data, y.to_vector(), 1e-5));
   }
 }
 
@@ -1540,7 +1541,7 @@ TEST_F(TensorOpsTest, CheckLogSumExp2) {
         const Tensor y = logsumexp(x, 0);
         EXPECT_EQ(Shape(), y.shape());
         // TODO(odashi): 1e-3 might not be enough precision.
-        EXPECT_TRUE(vector_near(
+        EXPECT_TRUE(vector_near_relative(
               vector<float>(1, k + std::log(n)), y.to_vector(), 1e-3));
     }
     }
@@ -1571,7 +1572,7 @@ TEST_F(TensorOpsTest, CheckLogSoftmax) {
     for (std::uint32_t i = 0; i < 4; ++i) {
       const Tensor y = log_softmax(x, i);
       EXPECT_EQ(Shape({2, 2, 2}, 2), y.shape());
-      EXPECT_TRUE(vector_near(y_data[i], y.to_vector(), 1e-6));
+      EXPECT_TRUE(vector_near_relative(y_data[i], y.to_vector(), 1e-5));
     }
   }
 }
@@ -1588,7 +1589,7 @@ TEST_F(TensorOpsTest, CheckLogSoftmax2) {
         EXPECT_EQ(Shape({n}), y.shape());
         // TODO(odashi): 1e-3 might not be enough precision.
         EXPECT_TRUE(
-            vector_near(vector<float>(n, -std::log(n)), y.to_vector(), 1e-3));
+            vector_near_relative(vector<float>(n, -std::log(n)), y.to_vector(), 1e-3));
       }
     }
   }
@@ -1618,7 +1619,7 @@ TEST_F(TensorOpsTest, CheckSoftmax) {
     for (std::uint32_t i = 0; i < 4; ++i) {
       const Tensor y = softmax(x, i);
       EXPECT_EQ(Shape({2, 2, 2}, 2), y.shape());
-      EXPECT_TRUE(vector_near(y_data[i], y.to_vector(), 1e-6));
+      EXPECT_TRUE(vector_near_relative(y_data[i], y.to_vector(), 1e-6));
     }
   }
 }
@@ -1634,7 +1635,7 @@ TEST_F(TensorOpsTest, CheckSoftmax2) {
         const Tensor y = softmax(x, 0);
         EXPECT_EQ(Shape({n}), y.shape());
         EXPECT_TRUE(
-            vector_near(vector<float>(n, 1./n), y.to_vector(), 1e-6));
+            vector_near_relative(vector<float>(n, 1./n), y.to_vector(), 1e-5));
       }
     }
   }
@@ -1852,7 +1853,7 @@ TEST_F(TensorOpsTest, CheckSparseSoftmaxCrossEntropy) {
       const Tensor x = dev->new_tensor_by_vector(tc.x_shape, tc.x_data);
       const Tensor y = softmax_cross_entropy(x, tc.ids, tc.dim);
       EXPECT_EQ(tc.y_shape, y.shape());
-      EXPECT_TRUE(vector_near(tc.y_data, y.to_vector(), 1e-6));
+      EXPECT_TRUE(vector_near_relative(tc.y_data, y.to_vector(), 1e-5));
     }
   }
 }

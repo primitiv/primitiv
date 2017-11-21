@@ -12,6 +12,7 @@
 using std::vector;
 using test_utils::vector_match;
 using test_utils::vector_near;
+using test_utils::vector_near_relative;
 
 namespace primitiv {
 namespace functions {
@@ -153,8 +154,8 @@ protected:
   EXPECT_EQ(#name_, node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
   EXPECT_EQ(nullptr, node.get_device()); \
-  EXPECT_TRUE(vector_near(ret_data, cur_value.to_vector(), err)); \
-  EXPECT_TRUE(vector_near(bw_grad, arg_grads[0]->to_vector(), err)); \
+  EXPECT_TRUE(vector_near_relative(ret_data, cur_value.to_vector(), err)); \
+  EXPECT_TRUE(vector_near_relative(bw_grad, arg_grads[0]->to_vector(), err)); \
 }
 
 #define TEST_1ARG_K_NEAR(name_, k_, err) { \
@@ -168,8 +169,8 @@ protected:
       std::to_string(static_cast<float>(k_)) + ')', node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
   EXPECT_EQ(nullptr, node.get_device()); \
-  EXPECT_TRUE(vector_near(ret_data, cur_value.to_vector(), err)); \
-  EXPECT_TRUE(vector_near(bw_grad, arg_grads[0]->to_vector(), err)); \
+  EXPECT_TRUE(vector_near_relative(ret_data, cur_value.to_vector(), err)); \
+  EXPECT_TRUE(vector_near_relative(bw_grad, arg_grads[0]->to_vector(), err)); \
 }
 
 #define TEST_2ARGS(name_) { \
@@ -957,7 +958,7 @@ TEST_F(FunctionImplTest, CheckTanh) {
     1, 1, 1, 1,
     .41997434, .070650825, .0098660372, .0013409507,
   };
-  TEST_1ARG_NEAR(Tanh, 1e-6);
+  TEST_1ARG_NEAR(Tanh, 1e-4);
 }
 
 TEST_F(FunctionImplTest, CheckSin) {
@@ -1029,7 +1030,7 @@ TEST_F(FunctionImplTest, CheckSigmoid) {
     .25, .25, .25, .25,
     .19661193, .10499359, .045176660, .017662706,
   };
-  TEST_1ARG_NEAR(Sigmoid, 1e-6);
+  TEST_1ARG_NEAR(Sigmoid, 1e-5);
 }
 
 TEST_F(FunctionImplTest, CheckSoftplus) {
@@ -1047,7 +1048,7 @@ TEST_F(FunctionImplTest, CheckSoftplus) {
     .5, .5, .5, .5,
     .26894142, .11920292, .047425873, .017986210,
   };
-  TEST_1ARG_NEAR(Softplus, 1e-6);
+  TEST_1ARG_NEAR(Softplus, 1e-5);
 }
 
 TEST_F(FunctionImplTest, CheckReLU) {
@@ -1119,7 +1120,7 @@ TEST_F(FunctionImplTest, CheckELU) {
     1, 1, 1, 1,
     3.6787944e-01, 1.3533528e-01, 4.9787068e-02, 1.8315639e-02,
   };
-  TEST_1ARG_K_NEAR(ELU, 1, 1e-6);
+  TEST_1ARG_K_NEAR(ELU, 1, 1e-5);
 }
 
 TEST_F(FunctionImplTest, CheckSum) {
@@ -1271,9 +1272,9 @@ TEST_F(FunctionImplTest, CheckSoftmaxCrossEntropy) {
   EXPECT_EQ("SoftmaxCrossEntropy(0)", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
   EXPECT_EQ(nullptr, node.get_device());
-  EXPECT_TRUE(vector_near(ret_data, cur_value.to_vector(), 1e-6));
-  EXPECT_TRUE(vector_near(bw_grads[0], arg_grads[0]->to_vector(), 1e-6));
-  EXPECT_TRUE(vector_near(bw_grads[1], arg_grads[1]->to_vector(), 1e-6));
+  EXPECT_TRUE(vector_near_relative(ret_data, cur_value.to_vector(), 1e-6));
+  EXPECT_TRUE(vector_near_relative(bw_grads[0], arg_grads[0]->to_vector(), 1e-6));
+  EXPECT_TRUE(vector_near_relative(bw_grads[1], arg_grads[1]->to_vector(), 1e-6));
 }
 
 TEST_F(FunctionImplTest, CheckSparseSoftmaxCrossEntropy) {
@@ -1322,8 +1323,8 @@ TEST_F(FunctionImplTest, CheckSparseSoftmaxCrossEntropy) {
         node.name());
     EXPECT_EQ(tc.ret_shape, cur_shape);
     EXPECT_EQ(nullptr, node.get_device());
-    EXPECT_TRUE(vector_near(tc.ret_data, cur_value.to_vector(), 1e-6));
-    EXPECT_TRUE(vector_near(tc.bw_grad, arg_grads[0]->to_vector(), 1e-6));
+    EXPECT_TRUE(vector_near_relative(tc.ret_data, cur_value.to_vector(), 1e-6));
+    EXPECT_TRUE(vector_near_relative(tc.bw_grad, arg_grads[0]->to_vector(), 1e-6));
   }
 }
 

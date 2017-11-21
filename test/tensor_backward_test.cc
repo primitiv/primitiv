@@ -10,6 +10,7 @@
 using std::vector;
 using test_utils::vector_match;
 using test_utils::vector_near;
+using test_utils::vector_near_relative;
 
 namespace primitiv {
 
@@ -420,7 +421,7 @@ TEST_F(TensorBackwardTest, CheckTanh) {
       1, -.41997434, .14130165, -.019732074,
       2, -.83994868, .070650825, -.0098660372,
     };
-    EXPECT_TRUE(vector_near(gx_val, gx.to_vector(), 1e-6));
+    EXPECT_TRUE(vector_near_relative(gx_val, gx.to_vector(), 1e-5));
   }
 }
 
@@ -657,7 +658,7 @@ TEST_F(TensorBackwardTest, CheckELU) {
         k, -1, 2, -2,
         2 * k, -7.3575888e-01f * k, 1.3533528e-01f * k, -4.9787068e-02f * k,
       };
-      EXPECT_TRUE(vector_near(gx_val, gx.to_vector(), 1e-5));
+      EXPECT_TRUE(vector_near_relative(gx_val, gx.to_vector(), 1e-5));
     }
   }
 }

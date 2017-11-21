@@ -11,6 +11,7 @@
 using std::vector;
 using test_utils::vector_match;
 using test_utils::vector_near;
+using test_utils::vector_near_relative;
 
 namespace primitiv {
 namespace optimizers {
@@ -772,12 +773,12 @@ TEST_F(OptimizerImplTest, CheckAdamUpdate) {
 
     param.gradient() += param.value();  // Squared loss
     optimizer.update();
-    EXPECT_TRUE(vector_near(
+    EXPECT_TRUE(vector_near_relative(
           expected_v[i], param.value().to_vector(), 1e-5));
-    EXPECT_TRUE(vector_near(
+    EXPECT_TRUE(vector_near_relative(
           expected_m1[i], param.stats("Adam.m1").to_vector(), 1e-5));
-    EXPECT_TRUE(vector_near(
-          expected_m2[i], param.stats("Adam.m2").to_vector(), 1e-5));
+    EXPECT_TRUE(vector_near_relative(
+          expected_m2[i], param.stats("Adam.m2").to_vector(), 1e-4));
   }
 }
 

@@ -15,6 +15,7 @@
 using std::vector;
 using test_utils::vector_match;
 using test_utils::vector_near;
+using test_utils::vector_near_relative;
 
 namespace primitiv {
 
@@ -396,8 +397,8 @@ TEST_F(GraphTest, CheckLSTM) {
   const float expected_sum_loss = std::accumulate(
       begin(expected_losses), end(expected_losses), .0f);
 
-  EXPECT_TRUE(vector_near(expected_losses, loss_tensor.to_vector(), 1e-6));
-  EXPECT_TRUE(vector_near(expected_losses, loss.to_vector(), 1e-6));
+  EXPECT_TRUE(vector_near_relative(expected_losses, loss_tensor.to_vector(), 1e-6));
+  EXPECT_TRUE(vector_near_relative(expected_losses, loss.to_vector(), 1e-6));
   EXPECT_FLOAT_EQ(expected_sum_loss, sum_loss_tensor.to_float());
   EXPECT_FLOAT_EQ(expected_sum_loss, sum_loss.to_float());
 
@@ -495,8 +496,8 @@ TEST_F(GraphTest, CheckConcatLSTM) {
   const float expected_sum_loss = std::accumulate(
       begin(expected_losses), end(expected_losses), .0f);
 
-  EXPECT_TRUE(vector_near(expected_losses, loss_tensor.to_vector(), 1e-6));
-  EXPECT_TRUE(vector_near(expected_losses, loss.to_vector(), 1e-6));
+  EXPECT_TRUE(vector_near_relative(expected_losses, loss_tensor.to_vector(), 1e-6));
+  EXPECT_TRUE(vector_near_relative(expected_losses, loss.to_vector(), 1e-6));
   EXPECT_FLOAT_EQ(expected_sum_loss, sum_loss_tensor.to_float());
   EXPECT_FLOAT_EQ(expected_sum_loss, sum_loss.to_float());
 
