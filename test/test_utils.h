@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_TEST_UTILS_H_
 #define PRIMITIV_TEST_UTILS_H_
 
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <initializer_list>
@@ -29,6 +30,15 @@ inline bool float_eq(const float a, const float b) {
 // check whether or not two float values are near than the given error.
 inline bool float_near(const float a, const float b, const float err) {
   return (a > b ? a - b : b - a) <= err;
+}
+
+// check closeness of two float values based on the relative error.
+inline bool float_near_relative(const float a, const float b, const float bound) {
+  if (a == 0 || b == 0) return a == b;
+  const float err = std::abs(a - b);
+  const float bound_a = std::abs(bound * a);
+  const float bound_b = std::abs(bound * b);
+  return err <= bound_a && err <= bound_b;
 }
 
 // helper to check vector equality.
@@ -83,6 +93,26 @@ inline testing::AssertionResult vector_near(
   }
   for (std::uint32_t i = 0; i < expected.size(); ++i) {
     if (!test_utils::float_near(expected[i], actual[i], err)) {
+      return testing::AssertionFailure()
+        << "expected[" << i << "]: " << expected[i]
+        << " != actual[" << i << "]: " << actual[i];
+    }
+  }
+  return testing::AssertionSuccess();
+}
+
+// helper to check closeness of float vectors based on the relative error.
+inline testing::AssertionResult vector_near_relative(
+    const std::vector<float> &expected,
+    const std::vector<float> &actual,
+    const float bound) {
+  if (expected.size() != actual.size()) {
+    return testing::AssertionFailure()
+      << "expected.size(): " << expected.size()
+      << " != actual.size(): " << actual.size();
+  }
+  for (std::uint32_t i = 0; i < expected.size(); ++i) {
+    if (!test_utils::float_near_relative(expected[i], actual[i], bound)) {
       return testing::AssertionFailure()
         << "expected[" << i << "]: " << expected[i]
         << " != actual[" << i << "]: " << actual[i];
