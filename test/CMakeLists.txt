@@ -28,8 +28,11 @@ include_directories(
   ${GTEST_INCLUDE_DIRS}
 )
 
+add_library(test_utils_OBJS OBJECT test_utils.h test_utils.cc)
+
 function(primitiv_test name)
-  add_executable(${name}_test test_utils.h ${name}_test.cc)
+  add_executable(${name}_test
+    test_utils.h ${name}_test.cc $<TARGET_OBJECTS:test_utils_OBJS>)
   if(PRIMITIV_GTEST_SOURCE_DIR)
     add_dependencies(${name}_test GTest)
   endif()

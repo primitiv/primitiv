@@ -21,11 +21,11 @@ void Model::load(
 
   std::uint32_t major, minor;
   reader >> major >> minor;
-  FileFormat::check_version(major, minor);
+  FileFormat::assert_version(major, minor);
 
   std::uint32_t datatype;
   reader >> datatype;
-  FileFormat::check_datatype(FileFormat::DataType::MODEL, datatype);
+  FileFormat::assert_datatype(FileFormat::DataType::MODEL, datatype);
 
   std::uint32_t num_params;
   reader >> num_params;

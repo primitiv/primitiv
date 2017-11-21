@@ -593,45 +593,115 @@ kernel void inplace_subtract_kernel(
   return ss.str();
 }
 
+/**
+ * Returns the list of available platforms.
+ * @return List of available cl::Platform.
+ */
+std::vector<cl::Platform> get_all_platforms() {
+  std::vector<cl::Platform> ret;
+  cl::Platform::get(&ret);
+  return ret;
+}
+
+/**
+ * Returns the list of available devices on the specified platform.
+ * @param platform_id Platform ID.
+ * @return List of available cl::Device.
+ */
+std::vector<cl::Device> get_all_devices(std::uint32_t platform_id) {
+  const auto all_pfs = ::get_all_platforms();
+  if (platform_id >= all_pfs.size()) {
+    THROW_ERROR("Invalid platform ID: " << platform_id);
+  }
+  std::vector<cl::Device> ret;
+  all_pfs[platform_id].getDevices(CL_DEVICE_TYPE_ALL, &ret);
+  return ret;
+}
+
+/**
+ * Returns the cl::Device corresponding to the specified IDs.
+ * @param platform_id Platform ID.
+ * @param device_id Device ID.
+ * @return Corresponding cl::Device object.
+ */
+cl::Device get_device(std::uint32_t platform_id, std::uint32_t device_id) {
+  const auto all_devs = ::get_all_devices(platform_id);
+  if (device_id >= all_devs.size()) {
+    THROW_ERROR(
+        "Invalid device ID: " << device_id
+        << " (on the platform " << platform_id << ")");
+  }
+  return all_devs[device_id];
+}
+
 }  // namespace
 
 namespace primitiv {
 namespace devices {
 
 std::uint32_t OpenCL::num_platforms() {
-  std::vector<cl::Platform> all_platforms;
-  cl::Platform::get(&all_platforms);
-  return all_platforms.size();
+  return ::get_all_platforms().size();
 }
 
 std::uint32_t OpenCL::num_devices(std::uint32_t platform_id) {
-  std::vector<cl::Platform> all_platforms;
-  cl::Platform::get(&all_platforms);
-  if (platform_id >= all_platforms.size()) {
-    THROW_ERROR("Invalid platform ID: " << platform_id);
+  return ::get_all_devices(platform_id).size();
+}
+
+void OpenCL::assert_support(
+    std::uint32_t platform_id, std::uint32_t device_id) {
+  const cl::Device dev = ::get_device(platform_id, device_id);
+
+  // Checks whether the device is globally available.
+  if (!dev.getInfo<CL_DEVICE_AVAILABLE>()) {
+    THROW_ERROR(
+        "OpenCL Device " << device_id << " on the platform " << platform_id
+        << " is not available (CL_DEVICE_AVAILABLE == false).");
   }
-  std::vector<cl::Device> all_devices;
-  all_platforms[platform_id].getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
-  return all_devices.size();
+
+  // Checks other minimum requirements.
+#define CHECK_REQUIREMENT(name, value) \
+  { \
+    const auto actual = dev.getInfo<name>(); \
+    if (actual < (value)) { \
+      THROW_ERROR( \
+          "OpenCL Device " << device_id << " on the platform " << platform_id \
+          << " does not satisfy the minimum requirement by primitiv. " \
+          << "property: " << #name << ", " \
+          << "value: " << actual << ", " \
+          << "required at least: " << (value)); \
+    } \
+  }
+#define CHECK_REQUIREMENT_VECTOR(name, index, value) \
+  { \
+    const auto actual = dev.getInfo<name>()[index]; \
+    if (actual < (value)) { \
+      THROW_ERROR( \
+          "OpenCL Device " << device_id << " on the platform " << platform_id \
+          << " does not satisfy the minimum requirement by primitiv. " \
+          << "property: " << #name << "[" << #index << "], " \
+          << "value: " << actual << ", " \
+          << "required at least: " << (value)); \
+    } \
+  } \
+
+  CHECK_REQUIREMENT(CL_DEVICE_GLOBAL_MEM_SIZE, 1ull * (1ull << 30));
+  CHECK_REQUIREMENT(CL_DEVICE_LOCAL_MEM_SIZE, 16ull * (1ull << 10));
+  CHECK_REQUIREMENT(CL_DEVICE_MAX_WORK_GROUP_SIZE, 256);
+  CHECK_REQUIREMENT_VECTOR(CL_DEVICE_MAX_WORK_ITEM_SIZES, 0, 256);
+  CHECK_REQUIREMENT_VECTOR(CL_DEVICE_MAX_WORK_ITEM_SIZES, 1, 16);
+  CHECK_REQUIREMENT_VECTOR(CL_DEVICE_MAX_WORK_ITEM_SIZES, 2, 1);
+  // NOTE(odashi): OpenCL does not support explicit grid sizes.
+
+#undef CHECK_REQUIREMENT
+#undef CHECK_REQUIREMENT_VECTOR
 }
 
 void OpenCL::initialize() {
-  std::vector<cl::Platform> all_platforms;
-  cl::Platform::get(&all_platforms);
-  if (pf_id_ >= all_platforms.size()) {
-    THROW_ERROR("Invalid platform ID: " << pf_id_);
-  }
-  std::vector<cl::Device> all_devices;
-  all_platforms[pf_id_].getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
-  if (dev_id_ >= all_devices.size()) {
-    THROW_ERROR(
-        "Invalid device ID on the platform " << pf_id_ << ": " << dev_id_);
-  }
+  assert_support(pf_id_, dev_id_);
 
-  device_ = all_devices.at(dev_id_);
+  device_ = ::get_device(pf_id_, dev_id_);
   context_ = cl::Context({device_});
   cmd_queue_ = cl::CommandQueue(context_, device_, 0);
-
   cl::Program program(context_, ::generate_kernels(), true);
 
   auto get_kernel_group_size = [&](const cl::Kernel &kernel) {
@@ -690,20 +760,25 @@ void OpenCL::initialize() {
   CONFIGURE_KERNEL(transpose_fw);
   CONFIGURE_KERNEL(transpose_bw);
 
-  transpose_fw_kernel_group_size_y_ = transpose_fw_kernel_group_size_;
-  transpose_fw_kernel_group_size_x_ = 1;
-  while (
-      transpose_fw_kernel_group_size_x_ < transpose_fw_kernel_group_size_y_) {
-    transpose_fw_kernel_group_size_x_ <<= 1;
-    transpose_fw_kernel_group_size_y_ >>= 1;
-  }
-  transpose_bw_kernel_group_size_y_ = transpose_bw_kernel_group_size_;
-  transpose_bw_kernel_group_size_x_ = 1;
-  while (
-      transpose_bw_kernel_group_size_x_ < transpose_bw_kernel_group_size_y_) {
-    transpose_bw_kernel_group_size_x_ <<= 1;
-    transpose_bw_kernel_group_size_y_ >>= 1;
-  }
+  // helper to find two sizes (x, y) that satisfy:
+  // 1. x * y <= size
+  // 2. x / y == 1 or 2
+  auto calc_dim2_sizes = [](
+      std::uint32_t size, std::uint32_t &x, std::uint32_t &y) {
+    x = y = 1;
+    bool p = true;
+    while ((x * y) << 1 <= size) {
+      (p ? x : y) <<= 1;
+      p = !p;
+    }
+  };
+
+  calc_dim2_sizes(
+      transpose_fw_kernel_group_size_,
+      transpose_fw_kernel_group_size_x_, transpose_fw_kernel_group_size_y_);
+  calc_dim2_sizes(
+      transpose_bw_kernel_group_size_,
+      transpose_bw_kernel_group_size_x_, transpose_bw_kernel_group_size_y_);
 
   CONFIGURE_KERNEL(add_const_fw);
   CONFIGURE_KERNEL(subtract_const_r_fw);
@@ -751,6 +826,9 @@ void OpenCL::initialize() {
   CONFIGURE_KERNEL(inplace_multiply_const);
   CONFIGURE_KERNEL(inplace_add);
   CONFIGURE_KERNEL(inplace_subtract);
+
+#undef CONFIGURE_KERNEL
+#undef CONFIGURE_KERNEL_LIST
 }
 
 OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id)
@@ -774,20 +852,17 @@ void OpenCL::dump_description() const {
 
   std::cerr << "  Platform ID: " << pf_id_ << std::endl;
   std::cerr << "  Device ID: " << dev_id_ << std::endl;
-  std::cerr << "    Vendor ................ "
+  std::cerr << "    Vendor ............ "
             << device_.getInfo<CL_DEVICE_VENDOR>() << std::endl;
-  std::cerr << "    Name .................. "
+  std::cerr << "    Name .............. "
             << device_.getInfo<CL_DEVICE_NAME>() << std::endl;
-  std::cerr << "    Global Memory ......... "
+  std::cerr << "    Global memory ..... "
             << device_.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() << std::endl;
-  std::cerr << "    Local Memory .......... "
+  std::cerr << "    Local memory ...... "
             << device_.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>() << std::endl;
-  std::cerr << "    Max Work Group ........ "
+  std::cerr << "    Work group size ... "
             << device_.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
-  std::cerr << "    Max Work Item dim ..... "
-            << device_.getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>()
-            << std::endl;
-  std::cerr << "    Max Work Item sizes ... ";
+  std::cerr << "    Work item size .... ";
   const auto sizes = device_.getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>();
   for (std::size_t i = 0; i < sizes.size(); ++i) {
     if (i > 0) std::cerr << ", ";
@@ -800,7 +875,14 @@ std::shared_ptr<void> OpenCL::new_handle(const Shape &shape) {
   const std::size_t mem_size = sizeof(float) * shape.size();
   cl::Buffer *data = new cl::Buffer(
       context_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, mem_size, NULL);
-  return std::shared_ptr<void>(data, [](void *ptr) {
+  return std::shared_ptr<void>(data, [&](void *ptr) {
+      // NOTE(odashi):
+      // Deleting cl::Buffer does NOT block the process regardless whether the
+      // remaining kernel functions are still working or not.
+      // We have to manually wait for finishing all kernel functions to prevent
+      // memory corruption.
+      cmd_queue_.finish();
+      // Then, we can delete the buffer safely.
       delete static_cast<cl::Buffer *>(ptr);
   });
 }
@@ -850,7 +932,6 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(
     CASE(1, 0);
 #undef CASE
   }
-  cmd_queue_.finish();
   std::vector<std::uint32_t> ret(r);
   cmd_queue_.enqueueReadBuffer(
       py, CL_TRUE, 0, sizeof(std::uint32_t) * r, ret.data());
@@ -891,7 +972,6 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(
     CASE(1, 0);
 #undef CASE
   }
-  cmd_queue_.finish();
   std::vector<std::uint32_t> ret(r);
   cmd_queue_.enqueueReadBuffer(
       py, CL_TRUE, 0, sizeof(std::uint32_t) * r, ret.data());
@@ -902,7 +982,6 @@ void OpenCL::reset_tensor_impl(float k, Tensor &x) {
   const std::uint32_t size = x.shape().size();
   cmd_queue_.enqueueFillBuffer<float>(
       ::get_buffer(x), k, 0, sizeof(float) * size);
-  cmd_queue_.finish();
 }
 
 void OpenCL::reset_tensor_by_array_impl(const float values[], Tensor &x) {
@@ -924,9 +1003,18 @@ void OpenCL::copy_tensor_impl(const Tensor &x, Tensor &y) {
         const std::uint32_t size = x.shape().size();
         cmd_queue_.enqueueCopyBuffer(
             ::get_buffer(x), ::get_buffer(y), 0, 0, sizeof(float) * size);
-        cmd_queue_.finish();
       } else {
-        reset_tensor_by_vector(x.to_vector(), y);
+        const std::uint32_t size = x.shape().size();
+        cl::CommandQueue cmd_queue_x = static_cast<OpenCL *>(&x.device())->cmd_queue_;
+        float *mapped_ptr_x = static_cast<float *>(
+            cmd_queue_x.enqueueMapBuffer(
+              ::get_buffer(x), CL_TRUE, CL_MAP_READ, 0, sizeof(float) * size, 0));
+        float *mapped_ptr_y = static_cast<float *>(
+            cmd_queue_.enqueueMapBuffer(
+              ::get_buffer(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0));
+        std::memcpy(mapped_ptr_y, mapped_ptr_x, sizeof(float) * size);
+        cmd_queue_.enqueueUnmapMemObject(::get_buffer(x), mapped_ptr_x);
+        cmd_queue_.enqueueUnmapMemObject(::get_buffer(y), mapped_ptr_y);
       }
       break;
     default:
@@ -946,7 +1034,6 @@ void OpenCL::identity_impl(Tensor &y) {
       set_identity_kernel_, cl::NullRange,
       cl::NDRange(num_blocks * set_identity_kernel_group_size_),
       cl::NDRange(set_identity_kernel_group_size_));
-  cmd_queue_.finish();
 }
 
 void OpenCL::random_bernoulli_impl(float p, Tensor &y) {
@@ -1008,7 +1095,6 @@ void OpenCL::pick_fw_impl(
       pick_fw_kernel_, cl::NullRange,
       cl::NDRange(g1 * pick_fw_kernel_group_size_, bs),
       cl::NDRange(pick_fw_kernel_group_size_, 1));
-  cmd_queue_.finish();
 }
 
 void OpenCL::slice_fw_impl(
@@ -1030,7 +1116,6 @@ void OpenCL::slice_fw_impl(
       slice_fw_kernel_, cl::NullRange,
       cl::NDRange(num_blocks * slice_fw_kernel_group_size_),
       cl::NDRange(slice_fw_kernel_group_size_));
-  cmd_queue_.finish();
 }
 
 void OpenCL::concat_fw_impl(
@@ -1059,7 +1144,6 @@ void OpenCL::concat_fw_impl(
         cl::NDRange(concat_fw_kernel_group_size_), NULL, NULL);
     offset += span;
   }
-  cmd_queue_.finish();
 }
 
 void OpenCL::pick_bw_impl(
@@ -1085,7 +1169,6 @@ void OpenCL::pick_bw_impl(
       pick_bw_kernel_, cl::NullRange,
       cl::NDRange(g1 * concat_fw_kernel_group_size_, bs),
       cl::NDRange(concat_fw_kernel_group_size_, 1));
-  cmd_queue_.finish();
 }
 
 void OpenCL::slice_bw_impl(
@@ -1112,7 +1195,6 @@ void OpenCL::slice_bw_impl(
       slice_bw_kernel_, cl::NullRange,
       cl::NDRange(g1 * slice_bw_kernel_group_size_),
       cl::NDRange(slice_bw_kernel_group_size_));
-  cmd_queue_.finish();
 }
 
 #define OPENCLDEV_FW_X(name) \
@@ -1127,7 +1209,6 @@ void OpenCL::name##_fw_impl(const Tensor &x, Tensor &y) { \
       name##_fw_kernel_, cl::NullRange, \
       cl::NDRange(num_blocks * name##_fw_kernel_group_size_), \
       cl::NDRange(name##_fw_kernel_group_size_)); \
-  cmd_queue_.finish(); \
 }
 
 #define OPENCLDEV_BW_X(name) \
@@ -1145,7 +1226,6 @@ void OpenCL::name##_bw_impl( \
       name##_bw_kernel_, cl::NullRange, \
       cl::NDRange(num_blocks * name##_bw_kernel_group_size_), \
       cl::NDRange(name##_bw_kernel_group_size_)); \
-  cmd_queue_.finish(); \
 }
 
 #define OPENCLDEV_FW_X_CONST(name) \
@@ -1161,7 +1241,6 @@ void OpenCL::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
       name##_fw_kernel_, cl::NullRange, \
       cl::NDRange(num_blocks * name##_fw_kernel_group_size_), \
       cl::NDRange(name##_fw_kernel_group_size_)); \
-  cmd_queue_.finish(); \
 }
 
 #define OPENCLDEV_BW_X_CONST(name) \
@@ -1180,7 +1259,6 @@ void OpenCL::name##_bw_impl( \
       name##_bw_kernel_, cl::NullRange, \
       cl::NDRange(num_blocks * name##_bw_kernel_group_size_), \
       cl::NDRange(name##_bw_kernel_group_size_)); \
-  cmd_queue_.finish(); \
 }
 
 #define OPENCLDEV_FW_X_SCALAR(name) \
@@ -1201,7 +1279,6 @@ void OpenCL::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
       name##_fw_kernel_, cl::NullRange, \
       cl::NDRange(g1 * name##_fw_kernel_group_size_, g2, 1), \
       cl::NDRange(name##_fw_kernel_group_size_, 1, 1)); \
-  cmd_queue_.finish(); \
 }
 
 #define OPENCLDEV_FW_AB(name) \
@@ -1222,7 +1299,6 @@ void OpenCL::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
       name##_fw_kernel_, cl::NullRange, \
       cl::NDRange(g1 * name##_fw_kernel_group_size_, g2, 1), \
       cl::NDRange(name##_fw_kernel_group_size_, 1, 1)); \
-  cmd_queue_.finish(); \
 }
 
 #define OPENCLDEV_BW_AB(name) \
@@ -1248,7 +1324,6 @@ void OpenCL::name##_bw_impl( \
       name##_bw_kernel_, cl::NullRange, \
       cl::NDRange(g1 * name##_bw_kernel_group_size_, g2, 1), \
       cl::NDRange(name##_bw_kernel_group_size_, 1, 1)); \
-  cmd_queue_.finish(); \
 }
 
 OPENCLDEV_FW_X(negate);
@@ -1335,7 +1410,6 @@ void OpenCL::transpose_fw_impl(const Tensor &x, Tensor &y) {
       cl::NDRange(
         transpose_fw_kernel_group_size_x_,
         transpose_fw_kernel_group_size_y_, 1));
-  cmd_queue_.finish();
 }
 
 void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
@@ -1373,7 +1447,6 @@ void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
         ::get_buffer(y)(), 0, di,
         1, &cmd_queue_(), 0, NULL, NULL);
   }
-  cmd_queue_.finish();
 }
 
 void OpenCL::transpose_bw_impl(
@@ -1397,7 +1470,6 @@ void OpenCL::transpose_bw_impl(
       cl::NDRange(
         transpose_bw_kernel_group_size_x_,
         transpose_bw_kernel_group_size_y_, 1));
-  cmd_queue_.finish();
 }
 
 void OpenCL::matmul_bw_impl(
@@ -1457,7 +1529,6 @@ void OpenCL::matmul_bw_impl(
         ::get_buffer(gb)(), 0, dj,
         1, &cmd_queue_(), 0, NULL, NULL);
   }
-  cmd_queue_.finish();
 }
 
 void OpenCL::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
@@ -1490,7 +1561,6 @@ void OpenCL::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
     CASE(1, 0);
 #undef CASE
   }
-  cmd_queue_.finish();
 }
 
 void OpenCL::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
@@ -1523,7 +1593,6 @@ void OpenCL::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
     CASE(1, 0);
 #undef CASE
   }
-  cmd_queue_.finish();
 }
 
 void OpenCL::broadcast_fw_impl(
@@ -1542,7 +1611,6 @@ void OpenCL::broadcast_fw_impl(
       broadcast_fw_kernel_, cl::NullRange,
       cl::NDRange(g1 * broadcast_fw_kernel_group_size_),
       cl::NDRange(broadcast_fw_kernel_group_size_));
-  cmd_queue_.finish();
 }
 
 void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
@@ -1558,7 +1626,6 @@ void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
       batch_sum_fw_kernel_, cl::NullRange,
       cl::NDRange(g1 * batch_sum_fw_kernel_group_size_),
       cl::NDRange(batch_sum_fw_kernel_group_size_));
-  cmd_queue_.finish();
 }
 
 void OpenCL::inplace_multiply_const_impl(float k, Tensor &x) {
@@ -1572,7 +1639,6 @@ void OpenCL::inplace_multiply_const_impl(float k, Tensor &x) {
       inplace_multiply_const_kernel_, cl::NullRange,
       cl::NDRange(g1 * inplace_multiply_const_kernel_group_size_),
       cl::NDRange(inplace_multiply_const_kernel_group_size_));
-  cmd_queue_.finish();
 }
 
 void OpenCL::inplace_add_impl(const Tensor &x, Tensor &y) {
@@ -1591,7 +1657,6 @@ void OpenCL::inplace_add_impl(const Tensor &x, Tensor &y) {
       inplace_add_kernel_, cl::NullRange,
       cl::NDRange(g1 * inplace_add_kernel_group_size_, bs, 1),
       cl::NDRange(inplace_add_kernel_group_size_, 1, 1));
-  cmd_queue_.finish();
 }
 
 void OpenCL::inplace_subtract_impl(const Tensor &x, Tensor &y) {
@@ -1610,7 +1675,6 @@ void OpenCL::inplace_subtract_impl(const Tensor &x, Tensor &y) {
       inplace_subtract_kernel_, cl::NullRange,
       cl::NDRange(g1 * inplace_subtract_kernel_group_size_, bs, 1),
       cl::NDRange(inplace_subtract_kernel_group_size_, 1, 1));
-  cmd_queue_.finish();
 }
 
 }  // namespace devices

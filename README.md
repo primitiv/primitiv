@@ -62,10 +62,13 @@ Building Options
   - Libraries built with this flag will tend to consume more memory.
 - `PRIMITIV_USE_CUDA` (default=`OFF`)
   - Enables CUDA backend (`devices::CUDA` class).
+- `PRIMITIV_USE_OPENCL` (default=`OFF`)
+  - Enables OpenCL backend(`devices::OpenCL` class).
 - Other available options:
   - CMake standard options.
-  - [FindCUDA](https://cmake.org/cmake/help/v3.1/module/FindCUDA.html) options.
   - [FindGTest](https://cmake.org/cmake/help/v3.1/module/FindGTest.html) options.
+  - [FindCUDA](https://cmake.org/cmake/help/v3.1/module/FindCUDA.html) options.
+  - [FindOpenCL](https://cmake.org/cmake/help/v3.1/module/FindOpenCL.html)/ options.
 
 Usage
 -----

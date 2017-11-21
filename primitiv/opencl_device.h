@@ -36,6 +36,28 @@ public:
   static std::uint32_t num_devices(std::uint32_t platform_id);
 
   /**
+   * Checks whether the device corresponding to the specified IDs is supported.
+   * @param platform_id Platform ID to check.
+   * @param device_id Device ID to check.
+   * @throw primitiv::Error This class does not support the specified device.
+   */
+  static void assert_support(
+      std::uint32_t platform_id, std::uint32_t device_id);
+
+  /**
+   * Checks whether the device corresponding to the specified ID is supported.
+   * @param platform_id Platform ID to check.
+   * @param device_id Device ID to check.
+   * @return true if this class supports the specified device, false otherwise.
+   */
+  static bool check_support(
+      std::uint32_t platform_id, std::uint32_t device_id) {
+    try { assert_support(platform_id, device_id); }
+    catch (...) { return false; }
+    return true;
+  }
+
+  /**
    * Creates a new OpenCL device.
    * @param platform_id Platform ID.
    * @param device_id Device ID on the selected platform.
