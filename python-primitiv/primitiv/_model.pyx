@@ -63,6 +63,8 @@ cdef class _Model:
         _Model.register_wrapper(self.wrapped, self)
         self.params = _ModelParameter(self)
         self.submodels = _ModelSubModel(self)
+        self.added_parameters = []
+        self.added_submodels = []
 
     def __dealloc__(self):
         if self.wrapped is not NULL:
@@ -79,9 +81,21 @@ cdef class _Model:
 
     def add_parameter(self, str name, _Parameter param):
         self.wrapped.add_parameter(pystr_to_cppstr(name), param.wrapped[0])
+        self.added_parameters.append(param)
 
     def add_submodel(self, str name, _Model model):
         self.wrapped.add_submodel(pystr_to_cppstr(name), model.wrapped[0])
+        self.added_submodels.append(model)
+
+    def add_all_parameters(self):
+        for k, v in self.__dict__.items():
+            if isinstance(v, _Parameter) and v not in self.added_parameters:
+                self.add_parameter(k, v)
+
+    def add_all_submodels(self):
+        for k, v in self.__dict__.items():
+            if isinstance(v, _Model) and v not in self.added_submodels:
+                self.add_submodel(k, v)
 
     # NOTE(vbkaisetsu):
     # get_parameter is replaced with `params` variable.
