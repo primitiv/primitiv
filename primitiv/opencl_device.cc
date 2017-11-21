@@ -1005,7 +1005,7 @@ void OpenCL::copy_tensor_impl(const Tensor &x, Tensor &y) {
             ::get_buffer(x), ::get_buffer(y), 0, 0, sizeof(float) * size);
       } else {
         const std::uint32_t size = x.shape().size();
-        cl::CommandQueue cmd_queue_x = static_cast<OpenCL *>(&x.device())->cmd_queue_;
+        cl::CommandQueue &cmd_queue_x = static_cast<OpenCL &>(x.device()).cmd_queue_;
         float *mapped_ptr_x = static_cast<float *>(
             cmd_queue_x.enqueueMapBuffer(
               ::get_buffer(x), CL_TRUE, CL_MAP_READ, 0, sizeof(float) * size, 0));
