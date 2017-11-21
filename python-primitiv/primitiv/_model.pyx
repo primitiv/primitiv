@@ -16,53 +16,11 @@ import weakref
 cdef object py_primitiv_model_weak_dict = WeakValueDictionary()
 
 
-cdef class _ModelParameter:
-
-    def __init__(self, _Model model):
-        # NOTE(vbkaisetsu): It becomes circular reference.
-        # We can't know when it will be deleted by the garbage collector.
-        # Therefore we hold this instance in a weakref to delete it immediately.
-        self.model_ref = weakref.ref(model)
-
-    def __getitem__(self, key):
-        cdef vector[string] names
-        if isinstance(key, str):
-            return _Parameter.get_wrapper(&(<_Model> self.model_ref()).wrapped.get_parameter(pystr_to_cppstr(key)))
-        elif isinstance(key, tuple):
-            for name in key:
-                names.push_back(pystr_to_cppstr(name))
-            return _Parameter.get_wrapper(&(<_Model> self.model_ref()).wrapped.get_parameter(names))
-        else:
-            raise TypeError("Argument 'key' has incorrect type (str or tuple)")
-
-
-cdef class _ModelSubModel:
-
-    def __init__(self, _Model model):
-        # NOTE(vbkaisetsu): It becomes circular reference.
-        # We can't know when it will be deleted by the garbage collector.
-        # Therefore we hold this instance in a weakref to delete it immediately.
-        self.model_ref = weakref.ref(model)
-
-    def __getitem__(self, key):
-        cdef vector[string] names
-        if isinstance(key, str):
-            return _Model.get_wrapper(&(<_Model> self.model_ref()).wrapped.get_submodel(pystr_to_cppstr(key)))
-        elif isinstance(key, tuple):
-            for name in key:
-                names.push_back(pystr_to_cppstr(name))
-            return _Model.get_wrapper(&(<_Model> self.model_ref()).wrapped.get_submodel(names))
-        else:
-            raise TypeError("Argument 'key' has incorrect type (str or tuple)")
-
-
 cdef class _Model:
 
     def __cinit__(self):
         self.wrapped = new CppModel()
         _Model.register_wrapper(self.wrapped, self)
-        self.params = _ModelParameter(self)
-        self.submodels = _ModelSubModel(self)
         self.added_parameters = []
         self.added_submodels = []
 
@@ -97,11 +55,19 @@ cdef class _Model:
             if isinstance(v, _Model) and v not in self.added_submodels:
                 self.add_submodel(k, v)
 
-    # NOTE(vbkaisetsu):
-    # get_parameter is replaced with `params` variable.
-
-    # NOTE(vbkaisetsu):
-    # get_submodel is replaced with `submodels` variable.
+    def __getitem__(self, key):
+        cdef vector[string] names
+        if isinstance(key, str):
+            return self[(key,)]
+        elif isinstance(key, tuple):
+            for name in key:
+                names.push_back(pystr_to_cppstr(name))
+            try:
+                return _Parameter.get_wrapper(&self.wrapped.get_parameter(names))
+            except:
+                return _Model.get_wrapper(&self.wrapped.get_submodel(names))
+        else:
+            raise TypeError("Argument 'key' has incorrect type (str or tuple)")
 
     def get_all_parameters(self):
         cdef pair[vector[string], CppParameter*] p
