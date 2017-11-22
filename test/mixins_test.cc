@@ -8,6 +8,30 @@ namespace mixins {
 
 class MixinsTest : public testing::Test {};
 
+TEST_F(MixinsTest, CheckIdentifiable) {
+  class TestClass : public Identifiable<TestClass> {};
+
+  EXPECT_THROW(TestClass::get_object(0u), Error);
+
+  {
+    TestClass a;
+    EXPECT_EQ(0u, a.id());
+    EXPECT_EQ(&a, &TestClass::get_object(0u));
+  }
+  EXPECT_THROW(TestClass::get_object(0u), Error);
+
+  {
+    TestClass a;
+    TestClass b;
+    EXPECT_EQ(1u, a.id());
+    EXPECT_EQ(2u, b.id());
+    EXPECT_EQ(&a, &TestClass::get_object(1u));
+    EXPECT_EQ(&b, &TestClass::get_object(2u));
+  }
+  EXPECT_THROW(TestClass::get_object(1u), Error);
+  EXPECT_THROW(TestClass::get_object(2u), Error);
+}
+
 TEST_F(MixinsTest, CheckDefaultSettable) {
   class TestClass : public DefaultSettable<TestClass> {};
 
