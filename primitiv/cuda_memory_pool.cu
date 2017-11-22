@@ -12,12 +12,18 @@ using std::make_pair;
 
 namespace primitiv {
 
-std::size_t CUDAMemoryPool::next_pool_id_ = 0;
-std::unordered_map<std::size_t, CUDAMemoryPool *> CUDAMemoryPool::pools_;
+#ifdef PRIMITIV_NEED_EXPLICIT_STATIC_SYMBOLS
+template<>
+  std::uint64_t mixins::Identifiable<CUDAMemoryPool>::next_id_ = 0;
+template<>
+  std::unordered_map<std::uint64_t, CUDAMemoryPool *>
+  mixins::Identifiable<CUDAMemoryPool>::objects_;
+template<>
+  std::mutex mixins::Identifiable<CUDAMemoryPool>::mutex_;
+#endif  // PRIMITIV_NEED_EXPLICIT_STATIC_SYMBOLS
 
 CUDAMemoryPool::CUDAMemoryPool(std::uint32_t device_id)
-: pool_id_(next_pool_id_++)
-, dev_id_(device_id)
+: dev_id_(device_id)
 , reserved_(64)
 , supplied_() {
   // Retrieves device properties.
@@ -28,20 +34,14 @@ CUDAMemoryPool::CUDAMemoryPool(std::uint32_t device_id)
         "Invalid CUDA device ID. given: " << dev_id_
         << " >= #devices: " << max_devs);
   }
-
-  // Registers this object.
-  pools_.emplace(pool_id_, this);
 }
 
 CUDAMemoryPool::~CUDAMemoryPool() {
-  // Unregisters this object.
-  pools_.erase(pools_.find(pool_id_));
-
   // NOTE(odashi):
   // Due to GC-based languages, we chouldn't assume that all memories were
   // disposed before arriving this code.
   while (!supplied_.empty()) {
-    free_inner(supplied_.begin()->first);
+    free(supplied_.begin()->first);
   }
   release_reserved_blocks();
 }
@@ -71,19 +71,10 @@ std::shared_ptr<void> CUDAMemoryPool::allocate(std::size_t size) {
     supplied_.emplace(ptr, shift);
   }
 
-  return std::shared_ptr<void>(ptr, CUDAMemoryDeleter(pool_id_));
+  return std::shared_ptr<void>(ptr, CUDAMemoryDeleter(id()));
 }
 
-void CUDAMemoryPool::free(std::size_t pool_id, void *ptr) {
-  auto it = pools_.find(pool_id);
-  if (it != pools_.end()) {
-    // Found a corresponding pool object, delete ptr.
-    it->second->free_inner(ptr);
-  }
-  // Otherwise, ptr is assumed as to be deleted before calling this function.
-}
-
-void CUDAMemoryPool::free_inner(void *ptr) {
+void CUDAMemoryPool::free(void *ptr) {
   auto it = supplied_.find(ptr);
   if (it == supplied_.end()) {
     THROW_ERROR("Detected to dispose unknown handle: " << ptr);

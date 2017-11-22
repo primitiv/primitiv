@@ -16,7 +16,7 @@ class CUDAMemoryDeleter;
 /**
  * Memory manager on the CUDA devices.
  */
-class CUDAMemoryPool : mixins::Nonmovable<CUDAMemoryPool> {
+class CUDAMemoryPool : public mixins::Identifiable<CUDAMemoryPool> {
   friend CUDAMemoryDeleter;
 
   CUDAMemoryPool() = delete;
@@ -37,35 +37,18 @@ public:
    */
   std::shared_ptr<void> allocate(std::size_t size);
 
-  /**
-   * Retrieves pool ID.
-   * @return pool ID.
-   */
-  std::uint64_t get_pool_id() const { return pool_id_; }
-
 private:
-  /**
-   * Disposes the memory.
-   * @param pool_id ID of the CUDAMemoryPool.
-   * @param ptr Handle of the memory to be disposed.
-   */
-  static void free(std::uint64_t pool_id, void *ptr);
-
   /**
    * Disposes the memory managed by this pool.
    * @param ptr Handle of the memory to be disposed.
    */
-  void free_inner(void *ptr);
+  void free(void *ptr);
 
   /**
    * Releases all reserved memory blocks.
    */
   void release_reserved_blocks();
 
-  static std::uint64_t next_pool_id_;
-  static std::unordered_map<std::uint64_t, CUDAMemoryPool *> pools_;
-
-  std::uint64_t pool_id_;
   std::uint32_t dev_id_;
   std::vector<std::vector<void *>> reserved_;
   std::unordered_map<void *, std::uint32_t> supplied_;
@@ -78,7 +61,16 @@ class CUDAMemoryDeleter {
   CUDAMemoryDeleter() = delete;
 public:
   explicit CUDAMemoryDeleter(std::uint64_t pool_id) : pool_id_(pool_id) {}
-  void operator()(void *ptr) { CUDAMemoryPool::free(pool_id_, ptr); }
+
+  void operator()(void *ptr) {
+    try {
+      CUDAMemoryPool::get_object(pool_id_).free(ptr);
+    } catch (primitiv::Error) {
+      // Memory pool already has gone and the pointer is already deleted by
+      // the memory pool.
+    }
+  }
+
 private:
   std::uint64_t pool_id_;
 };

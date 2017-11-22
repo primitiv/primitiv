@@ -15,7 +15,7 @@ class CUDAMemoryPoolTest : public testing::Test {};
 TEST_F(CUDAMemoryPoolTest, CheckNew) {
   {
     CUDAMemoryPool pool(0);
-    EXPECT_EQ(0, pool.get_pool_id());
+    EXPECT_EQ(0, pool.id());
   }  // pool is destroyed at the end of scope.
   SUCCEED();
 }
@@ -27,24 +27,24 @@ TEST_F(CUDAMemoryPoolTest, CheckInvalidNew) {
 
 TEST_F(CUDAMemoryPoolTest, CheckPoolIDs) {
   CUDAMemoryPool pool0(0);
-  std::uint64_t base_id = pool0.get_pool_id();
+  std::uint64_t base_id = pool0.id();
 
   CUDAMemoryPool pool1(0);
-  EXPECT_EQ(base_id + 1, pool1.get_pool_id());
+  EXPECT_EQ(base_id + 1, pool1.id());
   CUDAMemoryPool(0);
   CUDAMemoryPool(0);
   CUDAMemoryPool pool2(0);
-  EXPECT_EQ(base_id + 4, pool2.get_pool_id());
+  EXPECT_EQ(base_id + 4, pool2.id());
   {
     CUDAMemoryPool pool3(0);
-    EXPECT_EQ(base_id + 5, pool3.get_pool_id());
+    EXPECT_EQ(base_id + 5, pool3.id());
     CUDAMemoryPool(0);
     CUDAMemoryPool(0);
     CUDAMemoryPool pool4(0);
-    EXPECT_EQ(base_id + 8, pool4.get_pool_id());
+    EXPECT_EQ(base_id + 8, pool4.id());
   }
   CUDAMemoryPool pool5(0);
-  EXPECT_EQ(base_id + 9, pool5.get_pool_id());
+  EXPECT_EQ(base_id + 9, pool5.id());
 }
 
 TEST_F(CUDAMemoryPoolTest, CheckAllocate) {
