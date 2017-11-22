@@ -78,6 +78,7 @@ class ModelTest(unittest.TestCase):
         param = Parameter()
         model.add_parameter("p", param)
         self.assertIs(model["p"], param)
+        self.assertIs(model[("p",)], param)
 
     def test_model_parameter_deep(self):
         model1 = Model()
@@ -88,6 +89,7 @@ class ModelTest(unittest.TestCase):
         param = Parameter()
         model3.add_parameter("p", param)
         self.assertIs(model1["m2", "m3", "p"], param)
+        self.assertIs(model1["m2"]["m3"]["p"], param)
 
     def test_model_submodel(self):
         model1 = Model()
@@ -104,6 +106,7 @@ class ModelTest(unittest.TestCase):
         model4 = Model()
         model3.add_submodel("m4", model4)
         self.assertIs(model1["m2", "m3", "m4"], model4)
+        self.assertIs(model1["m2"]["m3"]["m4"], model4)
 
     def test_model_invalid_operation(self):
         model1 = Model()
@@ -115,6 +118,15 @@ class ModelTest(unittest.TestCase):
             del model1["p"]
         with self.assertRaises(TypeError):
             del model1["m"]
+        with self.assertRaises(TypeError):
+            del model1[0]
+        with self.assertRaises(TypeError):
+            model1["invalid"]
+        with self.assertRaises(TypeError):
+            model1[(0, 1)]
+        with self.assertRaises(TypeError):
+            model1[[0, 1]]
+
 
     def test_model_get_all_parameters(self):
         submodel = TestModel()

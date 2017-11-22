@@ -58,16 +58,22 @@ cdef class _Model:
     def __getitem__(self, key):
         cdef vector[string] names
         if isinstance(key, str):
-            return self[(key,)]
+            names.push_back(pystr_to_cppstr(key))
         elif isinstance(key, tuple):
             for name in key:
                 names.push_back(pystr_to_cppstr(name))
-            try:
-                return _Parameter.get_wrapper(&self.wrapped.get_parameter(names))
-            except:
-                return _Model.get_wrapper(&self.wrapped.get_submodel(names))
         else:
             raise TypeError("Argument 'key' has incorrect type (str or tuple)")
+        try:
+            return _Parameter.get_wrapper(&self.wrapped.get_parameter(names))
+        except:
+            try:
+                return _Model.get_wrapper(&self.wrapped.get_submodel(names))
+            except:
+                # NOTE(vbkaisetsu): DO NOT throw an exception here because
+                # error massages generated at above lines will also be shown.
+                pass
+        raise TypeError("'name' is not a name of neither parameter not submodel")
 
     def get_all_parameters(self):
         cdef pair[vector[string], CppParameter*] p
