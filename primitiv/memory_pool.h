@@ -13,11 +13,11 @@
 namespace primitiv {
 
 /**
- * Memory manager on the CUDA devices.
+ * Memory manager on the device specified by allocator/deleter functors.
  */
 class MemoryPool : public mixins::Identifiable<MemoryPool> {
   /**
-   * Custom deleter class for CUDA memories.
+   * Custom deleter class for MemoryPool.
    */
   class Deleter {
     std::uint64_t pool_id_;
