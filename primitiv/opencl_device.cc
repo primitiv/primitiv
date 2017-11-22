@@ -11,43 +11,65 @@
 #include <clBLAS.h>
 
 #include <primitiv/error.h>
+#include <primitiv/memory_pool.h>
 #include <primitiv/opencl_device.h>
 #include <primitiv/random.h>
 
 namespace {
 
 /**
- * Creates a readonly buffer using given vector.
- * @param context OpenCL context object.
- * @param data Target vector.
- * @return New OpenCL buffer.
+ * Copies a device buffer to a host array.
+ * @param queue cl::CommandQueue object to perform operations.
+ * @param buffer cl::Buffer object to be updated.
+ * @param data Array of the data.
+ * @param size Number of objects in `data`.
  */
 template<typename T>
-cl::Buffer make_readonly_buffer(
-    const cl::Context &context, const std::vector<T> &data) {
-  return cl::Buffer(
-      context,
-      CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR,
-      sizeof(T) * data.size(),
-      const_cast<T *>(data.data()));
+void read_buffer(
+    cl::CommandQueue &queue, const cl::Buffer &buffer,
+    T data[], std::size_t size) {
+  queue.enqueueReadBuffer(buffer, CL_TRUE, 0, sizeof(T) * size, data);
+}
+
+/**
+ * Copies a host array to a device buffer.
+ * @param queue cl::CommandQueue object to perform operations.
+ * @param buffer cl::Buffer object to be updated.
+ * @param data Array of the data.
+ * @param size Number of objects in `data`.
+ */
+template<typename T>
+void write_buffer(
+    cl::CommandQueue &queue, cl::Buffer &buffer,
+    const T data[], std::size_t size) {
+  queue.enqueueWriteBuffer(buffer, CL_TRUE, 0, sizeof(T) * size, data);
 }
 
 /**
  * Obtains mutable cl::Buffer from Tensor.
- * @param ptr Target Tensor object.
+ * @param x Target Tensor object.
  * @return cl::Buffer object which the tensor object holds.
  */
-cl::Buffer &get_buffer(primitiv::Tensor &ptr) {
-  return *static_cast<cl::Buffer *>(ptr.data());
+cl::Buffer &get_buffer(primitiv::Tensor &x) {
+  return *static_cast<cl::Buffer *>(x.data());
 }
 
 /**
  * Obtains immutable cl::Buffer from Tensor.
- * @param ptr Target Tensor object.
+ * @param x Target Tensor object.
  * @return cl::Buffer object which the tensor object holds.
  */
-const cl::Buffer &get_buffer(const primitiv::Tensor &ptr) {
-  return *static_cast<const cl::Buffer *>(ptr.data());
+const cl::Buffer &get_buffer(const primitiv::Tensor &x) {
+  return *static_cast<const cl::Buffer *>(x.data());
+}
+
+/**
+ * Obtains mutable cl::Buffer from shared_ptr<void>.
+ * @param ptr Target shared_ptr object.
+ * @return cl::Buffer object which the shared_ptr holds.
+ */
+cl::Buffer &get_buffer(std::shared_ptr<void> &ptr) {
+  return *static_cast<cl::Buffer *>(ptr.get());
 }
 
 /**
@@ -672,7 +694,26 @@ public:
     : randomizer_(rng_seed)
     , device(::get_device(pf_id, dev_id))
     , context({ device })
-    , queue(context, device, 0) {
+    , queue(context, device, 0)
+    , pool(
+        [this](std::size_t size) -> void * {  // allocator
+          return static_cast<void *>(
+              new cl::Buffer(
+                context,
+                CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
+                size,
+                NULL));
+        },
+        [this](void *ptr) -> void {  // deleter
+          // NOTE(odashi):
+          // Deleting cl::Buffer does NOT block the process regardless whether
+          // the remaining kernel functions are still working or not.
+          // We have to manually wait for finishing all kernel functions to
+          // prevent memory corruption.
+          queue.finish();
+          // Then, we can delete the buffer safely.
+          delete static_cast<cl::Buffer *>(ptr);
+        }) {
       cl::Program program(context, ::generate_kernels(), true);
 
 #define CONFIGURE_KERNEL(name) \
@@ -789,6 +830,7 @@ public:
   cl::Device device;
   cl::Context context;
   cl::CommandQueue queue;
+  MemoryPool pool;
 
 #define DECL_KERNEL(name) \
   cl::Kernel name##_kernel; \
@@ -994,29 +1036,13 @@ void OpenCL::dump_description() const {
 }
 
 std::shared_ptr<void> OpenCL::new_handle(const Shape &shape) {
-  const std::size_t mem_size = sizeof(float) * shape.size();
-  cl::Buffer *data = new cl::Buffer(
-      state_->context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, mem_size, NULL);
-  return std::shared_ptr<void>(data, [&](void *ptr) {
-      // NOTE(odashi):
-      // Deleting cl::Buffer does NOT block the process regardless whether the
-      // remaining kernel functions are still working or not.
-      // We have to manually wait for finishing all kernel functions to prevent
-      // memory corruption.
-      state_->queue.finish();
-      // Then, we can delete the buffer safely.
-      delete static_cast<cl::Buffer *>(ptr);
-  });
+  return state_->pool.allocate(sizeof(float) * shape.size());
 }
 
 std::vector<float> OpenCL::tensor_to_vector_impl(const Tensor &x) {
   const std::uint32_t size = x.shape().size();
   std::vector<float> ret(size);
-  float *mapped_ptr = static_cast<float *>(
-      state_->queue.enqueueMapBuffer(
-        ::get_buffer(x), CL_TRUE, CL_MAP_READ, 0, sizeof(float) * size, 0));
-  std::memcpy(ret.data(), mapped_ptr, sizeof(float) * size);
-  state_->queue.enqueueUnmapMemObject(::get_buffer(x), mapped_ptr);
+  ::read_buffer(state_->queue, ::get_buffer(x), ret.data(), size);
   return ret;
 }
 
@@ -1028,15 +1054,14 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(
   const std::uint32_t s = shape.lower_volume(dim);
   std::uint32_t group_size = std::min(state_->argmax_group_size, 1024u);
   while (group_size >> 1 >= n) group_size >>= 1;
-  cl::Buffer py = cl::Buffer(
-      state_->context, CL_MEM_WRITE_ONLY, sizeof(std::uint32_t) * r, NULL);
+  std::shared_ptr<void> py = state_->pool.allocate(sizeof(std::uint32_t) * r);
   switch (group_size) {
 #define CASE(k, m) \
     case k: \
       state_->argmax_kernel[m].setArg(0, ::get_buffer(x)); \
       state_->argmax_kernel[m].setArg(1, s); \
       state_->argmax_kernel[m].setArg(2, n); \
-      state_->argmax_kernel[m].setArg(3, py); \
+      state_->argmax_kernel[m].setArg(3, ::get_buffer(py)); \
       state_->queue.enqueueNDRangeKernel( \
           state_->argmax_kernel[m], \
           cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
@@ -1055,8 +1080,7 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(
 #undef CASE
   }
   std::vector<std::uint32_t> ret(r);
-  state_->queue.enqueueReadBuffer(
-      py, CL_TRUE, 0, sizeof(std::uint32_t) * r, ret.data());
+  ::read_buffer(state_->queue, ::get_buffer(py), ret.data(), r);
   return ret;
 }
 
@@ -1068,15 +1092,14 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(
   const std::uint32_t s = shape.lower_volume(dim);
   std::uint32_t group_size = std::min(state_->argmin_group_size, 1024u);
   while (group_size >> 1 >= n) group_size >>= 1;
-  cl::Buffer py = cl::Buffer(
-      state_->context, CL_MEM_WRITE_ONLY, sizeof(std::uint32_t) * r, NULL);
+  std::shared_ptr<void> py = state_->pool.allocate(sizeof(std::uint32_t) * r);
   switch (group_size) {
 #define CASE(k, m) \
     case k: \
       state_->argmin_kernel[m].setArg(0, ::get_buffer(x)); \
       state_->argmin_kernel[m].setArg(1, s); \
       state_->argmin_kernel[m].setArg(2, n); \
-      state_->argmin_kernel[m].setArg(3, py); \
+      state_->argmin_kernel[m].setArg(3, ::get_buffer(py)); \
       state_->queue.enqueueNDRangeKernel( \
           state_->argmin_kernel[m], \
           cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
@@ -1095,8 +1118,7 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(
 #undef CASE
   }
   std::vector<std::uint32_t> ret(r);
-  state_->queue.enqueueReadBuffer(
-      py, CL_TRUE, 0, sizeof(std::uint32_t) * r, ret.data());
+  ::read_buffer(state_->queue, ::get_buffer(py), ret.data(), r);
   return ret;
 }
 
@@ -1108,11 +1130,7 @@ void OpenCL::reset_tensor_impl(float k, Tensor &x) {
 
 void OpenCL::reset_tensor_by_array_impl(const float values[], Tensor &x) {
   const std::uint32_t size = x.shape().size();
-  float *mapped_ptr = static_cast<float *>(
-      state_->queue.enqueueMapBuffer(
-        ::get_buffer(x), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0));
-  std::memcpy(mapped_ptr, values, sizeof(float) * size);
-  state_->queue.enqueueUnmapMemObject(::get_buffer(x), mapped_ptr);
+  ::write_buffer(state_->queue, ::get_buffer(x), values, size);
 }
 
 void OpenCL::copy_tensor_impl(const Tensor &x, Tensor &y) {
@@ -1204,9 +1222,11 @@ void OpenCL::pick_fw_impl(
   const std::uint32_t sy = y.shape().volume();
   const std::uint32_t g1 = ::calc_num_blocks(sy, state_->pick_fw_group_size);
   const std::uint32_t bs = y.shape().batch();
-  cl::Buffer ids_buf = ::make_readonly_buffer(state_->context, ids);
+  std::shared_ptr<void> ids_buf = state_->pool.allocate(
+      sizeof(std::uint32_t) * ids.size());
+  ::write_buffer(state_->queue, ::get_buffer(ids_buf), ids.data(), ids.size());
   state_->pick_fw_kernel.setArg(0, ::get_buffer(x));
-  state_->pick_fw_kernel.setArg(1, ids_buf);
+  state_->pick_fw_kernel.setArg(1, ::get_buffer(ids_buf));
   state_->pick_fw_kernel.setArg(2, wx);
   state_->pick_fw_kernel.setArg(3, wy);
   state_->pick_fw_kernel.setArg(4, sx);
@@ -1278,9 +1298,11 @@ void OpenCL::pick_bw_impl(
   const std::uint32_t sy = gy.shape().volume();
   const std::uint32_t g1 = ::calc_num_blocks(sy, state_->concat_fw_group_size);
   const std::uint32_t bs = gy.shape().batch();
-  cl::Buffer ids_buf = ::make_readonly_buffer(state_->context, ids);
+  std::shared_ptr<void> ids_buf = state_->pool.allocate(
+      sizeof(std::uint32_t) * ids.size());
+  ::write_buffer(state_->queue, ::get_buffer(ids_buf), ids.data(), ids.size());
   state_->pick_bw_kernel.setArg(0, ::get_buffer(gy));
-  state_->pick_bw_kernel.setArg(1, ids_buf);
+  state_->pick_bw_kernel.setArg(1, ::get_buffer(ids_buf));
   state_->pick_bw_kernel.setArg(2, wx);
   state_->pick_bw_kernel.setArg(3, wy);
   state_->pick_bw_kernel.setArg(4, sx);
