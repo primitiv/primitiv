@@ -8,6 +8,7 @@
 #include <primitiv/cuda_device.h>
 #include <primitiv/cuda_utils.h>
 #include <primitiv/error.h>
+#include <primitiv/memory_pool.h>
 
 using std::cerr;
 using std::endl;
@@ -532,9 +533,21 @@ namespace devices {
  */
 struct CUDAInternalState {
   CUDAInternalState(std::uint32_t dev_id, std::uint32_t rng_seed)
-    : cublas(dev_id) , curand(dev_id, rng_seed) {}
+    : cublas(dev_id)
+    , curand(dev_id, rng_seed)
+    , pool(
+        [dev_id](std::size_t size) -> void * {  // allocator
+          void *ptr;
+          CUDA_CALL(::cudaSetDevice(dev_id));
+          CUDA_CALL(::cudaMalloc(&ptr, size));
+          return ptr;
+        },
+        [](void *ptr) -> void {  // deleter
+          CUDA_CALL(::cudaFree(ptr));
+        }) {}
   ::CUBLASHandle cublas;
   ::CURANDHandle curand;
+  MemoryPool pool;
   ::cudaDeviceProp prop;
 };
 
@@ -628,22 +641,16 @@ void CUDA::initialize() {
   state_->prop = prop;
 
   // Initializes the device pointer for integer IDs.
-  ids_ptr_ = pool_.allocate(sizeof(std::uint32_t) * max_batch_);
-}
-
-CUDA::CUDA(std::uint32_t device_id)
-: dev_id_(device_id)
-, rng_seed_(std::random_device()())
-, pool_(device_id) {
-  initialize();
+  ids_ptr_ = state_->pool.allocate(sizeof(std::uint32_t) * max_batch_);
 }
 
 CUDA::CUDA(std::uint32_t device_id, std::uint32_t rng_seed)
 : dev_id_(device_id)
-, rng_seed_(rng_seed)
-, pool_(device_id) {
+, rng_seed_(rng_seed) {
   initialize();
 }
+
+CUDA::CUDA(std::uint32_t device_id) : CUDA(device_id, std::random_device()()) {}
 
 CUDA::~CUDA() {
   // Nothing to do for now.
@@ -677,7 +684,7 @@ void CUDA::dump_description() const {
 }
 
 std::shared_ptr<void> CUDA::new_handle(const Shape &shape) {
-  return pool_.allocate(sizeof(float) * shape.size());
+  return state_->pool.allocate(sizeof(float) * shape.size());
 }
 
 #define GRID_SIZE(x, threads) (((x) + (threads) - 1) / (threads))
@@ -700,7 +707,7 @@ std::vector<std::uint32_t> CUDA::argmax_impl(const Tensor &x, std::uint32_t dim)
   const std::uint32_t s = shape.lower_volume(dim);
   std::uint32_t block_size = dim1_x_;
   while (block_size >> 1 >= n) block_size >>= 1;
-  std::shared_ptr<void> py = pool_.allocate(sizeof(std::uint32_t) * r);
+  std::shared_ptr<void> py = state_->pool.allocate(sizeof(std::uint32_t) * r);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   switch (block_size) {
 #define CASE(k) \
@@ -732,7 +739,7 @@ std::vector<std::uint32_t> CUDA::argmin_impl(const Tensor &x, std::uint32_t dim)
   const std::uint32_t s = shape.lower_volume(dim);
   std::uint32_t block_size = dim1_x_;
   while (block_size >> 1 >= n) block_size >>= 1;
-  std::shared_ptr<void> py = pool_.allocate(sizeof(std::uint32_t) * r);
+  std::shared_ptr<void> py = state_->pool.allocate(sizeof(std::uint32_t) * r);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   switch (block_size) {
 #define CASE(k) \

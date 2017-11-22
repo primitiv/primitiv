@@ -3,7 +3,6 @@
 
 #include <map>
 #include <memory>
-#include <primitiv/cuda_memory_pool.h>
 #include <primitiv/device.h>
 
 namespace primitiv {
@@ -174,7 +173,6 @@ private:
   std::uint32_t dim2_x_;
   std::uint32_t dim2_y_;
   std::uint32_t max_batch_;
-  CUDAMemoryPool pool_;
   std::unique_ptr<CUDAInternalState> state_;
 
   // Reserved pointer to store temporary integers given from indexing functions

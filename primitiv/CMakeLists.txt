@@ -10,6 +10,7 @@ set(primitiv_base_HDRS
   graph.h
   initializer.h
   initializer_impl.h
+  memory_pool.h
   mixins.h
   model.h
   naive_device.h
@@ -31,6 +32,7 @@ set(primitiv_base_SRCS
   function_impl.cc
   graph.cc
   initializer_impl.cc
+  memory_pool.cc
   model.cc
   naive_device.cc
   node_ops.cc
@@ -68,11 +70,9 @@ if(PRIMITIV_USE_CUDA)
   set(primitiv_cuda_HDRS
     primitiv_cuda.h
     cuda_device.h
-    cuda_memory_pool.h
     cuda_utils.h)
   set(primitiv_cuda_SRCS
     cuda_device.cu
-    cuda_memory_pool.cu
     cuda_utils.cu)
   install(FILES ${primitiv_cuda_HDRS} DESTINATION include/primitiv)
 

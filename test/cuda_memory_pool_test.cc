@@ -1,7 +1,7 @@
 #include <config.h>
 
 #include <gtest/gtest.h>
-#include <primitiv/cuda_memory_pool.h>
+#include <primitiv/memory_pool.h>
 #include <primitiv/cuda_device.h>
 #include <primitiv/cuda_utils.h>
 #include <primitiv/error.h>
@@ -9,46 +9,53 @@
 
 namespace primitiv {
 
-class CUDAMemoryPoolTest : public testing::Test {};
+class MemoryPoolTest_CUDA : public testing::Test {
+protected:
+  static void *allocator(std::size_t size) {
+    void *ptr;
+    CUDA_CALL(::cudaSetDevice(0));
+    CUDA_CALL(::cudaMalloc(&ptr, size));
+    return ptr;
+  }
+
+  static void deleter(void *ptr) {
+    CUDA_CALL(::cudaFree(ptr));
+  }
+};
 
 // This test should be placed on the top.
-TEST_F(CUDAMemoryPoolTest, CheckNew) {
+TEST_F(MemoryPoolTest_CUDA, CheckNew) {
   {
-    CUDAMemoryPool pool(0);
+    MemoryPool pool(allocator, deleter);
     EXPECT_EQ(0, pool.id());
   }  // pool is destroyed at the end of scope.
   SUCCEED();
 }
 
-TEST_F(CUDAMemoryPoolTest, CheckInvalidNew) {
-  // We might not have 12345678 GPUs.
-  EXPECT_THROW(CUDAMemoryPool(12345678), Error);
-}
-
-TEST_F(CUDAMemoryPoolTest, CheckPoolIDs) {
-  CUDAMemoryPool pool0(0);
+TEST_F(MemoryPoolTest_CUDA, CheckPoolIDs) {
+  MemoryPool pool0(allocator, deleter);
   std::uint64_t base_id = pool0.id();
 
-  CUDAMemoryPool pool1(0);
+  MemoryPool pool1(allocator, deleter);
   EXPECT_EQ(base_id + 1, pool1.id());
-  CUDAMemoryPool(0);
-  CUDAMemoryPool(0);
-  CUDAMemoryPool pool2(0);
+  MemoryPool(allocator, deleter);
+  MemoryPool(allocator, deleter);
+  MemoryPool pool2(allocator, deleter);
   EXPECT_EQ(base_id + 4, pool2.id());
   {
-    CUDAMemoryPool pool3(0);
+    MemoryPool pool3(allocator, deleter);
     EXPECT_EQ(base_id + 5, pool3.id());
-    CUDAMemoryPool(0);
-    CUDAMemoryPool(0);
-    CUDAMemoryPool pool4(0);
+    MemoryPool(allocator, deleter);
+    MemoryPool(allocator, deleter);
+    MemoryPool pool4(allocator, deleter);
     EXPECT_EQ(base_id + 8, pool4.id());
   }
-  CUDAMemoryPool pool5(0);
+  MemoryPool pool5(allocator, deleter);
   EXPECT_EQ(base_id + 9, pool5.id());
 }
 
-TEST_F(CUDAMemoryPoolTest, CheckAllocate) {
-  CUDAMemoryPool pool(0);
+TEST_F(MemoryPoolTest_CUDA, CheckAllocate) {
+  MemoryPool pool(allocator, deleter);
   void *p1, *p2, *p3, *p4;
   {
     // Allocates new pointers.
@@ -85,8 +92,8 @@ TEST_F(CUDAMemoryPoolTest, CheckAllocate) {
   }
 }
 
-TEST_F(CUDAMemoryPoolTest, CheckInvalidAllocate) {
-  CUDAMemoryPool pool(0);
+TEST_F(MemoryPoolTest_CUDA, CheckInvalidAllocate) {
+  MemoryPool pool(allocator, deleter);
 
   // Available maximum size of the memory: 2^63 bytes.
   EXPECT_THROW(pool.allocate((1llu << 63) + 1), Error);
@@ -112,8 +119,8 @@ TEST_F(CUDAMemoryPoolTest, CheckInvalidAllocate) {
   EXPECT_THROW(pool.allocate(size), Error);  // Out of memory
 }
 
-TEST_F(CUDAMemoryPoolTest, CheckReleaseReservedBlocks) {
-  CUDAMemoryPool pool(0);
+TEST_F(MemoryPoolTest_CUDA, CheckReleaseReservedBlocks) {
+  MemoryPool pool(allocator, deleter);
 
   ::cudaDeviceProp prop;
   CUDA_CALL(::cudaGetDeviceProperties(&prop, 0));
