@@ -1572,7 +1572,7 @@ TEST_F(TensorOpsTest, CheckLogSoftmax) {
     for (std::uint32_t i = 0; i < 4; ++i) {
       const Tensor y = log_softmax(x, i);
       EXPECT_EQ(Shape({2, 2, 2}, 2), y.shape());
-      EXPECT_TRUE(vector_near_relative(y_data[i], y.to_vector(), 1e-5));
+      EXPECT_TRUE(vector_near_relative(y_data[i], y.to_vector(), 1e-4));
     }
   }
 }
@@ -1635,7 +1635,7 @@ TEST_F(TensorOpsTest, CheckSoftmax2) {
         const Tensor y = softmax(x, 0);
         EXPECT_EQ(Shape({n}), y.shape());
         EXPECT_TRUE(
-            vector_near_relative(vector<float>(n, 1./n), y.to_vector(), 1e-5));
+            vector_near_relative(vector<float>(n, 1./n), y.to_vector(), 1e-3));
       }
     }
   }
