@@ -4,6 +4,7 @@
 #include <iostream>
 #include <random>
 
+#define __CL_ENABLE_EXCEPTIONS
 #define CL_HPP_MINIMUM_OPENCL_VERSION 120
 #define CL_HPP_TARGET_OPENCL_VERSION 120
 #define CL_HPP_CL_1_2_DEFAULT_BUILD
@@ -42,7 +43,19 @@ template<typename T>
 void write_buffer(
     cl::CommandQueue &queue, cl::Buffer &buffer,
     const T data[], std::size_t size) {
-  queue.enqueueWriteBuffer(buffer, CL_TRUE, 0, sizeof(T) * size, data);
+  // NOTE(odashi):
+  // Some devices could not directly write their buffers.
+  // (I observed this issue using Intel GPUs.)
+  // For now, we disabled below code,
+  //
+  //queue.enqueueWriteBuffer(buffer, CL_TRUE, 0, sizeof(T) * size, data);
+  //
+  // and enables copying through memory mapping.
+  T *mapped_ptr = static_cast<T *>(
+      queue.enqueueMapBuffer(
+        buffer, CL_TRUE, CL_MAP_WRITE, 0, sizeof(T) * size, 0));
+  std::memcpy(mapped_ptr, data, sizeof(T) * size);
+  queue.enqueueUnmapMemObject(buffer, mapped_ptr);
 }
 
 /**
@@ -675,9 +688,21 @@ private:
   }
 
   /**
+   * Helper to find an integer x that satisfy:
+   * 1. x == 2^n
+   * 2. x <= size
+   */
+  std::uint32_t calc_dim1_size(std::uint32_t size) {
+    std::uint32_t ret = 1;
+    while (ret << 1 <= size) ret <<= 1;
+    return ret;
+  }
+
+  /**
    * Helper to find two sizes (x, y) that satisfy:
-   * 1. x * y <= size
-   * 2. x / y == 1 or 2
+   * 1.x == 2^n, y == 2^m
+   * 2. x * y <= size
+   * 3. x / y == 1 or 2
    */
   void calc_dim2_sizes(std::uint32_t size, std::uint32_t &x, std::uint32_t &y) {
     x = y = 1;
@@ -734,6 +759,8 @@ public:
 
       CONFIGURE_KERNEL_LIST(argmax);
       CONFIGURE_KERNEL_LIST(argmin);
+      argmax_group_size = calc_dim1_size(argmax_group_size);
+      argmin_group_size = calc_dim1_size(argmin_group_size);
 
       CONFIGURE_KERNEL(set_identity);
 
@@ -814,6 +841,8 @@ public:
 
       CONFIGURE_KERNEL_LIST(sum_fw);
       CONFIGURE_KERNEL_LIST(logsumexp_fw);
+      sum_fw_group_size = calc_dim1_size(sum_fw_group_size);
+      logsumexp_fw_group_size = calc_dim1_size(logsumexp_fw_group_size);
 
       CONFIGURE_KERNEL(broadcast_fw);
       CONFIGURE_KERNEL(batch_sum_fw);
