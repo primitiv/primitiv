@@ -42,7 +42,7 @@ REF_TEST_FILE = "data/test.ja"
 
 class AttentionalEncoderDecoder(Model):
     """Encoder-decoder translation model with dot-attention."""
-    
+
     def __init__(self):
         self.dropout_rate = DROPOUT_RATE
         self.psrc_lookup = Parameter()
