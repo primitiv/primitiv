@@ -70,10 +70,10 @@ cdef class _Model:
             try:
                 return _Model.get_wrapper(&self.wrapped.get_submodel(names))
             except:
-                # NOTE(vbkaisetsu): DO NOT throw an exception here because
-                # error massages generated at above lines will also be shown.
+                # NOTE(vbkaisetsu): DO NOT throw an exception here, because
+                # error massages generated at above lines should not be shown.
                 pass
-        raise TypeError("'name' is not a name of neither parameter not submodel")
+        raise TypeError("'name' is not a name of neither parameter nor submodel")
 
     def get_all_parameters(self):
         cdef pair[vector[string], CppParameter*] p
