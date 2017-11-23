@@ -40,8 +40,8 @@ TEST_F(CUDADeviceTest, CheckDeviceType) {
 }
 
 TEST_F(CUDADeviceTest, CheckInvalidInit) {
-  // We probably do not have millions of GPUs in one host.
-  EXPECT_THROW(devices::CUDA dev(12345678), Error);
+  EXPECT_THROW(devices::CUDA(devices::CUDA::num_devices()), Error);
+  EXPECT_THROW(devices::CUDA(12345678), Error);
 }
 
 TEST_F(CUDADeviceTest, CheckNewDelete) {

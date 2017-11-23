@@ -1,10 +1,10 @@
 #include <config.h>
 
 #include <chrono>
-#include <stdexcept>
 #include <thread>
 #include <vector>
 #include <gtest/gtest.h>
+#include <primitiv/error.h>
 #include <primitiv/naive_device.h>
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
