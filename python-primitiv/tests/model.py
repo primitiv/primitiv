@@ -114,14 +114,15 @@ class ModelTest(unittest.TestCase):
         model1.add_submodel("m", model2)
         param = Parameter()
         model1.add_parameter("p", param)
+        with self.assertRaises(TypeError) as e:
+            model1["notfound"]
+        self.assertEqual(str(e.exception), "'name' is not a name of neither parameter nor submodel")
         with self.assertRaises(TypeError):
             del model1["p"]
         with self.assertRaises(TypeError):
             del model1["m"]
         with self.assertRaises(TypeError):
             del model1[0]
-        with self.assertRaises(TypeError):
-            model1["invalid"]
         with self.assertRaises(TypeError):
             model1[(0, 1)]
         with self.assertRaises(TypeError):
