@@ -11,7 +11,7 @@ docker exec travis-ci bash -c "dnf install -y gcc-c++ cmake gtest-devel python3-
 docker exec travis-ci bash -c "pip3 install cython"
 
 # install OpenCL environment
-docker exec travis-ci bash -c "dnf install -y opencl-headers git hwloc-devel libtool-ltdl-devel ocl-icd-devel ocl-icd clang llvm-devel clang-devel zlib-devel blas-devel boost-devel patch"
+docker exec travis-ci bash -c "dnf install -y opencl-headers git hwloc-devel libtool-ltdl-devel ocl-icd-devel ocl-icd clang llvm-devel clang-devel zlib-devel blas-devel boost-devel patch --setopt=install_weak_deps=False"
 docker exec travis-ci bash -c "git clone https://github.com/clMathLibraries/clBLAS.git"
 docker exec travis-ci bash -c "cd ./clBLAS/src && cmake . -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TEST=OFF -DBUILD_KTEST=OFF"
 docker exec travis-ci bash -c "cd ./clBLAS/src && make && make install"
