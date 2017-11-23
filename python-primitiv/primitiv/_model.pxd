@@ -22,19 +22,11 @@ cdef extern from "primitiv/model.h":
         cppmap[vector[string], CppParameter *] get_trainable_parameters() except +
 
 
-cdef class _ModelParameter:
-    cdef object model_ref
-
-
-cdef class _ModelSubModel:
-    cdef object model_ref
-
-
 cdef class _Model:
     cdef CppModel *wrapped
     cdef object __weakref__
-    cdef readonly _ModelParameter params
-    cdef readonly _ModelSubModel submodels
+    cdef object added_parameters
+    cdef object added_submodels
     @staticmethod
     cdef void register_wrapper(CppModel *ptr, _Model wrapper)
     @staticmethod

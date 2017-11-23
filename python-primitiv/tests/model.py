@@ -1,8 +1,6 @@
 from primitiv import Parameter, Device, Model, Shape
 from primitiv import devices as D
 from primitiv import initializers as I
-from primitiv._model import _ModelParameter
-from primitiv._model import _ModelSubModel
 from primitiv import tensor_operators as tF
 
 import numpy as np
@@ -79,7 +77,8 @@ class ModelTest(unittest.TestCase):
         model = Model()
         param = Parameter()
         model.add_parameter("p", param)
-        self.assertIs(model.params["p"], param)
+        self.assertIs(model["p"], param)
+        self.assertIs(model[("p",)], param)
 
     def test_model_parameter_deep(self):
         model1 = Model()
@@ -89,13 +88,14 @@ class ModelTest(unittest.TestCase):
         model2.add_submodel("m3", model3)
         param = Parameter()
         model3.add_parameter("p", param)
-        self.assertIs(model1.params["m2", "m3", "p"], param)
+        self.assertIs(model1["m2", "m3", "p"], param)
+        self.assertIs(model1["m2"]["m3"]["p"], param)
 
     def test_model_submodel(self):
         model1 = Model()
         model2 = Model()
         model1.add_submodel("m", model2)
-        self.assertIs(model1.submodels["m"], model2)
+        self.assertIs(model1["m"], model2)
 
     def test_model_submodel_deep(self):
         model1 = Model()
@@ -105,7 +105,8 @@ class ModelTest(unittest.TestCase):
         model2.add_submodel("m3", model3)
         model4 = Model()
         model3.add_submodel("m4", model4)
-        self.assertIs(model1.submodels["m2", "m3", "m4"], model4)
+        self.assertIs(model1["m2", "m3", "m4"], model4)
+        self.assertIs(model1["m2"]["m3"]["m4"], model4)
 
     def test_model_invalid_operation(self):
         model1 = Model()
@@ -113,18 +114,20 @@ class ModelTest(unittest.TestCase):
         model1.add_submodel("m", model2)
         param = Parameter()
         model1.add_parameter("p", param)
-        with self.assertRaises(AttributeError):
-            model1.params = _ModelParameter(model1)
-        with self.assertRaises(AttributeError):
-            model1.submodels = _ModelSubModel(model1)
-        with self.assertRaises(AttributeError):
-            del model1.params
-        with self.assertRaises(AttributeError):
-            del model1.submodels
+        with self.assertRaises(TypeError) as e:
+            model1["notfound"]
+        self.assertEqual(str(e.exception), "'name' is not a name of neither parameter nor submodel")
         with self.assertRaises(TypeError):
-            del model1.params["p"]
+            del model1["p"]
         with self.assertRaises(TypeError):
-            del model1.submodels["m"]
+            del model1["m"]
+        with self.assertRaises(TypeError):
+            del model1[0]
+        with self.assertRaises(TypeError):
+            model1[(0, 1)]
+        with self.assertRaises(TypeError):
+            model1[[0, 1]]
+
 
     def test_model_get_all_parameters(self):
         submodel = TestModel()
@@ -144,3 +147,31 @@ class ModelTest(unittest.TestCase):
         self.assertIs(params[("p2",)], parentmodel.p2)
         self.assertIs(params[("sub", "sp1")], parentmodel.sub.sp1)
         self.assertIs(params[("sub", "sp2")], parentmodel.sub.sp2)
+
+    def test_model_add_all_parameters(self):
+        model = TestModel()
+        model.p1 = Parameter()
+        model.add_parameter("p1_manual", model.p1)
+        model.p2 = Parameter()
+        model.p3 = Parameter()
+        model.add_all_parameters()
+        self.assertIs(model["p1_manual"], model.p1)
+        self.assertIs(model["p2"], model.p2)
+        self.assertIs(model["p3"], model.p3)
+        model.p4 = Parameter()
+        model.add_all_parameters()
+        self.assertIs(model["p4"], model.p4)
+
+    def test_model_add_all_submodels(self):
+        model = TestModel()
+        model.m1 = TestModel()
+        model.add_submodel("m1_manual", model.m1)
+        model.m2 = TestModel()
+        model.m3 = TestModel()
+        model.add_all_submodels()
+        self.assertIs(model["m1_manual"], model.m1)
+        self.assertIs(model["m2"], model.m2)
+        self.assertIs(model["m3"], model.m3)
+        model.m4 = TestModel()
+        model.add_all_submodels()
+        self.assertIs(model["m4"], model.m4)
