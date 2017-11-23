@@ -44,84 +44,86 @@ class AttentionalEncoderDecoder(Model):
     """Encoder-decoder translation model with dot-attention."""
     
     def __init__(self):
-        self._dropout_rate = DROPOUT_RATE
-        self._psrc_lookup = Parameter(); self.add_parameter("src_lookup", self._psrc_lookup)
-        self._ptrg_lookup = Parameter(); self.add_parameter("trg_lookup", self._ptrg_lookup)
-        self._pwhj = Parameter(); self.add_parameter("whj", self._pwhj)
-        self._pbj = Parameter(); self.add_parameter("bj", self._pbj)
-        self._pwjy = Parameter(); self.add_parameter("wjy", self._pwjy)
-        self._pby = Parameter(); self.add_parameter("by", self._pby)
-        self._src_fw_lstm = LSTM(); self.add_submodel("src_fw_lstm", self._src_fw_lstm)
-        self._src_bw_lstm = LSTM(); self.add_submodel("src_bw_lstm", self._src_bw_lstm)
-        self._trg_lstm = LSTM(); self.add_submodel("trg_lstm", self._trg_lstm)
+        self.dropout_rate = DROPOUT_RATE
+        self.psrc_lookup = Parameter()
+        self.ptrg_lookup = Parameter()
+        self.pwhj = Parameter()
+        self.pbj = Parameter()
+        self.pwjy = Parameter()
+        self.pby = Parameter()
+        self.src_fw_lstm = LSTM()
+        self.src_bw_lstm = LSTM()
+        self.trg_lstm = LSTM()
+        self.add_all_parameters()
+        self.add_all_submodels()
 
     def init(self, src_vocab_size, trg_vocab_size, embed_size, hidden_size):
         """Creates a new AttentionalEncoderDecoder object."""
-        self._psrc_lookup.init([embed_size, src_vocab_size], I.XavierUniform())
-        self._ptrg_lookup.init([embed_size, trg_vocab_size], I.XavierUniform())
-        self._pwhj.init([embed_size, 2 * hidden_size], I.XavierUniform())
-        self._pbj.init([embed_size], I.Constant(0))
-        self._pwjy.init([trg_vocab_size, embed_size], I.XavierUniform())
-        self._pby.init([trg_vocab_size], I.Constant(0))
-        self._src_fw_lstm.init(embed_size, hidden_size)
-        self._src_bw_lstm.init(embed_size, hidden_size)
-        self._trg_lstm.init(2 * embed_size, hidden_size)
+        self.psrc_lookup.init([embed_size, src_vocab_size], I.XavierUniform())
+        self.ptrg_lookup.init([embed_size, trg_vocab_size], I.XavierUniform())
+        self.pwhj.init([embed_size, 2 * hidden_size], I.XavierUniform())
+        self.pbj.init([embed_size], I.Constant(0))
+        self.pwjy.init([trg_vocab_size, embed_size], I.XavierUniform())
+        self.pby.init([trg_vocab_size], I.Constant(0))
+        self.src_fw_lstm.init(embed_size, hidden_size)
+        self.src_bw_lstm.init(embed_size, hidden_size)
+        self.trg_lstm.init(2 * embed_size, hidden_size)
 
     def encode(self, src_batch, train):
         """Encodes source sentences and prepares internal states."""
         # Embedding lookup.
-        src_lookup = F.parameter(self._psrc_lookup)
+        src_lookup = F.parameter(self.psrc_lookup)
         e_list = []
         for x in src_batch:
             e = F.pick(src_lookup, x, 1)
-            e = F.dropout(e, self._dropout_rate, train)
+            e = F.dropout(e, self.dropout_rate, train)
             e_list.append(e)
 
         # Forward encoding
-        self._src_fw_lstm.restart()
+        self.src_fw_lstm.restart()
         f_list = []
         for e in e_list:
-            f = self._src_fw_lstm.forward(e)
-            f = F.dropout(f, self._dropout_rate, train)
+            f = self.src_fw_lstm.forward(e)
+            f = F.dropout(f, self.dropout_rate, train)
             f_list.append(f)
 
         # Backward encoding
-        self._src_bw_lstm.restart()
+        self.src_bw_lstm.restart()
         b_list = []
         for e in reversed(e_list):
-            b = self._src_bw_lstm.forward(e)
-            b = F.dropout(b, self._dropout_rate, train)
+            b = self.src_bw_lstm.forward(e)
+            b = F.dropout(b, self.dropout_rate, train)
             b_list.append(b)
 
         b_list.reverse()
 
         # Concatenates RNN states.
         fb_list = [f_list[i] + b_list[i] for i in range(len(src_batch))]
-        self._concat_fb = F.concat(fb_list, 1)
-        self._t_concat_fb = F.transpose(self._concat_fb)
+        self.concat_fb = F.concat(fb_list, 1)
+        self.t_concat_fb = F.transpose(self.concat_fb)
 
         # Initializes decode states.
-        embed_size = self._psrc_lookup.shape()[0]
-        self._trg_lookup = F.parameter(self._ptrg_lookup)
-        self._whj = F.parameter(self._pwhj)
-        self._bj = F.parameter(self._pbj)
-        self._wjy = F.parameter(self._pwjy)
-        self._by = F.parameter(self._pby)
-        self._feed = F.zeros([embed_size])
-        self._trg_lstm.restart(
-            self._src_fw_lstm.get_c() + self._src_bw_lstm.get_c(),
-            self._src_fw_lstm.get_h() + self._src_bw_lstm.get_h())
+        embed_size = self.psrc_lookup.shape()[0]
+        self.trg_lookup = F.parameter(self.ptrg_lookup)
+        self.whj = F.parameter(self.pwhj)
+        self.bj = F.parameter(self.pbj)
+        self.wjy = F.parameter(self.pwjy)
+        self.by = F.parameter(self.pby)
+        self.feed = F.zeros([embed_size])
+        self.trg_lstm.restart(
+            self.src_fw_lstm.get_c() + self.src_bw_lstm.get_c(),
+            self.src_fw_lstm.get_h() + self.src_bw_lstm.get_h())
 
     def decode_step(self, trg_words, train):
         """One step decoding."""
-        e = F.pick(self._trg_lookup, trg_words, 1)
-        e = F.dropout(e, self._dropout_rate, train)
-        h = self._trg_lstm.forward(F.concat([e, self._feed], 0))
-        h = F.dropout(h, self._dropout_rate, train)
-        atten_probs = F.softmax(self._t_concat_fb @ h, 0)
-        c = self._concat_fb @ atten_probs
-        self._feed = F.tanh(self._whj @ F.concat([h, c], 0) + self._bj)
-        return self._wjy @ self._feed + self._by
+        e = F.pick(self.trg_lookup, trg_words, 1)
+        e = F.dropout(e, self.dropout_rate, train)
+        h = self.trg_lstm.forward(F.concat([e, self.feed], 0))
+        h = F.dropout(h, self.dropout_rate, train)
+        atten_probs = F.softmax(self.t_concat_fb @ h, 0)
+        c = self.concat_fb @ atten_probs
+        self.feed = F.tanh(self.whj @ F.concat([h, c], 0) + self.bj)
+        return self.wjy @ self.feed + self.by
 
     def loss(self, trg_batch, train):
         """Calculates loss values."""
