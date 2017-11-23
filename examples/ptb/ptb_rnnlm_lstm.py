@@ -122,7 +122,7 @@ class RNNLM(Model):
 def main():
     # Loads vocab.
     vocab = make_vocab("data/ptb.train.txt")
-    print("#vocab:", len(vocab))  # maybe 10001
+    print("#vocab:", len(vocab))  # maybe 10000
     eos_id = vocab["<s>"]
 
     # Loads all corpus.
