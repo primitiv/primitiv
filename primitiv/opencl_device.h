@@ -1,32 +1,76 @@
-#ifndef PRIMITIV_NAIVE_DEVICE_H_
-#define PRIMITIV_NAIVE_DEVICE_H_
+#ifndef PRIMITIV_OPENCL_DEVICE_H_
+#define PRIMITIV_OPENCL_DEVICE_H_
 
+#include <memory>
 #include <primitiv/device.h>
-#include <primitiv/random.h>
 
 namespace primitiv {
 namespace devices {
 
+struct OpenCLInternalState;
+
 /**
- * Device class for the naive function implementations on CPU.
+ * Device class for OpenCL.
  */
-class Naive : public Device {
+class OpenCL : public Device {
+  OpenCL() = delete;
+
 public:
   /**
-   * Creates a Naive object.
+   * Retrieves the number of active platforms.
+   * @return Number of active platforms.
    */
-  Naive() = default;
+  static std::uint32_t num_platforms();
 
   /**
-   * Creates a Naive object.
-   * @param seed The seed value of internal random number generator.
+   * Retrieves the number of active devices on the specified platform.
+   * @param platform_id Platform ID.
+   *                    This value should be between 0 to num_platforms() - 1.
+   * @return Number of active devices.
    */
-  explicit Naive(std::uint32_t seed) : randomizer_(seed) {}
+  static std::uint32_t num_devices(std::uint32_t platform_id);
 
-  ~Naive() override = default;
+  /**
+   * Checks whether the device corresponding to the specified IDs is supported.
+   * @param platform_id Platform ID to check.
+   * @param device_id Device ID to check.
+   * @throw primitiv::Error This class does not support the specified device.
+   */
+  static void assert_support(
+      std::uint32_t platform_id, std::uint32_t device_id);
+
+  /**
+   * Checks whether the device corresponding to the specified ID is supported.
+   * @param platform_id Platform ID to check.
+   * @param device_id Device ID to check.
+   * @return true if this class supports the specified device, false otherwise.
+   */
+  static bool check_support(
+      std::uint32_t platform_id, std::uint32_t device_id) {
+    try { assert_support(platform_id, device_id); }
+    catch (...) { return false; }
+    return true;
+  }
+
+  /**
+   * Creates a new OpenCL device.
+   * @param platform_id Platform ID.
+   * @param device_id Device ID on the selected platform.
+   */
+  OpenCL(std::uint32_t platform_id, std::uint32_t device_id);
+
+  /**
+   * Creates a new OpenCL device.
+   * @param platform_id Platform ID.
+   * @param device_id Device ID on the selected platform.
+   * @param rng_seed Seed value of the random number generator.
+   */
+  OpenCL(std::uint32_t platform_id, std::uint32_t device_id, std::uint32_t rng_seed);
+
+  ~OpenCL() override;
 
   void dump_description() const override;
-  Device::DeviceType type() const override { return Device::DeviceType::CPU; }
+  Device::DeviceType type() const override { return Device::DeviceType::OPENCL; }
 
 private:
   std::shared_ptr<void> new_handle(const Shape &shape) override;
@@ -134,11 +178,19 @@ private:
   void inplace_add_impl(const Tensor &x, Tensor &y) override;
   void inplace_subtract_impl(const Tensor &x, Tensor &y) override;
 
+  /**
+   * Internal method to initialize the object.
+   */
+  void initialize();
+
 private:
-  DefaultRandomizer randomizer_;
+  std::uint32_t pf_id_;
+  std::uint32_t dev_id_;
+  std::uint32_t rng_seed_;
+  std::unique_ptr<OpenCLInternalState> state_;
 };
 
 }  // namespace devices
 }  // namespace primitiv
 
-#endif  // PRIMITIV_NAIVE_DEVICE_H_
+#endif  // PRIMITIV_CUDA_DEVICE_H_

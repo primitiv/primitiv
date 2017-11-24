@@ -12,10 +12,6 @@
 #include <primitiv/tensor.h>
 #include <test_utils.h>
 
-#ifdef PRIMITIV_USE_CUDA
-#include <primitiv/cuda_device.h>
-#endif  // PRIMITIV_USE_CUDA
-
 using std::vector;
 using test_utils::vector_match;
 using test_utils::vector_near;
@@ -25,26 +21,20 @@ namespace operators {
 
 class TensorOpsTest : public testing::Test {
 protected:
-  vector<Device *> devices;
+  static vector<Device *> devices;
 
-  void SetUp() override {
-    devices.emplace_back(new devices::Naive());
-    devices.emplace_back(new devices::Naive()); // other device on the same hardware
-#ifdef PRIMITIV_USE_CUDA
-    devices.emplace_back(new devices::CUDA(0));
-    devices.emplace_back(new devices::CUDA(0)); // other device on the same hardware
-    if (devices::CUDA::num_devices() > 2) {
-      devices.emplace_back(new devices::CUDA(1));
-    }
-#endif  // PRIMITIV_USE_CUDA
+  static void SetUpTestCase() {
+    test_utils::add_available_devices(devices);
   }
 
-  void TearDown() override {
+  static void TearDownTestCase() {
     for (Device *dev : devices) {
       delete dev;
     }
   }
 };
+
+vector<Device *> TensorOpsTest::devices;
 
 TEST_F(TensorOpsTest, CheckInputByVector) {
   vector<float> data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
@@ -1056,6 +1046,36 @@ TEST_F(TensorOpsTest, CheckMatMulBatchBroadcastN1) {
     const Tensor y = matmul(a, b);
     EXPECT_EQ(Shape({2, 2}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+  }
+}
+
+TEST_F(TensorOpsTest, CheckMatMulLarge) {
+  const std::uint32_t N = 123;
+  vector<float> a_data(N * N);
+  vector<float> b_data(N * N);
+  vector<float> y1_data(N * N);
+  vector<float> y2_data(N * N);
+  std::uint32_t k = 0;
+  for (std::uint32_t i = 0; i < N; ++i) {
+    k += i * i;
+  }
+  for (std::uint32_t i = 0; i < N; ++i) {
+    for (std::uint32_t j = 0; j < N; ++j) {
+      a_data[i + j * N] = i;
+      b_data[i + j * N] = j;
+      y1_data[i + j * N] = N * i * j;
+      y2_data[i + j * N] = k;
+    }
+  }
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector(Shape({N, N}), a_data);
+    const Tensor b = dev->new_tensor_by_vector({N, N}, b_data);
+    const Tensor y1 = matmul(a, b);
+    const Tensor y2 = matmul(b, a);
+    EXPECT_EQ(Shape({N, N}), y1.shape());
+    EXPECT_EQ(Shape({N, N}), y2.shape());
+    EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+    EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
   }
 }
 

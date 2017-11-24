@@ -49,7 +49,7 @@ void write_tensor(const primitiv::Tensor &src, primitiv::msgpack::Writer &writer
   writer << data;
 }
 
-void check_shape(
+void assert_shape(
     const primitiv::Tensor &value,
     const primitiv::Tensor &grad) {
   const primitiv::Shape &sv = value.shape();
@@ -78,7 +78,7 @@ Parameter::Parameter(
 , device_(&device)
 , value_(operators::input<Tensor>(shape, value, device))
 , grad_(operators::zeros<Tensor>(shape, device)) {
-  ::check_shape(value_, grad_);
+  ::assert_shape(value_, grad_);
 }
 
 Parameter::Parameter(
@@ -89,7 +89,7 @@ Parameter::Parameter(
 , device_(&device)
 , value_(operators::zeros<Tensor>(shape, device))
 , grad_(operators::zeros<Tensor>(shape, device)) {
-  ::check_shape(value_, grad_);
+  ::assert_shape(value_, grad_);
   initializer.apply(value_);
 }
 
@@ -99,7 +99,7 @@ void Parameter::init(
     Device &device) {
   Tensor value_temp = operators::input<Tensor>(shape, value, device);
   Tensor grad_temp = operators::zeros<Tensor>(shape, device);
-  ::check_shape(value_temp, grad_temp);
+  ::assert_shape(value_temp, grad_temp);
 
   // Initialization succeeded. Move all objects to `this`.
   shape_ = shape;
@@ -115,7 +115,7 @@ void Parameter::init(
     Device &device) {
   Tensor value_temp = operators::zeros<Tensor>(shape, device);
   Tensor grad_temp = operators::zeros<Tensor>(shape, device);
-  ::check_shape(value_temp, grad_temp);
+  ::assert_shape(value_temp, grad_temp);
   initializer.apply(value_temp);
 
   // Initialization succeeded. Move all objects to `this`.
@@ -145,7 +145,7 @@ void Parameter::load_inner(
 
   const Shape &shape_temp = value_temp.shape();
   Tensor grad_temp = operators::zeros<Tensor>(shape_temp, device);
-  ::check_shape(value_temp, grad_temp);
+  ::assert_shape(value_temp, grad_temp);
 
   // Loading succeeded. Move all data to `this`.
   shape_ = shape_temp;
@@ -182,11 +182,11 @@ void Parameter::load(const string &path, bool with_stats, Device &device) {
 
   std::uint32_t major, minor;
   reader >> major >> minor;
-  FileFormat::check_version(major, minor);
+  FileFormat::assert_version(major, minor);
 
   std::uint32_t datatype;
   reader >> datatype;
-  FileFormat::check_datatype(FileFormat::DataType::PARAMETER, datatype);
+  FileFormat::assert_datatype(FileFormat::DataType::PARAMETER, datatype);
 
   load_inner(reader, with_stats, device);
 }

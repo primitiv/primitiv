@@ -15,7 +15,7 @@ namespace primitiv {
 namespace devices {
 
 void Naive::dump_description() const {
-  cerr << "Device " << this << ':' << endl;
+  cerr << "Device " << this << endl;
   cerr << "  Type: Naive" << endl;
 }
 
@@ -103,7 +103,7 @@ void Naive::reset_tensor_by_array_impl(const float values[], Tensor &x) {
 
 void Naive::copy_tensor_impl(const Tensor &x, Tensor &y) {
   switch (x.device().type()) {
-    case Device::DEVICE_TYPE_CPU:
+    case Device::DeviceType::CPU:
       reset_tensor_by_array(CDATA(x), y);
       break;
     default:
@@ -119,34 +119,19 @@ void Naive::identity_impl(Tensor &y) {
 }
 
 void Naive::random_bernoulli_impl(float p, Tensor &y) {
-  std::bernoulli_distribution dist(p);
-  float *dest = DATA(y);
-  const std::uint32_t size = y.shape().size();
-  REPEAT_OP(i, size, dest[i] = dist(rng_));
+  randomizer_.fill_bernoulli(p, y.shape().size(), DATA(y));
 }
 
 void Naive::random_uniform_impl(float lower, float upper, Tensor &y) {
-  std::uniform_real_distribution<float> dist(lower, upper);
-  float *dest = DATA(y);
-  const std::uint32_t size = y.shape().size();
-  for (std::uint32_t i = 0; i < size; ++i) {
-    const float x = dist(rng_);
-    dest[i] = x == lower ? upper : x;
-  }
+  randomizer_.fill_uniform(lower, upper, y.shape().size(), DATA(y));
 }
 
 void Naive::random_normal_impl(float mean, float sd, Tensor &y) {
-  std::normal_distribution<float> dist(mean, sd);
-  float *dest = DATA(y);
-  const std::uint32_t size = y.shape().size();
-  REPEAT_OP(i, size, dest[i] = dist(rng_));
+  randomizer_.fill_normal(mean, sd, y.shape().size(), DATA(y));
 }
 
 void Naive::random_log_normal_impl(float mean, float sd, Tensor &y) {
-  std::lognormal_distribution<float> dist(mean, sd);
-  float *dest = DATA(y);
-  const std::uint32_t size = y.shape().size();
-  REPEAT_OP(i, size, dest[i] = dist(rng_));
+  randomizer_.fill_log_normal(mean, sd, y.shape().size(), DATA(y));
 }
 
 void Naive::pick_fw_impl(
@@ -523,14 +508,29 @@ void Naive::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   float *dest = DATA(y);
   const float *src_a = CDATA(a);
   const float *src_b = CDATA(b);
+
   for (std::uint32_t batch = 0; batch < bs; ++batch) {
-    for (std::uint32_t i = 0; i < d1; ++i) {
-      for (std::uint32_t ky = 0, kb = 0; ky < dest_shift; ky += d1, kb += d2) {
-        float tmp = 0;
-        for (std::uint32_t ja = 0, jb = 0; jb < d2; ja += d1, ++jb) {
-          tmp += src_a[i + ja] * src_b[jb + kb];
+    for (std::uint32_t n = 0; n < dest_shift; ++n) {
+      dest[n] = 0;
+    }
+    for (std::uint32_t k = 0; k < d3; k += 8) {
+      const std::uint32_t ek = std::min(k + 8, d3);
+      for (std::uint32_t i = 0; i < d1; i += 8) {
+        const std::uint32_t ei = std::min(i + 8, d1);
+        for (std::uint32_t j = 0; j < d2; j += 8) {
+          const std::uint32_t ej = std::min(j + 8, d2);
+          for (std::uint32_t kk = k; kk < ek; ++kk) {
+            const std::uint32_t kk_d1 = kk * d1;
+            const std::uint32_t kk_d2 = kk * d2;
+            for (std::uint32_t ii = i; ii < ei; ++ii) {
+              float tmp = 0;
+              for (std::uint32_t jj = j; jj < ej; ++jj) {
+                tmp += src_a[ii + jj * d1] * src_b[jj + kk_d2];
+              }
+              dest[ii + kk_d1] += tmp;
+            }
+          }
         }
-        dest[i + ky] = tmp;
       }
     }
     dest += dest_shift;
