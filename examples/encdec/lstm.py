@@ -18,41 +18,42 @@ class LSTM(Model):
     """LSTM cell."""
 
     def __init__(self):
-        self._pwxh = Parameter(); self.add_parameter("wxh", self._pwxh)
-        self._pwhh = Parameter(); self.add_parameter("whh", self._pwhh)
-        self._pbh = Parameter(); self.add_parameter("bh", self._pbh)
+        self.pwxh = Parameter()
+        self.pwhh = Parameter()
+        self.pbh = Parameter()
+        self.add_all_parameters()
 
     def init(self, in_size, out_size):
         """Creates a new LSTM."""
-        self._pwxh.init([4 * out_size, in_size], I.XavierUniform())
-        self._pwhh.init([4 * out_size, out_size], I.XavierUniform())
-        self._pbh.init([4 * out_size], I.Constant(0))
+        self.pwxh.init([4 * out_size, in_size], I.XavierUniform())
+        self.pwhh.init([4 * out_size, out_size], I.XavierUniform())
+        self.pbh.init([4 * out_size], I.Constant(0))
 
     def restart(self, init_c = Node(), init_h = Node()):
         """Initializes internal states."""
-        out_size = self._pwhh.shape()[1]
-        self._wxh = F.parameter(self._pwxh)
-        self._whh = F.parameter(self._pwhh)
-        self._bh = F.parameter(self._pbh)
-        self._c = init_c if init_c.valid() else F.zeros([out_size])
-        self._h = init_h if init_h.valid() else F.zeros([out_size])
+        out_size = self.pwhh.shape()[1]
+        self.wxh = F.parameter(self.pwxh)
+        self.whh = F.parameter(self.pwhh)
+        self.bh = F.parameter(self.pbh)
+        self.c = init_c if init_c.valid() else F.zeros([out_size])
+        self.h = init_h if init_h.valid() else F.zeros([out_size])
 
     def forward(self, x):
         """One step forwarding."""
-        out_size = self._pwhh.shape()[1]
-        u = self._wxh @ x + self._whh @ self._h + self._bh
+        out_size = self.pwhh.shape()[1]
+        u = self.wxh @ x + self.whh @ self.h + self.bh
         i = F.sigmoid(F.slice(u, 0, 0, out_size))
         f = F.sigmoid(F.slice(u, 0, out_size, 2 * out_size))
         o = F.sigmoid(F.slice(u, 0, 2 * out_size, 3 * out_size))
         j = F.tanh(F.slice(u, 0, 3 * out_size, 4 * out_size))
-        self._c = i * j + f * self._c
-        self._h = o * F.tanh(self._c)
-        return self._h
+        self.c = i * j + f * self.c
+        self.h = o * F.tanh(self.c)
+        return self.h
 
     def get_c(self):
         """Retrieves current internal cell state."""
-        return self._c
+        return self.c
 
     def get_h(self):
         """Retrieves current hidden value."""
-        return self._h
+        return self.h
