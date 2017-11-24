@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_NAIVE_DEVICE_H_
 #define PRIMITIV_NAIVE_DEVICE_H_
 
+#include <mutex>
 #include <primitiv/device.h>
 #include <primitiv/random.h>
 
@@ -136,6 +137,7 @@ private:
 
 private:
   DefaultRandomizer randomizer_;
+  std::mutex mutex_;
 };
 
 }  // namespace devices

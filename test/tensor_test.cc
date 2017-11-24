@@ -4,6 +4,7 @@
 #include <iterator>
 #include <numeric>
 #include <random>
+#include <thread>
 #include <utility>
 #include <vector>
 #include <gtest/gtest.h>
@@ -439,6 +440,40 @@ TEST_F(TensorTest, CheckInplaceMultiplyConst) {
   }
 }
 
+TEST_F(TensorTest, CheckInplaceMultiplyConstRepeat) {
+  for (Device *dev : devices) {
+    Tensor a = dev->new_tensor_by_constant(Shape {16} , 1);
+
+    for (std::uint32_t i = 0; i < 1024; ++i) {
+      a *= -2;
+      a *= -.5;
+    }
+
+    EXPECT_TRUE(vector_match(vector<float>(16, 1), a.to_vector()));
+  }
+}
+
+TEST_F(TensorTest, CheckInplaceMultiplyConstRepeatMultithread) {
+  for (Device *dev : devices) {
+    Tensor a = dev->new_tensor_by_constant(Shape {}, 1);
+
+    auto thread_proc = [&a] {
+      for (std::uint32_t i = 0; i < 2048; ++i) {
+        a *= -2;
+        a *= -.5;
+      }
+    };
+
+    std::thread th1(thread_proc);
+    std::thread th2(thread_proc);
+
+    th1.join();
+    th2.join();
+
+    EXPECT_TRUE(vector_match(vector<float> {1}, a.to_vector()));
+  }
+}
+
 TEST_F(TensorTest, CheckInplaceAddNN) {
   for (Device *dev : devices) {
     const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
@@ -493,6 +528,40 @@ TEST_F(TensorTest, CheckCopyAndInplaceAdd) {
   }
 }
 
+TEST_F(TensorTest, CheckInplaceAddRepeat) {
+  for (Device *dev : devices) {
+    Tensor a = dev->new_tensor_by_constant(Shape {16}, 0);
+    const Tensor b = dev->new_tensor_by_constant(Shape {16}, 1);
+
+    for (std::uint32_t i = 0; i < 1024; ++i) {
+      a += b;
+    }
+
+    EXPECT_TRUE(vector_match(vector<float>(16, 1024), a.to_vector()));
+  }
+}
+
+TEST_F(TensorTest, CheckInplaceAddRepeatMultithread) {
+  for (Device *dev : devices) {
+    Tensor a = dev->new_tensor_by_constant(Shape {}, 0);
+    const Tensor b = dev->new_tensor_by_constant(Shape {}, 1);
+
+    auto thread_proc = [&a, &b] {
+      for (std::uint32_t i = 0; i < 2048; ++i) {
+        a += b;
+      }
+    };
+
+    std::thread th1(thread_proc);
+    std::thread th2(thread_proc);
+
+    th1.join();
+    th2.join();
+
+    EXPECT_TRUE(vector_match(vector<float> {4096}, a.to_vector()));
+  }
+}
+
 TEST_F(TensorTest, CheckInplaceSubtractNN) {
   for (Device *dev : devices) {
     const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
@@ -544,6 +613,40 @@ TEST_F(TensorTest, CheckCopyAndInplaceSubtract) {
     EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
     EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
+  }
+}
+
+TEST_F(TensorTest, CheckInplaceSubtractRepeat) {
+  for (Device *dev : devices) {
+    Tensor a = dev->new_tensor_by_constant(Shape {16} , 0);
+    const Tensor b = dev->new_tensor_by_constant(Shape {16} , 1);
+
+    for (std::uint32_t i = 0; i < 1024; ++i) {
+      a -= b;
+    }
+
+    EXPECT_TRUE(vector_match(vector<float>(16, -1024), a.to_vector()));
+  }
+}
+
+TEST_F(TensorTest, CheckInplaceSubtractRepeatMultithread) {
+  for (Device *dev : devices) {
+    Tensor a = dev->new_tensor_by_constant(Shape {}, 0);
+    const Tensor b = dev->new_tensor_by_constant(Shape {}, 1);
+
+    auto thread_proc = [&a, &b] {
+      for (std::uint32_t i = 0; i < 2048; ++i) {
+        a -= b;
+      }
+    };
+
+    std::thread th1(thread_proc);
+    std::thread th2(thread_proc);
+
+    th1.join();
+    th2.join();
+
+    EXPECT_TRUE(vector_match(vector<float> {-4096}, a.to_vector()));
   }
 }
 

@@ -627,6 +627,9 @@ void Naive::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
 void Naive::inplace_multiply_const_impl(float k, Tensor &x) {
   const std::uint32_t size = x.shape().size();
   float *dest = DATA(x);
+
+  std::lock_guard<std::mutex> lock(mutex_);
+
   REPEAT_OP(i, size, dest[i] *= k);
 }
 
@@ -639,6 +642,9 @@ void Naive::inplace_add_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t b_skip_s = sx.has_batch() * size;
   float *dest = DATA(y);
   const float *src = CDATA(x);
+
+  std::lock_guard<std::mutex> lock(mutex_);
+
   for (std::uint32_t batch = 0; batch < bs; ++batch) {
     REPEAT_OP(i, size, dest[i] += src[i]);
     dest += b_skip_d;
@@ -655,6 +661,9 @@ void Naive::inplace_subtract_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t b_skip_s = sx.has_batch() * size;
   float *dest = DATA(y);
   const float *src = CDATA(x);
+
+  std::lock_guard<std::mutex> lock(mutex_);
+
   for (std::uint32_t batch = 0; batch < bs; ++batch) {
     REPEAT_OP(i, size, dest[i] -= src[i]);
     dest += b_skip_d;
