@@ -60,7 +60,7 @@ TEST_F(MixinsTest, CheckDefaultSettable) {
   EXPECT_THROW(TestClass::get_default(), Error);
 }
 
-TEST_F(MixinsTest, CheckDefaultSettableMultithreading) {
+TEST_F(MixinsTest, CheckDefaultSettableMultithread) {
   class TestClass : public DefaultSettable<TestClass> {};
 
   ASSERT_THROW(TestClass::get_default(), Error);

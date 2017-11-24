@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <unordered_map>
 #include <vector>
 
@@ -38,6 +39,7 @@ class MemoryPool : public mixins::Identifiable<MemoryPool> {
   std::function<void(void *)> deleter_;
   std::vector<std::vector<void *>> reserved_;
   std::unordered_map<void *, std::uint32_t> supplied_;
+  std::recursive_mutex mutex_;
 
 public:
   /**

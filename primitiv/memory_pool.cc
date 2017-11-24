@@ -33,6 +33,8 @@ MemoryPool::~MemoryPool() {
   // NOTE(odashi):
   // Due to GC-based languages, we chouldn't assume that all memories were
   // disposed before arriving this code.
+  std::lock_guard<std::recursive_mutex> lock(mutex_);
+
   while (!supplied_.empty()) {
     free(supplied_.begin()->first);
   }
@@ -47,23 +49,28 @@ std::shared_ptr<void> MemoryPool::allocate(std::size_t size) {
   if (shift > MAX_SHIFTS) THROW_ERROR("Invalid memory size: " << size);
 
   void *ptr;
-  if (reserved_[shift].empty()) {
-    // Allocates a new block.
-    try {
-      ptr = allocator_(1ull << shift);
-    } catch (...) {
-      // Maybe out-of-memory.
-      // Release other blocks and try allocation again.
-      release_reserved_blocks();
-      // Below allocation may throw an error when the memory allocation
-      // process finally failed.
-      ptr = allocator_(1ull << shift);
+
+  {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
+
+    if (reserved_[shift].empty()) {
+      // Allocates a new block.
+      try {
+        ptr = allocator_(1ull << shift);
+      } catch (...) {
+        // Maybe out-of-memory.
+        // Release other blocks and try allocation again.
+        release_reserved_blocks();
+        // Below allocation may throw an error when the memory allocation
+        // process finally failed.
+        ptr = allocator_(1ull << shift);
+      }
+    } else {
+      // Returns an existing block.
+      ptr = reserved_[shift].back();
+      reserved_[shift].pop_back();
     }
-    supplied_.emplace(ptr, shift);
-  } else {
-    // Returns an existing block.
-    ptr = reserved_[shift].back();
-    reserved_[shift].pop_back();
+
     supplied_.emplace(ptr, shift);
   }
 
@@ -71,6 +78,8 @@ std::shared_ptr<void> MemoryPool::allocate(std::size_t size) {
 }
 
 void MemoryPool::free(void *ptr) {
+  std::lock_guard<std::recursive_mutex> lock(mutex_);
+
   auto it = supplied_.find(ptr);
   if (it == supplied_.end()) {
     THROW_ERROR("Detected to dispose unknown handle: " << ptr);
@@ -80,6 +89,8 @@ void MemoryPool::free(void *ptr) {
 }
 
 void MemoryPool::release_reserved_blocks() {
+  std::lock_guard<std::recursive_mutex> lock(mutex_);
+
   for (auto &ptrs : reserved_) {
     while (!ptrs.empty()) {
       deleter_(ptrs.back());
