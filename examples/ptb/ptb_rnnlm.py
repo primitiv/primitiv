@@ -8,68 +8,23 @@ from primitiv import initializers as I
 from primitiv import operators as F
 from primitiv import devices as D
 from primitiv import optimizers as O
-from primitiv import Device, Graph, Parameter, Shape
+from primitiv import Device, Graph, Model, Parameter, Shape
+
+from utils import make_vocab, load_corpus, count_labels, make_batch
 
 NUM_HIDDEN_UNITS = 256
 BATCH_SIZE = 64
 MAX_EPOCH = 100
 
 
-# Gathers the set of words from space-separated corpus.
-def make_vocab(filename):
-    vocab = {}
-    with open(filename, "r") as ifs:
-        for line in ifs:
-            line = "<s> " + line.strip() + " <s>"
-            for word in line.split():
-                if word not in vocab:
-                    vocab[word] = len(vocab)
-    return vocab
+class RNNLM(Model):
 
-
-# Generates word ID list using corpus and vocab.
-def load_corpus(filename, vocab):
-    corpus = []
-    with open(filename, "r") as ifs:
-        for line in ifs:
-            line = "<s> " + line.strip() + " <s>"
-            sentence = [vocab[word] for word in line.split()]
-            corpus.append(sentence)
-    return corpus
-
-
-# Counts output labels in the corpus.
-def count_labels(corpus):
-    ret = 0
-    for sent in corpus:
-        ret += len(sent) - 1
-    return ret
-
-
-# Extracts a minibatch from loaded corpus
-def make_batch(corpus, sent_ids, eos_id):
-    batch_size = len(sent_ids)
-    max_len = 0
-    for sid in sent_ids:
-        max_len = max(max_len, len(corpus[sid]))
-    batch = [[eos_id] * batch_size for i in range(max_len)]
-    for i in range(batch_size):
-        sent = corpus[sent_ids[i]]
-        for j in range(len(sent)):
-            batch[j][i] = sent[j]
-    return batch
-
-
-class RNNLM(object):
-
-    def __init__(self, vocab_size, eos_id, optimizer):
-        self.eos_id_ = eos_id
-        self.pwlookup_ = Parameter([NUM_HIDDEN_UNITS, vocab_size], I.XavierUniform())
-        self.pwxs_ = Parameter([NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS], I.XavierUniform())
-        self.pwsy_ = Parameter([vocab_size, NUM_HIDDEN_UNITS], I.XavierUniform())
-        optimizer.add_parameter(self.pwlookup_)
-        optimizer.add_parameter(self.pwxs_)
-        optimizer.add_parameter(self.pwsy_)
+    def __init__(self, vocab_size, eos_id):
+        self.eos_id = eos_id
+        self.pwlookup = Parameter([NUM_HIDDEN_UNITS, vocab_size], I.XavierUniform())
+        self.pwxs = Parameter([NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS], I.XavierUniform())
+        self.pwsy = Parameter([vocab_size, NUM_HIDDEN_UNITS], I.XavierUniform())
+        self.add_all_parameters()
 
     # Forward function of RNNLM. Input data should be arranged below:
     # inputs = {
@@ -80,9 +35,9 @@ class RNNLM(object):
     # };
     def forward(self, inputs):
         batch_size = len(inputs[0])
-        wlookup = F.parameter(self.pwlookup_)
-        wxs = F.parameter(self.pwxs_)
-        wsy = F.parameter(self.pwsy_)
+        wlookup = F.parameter(self.pwlookup)
+        wxs = F.parameter(self.pwxs)
+        wsy = F.parameter(self.pwsy)
         s = F.zeros(Shape([NUM_HIDDEN_UNITS], batch_size))
         outputs = []
         for i in range(len(inputs) - 1):
@@ -115,23 +70,24 @@ def main():
     print("train:", num_train_sents, "sentences,", num_train_labels, "labels")
     print("valid:", num_valid_sents, "sentences,", num_valid_labels, "labels")
 
-    dev = D.CUDA(0)
+    # Device and computation graph.
+    dev = D.CUDA(0);
     Device.set_default(dev)
+    g = Graph();
+    Graph.set_default(g)
+
+    # Our LM.
+    lm = RNNLM(len(vocab), eos_id)
 
     # Optimizer.
     optimizer = O.Adam()
     optimizer.set_weight_decay(1e-6)
     optimizer.set_gradient_clipping(5)
-
-    # Our LM.
-    lm = RNNLM(len(vocab), eos_id, optimizer)
+    optimizer.add_model(lm)
 
     # Sentence IDs.
     train_ids = list(range(num_train_sents))
     valid_ids = list(range(num_valid_sents))
-
-    g = Graph()
-    Graph.set_default(g)
 
     # Train/valid loop.
     for epoch in range(MAX_EPOCH):

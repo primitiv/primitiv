@@ -45,46 +45,48 @@ class EncoderDecoder(Model):
     """Standard encoder-decoder model."""
 
     def __init__(self):
-        self._dropout_rate = DROPOUT_RATE
-        self._psrc_lookup = Parameter(); self.add_parameter("src_lookup", self._psrc_lookup)
-        self._ptrg_lookup = Parameter(); self.add_parameter("trg_lookup", self._ptrg_lookup)
-        self._pwhy = Parameter(); self.add_parameter("why", self._pwhy)
-        self._pby = Parameter(); self.add_parameter("by", self._pby)
-        self._src_lstm = LSTM(); self.add_submodel("src_lstm", self._src_lstm)
-        self._trg_lstm = LSTM(); self.add_submodel("trg_lstm", self._trg_lstm)
+        self.dropout_rate = DROPOUT_RATE
+        self.psrc_lookup = Parameter()
+        self.ptrg_lookup = Parameter()
+        self.pwhy = Parameter()
+        self.pby = Parameter()
+        self.src_lstm = LSTM()
+        self.trg_lstm = LSTM()
+        self.add_all_parameters()
+        self.add_all_submodels()
 
     def init(self, src_vocab_size, trg_vocab_size, embed_size, hidden_size):
         """Creates a new EncoderDecoder object."""
-        self._psrc_lookup.init([embed_size, src_vocab_size], I.XavierUniform())
-        self._ptrg_lookup.init([embed_size, trg_vocab_size], I.XavierUniform())
-        self._pwhy.init([trg_vocab_size, hidden_size], I.XavierUniform())
-        self._pby.init([trg_vocab_size], I.Constant(0))
-        self._src_lstm.init(embed_size, hidden_size)
-        self._trg_lstm.init(embed_size, hidden_size)
+        self.psrc_lookup.init([embed_size, src_vocab_size], I.XavierUniform())
+        self.ptrg_lookup.init([embed_size, trg_vocab_size], I.XavierUniform())
+        self.pwhy.init([trg_vocab_size, hidden_size], I.XavierUniform())
+        self.pby.init([trg_vocab_size], I.Constant(0))
+        self.src_lstm.init(embed_size, hidden_size)
+        self.trg_lstm.init(embed_size, hidden_size)
 
     def encode(self, src_batch, train):
         """Encodes source sentences and prepares internal states."""
         # Reversed encoding.
-        src_lookup = F.parameter(self._psrc_lookup)
-        self._src_lstm.restart()
+        src_lookup = F.parameter(self.psrc_lookup)
+        self.src_lstm.restart()
         for it in src_batch:
             x = F.pick(src_lookup, it, 1)
-            x = F.dropout(x, self._dropout_rate, train)
-            self._src_lstm.forward(x)
+            x = F.dropout(x, self.dropout_rate, train)
+            self.src_lstm.forward(x)
 
         # Initializes decoder states.
-        self._trg_lookup = F.parameter(self._ptrg_lookup)
-        self._why = F.parameter(self._pwhy)
-        self._by = F.parameter(self._pby)
-        self._trg_lstm.restart(self._src_lstm.get_c(), self._src_lstm.get_h())
+        self.trg_lookup = F.parameter(self.ptrg_lookup)
+        self.why = F.parameter(self.pwhy)
+        self.by = F.parameter(self.pby)
+        self.trg_lstm.restart(self.src_lstm.get_c(), self.src_lstm.get_h())
 
     def decode_step(self, trg_words, train):
         """One step decoding."""
-        x = F.pick(self._trg_lookup, trg_words, 1)
-        x = F.dropout(x, self._dropout_rate, train)
-        h = self._trg_lstm.forward(x)
-        h = F.dropout(h, self._dropout_rate, train)
-        return self._why @ h + self._by
+        x = F.pick(self.trg_lookup, trg_words, 1)
+        x = F.dropout(x, self.dropout_rate, train)
+        h = self.trg_lstm.forward(x)
+        h = F.dropout(h, self.dropout_rate, train)
+        return self.why @ h + self.by
 
     def loss(self, trg_batch, train):
         """Calculates loss values."""

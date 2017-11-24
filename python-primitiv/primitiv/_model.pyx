@@ -16,53 +16,13 @@ import weakref
 cdef object py_primitiv_model_weak_dict = WeakValueDictionary()
 
 
-cdef class _ModelParameter:
-
-    def __init__(self, _Model model):
-        # NOTE(vbkaisetsu): It becomes circular reference.
-        # We can't know when it will be deleted by the garbage collector.
-        # Therefore we hold this instance in a weakref to delete it immediately.
-        self.model_ref = weakref.ref(model)
-
-    def __getitem__(self, key):
-        cdef vector[string] names
-        if isinstance(key, str):
-            return _Parameter.get_wrapper(&(<_Model> self.model_ref()).wrapped.get_parameter(pystr_to_cppstr(key)))
-        elif isinstance(key, tuple):
-            for name in key:
-                names.push_back(pystr_to_cppstr(name))
-            return _Parameter.get_wrapper(&(<_Model> self.model_ref()).wrapped.get_parameter(names))
-        else:
-            raise TypeError("Argument 'key' has incorrect type (str or tuple)")
-
-
-cdef class _ModelSubModel:
-
-    def __init__(self, _Model model):
-        # NOTE(vbkaisetsu): It becomes circular reference.
-        # We can't know when it will be deleted by the garbage collector.
-        # Therefore we hold this instance in a weakref to delete it immediately.
-        self.model_ref = weakref.ref(model)
-
-    def __getitem__(self, key):
-        cdef vector[string] names
-        if isinstance(key, str):
-            return _Model.get_wrapper(&(<_Model> self.model_ref()).wrapped.get_submodel(pystr_to_cppstr(key)))
-        elif isinstance(key, tuple):
-            for name in key:
-                names.push_back(pystr_to_cppstr(name))
-            return _Model.get_wrapper(&(<_Model> self.model_ref()).wrapped.get_submodel(names))
-        else:
-            raise TypeError("Argument 'key' has incorrect type (str or tuple)")
-
-
 cdef class _Model:
 
     def __cinit__(self):
         self.wrapped = new CppModel()
         _Model.register_wrapper(self.wrapped, self)
-        self.params = _ModelParameter(self)
-        self.submodels = _ModelSubModel(self)
+        self.added_parameters = []
+        self.added_submodels = []
 
     def __dealloc__(self):
         if self.wrapped is not NULL:
@@ -79,15 +39,41 @@ cdef class _Model:
 
     def add_parameter(self, str name, _Parameter param):
         self.wrapped.add_parameter(pystr_to_cppstr(name), param.wrapped[0])
+        self.added_parameters.append(param)
 
     def add_submodel(self, str name, _Model model):
         self.wrapped.add_submodel(pystr_to_cppstr(name), model.wrapped[0])
+        self.added_submodels.append(model)
 
-    # NOTE(vbkaisetsu):
-    # get_parameter is replaced with `params` variable.
+    def add_all_parameters(self):
+        for k, v in self.__dict__.items():
+            if isinstance(v, _Parameter) and v not in self.added_parameters:
+                self.add_parameter(k, v)
 
-    # NOTE(vbkaisetsu):
-    # get_submodel is replaced with `submodels` variable.
+    def add_all_submodels(self):
+        for k, v in self.__dict__.items():
+            if isinstance(v, _Model) and v not in self.added_submodels:
+                self.add_submodel(k, v)
+
+    def __getitem__(self, key):
+        cdef vector[string] names
+        if isinstance(key, str):
+            names.push_back(pystr_to_cppstr(key))
+        elif isinstance(key, tuple):
+            for name in key:
+                names.push_back(pystr_to_cppstr(name))
+        else:
+            raise TypeError("Argument 'key' has incorrect type (str or tuple)")
+        try:
+            return _Parameter.get_wrapper(&self.wrapped.get_parameter(names))
+        except:
+            try:
+                return _Model.get_wrapper(&self.wrapped.get_submodel(names))
+            except:
+                # NOTE(vbkaisetsu): DO NOT throw an exception here, because
+                # error massages generated at above lines should not be shown.
+                pass
+        raise TypeError("'name' is not a name of neither parameter nor submodel")
 
     def get_all_parameters(self):
         cdef pair[vector[string], CppParameter*] p
