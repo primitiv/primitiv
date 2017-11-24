@@ -215,7 +215,14 @@ public:
           // Then, we can delete the buffer safely.
           delete static_cast<cl::Buffer *>(ptr);
         }) {
-      cl::Program program(context, ::generate_kernels(), true);
+      cl::Program program(context, ::generate_kernels());
+      try {
+        program.build({device});
+      } catch (...) {
+        std::cerr << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device)
+        << std::endl;
+        THROW_ERROR("OpenCL kernel compile error");
+      }
 
 #define CONFIGURE_KERNEL(name) \
       { \
