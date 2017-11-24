@@ -1,5 +1,6 @@
 #include <config.h>
 
+#include <thread>
 #include <gtest/gtest.h>
 #include <primitiv/mixins.h>
 
@@ -57,6 +58,35 @@ TEST_F(MixinsTest, CheckDefaultSettable) {
     EXPECT_EQ(&obj4, &TestClass::get_default());
   }
   EXPECT_THROW(TestClass::get_default(), Error);
+}
+
+TEST_F(MixinsTest, CheckDefaultSettableMultithreading) {
+  class TestClass : public DefaultSettable<TestClass> {};
+
+  ASSERT_THROW(TestClass::get_default(), Error);
+  TestClass obj_th0;
+  TestClass::set_default(obj_th0);
+  ASSERT_EQ(&obj_th0, &TestClass::get_default());
+
+  std::thread th1([&] {
+      EXPECT_THROW(TestClass::get_default(), Error);
+      TestClass obj_th1;
+      TestClass::set_default(obj_th1);
+      EXPECT_EQ(&obj_th1, &TestClass::get_default());
+  });
+  std::thread th2([&] {
+      EXPECT_THROW(TestClass::get_default(), Error);
+      TestClass obj_th2;
+      TestClass::set_default(obj_th2);
+      EXPECT_EQ(&obj_th2, &TestClass::get_default());
+  });
+
+  EXPECT_EQ(&obj_th0, &TestClass::get_default());
+
+  th1.join();
+  th2.join();
+
+  EXPECT_EQ(&obj_th0, &TestClass::get_default());
 }
 
 }  // namespace mixins

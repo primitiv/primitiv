@@ -99,7 +99,7 @@ class DefaultSettable {
   /**
    * Pointer of current default object.
    */
-  static T *default_obj_;
+  static thread_local T *default_obj_;
 
 protected:
   DefaultSettable() = default;
@@ -132,7 +132,7 @@ public:
 };
 
 template<typename T>
-T *DefaultSettable<T>::default_obj_ = nullptr;
+thread_local T *DefaultSettable<T>::default_obj_ = nullptr;
 
 }  // namespace mixins
 }  // namespace primitiv
