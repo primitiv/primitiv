@@ -12,10 +12,6 @@
 #include <primitiv/tensor.h>
 #include <test_utils.h>
 
-#ifdef PRIMITIV_USE_CUDA
-#include <primitiv/cuda_device.h>
-#endif  // PRIMITIV_USE_CUDA
-
 using std::vector;
 using test_utils::vector_match;
 
@@ -23,21 +19,20 @@ namespace primitiv {
 
 class TensorTest : public testing::Test {
 protected:
-  vector<Device *> devices;
+  static vector<Device *> devices;
 
-  void SetUp() override {
-    devices.emplace_back(new devices::Naive());
-#ifdef PRIMITIV_USE_CUDA
-    devices.emplace_back(new devices::CUDA(0));
-#endif  // PRIMITIV_USE_CUDA
+  static void SetUpTestCase() {
+    test_utils::add_available_devices(devices);
   }
 
-  void TearDown() override {
+  static void TearDownTestCase() {
     for (Device *dev : devices) {
       delete dev;
     }
   }
 };
+
+vector<Device *> TensorTest::devices;
 
 TEST_F(TensorTest, CheckInvalid) {
   const Tensor x;
@@ -50,7 +45,7 @@ TEST_F(TensorTest, CheckInvalid) {
 }
 
 TEST_F(TensorTest, CheckNewScalarWithData) {
-  for (Device *dev : devices ) {
+  for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_constant({}, 1);
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(dev, &x.device());
@@ -62,7 +57,7 @@ TEST_F(TensorTest, CheckNewScalarWithData) {
 }
 
 TEST_F(TensorTest, CheckNewMatrixWithData) {
-  for (Device *dev : devices ) {
+  for (Device *dev : devices) {
     const vector<float> data {1, 2, 3, 4, 5, 6};
     const Tensor x = dev->new_tensor_by_vector({2, 3}, data);
     EXPECT_TRUE(x.valid());
@@ -75,7 +70,7 @@ TEST_F(TensorTest, CheckNewMatrixWithData) {
 }
 
 TEST_F(TensorTest, CheckNewMatrixMinibatchWithData) {
-  for (Device *dev : devices ) {
+  for (Device *dev : devices) {
     const vector<float> data {
       3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8,
       9, 7, 9, 3, 2, 3, 8, 4, 6, 2, 6, 4,

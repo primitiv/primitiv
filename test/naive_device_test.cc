@@ -1,10 +1,10 @@
 #include <config.h>
 
 #include <chrono>
-#include <stdexcept>
 #include <thread>
 #include <vector>
 #include <gtest/gtest.h>
+#include <primitiv/error.h>
 #include <primitiv/naive_device.h>
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
@@ -19,7 +19,7 @@ class NaiveDeviceTest : public testing::Test {};
 
 TEST_F(NaiveDeviceTest, CheckDeviceType) {
   devices::Naive dev;
-  EXPECT_EQ(Device::DEVICE_TYPE_CPU, dev.type());
+  EXPECT_EQ(Device::DeviceType::CPU, dev.type());
 }
 
 TEST_F(NaiveDeviceTest, CheckNewDelete) {
@@ -162,7 +162,7 @@ TEST_F(NaiveDeviceTest, CheckRandomNormalWithSeed) {
   };
 #else
   const vector<float> expected {};
-  std::cerr << "... Unknown C++ library. Expected results can't be defined." << std::endl;
+  std::cerr << "Unknown C++ library. Expected results can't be defined." << std::endl;
 #endif
   devices::Naive dev(12345);
   const Tensor x = dev.random_normal(Shape({2, 2}, 2), 1, 3);
@@ -207,7 +207,7 @@ TEST_F(NaiveDeviceTest, CheckRandomLogNormalWithSeed) {
   };
 #else
   const vector<float> expected {};
-  std::cerr << "... Unknown C++ library. Expected results can't be defined." << std::endl;
+  std::cerr << "Unknown C++ library. Expected results can't be defined." << std::endl;
 #endif
   devices::Naive dev(12345);
   const Tensor x = dev.random_log_normal(Shape({2, 2}, 2), 1, 3);

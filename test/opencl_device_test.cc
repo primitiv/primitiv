@@ -4,8 +4,8 @@
 #include <thread>
 #include <vector>
 #include <gtest/gtest.h>
-#include <primitiv/cuda_device.h>
 #include <primitiv/error.h>
+#include <primitiv/opencl_device.h>
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
 #include <test_utils.h>
@@ -15,38 +15,51 @@ using test_utils::vector_match;
 
 namespace primitiv {
 
-class CUDADeviceTest : public testing::Test {
+class OpenCLDeviceTest : public testing::Test {
 protected:
-  vector<std::uint32_t> dev_ids;
+  struct Config {
+    std::uint32_t pf_id;
+    std::uint32_t dev_id;
+  };
+  vector<Config> configs;
 
   void SetUp() override {
-    const std::uint32_t num_devs = devices::CUDA::num_devices();
-    for (std::uint32_t dev_id = 0; dev_id < num_devs; ++dev_id) {
-      if (devices::CUDA::check_support(dev_id)) {
-        dev_ids.emplace_back(dev_id);
+    const std::uint32_t num_pfs = devices::OpenCL::num_platforms();
+    for (std::uint32_t pf_id = 0; pf_id < num_pfs; ++pf_id) {
+      const std::uint32_t num_devs = devices::OpenCL::num_devices(pf_id);
+      for (std::uint32_t dev_id = 0; dev_id < num_devs; ++dev_id) {
+        if (devices::OpenCL::check_support(pf_id, dev_id)) {
+          configs.emplace_back(Config { pf_id, dev_id });
+        }
       }
     }
-    if (dev_ids.empty()) {
-      std::cerr << "No available CUDA devices." << std::endl;
+    if (configs.empty()) {
+      std::cerr << "No available OpenCL devices." << std::endl;
     }
   }
 };
 
-TEST_F(CUDADeviceTest, CheckDeviceType) {
-  for (std::uint32_t dev_id : dev_ids) {
-    devices::CUDA dev(dev_id);
-    EXPECT_EQ(Device::DeviceType::CUDA, dev.type());
+TEST_F(OpenCLDeviceTest, CheckDeviceType) {
+  for (const Config &cfg : configs) {
+    devices::OpenCL dev(cfg.pf_id, cfg.dev_id);
+    EXPECT_EQ(Device::DeviceType::OPENCL, dev.type());
   }
 }
 
-TEST_F(CUDADeviceTest, CheckInvalidInit) {
-  EXPECT_THROW(devices::CUDA(devices::CUDA::num_devices()), Error);
-  EXPECT_THROW(devices::CUDA(12345678), Error);
+TEST_F(OpenCLDeviceTest, CheckInvalidInit) {
+  const std::uint32_t num_pfs = devices::OpenCL::num_platforms();
+  EXPECT_THROW(devices::OpenCL(num_pfs, 0), Error);
+  EXPECT_THROW(devices::OpenCL(12345678, 0), Error);
+  for (std::uint32_t pf_id = 0; pf_id < num_pfs; ++pf_id) {
+    EXPECT_THROW(
+        devices::OpenCL(pf_id, devices::OpenCL::num_devices(pf_id)), Error);
+    EXPECT_THROW(devices::OpenCL(pf_id, 12345678), Error);
+  }
 }
 
-TEST_F(CUDADeviceTest, CheckNewDelete) {
-  for (std::uint32_t dev_id : dev_ids) {
-    devices::CUDA dev(dev_id);
+TEST_F(OpenCLDeviceTest, CheckNewDelete) {
+  for (const Config &cfg : configs) {
+    devices::OpenCL dev(cfg.pf_id, cfg.dev_id);
     {
       // 1 value
       Tensor x1 = dev.new_tensor_by_constant(Shape(), 0);
@@ -60,11 +73,11 @@ TEST_F(CUDADeviceTest, CheckNewDelete) {
   SUCCEED();
 }
 
-TEST_F(CUDADeviceTest, CheckDanglingTensor) {
-  for (std::uint32_t dev_id : dev_ids) {
+TEST_F(OpenCLDeviceTest, CheckDanglingTensor) {
+  for (const Config &cfg : configs) {
     Tensor x1;
     {
-      devices::CUDA dev(dev_id);
+      devices::OpenCL dev(cfg.pf_id, cfg.dev_id);
       x1 = dev.new_tensor_by_constant(Shape(), 0);
     }
     // x1 still has valid object,
@@ -75,11 +88,11 @@ TEST_F(CUDADeviceTest, CheckDanglingTensor) {
 }
 
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
-TEST_F(CUDADeviceTest, CheckRandomBernoulli) {
+TEST_F(OpenCLDeviceTest, CheckRandomBernoulli) {
   vector<vector<float>> history;
-  for (std::uint32_t dev_id : dev_ids) {
+  for (const Config &cfg : configs) {
     for (std::uint32_t i = 0; i < 10; ++i) {
-      devices::CUDA dev(dev_id);
+      devices::OpenCL dev(cfg.pf_id, cfg.dev_id);
       const Tensor x = dev.random_bernoulli(Shape({3, 3}, 3), 0.3);
       const vector<float> x_val = x.to_vector();
 
@@ -101,26 +114,26 @@ TEST_F(CUDADeviceTest, CheckRandomBernoulli) {
 }
 #endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
-TEST_F(CUDADeviceTest, CheckRandomBernoulliWithSeed) {
+TEST_F(OpenCLDeviceTest, CheckRandomBernoulliWithSeed) {
   const vector<float> expected {
-    1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-    0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0,
-    1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,
-    0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1,
+    0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0,
+    0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0,
   };
-  for (std::uint32_t dev_id : dev_ids) {
-    devices::CUDA dev(dev_id, 12345);
+  for (const Config &cfg : configs) {
+    devices::OpenCL dev(cfg.pf_id, cfg.dev_id, 12345);
     const Tensor x = dev.random_bernoulli(Shape({4, 4}, 4), 0.3);
     EXPECT_TRUE(vector_match(expected, x.to_vector()));
   }
 }
 
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
-TEST_F(CUDADeviceTest, CheckRandomUniform) {
+TEST_F(OpenCLDeviceTest, CheckRandomUniform) {
   vector<vector<float>> history;
-  for (std::uint32_t dev_id : dev_ids) {
+  for (const Config &cfg : configs) {
     for (std::uint32_t i = 0; i < 10; ++i) {
-      devices::CUDA dev(dev_id);
+      devices::OpenCL dev(cfg.pf_id, cfg.dev_id);
       const Tensor x = dev.random_uniform(Shape({2, 2}, 2), -9, 9);
       const vector<float> x_val = x.to_vector();
 
@@ -142,24 +155,24 @@ TEST_F(CUDADeviceTest, CheckRandomUniform) {
 }
 #endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
-TEST_F(CUDADeviceTest, CheckRandomUniformWithSeed) {
+TEST_F(OpenCLDeviceTest, CheckRandomUniformWithSeed) {
   const vector<float> expected {
-    -3.6198268e+00, 4.1064610e+00, -6.9007745e+00, 8.5519943e+00,
-    -7.7016129e+00, -4.6067810e+00, 8.7706423e+00, -4.9437490e+00,
+    7.7330894e+00, 7.0227852e+00, -3.3052402e+00, -6.6472688e+00,
+    -5.6894612e+00, -8.2843294e+00, -5.3179150e+00, 5.8758497e+00,
   };
-  for (std::uint32_t dev_id : dev_ids) {
-    devices::CUDA dev(dev_id, 12345);
+  for (const Config &cfg : configs) {
+    devices::OpenCL dev(cfg.pf_id, cfg.dev_id, 12345);
     const Tensor x = dev.random_uniform(Shape({2, 2}, 2), -9, 9);
     EXPECT_TRUE(vector_match(expected, x.to_vector()));
   }
 }
 
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
-TEST_F(CUDADeviceTest, CheckRandomNormal) {
+TEST_F(OpenCLDeviceTest, CheckRandomNormal) {
   vector<vector<float>> history;
-  for (std::uint32_t dev_id : dev_ids) {
+  for (const Config &cfg : configs) {
     for (std::uint32_t i = 0; i < 10; ++i) {
-      devices::CUDA dev(dev_id);
+      devices::OpenCL dev(cfg.pf_id, cfg.dev_id);
       const Tensor x = dev.random_normal(Shape({2, 2}, 2), 1, 3);
       const vector<float> x_val = x.to_vector();
 
@@ -181,24 +194,34 @@ TEST_F(CUDADeviceTest, CheckRandomNormal) {
 }
 #endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
-TEST_F(CUDADeviceTest, CheckRandomNormalWithSeed) {
+TEST_F(OpenCLDeviceTest, CheckRandomNormalWithSeed) {
+#ifdef __GLIBCXX__
   const vector<float> expected {
-    4.1702256e+00, -2.4186814e+00, 1.5060894e+00, -1.3355234e+00,
-    -5.0218196e+00, -5.5439359e-01, 5.8913720e-01, 1.5337296e+00,
+    -1.3574908e+00, -1.7222166e-01, 2.5865970e+00, -4.3594337e-01,
+    4.5383353e+00, 8.4703674e+00, 2.5535507e+00, 1.3252910e+00,
   };
-  for (std::uint32_t dev_id : dev_ids) {
-    devices::CUDA dev(dev_id, 12345);
+#elif defined _LIBCPP_VERSION
+  const vector<float> expected {
+    -1.7222166e-01, -1.3574908e+00, -4.3594337e-01, 2.5865970e+00,
+    8.4703674e+00, 4.5383353e+00, 1.3252910e+00, 2.5535507e+00,
+  };
+#else
+  const vector<float> expected {};
+  std::cerr << "Unknown C++ library. Expected results can't be defined." << std::endl;
+#endif
+  for (const Config &cfg : configs) {
+    devices::OpenCL dev(cfg.pf_id, cfg.dev_id, 12345);
     const Tensor x = dev.random_normal(Shape({2, 2}, 2), 1, 3);
     EXPECT_TRUE(vector_match(expected, x.to_vector()));
   }
 }
 
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
-TEST_F(CUDADeviceTest, CheckRandomLogNormal) {
+TEST_F(OpenCLDeviceTest, CheckRandomLogNormal) {
   vector<vector<float>> history;
-  for (std::uint32_t dev_id : dev_ids) {
+  for (const Config &cfg : configs) {
     for (std::uint32_t i = 0; i < 10; ++i) {
-      devices::CUDA dev(dev_id);
+      devices::OpenCL dev(cfg.pf_id, cfg.dev_id);
       const Tensor x = dev.random_log_normal(Shape({2, 2}, 2), 1, 3);
       const vector<float> x_val = x.to_vector();
 
@@ -220,13 +243,23 @@ TEST_F(CUDADeviceTest, CheckRandomLogNormal) {
 }
 #endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
-TEST_F(CUDADeviceTest, CheckRandomLogNormalWithSeed) {
+TEST_F(OpenCLDeviceTest, CheckRandomLogNormalWithSeed) {
+#ifdef __GLIBCXX__
   const vector<float> expected {
-    6.4730049e+01, 8.9038946e-02, 4.5090632e+00, 2.6302049e-01,
-    6.5925200e-03, 5.7442045e-01, 1.8024327e+00, 4.6354327e+00,
+    2.5730559e-01, 8.4179258e-01, 1.3284487e+01, 6.4665437e-01,
+    9.3534966e+01, 4.7712681e+03, 1.2852659e+01, 3.7632804e+00,
   };
-  for (std::uint32_t dev_id : dev_ids) {
-    devices::CUDA dev(dev_id, 12345);
+#elif defined _LIBCPP_VERSION
+  const vector<float> expected {
+    8.4179258e-01, 2.5730559e-01, 6.4665437e-01, 1.3284487e+01,
+    4.7712681e+03, 9.3534966e+01, 3.7632804e+00, 1.2852659e+01,
+  };
+#else
+  const vector<float> expected {};
+  std::cerr << "Unknown C++ library. Expected results can't be defined." << std::endl;
+#endif
+  for (const Config &cfg : configs) {
+    devices::OpenCL dev(cfg.pf_id, cfg.dev_id, 12345);
     const Tensor x = dev.random_log_normal(Shape({2, 2}, 2), 1, 3);
     EXPECT_TRUE(vector_match(expected, x.to_vector()));
   }

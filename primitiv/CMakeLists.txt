@@ -10,6 +10,7 @@ set(primitiv_base_HDRS
   graph.h
   initializer.h
   initializer_impl.h
+  memory_pool.h
   mixins.h
   model.h
   naive_device.h
@@ -19,7 +20,7 @@ set(primitiv_base_HDRS
   optimizer_impl.h
   parameter.h
   primitiv.h
-  primitiv_cuda.h
+  random.h
   shape.h
   shape_ops.h
   string_utils.h
@@ -31,6 +32,7 @@ set(primitiv_base_SRCS
   function_impl.cc
   graph.cc
   initializer_impl.cc
+  memory_pool.cc
   model.cc
   naive_device.cc
   node_ops.cc
@@ -57,19 +59,20 @@ set(primitiv_core_HDRS ${primitiv_base_HDRS} ${primitiv_msgpack_HDRS})
 set(primitiv_core_SRCS ${primitiv_base_SRCS})
 
 # Builds core library.
-add_library(primitiv_core_OBJS OBJECT ${primitiv_core_HDRS} ${primitiv_core_SRCS})
+add_library(primitiv_core_OBJS OBJECT
+  ${primitiv_core_HDRS}
+  ${primitiv_core_SRCS})
 set(primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_core_OBJS>)
 set(primitiv_all_DEPS)
 
 # Build rules of the CUDA backend.
 if(PRIMITIV_USE_CUDA)
   set(primitiv_cuda_HDRS
+    primitiv_cuda.h
     cuda_device.h
-    cuda_memory_pool.h
     cuda_utils.h)
   set(primitiv_cuda_SRCS
     cuda_device.cu
-    cuda_memory_pool.cu
     cuda_utils.cu)
   install(FILES ${primitiv_cuda_HDRS} DESTINATION include/primitiv)
 
@@ -96,6 +99,25 @@ if(PRIMITIV_USE_CUDA)
     ${CUDA_LIBRARIES}
     ${CUDA_cublas_LIBRARY}
     ${CUDA_curand_LIBRARY})
+endif()
+
+# Build rules of the OpenCL backend.
+if(PRIMITIV_USE_OPENCL)
+  set(primitiv_opencl_HDRS
+    primitiv_opencl.h
+    opencl_device.h)
+  set(primitiv_opencl_SRCS
+    opencl_device.cc)
+  install(FILES ${primitiv_opencl_HDRS} DESTINATION include/primitiv)
+
+  add_library(primitiv_opencl_OBJS OBJECT
+    ${primitiv_base_HDRS}
+    ${primitiv_opencl_HDRS}
+    ${primitiv_opencl_SRCS})
+  list(APPEND primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_opencl_OBJS>)
+  list(APPEND primitiv_all_DEPS
+    ${OpenCL_LIBRARIES}
+    ${CLBLAS_LIBRARIES})
 endif()
 
 # Builds the integrated binary.

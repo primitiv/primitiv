@@ -3,7 +3,6 @@
 
 #include <map>
 #include <memory>
-#include <primitiv/cuda_memory_pool.h>
 #include <primitiv/device.h>
 
 namespace primitiv {
@@ -18,10 +17,28 @@ class CUDA : public Device {
   CUDA() = delete;
 
 public:
-  /** Retrieves the number of active hardwares.
+  /**
+   * Retrieves the number of active hardwares.
    * @return Number of active hardwares.
    */
   static std::uint32_t num_devices();
+
+  /**
+   * Checks whether the device corresponding to the specified ID is supported.
+   * @param device_id Device ID to check.
+   * @throw primitiv::Error This class does not support the specified device.
+   */
+  static void assert_support(std::uint32_t device_id);
+
+  /**
+   * Checks whether the device corresponding to the specified ID is supported.
+   * @param device_id Device ID to check.
+   * @return true if this class supports the specified device, false otherwise.
+   */
+  static bool check_support(std::uint32_t device_id) {
+    try { assert_support(device_id); } catch (...) { return false; }
+    return true;
+  }
 
   /**
    * Creates a new CUDA device.
@@ -41,7 +58,7 @@ public:
   ~CUDA() override;
 
   void dump_description() const override;
-  Device::DeviceType type() const override { return Device::DEVICE_TYPE_CUDA; }
+  Device::DeviceType type() const override { return Device::DeviceType::CUDA; }
 
 private:
   std::shared_ptr<void> new_handle(const Shape &shape) override;
@@ -156,12 +173,12 @@ private:
   std::uint32_t dim2_x_;
   std::uint32_t dim2_y_;
   std::uint32_t max_batch_;
-  CUDAMemoryPool pool_;
   std::unique_ptr<CUDAInternalState> state_;
 
-  // Reserved pointer to store integer IDs.
-  // This member holds a pointer provided from `pool_`, and should be declared
-  // after `pool_` due to the order of member destruction.
+  // Reserved pointer to store temporary integers given from indexing functions
+  // such as operators::input().
+  // This member is initialized by a pointer provided from `pool_` and should
+  // be declared after `pool_` due to the destruction order of class members.
   std::shared_ptr<void> ids_ptr_;
 
   /**

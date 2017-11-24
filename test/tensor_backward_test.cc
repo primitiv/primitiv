@@ -7,10 +7,6 @@
 #include <primitiv/tensor.h>
 #include <test_utils.h>
 
-#ifdef PRIMITIV_USE_CUDA
-#include <primitiv/cuda_device.h>
-#endif  // PRIMITIV_USE_CUDA
-
 using std::vector;
 using test_utils::vector_match;
 using test_utils::vector_near;
@@ -19,26 +15,20 @@ namespace primitiv {
 
 class TensorBackwardTest : public testing::Test {
 protected:
-  vector<Device *> devices;
+  static vector<Device *> devices;
 
-  void SetUp() override {
-    devices.emplace_back(new devices::Naive());
-    devices.emplace_back(new devices::Naive()); // other device on the same hardware
-#ifdef PRIMITIV_USE_CUDA
-    devices.emplace_back(new devices::CUDA(0));
-    devices.emplace_back(new devices::CUDA(0)); // other device on the same hardware
-    if (devices::CUDA::num_devices() > 2) {
-      devices.emplace_back(new devices::CUDA(1));
-    }
-#endif  // PRIMITIV_USE_CUDA
+  static void SetUpTestCase() {
+    test_utils::add_available_devices(devices);
   }
 
-  void TearDown() override {
+  static void TearDownTestCase() {
     for (Device *dev : devices) {
       delete dev;
     }
   }
 };
+
+vector<Device *> TensorBackwardTest::devices;
 
 TEST_F(TensorBackwardTest, CheckSliceNN_1) {
   const vector<float> a_data {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
