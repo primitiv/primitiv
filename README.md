@@ -14,7 +14,7 @@ A Neural Network Toolkit.
 Features
 --------
 
-- Dynamic and incremental graph construction
+- Dynamic and incremental graph construction (a.k.a. "define-by-run" style)
 - On-demand memory allocation
 - Automatic minibatch broadcasting
 - Mostly device-independent
@@ -38,7 +38,7 @@ Install
     cd primitiv
     mkdir build
     cd build
-    cmake .. [-DPRIMITIV_USE_CUDA=ON] [(Other options)]
+    cmake .. [-D(Options you need)]
     make [-j <threads>]
     [make test]
     [make install]
@@ -68,13 +68,13 @@ Building Options
   - CMake standard options.
   - [FindGTest](https://cmake.org/cmake/help/v3.1/module/FindGTest.html) options.
   - [FindCUDA](https://cmake.org/cmake/help/v3.1/module/FindCUDA.html) options.
-  - [FindOpenCL](https://cmake.org/cmake/help/v3.1/module/FindOpenCL.html)/ options.
+  - [FindOpenCL](https://cmake.org/cmake/help/v3.1/module/FindOpenCL.html) options.
 
 Usage
 -----
 
 - [Short Python tutorial](https://github.com/odashi/primitiv/tree/develop/examples/tutorial1_xor.ipynb) with solving XOR problem.
-- [Other examples](https://github.com/odashi/primitiv/tree/develop/examples).
+- [Examples](https://github.com/odashi/primitiv/tree/develop/examples).
 
 
 Contact
