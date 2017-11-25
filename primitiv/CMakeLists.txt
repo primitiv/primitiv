@@ -103,15 +103,15 @@ endif()
 
 # Build rules of the OpenCL backend.
 if(PRIMITIV_USE_OPENCL)
-  add_custom_command(OUTPUT opencl_kernel.h
+  add_custom_command(OUTPUT opencl_device_kernel.h
     COMMAND
       ${CMAKE_COMMAND}
       -P
       ${PROJECT_SOURCE_DIR}/cmake/generate_char_array.cmake
-      ${PROJECT_SOURCE_DIR}/primitiv/opencl_kernel.cl
-      opencl_kernel.h
-    DEPENDS opencl_kernel.cl)
-  add_custom_target(primitiv_opencl_KERNEL_DATA DEPENDS opencl_kernel.h)
+      ${PROJECT_SOURCE_DIR}/primitiv/opencl_device_kernel.cl
+      opencl_device_kernel.h
+    DEPENDS opencl_device_kernel.cl)
+  add_custom_target(primitiv_opencl_KERNEL_DATA DEPENDS opencl_device_kernel.h)
 
   set(primitiv_opencl_HDRS
     primitiv_opencl.h
@@ -124,7 +124,6 @@ if(PRIMITIV_USE_OPENCL)
     ${primitiv_base_HDRS}
     ${primitiv_opencl_HDRS}
     ${primitiv_opencl_SRCS})
-
   add_dependencies(primitiv_opencl_OBJS primitiv_opencl_KERNEL_DATA)
 
   list(APPEND primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_opencl_OBJS>)
