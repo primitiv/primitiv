@@ -98,12 +98,11 @@ std::uint32_t calc_num_blocks(std::uint32_t size, std::uint32_t num_threads) {
  * Generates source code of all kernel functions.
  * @return Source code of kernel functions.
  */
-const std::string generate_kernels() {
-  const std::string ss({
-    // `opencl_device_kernel.h` is generated from `opencl_device_kernel.cl`
-#include <primitiv/opencl_device_kernel.h>
-  });
-  return ss;
+std::string generate_kernels() {
+  return {
+    // `opencl_device_kernel.inc` is generated from `opencl_device_kernel.cl`
+#include "primitiv/opencl_device_kernel.inc"
+  };
 }
 
 /**
