@@ -219,9 +219,7 @@ public:
       try {
         program.build({device});
       } catch (...) {
-        std::cerr << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device)
-        << std::endl;
-        THROW_ERROR("OpenCL kernel compile error");
+        THROW_ERROR("OpenCL kernel compile error:" << std::endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
       }
 
 #define CONFIGURE_KERNEL(name) \
