@@ -103,6 +103,16 @@ endif()
 
 # Build rules of the OpenCL backend.
 if(PRIMITIV_USE_OPENCL)
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc
+    COMMAND
+      ${CMAKE_COMMAND}
+      -P
+      ${PROJECT_SOURCE_DIR}/cmake/generate_char_array.cmake
+      ${CMAKE_CURRENT_SOURCE_DIR}/opencl_device_kernel.cl
+      ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/opencl_device_kernel.cl)
+  add_custom_target(primitiv_opencl_KERNEL_DATA DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc)
+
   set(primitiv_opencl_HDRS
     primitiv_opencl.h
     opencl_device.h)
@@ -114,6 +124,8 @@ if(PRIMITIV_USE_OPENCL)
     ${primitiv_base_HDRS}
     ${primitiv_opencl_HDRS}
     ${primitiv_opencl_SRCS})
+  add_dependencies(primitiv_opencl_OBJS primitiv_opencl_KERNEL_DATA)
+
   list(APPEND primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_opencl_OBJS>)
   list(APPEND primitiv_all_DEPS
     ${OpenCL_LIBRARIES}
