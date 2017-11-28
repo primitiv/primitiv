@@ -2,6 +2,12 @@ cdef str py_primitiv_utils_encoding = None
 
 
 def set_encoding(str encoding = None):
+    """Set text encoding for converting unicode in Python.
+
+    :param encoding: String to identify the encoding.
+    :type encoding: str
+
+    """
     global py_primitiv_utils_encoding
     if encoding is None:
         import locale
@@ -15,6 +21,12 @@ def set_encoding(str encoding = None):
 
 
 def get_encoding():
+    """Get text encoding for converting unicode in Python.
+
+    :return: Current encoding.
+    :rtype: str
+
+    """
     return py_primitiv_utils_encoding
 
 

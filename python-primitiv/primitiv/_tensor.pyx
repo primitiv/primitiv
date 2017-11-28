@@ -19,6 +19,9 @@ cdef object py_primitiv_tensor_weak_dict = WeakValueDictionary()
 
 
 cdef class _Tensor:
+    """Value with any dimensions.
+
+    """
 
     def __init__(self, _Tensor src = None):
         if self.wrapped is not NULL:
@@ -36,30 +39,76 @@ cdef class _Tensor:
             self.wrapped = NULL
 
     def valid(self):
+        """Check whether the object is valid or not.
+
+        :return: ``True`` if the object is valid, ``False`` otherwise.
+        :rtype: bool
+
+        This returns ``False`` when the object is created through the default
+        constructor or the object had been moved.
+
+        """
         return self.wrapped.valid()
 
     def shape(self):
+        """Returns the shape of the Tensor.
+
+        :return: Shape of the Tensor.
+        :rtype: primitiv.Shape
+
+        """
         return wrapShape(self.wrapped.shape())
 
     def device(self):
+        """Returns the Device object related to the internal memory.
+
+        :return: Device object.
+        :rtype: primitiv.Device
+
+        """
         return _Device.get_wrapper(&self.wrapped.device())
 
     #def data(self):
         #return self.wrapped.data()
 
     def to_float(self):
+        """Retrieves one internal value in the tensor.
+
+        :return: An internal float value.
+        :rtype: float
+
+        This function can be used only when the tensor is a scalar and
+        non-minibatched (i.e., ``shape() == Shape()``).
+
+        """
         cdef float val
         with nogil:
             val = self.wrapped.to_float()
         return val
 
     def to_list(self):
+        """Retrieves internal values in the tensor as a ``list``.
+
+        :return: A list of the internal values.
+        :rtype: list[float]
+
+        Each resulting values a reordered by the column-major order, and
+        the batch size is assumed as the last dimension of the tensor.
+
+        """
         cdef vector[float] vec
         with nogil:
             vec = self.wrapped.to_vector()
         return vec
 
     def to_ndarrays(self):
+        """Retrieves internal values in the tensor as a  list of ``numpy.ndarray``
+        containing ``numpy.float32``.
+
+        :return: ``numpy.ndarray``'s list of the internal values.
+        :rtype: list[numpy.ndarray[numpy.float32]]
+
+        """
         cdef vector[float] vec
         cdef CppShape s = self.wrapped.shape()
         cdef np.ndarray output_item
@@ -79,30 +128,76 @@ cdef class _Tensor:
         return output
 
     def argmax(self, unsigned dim):
+        """Retrieves argmax indices along an axis.
+
+        :param dim: A specified axis.
+        :type dim: int
+        :return: A list of integer that indicates positions of the maximum values.
+        :rtype: list[int]
+
+        """
         cdef vector[unsigned] vec
         with nogil:
             vec = self.wrapped.argmax(dim)
         return vec
 
     def argmin(self, unsigned dim):
+        """Retrieves argmin indices along an axis.
+
+        :param dim: A specified axis.
+        :type dim: int
+        :return: A ``list`` of ``int`` that indicates positions of the minimum values.
+        :rtype: list[int]
+
+        """
         cdef vector[unsigned] vec
         with nogil:
             vec = self.wrapped.argmin(dim)
         return vec
 
     def reset(self, float k):
+        """Reset internal values using a constant.
+
+        :param k: A value to be used to initialize each element.
+        :type k: float
+
+        """
         self.wrapped.reset(k)
 
     #def reset_by_array(self, vector[float] values):
         #self.wrapped.reset_by_array(values)
 
     def reset_by_vector(self, vector[float] values):
+        """Reset internal values using a list.
+
+        :param values: list of values to be used to initialize each element.
+        :type values: list[float]
+
+        ``len(values)`` should be equal to ``shape().size()``. Each element
+        should be ordered by the column-major order, and the batch size is
+        assumed as the last dimension.
+
+        """
         self.wrapped.reset_by_vector(values)
 
     def reshape(self, _Shape new_shape):
+        """Returns a tensor which have the same values and different shape.
+
+        :param new_shape: New shape with batch size 1.
+        :type new_shape: primitiv.Shape
+        :return: A new tensor.
+        :rtype: primitiv.Tensor
+
+        """
         return _Tensor.get_wrapper_with_new(new CppTensor(self.wrapped.reshape(normShape(new_shape).wrapped)))
 
     def flatten(self):
+        """Returns a flattened tensor.
+
+        :return: A new tensor.
+        :rtype: primitiv.Tensor
+
+        """
         return _Tensor.get_wrapper_with_new(new CppTensor(self.wrapped.flatten()))
 
     def __pos__(self):

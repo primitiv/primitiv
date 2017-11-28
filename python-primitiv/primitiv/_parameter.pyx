@@ -42,11 +42,20 @@ cdef class _ParameterStatistics:
 
 
 cdef class _Parameter:
+    """Class to manage a trainable tensor parameter.
+
+    """
 
     def __cinit__(self):
         self.stats = _ParameterStatistics(self)
 
     def __init__(self, *args, **kwargs):
+        """Creates a new Parameter object.
+
+        If no argument is given, a Parameter is initialized with zeros,
+        otherwise ``init()`` method is called with given arguments.
+
+        """
         if self.wrapped is not NULL:
             raise TypeError("__init__() has already been called.")
         self.wrapped = new CppParameter()
@@ -62,28 +71,78 @@ cdef class _Parameter:
     # NOTE(vbkaisetsu):
     # Python's Parameter.init only takes shape+Initializer arguments.
     def init(self, shape, _Initializer initializer, _Device device = None):
+        """Initializes the Parameter object.
+
+        :param shape: The shape of the parameter. The batch size should be 1.
+        :type shape: primitiv.Shape
+        :param init: An Initializer object.
+        :type init: primitiv.Initializer
+        :param device: The device object to manage internal memory (default: ``None``).
+        :type device: primitiv.Device or None
+
+        """
         if device is None:
             device = _Device.get_default()
         self.wrapped.init(normShape(shape).wrapped, initializer.wrapped[0], device.wrapped[0])
 
     def load(self, str path, bool with_stats = True, _Device device = None):
+        """Loads parameters from specified file.
+
+        :param path: File path to load parameters.
+        :type path: str
+        :param with_stats: Whether or not to load all additional statistics as well
+                           as parameter values if the file has them (default: True).
+        :type with_stats: bool
+        :param device: The device object to manage internal memory (default: None).
+        :type device: primitiv.Device or None
+
+        """
         if device is None:
             device = _Device.get_default()
         self.wrapped.load(pystr_to_cppstr(path), with_stats, device.wrapped[0])
         return
 
     def save(self, str path, bool with_stats = True):
+        """Saves current parameters into specified file.
+
+        :param path: File path to save parameters.
+        :type path: str
+        :param with_stats: Whether or not to save all additional statistics as well
+                           as parameter values if the parameter object has them
+                           (default: ``True``).
+        :type with_stats: bool
+
+        """
         self.wrapped.save(pystr_to_cppstr(path), with_stats)
         return
 
     def valid(self):
+        """Returns whether the parameter is valid or not.
+
+        :return: ``True`` or ``False`` w.r.t. the parameter is valid or not.
+        :rtype: bool
+
+        """
         return self.wrapped.valid()
 
     def reset_gradient(self):
+        """Set all gradients to 0.
+
+        """
         self.wrapped.reset_gradient()
         return
 
     def add_stats(self, str name, shape):
+        """Adds a new optional statistics tensor.
+
+        :param name: Name of the statistics.
+        :rtype: str
+        :param shape: Shape of the tensor.
+        :rtype: primitiv.Shape
+
+        All elements in the new statistics tensor is initialized by 0.
+
+        """
         self.wrapped.add_stats(pystr_to_cppstr(name), normShape(shape).wrapped)
         return
 
@@ -94,15 +153,30 @@ cdef class _Parameter:
     #     return self.wrapped.has_stats(pystr_to_cppstr(name))
 
     def shape(self):
+        """Returns the shape of the parameter.
+
+        :return: Shape of the parameter.
+        :rtype: primitiv.Shape
+
+        """
         return wrapShape(self.wrapped.shape())
 
     def device(self):
+        """Returns the Device object to manage the internal memory.
+
+        :return: The Device object.
+        :rtype: primitiv.Device
+
+        """
         return _Device.get_wrapper(&self.wrapped.device())
 
     # NOTE(vbkaisetsu):
     # `value` function is replaced with a property in Python.
     @property
     def value(self):
+        """A ``Tensor`` representing the parameter tensor.
+
+        """
         return _Tensor.get_wrapper(&self.wrapped.value())
 
     @value.setter
@@ -114,6 +188,9 @@ cdef class _Parameter:
     # `gradient` function is replaced with a property in Python.
     @property
     def gradient(self):
+        """A ``Tensor`` representing the current gradient of the value.
+
+        """
         return _Tensor.get_wrapper(&self.wrapped.gradient())
 
     @gradient.setter

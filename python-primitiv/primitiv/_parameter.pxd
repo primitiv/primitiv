@@ -37,6 +37,9 @@ cdef class _Parameter:
     cdef CppParameter *wrapped
     cdef object __weakref__
     cdef readonly _ParameterStatistics stats
+    """A dictionary-like object of the current opotional statistics.
+
+    """
     @staticmethod
     cdef void register_wrapper(CppParameter *ptr, _Parameter wrapper)
     @staticmethod

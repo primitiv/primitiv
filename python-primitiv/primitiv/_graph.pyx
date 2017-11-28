@@ -22,6 +22,9 @@ cdef object py_primitiv_graph_weak_dict = WeakValueDictionary()
 
 
 cdef class _Node:
+    """Pointer of a node in the computation graph.
+
+    """
 
     def __init__(self, _Node src = None):
         if src is None:
@@ -30,36 +33,99 @@ cdef class _Node:
             self.wrapped = CppNode(src.wrapped)
 
     def valid(self):
+        """Returns whether the node is valid or not.
+
+        :return: ``True`` or ``False`` w.r.t. the node is valid or not.
+        :rtype: bool
+
+        """
         return self.wrapped.valid()
 
     def graph(self):
+        """Returns corresponding Graph object.
+
+        :return: Corresponding Graph object.
+        :rtype: primitiv.Graph
+
+        """
         return _Graph.get_wrapper(&self.wrapped.graph())
 
     def function_id(self):
+        """Returns the function ID.
+
+        :return: Function ID.
+        :rtype: int
+
+        """
         return self.wrapped.function_id()
 
     def value_id(self):
+        """Returns the value ID of the function.
+
+        :return: Value ID.
+        :rtype: int
+
+        """
         return self.wrapped.value_id()
 
     def shape(self):
+        """Returns shape of the node.
+
+        :return: A Shape of this node.
+        :rtype: primitiv.Shape
+
+        """
         return wrapShape(self.wrapped.shape())
 
     def device(self):
+        """Returns device of the node.
+
+        :return: A Device of this node.
+        :rtype: primitiv.Device
+
+        """
         return _Device.get_wrapper(&self.wrapped.device())
 
     def to_float(self):
+        """Calculates the value of this node and returns a ``float``.
+
+        :return: A calculated float value.
+        :rtype: float
+
+        This function calls ``Graph::forward()`` internally.
+        This function can be used only when the Node has a scalar and
+        non-minibatched shape (i.e., ``shape() == Shape()``)
+
+        """
         cdef float val
         with nogil:
             val = self.wrapped.to_float()
         return val
 
     def to_list(self):
+        """Calculates the value of this node and returns a list of float.
+
+        :return: A list of calculated values.
+        :rtype: list[float]
+
+        This function calls ``Graph::forward()`` internally.
+
+        """
         cdef vector[float] vec
         with nogil:
             vec = self.wrapped.to_vector()
         return vec
 
     def to_ndarrays(self):
+        """Calculates the value of this node and returns a list of ``numpy.ndarray``
+        containing ``numpy.float32``.
+
+        :return: ``numpy.ndarray``'s list of calculated values.
+        :rtype: list[numpy.ndarray[numpy.float32]]
+
+        This function calls ``Graph::forward()`` internally.
+
+        """
         cdef vector[float] vec
         cdef CppShape s = self.wrapped.shape()
         cdef np.ndarray output_item
@@ -79,18 +145,37 @@ cdef class _Node:
         return output
 
     def argmax(self, unsigned dim):
+        """Returns argmax indices along an axis of this node.
+
+        :param dim: A specified axis.
+        :type dim: int
+        :return: A list of integer that indicates positions of the maximum values.
+        :rtype: list[int]
+
+        """
         cdef vector[unsigned] vec
         with nogil:
             vec = self.wrapped.argmax(dim)
         return vec
 
     def argmin(self, unsigned dim):
+        """Returns argmin indices along an axis of this node.
+
+        :param dim: A specified axis.
+        :type dim: int
+        :return: A list of integer that indicates positions of the minimum values.
+        :rtype: list[int]
+
+        """
         cdef vector[unsigned] vec
         with nogil:
             vec = self.wrapped.argmin(dim)
         return vec
 
     def backward(self):
+        """Executes the backward operation from this node.
+
+        """
         with nogil:
             self.wrapped.backward()
 
@@ -168,8 +253,14 @@ cdef class _Node:
 
 
 cdef class _Graph:
+    """Computation graph.
+
+    """
 
     def __init__(self):
+        """Creates a new Graph object.
+
+        """
         if self.wrapped is not NULL:
             raise TypeError("__init__() has already been called.")
         self.wrapped = new CppGraph()
@@ -182,37 +273,113 @@ cdef class _Graph:
 
     @staticmethod
     def get_default():
+        """Retrieves the current default graph.
+
+        :return: Reference of the current default graph.
+        :rtype: primitiv.Graph
+        :raises RuntimeError: if the default graph is null.
+
+        """
         return _Graph.get_wrapper(&CppGraph.get_default())
 
     @staticmethod
     def set_default(_Graph g):
+        """Specifies a new default graph.
+
+        :param g: Reference of the new default graph.
+        :type g: primitiv.Graph
+
+        """
         CppGraph.set_default(g.wrapped[0])
 
     def clear(self):
+        """Clear all functions in the graph.
+
+        After calling this method, all Node objects supplied by the graph
+        itself is invalidated.
+
+        """
         self.wrapped.clear()
         return
 
     def forward(self, _Node node):
+        """Calculates the value of given node.
+
+        :param node: Node object specifying the target node.
+        :type node: primitiv.Node
+        :return: Calculated value.
+        :rtype: primitiv.Tensor
+
+        This function calculates only the subgraph which is required to
+        calculate the target node. Each intermediate result is stored to
+        the corresponding node in the subgraph and they are re-used for
+        future calculation. I.e., each node is calculated only once while
+        the lifetime of the Graph object.
+
+        """
         cdef CppTensor t
         with nogil:
             t = self.wrapped.forward(node.wrapped)
         return _Tensor.get_wrapper_with_new(new CppTensor(t))
 
     def backward(self, _Node node):
+        """Calculates the backpropagation.
+
+        :param node: Node object specifying the output node.
+        :type node: primitiv.Node
+
+        If ``node`` is not yet forwarded, this function implicitly calls
+        ``forward(node)``.
+
+        """
         with nogil:
             self.wrapped.backward(node.wrapped)
         return
 
     def get_shape(self, _Node node):
+        """Retrieves the shape of the node.
+
+        :param node: Node object specifying the target node.
+        :type node: primitiv.Node
+        :return: The shape of the node.
+        :rtype: primitiv.Shape
+
+        """
         return wrapShape(self.wrapped.get_shape(node.wrapped))
 
     def get_device(self, _Node node):
+        """Retrieves the device of the node.
+
+        :param node: Node object specifying the target node.
+        :type node: primitiv.Node
+        :return: Device of the node.
+        :rtype: primitiv.Device
+
+        """
         return _Device.get_wrapper(&self.wrapped.get_device(node.wrapped))
 
     def dump(self, str fmt):
+        """Dump internal graph structure.
+
+        :param fmt: Name of the format.
+        :type fmt: str
+        :return: A string that represents the internal graph using given format.
+        :rtype: str
+
+        Available formats:
+
+        * ``dot``: Graphviz's dot format.
+
+        """
         return cppstr_to_pystr(self.wrapped.dump(pystr_to_cppstr(fmt)))
 
     def num_functions(self):
+        """Returns the number of functions in the computation graph.
+
+        :return: Number of nodes.
+        :rtype: int
+
+        """
         return self.wrapped.num_functions()
 
     def __copy__(self):

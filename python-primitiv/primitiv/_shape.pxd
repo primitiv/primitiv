@@ -8,6 +8,7 @@ cdef extern from "primitiv/shape.h":
         CppShape() except +
         CppShape(vector[unsigned] &dims, unsigned batch) except +
         unsigned operator[](unsigned i) except +
+        vector[unsigned] dims() except +
         unsigned depth() except +
         unsigned batch() except +
         unsigned volume() except +

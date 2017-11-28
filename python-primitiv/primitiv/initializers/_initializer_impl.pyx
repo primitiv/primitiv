@@ -1,9 +1,15 @@
-from primitiv._tensor cimport _Tensor
-
-
 cdef class _Constant(_Initializer):
+    """Initializer to generate a same-value tensor.
+
+    """
 
     def __init__(self, float k):
+        """Crates a new initializer object.
+
+        :param k: Constant to provide.
+        :type k: float
+
+        """
         if self.wrapped_newed is not NULL:
             raise TypeError("__init__() has already been called.")
         self.wrapped_newed = new CppConstant(k)
@@ -16,14 +22,21 @@ cdef class _Constant(_Initializer):
             del temp
             self.wrapped_newed = NULL
 
-    def apply(self, _Tensor x):
-        (<CppConstant*> self.wrapped).apply(x.wrapped[0])
-        return
-
 
 cdef class _Uniform(_Initializer):
+    """Initializer using a parameterized uniform distribution (lower, upper].
+
+    """
 
     def __init__(self, float lower, float upper):
+        """Crates a new initializer object.
+
+        :param lower: Lower bound of the distribusion.
+        :type lower: float
+        :param upper: Upper bound of the distribusion.
+        :type upper: float
+
+        """
         if self.wrapped_newed is not NULL:
             raise TypeError("__init__() has already been called.")
         self.wrapped_newed = new CppUniform(lower, upper)
@@ -36,14 +49,21 @@ cdef class _Uniform(_Initializer):
             del temp
             self.wrapped_newed = NULL
 
-    def apply(self, _Tensor x):
-        (<CppUniform*> self.wrapped).apply(x.wrapped[0])
-        return
-
 
 cdef class _Normal(_Initializer):
+    """Initializer using a parameterized normal distribution N(mean, sd).
+
+    """
 
     def __init__(self, float mean, float sd):
+        """Crates a new initializer object.
+
+        :param mean: Mean value of the distribusion.
+        :type mean: float
+        :param sd: Standard deviation of the distribusion.
+        :type sd: float
+
+        """
         if self.wrapped_newed is not NULL:
             raise TypeError("__init__() has already been called.")
         self.wrapped_newed = new CppNormal(mean, sd)
@@ -56,14 +76,16 @@ cdef class _Normal(_Initializer):
             del temp
             self.wrapped_newed = NULL
 
-    def apply(self, _Tensor x):
-        (<CppNormal*> self.wrapped).apply(x.wrapped[0])
-        return
-
 
 cdef class _Identity(_Initializer):
+    """Identity matrix initializer.
+
+    """
 
     def __init__(self):
+        """Crates a new initializer object.
+
+        """
         if self.wrapped_newed is not NULL:
             raise TypeError("__init__() has already been called.")
         self.wrapped_newed = new CppIdentity()
@@ -76,14 +98,19 @@ cdef class _Identity(_Initializer):
             del temp
             self.wrapped_newed = NULL
 
-    def apply(self, _Tensor x):
-        (<CppIdentity*> self.wrapped).apply(x.wrapped[0])
-        return
-
 
 cdef class _XavierUniform(_Initializer):
+    """The Xavier matrix initialization with the uniform distribution.
+
+    """
 
     def __init__(self, scale = 1.0):
+        """Crates a new initializer object.
+
+        :param scale: Scale of the distribusion.
+        :type scale: float
+
+        """
         if self.wrapped_newed is not NULL:
             raise TypeError("__init__() has already been called.")
         self.wrapped_newed = new CppXavierUniform(scale)
@@ -96,14 +123,19 @@ cdef class _XavierUniform(_Initializer):
             del temp
             self.wrapped_newed = NULL
 
-    def apply(self, _Tensor x):
-        (<CppXavierUniform*> self.wrapped).apply(x.wrapped[0])
-        return
-
 
 cdef class _XavierNormal(_Initializer):
+    """The Xavier matrix initialization with the normal distribution.
+
+    """
 
     def __init__(self, float scale = 1.0):
+        """Crates a new initializer object.
+
+        :param scale: Scale of the distribusion.
+        :type scale: float
+
+        """
         if self.wrapped_newed is not NULL:
             raise TypeError("__init__() has already been called.")
         self.wrapped_newed = new CppXavierNormal(scale)
@@ -115,7 +147,3 @@ cdef class _XavierNormal(_Initializer):
             temp = <CppXavierNormal*> self.wrapped_newed
             del temp
             self.wrapped_newed = NULL
-
-    def apply(self, _Tensor x):
-        (<CppXavierNormal*> self.wrapped).apply(x.wrapped[0])
-        return
