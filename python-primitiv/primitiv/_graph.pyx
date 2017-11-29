@@ -1,9 +1,9 @@
 from libc.stdint cimport uintptr_t
 from libcpp.vector cimport vector
 
-from primitiv._device cimport _Device
+from primitiv._device cimport Device
 from primitiv._shape cimport wrapShape
-from primitiv._tensor cimport _Tensor
+from primitiv._tensor cimport Tensor
 from primitiv._operator cimport op_pow, op_ipow, op_matmul
 from primitiv.config cimport pystr_to_cppstr, cppstr_to_pystr
 
@@ -21,12 +21,12 @@ import numpy as np
 cdef object py_primitiv_graph_weak_dict = WeakValueDictionary()
 
 
-cdef class _Node:
+cdef class Node:
     """Pointer of a node in the computation graph.
 
     """
 
-    def __init__(self, _Node src = None):
+    def __init__(self, Node src = None):
         if src is None:
             self.wrapped = CppNode()
         else:
@@ -48,7 +48,7 @@ cdef class _Node:
         :rtype: primitiv.Graph
 
         """
-        return _Graph.get_wrapper(&self.wrapped.graph())
+        return Graph.get_wrapper(&self.wrapped.graph())
 
     def function_id(self):
         """Returns the function ID.
@@ -84,7 +84,7 @@ cdef class _Node:
         :rtype: primitiv.Device
 
         """
-        return _Device.get_wrapper(&self.wrapped.device())
+        return Device.get_wrapper(&self.wrapped.device())
 
     def to_float(self):
         """Calculates the value of this node and returns a ``float``.
@@ -187,47 +187,47 @@ cdef class _Node:
 
     def __add__(left, right):
         if isinstance(right, (int, float)):
-            return wrapNode(op_node_add((<_Node> left).wrapped, <float> right))
+            return wrapNode(op_node_add((<Node> left).wrapped, <float> right))
         elif isinstance(left, (int, float)):
-            return wrapNode(op_node_add(<float> left, (<_Node> right).wrapped))
-        elif isinstance(left, _Node) and isinstance(right, _Node):
-            return wrapNode(op_node_add((<_Node> left).wrapped, (<_Node> right).wrapped))
+            return wrapNode(op_node_add(<float> left, (<Node> right).wrapped))
+        elif isinstance(left, Node) and isinstance(right, Node):
+            return wrapNode(op_node_add((<Node> left).wrapped, (<Node> right).wrapped))
         else:
             return NotImplemented
 
     def __sub__(left, right):
         if isinstance(right, (int, float)):
-            return wrapNode(op_node_sub((<_Node> left).wrapped, <float> right))
+            return wrapNode(op_node_sub((<Node> left).wrapped, <float> right))
         elif isinstance(left, (int, float)):
-            return wrapNode(op_node_sub(<float> left, (<_Node> right).wrapped))
-        elif isinstance(left, _Node) and isinstance(right, _Node):
-            return wrapNode(op_node_sub((<_Node> left).wrapped, (<_Node> right).wrapped))
+            return wrapNode(op_node_sub(<float> left, (<Node> right).wrapped))
+        elif isinstance(left, Node) and isinstance(right, Node):
+            return wrapNode(op_node_sub((<Node> left).wrapped, (<Node> right).wrapped))
         else:
             return NotImplemented
 
     def __mul__(left, right):
         if isinstance(right, (int, float)):
-            return wrapNode(op_node_mul((<_Node> left).wrapped, <float> right))
+            return wrapNode(op_node_mul((<Node> left).wrapped, <float> right))
         elif isinstance(left, (int, float)):
-            return wrapNode(op_node_mul(<float> left, (<_Node> right).wrapped))
-        elif isinstance(left, _Node) and isinstance(right, _Node):
-            return wrapNode(op_node_mul((<_Node> left).wrapped, (<_Node> right).wrapped))
+            return wrapNode(op_node_mul(<float> left, (<Node> right).wrapped))
+        elif isinstance(left, Node) and isinstance(right, Node):
+            return wrapNode(op_node_mul((<Node> left).wrapped, (<Node> right).wrapped))
         else:
             return NotImplemented
 
     def __matmul__(left, right):
-        if isinstance(left, _Node) and isinstance(right, _Node):
-            return wrapNode(op_matmul((<_Node> left).wrapped, (<_Node> right).wrapped))
+        if isinstance(left, Node) and isinstance(right, Node):
+            return wrapNode(op_matmul((<Node> left).wrapped, (<Node> right).wrapped))
         else:
             return NotImplemented
 
     def __truediv__(left, right):
         if isinstance(right, (int, float)):
-            return wrapNode(op_node_div((<_Node> left).wrapped, <float> right))
+            return wrapNode(op_node_div((<Node> left).wrapped, <float> right))
         elif isinstance(left, (int, float)):
-            return wrapNode(op_node_div(<float> left, (<_Node> right).wrapped))
-        elif isinstance(left, _Node) and isinstance(right, _Node):
-            return wrapNode(op_node_div((<_Node> left).wrapped, (<_Node> right).wrapped))
+            return wrapNode(op_node_div(<float> left, (<Node> right).wrapped))
+        elif isinstance(left, Node) and isinstance(right, Node):
+            return wrapNode(op_node_div((<Node> left).wrapped, (<Node> right).wrapped))
         else:
             return NotImplemented
 
@@ -235,13 +235,13 @@ cdef class _Node:
         if mod is not None:
             return NotImplemented
         if isinstance(right, int) and -0x80000000 <= right <= 0x7fffffff:
-            return wrapNode(op_ipow((<_Node> left).wrapped, <int> right))
+            return wrapNode(op_ipow((<Node> left).wrapped, <int> right))
         elif isinstance(right, (int, float)):
-            return wrapNode(op_pow((<_Node> left).wrapped, <float> right))
+            return wrapNode(op_pow((<Node> left).wrapped, <float> right))
         elif isinstance(left, (int, float)):
-            return wrapNode(op_pow(<float> left, (<_Node> right).wrapped))
-        elif isinstance(left, _Node) and isinstance(right, _Node):
-            return wrapNode(op_pow((<_Node> left).wrapped, (<_Node> right).wrapped))
+            return wrapNode(op_pow(<float> left, (<Node> right).wrapped))
+        elif isinstance(left, Node) and isinstance(right, Node):
+            return wrapNode(op_pow((<Node> left).wrapped, (<Node> right).wrapped))
         else:
             return NotImplemented
 
@@ -252,7 +252,7 @@ cdef class _Node:
         raise NotImplementedError(type(self).__name__ + " does not support `__deepcopy__` for now.")
 
 
-cdef class _Graph:
+cdef class Graph:
     """Computation graph.
 
     """
@@ -264,7 +264,7 @@ cdef class _Graph:
         if self.wrapped is not NULL:
             raise TypeError("__init__() has already been called.")
         self.wrapped = new CppGraph()
-        _Graph.register_wrapper(self.wrapped, self)
+        Graph.register_wrapper(self.wrapped, self)
 
     def __dealloc__(self):
         if self.wrapped is not NULL:
@@ -280,10 +280,10 @@ cdef class _Graph:
         :raises RuntimeError: if the default graph is null.
 
         """
-        return _Graph.get_wrapper(&CppGraph.get_default())
+        return Graph.get_wrapper(&CppGraph.get_default())
 
     @staticmethod
-    def set_default(_Graph g):
+    def set_default(Graph g):
         """Specifies a new default graph.
 
         :param g: Reference of the new default graph.
@@ -302,7 +302,7 @@ cdef class _Graph:
         self.wrapped.clear()
         return
 
-    def forward(self, _Node node):
+    def forward(self, Node node):
         """Calculates the value of given node.
 
         :param node: Node object specifying the target node.
@@ -320,9 +320,9 @@ cdef class _Graph:
         cdef CppTensor t
         with nogil:
             t = self.wrapped.forward(node.wrapped)
-        return _Tensor.get_wrapper_with_new(new CppTensor(t))
+        return Tensor.get_wrapper_with_new(new CppTensor(t))
 
-    def backward(self, _Node node):
+    def backward(self, Node node):
         """Calculates the backpropagation.
 
         :param node: Node object specifying the output node.
@@ -336,7 +336,7 @@ cdef class _Graph:
             self.wrapped.backward(node.wrapped)
         return
 
-    def get_shape(self, _Node node):
+    def get_shape(self, Node node):
         """Retrieves the shape of the node.
 
         :param node: Node object specifying the target node.
@@ -347,7 +347,7 @@ cdef class _Graph:
         """
         return wrapShape(self.wrapped.get_shape(node.wrapped))
 
-    def get_device(self, _Node node):
+    def get_device(self, Node node):
         """Retrieves the device of the node.
 
         :param node: Node object specifying the target node.
@@ -356,7 +356,7 @@ cdef class _Graph:
         :rtype: primitiv.Device
 
         """
-        return _Device.get_wrapper(&self.wrapped.get_device(node.wrapped))
+        return Device.get_wrapper(&self.wrapped.get_device(node.wrapped))
 
     def dump(self, str fmt):
         """Dump internal graph structure.
@@ -389,14 +389,14 @@ cdef class _Graph:
         raise NotImplementedError(type(self).__name__ + " does not support `__deepcopy__` for now.")
 
     @staticmethod
-    cdef void register_wrapper(CppGraph *ptr, _Graph wrapper):
+    cdef void register_wrapper(CppGraph *ptr, Graph wrapper):
         if <uintptr_t> ptr in py_primitiv_graph_weak_dict:
             raise ValueError("Attempted to register the same C++ object twice.")
         py_primitiv_graph_weak_dict[<uintptr_t> ptr] = wrapper
 
     @staticmethod
-    cdef _Graph get_wrapper(CppGraph *ptr):
+    cdef Graph get_wrapper(CppGraph *ptr):
         # NOTE(vbkaisetsu):
-        # _Graph instances should be created and be registered before this
+        # Graph instances should be created and be registered before this
         # function is called.
         return py_primitiv_graph_weak_dict[<uintptr_t> ptr]

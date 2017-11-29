@@ -11,7 +11,7 @@ from weakref import WeakValueDictionary
 cdef object py_primitiv_device_weak_dict = WeakValueDictionary()
 
 
-cdef class _Device:
+cdef class Device:
     """Interface of the Tensor provider.
 
     """
@@ -25,10 +25,10 @@ cdef class _Device:
         :raises RuntimeError: if the default device is null.
 
         """
-        return _Device.get_wrapper(&CppDevice.get_default())
+        return Device.get_wrapper(&CppDevice.get_default())
 
     @staticmethod
-    def set_default(_Device dev):
+    def set_default(Device dev):
         """Specifies a new default device.
 
         :param dev: Reference of the new default device.
@@ -51,14 +51,14 @@ cdef class _Device:
         raise NotImplementedError(type(self).__name__ + " does not support `__deepcopy__` for now.")
 
     @staticmethod
-    cdef void register_wrapper(CppDevice *ptr, _Device wrapper):
+    cdef void register_wrapper(CppDevice *ptr, Device wrapper):
         if <uintptr_t> ptr in py_primitiv_device_weak_dict:
             raise ValueError("Attempted to register the same C++ object twice.")
         py_primitiv_device_weak_dict[<uintptr_t> ptr] = wrapper
 
     @staticmethod
-    cdef _Device get_wrapper(CppDevice *ptr):
+    cdef Device get_wrapper(CppDevice *ptr):
         # NOTE(vbkaisetsu):
-        # _Device instances should be created and be registered before this
+        # Device instances should be created and be registered before this
         # function is called.
         return py_primitiv_device_weak_dict[<uintptr_t> ptr]

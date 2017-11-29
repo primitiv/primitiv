@@ -44,13 +44,13 @@ cdef extern from "tensor_op.h" namespace "python_primitiv_tensor":
     cdef void op_tensor_isub(CppTensor &tensor, const CppTensor &x) except +
 
 
-cdef class _Tensor:
+cdef class Tensor:
     cdef CppTensor *wrapped
     cdef bool del_required
     cdef object __weakref__
     @staticmethod
-    cdef void register_wrapper(CppTensor *ptr, _Tensor wrapper)
+    cdef void register_wrapper(CppTensor *ptr, Tensor wrapper)
     @staticmethod
-    cdef _Tensor get_wrapper(CppTensor *ptr)
+    cdef Tensor get_wrapper(CppTensor *ptr)
     @staticmethod
-    cdef _Tensor get_wrapper_with_new(CppTensor *ptr)
+    cdef Tensor get_wrapper_with_new(CppTensor *ptr)

@@ -3,10 +3,10 @@ from libcpp.string cimport string
 from libcpp cimport bool
 from libc.stdint cimport uintptr_t
 
-from primitiv._tensor cimport CppTensor, _Tensor
-from primitiv._shape cimport CppShape, _Shape
+from primitiv._tensor cimport CppTensor, Tensor
+from primitiv._shape cimport CppShape, Shape
 from primitiv._device cimport CppDevice
-from primitiv._initializer cimport CppInitializer, _Initializer
+from primitiv._initializer cimport CppInitializer, Initializer
 
 
 cdef extern from "primitiv/parameter.h":
@@ -29,24 +29,24 @@ cdef extern from "primitiv/parameter.h":
         CppTensor &stats(const string &name) except +
 
 
-cdef class _ParameterStatistics:
+cdef class ParameterStatistics:
     cdef object param_ref
 
 
-cdef class _Parameter:
+cdef class Parameter:
     cdef CppParameter *wrapped
     cdef object __weakref__
-    cdef readonly _ParameterStatistics stats
+    cdef readonly ParameterStatistics stats
     """A dictionary-like object of the current opotional statistics.
 
     """
     @staticmethod
-    cdef void register_wrapper(CppParameter *ptr, _Parameter wrapper)
+    cdef void register_wrapper(CppParameter *ptr, Parameter wrapper)
     @staticmethod
-    cdef _Parameter get_wrapper(CppParameter *ptr)
+    cdef Parameter get_wrapper(CppParameter *ptr)
     @staticmethod
-    cdef _Parameter get_wrapper_with_new(CppParameter *ptr)
+    cdef Parameter get_wrapper_with_new(CppParameter *ptr)
 
     # NOTE(vbkaisetsu)
-    # _Parameter is always created with `new`, so `del_required` is not used.
+    # Parameter is always created with `new`, so `del_required` is not used.
     # cdef bool del_required

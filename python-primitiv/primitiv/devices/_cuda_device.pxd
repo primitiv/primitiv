@@ -9,5 +9,5 @@ cdef extern from "primitiv/cuda_device.h":
         unsigned num_devices() except +
 
 
-cdef class _CUDA(_Device):
+cdef class CUDA(_Device):
     pass

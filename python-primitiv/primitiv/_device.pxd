@@ -7,10 +7,10 @@ cdef extern from "primitiv/device.h":
         void dump_description() except +
 
 
-cdef class _Device:
+cdef class Device:
     cdef CppDevice *wrapped
     cdef object __weakref__
     @staticmethod
-    cdef void register_wrapper(CppDevice *ptr, _Device wrapper)
+    cdef void register_wrapper(CppDevice *ptr, Device wrapper)
     @staticmethod
-    cdef _Device get_wrapper(CppDevice *ptr)
+    cdef Device get_wrapper(CppDevice *ptr)

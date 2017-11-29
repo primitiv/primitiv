@@ -1,4 +1,4 @@
-from primitiv._initializer cimport CppInitializer, _Initializer
+from primitiv._initializer cimport CppInitializer, Initializer
 
 
 cdef extern from "primitiv/initializer_impl.h":
@@ -21,20 +21,20 @@ cdef extern from "primitiv/initializer_impl.h":
         CppXavierNormal(float scale)
 
 
-cdef class _Constant(_Initializer):
+cdef class Constant(Initializer):
     pass
 
-cdef class _Uniform(_Initializer):
+cdef class Uniform(Initializer):
     pass
 
-cdef class _Normal(_Initializer):
+cdef class Normal(Initializer):
     pass
 
-cdef class _Identity(_Initializer):
+cdef class Identity(Initializer):
     pass
 
-cdef class _XavierUniform(_Initializer):
+cdef class XavierUniform(Initializer):
     pass
 
-cdef class _XavierNormal(_Initializer):
+cdef class XavierNormal(Initializer):
     pass

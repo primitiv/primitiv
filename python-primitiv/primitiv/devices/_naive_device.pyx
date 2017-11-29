@@ -1,7 +1,7 @@
-from primitiv._device cimport _Device
+from primitiv._device cimport Device
 
 
-cdef class _Naive(_Device):
+cdef class Naive(Device):
     """Creates a Naive object.
 
     """
@@ -20,7 +20,7 @@ cdef class _Naive(_Device):
         else:
             self.wrapped = new CppNaive(<unsigned> rng_seed)
 
-        _Device.register_wrapper(self.wrapped, self)
+        Device.register_wrapper(self.wrapped, self)
 
     def __dealloc__(self):
         if self.wrapped is not NULL:

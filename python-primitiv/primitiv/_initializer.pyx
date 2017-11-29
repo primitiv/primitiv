@@ -1,12 +1,12 @@
-from primitiv._tensor cimport _Tensor
+from primitiv._tensor cimport Tensor
 
 
-cdef class _Initializer:
+cdef class Initializer:
     """Abstract class to provide parameter initialization algorithms.
 
     """
 
-    def apply(self, _Tensor x):
+    def apply(self, Tensor x):
         """Provides an initialized tensor.
 
         :param x: Tensor object to be initialized.

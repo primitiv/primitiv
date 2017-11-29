@@ -6,7 +6,7 @@ from libcpp.memory cimport shared_ptr
 
 from primitiv._device cimport CppDevice
 from primitiv._model cimport CppModel
-from primitiv._parameter cimport CppParameter, _Parameter
+from primitiv._parameter cimport CppParameter, Parameter
 from primitiv._shape cimport CppShape
 
 
@@ -32,7 +32,7 @@ cdef extern from "primitiv/optimizer.h":
         void set_configs(const unordered_map[string, unsigned] &uint_configs, const unordered_map[string, float] &float_configs) except +
 
 
-cdef class _Optimizer:
+cdef class Optimizer:
     cdef CppOptimizer *wrapped
 
 

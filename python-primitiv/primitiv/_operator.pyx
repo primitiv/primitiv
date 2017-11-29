@@ -1,11 +1,11 @@
 from libcpp.vector cimport vector
 from libcpp cimport bool
 
-from primitiv._device cimport _Device
-from primitiv._shape cimport _Shape, normShape
-from primitiv._tensor cimport _Tensor, CppTensor
-from primitiv._graph cimport _Graph, wrapNode, CppNode, _Node
-from primitiv._parameter cimport _Parameter
+from primitiv._device cimport Device
+from primitiv._shape cimport Shape, normShape
+from primitiv._tensor cimport Tensor, CppTensor
+from primitiv._graph cimport Graph, wrapNode, CppNode, Node
+from primitiv._parameter cimport Parameter
 
 from utils cimport ndarrays_to_vector
 
@@ -13,12 +13,12 @@ cimport numpy as np
 import numpy as np
 
 
-class _operators:
+class operators:
 
     @staticmethod
-    def raw_input(shape, vector[float] data, _Device device = None, _Graph g = None):
+    def raw_input(shape, vector[float] data, Device device = None, Graph g = None):
         if device is None:
-            device = _Device.get_default()
+            device = Device.get_default()
         if g is not None:
             return wrapNode(Node_input_vector(normShape(shape).wrapped, data, device.wrapped[0], g.wrapped[0]))
         else:
@@ -28,7 +28,7 @@ class _operators:
     # This function takes an np.ndarray or a list of np.ndarray
     # instead of a vector.
     @staticmethod
-    def input(data, _Device device = None, _Graph g = None):
+    def input(data, Device device = None, Graph g = None):
         # NOTE(vbkaisetsu, odashi):
         # In this function, we don't check whether each ndarray is empty
         # (i.e., it doesn't have any elements) or not.
@@ -43,204 +43,204 @@ class _operators:
                 raise TypeError("`data` contains no item.")
             if not isinstance(data[0], np.ndarray):
                 raise TypeError("`data` contains other objects than numpy.ndarray.")
-            shape = _Shape(data[0].shape, len(data))
+            shape = Shape(data[0].shape, len(data))
         else:
             raise TypeError("`data` has incorrect type.")
-        return _operators.raw_input(shape, ndarrays_to_vector(data), device, g)
+        return operators.raw_input(shape, ndarrays_to_vector(data), device, g)
 
 
     @staticmethod
-    def parameter(_Parameter param, _Graph g = None):
+    def parameter(Parameter param, Graph g = None):
         if g is not None:
             return wrapNode(Node_parameter(param.wrapped[0], g.wrapped[0]))
         else:
             return wrapNode(Node_parameter(param.wrapped[0]))
 
     @staticmethod
-    def copy(_Node x, _Device device = None):
+    def copy(Node x, Device device = None):
         if device is None:
-            device = _Device.get_default()
+            device = Device.get_default()
         return wrapNode(op_copy(x.wrapped, device.wrapped[0]))
 
     @staticmethod
-    def pick(_Node x, vector[unsigned] ids, unsigned dim):
+    def pick(Node x, vector[unsigned] ids, unsigned dim):
         return wrapNode(op_pick(x.wrapped, ids, dim))
 
     @staticmethod
-    def slice(_Node x, unsigned dim, unsigned lower, unsigned upper):
+    def slice(Node x, unsigned dim, unsigned lower, unsigned upper):
         return wrapNode(op_slice(x.wrapped, dim, lower, upper))
 
     @staticmethod
     def concat(xs, unsigned dim):
         cdef vector[CppNode] vec
-        cdef _Node x
+        cdef Node x
         for x in xs:
             vec.push_back(x.wrapped)
         return wrapNode(op_concat(vec, dim))
 
     @staticmethod
-    def reshape(_Node x, _Shape new_shape):
+    def reshape(Node x, Shape new_shape):
         return wrapNode(op_reshape(x.wrapped, new_shape.wrapped))
 
     @staticmethod
-    def flatten(_Node x):
+    def flatten(Node x):
         return wrapNode(op_flatten(x.wrapped))
 
     @staticmethod
-    def transpose(_Node x):
+    def transpose(Node x):
         return wrapNode(op_transpose(x.wrapped))
 
     @staticmethod
-    def matmul(_Node a, _Node b):
+    def matmul(Node a, Node b):
         return wrapNode(op_matmul(a.wrapped, b.wrapped))
 
     @staticmethod
-    def sqrt(_Node x):
+    def sqrt(Node x):
         return wrapNode(op_sqrt(x.wrapped))
 
     @staticmethod
-    def exp(_Node x):
+    def exp(Node x):
         return wrapNode(op_exp(x.wrapped))
 
     @staticmethod
-    def log(_Node x):
+    def log(Node x):
         return wrapNode(op_log(x.wrapped))
 
     @staticmethod
     def pow(x, k):
-        if isinstance(x, _Node) and isinstance(k, int) and -0x80000000 <= k <= 0x7fffffff:
-            return wrapNode(op_ipow((<_Node> x).wrapped, <int> k))
-        elif isinstance(x, _Node) and isinstance(k, (int, float)):
-            return wrapNode(op_pow((<_Node> x).wrapped, <float> k))
-        elif isinstance(x, (int, float)) and isinstance(k, _Node):
-            return wrapNode(op_pow(<float> x, (<_Node> k).wrapped))
-        elif isinstance(x, _Node) and isinstance(k, _Node):
-            return wrapNode(op_pow((<_Node> x).wrapped, (<_Node> k).wrapped))
+        if isinstance(x, Node) and isinstance(k, int) and -0x80000000 <= k <= 0x7fffffff:
+            return wrapNode(op_ipow((<Node> x).wrapped, <int> k))
+        elif isinstance(x, Node) and isinstance(k, (int, float)):
+            return wrapNode(op_pow((<Node> x).wrapped, <float> k))
+        elif isinstance(x, (int, float)) and isinstance(k, Node):
+            return wrapNode(op_pow(<float> x, (<Node> k).wrapped))
+        elif isinstance(x, Node) and isinstance(k, Node):
+            return wrapNode(op_pow((<Node> x).wrapped, (<Node> k).wrapped))
         else:
             raise TypeError("`x` or `k` has incorrect type.")
 
     @staticmethod
-    def tanh(_Node x):
+    def tanh(Node x):
         return wrapNode(op_tanh(x.wrapped))
 
     @staticmethod
-    def sigmoid(_Node x):
+    def sigmoid(Node x):
         return wrapNode(op_sigmoid(x.wrapped))
 
     @staticmethod
-    def softplus(_Node x):
+    def softplus(Node x):
         return wrapNode(op_softplus(x.wrapped))
 
     @staticmethod
-    def sin(_Node x):
+    def sin(Node x):
         return wrapNode(op_sin(x.wrapped))
 
     @staticmethod
-    def cos(_Node x):
+    def cos(Node x):
         return wrapNode(op_cos(x.wrapped))
 
     @staticmethod
-    def tan(_Node x):
+    def tan(Node x):
         return wrapNode(op_tan(x.wrapped))
 
     @staticmethod
-    def relu(_Node x):
+    def relu(Node x):
         return wrapNode(op_relu(x.wrapped))
 
     @staticmethod
-    def lrelu(_Node x):
+    def lrelu(Node x):
         return wrapNode(op_lrelu(x.wrapped))
 
     @staticmethod
-    def prelu(_Node x, float a):
+    def prelu(Node x, float a):
         return wrapNode(op_prelu(x.wrapped, a))
 
     @staticmethod
-    def elu(_Node x, float a):
+    def elu(Node x, float a):
         return wrapNode(op_elu(x.wrapped, a))
 
     @staticmethod
-    def selu(_Node x, float a, float s):
+    def selu(Node x, float a, float s):
         return wrapNode(op_selu(x.wrapped, a, s))
 
     @staticmethod
     def sum(x, dim = None):
         cdef vector[CppNode] xs
-        cdef _Node node
+        cdef Node node
         if isinstance(x, list):
             for node in x:
                 xs.push_back(node.wrapped)
             return wrapNode(Node_sum_container(xs))
         else:
-            return wrapNode(Node_sum((<_Node> x).wrapped, <unsigned> dim))
+            return wrapNode(Node_sum((<Node> x).wrapped, <unsigned> dim))
 
     @staticmethod
     def mean(x, dim = None):
         cdef vector[CppNode] xs
-        cdef _Node node
+        cdef Node node
         if isinstance(x, list):
             for node in x:
                 xs.push_back(node.wrapped)
             return wrapNode(Node_mean_container(xs))
         else:
-            return wrapNode(Node_mean((<_Node> x).wrapped, <unsigned> dim))
+            return wrapNode(Node_mean((<Node> x).wrapped, <unsigned> dim))
 
     @staticmethod
-    def broadcast(_Node x, unsigned dim, unsigned size):
+    def broadcast(Node x, unsigned dim, unsigned size):
         return wrapNode(op_broadcast(x.wrapped, dim, size))
 
     @staticmethod
-    def logsumexp(_Node x, unsigned dim):
+    def logsumexp(Node x, unsigned dim):
         return wrapNode(op_logsumexp(x.wrapped, dim))
 
     @staticmethod
-    def log_softmax(_Node x, unsigned dim):
+    def log_softmax(Node x, unsigned dim):
         return wrapNode(op_log_softmax(x.wrapped, dim))
 
     @staticmethod
-    def softmax(_Node x, unsigned dim):
+    def softmax(Node x, unsigned dim):
         return wrapNode(op_softmax(x.wrapped, dim))
 
     @staticmethod
-    def softmax_cross_entropy(_Node x, t, unsigned dim):
-        if isinstance(t, _Node):
-            return wrapNode(op_softmax_cross_entropy(x.wrapped, (<_Node> t).wrapped, dim))
+    def softmax_cross_entropy(Node x, t, unsigned dim):
+        if isinstance(t, Node):
+            return wrapNode(op_softmax_cross_entropy(x.wrapped, (<Node> t).wrapped, dim))
         elif isinstance(t, list):
             return wrapNode(op_softmax_cross_entropy(x.wrapped, <vector[unsigned]> t, dim))
         else:
             raise TypeError("`t` has incorrect type.")
 
     @staticmethod
-    def constant(shape, float k, _Device device = None, _Graph g = None):
+    def constant(shape, float k, Device device = None, Graph g = None):
         if device is None:
-            device = _Device.get_default()
+            device = Device.get_default()
         if g is None:
             return wrapNode(op_constant[CppNode](normShape(shape).wrapped, k, device.wrapped[0]))
         else:
             return wrapNode(op_constant(normShape(shape).wrapped, k, device.wrapped[0], g.wrapped[0]))
 
     @staticmethod
-    def zeros(shape, _Device device = None, _Graph g = None):
+    def zeros(shape, Device device = None, Graph g = None):
         if device is None:
-            device = _Device.get_default()
+            device = Device.get_default()
         if g is None:
             return wrapNode(op_zeros[CppNode](normShape(shape).wrapped, device.wrapped[0]))
         else:
             return wrapNode(op_zeros(normShape(shape).wrapped, device.wrapped[0], g.wrapped[0]))
 
     @staticmethod
-    def ones(shape, _Device device = None, _Graph g = None):
+    def ones(shape, Device device = None, Graph g = None):
         if device is None:
-            device = _Device.get_default()
+            device = Device.get_default()
         if g is None:
             return wrapNode(op_ones[CppNode](normShape(shape).wrapped, device.wrapped[0]))
         else:
             return wrapNode(op_ones(normShape(shape).wrapped, device.wrapped[0], g.wrapped[0]))
 
     @staticmethod
-    def identity(unsigned size, _Device device = None, _Graph g = None):
+    def identity(unsigned size, Device device = None, Graph g = None):
         if device is None:
-            device = _Device.get_default()
+            device = Device.get_default()
         if g is None:
             return wrapNode(op_identity[CppNode](size, device.wrapped[0]))
         else:
@@ -248,81 +248,81 @@ class _operators:
 
     class batch:
         @staticmethod
-        def sum(_Node x):
+        def sum(Node x):
             return wrapNode(op_batch_sum[CppNode](x.wrapped))
 
         @staticmethod
-        def mean(_Node x):
+        def mean(Node x):
             return wrapNode(op_batch_mean[CppNode](x.wrapped))
 
         @staticmethod
-        def normalize(_Node x):
+        def normalize(Node x):
             return wrapNode(op_batch_normalize[CppNode](x.wrapped))
 
     class random:
         @staticmethod
-        def bernoulli(shape, float p, _Device device = None, _Graph g = None):
+        def bernoulli(shape, float p, Device device = None, Graph g = None):
             if device is None:
-                device = _Device.get_default()
+                device = Device.get_default()
             if g is None:
                 return wrapNode(op_random_bernoulli[CppNode](normShape(shape).wrapped, p, device.wrapped[0]))
             else:
                 return wrapNode(op_random_bernoulli(normShape(shape).wrapped, p, device.wrapped[0], g.wrapped[0]))
 
         @staticmethod
-        def uniform(shape, float lower, float upper, _Device device = None, _Graph g = None):
+        def uniform(shape, float lower, float upper, Device device = None, Graph g = None):
             if device is None:
-                device = _Device.get_default()
+                device = Device.get_default()
             if g is None:
                 return wrapNode(op_random_uniform[CppNode](normShape(shape).wrapped, lower, upper, device.wrapped[0]))
             else:
                 return wrapNode(op_random_uniform(normShape(shape).wrapped, lower, upper, device.wrapped[0], g.wrapped[0]))
 
         @staticmethod
-        def normal(shape, float mean, float sd, _Device device = None, _Graph g = None):
+        def normal(shape, float mean, float sd, Device device = None, Graph g = None):
             if device is None:
-                device = _Device.get_default()
+                device = Device.get_default()
             if g is None:
                 return wrapNode(op_random_normal[CppNode](normShape(shape).wrapped, mean, sd, device.wrapped[0]))
             else:
                 return wrapNode(op_random_normal(normShape(shape).wrapped, mean, sd, device.wrapped[0], g.wrapped[0]))
 
         @staticmethod
-        def log_normal(shape, float mean, float sd, _Device device = None, _Graph g = None):
+        def log_normal(shape, float mean, float sd, Device device = None, Graph g = None):
             if device is None:
-                device = _Device.get_default()
+                device = Device.get_default()
             if g is None:
                 return wrapNode(op_random_log_normal[CppNode](normShape(shape).wrapped, mean, sd, device.wrapped[0]))
             else:
                 return wrapNode(op_random_log_normal(normShape(shape).wrapped, mean, sd, device.wrapped[0], g.wrapped[0]))
 
         @staticmethod
-        def gumbel(shape, float mu, float beta, _Device device = None, _Graph g = None):
+        def gumbel(shape, float mu, float beta, Device device = None, Graph g = None):
             if device is None:
-                device = _Device.get_default()
+                device = Device.get_default()
             if g is None:
                 return wrapNode(op_random_gumbel[CppNode](normShape(shape).wrapped, mu, beta, device.wrapped[0]))
             else:
                 return wrapNode(op_random_gumbel(normShape(shape).wrapped, mu, beta, device.wrapped[0], g.wrapped[0]))
 
     @staticmethod
-    def dropout(_Node x, float rate, bool enabled):
+    def dropout(Node x, float rate, bool enabled):
         return wrapNode(op_dropout(x.wrapped, rate, enabled))
 
 
-class _tensor_operators:
+class tensor_operators:
 
     @staticmethod
-    def raw_input(shape, vector[float] data, _Device device = None):
+    def raw_input(shape, vector[float] data, Device device = None):
         if device is None:
-            device = _Device.get_default()
-        return _Tensor.get_wrapper_with_new(new CppTensor(Tensor_input_vector(normShape(shape).wrapped, data, device.wrapped[0])))
+            device = Device.get_default()
+        return Tensor.get_wrapper_with_new(new CppTensor(Tensor_input_vector(normShape(shape).wrapped, data, device.wrapped[0])))
 
     # NOTE(vbkaisetsu)
     # This function takes an np.ndarray or a list of np.ndarray
     # instead of a vector.
     @staticmethod
-    def input(data, _Device device = None):
+    def input(data, Device device = None):
         # NOTE(vbkaisetsu, odashi):
         # In this function, we don't check whether each ndarray is empty
         # (i.e., it doesn't have any elements) or not.
@@ -337,237 +337,237 @@ class _tensor_operators:
                 raise TypeError("`data` contains no item.")
             if not isinstance(data[0], np.ndarray):
                 raise TypeError("`data` contains other objects than numpy.ndarray.")
-            shape = _Shape(data[0].shape, len(data))
+            shape = Shape(data[0].shape, len(data))
         else:
             raise TypeError("`data` has incorrect type.")
-        return _tensor_operators.raw_input(shape, ndarrays_to_vector(data), device)
+        return tensor_operators.raw_input(shape, ndarrays_to_vector(data), device)
 
     @staticmethod
-    def parameter(_Parameter param):
-        return _Tensor.get_wrapper_with_new(new CppTensor(Tensor_parameter(param.wrapped[0])))
+    def parameter(Parameter param):
+        return Tensor.get_wrapper_with_new(new CppTensor(Tensor_parameter(param.wrapped[0])))
 
     @staticmethod
-    def copy(_Tensor x, _Device device = None):
+    def copy(Tensor x, Device device = None):
         if device is None:
-            device = _Device.get_default()
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_copy(x.wrapped[0], device.wrapped[0])))
+            device = Device.get_default()
+        return Tensor.get_wrapper_with_new(new CppTensor(op_copy(x.wrapped[0], device.wrapped[0])))
 
     @staticmethod
-    def pick(_Tensor x, vector[unsigned] ids, unsigned dim):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_pick(x.wrapped[0], ids, dim)))
+    def pick(Tensor x, vector[unsigned] ids, unsigned dim):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_pick(x.wrapped[0], ids, dim)))
 
     @staticmethod
-    def slice(_Tensor x, unsigned dim, unsigned lower, unsigned upper):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_slice(x.wrapped[0], dim, lower, upper)))
+    def slice(Tensor x, unsigned dim, unsigned lower, unsigned upper):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_slice(x.wrapped[0], dim, lower, upper)))
 
     @staticmethod
     def concat(xs, unsigned dim):
         cdef vector[CppTensor] vec
-        cdef _Tensor x
+        cdef Tensor x
         for x in xs:
             vec.push_back(x.wrapped[0])
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_concat(vec, dim)))
+        return Tensor.get_wrapper_with_new(new CppTensor(op_concat(vec, dim)))
 
     @staticmethod
-    def reshape(_Tensor x, _Shape new_shape):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_reshape(x.wrapped[0], new_shape.wrapped)))
+    def reshape(Tensor x, Shape new_shape):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_reshape(x.wrapped[0], new_shape.wrapped)))
 
     @staticmethod
-    def flatten(_Tensor x):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_flatten(x.wrapped[0])))
+    def flatten(Tensor x):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_flatten(x.wrapped[0])))
 
     @staticmethod
-    def transpose(_Tensor x):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_transpose(x.wrapped[0])))
+    def transpose(Tensor x):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_transpose(x.wrapped[0])))
 
     @staticmethod
-    def matmul(_Tensor a, _Tensor b):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_matmul(a.wrapped[0], b.wrapped[0])))
+    def matmul(Tensor a, Tensor b):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_matmul(a.wrapped[0], b.wrapped[0])))
 
     @staticmethod
-    def sqrt(_Tensor x):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_sqrt(x.wrapped[0])))
+    def sqrt(Tensor x):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_sqrt(x.wrapped[0])))
 
     @staticmethod
-    def exp(_Tensor x):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_exp(x.wrapped[0])))
+    def exp(Tensor x):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_exp(x.wrapped[0])))
 
     @staticmethod
-    def log(_Tensor x):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_log(x.wrapped[0])))
+    def log(Tensor x):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_log(x.wrapped[0])))
 
     @staticmethod
     def pow(x, k):
-        if isinstance(x, _Tensor) and isinstance(k, int) and -0x80000000 <= k <= 0x7fffffff:
-            return _Tensor.get_wrapper_with_new(new CppTensor(op_ipow((<_Tensor> x).wrapped[0], <int> k)))
-        elif isinstance(x, _Tensor) and isinstance(k, (int, float)):
-            return _Tensor.get_wrapper_with_new(new CppTensor(op_pow((<_Tensor> x).wrapped[0], <float> k)))
-        elif isinstance(x, (int, float)) and isinstance(k, _Tensor):
-            return _Tensor.get_wrapper_with_new(new CppTensor(op_pow(<float> x, (<_Tensor> k).wrapped[0])))
-        elif isinstance(x, _Tensor) and isinstance(k, _Tensor):
-            return _Tensor.get_wrapper_with_new(new CppTensor(op_pow((<_Tensor> x).wrapped[0], (<_Tensor> k).wrapped[0])))
+        if isinstance(x, Tensor) and isinstance(k, int) and -0x80000000 <= k <= 0x7fffffff:
+            return Tensor.get_wrapper_with_new(new CppTensor(op_ipow((<Tensor> x).wrapped[0], <int> k)))
+        elif isinstance(x, Tensor) and isinstance(k, (int, float)):
+            return Tensor.get_wrapper_with_new(new CppTensor(op_pow((<Tensor> x).wrapped[0], <float> k)))
+        elif isinstance(x, (int, float)) and isinstance(k, Tensor):
+            return Tensor.get_wrapper_with_new(new CppTensor(op_pow(<float> x, (<Tensor> k).wrapped[0])))
+        elif isinstance(x, Tensor) and isinstance(k, Tensor):
+            return Tensor.get_wrapper_with_new(new CppTensor(op_pow((<Tensor> x).wrapped[0], (<Tensor> k).wrapped[0])))
         else:
             raise TypeError("`x` or `k` has incorrect type.")
 
     @staticmethod
-    def tanh(_Tensor x):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_tanh(x.wrapped[0])))
+    def tanh(Tensor x):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_tanh(x.wrapped[0])))
 
     @staticmethod
-    def sigmoid(_Tensor x):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_sigmoid(x.wrapped[0])))
+    def sigmoid(Tensor x):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_sigmoid(x.wrapped[0])))
 
     @staticmethod
-    def softplus(_Tensor x):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_softplus(x.wrapped[0])))
+    def softplus(Tensor x):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_softplus(x.wrapped[0])))
 
     @staticmethod
-    def sin(_Tensor x):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_sin(x.wrapped[0])))
+    def sin(Tensor x):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_sin(x.wrapped[0])))
 
     @staticmethod
-    def cos(_Tensor x):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_cos(x.wrapped[0])))
+    def cos(Tensor x):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_cos(x.wrapped[0])))
 
     @staticmethod
-    def tan(_Tensor x):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_tan(x.wrapped[0])))
+    def tan(Tensor x):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_tan(x.wrapped[0])))
 
     @staticmethod
-    def relu(_Tensor x):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_relu(x.wrapped[0])))
+    def relu(Tensor x):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_relu(x.wrapped[0])))
 
     @staticmethod
-    def lrelu(_Tensor x):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_lrelu(x.wrapped[0])))
+    def lrelu(Tensor x):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_lrelu(x.wrapped[0])))
 
     @staticmethod
-    def prelu(_Tensor x, float a):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_prelu(x.wrapped[0], a)))
+    def prelu(Tensor x, float a):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_prelu(x.wrapped[0], a)))
 
     @staticmethod
-    def elu(_Tensor x, float a):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_elu(x.wrapped[0], a)))
+    def elu(Tensor x, float a):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_elu(x.wrapped[0], a)))
 
     @staticmethod
-    def selu(_Tensor x, float a, float s):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_selu(x.wrapped[0], a, s)))
+    def selu(Tensor x, float a, float s):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_selu(x.wrapped[0], a, s)))
 
     @staticmethod
     def sum(x, dim = None):
         cdef vector[CppTensor] xs
-        cdef _Tensor t
+        cdef Tensor t
         if isinstance(x, list):
             for t in x:
                 xs.push_back(t.wrapped[0])
-            return _Tensor.get_wrapper_with_new(new CppTensor(Tensor_sum_container(xs)))
+            return Tensor.get_wrapper_with_new(new CppTensor(Tensor_sum_container(xs)))
         else:
-            return _Tensor.get_wrapper_with_new(new CppTensor(Tensor_sum((<_Tensor> x).wrapped[0], <unsigned> dim)))
+            return Tensor.get_wrapper_with_new(new CppTensor(Tensor_sum((<Tensor> x).wrapped[0], <unsigned> dim)))
 
     @staticmethod
     def mean(x, dim = None):
         cdef vector[CppTensor] xs
-        cdef _Tensor t
+        cdef Tensor t
         if isinstance(x, list):
             for t in x:
                 xs.push_back(t.wrapped[0])
-            return _Tensor.get_wrapper_with_new(new CppTensor(Tensor_mean_container(xs)))
+            return Tensor.get_wrapper_with_new(new CppTensor(Tensor_mean_container(xs)))
         else:
-            return _Tensor.get_wrapper_with_new(new CppTensor(Tensor_mean((<_Tensor> x).wrapped[0], <unsigned> dim)))
+            return Tensor.get_wrapper_with_new(new CppTensor(Tensor_mean((<Tensor> x).wrapped[0], <unsigned> dim)))
 
     @staticmethod
-    def broadcast(_Tensor x, unsigned dim, unsigned size):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_broadcast(x.wrapped[0], dim, size)))
+    def broadcast(Tensor x, unsigned dim, unsigned size):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_broadcast(x.wrapped[0], dim, size)))
 
     @staticmethod
-    def logsumexp(_Tensor x, unsigned dim):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_logsumexp(x.wrapped[0], dim)))
+    def logsumexp(Tensor x, unsigned dim):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_logsumexp(x.wrapped[0], dim)))
 
     @staticmethod
-    def log_softmax(_Tensor x, unsigned dim):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_log_softmax(x.wrapped[0], dim)))
+    def log_softmax(Tensor x, unsigned dim):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_log_softmax(x.wrapped[0], dim)))
 
     @staticmethod
-    def softmax(_Tensor x, unsigned dim):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_softmax(x.wrapped[0], dim)))
+    def softmax(Tensor x, unsigned dim):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_softmax(x.wrapped[0], dim)))
 
     @staticmethod
-    def softmax_cross_entropy(_Tensor x, t, unsigned dim):
-        if isinstance(t, _Tensor):
-            return _Tensor.get_wrapper_with_new(new CppTensor(op_softmax_cross_entropy(x.wrapped[0], (<_Tensor> t).wrapped[0], dim)))
+    def softmax_cross_entropy(Tensor x, t, unsigned dim):
+        if isinstance(t, Tensor):
+            return Tensor.get_wrapper_with_new(new CppTensor(op_softmax_cross_entropy(x.wrapped[0], (<Tensor> t).wrapped[0], dim)))
         elif isinstance(t, list):
-            return _Tensor.get_wrapper_with_new(new CppTensor(op_softmax_cross_entropy(x.wrapped[0], <vector[unsigned]> t, dim)))
+            return Tensor.get_wrapper_with_new(new CppTensor(op_softmax_cross_entropy(x.wrapped[0], <vector[unsigned]> t, dim)))
         else:
             raise TypeError("`t` has incorrect type.")
 
     @staticmethod
-    def constant(shape, float k, _Device device = None):
+    def constant(shape, float k, Device device = None):
         if device is None:
-            device = _Device.get_default()
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_constant[CppTensor](normShape(shape).wrapped, k, device.wrapped[0])))
+            device = Device.get_default()
+        return Tensor.get_wrapper_with_new(new CppTensor(op_constant[CppTensor](normShape(shape).wrapped, k, device.wrapped[0])))
 
     @staticmethod
-    def zeros(shape, _Device device = None):
+    def zeros(shape, Device device = None):
         if device is None:
-            device = _Device.get_default()
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_zeros[CppTensor](normShape(shape).wrapped, device.wrapped[0])))
+            device = Device.get_default()
+        return Tensor.get_wrapper_with_new(new CppTensor(op_zeros[CppTensor](normShape(shape).wrapped, device.wrapped[0])))
 
     @staticmethod
-    def ones(shape, _Device device = None):
+    def ones(shape, Device device = None):
         if device is None:
-            device = _Device.get_default()
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_ones[CppTensor](normShape(shape).wrapped, device.wrapped[0])))
+            device = Device.get_default()
+        return Tensor.get_wrapper_with_new(new CppTensor(op_ones[CppTensor](normShape(shape).wrapped, device.wrapped[0])))
 
     @staticmethod
-    def identity(unsigned size, _Device device = None):
+    def identity(unsigned size, Device device = None):
         if device is None:
-            device = _Device.get_default()
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_identity[CppTensor](size, device.wrapped[0])))
+            device = Device.get_default()
+        return Tensor.get_wrapper_with_new(new CppTensor(op_identity[CppTensor](size, device.wrapped[0])))
 
     class batch:
         @staticmethod
-        def sum(_Tensor x):
-            return _Tensor.get_wrapper_with_new(new CppTensor(op_batch_sum[CppTensor](x.wrapped[0])))
+        def sum(Tensor x):
+            return Tensor.get_wrapper_with_new(new CppTensor(op_batch_sum[CppTensor](x.wrapped[0])))
 
         @staticmethod
-        def mean(_Tensor x):
-            return _Tensor.get_wrapper_with_new(new CppTensor(op_batch_mean[CppTensor](x.wrapped[0])))
+        def mean(Tensor x):
+            return Tensor.get_wrapper_with_new(new CppTensor(op_batch_mean[CppTensor](x.wrapped[0])))
 
         @staticmethod
-        def normalize(_Tensor x):
-            return _Tensor.get_wrapper_with_new(new CppTensor(op_batch_normalize[CppTensor](x.wrapped[0])))
+        def normalize(Tensor x):
+            return Tensor.get_wrapper_with_new(new CppTensor(op_batch_normalize[CppTensor](x.wrapped[0])))
 
     class random:
         @staticmethod
-        def bernoulli(shape, float p, _Device device = None):
+        def bernoulli(shape, float p, Device device = None):
             if device is None:
-                device = _Device.get_default()
-            return _Tensor.get_wrapper_with_new(new CppTensor(op_random_bernoulli[CppTensor](normShape(shape).wrapped, p, device.wrapped[0])))
+                device = Device.get_default()
+            return Tensor.get_wrapper_with_new(new CppTensor(op_random_bernoulli[CppTensor](normShape(shape).wrapped, p, device.wrapped[0])))
 
         @staticmethod
-        def uniform(shape, float lower, float upper, _Device device = None):
+        def uniform(shape, float lower, float upper, Device device = None):
             if device is None:
-                device = _Device.get_default()
-            return _Tensor.get_wrapper_with_new(new CppTensor(op_random_uniform[CppTensor](normShape(shape).wrapped, lower, upper, device.wrapped[0])))
+                device = Device.get_default()
+            return Tensor.get_wrapper_with_new(new CppTensor(op_random_uniform[CppTensor](normShape(shape).wrapped, lower, upper, device.wrapped[0])))
 
         @staticmethod
-        def normal(shape, float mean, float sd, _Device device = None):
+        def normal(shape, float mean, float sd, Device device = None):
             if device is None:
-                device = _Device.get_default()
-            return _Tensor.get_wrapper_with_new(new CppTensor(op_random_normal[CppTensor](normShape(shape).wrapped, mean, sd, device.wrapped[0])))
+                device = Device.get_default()
+            return Tensor.get_wrapper_with_new(new CppTensor(op_random_normal[CppTensor](normShape(shape).wrapped, mean, sd, device.wrapped[0])))
 
         @staticmethod
-        def log_normal(shape, float mean, float sd, _Device device = None):
+        def log_normal(shape, float mean, float sd, Device device = None):
             if device is None:
-                device = _Device.get_default()
-            return _Tensor.get_wrapper_with_new(new CppTensor(op_random_log_normal[CppTensor](normShape(shape).wrapped, mean, sd, device.wrapped[0])))
+                device = Device.get_default()
+            return Tensor.get_wrapper_with_new(new CppTensor(op_random_log_normal[CppTensor](normShape(shape).wrapped, mean, sd, device.wrapped[0])))
 
         @staticmethod
-        def gumbel(shape, float mu, float beta, _Device device = None):
+        def gumbel(shape, float mu, float beta, Device device = None):
             if device is None:
-                device = _Device.get_default()
-            return _Tensor.get_wrapper_with_new(new CppTensor(op_random_gumbel[CppTensor](normShape(shape).wrapped, mu, beta, device.wrapped[0])))
+                device = Device.get_default()
+            return Tensor.get_wrapper_with_new(new CppTensor(op_random_gumbel[CppTensor](normShape(shape).wrapped, mu, beta, device.wrapped[0])))
 
     @staticmethod
-    def dropout(_Tensor x, float rate, bool enabled):
-        return _Tensor.get_wrapper_with_new(new CppTensor(op_dropout(x.wrapped[0], rate, enabled)))
+    def dropout(Tensor x, float rate, bool enabled):
+        return Tensor.get_wrapper_with_new(new CppTensor(op_dropout(x.wrapped[0], rate, enabled)))

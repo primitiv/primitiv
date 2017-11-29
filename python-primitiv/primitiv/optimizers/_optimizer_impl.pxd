@@ -2,7 +2,7 @@ from libcpp.string cimport string
 from libcpp.unordered_map cimport unordered_map
 
 from primitiv._device cimport CppDevice
-from primitiv._optimizer cimport CppOptimizer, _Optimizer
+from primitiv._optimizer cimport CppOptimizer, Optimizer
 
 
 cdef extern from "primitiv/optimizer_impl.h":
@@ -39,25 +39,25 @@ cdef extern from "primitiv/optimizer_impl.h":
         float eps()
 
 
-cdef class _SGD(_Optimizer):
+cdef class SGD(Optimizer):
     pass
 
 
-cdef class _MomentumSGD(_Optimizer):
+cdef class MomentumSGD(Optimizer):
     pass
 
 
-cdef class _AdaGrad(_Optimizer):
+cdef class AdaGrad(Optimizer):
     pass
 
 
-cdef class _RMSProp(_Optimizer):
+cdef class RMSProp(Optimizer):
     pass
 
 
-cdef class _AdaDelta(_Optimizer):
+cdef class AdaDelta(Optimizer):
     pass
 
 
-cdef class _Adam(_Optimizer):
+cdef class Adam(Optimizer):
     pass
