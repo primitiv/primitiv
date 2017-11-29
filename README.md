@@ -1,5 +1,4 @@
 [![c++](https://img.shields.io/badge/c%2B%2B-11-blue.svg)](https://isocpp.org/)
-[![python](https://img.shields.io/badge/python-3.5-blue.svg)](https://www.python.org/)
 [![backend](https://img.shields.io/badge/backend-CPU%2c%20CUDA%2c%20OpenCL-blue.svg)](README.md)
 [![os](https://img.shields.io/badge/os-Ubuntu%2c%20Debian%2c%20Fedora%2c%20OSX-blue.svg)](https://travis-ci.org/odashi/primitiv)
 [![license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
@@ -22,6 +21,13 @@ Features
 - Simple usage
 
 
+Languages
+---------
+
+This repository contains only the core C++ library of *primitiv*.
+Some bindings for other programming languages (e.g., Python) can be found in [the official repository](https://github.com/primitiv).
+
+
 Prerequisites
 -------------
 
@@ -31,6 +37,7 @@ Prerequisites
   - Required only when `-DPRIMITIV_BUILD_TESTS=ON`.
 - (optional) CUDA 7.5 or later
   - Required only when `-DPRIMITIV_USE_CUDA=ON`
+
 
 Install
 -------
