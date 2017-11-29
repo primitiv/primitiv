@@ -5,14 +5,6 @@ from primitiv.config cimport cppstr_to_pystr
 cdef class _Shape:
     """Data structure to represent the shape of the node.
 
-    Examples:
-
-    * ``Shape()         == Shape([1, 1, 1, ...], 1)``: scalar
-    * ``Shape([])       == Shape([1, 1, 1, ...], 1)``: scalar
-    * ``Shape([n])      == Shape([n, 1, 1, ...], 1)``: row vector
-    * ``Shape([n, m])   == Shape([n, m, 1, ...], 1)``: matrix
-    * ``Shape([...], k)``: k-parallelized data (mini-batch)
-
     """
 
     def __init__(self, dims = None, unsigned batch = 1):
@@ -22,6 +14,14 @@ cdef class _Shape:
         :type dims: list[int]
         :param batch: Batch size (default: 1)
         :type batch: int
+
+        Examples:
+
+            >>> Shape()         == Shape([1, 1, 1, ...], 1) # scalar
+            >>> Shape([])       == Shape([1, 1, 1, ...], 1) # scalar
+            >>> Shape([n])      == Shape([n, 1, 1, ...], 1) # row vector
+            >>> Shape([n, m])   == Shape([n, m, 1, ...], 1) # matrix
+            >>> Shape([...], k) # k-parallelized data (mini-batch)
 
         """
         if dims is None:
