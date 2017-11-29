@@ -1,0 +1,38 @@
+#include <config.h>
+
+#include <mutex>
+#include <thread>
+#include <gtest/gtest.h>
+#include <primitiv/spinlock.h>
+
+namespace primitiv {
+
+class SpinlockTest : public testing::Test {};
+
+TEST_F(SpinlockTest, CheckBlock) {
+  Spinlock sl;
+  int x = 0, y = 0;
+
+  auto proc = [&] {
+    for (int i = 0; i < 1000000; ++i) {
+      ++x;
+      std::lock_guard<Spinlock> lock(sl);
+      ++y;
+    }
+  };
+
+  std::thread th1(proc);
+  std::thread th2(proc);
+  std::thread th3(proc);
+  std::thread th4(proc);
+
+  th1.join();
+  th2.join();
+  th3.join();
+  th4.join();
+
+  EXPECT_NE(4000000, x);
+  EXPECT_EQ(4000000, y);
+}
+
+}  // namespace primitiv

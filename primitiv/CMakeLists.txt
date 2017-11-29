@@ -23,6 +23,7 @@ set(primitiv_base_HDRS
   random.h
   shape.h
   shape_ops.h
+  spinlock.h
   string_utils.h
   tensor.h
   type_traits.h
