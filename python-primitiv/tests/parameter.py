@@ -3,7 +3,7 @@ from primitiv import initializers as I
 from primitiv import devices as D
 from primitiv import operators as F
 from primitiv import tensor_operators as tF
-from primitiv._parameter import _ParameterStatistics
+from primitiv._parameter import ParameterStatistics
 
 import unittest
 
@@ -43,7 +43,7 @@ class ParameterTest(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             del self.p.stats["stat1"]
         with self.assertRaises(AttributeError):
-            self.p.stats = _ParameterStatistics(self.p)
+            self.p.stats = ParameterStatistics(self.p)
 
     def test_parameter_value(self):
         self.assertTrue((self.p.value.to_ndarrays() == np.array([1, 2, 3, 4, 5, 6, 7, 8])).all())
