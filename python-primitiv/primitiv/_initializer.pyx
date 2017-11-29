@@ -1,5 +1,20 @@
+from primitiv._tensor cimport _Tensor
+
 
 cdef class _Initializer:
+    """Abstract class to provide parameter initialization algorithms.
+
+    """
+
+    def apply(self, _Tensor x):
+        """Provides an initialized tensor.
+
+        :param x: Tensor object to be initialized.
+        :type x: primitiv.Tensor
+
+        """
+        self.wrapped.apply(x.wrapped[0])
+        return
 
     def __copy__(self):
         raise NotImplementedError(type(self).__name__ + " does not support `__copy__` for now.")

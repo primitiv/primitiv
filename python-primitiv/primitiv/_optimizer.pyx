@@ -4,6 +4,9 @@ from primitiv.config cimport pystr_to_cppstr, cppstr_to_pystr
 
 
 cdef class _Optimizer:
+    """Abstract class for parameter optimizers.
+
+    """
 
     # NOTE(vbkaisetsu):
     # This method should be called in the __init__() method of a
@@ -13,6 +16,34 @@ cdef class _Optimizer:
     # generates an instance of a helper optimizer called "PyOptimizer" that
     # can call methods implemented in child classes of Optimizer.
     def __init__(self):
+        """Creates a new Python Optimizer.
+
+        To create a new optimizer implemented in Python, call the base
+        initializer in ``__init__`` function, and define at least four methods:
+        ``configure_parameter``, ``update_parameter``, ``get_configs``,
+        ``set_configs`` in the sub-class of the ``Optimizer``.
+
+        Example:
+
+            >>> class MyOptimizer(Optimizer):
+            ...     def __init__(self):
+            ...         super().__init__()
+            ...         :::
+            ...
+            ...     def configure_parameter(self, param):
+            ...         :::
+            ...
+            ...     def update_parameter(self, scale, param):
+            ...         :::
+            ...
+            ...     def get_configs(self):
+            ...         :::
+            ...         return uint_configs, float_configs
+            ...
+            ...     def set_configs(self, uint_configs, float_configs):
+            ...         :::
+
+        """
         if self.wrapped is not NULL:
             raise TypeError("__init__() has already been called.")
         self.wrapped = new CppPyOptimizer(self)
@@ -31,58 +62,148 @@ cdef class _Optimizer:
             self.wrapped = NULL
 
     def load(self, str path):
+        """Loads configurations from a file.
+
+        :param path: Path of the optimizer parameter file.
+        :type path: str
+
+        """
         self.wrapped.load(pystr_to_cppstr(path))
         return
 
     def save(self, str path):
+        """Saves current configurations to a file.
+
+        :param path: Path of the file that will store optimizer parameters.
+        :type path: str
+
+        """
         self.wrapped.save(pystr_to_cppstr(path))
         return
 
     def get_epoch(self):
+        """Retrieves current epoch.
+
+        :return: Current epoch.
+        :rtype: int
+
+        """
         return self.wrapped.get_epoch()
 
     def set_epoch(self, unsigned epoch):
+        """Sets current epoch.
+
+        :param epoch: New epoch.
+        :type epoch: int
+
+        """
         self.wrapped.set_epoch(epoch)
         return
 
     def get_learning_rate_scaling(self):
+        """Retrieves current learning rate scaling factor.
+
+        :return: The scaling factor.
+        :rtype: float
+
+        """
         return self.wrapped.get_learning_rate_scaling()
 
     def set_learning_rate_scaling(self, float scale):
+        """Sets learning rate scaling factor.
+
+        :param scale: New scaling factor.
+        :type scale: float
+
+        Could not set negative values.
+
+        """
         self.wrapped.set_learning_rate_scaling(scale)
         return
 
     def get_weight_decay(self):
+        """Retrieves current L2 decay strength.
+
+        :return: Current L2 decay strength.
+        :rtype: float
+
+        """
         return self.wrapped.get_weight_decay()
 
     def set_weight_decay(self, float strength):
+        """Sets L2 decay strength.
+
+        :param strength: New L2 decay strength, or 0 to disable L2 decay.
+        :type strength: float
+
+        Could not set negative values.
+
+        """
         self.wrapped.set_weight_decay(strength)
         return
 
     def get_gradient_clipping(self):
+        """Retrieves current gradient clipping threshold.
+
+        :return: Current gradient clipping threshold.
+        :rtype: float
+
+        """
         return self.wrapped.get_gradient_clipping()
 
     def set_gradient_clipping(self, float threshold):
+        """Sets gradient clipping threshold.
+
+        :param threshold: New clipping threshold, or 0 to disable gradient clipping.
+        :type threshold: float
+
+        Could not set negative values.
+
+        """
         self.wrapped.set_gradient_clipping(threshold)
         return
 
     def add_parameter(self, _Parameter param):
+        """Registers a parameter.
+
+        :param param: Parameter to be optimized.
+        :type param: primitiv.Parameter
+
+        """
         self.wrapped.add_parameter(param.wrapped[0])
         return
 
     def add_model(self, _Model model):
+        """Registers all trainable parameters in a model.
+
+        :param model: Model to be optimized.
+        :type model: primitiv.Model
+
+        """
         self.wrapped.add_model(model.wrapped[0])
         return
 
     def reset_gradients(self):
+        """Resets all gradients of registered parameters.
+
+        """
         self.wrapped.reset_gradients()
         return
 
     def update(self):
+        """Updates parameter values.
+
+        """
         self.wrapped.update()
         return
 
     def get_configs(self):
+        """Gathers configuration values.
+
+        :return: Tuple of configurations with ``int`` type and ``float`` type.
+        :rtype: tuple[dict[str, int], dict[str, float]]
+
+        """
         cdef unordered_map[string, unsigned] uint_configs
         cdef unordered_map[string, float] float_configs
         self.wrapped.get_configs(uint_configs, float_configs)
@@ -90,6 +211,14 @@ cdef class _Optimizer:
                 {cppstr_to_pystr(k): v for k, v in dict(float_configs).items()})
 
     def set_configs(self, dict uint_configs, dict float_configs):
+        """Sets configuration values.
+
+        :param uint_configs: Configurations with ``int`` type.
+        :type uint_configs: dict[str, int]
+        :param float_configs: Configurations with ``float`` type.
+        :type float_configs: dict[str, float]
+
+        """
         self.wrapped.set_configs({pystr_to_cppstr(k): v for k, v in uint_configs.items()},
                                  {pystr_to_cppstr(k): v for k, v in float_configs.items()})
         return

@@ -12,16 +12,35 @@ cdef object py_primitiv_device_weak_dict = WeakValueDictionary()
 
 
 cdef class _Device:
+    """Interface of the Tensor provider.
+
+    """
 
     @staticmethod
     def get_default():
+        """Retrieves the current default device.
+
+        :return: Reference of the current default device.
+        :rtype: primitiv.Device
+        :raises RuntimeError: if the default device is null.
+
+        """
         return _Device.get_wrapper(&CppDevice.get_default())
 
     @staticmethod
     def set_default(_Device dev):
+        """Specifies a new default device.
+
+        :param dev: Reference of the new default device.
+        :type dev: primitiv.Device
+
+        """
         CppDevice.set_default(dev.wrapped[0])
 
     def dump_description(self):
+        """Prints device description to stderr.
+
+        """
         self.wrapped.dump_description()
         return
 

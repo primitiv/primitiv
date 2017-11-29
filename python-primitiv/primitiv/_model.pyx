@@ -30,32 +30,131 @@ cdef class _Model:
             self.wrapped = NULL
 
     def load(self, str path, bool with_stats = True, _Device device = None):
+        """Loads all parameters from a file.
+
+        :param path: Path of the file.
+        :type path: str
+        :param with_stats: Whether or not to load all additional statistics (default: ``True``).
+        :type with_stats: bool
+        :param device: Device object to manage parameters (default: ``None``).
+        :type device: bool or None
+
+        """
         if device is None:
             device = _Device.get_default()
         self.wrapped.load(pystr_to_cppstr(path), with_stats, device.wrapped[0])
 
     def save(self, str path, bool with_stats = True):
+        """Saves all parameters to a file.
+
+        :param path: Path of the file.
+        :type path: str
+        :param with_stats: Whether or not to save all additional statistics (default: ``True``).
+        :type with_stats: bool
+
+        """
         self.wrapped.save(pystr_to_cppstr(path), with_stats)
 
     def add_parameter(self, str name, _Parameter param):
+        """Registers a new parameter.
+
+        :param name: Name of the parameter.
+        :type path: str
+        :param param: Reference to the parameter.
+        :type param: primitiv.Parameter
+
+        ``name`` should not be overlapped with all registered parameters and
+        submodels.
+
+        """
         self.wrapped.add_parameter(pystr_to_cppstr(name), param.wrapped[0])
         self.added_parameters.append(param)
 
     def add_submodel(self, str name, _Model model):
+        """Registers a new submodel.
+
+        :param name: Name of the submodel.
+        :type name: str
+        :param model: Reference to the submodel.
+        :type model: primitiv.Model
+
+        ``name`` should not be overlapped with all registered parameters and
+        submodels.
+
+        """
         self.wrapped.add_submodel(pystr_to_cppstr(name), model.wrapped[0])
         self.added_submodels.append(model)
 
     def add_all_parameters(self):
+        """Registers all ``Parameter`` members of this model.
+
+        This method internally calls `add_parameter()` for all Parameter
+        members of this model with variable names.
+
+        Example:
+
+            >>> class ParentModel(Model):
+            ...     def __init__(self):
+            ...         self.subparam1 = Parameter()
+            ...         self.subparam2 = Parameter()
+            ...         self.add_all_parameters()
+
+        is equivalent to:
+
+            >>> class ParentModel(Model):
+            ...     def __init__(self):
+            ...         self.subparam1 = Parameter()
+            ...         self.subparam2 = Parameter()
+            ...         self.add_parameter("subparam1", self.subparam1)
+            ...         self.add_parameter("subparam2", self.subparam2)
+
+        """
         for k, v in self.__dict__.items():
             if isinstance(v, _Parameter) and v not in self.added_parameters:
                 self.add_parameter(k, v)
 
     def add_all_submodels(self):
+        """Registers all ``Model`` members of this model.
+
+        This method internally calls `add_submodel()` for all Model
+        members of this model with variable names.
+
+        Example:
+
+            >>> class ParentModel(Model):
+            ...     def __init__(self):
+            ...         self.submodel1 = SubModel1() # Sub class of Model
+            ...         self.submodel2 = SubModel2() # Sub class of Model
+            ...         self.add_all_submodels()
+
+        is equivalent to:
+
+            >>> class ParentModel(Model):
+            ...     def __init__(self):
+            ...         self.submodel1 = SubModel1()
+            ...         self.submodel2 = SubModel2()
+            ...         self.add_submodel("submodel1", self.submodel1)
+            ...         self.add_submodel("submodel2", self.submodel2)
+
+        """
         for k, v in self.__dict__.items():
             if isinstance(v, _Model) and v not in self.added_submodels:
                 self.add_submodel(k, v)
 
     def __getitem__(self, key):
+        """Retrieves a parameter or a model in this model.
+
+        :param key: Name hierarchy of the submodel or parameter.
+        :type key: str or tuple[str]
+
+        The following example retrieves ``sub3`` in ``sub2`` in ``sub1`` model
+        in the model instance ``m``:
+
+            >>> m = MyModel()
+            >>> :::
+            >>> m["sub1", "sub2", "sub3"]
+
+        """
         cdef vector[string] names
         if isinstance(key, str):
             names.push_back(pystr_to_cppstr(key))
@@ -76,6 +175,12 @@ cdef class _Model:
         raise TypeError("'name' is not a name of neither parameter nor submodel")
 
     def get_all_parameters(self):
+        """Retrieves all parameters in the model.
+
+        :return: Dictionary of all parameters.
+        :rtype: dict[str, primitiv.Parameter]
+
+        """
         cdef pair[vector[string], CppParameter*] p
         result = {}
         for p in self.wrapped.get_all_parameters():
@@ -83,6 +188,12 @@ cdef class _Model:
         return result
 
     def get_trainable_parameters(self):
+        """Retrieves trainable parameters in the model.
+
+        :return: Dictionary of trainable parameters.
+        :rtype: dict[str, primitiv.Parameter]
+
+        """
         cdef pair[vector[string], CppParameter*] p
         result = {}
         for p in self.wrapped.get_trainable_parameters():
