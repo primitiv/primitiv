@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <mutex>
 #include <random>
 
 #define CL_HPP_ENABLE_EXCEPTIONS
@@ -27,6 +28,7 @@ namespace {
  */
 template<typename T>
 void read_buffer(
+    std::mutex &/* unused*/,
     cl::CommandQueue &queue, const cl::Buffer &buffer,
     T data[], std::size_t size) {
   queue.enqueueReadBuffer(buffer, CL_TRUE, 0, sizeof(T) * size, data);
@@ -41,8 +43,11 @@ void read_buffer(
  */
 template<typename T>
 void write_buffer(
+    std::mutex &mutex,
     cl::CommandQueue &queue, cl::Buffer &buffer,
     const T data[], std::size_t size) {
+  std::lock_guard<std::mutex> lock(mutex);
+
   // NOTE(odashi):
   // Some devices could not directly write their buffers.
   // (I observed this issue using Intel GPUs.)
@@ -182,20 +187,19 @@ private:
    */
   void calc_dim2_sizes(std::uint32_t size, std::uint32_t &x, std::uint32_t &y) {
     x = y = 1;
-    bool p = true;
-    while ((x * y) << 1 <= size) {
+    for (bool p = true; (x * y) << 1 <= size; p = !p) {
       (p ? x : y) <<= 1;
-      p = !p;
     }
   }
 
 public:
   OpenCLInternalState(
       std::uint32_t pf_id, std::uint32_t dev_id, std::uint32_t rng_seed)
-    : randomizer_(rng_seed)
+    : mutex()
     , device(::get_device(pf_id, dev_id))
     , context({ device })
     , queue(context, device, 0)
+    , randomizer(rng_seed)
     , pool(
         [this](std::size_t size) -> void * {  // allocator
           return static_cast<void *>(
@@ -215,11 +219,15 @@ public:
           // Then, we can delete the buffer safely.
           delete static_cast<cl::Buffer *>(ptr);
         }) {
+
       cl::Program program(context, ::generate_kernels());
+
       try {
         program.build({device});
       } catch (...) {
-        THROW_ERROR("OpenCL kernel compile error:" << std::endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
+        THROW_ERROR(
+            "OpenCL kernel compile error:\n"
+            << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
       }
 
 #define CONFIGURE_KERNEL(name) \
@@ -336,10 +344,11 @@ public:
 #undef CONFIGURE_KERNEL_LIST
     }
 
-  DefaultRandomizer randomizer_;
+  std::mutex mutex;
   cl::Device device;
   cl::Context context;
   cl::CommandQueue queue;
+  DefaultRandomizer randomizer;
   MemoryPool pool;
 
 #define DECL_KERNEL(name) \
@@ -552,7 +561,8 @@ std::shared_ptr<void> OpenCL::new_handle(const Shape &shape) {
 std::vector<float> OpenCL::tensor_to_vector_impl(const Tensor &x) {
   const std::uint32_t size = x.shape().size();
   std::vector<float> ret(size);
-  ::read_buffer(state_->queue, ::get_buffer(x), ret.data(), size);
+  ::read_buffer(
+      state_->mutex, state_->queue, ::get_buffer(x), ret.data(), size);
   return ret;
 }
 
@@ -565,32 +575,38 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(
   std::uint32_t group_size = std::min(state_->argmax_group_size, 1024u);
   while (group_size >> 1 >= n) group_size >>= 1;
   std::shared_ptr<void> py = state_->pool.allocate(sizeof(std::uint32_t) * r);
-  switch (group_size) {
+
+  {
+    std::lock_guard<std::mutex> lock(state_->mutex);
+
+    switch (group_size) {
 #define CASE(k, m) \
-    case k: \
-      state_->argmax_kernel[m].setArg(0, ::get_buffer(x)); \
-      state_->argmax_kernel[m].setArg(1, s); \
-      state_->argmax_kernel[m].setArg(2, n); \
-      state_->argmax_kernel[m].setArg(3, ::get_buffer(py)); \
-      state_->queue.enqueueNDRangeKernel( \
-          state_->argmax_kernel[m], \
-          cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
-      break;
-    CASE(1024, 10);
-    CASE(512, 9);
-    CASE(256, 8);
-    CASE(128, 7);
-    CASE(64, 6);
-    CASE(32, 5);
-    CASE(16, 4);
-    CASE(8, 3);
-    CASE(4, 2);
-    CASE(2, 1);
-    CASE(1, 0);
+      case k: \
+        state_->argmax_kernel[m].setArg(0, ::get_buffer(x)); \
+        state_->argmax_kernel[m].setArg(1, s); \
+        state_->argmax_kernel[m].setArg(2, n); \
+        state_->argmax_kernel[m].setArg(3, ::get_buffer(py)); \
+        state_->queue.enqueueNDRangeKernel( \
+            state_->argmax_kernel[m], \
+            cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
+        break;
+      CASE(1024, 10);
+      CASE(512, 9);
+      CASE(256, 8);
+      CASE(128, 7);
+      CASE(64, 6);
+      CASE(32, 5);
+      CASE(16, 4);
+      CASE(8, 3);
+      CASE(4, 2);
+      CASE(2, 1);
+      CASE(1, 0);
 #undef CASE
+    }
   }
+
   std::vector<std::uint32_t> ret(r);
-  ::read_buffer(state_->queue, ::get_buffer(py), ret.data(), r);
+  ::read_buffer(state_->mutex, state_->queue, ::get_buffer(py), ret.data(), r);
   return ret;
 }
 
@@ -603,32 +619,38 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(
   std::uint32_t group_size = std::min(state_->argmin_group_size, 1024u);
   while (group_size >> 1 >= n) group_size >>= 1;
   std::shared_ptr<void> py = state_->pool.allocate(sizeof(std::uint32_t) * r);
-  switch (group_size) {
+
+  {
+    std::lock_guard<std::mutex> lock(state_->mutex);
+
+    switch (group_size) {
 #define CASE(k, m) \
-    case k: \
-      state_->argmin_kernel[m].setArg(0, ::get_buffer(x)); \
-      state_->argmin_kernel[m].setArg(1, s); \
-      state_->argmin_kernel[m].setArg(2, n); \
-      state_->argmin_kernel[m].setArg(3, ::get_buffer(py)); \
-      state_->queue.enqueueNDRangeKernel( \
-          state_->argmin_kernel[m], \
-          cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
-      break;
-    CASE(1024, 10);
-    CASE(512, 9);
-    CASE(256, 8);
-    CASE(128, 7);
-    CASE(64, 6);
-    CASE(32, 5);
-    CASE(16, 4);
-    CASE(8, 3);
-    CASE(4, 2);
-    CASE(2, 1);
-    CASE(1, 0);
+      case k: \
+        state_->argmin_kernel[m].setArg(0, ::get_buffer(x)); \
+        state_->argmin_kernel[m].setArg(1, s); \
+        state_->argmin_kernel[m].setArg(2, n); \
+        state_->argmin_kernel[m].setArg(3, ::get_buffer(py)); \
+        state_->queue.enqueueNDRangeKernel( \
+            state_->argmin_kernel[m], \
+            cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
+        break;
+      CASE(1024, 10);
+      CASE(512, 9);
+      CASE(256, 8);
+      CASE(128, 7);
+      CASE(64, 6);
+      CASE(32, 5);
+      CASE(16, 4);
+      CASE(8, 3);
+      CASE(4, 2);
+      CASE(2, 1);
+      CASE(1, 0);
 #undef CASE
+    }
   }
+
   std::vector<std::uint32_t> ret(r);
-  ::read_buffer(state_->queue, ::get_buffer(py), ret.data(), r);
+  ::read_buffer(state_->mutex, state_->queue, ::get_buffer(py), ret.data(), r);
   return ret;
 }
 
@@ -640,7 +662,7 @@ void OpenCL::reset_tensor_impl(float k, Tensor &x) {
 
 void OpenCL::reset_tensor_by_array_impl(const float values[], Tensor &x) {
   const std::uint32_t size = x.shape().size();
-  ::write_buffer(state_->queue, ::get_buffer(x), values, size);
+  ::write_buffer(state_->mutex, state_->queue, ::get_buffer(x), values, size);
 }
 
 void OpenCL::copy_tensor_impl(const Tensor &x, Tensor &y) {
@@ -654,14 +676,19 @@ void OpenCL::copy_tensor_impl(const Tensor &x, Tensor &y) {
         state_->queue.enqueueCopyBuffer(
             ::get_buffer(x), ::get_buffer(y), 0, 0, sizeof(float) * size);
       } else {
+        std::lock_guard<std::mutex> lock(state_->mutex);
+
         const std::uint32_t size = x.shape().size();
-        cl::CommandQueue &queue_x = static_cast<OpenCL &>(x.device()).state_->queue;
+        cl::CommandQueue &queue_x
+          = static_cast<OpenCL &>(x.device()).state_->queue;
         float *mapped_ptr_x = static_cast<float *>(
             queue_x.enqueueMapBuffer(
-              ::get_buffer(x), CL_TRUE, CL_MAP_READ, 0, sizeof(float) * size, 0));
+              ::get_buffer(x), CL_TRUE, CL_MAP_READ,
+              0, sizeof(float) * size, 0));
         float *mapped_ptr_y = static_cast<float *>(
             state_->queue.enqueueMapBuffer(
-              ::get_buffer(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0));
+              ::get_buffer(y), CL_TRUE, CL_MAP_WRITE,
+              0, sizeof(float) * size, 0));
         std::memcpy(mapped_ptr_y, mapped_ptr_x, sizeof(float) * size);
         queue_x.enqueueUnmapMemObject(::get_buffer(x), mapped_ptr_x);
         state_->queue.enqueueUnmapMemObject(::get_buffer(y), mapped_ptr_y);
@@ -677,6 +704,9 @@ void OpenCL::identity_impl(Tensor &y) {
   const std::uint32_t skip = y.shape()[0] + 1;
   const std::uint32_t num_blocks = ::calc_num_blocks(
       size, state_->set_identity_group_size);
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   state_->set_identity_kernel.setArg(0, size);
   state_->set_identity_kernel.setArg(1, skip);
   state_->set_identity_kernel.setArg(2, ::get_buffer(y));
@@ -688,37 +718,49 @@ void OpenCL::identity_impl(Tensor &y) {
 
 void OpenCL::random_bernoulli_impl(float p, Tensor &y) {
   const std::uint32_t size = y.shape().size();
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   float *mapped_ptr = static_cast<float *>(
       state_->queue.enqueueMapBuffer(
         ::get_buffer(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0));
-  state_->randomizer_.fill_bernoulli(p, size, mapped_ptr);
+  state_->randomizer.fill_bernoulli(p, size, mapped_ptr);
   state_->queue.enqueueUnmapMemObject(::get_buffer(y), mapped_ptr);
 }
 
 void OpenCL::random_uniform_impl(float lower, float upper, Tensor &y) {
   const std::uint32_t size = y.shape().size();
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   float *mapped_ptr = static_cast<float *>(
       state_->queue.enqueueMapBuffer(
         ::get_buffer(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0));
-  state_->randomizer_.fill_uniform(lower, upper, size, mapped_ptr);
+  state_->randomizer.fill_uniform(lower, upper, size, mapped_ptr);
   state_->queue.enqueueUnmapMemObject(::get_buffer(y), mapped_ptr);
 }
 
 void OpenCL::random_normal_impl(float mean, float sd, Tensor &y) {
   const std::uint32_t size = y.shape().size();
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   float *mapped_ptr = static_cast<float *>(
       state_->queue.enqueueMapBuffer(
         ::get_buffer(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0));
-  state_->randomizer_.fill_normal(mean, sd, size, mapped_ptr);
+  state_->randomizer.fill_normal(mean, sd, size, mapped_ptr);
   state_->queue.enqueueUnmapMemObject(::get_buffer(y), mapped_ptr);
 }
 
 void OpenCL::random_log_normal_impl(float mean, float sd, Tensor &y) {
   const std::uint32_t size = y.shape().size();
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   float *mapped_ptr = static_cast<float *>(
       state_->queue.enqueueMapBuffer(
         ::get_buffer(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0));
-  state_->randomizer_.fill_log_normal(mean, sd, size, mapped_ptr);
+  state_->randomizer.fill_log_normal(mean, sd, size, mapped_ptr);
   state_->queue.enqueueUnmapMemObject(::get_buffer(y), mapped_ptr);
 }
 
@@ -734,7 +776,12 @@ void OpenCL::pick_fw_impl(
   const std::uint32_t bs = y.shape().batch();
   std::shared_ptr<void> ids_buf = state_->pool.allocate(
       sizeof(std::uint32_t) * ids.size());
-  ::write_buffer(state_->queue, ::get_buffer(ids_buf), ids.data(), ids.size());
+  ::write_buffer(
+      state_->mutex, state_->queue, ::get_buffer(ids_buf),
+      ids.data(), ids.size());
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   state_->pick_fw_kernel.setArg(0, ::get_buffer(x));
   state_->pick_fw_kernel.setArg(1, ::get_buffer(ids_buf));
   state_->pick_fw_kernel.setArg(2, wx);
@@ -758,6 +805,9 @@ void OpenCL::slice_fw_impl(
   const std::uint32_t size = y.shape().size();
   const std::uint32_t num_blocks = ::calc_num_blocks(
       size, state_->slice_fw_group_size);
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   state_->slice_fw_kernel.setArg(0, ::get_buffer(x));
   state_->slice_fw_kernel.setArg(1, shift);
   state_->slice_fw_kernel.setArg(2, span);
@@ -777,6 +827,9 @@ void OpenCL::concat_fw_impl(
   const std::uint32_t skip = base * y.shape()[dim];
   const std::uint32_t repeat = y.shape().volume() / skip;
   std::uint32_t offset = 0;
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   for (const Tensor *x : xs) {
     const std::uint32_t span = base * x->shape()[dim];
     const std::uint32_t x_size = span * repeat * x->shape().batch();
@@ -810,7 +863,12 @@ void OpenCL::pick_bw_impl(
   const std::uint32_t bs = gy.shape().batch();
   std::shared_ptr<void> ids_buf = state_->pool.allocate(
       sizeof(std::uint32_t) * ids.size());
-  ::write_buffer(state_->queue, ::get_buffer(ids_buf), ids.data(), ids.size());
+  ::write_buffer(
+      state_->mutex, state_->queue, ::get_buffer(ids_buf),
+      ids.data(), ids.size());
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   state_->pick_bw_kernel.setArg(0, ::get_buffer(gy));
   state_->pick_bw_kernel.setArg(1, ::get_buffer(ids_buf));
   state_->pick_bw_kernel.setArg(2, wx);
@@ -838,6 +896,9 @@ void OpenCL::slice_bw_impl(
   const std::uint32_t ny = repeat * sy.batch();
   const std::uint32_t g1 = ::calc_num_blocks(
       wy * std::max(nx, ny), state_->slice_bw_group_size);
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   state_->slice_bw_kernel.setArg(0, ::get_buffer(gy));
   state_->slice_bw_kernel.setArg(1, wx);
   state_->slice_bw_kernel.setArg(2, wy);
@@ -856,6 +917,9 @@ void OpenCL::name##_fw_impl(const Tensor &x, Tensor &y) { \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = ::calc_num_blocks( \
       size, state_->name##_fw_group_size); \
+  \
+  std::lock_guard<std::mutex> lock(state_->mutex); \
+  \
   state_->name##_fw_kernel.setArg(0, ::get_buffer(x)); \
   state_->name##_fw_kernel.setArg(1, size); \
   state_->name##_fw_kernel.setArg(2, ::get_buffer(y)); \
@@ -871,6 +935,9 @@ void OpenCL::name##_bw_impl( \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = ::calc_num_blocks( \
       size, state_->name##_bw_group_size); \
+  \
+  std::lock_guard<std::mutex> lock(state_->mutex); \
+  \
   state_->name##_bw_kernel.setArg(0, ::get_buffer(x)); \
   state_->name##_bw_kernel.setArg(1, ::get_buffer(y)); \
   state_->name##_bw_kernel.setArg(2, ::get_buffer(gy)); \
@@ -887,6 +954,9 @@ void OpenCL::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = ::calc_num_blocks( \
       size, state_->name##_fw_group_size); \
+  \
+  std::lock_guard<std::mutex> lock(state_->mutex); \
+  \
   state_->name##_fw_kernel.setArg(0, ::get_buffer(x)); \
   state_->name##_fw_kernel.setArg(1, k); \
   state_->name##_fw_kernel.setArg(2, size); \
@@ -903,6 +973,9 @@ void OpenCL::name##_bw_impl( \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = ::calc_num_blocks( \
       size, state_->name##_bw_group_size); \
+  \
+  std::lock_guard<std::mutex> lock(state_->mutex); \
+  \
   state_->name##_bw_kernel.setArg(0, ::get_buffer(x)); \
   state_->name##_bw_kernel.setArg(1, ::get_buffer(y)); \
   state_->name##_bw_kernel.setArg(2, ::get_buffer(gy)); \
@@ -923,6 +996,9 @@ void OpenCL::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
   const std::uint32_t g2 = y.shape().batch(); \
   const std::uint32_t mbx = x.shape().has_batch(); \
   const std::uint32_t mbk = k.shape().has_batch(); \
+  \
+  std::lock_guard<std::mutex> lock(state_->mutex); \
+  \
   state_->name##_fw_kernel.setArg(0, ::get_buffer(x)); \
   state_->name##_fw_kernel.setArg(1, ::get_buffer(k)); \
   state_->name##_fw_kernel.setArg(2, size); \
@@ -943,6 +1019,9 @@ void OpenCL::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
   const std::uint32_t g2 = y.shape().batch(); \
   const std::uint32_t mba = a.shape().has_batch(); \
   const std::uint32_t mbb = b.shape().has_batch(); \
+  \
+  std::lock_guard<std::mutex> lock(state_->mutex); \
+  \
   state_->name##_fw_kernel.setArg(0, ::get_buffer(a)); \
   state_->name##_fw_kernel.setArg(1, ::get_buffer(b)); \
   state_->name##_fw_kernel.setArg(2, size); \
@@ -965,6 +1044,9 @@ void OpenCL::name##_bw_impl( \
   const std::uint32_t g2 = y.shape().batch(); \
   const std::uint32_t mba = a.shape().has_batch(); \
   const std::uint32_t mbb = b.shape().has_batch(); \
+  \
+  std::lock_guard<std::mutex> lock(state_->mutex); \
+  \
   state_->name##_bw_kernel.setArg(0, ::get_buffer(a)); \
   state_->name##_bw_kernel.setArg(1, ::get_buffer(b)); \
   state_->name##_bw_kernel.setArg(2, ::get_buffer(y)); \
@@ -1052,6 +1134,9 @@ void OpenCL::transpose_fw_impl(const Tensor &x, Tensor &y) {
       rows, state_->transpose_fw_group_size_x);
   const std::uint32_t g2 = ::calc_num_blocks(
       cols, state_->transpose_fw_group_size_y);
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   state_->transpose_fw_kernel.setArg(0, ::get_buffer(x));
   state_->transpose_fw_kernel.setArg(1, rows);
   state_->transpose_fw_kernel.setArg(2, cols);
@@ -1070,8 +1155,11 @@ void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   const std::uint32_t di = a.shape()[0];
   const std::uint32_t dj = a.shape()[1];
   const std::uint32_t dk = b.shape()[1];
-  float alpha = 1.;
-  float beta = 0.;
+  const float alpha = 1.f;
+  const float beta = 0.f;
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
     const std::uint32_t a_skip = di * dj;
@@ -1079,7 +1167,7 @@ void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
     const std::uint32_t y_skip = di * dk;
     const std::uint32_t bs = a.shape().batch();
     for (std::uint32_t n = 0; n < bs; ++n) {
-      clblasSgemm(
+      ::clblasSgemm(
           clblasColumnMajor, clblasNoTrans, clblasNoTrans,
           di, dk, dj,
           alpha,
@@ -1091,7 +1179,7 @@ void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
     }
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
-    clblasSgemm(
+    ::clblasSgemm(
         clblasColumnMajor, clblasNoTrans, clblasNoTrans,
         di, dk * b.shape().batch(), dj,
         alpha,
@@ -1112,6 +1200,9 @@ void OpenCL::transpose_bw_impl(
       rows, state_->transpose_bw_group_size_x);
   const std::uint32_t g2 = ::calc_num_blocks(
       cols, state_->transpose_bw_group_size_y);
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   state_->transpose_bw_kernel.setArg(0, ::get_buffer(gy));
   state_->transpose_bw_kernel.setArg(1, rows);
   state_->transpose_bw_kernel.setArg(2, cols);
@@ -1134,8 +1225,11 @@ void OpenCL::matmul_bw_impl(
   const std::uint32_t di = a.shape()[0];
   const std::uint32_t dj = a.shape()[1];
   const std::uint32_t dk = b.shape()[1];
-  float alpha = 1.;
-  float beta = 1.;
+  const float alpha = 1.f;
+  const float beta = 1.f;
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
     const std::uint32_t a_skip = di * dj;
@@ -1143,7 +1237,7 @@ void OpenCL::matmul_bw_impl(
     const std::uint32_t y_skip = di * dk;
     const std::uint32_t bs = a.shape().batch();
     for (std::uint32_t n = 0; n < bs; ++n) {
-      clblasSgemm(
+      ::clblasSgemm(
           clblasColumnMajor, clblasNoTrans, clblasTrans,
           di, dj, dk,
           alpha,
@@ -1152,7 +1246,7 @@ void OpenCL::matmul_bw_impl(
           beta,
           ::get_buffer(ga)(), n * a_skip, di,
           1, &state_->queue(), 0, NULL, NULL);
-      clblasSgemm(
+      ::clblasSgemm(
           clblasColumnMajor, clblasTrans, clblasNoTrans,
           dj, dk, di,
           alpha,
@@ -1164,7 +1258,7 @@ void OpenCL::matmul_bw_impl(
     }
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
-    clblasSgemm(
+    ::clblasSgemm(
         clblasColumnMajor, clblasNoTrans, clblasTrans,
         di, dj, dk * b.shape().batch(),
         alpha,
@@ -1173,7 +1267,7 @@ void OpenCL::matmul_bw_impl(
         beta,
         ::get_buffer(ga)(), 0, di,
         1, &state_->queue(), 0, NULL, NULL);
-    clblasSgemm(
+    ::clblasSgemm(
         clblasColumnMajor, clblasTrans, clblasNoTrans,
         dj, dk * b.shape().batch(), di,
         alpha,
@@ -1191,6 +1285,9 @@ void OpenCL::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   const std::uint32_t s = y.shape().lower_volume(dim);
   std::uint32_t group_size = std::min(state_->sum_fw_group_size, 1024u);
   while (group_size >> 1 >= n) group_size >>= 1;
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   switch (group_size) {
 #define CASE(k, m) \
     case k: \
@@ -1223,6 +1320,9 @@ void OpenCL::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   const std::uint32_t s = y.shape().lower_volume(dim);
   std::uint32_t group_size = std::min(state_->logsumexp_fw_group_size, 1024u);
   while (group_size >> 1 >= n) group_size >>= 1;
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   switch (group_size) {
 #define CASE(k, m) \
     case k: \
@@ -1256,6 +1356,9 @@ void OpenCL::broadcast_fw_impl(
   const std::uint32_t total = y.shape().size();
   const std::uint32_t g1 = ::calc_num_blocks(
       total, state_->broadcast_fw_group_size);
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   state_->broadcast_fw_kernel.setArg(0, ::get_buffer(x));
   state_->broadcast_fw_kernel.setArg(1, skip1);
   state_->broadcast_fw_kernel.setArg(2, skip2);
@@ -1272,6 +1375,9 @@ void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t batch = x.shape().batch();
   const std::uint32_t g1 = ::calc_num_blocks(
       size, state_->batch_sum_fw_group_size);
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   state_->batch_sum_fw_kernel.setArg(0, ::get_buffer(x));
   state_->batch_sum_fw_kernel.setArg(1, size);
   state_->batch_sum_fw_kernel.setArg(2, batch);
@@ -1286,6 +1392,9 @@ void OpenCL::inplace_multiply_const_impl(float k, Tensor &x) {
   const std::uint32_t size = x.shape().size();
   const std::uint32_t g1 = ::calc_num_blocks(
       size, state_->inplace_multiply_const_group_size);
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   state_->inplace_multiply_const_kernel.setArg(0, k);
   state_->inplace_multiply_const_kernel.setArg(1, size);
   state_->inplace_multiply_const_kernel.setArg(2, ::get_buffer(x));
@@ -1302,6 +1411,9 @@ void OpenCL::inplace_add_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t g1 = ::calc_num_blocks(
       size, state_->inplace_add_group_size);
   const std::uint32_t bs = std::max(x.shape().batch(), y.shape().batch());
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   state_->inplace_add_kernel.setArg(0, ::get_buffer(x));
   state_->inplace_add_kernel.setArg(1, size);
   state_->inplace_add_kernel.setArg(2, mbx);
@@ -1320,6 +1432,9 @@ void OpenCL::inplace_subtract_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t g1 = ::calc_num_blocks(
       size, state_->inplace_subtract_group_size);
   const std::uint32_t bs = std::max(x.shape().batch(), y.shape().batch());
+
+  std::lock_guard<std::mutex> lock(state_->mutex);
+
   state_->inplace_subtract_kernel.setArg(0, ::get_buffer(x));
   state_->inplace_subtract_kernel.setArg(1, size);
   state_->inplace_subtract_kernel.setArg(2, mbx);
