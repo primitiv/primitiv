@@ -86,7 +86,27 @@ cdef class _Model:
         self.added_submodels.append(model)
 
     def add_all_parameters(self):
-        """TODO
+        """Registers all ``Parameter`` members of this model.
+
+        This method internally calls `add_parameter()` for all Parameter
+        members of this model with variable names.
+
+        Example:
+
+            >>> class ParentModel(Model):
+            ...     def __init__(self):
+            ...         self.subparam1 = Parameter()
+            ...         self.subparam2 = Parameter()
+            ...         self.add_all_parameters()
+
+        is equivalent to:
+
+            >>> class ParentModel(Model):
+            ...     def __init__(self):
+            ...         self.subparam1 = Parameter()
+            ...         self.subparam2 = Parameter()
+            ...         self.add_parameter("subparam1", self.subparam1)
+            ...         self.add_parameter("subparam2", self.subparam2)
 
         """
         for k, v in self.__dict__.items():
@@ -94,7 +114,27 @@ cdef class _Model:
                 self.add_parameter(k, v)
 
     def add_all_submodels(self):
-        """TODO
+        """Registers all ``Model`` members of this model.
+
+        This method internally calls `add_submodel()` for all Model
+        members of this model with variable names.
+
+        Example:
+
+            >>> class ParentModel(Model):
+            ...     def __init__(self):
+            ...         self.submodel1 = SubModel1() # Sub class of Model
+            ...         self.submodel2 = SubModel2() # Sub class of Model
+            ...         self.add_all_submodels()
+
+        is equivalent to:
+
+            >>> class ParentModel(Model):
+            ...     def __init__(self):
+            ...         self.submodel1 = SubModel1()
+            ...         self.submodel2 = SubModel2()
+            ...         self.add_submodel("submodel1", self.submodel1)
+            ...         self.add_submodel("submodel2", self.submodel2)
 
         """
         for k, v in self.__dict__.items():
@@ -102,7 +142,17 @@ cdef class _Model:
                 self.add_submodel(k, v)
 
     def __getitem__(self, key):
-        """TODO
+        """Retrieves a parameter or a model in this model.
+
+        :param key: Name hierarchy of the submodel or parameter.
+        :type key: str or tuple[str]
+
+        The following example retrieves ``sub3`` in ``sub2`` in ``sub1`` model
+        in the model instance ``m``:
+
+            >>> m = MyModel()
+            >>> :::
+            >>> m["sub1", "sub2", "sub3"]
 
         """
         cdef vector[string] names
