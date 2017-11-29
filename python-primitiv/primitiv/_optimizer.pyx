@@ -18,8 +18,30 @@ cdef class Optimizer:
     def __init__(self):
         """Creates a new Python Optimizer.
 
-        When you create a new Optimizer implemented in Python, this method must
-        be called in the inheritance of Optimizer class.
+        To create a new optimizer implemented in Python, call the base
+        initializer in ``__init__`` function, and define at least four methods:
+        ``configure_parameter``, ``update_parameter``, ``get_configs``,
+        ``set_configs`` in the sub-class of the ``Optimizer``.
+
+        Example:
+
+            >>> class MyOptimizer(Optimizer):
+            ...     def __init__(self):
+            ...         super().__init__()
+            ...         :::
+            ...
+            ...     def configure_parameter(self, param):
+            ...         :::
+            ...
+            ...     def update_parameter(self, scale, param):
+            ...         :::
+            ...
+            ...     def get_configs(self):
+            ...         :::
+            ...         return uint_configs, float_configs
+            ...
+            ...     def set_configs(self, uint_configs, float_configs):
+            ...         :::
 
         """
         if self.wrapped is not NULL:

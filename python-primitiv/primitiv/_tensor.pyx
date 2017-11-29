@@ -146,7 +146,7 @@ cdef class Tensor:
 
         :param dim: A specified axis.
         :type dim: int
-        :return: A ``list`` of ``int`` that indicates positions of the minimum values.
+        :return: A list of integer that indicates positions of the minimum values.
         :rtype: list[int]
 
         """
