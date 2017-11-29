@@ -7,12 +7,12 @@ cdef extern from "primitiv/initializer.h":
         void apply(CppTensor &x) except +
 
 
-cdef class _Initializer:
+cdef class Initializer:
     cdef CppInitializer *wrapped
     cdef CppInitializer *wrapped_newed
 
 
-cdef inline _Initializer wrapInitializer(CppInitializer *wrapped) except +:
-    cdef _Initializer initializer = _Initializer.__new__(_Initializer)
+cdef inline Initializer wrapInitializer(CppInitializer *wrapped) except +:
+    cdef Initializer initializer = Initializer.__new__(Initializer)
     initializer.wrapped = wrapped
     return initializer

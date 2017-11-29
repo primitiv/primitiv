@@ -30,17 +30,17 @@ cdef extern from "primitiv/shape.h":
         void update_batch(unsigned batch) except +
 
 
-cdef class _Shape:
+cdef class Shape:
     cdef CppShape wrapped
 
 
-cdef inline _Shape wrapShape(CppShape wrapped) except +:
-    cdef _Shape shape = _Shape.__new__(_Shape)
+cdef inline Shape wrapShape(CppShape wrapped) except +:
+    cdef Shape shape = Shape.__new__(Shape)
     shape.wrapped = wrapped
     return shape
 
-cdef inline _Shape normShape(shapelike):
-    if isinstance(shapelike, _Shape):
+cdef inline Shape normShape(shapelike):
+    if isinstance(shapelike, Shape):
         return shapelike
     else:
-        return _Shape(shapelike)
+        return Shape(shapelike)

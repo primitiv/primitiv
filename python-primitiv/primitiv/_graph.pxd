@@ -56,20 +56,20 @@ cdef extern from "primitiv/graph.h" nogil:
         unsigned num_functions() except +
 
 
-cdef class _Node:
+cdef class Node:
     cdef CppNode wrapped
 
 
-cdef class _Graph:
+cdef class Graph:
     cdef CppGraph *wrapped
     cdef object __weakref__
     @staticmethod
-    cdef void register_wrapper(CppGraph *ptr, _Graph wrapper)
+    cdef void register_wrapper(CppGraph *ptr, Graph wrapper)
     @staticmethod
-    cdef _Graph get_wrapper(CppGraph *ptr)
+    cdef Graph get_wrapper(CppGraph *ptr)
 
 
-cdef inline _Node wrapNode(CppNode wrapped):
-    cdef _Node node = _Node.__new__(_Node)
+cdef inline Node wrapNode(CppNode wrapped):
+    cdef Node node = Node.__new__(Node)
     node.wrapped = wrapped
     return node

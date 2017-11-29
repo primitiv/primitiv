@@ -1,4 +1,4 @@
-from primitiv._device cimport CppDevice, _Device
+from primitiv._device cimport CppDevice, Device
 
 
 cdef extern from "primitiv/naive_device.h":
@@ -7,5 +7,5 @@ cdef extern from "primitiv/naive_device.h":
         CppNaive(unsigned rng_seed) except +
 
 
-cdef class _Naive(_Device):
+cdef class Naive(Device):
     pass

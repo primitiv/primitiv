@@ -1,8 +1,8 @@
 from libcpp.pair cimport pair
 from libc.stdint cimport uintptr_t
 
-from primitiv._device cimport _Device
-from primitiv._parameter cimport _Parameter
+from primitiv._device cimport Device
+from primitiv._parameter cimport Parameter
 from primitiv.config cimport pystr_to_cppstr, cppstr_to_pystr
 
 from weakref import WeakValueDictionary
@@ -16,11 +16,11 @@ import weakref
 cdef object py_primitiv_model_weak_dict = WeakValueDictionary()
 
 
-cdef class _Model:
+cdef class Model:
 
     def __cinit__(self):
         self.wrapped = new CppModel()
-        _Model.register_wrapper(self.wrapped, self)
+        Model.register_wrapper(self.wrapped, self)
         self.added_parameters = []
         self.added_submodels = []
 
@@ -29,7 +29,7 @@ cdef class _Model:
             del self.wrapped
             self.wrapped = NULL
 
-    def load(self, str path, bool with_stats = True, _Device device = None):
+    def load(self, str path, bool with_stats = True, Device device = None):
         """Loads all parameters from a file.
 
         :param path: Path of the file.
@@ -41,7 +41,7 @@ cdef class _Model:
 
         """
         if device is None:
-            device = _Device.get_default()
+            device = Device.get_default()
         self.wrapped.load(pystr_to_cppstr(path), with_stats, device.wrapped[0])
 
     def save(self, str path, bool with_stats = True):
@@ -55,7 +55,7 @@ cdef class _Model:
         """
         self.wrapped.save(pystr_to_cppstr(path), with_stats)
 
-    def add_parameter(self, str name, _Parameter param):
+    def add_parameter(self, str name, Parameter param):
         """Registers a new parameter.
 
         :param name: Name of the parameter.
@@ -70,7 +70,7 @@ cdef class _Model:
         self.wrapped.add_parameter(pystr_to_cppstr(name), param.wrapped[0])
         self.added_parameters.append(param)
 
-    def add_submodel(self, str name, _Model model):
+    def add_submodel(self, str name, Model model):
         """Registers a new submodel.
 
         :param name: Name of the submodel.
@@ -110,7 +110,7 @@ cdef class _Model:
 
         """
         for k, v in self.__dict__.items():
-            if isinstance(v, _Parameter) and v not in self.added_parameters:
+            if isinstance(v, Parameter) and v not in self.added_parameters:
                 self.add_parameter(k, v)
 
     def add_all_submodels(self):
@@ -138,7 +138,7 @@ cdef class _Model:
 
         """
         for k, v in self.__dict__.items():
-            if isinstance(v, _Model) and v not in self.added_submodels:
+            if isinstance(v, Model) and v not in self.added_submodels:
                 self.add_submodel(k, v)
 
     def __getitem__(self, key):
@@ -164,10 +164,10 @@ cdef class _Model:
         else:
             raise TypeError("Argument 'key' has incorrect type (str or tuple)")
         try:
-            return _Parameter.get_wrapper(&self.wrapped.get_parameter(names))
+            return Parameter.get_wrapper(&self.wrapped.get_parameter(names))
         except:
             try:
-                return _Model.get_wrapper(&self.wrapped.get_submodel(names))
+                return Model.get_wrapper(&self.wrapped.get_submodel(names))
             except:
                 # NOTE(vbkaisetsu): DO NOT throw an exception here, because
                 # error massages generated at above lines should not be shown.
@@ -184,7 +184,7 @@ cdef class _Model:
         cdef pair[vector[string], CppParameter*] p
         result = {}
         for p in self.wrapped.get_all_parameters():
-            result[tuple(cppstr_to_pystr(s) for s in p.first)] = _Parameter.get_wrapper(p.second)
+            result[tuple(cppstr_to_pystr(s) for s in p.first)] = Parameter.get_wrapper(p.second)
         return result
 
     def get_trainable_parameters(self):
@@ -197,15 +197,15 @@ cdef class _Model:
         cdef pair[vector[string], CppParameter*] p
         result = {}
         for p in self.wrapped.get_trainable_parameters():
-            result[tuple(cppstr_to_pystr(s) for s in p.first)] = _Parameter.get_wrapper(p.second)
+            result[tuple(cppstr_to_pystr(s) for s in p.first)] = Parameter.get_wrapper(p.second)
         return result
 
     @staticmethod
-    cdef void register_wrapper(CppModel *ptr, _Model wrapper):
+    cdef void register_wrapper(CppModel *ptr, Model wrapper):
         if <uintptr_t> ptr in py_primitiv_model_weak_dict:
             raise ValueError("Attempted to register the same C++ object twice.")
         py_primitiv_model_weak_dict[<uintptr_t> ptr] = wrapper
 
     @staticmethod
-    cdef _Model get_wrapper(CppModel *ptr):
+    cdef Model get_wrapper(CppModel *ptr):
         return py_primitiv_model_weak_dict[<uintptr_t> ptr]

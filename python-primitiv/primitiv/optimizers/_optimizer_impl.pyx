@@ -1,7 +1,7 @@
 from libcpp.string cimport string
 
 
-cdef class _SGD(_Optimizer):
+cdef class SGD(Optimizer):
     """Simple stochastic gradient descent.
 
     """
@@ -27,7 +27,7 @@ cdef class _SGD(_Optimizer):
         return (<CppSGD*> self.wrapped).eta()
 
 
-cdef class _MomentumSGD(_Optimizer):
+cdef class MomentumSGD(Optimizer):
     """Stochastic gradient descent with momentum.
 
     """
@@ -64,7 +64,7 @@ cdef class _MomentumSGD(_Optimizer):
         return (<CppMomentumSGD*> self.wrapped).momentum()
 
 
-cdef class _AdaGrad(_Optimizer):
+cdef class AdaGrad(Optimizer):
     """AdaGrad optimizer.
 
     """
@@ -101,7 +101,7 @@ cdef class _AdaGrad(_Optimizer):
         return (<CppAdaGrad*> self.wrapped).eps()
 
 
-cdef class _RMSProp(_Optimizer):
+cdef class RMSProp(Optimizer):
     """RMSProp Optimizer.
 
     """
@@ -149,7 +149,7 @@ cdef class _RMSProp(_Optimizer):
         return (<CppRMSProp*> self.wrapped).eps()
 
 
-cdef class _AdaDelta(_Optimizer):
+cdef class AdaDelta(Optimizer):
     """AdaDelta optimizer.
     https://arxiv.org/abs/1212.5701
 
@@ -187,7 +187,7 @@ cdef class _AdaDelta(_Optimizer):
         return (<CppAdaDelta*> self.wrapped).eps()
 
 
-cdef class _Adam(_Optimizer):
+cdef class Adam(Optimizer):
     """Adam optimizer.
     https://arxiv.org/abs/1412.6980
 

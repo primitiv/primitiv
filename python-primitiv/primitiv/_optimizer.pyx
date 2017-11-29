@@ -1,9 +1,9 @@
-from primitiv._model cimport _Model
-from primitiv._parameter cimport _Parameter
+from primitiv._model cimport Model
+from primitiv._parameter cimport Parameter
 from primitiv.config cimport pystr_to_cppstr, cppstr_to_pystr
 
 
-cdef class _Optimizer:
+cdef class Optimizer:
     """Abstract class for parameter optimizers.
 
     """
@@ -141,7 +141,7 @@ cdef class _Optimizer:
         self.wrapped.set_gradient_clipping(threshold)
         return
 
-    def add_parameter(self, _Parameter param):
+    def add_parameter(self, Parameter param):
         """Registers a parameter.
 
         :param param: Parameter to be optimized.
@@ -151,7 +151,7 @@ cdef class _Optimizer:
         self.wrapped.add_parameter(param.wrapped[0])
         return
 
-    def add_model(self, _Model model):
+    def add_model(self, Model model):
         """Registers all trainable parameters in a model.
 
         :param model: Model to be optimized.
@@ -215,7 +215,7 @@ cdef public api int python_primitiv_optimizer_configure_parameter(
     # `hasattr(self.__class__, "configure_parameter")` also scans a parent class.
     # We want check that the function is overrided or not.
     if "configure_parameter" in self.__class__.__dict__ and callable(self.configure_parameter):
-        self.configure_parameter(_Parameter.get_wrapper(&param))
+        self.configure_parameter(Parameter.get_wrapper(&param))
         return 0
     raise NotImplementedError("'configure_parameter()' is not implemented in '%s'"
                                         % self.__class__.__name__)
@@ -229,7 +229,7 @@ cdef public api int python_primitiv_optimizer_update_parameter(
     # `hasattr(self.__class__, "update_parameter")` also scans a parent class.
     # We want check that the function is overrided or not.
     if "update_parameter" in self.__class__.__dict__ and callable(self.update_parameter):
-        self.update_parameter(scale, _Parameter.get_wrapper(&param))
+        self.update_parameter(scale, Parameter.get_wrapper(&param))
         return 0
     raise NotImplementedError("'update_parameter()' is not implemented in '%s'"
                                         % self.__class__.__name__)

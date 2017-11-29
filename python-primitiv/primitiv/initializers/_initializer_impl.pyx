@@ -1,4 +1,4 @@
-cdef class _Constant(_Initializer):
+cdef class Constant(Initializer):
     """Initializer to generate a same-value tensor.
 
     """
@@ -23,7 +23,7 @@ cdef class _Constant(_Initializer):
             self.wrapped_newed = NULL
 
 
-cdef class _Uniform(_Initializer):
+cdef class Uniform(Initializer):
     """Initializer using a parameterized uniform distribution (lower, upper].
 
     """
@@ -50,7 +50,7 @@ cdef class _Uniform(_Initializer):
             self.wrapped_newed = NULL
 
 
-cdef class _Normal(_Initializer):
+cdef class Normal(Initializer):
     """Initializer using a parameterized normal distribution N(mean, sd).
 
     """
@@ -77,7 +77,7 @@ cdef class _Normal(_Initializer):
             self.wrapped_newed = NULL
 
 
-cdef class _Identity(_Initializer):
+cdef class Identity(Initializer):
     """Identity matrix initializer.
 
     """
@@ -99,7 +99,7 @@ cdef class _Identity(_Initializer):
             self.wrapped_newed = NULL
 
 
-cdef class _XavierUniform(_Initializer):
+cdef class XavierUniform(Initializer):
     """The Xavier matrix initialization with the uniform distribution.
 
     """
@@ -124,7 +124,7 @@ cdef class _XavierUniform(_Initializer):
             self.wrapped_newed = NULL
 
 
-cdef class _XavierNormal(_Initializer):
+cdef class XavierNormal(Initializer):
     """The Xavier matrix initialization with the normal distribution.
 
     """

@@ -1,17 +1,17 @@
-from primitiv._device import _Device as Device
-from primitiv._graph import _Graph as Graph
-from primitiv._initializer import _Initializer as Initializer
-from primitiv._model import _Model as Model
-from primitiv._graph import _Node as Node
-from primitiv._parameter import _Parameter as Parameter
-from primitiv._shape import _Shape as Shape
-from primitiv._tensor import _Tensor as Tensor
-from primitiv._optimizer import _Optimizer as Optimizer
+from primitiv._device import Device
+from primitiv._graph import Graph
+from primitiv._initializer import Initializer
+from primitiv._model import Model
+from primitiv._graph import Node
+from primitiv._parameter import Parameter
+from primitiv._shape import Shape
+from primitiv._tensor import Tensor
+from primitiv._optimizer import Optimizer
 
 from primitiv import devices
 from primitiv import initializers
-from primitiv._operator import _operators as operators
-from primitiv._operator import _tensor_operators as tensor_operators
+from primitiv._operator import operators
+from primitiv._operator import tensor_operators
 from primitiv import optimizers
 from primitiv import config
 

@@ -1,10 +1,9 @@
 from libcpp.vector cimport vector
 from libcpp cimport bool
 
-from primitiv._device cimport _Device
-from primitiv._shape cimport _Shape, normShape
-from primitiv._graph cimport _Graph, wrapNode, CppNode, _Node
-from primitiv._parameter cimport _Parameter
+from primitiv._shape cimport Shape, normShape
+from primitiv._graph cimport Graph, wrapNode, CppNode, Node
+from primitiv._parameter cimport Parameter
 
 cimport numpy as np
 import numpy as np

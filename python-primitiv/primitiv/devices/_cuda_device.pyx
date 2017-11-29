@@ -1,7 +1,7 @@
 from primitiv._device cimport _Device
 
 
-cdef class _CUDA(_Device):
+cdef class CUDA(_Device):
 
     def __init__(self, unsigned device_id, rng_seed = None):
         """Creates a new CUDA device.

@@ -2,8 +2,8 @@ from libc.stdint cimport uintptr_t
 from libcpp.vector cimport vector
 from libcpp cimport bool
 
-from primitiv._device cimport _Device
-from primitiv._tensor cimport _Tensor
+from primitiv._device cimport Device
+from primitiv._tensor cimport Tensor
 from primitiv._shape cimport wrapShape, normShape
 from utils cimport ndarrays_to_vector
 from primitiv.config cimport pystr_to_cppstr
@@ -22,32 +22,32 @@ import weakref
 cdef object py_primitiv_parameter_weak_dict = WeakValueDictionary()
 
 
-cdef class _ParameterStatistics:
+cdef class ParameterStatistics:
 
-    def __init__(self, _Parameter param):
+    def __init__(self, Parameter param):
         # NOTE(vbkaisetsu): It becomes circular reference.
         # We can't know when it will be deleted by the garbage collector.
         # Therefore we hold this instance in a weakref to delete it immediately.
         self.param_ref = weakref.ref(param)
 
     def __getitem__(self, str name):
-        return _Tensor.get_wrapper(&(<_Parameter> self.param_ref()).wrapped.stats(pystr_to_cppstr(name)))
+        return Tensor.get_wrapper(&(<Parameter> self.param_ref()).wrapped.stats(pystr_to_cppstr(name)))
 
-    def __setitem__(self, str name, _Tensor value):
-        cdef CppTensor *tensor_p = &(<_Parameter> self.param_ref()).wrapped.stats(pystr_to_cppstr(name))
+    def __setitem__(self, str name, Tensor value):
+        cdef CppTensor *tensor_p = &(<Parameter> self.param_ref()).wrapped.stats(pystr_to_cppstr(name))
         tensor_p[0] = value.wrapped[0]
 
     def __contains__(self, str name):
-        return (<_Parameter> self.param_ref()).wrapped.has_stats(pystr_to_cppstr(name))
+        return (<Parameter> self.param_ref()).wrapped.has_stats(pystr_to_cppstr(name))
 
 
-cdef class _Parameter:
+cdef class Parameter:
     """Class to manage a trainable tensor parameter.
 
     """
 
     def __cinit__(self):
-        self.stats = _ParameterStatistics(self)
+        self.stats = ParameterStatistics(self)
 
     def __init__(self, *args, **kwargs):
         """Creates a new Parameter object.
@@ -61,7 +61,7 @@ cdef class _Parameter:
         self.wrapped = new CppParameter()
         if len(args) != 0 or len(kwargs) != 0:
             self.init(*args, **kwargs)
-        _Parameter.register_wrapper(self.wrapped, self)
+        Parameter.register_wrapper(self.wrapped, self)
 
     def __dealloc__(self):
         if self.wrapped is not NULL:
@@ -70,7 +70,7 @@ cdef class _Parameter:
 
     # NOTE(vbkaisetsu):
     # Python's Parameter.init only takes shape+Initializer arguments.
-    def init(self, shape, _Initializer initializer, _Device device = None):
+    def init(self, shape, Initializer initializer, Device device = None):
         """Initializes the Parameter object.
 
         :param shape: The shape of the parameter. The batch size should be 1.
@@ -82,10 +82,10 @@ cdef class _Parameter:
 
         """
         if device is None:
-            device = _Device.get_default()
+            device = Device.get_default()
         self.wrapped.init(normShape(shape).wrapped, initializer.wrapped[0], device.wrapped[0])
 
-    def load(self, str path, bool with_stats = True, _Device device = None):
+    def load(self, str path, bool with_stats = True, Device device = None):
         """Loads parameters from specified file.
 
         :param path: File path to load parameters.
@@ -98,7 +98,7 @@ cdef class _Parameter:
 
         """
         if device is None:
-            device = _Device.get_default()
+            device = Device.get_default()
         self.wrapped.load(pystr_to_cppstr(path), with_stats, device.wrapped[0])
         return
 
@@ -168,7 +168,7 @@ cdef class _Parameter:
         :rtype: primitiv.Device
 
         """
-        return _Device.get_wrapper(&self.wrapped.device())
+        return Device.get_wrapper(&self.wrapped.device())
 
     # NOTE(vbkaisetsu):
     # `value` function is replaced with a property in Python.
@@ -177,10 +177,10 @@ cdef class _Parameter:
         """A ``Tensor`` representing the parameter tensor.
 
         """
-        return _Tensor.get_wrapper(&self.wrapped.value())
+        return Tensor.get_wrapper(&self.wrapped.value())
 
     @value.setter
-    def value(self, _Tensor value):
+    def value(self, Tensor value):
         cdef CppTensor *tensor_p = &self.wrapped.value()
         tensor_p[0] = value.wrapped[0]
 
@@ -191,17 +191,17 @@ cdef class _Parameter:
         """A ``Tensor`` representing the current gradient of the value.
 
         """
-        return _Tensor.get_wrapper(&self.wrapped.gradient())
+        return Tensor.get_wrapper(&self.wrapped.gradient())
 
     @gradient.setter
-    def gradient(self, _Tensor value):
+    def gradient(self, Tensor value):
         cdef CppTensor *tensor_p = &self.wrapped.gradient()
         tensor_p[0] = value.wrapped[0]
 
     # NOTE(vbkaisetsu):
     # This function is replaced with `stats` variable.
     # def stats(self, str name):
-    #     return _Tensor.get_wrapper(&self.wrapped.stats(pystr_to_cppstr(name)))
+    #     return Tensor.get_wrapper(&self.wrapped.stats(pystr_to_cppstr(name)))
 
     def __copy__(self):
         raise NotImplementedError(type(self).__name__ + " does not support `__copy__` for now.")
@@ -210,18 +210,18 @@ cdef class _Parameter:
         raise NotImplementedError(type(self).__name__ + " does not support `__deepcopy__` for now.")
 
     @staticmethod
-    cdef void register_wrapper(CppParameter *ptr, _Parameter wrapper):
+    cdef void register_wrapper(CppParameter *ptr, Parameter wrapper):
         if <uintptr_t> ptr in py_primitiv_parameter_weak_dict:
             raise ValueError("Attempted to register the same C++ object twice.")
         py_primitiv_parameter_weak_dict[<uintptr_t> ptr] = wrapper
 
     @staticmethod
-    cdef _Parameter get_wrapper(CppParameter *ptr):
+    cdef Parameter get_wrapper(CppParameter *ptr):
         return py_primitiv_parameter_weak_dict[<uintptr_t> ptr]
 
     @staticmethod
-    cdef _Parameter get_wrapper_with_new(CppParameter *ptr):
-        cdef _Parameter param = _Parameter.__new__(_Parameter)
+    cdef Parameter get_wrapper_with_new(CppParameter *ptr):
+        cdef Parameter param = Parameter.__new__(Parameter)
         param.wrapped = ptr
         if py_primitiv_parameter_weak_dict.setdefault(<uintptr_t> ptr, param) is not param:
             raise ValueError("Attempted to register the same C++ object twice.")

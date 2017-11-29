@@ -22,16 +22,16 @@ cdef extern from "primitiv/model.h":
         cppmap[vector[string], CppParameter *] get_trainable_parameters() except +
 
 
-cdef class _Model:
+cdef class Model:
     cdef CppModel *wrapped
     cdef object __weakref__
     cdef object added_parameters
     cdef object added_submodels
     @staticmethod
-    cdef void register_wrapper(CppModel *ptr, _Model wrapper)
+    cdef void register_wrapper(CppModel *ptr, Model wrapper)
     @staticmethod
-    cdef _Model get_wrapper(CppModel *ptr)
+    cdef Model get_wrapper(CppModel *ptr)
 
     # NOTE(vbkaisetsu)
-    # _Model is always created with `new`, so `del_required` is not used.
+    # Model is always created with `new`, so `del_required` is not used.
     # cdef bool del_required

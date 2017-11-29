@@ -2,7 +2,7 @@ from libcpp.vector cimport vector
 from primitiv.config cimport cppstr_to_pystr
 
 
-cdef class _Shape:
+cdef class Shape:
     """Data structure to represent the shape of the node.
 
     Examples:
@@ -96,10 +96,10 @@ cdef class _Shape:
     def __getitem__(self, unsigned i):
         return self.wrapped[i]
 
-    def __eq__(_Shape self, _Shape rhs):
+    def __eq__(Shape self, Shape rhs):
         return self.wrapped == rhs.wrapped
 
-    def __ne__(_Shape self, _Shape rhs):
+    def __ne__(Shape self, Shape rhs):
         return self.wrapped != rhs.wrapped
 
     def has_batch(self):
@@ -111,7 +111,7 @@ cdef class _Shape:
         """
         return self.wrapped.has_batch()
 
-    def has_compatible_batch(self, _Shape rhs):
+    def has_compatible_batch(self, Shape rhs):
         """Checks whether two batch size is compatible (broadcastable) or not.
 
         :param rhs: Shape object to compare.
@@ -149,7 +149,7 @@ cdef class _Shape:
         """
         return self.wrapped.is_matrix()
 
-    def has_same_dims(self, _Shape rhs):
+    def has_same_dims(self, Shape rhs):
         """Checks whether two shapes have completely same dimensions.
 
         :param rhs: Shape object to compare.
@@ -160,7 +160,7 @@ cdef class _Shape:
         """
         return self.wrapped.has_same_dims(rhs.wrapped)
 
-    def has_same_loo_dims(self, _Shape rhs, unsigned dim):
+    def has_same_loo_dims(self, Shape rhs, unsigned dim):
         """Checks whether two shapes have same dimensions without an axis.
         (LOO: leave one out)
 

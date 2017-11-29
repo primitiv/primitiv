@@ -1,7 +1,7 @@
-from primitiv._device cimport _Device
+from primitiv._device cimport Device
 
 
-cdef class _OpenCL(_Device):
+cdef class OpenCL(Device):
 
     def __init__(self, unsigned platform_id, unsigned device_id, rng_seed=None):
         """Creates a new OpenCL device.
@@ -21,7 +21,7 @@ cdef class _OpenCL(_Device):
         else:
             self.wrapped = new CppOpenCL(platform_id, device_id, <unsigned> rng_seed)
 
-        _Device.register_wrapper(self.wrapped, self)
+        Device.register_wrapper(self.wrapped, self)
 
     def __dealloc__(self):
         if self.wrapped is not NULL:
