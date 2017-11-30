@@ -3,8 +3,6 @@ set -xe
 
 # install
 brew update
-brew install python3
-pip3 install cython numpy
 git clone https://github.com/google/googletest.git $TRAVIS_BUILD_DIR/googletest
 
 # script
@@ -14,6 +12,3 @@ cmake . -DPRIMITIV_BUILD_TESTS=ON -DPRIMITIV_GTEST_SOURCE_DIR=$TRAVIS_BUILD_DIR/
 make VERBOSE=1
 make test ARGS='-V'
 make install
-cd $TRAVIS_BUILD_DIR/python-primitiv
-./setup.py build
-./setup.py test
