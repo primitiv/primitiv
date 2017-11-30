@@ -7,7 +7,7 @@ docker run --name travis-ci -v $TRAVIS_BUILD_DIR:/primitiv -td fedora:latest /bi
 
 # install
 docker exec travis-ci bash -c "dnf update -y"
-docker exec travis-ci bash -c "dnf install -y gcc-c++ cmake gtest-devel"
+docker exec travis-ci bash -c "dnf install -y rpm-build gcc-c++ cmake gtest-devel"
 
 # install OpenCL environment
 docker exec travis-ci bash -c "dnf install -y opencl-headers git hwloc-devel libtool-ltdl-devel ocl-icd-devel ocl-icd clang llvm-devel clang-devel zlib-devel blas-devel boost-devel patch --setopt=install_weak_deps=False"
