@@ -47,10 +47,7 @@ int main() {
 
   // Optimizer
   O::SGD optimizer(0.1);
-  optimizer.add_parameter(pw1);
-  optimizer.add_parameter(pb1);
-  optimizer.add_parameter(pw2);
-  optimizer.add_parameter(pb2);
+  optimizer.add(pw1, pb1, pw2, pb2);
 
   // Fixed input data
   const vector<float> input_data {

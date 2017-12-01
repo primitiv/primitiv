@@ -20,9 +20,9 @@ class LSTM : public primitiv::Model {
 
 public:
   LSTM() {
-    add_parameter("wxh", pwxh_);
-    add_parameter("whh", pwhh_);
-    add_parameter("bh", pbh_);
+    add("wxh", pwxh_);
+    add("whh", pwhh_);
+    add("bh", pbh_);
   }
 
   // Initializes the model.

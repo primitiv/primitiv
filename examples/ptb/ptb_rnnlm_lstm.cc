@@ -22,7 +22,7 @@
 #include <vector>
 
 #include <primitiv/primitiv.h>
-#include <primitiv/primitiv_cuda.h>
+//#include <primitiv/primitiv_cuda.h>
 
 #include "utils.h"
 
@@ -51,8 +51,8 @@ public:
   Affine(unsigned in_size, unsigned out_size)
     : pw_({out_size, in_size}, Uniform(-0.1, 0.1))
     , pb_({out_size}, Constant(0)) {
-      add_parameter("pw", pw_);
-      add_parameter("pb", pb_);
+      add("pw", pw_);
+      add("pb", pb_);
     }
 
   // Initializes internal values.
@@ -87,9 +87,9 @@ public:
     , pwxh_({4 * out_size, in_size}, Uniform(-0.1, 0.1))
     , pwhh_({4 * out_size, out_size}, Uniform(-0.1, 0.1))
     , pbh_({4 * out_size}, Constant(0)) {
-      add_parameter("pwxh", pwxh_);
-      add_parameter("pwhh", pwhh_);
-      add_parameter("pbh", pbh_);
+      add("pwxh", pwxh_);
+      add("pwhh", pwhh_);
+      add("pbh", pbh_);
     }
 
   // Initializes internal values.
@@ -116,22 +116,20 @@ public:
 // Language model using above LSTM.
 template <typename Var>
 class RNNLM : public Model {
-  unsigned eos_id_;
   Parameter plookup_;
   LSTM<Var> rnn1_, rnn2_;
   Affine<Var> hy_;
 
 public:
-  RNNLM(unsigned vocab_size, unsigned eos_id)
-    : eos_id_(eos_id)
-    , plookup_({NUM_HIDDEN_UNITS, vocab_size}, Uniform(-0.1, 0.1))
+  RNNLM(unsigned vocab_size)
+    : plookup_({NUM_HIDDEN_UNITS, vocab_size}, Uniform(-0.1, 0.1))
     , rnn1_(NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS)
     , rnn2_(NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS)
     , hy_(NUM_HIDDEN_UNITS, vocab_size) {
-      add_parameter("plookup", plookup_);
-      add_submodel("rnn1", rnn1_);
-      add_submodel("rnn2", rnn2_);
-      add_submodel("hy", hy_);
+      add("plookup", plookup_);
+      add("rnn1", rnn1_);
+      add("rnn2", rnn2_);
+      add("hy", hy_);
     }
 
   // Forward function of RNNLM. Input data should be arranged below:
@@ -141,9 +139,7 @@ public:
   //   ...,
   //   {sent1_wordM, sent2_wordM, ..., sentN_wordM},  // last output (<eos>)
   // };
-  vector<Var> forward(
-      const vector<vector<unsigned>> &inputs, bool train) {
-    const unsigned batch_size = inputs[0].size();
+  vector<Var> forward(const vector<vector<unsigned>> &inputs, bool train) {
     Var lookup = F::parameter<Var>(plookup_);
     rnn1_.init();
     rnn2_.init();
@@ -194,20 +190,19 @@ int main() {
   cout << "valid: " << num_valid_sents << " sentences, "
                     << num_valid_labels << " labels" << endl;
 
-  // Uses GPU.
-  devices::CUDA dev(0);
+  devices::Naive dev;  // devices::CUDA dev(0);
   Device::set_default(dev);
   Graph g;
   Graph::set_default(g);
 
   // Our LM.
-  ::RNNLM<Node> lm(vocab.size(), eos_id);
+  ::RNNLM<Node> lm(vocab.size());
 
   // Optimizer.
   SGD optimizer(1);
   //optimizer.set_weight_decay(1e-6);
   optimizer.set_gradient_clipping(5);
-  optimizer.add_model(lm);
+  optimizer.add(lm);
 
   // Batch randomizer.
   random_device rd;
