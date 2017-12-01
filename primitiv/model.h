@@ -48,7 +48,7 @@ public:
    * @remarks `name` should not be overlapped with all registered parameters and
    *          submodels.
    */
-  void add_parameter(const std::string &name, Parameter &param);
+  void add(const std::string &name, Parameter &param);
 
   /**
    * Registers a new submodel.
@@ -57,7 +57,7 @@ public:
    * @remarks `name` should not be overlapped with all registered parameters and
    *          submodels.
    */
-  void add_submodel(const std::string &name, Model &model);
+  void add(const std::string &name, Model &model);
 
   /**
    * Retrieves a parameter with specified name.

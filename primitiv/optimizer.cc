@@ -51,7 +51,7 @@ void Optimizer::save(const std::string &path) const {
   writer << uint_configs << float_configs;
 }
 
-void Optimizer::add_parameter(Parameter &param) {
+void Optimizer::add_inner(Parameter &param) {
   if (params_.find(&param) != params_.end()) {
     THROW_ERROR("Parameter '" << &param << "' is already registered.");
   }
@@ -59,9 +59,9 @@ void Optimizer::add_parameter(Parameter &param) {
   configure_parameter(param);
 }
 
-void Optimizer::add_model(const Model &model) {
+void Optimizer::add_inner(const Model &model) {
   for (const auto &kv : model.get_trainable_parameters()) {
-    add_parameter(*kv.second);
+    add_inner(*kv.second);
   }
 }
 

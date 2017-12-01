@@ -97,17 +97,45 @@ public:
   }
 
   /**
-   * Registers a parameter.
-   * @param param Parameter to be optimized.
+   * Registers multiple parameters and models.
+   * This function is defined as the sentinel of other specialized functions.
+   * @param args List of arguments (could be empty).
    */
-  void add_parameter(Parameter &param);
+  void add() { /* do nothing */ }
 
   /**
-   * Registers all trainable parameters in a model.
+   * Registers multiple parameters and models.
+   * @param model_or_param Parameter or Model to be optimized.
+   * @param args List of remaining Parameter or Model to be optimized.
+   *
+   * This function behaves similar to multiple `add()` calls with the same
+   * order of arguments.
+   * E.g., below lines should behave similarly (except the case of exceptions):
+   *
+   *     add(a, b, c, d);
+   *     add(a, b); add(c, d);
+   *     add(a); add(b); add(c); add(d);
+   */
+  template<typename T, typename... Args>
+  void add(T &model_or_param, Args &... args) {
+    add_inner(model_or_param);
+    add(args...);
+  }
+
+private:
+  /**
+   * Registers a parameter (inner function).
+   * @param param Parameter to be optimized.
+   */
+  void add_inner(Parameter &param);
+
+  /**
+   * Registers all trainable parameters in a model (inner function).
    * @param model Model to be optimized.
    */
-  void add_model(const Model &model);
+  void add_inner(const Model &model);
 
+public:
   /**
    * Resets all gradients of registered parameters.
    */

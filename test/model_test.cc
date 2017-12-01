@@ -30,72 +30,72 @@ TEST_F(ModelTest, CheckAddParameter) {
   Model m;
   Parameter p1, p2, p3;
 
-  EXPECT_NO_THROW(m.add_parameter("p1", p1));
-  EXPECT_THROW(m.add_parameter("p1", p1), Error);
-  EXPECT_THROW(m.add_parameter("x", p1), Error);
+  EXPECT_NO_THROW(m.add("p1", p1));
+  EXPECT_THROW(m.add("p1", p1), Error);
+  EXPECT_THROW(m.add("x", p1), Error);
 
-  EXPECT_THROW(m.add_parameter("p1", p2), Error);
-  EXPECT_NO_THROW(m.add_parameter("p2", p2));
-  EXPECT_THROW(m.add_parameter("p2", p2), Error);
-  EXPECT_THROW(m.add_parameter("x", p2), Error);
+  EXPECT_THROW(m.add("p1", p2), Error);
+  EXPECT_NO_THROW(m.add("p2", p2));
+  EXPECT_THROW(m.add("p2", p2), Error);
+  EXPECT_THROW(m.add("x", p2), Error);
 
-  EXPECT_THROW(m.add_parameter("p1", p3), Error);
-  EXPECT_THROW(m.add_parameter("p2", p3), Error);
-  EXPECT_NO_THROW(m.add_parameter("p3", p3));
-  EXPECT_THROW(m.add_parameter("p3", p3), Error);
-  EXPECT_THROW(m.add_parameter("x", p3), Error);
+  EXPECT_THROW(m.add("p1", p3), Error);
+  EXPECT_THROW(m.add("p2", p3), Error);
+  EXPECT_NO_THROW(m.add("p3", p3));
+  EXPECT_THROW(m.add("p3", p3), Error);
+  EXPECT_THROW(m.add("x", p3), Error);
 }
 
 TEST_F(ModelTest, CheckAddSubmodel) {
   Model m, sm1, sm2;
   Parameter p1, p2;
 
-  EXPECT_NO_THROW(m.add_parameter("p1", p1));
-  EXPECT_NO_THROW(m.add_submodel("sm1", sm1));
-  EXPECT_THROW(m.add_submodel("sm1", sm1), Error);
-  EXPECT_THROW(m.add_submodel("x", sm1), Error);
+  EXPECT_NO_THROW(m.add("p1", p1));
+  EXPECT_NO_THROW(m.add("sm1", sm1));
+  EXPECT_THROW(m.add("sm1", sm1), Error);
+  EXPECT_THROW(m.add("x", sm1), Error);
 
-  EXPECT_THROW(m.add_parameter("p1", p2), Error);
-  EXPECT_THROW(m.add_parameter("sm1", p2), Error);
-  EXPECT_THROW(m.add_submodel("p1", sm2), Error);
-  EXPECT_THROW(m.add_submodel("sm1", sm2), Error);
+  EXPECT_THROW(m.add("p1", p2), Error);
+  EXPECT_THROW(m.add("sm1", p2), Error);
+  EXPECT_THROW(m.add("p1", sm2), Error);
+  EXPECT_THROW(m.add("sm1", sm2), Error);
 
-  EXPECT_NO_THROW(m.add_parameter("p2", p2));
-  EXPECT_NO_THROW(m.add_submodel("sm2", sm2));
-  EXPECT_THROW(m.add_submodel("sm2", sm2), Error);
-  EXPECT_THROW(m.add_submodel("x", sm2), Error);
+  EXPECT_NO_THROW(m.add("p2", p2));
+  EXPECT_NO_THROW(m.add("sm2", sm2));
+  EXPECT_THROW(m.add("sm2", sm2), Error);
+  EXPECT_THROW(m.add("x", sm2), Error);
 }
 
 TEST_F(ModelTest, CheckAddSubmodelCycle) {
   Model m1, m2, m3, m4;
 
-  EXPECT_THROW(m1.add_submodel("self", m1), Error);
+  EXPECT_THROW(m1.add("self", m1), Error);
 
-  EXPECT_NO_THROW(m1.add_submodel("m2", m2));
-  EXPECT_THROW(m2.add_submodel("m1", m1), Error);
+  EXPECT_NO_THROW(m1.add("m2", m2));
+  EXPECT_THROW(m2.add("m1", m1), Error);
 
-  EXPECT_NO_THROW(m2.add_submodel("m3", m3));
-  EXPECT_THROW(m3.add_submodel("m1", m1), Error);
-  EXPECT_THROW(m3.add_submodel("m2", m2), Error);
+  EXPECT_NO_THROW(m2.add("m3", m3));
+  EXPECT_THROW(m3.add("m1", m1), Error);
+  EXPECT_THROW(m3.add("m2", m2), Error);
 
-  EXPECT_NO_THROW(m2.add_submodel("m4", m4));
-  EXPECT_THROW(m4.add_submodel("m1", m1), Error);
-  EXPECT_THROW(m4.add_submodel("m2", m2), Error);
+  EXPECT_NO_THROW(m2.add("m4", m4));
+  EXPECT_THROW(m4.add("m1", m1), Error);
+  EXPECT_THROW(m4.add("m2", m2), Error);
 
   // NOTE(odashi):
   // This generates a diamond hierarchy.
   // We allow to do this for now, but Trainer.add_model() may fail because of
   // registering same parameters multiple times.
-  EXPECT_NO_THROW(m4.add_submodel("m3", m3));
+  EXPECT_NO_THROW(m4.add("m3", m3));
 }
 
 TEST_F(ModelTest, CheckGetParameter) {
   Model m, sm;
   Parameter p1, p2, p3;
-  m.add_parameter("p1", p1);
-  m.add_parameter("p2", p2);
-  sm.add_parameter("p3", p3);
-  m.add_submodel("sm", sm);
+  m.add("p1", p1);
+  m.add("p2", p2);
+  sm.add("p3", p3);
+  m.add("sm", sm);
 
   EXPECT_EQ(&p1, &m.get_parameter("p1"));
   EXPECT_EQ(&p2, &m.get_parameter("p2"));
@@ -114,10 +114,10 @@ TEST_F(ModelTest, CheckGetParameter) {
 TEST_F(ModelTest, CheckGetParameterRecursiveByInitializerList) {
   Model m, sm;
   Parameter p1, p2, p3;
-  m.add_parameter("p1", p1);
-  sm.add_parameter("p2", p2);
-  sm.add_parameter("p3", p3);
-  m.add_submodel("sm", sm);
+  m.add("p1", p1);
+  sm.add("p2", p2);
+  sm.add("p3", p3);
+  m.add("sm", sm);
 
   EXPECT_EQ(&p1, &m.get_parameter({"p1"}));
   EXPECT_EQ(&p2, &m.get_parameter({"sm", "p2"}));
@@ -148,10 +148,10 @@ TEST_F(ModelTest, CheckGetParameterRecursiveByInitializerList) {
 TEST_F(ModelTest, CheckGetParameterRecursiveByVector) {
   Model m, sm;
   Parameter p1, p2, p3;
-  m.add_parameter("p1", p1);
-  sm.add_parameter("p2", p2);
-  sm.add_parameter("p3", p3);
-  m.add_submodel("sm", sm);
+  m.add("p1", p1);
+  sm.add("p2", p2);
+  sm.add("p3", p3);
+  m.add("sm", sm);
 
   EXPECT_EQ(&p1, &m.get_parameter(vector<string> {"p1"}));
   EXPECT_EQ(&p2, &m.get_parameter(vector<string> {"sm", "p2"}));
@@ -182,10 +182,10 @@ TEST_F(ModelTest, CheckGetParameterRecursiveByVector) {
 TEST_F(ModelTest, CheckGetSubmodel) {
   Model m, sm1, sm2, ssm;
   Parameter p;
-  m.add_parameter("p", p);
-  m.add_submodel("sm1", sm1);
-  m.add_submodel("sm2", sm2);
-  sm1.add_submodel("ssm", ssm);
+  m.add("p", p);
+  m.add("sm1", sm1);
+  m.add("sm2", sm2);
+  sm1.add("ssm", ssm);
 
   EXPECT_EQ(&sm1, &m.get_submodel("sm1"));
   EXPECT_EQ(&sm2, &m.get_submodel("sm2"));
@@ -202,10 +202,10 @@ TEST_F(ModelTest, CheckGetSubmodel) {
 TEST_F(ModelTest, CheckGetSubmodelRecursiveByInitializerList) {
   Model m, sm1, sm2, ssm;
   Parameter p;
-  m.add_parameter("p", p);
-  m.add_submodel("sm1", sm1);
-  m.add_submodel("sm2", sm2);
-  sm1.add_submodel("ssm", ssm);
+  m.add("p", p);
+  m.add("sm1", sm1);
+  m.add("sm2", sm2);
+  sm1.add("ssm", ssm);
 
   EXPECT_EQ(&sm1, &m.get_submodel({"sm1"}));
   EXPECT_EQ(&sm2, &m.get_submodel({"sm2"}));
@@ -230,10 +230,10 @@ TEST_F(ModelTest, CheckGetSubmodelRecursiveByInitializerList) {
 TEST_F(ModelTest, CheckGetSubmodelRecursiveByVector) {
   Model m, sm1, sm2, ssm;
   Parameter p;
-  m.add_parameter("p", p);
-  m.add_submodel("sm1", sm1);
-  m.add_submodel("sm2", sm2);
-  sm1.add_submodel("ssm", ssm);
+  m.add("p", p);
+  m.add("sm1", sm1);
+  m.add("sm2", sm2);
+  sm1.add("ssm", ssm);
 
   EXPECT_EQ(&sm1, &m.get_submodel(vector<string> {"sm1"}));
   EXPECT_EQ(&sm2, &m.get_submodel(vector<string> {"sm2"}));
@@ -258,9 +258,9 @@ TEST_F(ModelTest, CheckGetSubmodelRecursiveByVector) {
 TEST_F(ModelTest, CheckGetAllParameters) {
   Model m;
   Parameter p1, p2, p3;
-  m.add_parameter("p1", p1);
-  m.add_parameter("p2", p2);
-  m.add_parameter("p3", p3);
+  m.add("p1", p1);
+  m.add("p2", p2);
+  m.add("p3", p3);
   const map<vector<string>, Parameter *> params = m.get_all_parameters();
   EXPECT_EQ(3u, params.size());
   EXPECT_EQ(&p1, params.at(vector<string> { "p1" }));
@@ -271,11 +271,11 @@ TEST_F(ModelTest, CheckGetAllParameters) {
 TEST_F(ModelTest, CheckGetAllParametersWithSubmodels) {
   Model m1, m2, m3;
   Parameter p1, p2, p3;
-  m1.add_parameter("p", p1);
-  m2.add_parameter("p", p2);
-  m3.add_parameter("p", p3);
-  m1.add_submodel("sm", m2);
-  m2.add_submodel("sm", m3);
+  m1.add("p", p1);
+  m2.add("p", p2);
+  m3.add("p", p3);
+  m1.add("sm", m2);
+  m2.add("sm", m3);
 
   const map<vector<string>, Parameter *> params1 = m1.get_all_parameters();
   EXPECT_EQ(3u, params1.size());
@@ -296,9 +296,9 @@ TEST_F(ModelTest, CheckGetAllParametersWithSubmodels) {
 TEST_F(ModelTest, CheckGetTrainableParameters) {
   Model m;
   Parameter p1, p2, p3;
-  m.add_parameter("p1", p1);
-  m.add_parameter("p2", p2);
-  m.add_parameter("p3", p3);
+  m.add("p1", p1);
+  m.add("p2", p2);
+  m.add("p3", p3);
   const map<vector<string>, Parameter *> params = m.get_trainable_parameters();
   EXPECT_EQ(3u, params.size());
   EXPECT_EQ(&p1, params.at(vector<string> { "p1" }));
@@ -309,11 +309,11 @@ TEST_F(ModelTest, CheckGetTrainableParameters) {
 TEST_F(ModelTest, CheckGetTrainableParametersWithSubmodels) {
   Model m1, m2, m3;
   Parameter p1, p2, p3;
-  m1.add_parameter("p", p1);
-  m2.add_parameter("p", p2);
-  m3.add_parameter("p", p3);
-  m1.add_submodel("sm", m2);
-  m2.add_submodel("sm", m3);
+  m1.add("p", p1);
+  m2.add("p", p2);
+  m3.add("p", p3);
+  m1.add("sm", m2);
+  m2.add("sm", m3);
 
   const map<vector<string>, Parameter *> params1 = m1.get_trainable_parameters();
   EXPECT_EQ(3u, params1.size());
@@ -340,9 +340,9 @@ TEST_F(ModelTest, CheckSaveLoad_Same) {
   {
     Model m1, m2;
     Parameter p1(shape, values1), p2(shape, values2);
-    m1.add_parameter("p", p1);
-    m2.add_parameter("p", p2);
-    m1.add_submodel("sm", m2);
+    m1.add("p", p1);
+    m2.add("p", p2);
+    m1.add("sm", m2);
 
     ASSERT_NO_THROW(m1.save(path));
   }
@@ -350,9 +350,9 @@ TEST_F(ModelTest, CheckSaveLoad_Same) {
   {
     Model m1, m2;
     Parameter p1, p2;
-    m1.add_parameter("p", p1);
-    m2.add_parameter("p", p2);
-    m1.add_submodel("sm", m2);
+    m1.add("p", p1);
+    m2.add("p", p2);
+    m1.add("sm", m2);
 
     EXPECT_NO_THROW(m1.load(path));
     std::remove(path.c_str());
@@ -375,9 +375,9 @@ TEST_F(ModelTest, CheckSaveLoad_Insufficient) {
   {
     Model m1, m2;
     Parameter p1(shape, values1), p2(shape, values2);
-    m1.add_parameter("p", p1);
-    m2.add_parameter("p", p2);
-    m1.add_submodel("sm", m2);
+    m1.add("p", p1);
+    m2.add("p", p2);
+    m1.add("sm", m2);
 
     ASSERT_NO_THROW(m1.save(path));
   }
@@ -385,8 +385,8 @@ TEST_F(ModelTest, CheckSaveLoad_Insufficient) {
   {
     Model m1, m2;
     Parameter p1;
-    m1.add_parameter("p", p1);
-    m1.add_submodel("sm", m2);
+    m1.add("p", p1);
+    m1.add("sm", m2);
 
     EXPECT_THROW(m1.load(path), Error);
     std::remove(path.c_str());
@@ -402,9 +402,9 @@ TEST_F(ModelTest, CheckSaveLoad_Excessive) {
   {
     Model m1, m2;
     Parameter p1(shape, values1), p2(shape, values2);
-    m1.add_parameter("p", p1);
-    m2.add_parameter("p", p2);
-    m1.add_submodel("sm", m2);
+    m1.add("p", p1);
+    m2.add("p", p2);
+    m1.add("sm", m2);
 
     ASSERT_NO_THROW(m1.save(path));
   }
@@ -412,10 +412,10 @@ TEST_F(ModelTest, CheckSaveLoad_Excessive) {
   {
     Model m1, m2;
     Parameter p1, p2, p3;
-    m1.add_parameter("p", p1);
-    m2.add_parameter("p", p2);
-    m2.add_parameter("pp", p3);
-    m1.add_submodel("sm", m2);
+    m1.add("p", p1);
+    m2.add("p", p2);
+    m2.add("pp", p3);
+    m1.add("sm", m2);
 
     EXPECT_NO_THROW(m1.load(path));
     std::remove(path.c_str());
@@ -445,9 +445,9 @@ TEST_F(ModelTest, CheckSaveLoadWithStats) {
     p2.add_stats("b", shape);
     p1.stats("a").reset_by_vector(stats1);
     p2.stats("b").reset_by_vector(stats2);
-    m1.add_parameter("p", p1);
-    m2.add_parameter("p", p2);
-    m1.add_submodel("sm", m2);
+    m1.add("p", p1);
+    m2.add("p", p2);
+    m1.add("sm", m2);
 
     ASSERT_NO_THROW(m1.save(path));
   }
@@ -455,9 +455,9 @@ TEST_F(ModelTest, CheckSaveLoadWithStats) {
   {
     Model m1, m2;
     Parameter p1, p2;
-    m1.add_parameter("p", p1);
-    m2.add_parameter("p", p2);
-    m1.add_submodel("sm", m2);
+    m1.add("p", p1);
+    m2.add("p", p2);
+    m1.add("sm", m2);
 
     EXPECT_NO_THROW(m1.load(path));
     std::remove(path.c_str());
@@ -490,9 +490,9 @@ TEST_F(ModelTest, CheckSaveWithoutStats) {
     p2.add_stats("b", shape);
     p1.stats("a").reset_by_vector(stats1);
     p2.stats("b").reset_by_vector(stats2);
-    m1.add_parameter("p", p1);
-    m2.add_parameter("p", p2);
-    m1.add_submodel("sm", m2);
+    m1.add("p", p1);
+    m2.add("p", p2);
+    m1.add("sm", m2);
 
     ASSERT_NO_THROW(m1.save(path, false));
   }
@@ -500,9 +500,9 @@ TEST_F(ModelTest, CheckSaveWithoutStats) {
   {
     Model m1, m2;
     Parameter p1, p2;
-    m1.add_parameter("p", p1);
-    m2.add_parameter("p", p2);
-    m1.add_submodel("sm", m2);
+    m1.add("p", p1);
+    m2.add("p", p2);
+    m1.add("sm", m2);
 
     EXPECT_NO_THROW(m1.load(path));
     std::remove(path.c_str());
@@ -533,9 +533,9 @@ TEST_F(ModelTest, CheckLoadWithoutStats) {
     p2.add_stats("b", shape);
     p1.stats("a").reset_by_vector(stats1);
     p2.stats("b").reset_by_vector(stats2);
-    m1.add_parameter("p", p1);
-    m2.add_parameter("p", p2);
-    m1.add_submodel("sm", m2);
+    m1.add("p", p1);
+    m2.add("p", p2);
+    m1.add("sm", m2);
 
     ASSERT_NO_THROW(m1.save(path));
   }
@@ -543,9 +543,9 @@ TEST_F(ModelTest, CheckLoadWithoutStats) {
   {
     Model m1, m2;
     Parameter p1, p2;
-    m1.add_parameter("p", p1);
-    m2.add_parameter("p", p2);
-    m1.add_submodel("sm", m2);
+    m1.add("p", p1);
+    m2.add("p", p2);
+    m1.add("sm", m2);
 
     EXPECT_NO_THROW(m1.load(path, false));
     std::remove(path.c_str());
