@@ -88,7 +88,6 @@ inline std::vector<unsigned> line_to_sent(
 inline std::vector<std::vector<unsigned>> load_corpus(
     const std::string &path,
     const std::unordered_map<std::string, unsigned> &vocab) {
-  const unsigned unk_id = vocab.at("<unk>");
   std::ifstream ifs;
   ::open_file(path, ifs);
   std::vector<std::vector<unsigned>> corpus;

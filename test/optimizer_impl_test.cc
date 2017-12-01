@@ -173,7 +173,7 @@ TEST_F(OptimizerImplTest, CheckSGDUpdate) {
 
   SGD optimizer;
   optimizer.set_learning_rate_scaling(.1);
-  optimizer.add_parameter(param);
+  optimizer.add(param);
 
   vector<vector<float>> expected_v {
     {9.9000000e-01, 1.9800000e+00, 2.9700000e+00, 3.9600000e+00},
@@ -271,7 +271,7 @@ TEST_F(OptimizerImplTest, CheckMomentumSGDUpdate) {
 
   MomentumSGD optimizer;
   optimizer.set_learning_rate_scaling(.1);
-  optimizer.add_parameter(param);
+  optimizer.add(param);
   ASSERT_TRUE(param.has_stats("MomentumSGD.m"));
   EXPECT_TRUE(vector_match(
         vector<float>(4, 0), param.stats("MomentumSGD.m").to_vector()));
@@ -381,7 +381,7 @@ TEST_F(OptimizerImplTest, CheckAdaGradUpdate) {
 
   AdaGrad optimizer;
   optimizer.set_learning_rate_scaling(.1);
-  optimizer.add_parameter(param);
+  optimizer.add(param);
   ASSERT_TRUE(param.has_stats("AdaGrad.m"));
   EXPECT_TRUE(vector_match(
         vector<float>(4, 0), param.stats("AdaGrad.m").to_vector()));
@@ -495,7 +495,7 @@ TEST_F(OptimizerImplTest, CheckRMSPropUpdate) {
 
   RMSProp optimizer;
   optimizer.set_learning_rate_scaling(.1);
-  optimizer.add_parameter(param);
+  optimizer.add(param);
   ASSERT_TRUE(param.has_stats("RMSProp.m"));
   EXPECT_TRUE(vector_match(
         vector<float>(4, 0), param.stats("RMSProp.m").to_vector()));
@@ -605,7 +605,7 @@ TEST_F(OptimizerImplTest, CheckAdaDeltaUpdate) {
 
   AdaDelta optimizer;
   optimizer.set_learning_rate_scaling(.1);
-  optimizer.add_parameter(param);
+  optimizer.add(param);
   ASSERT_TRUE(param.has_stats("AdaDelta.m1"));
   ASSERT_TRUE(param.has_stats("AdaDelta.m2"));
   EXPECT_TRUE(vector_match(
@@ -735,7 +735,7 @@ TEST_F(OptimizerImplTest, CheckAdamUpdate) {
 
   Adam optimizer;
   optimizer.set_learning_rate_scaling(.1);
-  optimizer.add_parameter(param);
+  optimizer.add(param);
   ASSERT_TRUE(param.has_stats("Adam.m1"));
   ASSERT_TRUE(param.has_stats("Adam.m2"));
   EXPECT_TRUE(vector_match(
