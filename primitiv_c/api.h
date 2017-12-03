@@ -10,4 +10,4 @@
 #include "primitiv_c/tensor.h"
 #include "primitiv_c/optimizer.h"
 
-#endif  //PRIMITIV_C_API_H_
+#endif  // PRIMITIV_C_API_H_

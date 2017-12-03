@@ -41,4 +41,4 @@ struct primitiv_Optimizer {
   primitiv::Optimizer optimizer;
 };
 
-#endif //PRIMITIV_C_INTERNAL_H_
+#endif  // PRIMITIV_C_INTERNAL_H_
