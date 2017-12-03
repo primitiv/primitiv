@@ -5,10 +5,6 @@
 
 #include "primitiv/primitiv.h"
 
-struct primitiv_Device {
-  primitiv::Device device;
-};
-
 struct primitiv_Graph {
   primitiv::Graph graph;
 };
