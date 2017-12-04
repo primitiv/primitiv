@@ -1,9 +1,9 @@
 #ifndef PRIMITIV_NAIVE_DEVICE_H_
 #define PRIMITIV_NAIVE_DEVICE_H_
 
-#include <mutex>
 #include <primitiv/device.h>
 #include <primitiv/random.h>
+#include <primitiv/spinlock.h>
 
 namespace primitiv {
 namespace devices {
@@ -137,7 +137,7 @@ private:
 
 private:
   DefaultRandomizer randomizer_;
-  std::mutex mutex_;
+  Spinlock spinlock_;
 };
 
 }  // namespace devices

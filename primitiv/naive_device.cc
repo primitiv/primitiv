@@ -5,6 +5,7 @@
 #include <cstring>
 #include <cmath>
 #include <iostream>
+#include <mutex>
 #include <primitiv/naive_device.h>
 #include <primitiv/error.h>
 
@@ -628,7 +629,7 @@ void Naive::inplace_multiply_const_impl(float k, Tensor &x) {
   const std::uint32_t size = x.shape().size();
   float *dest = DATA(x);
 
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::lock_guard<Spinlock> lock(spinlock_);
 
   REPEAT_OP(i, size, dest[i] *= k);
 }
@@ -643,7 +644,7 @@ void Naive::inplace_add_impl(const Tensor &x, Tensor &y) {
   float *dest = DATA(y);
   const float *src = CDATA(x);
 
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::lock_guard<Spinlock> lock(spinlock_);
 
   for (std::uint32_t batch = 0; batch < bs; ++batch) {
     REPEAT_OP(i, size, dest[i] += src[i]);
@@ -662,7 +663,7 @@ void Naive::inplace_subtract_impl(const Tensor &x, Tensor &y) {
   float *dest = DATA(y);
   const float *src = CDATA(x);
 
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::lock_guard<Spinlock> lock(spinlock_);
 
   for (std::uint32_t batch = 0; batch < bs; ++batch) {
     REPEAT_OP(i, size, dest[i] -= src[i]);
