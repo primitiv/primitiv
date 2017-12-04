@@ -8,6 +8,7 @@ set(primitiv_c_HDRS
   model.h
   naive_device.h
   optimizer.h
+  optimizer_impl.h
   parameter.h
   shape.h
   tensor.h
@@ -19,6 +20,7 @@ set(primitiv_c_SRCS
   model.cc
   naive_device.cc
   optimizer.cc
+  optimizer_impl.cc
   parameter.cc
   shape.cc
   tensor.cc)
