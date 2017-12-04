@@ -8,9 +8,9 @@
 extern "C" {
 #endif
 
-primitiv_Device* primitiv_Naive_new();
+primitiv_Device *primitiv_Naive_new();
 
-primitiv_Device* primitiv_Naive_new_with_seed(uint32_t seed);
+primitiv_Device *primitiv_Naive_new_with_seed(uint32_t seed);
 
 void primitiv_Naive_delete(primitiv_Device *device);
 

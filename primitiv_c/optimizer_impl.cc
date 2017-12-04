@@ -14,11 +14,11 @@ using primitiv::optimizers::MomentumSGD;
 
 extern "C" {
 
-primitiv_Optimizer* primitiv_SGD_new() {
+primitiv_Optimizer *primitiv_SGD_new() {
   return to_c(new SGD());
 }
 
-primitiv_Optimizer* primitiv_SGD_new_with_eta(float eta) {
+primitiv_Optimizer *primitiv_SGD_new_with_eta(float eta) {
   return to_c(new SGD(eta));
 }
 
@@ -30,15 +30,15 @@ float primitiv_SGD_eta(const primitiv_Optimizer *optimizer) {
   return CAST_TO_CONST_CC_SGD(optimizer)->eta();
 }
 
-primitiv_Optimizer* primitiv_MomentumSGD_new() {
+primitiv_Optimizer *primitiv_MomentumSGD_new() {
   return to_c(new MomentumSGD());
 }
 
-primitiv_Optimizer* primitiv_MomentumSGD_new_with_eta(float eta) {
+primitiv_Optimizer *primitiv_MomentumSGD_new_with_eta(float eta) {
   return to_c(new MomentumSGD(eta));
 }
 
-primitiv_Optimizer* primitiv_MomentumSGD_new_with_eta_and_momentum(float eta, float momentum) {
+primitiv_Optimizer *primitiv_MomentumSGD_new_with_eta_and_momentum(float eta, float momentum) {
   return to_c(new MomentumSGD(eta, momentum));
 }
 

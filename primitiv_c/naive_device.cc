@@ -7,11 +7,11 @@ using primitiv::devices::Naive;
 
 extern "C" {
 
-primitiv_Device* primitiv_Naive_new() {
+primitiv_Device *primitiv_Naive_new() {
   return reinterpret_cast<primitiv_Device*>(new Naive());
 }
 
-primitiv_Device* primitiv_Naive_new_with_seed(uint32_t seed) {
+primitiv_Device *primitiv_Naive_new_with_seed(uint32_t seed) {
   return reinterpret_cast<primitiv_Device*>(new Naive(seed));
 }
 

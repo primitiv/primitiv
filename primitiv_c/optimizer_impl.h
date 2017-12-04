@@ -8,19 +8,19 @@
 extern "C" {
 #endif
 
-primitiv_Optimizer* primitiv_SGD_new();
+primitiv_Optimizer *primitiv_SGD_new();
 
-primitiv_Optimizer* primitiv_SGD_new_with_eta(float eta);
+primitiv_Optimizer *primitiv_SGD_new_with_eta(float eta);
 
 void primitiv_SGD_delete(primitiv_Optimizer *optimizer);
 
 float primitiv_SGD_eta(const primitiv_Optimizer *optimizer);
 
-primitiv_Optimizer* primitiv_MomentumSGD_new();
+primitiv_Optimizer *primitiv_MomentumSGD_new();
 
-primitiv_Optimizer* primitiv_MomentumSGD_new_with_eta(float eta);
+primitiv_Optimizer *primitiv_MomentumSGD_new_with_eta(float eta);
 
-primitiv_Optimizer* primitiv_MomentumSGD_new_with_eta_and_momentum(float eta, float momentum);
+primitiv_Optimizer *primitiv_MomentumSGD_new_with_eta_and_momentum(float eta, float momentum);
 
 void primitiv_MomentumSGD_delete(primitiv_Optimizer *optimizer);
 
