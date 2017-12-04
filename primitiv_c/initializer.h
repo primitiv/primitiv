@@ -1,6 +1,8 @@
 #ifndef PRIMITIV_C_INITIALIZER_H_
 #define PRIMITIV_C_INITIALIZER_H_
 
+#include "primitiv_c/define.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

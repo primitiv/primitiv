@@ -1,3 +1,4 @@
+#include "primitiv_c/internal.h"
 #include "primitiv_c/shape.h"
 
 #include <string>
@@ -8,10 +9,6 @@
 using primitiv::Shape;
 
 extern "C" {
-
-struct primitiv_Shape {
-  primitiv::Shape shape;
-};
 
 primitiv_Shape *primitiv_Shape_new() {
   return new primitiv_Shape;
@@ -109,11 +106,11 @@ primitiv_Shape *primitiv_Shape_resize_batch(const primitiv_Shape *shape, uint32_
   return new primitiv_Shape{shape->shape.resize_batch(batch)};
 }
 
-void primitiv_Shape_update_dim(const primitiv_Shape *shape, uint32_t dim, uint32_t m) {
+void primitiv_Shape_update_dim(primitiv_Shape *shape, uint32_t dim, uint32_t m) {
   shape->shape.update_dim(dim, m);
 }
 
-void primitiv_Shape_update_batch(const primitiv_Shape *shape, uint32_t batch) {
+void primitiv_Shape_update_batch(primitiv_Shape *shape, uint32_t batch) {
   shape->shape.update_batch(batch);
 }
 

@@ -1,9 +1,8 @@
 #ifndef PRIMITIV_C_NAIVE_DEVICE_H_
 #define PRIMITIV_C_NAIVE_DEVICE_H_
 
+#include "primitiv_c/define.h"
 #include "primitiv_c/device.h"
-
-#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {

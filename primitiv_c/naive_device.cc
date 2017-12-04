@@ -1,3 +1,4 @@
+#include "primitiv_c/internal.h"
 #include "primitiv_c/naive_device.h"
 
 #include <primitiv/naive_device.h>

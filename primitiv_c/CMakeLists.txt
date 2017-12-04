@@ -1,5 +1,6 @@
 set(primitiv_c_HDRS
   api.h
+  define.h
   device.h
   graph.h
   initializer.h

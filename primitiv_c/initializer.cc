@@ -1,3 +1,4 @@
+#include "primitiv_c/internal.h"
 #include "primitiv_c/initializer.h"
 
 #include <primitiv/initializer.h>

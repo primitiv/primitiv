@@ -1,7 +1,7 @@
 #ifndef PRIMITIV_C_DEVICE_H_
 #define PRIMITIV_C_DEVICE_H_
 
-#include <stdint.h>
+#include "primitiv_c/define.h"
 
 #ifdef __cplusplus
 extern "C" {

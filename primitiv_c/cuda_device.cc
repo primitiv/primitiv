@@ -1,3 +1,4 @@
+#include "primitiv_c/internal.h"
 #include "primitiv_c/cuda_device.h"
 
 #include <primitiv/cuda_device.h>

@@ -1,8 +1,7 @@
 #ifndef PRIMITIV_C_SHAPE_H_
 #define PRIMITIV_C_SHAPE_H_
 
-#include <stddef.h>
-#include <stdint.h>
+#include "primitiv_c/define.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,9 +55,9 @@ primitiv_Shape *primitiv_Shape_resize_dim(const primitiv_Shape *shape, uint32_t 
 
 primitiv_Shape *primitiv_Shape_resize_batch(const primitiv_Shape *shape, uint32_t batch);
 
-void primitiv_Shape_update_dim(const primitiv_Shape *shape, uint32_t dim, uint32_t m);
+void primitiv_Shape_update_dim(primitiv_Shape *shape, uint32_t dim, uint32_t m);
 
-void primitiv_Shape_update_batch(const primitiv_Shape *shape, uint32_t batch);
+void primitiv_Shape_update_batch(primitiv_Shape *shape, uint32_t batch);
 
 #ifdef __cplusplus
 }  // end extern "C"
