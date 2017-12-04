@@ -7,11 +7,6 @@
 #include "primitiv_c/shape.h"
 #include "primitiv_c/tensor.h"
 
-#define CAST_TO_CC_NODE(x) reinterpret_cast<Node*>(x)
-#define CAST_TO_C_NODE(x) reinterpret_cast<primitiv_Node*>(x)
-#define CAST_TO_CONST_CC_NODE(x) reinterpret_cast<const Node*>(x)
-#define CAST_TO_CONST_C_NODE(x) reinterpret_cast<const primitiv_Node*>(x)
-
 #ifdef __cplusplus
 extern "C" {
 #endif
