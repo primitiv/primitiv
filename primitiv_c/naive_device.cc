@@ -5,18 +5,21 @@
 
 using primitiv::devices::Naive;
 
+#define CAST_TO_CC_NAIVE(x) reinterpret_cast<Naive*>(x)
+#define CAST_TO_CONST_CC_NAIVE(x) reinterpret_cast<const Naive*>(x)
+
 extern "C" {
 
 primitiv_Device *primitiv_Naive_new() {
-  return reinterpret_cast<primitiv_Device*>(new Naive());
+  return to_c(new Naive());
 }
 
 primitiv_Device *primitiv_Naive_new_with_seed(uint32_t seed) {
-  return reinterpret_cast<primitiv_Device*>(new Naive(seed));
+  return to_c(new Naive(seed));
 }
 
 void primitiv_Naive_delete(primitiv_Device *device) {
-  delete reinterpret_cast<Naive*>(device);
+  delete CAST_TO_CC_NAIVE(device);
 }
 
 }  // end extern "C"
