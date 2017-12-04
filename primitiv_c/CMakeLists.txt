@@ -7,6 +7,7 @@ set(primitiv_c_HDRS
   internal.h
   model.h
   naive_device.h
+  operators.h
   optimizer.h
   optimizer_impl.h
   parameter.h
@@ -19,6 +20,7 @@ set(primitiv_c_SRCS
   initializer.cc
   model.cc
   naive_device.cc
+  operators.cc
   optimizer.cc
   optimizer_impl.cc
   parameter.cc
