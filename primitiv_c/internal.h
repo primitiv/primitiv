@@ -89,4 +89,4 @@ struct primitiv_Optimizer;
 
 DEFINE_CONVERSION_AS_CAST(Optimizer, primitiv_Optimizer);
 
-#endif // PRIMITIV_C_INTERNAL_H_
+#endif  // PRIMITIV_C_INTERNAL_H_
