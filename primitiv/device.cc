@@ -166,12 +166,19 @@ Tensor Device::slice_fw(
 
 Tensor Device::concat_fw(const vector<const Tensor *> &xs, std::uint32_t dim) {
   if (xs.empty()) THROW_ERROR("No tensors to concat.");
-  vector<const Shape *> shapes(xs.size());
+
+  vector<Shape> shape_objs;
+  vector<const Shape *> shape_ptrs;
+  shape_objs.reserve(xs.size());
+  shape_ptrs.reserve(xs.size());
+
   for (std::uint32_t i = 0; i < xs.size(); ++i) {
     CHECK_DEVICE(*xs[i]);
-    shapes[i] = &xs[i]->shape();
+    shape_objs.emplace_back(xs[i]->shape());
+    shape_ptrs.emplace_back(&shape_objs.back());
   }
-  Tensor y = new_raw_tensor(shape_ops::concat(shapes, dim));
+
+  Tensor y = new_raw_tensor(shape_ops::concat(shape_ptrs, dim));
   concat_fw_impl(xs, dim, y);
   return y;
 }

@@ -3,9 +3,11 @@
 
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <vector>
 #include <primitiv/error.h>
 #include <primitiv/shape.h>
+#include <primitiv/spinlock.h>
 
 namespace primitiv {
 
@@ -18,31 +20,74 @@ class Tensor {
   friend Device;
 
 public:
-  Tensor(const Tensor &) = default;
+  /**
+   * Creates an invalid Tensor.
+   */
+  Tensor() : shape_(), device_(nullptr), data_() {}
 
-  Tensor(Tensor &&src)
-    : shape_(std::move(src.shape_))
-    , device_(src.device_)
-    , data_(std::move(src.data_)) {
-      src.device_ = nullptr;
-    }
+  /**
+   * Copy constructor.
+   */
+  Tensor(const Tensor &src) {
+    std::lock(spinlock_, src.spinlock_);
 
-  Tensor &operator=(const Tensor &) = default;
+    shape_ = src.shape_;
+    device_ = src.device_;
+    data_ = src.data_;
 
-  Tensor &operator=(Tensor &&src) {
+    spinlock_.unlock();
+    src.spinlock_.unlock();
+  }
+
+  /**
+   * Move constructor.
+   */
+  Tensor(Tensor &&src) {
+    std::lock(spinlock_, src.spinlock_);
+
+    shape_ = std::move(src.shape_);
+    device_ = src.device_;
+    data_ = std::move(src.data_);
+    src.device_ = nullptr;
+
+    spinlock_.unlock();
+    src.spinlock_.unlock();
+  }
+
+  /**
+   * Copy assignment.
+   */
+  Tensor &operator=(const Tensor &src) {
     if (&src != this) {
-      shape_ = std::move(src.shape_);
+      std::lock(spinlock_, src.spinlock_);
+
+      shape_ = src.shape_;
       device_ = src.device_;
-      data_ = std::move(src.data_);
-      src.device_ = nullptr;
+      data_ = src.data_;
+
+      spinlock_.unlock();
+      src.spinlock_.unlock();
     }
     return *this;
   }
 
   /**
-   * Creates an invalid Tensor.
+   * Move assignment.
    */
-  Tensor() : shape_(), device_(nullptr), data_() {}
+  Tensor &operator=(Tensor &&src) {
+    if (&src != this) {
+      std::lock(spinlock_, src.spinlock_);
+
+      shape_ = std::move(src.shape_);
+      device_ = src.device_;
+      data_ = std::move(src.data_);
+      src.device_ = nullptr;
+
+      spinlock_.unlock();
+      src.spinlock_.unlock();
+    }
+    return *this;
+  }
 
   /**
    * Check whether the object is valid or not.
@@ -56,7 +101,9 @@ public:
    * Returns the shape of the Tensor.
    * @return Shape of the Tensor.
    */
-  const Shape &shape() const {
+  Shape shape() const {
+    std::lock_guard<RecursiveSpinlock> lock(spinlock_);
+
     if (!valid()) THROW_ERROR("Invalid tensor.");
     return shape_;
   }
@@ -66,6 +113,8 @@ public:
    * @return Device object.
    */
   Device &device() const {
+    std::lock_guard<RecursiveSpinlock> lock(spinlock_);
+
     if (!valid()) THROW_ERROR("Invalid tensor.");
     return *device_;
   }
@@ -81,6 +130,8 @@ public:
    * @return Const-pointer of the internal memory.
    */
   const void *data() const {
+    std::lock_guard<RecursiveSpinlock> lock(spinlock_);
+
     if (!valid()) THROW_ERROR("Invalid tensor.");
     return data_.get();
   }
@@ -189,6 +240,7 @@ private:
   Shape shape_;
   Device *device_;
   std::shared_ptr<void> data_;
+  mutable RecursiveSpinlock spinlock_;
 };
 
 }  // namespace primitiv
