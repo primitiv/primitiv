@@ -68,7 +68,7 @@ void Model::save(const std::string &path, bool with_stats) const {
   }
 }
 
-void Model::add_parameter(const std::string &name, Parameter &param) {
+void Model::add(const std::string &name, Parameter &param) {
   if (name_set_.find(name) != name_set_.end()) {
     THROW_ERROR(
         "Name '" << name << "' already exists in the model.");
@@ -82,7 +82,7 @@ void Model::add_parameter(const std::string &name, Parameter &param) {
   param_kv_.emplace(name, &param);
 }
 
-void Model::add_submodel(const std::string &name, Model &model) {
+void Model::add(const std::string &name, Model &model) {
   if (&model == this) {
     THROW_ERROR("Can't add self as a submodel.");
   }

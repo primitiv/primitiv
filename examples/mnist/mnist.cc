@@ -19,7 +19,7 @@
 #include <vector>
 
 #include <primitiv/primitiv.h>
-#include <primitiv/primitiv_cuda.h>
+//#include <primitiv/primitiv_cuda.h>
 
 using namespace primitiv;
 using namespace std;
@@ -74,13 +74,16 @@ vector<char> load_labels(const string &filename, const unsigned n) {
 
 int main() {
   // Loads data
-  vector<float> train_inputs = ::load_images("data/train-images-idx3-ubyte", NUM_TRAIN_SAMPLES);
-  vector<char> train_labels = ::load_labels("data/train-labels-idx1-ubyte", NUM_TRAIN_SAMPLES);
-  vector<float> test_inputs = ::load_images("data/t10k-images-idx3-ubyte", NUM_TEST_SAMPLES);
-  vector<char> test_labels = ::load_labels("data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES);
+  vector<float> train_inputs
+    = ::load_images("data/train-images-idx3-ubyte", NUM_TRAIN_SAMPLES);
+  vector<char> train_labels
+    = ::load_labels("data/train-labels-idx1-ubyte", NUM_TRAIN_SAMPLES);
+  vector<float> test_inputs
+    = ::load_images("data/t10k-images-idx3-ubyte", NUM_TEST_SAMPLES);
+  vector<char> test_labels
+    = ::load_labels("data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES);
 
-  // Uses GPU.
-  devices::CUDA dev(0);
+  devices::Naive dev;  //devices::CUDA dev(0);
   Device::set_default(dev);
   Graph g;
   Graph::set_default(g);
@@ -93,10 +96,7 @@ int main() {
 
   // Optimizer
   O::SGD optimizer(.5);
-  optimizer.add_parameter(pw1);
-  optimizer.add_parameter(pb1);
-  optimizer.add_parameter(pw2);
-  optimizer.add_parameter(pb2);
+  optimizer.add(pw1, pb1, pw2, pb2);
 
   // Helper lambda to construct the predictor network.
   auto make_graph = [&](const vector<float> &inputs, bool train) {
@@ -169,10 +169,10 @@ int main() {
       vector<float> y_val = y.to_vector();
       for (unsigned i = 0; i < BATCH_SIZE; ++i) {
         float maxval = -1e10;
-        unsigned argmax = -1;
+        int argmax = -1;
         for (unsigned j = 0; j < NUM_OUTPUT_UNITS; ++j) {
           float v = y_val[j + i * NUM_OUTPUT_UNITS];
-          if (v > maxval) maxval = v, argmax = j;
+          if (v > maxval) maxval = v, argmax = static_cast<int>(j);
         }
         if (argmax == test_labels[i + batch * BATCH_SIZE]) ++match;
       }

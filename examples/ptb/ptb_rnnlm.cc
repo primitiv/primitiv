@@ -25,7 +25,7 @@
 #include <vector>
 
 #include <primitiv/primitiv.h>
-#include <primitiv/primitiv_cuda.h>
+//#include <primitiv/primitiv_cuda.h>
 
 #include "utils.h"
 
@@ -43,14 +43,13 @@ static const unsigned MAX_EPOCH = 100;
 
 class RNNLM : public Model {
 public:
-  RNNLM(unsigned vocab_size, unsigned eos_id)
-    : eos_id_(eos_id)
-    , pwlookup_({NUM_HIDDEN_UNITS, vocab_size}, XavierUniform())
+  RNNLM(unsigned vocab_size)
+    : pwlookup_({NUM_HIDDEN_UNITS, vocab_size}, XavierUniform())
     , pwxs_({NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS}, XavierUniform())
     , pwsy_({vocab_size, NUM_HIDDEN_UNITS}, XavierUniform()) {
-      add_parameter("pwlookup", pwlookup_);
-      add_parameter("pwxs", pwxs_);
-      add_parameter("pwsy", pwsy_);
+      add("pwlookup", pwlookup_);
+      add("pwxs", pwxs_);
+      add("pwsy", pwsy_);
     }
 
   // Forward function of RNNLM. Input data should be arranged below:
@@ -88,7 +87,6 @@ public:
   }
 
 private:
-  unsigned eos_id_;
   Parameter pwlookup_;
   Parameter pwxs_;
   Parameter pwsy_;
@@ -114,20 +112,19 @@ int main() {
   cout << "valid: " << num_valid_sents << " sentences, "
                     << num_valid_labels << " labels" << endl;
 
-  // Uses GPU.
-  devices::CUDA dev(0);
+  devices::Naive dev;  //devices::CUDA dev(0);
   Device::set_default(dev);
   Graph g;
   Graph::set_default(g);
 
   // Our LM.
-  ::RNNLM lm(vocab.size(), eos_id);
+  ::RNNLM lm(vocab.size());
 
   // Optimizer.
   Adam optimizer;
   optimizer.set_weight_decay(1e-6);
   optimizer.set_gradient_clipping(5);
-  optimizer.add_model(lm);
+  optimizer.add(lm);
 
   // Batch randomizer.
   random_device rd;

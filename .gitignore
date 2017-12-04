@@ -1,15 +1,5 @@
-.ipynb_checkpoints
-.python-version
-__pycache__
 /build
 /examples/*/a.out
 /examples/*/*.config
 /examples/*/*.param
 /examples/*/data
-/python-primitiv/**/*.cpp
-/python-primitiv/**/*.so
-/python-primitiv/*.egg-info
-/python-primitiv/build
-/python-primitiv/dist
-/python-primitiv/primitiv/_trainer.h
-/python-primitiv/primitiv/_trainer_api.h
