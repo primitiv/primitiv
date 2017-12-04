@@ -16,6 +16,7 @@
 #include <primitiv/memory_pool.h>
 #include <primitiv/opencl_device.h>
 #include <primitiv/random.h>
+#include <primitiv/spinlock.h>
 
 namespace {
 
@@ -26,9 +27,9 @@ namespace {
  * @param data Array of the data.
  * @param size Number of objects in `data`.
  */
-template<typename T>
+template<typename T, typename Mutex>
 void read_buffer(
-    std::mutex &/* unused*/,
+    Mutex &/* unused*/,
     cl::CommandQueue &queue, const cl::Buffer &buffer,
     T data[], std::size_t size) {
   queue.enqueueReadBuffer(buffer, CL_TRUE, 0, sizeof(T) * size, data);
@@ -41,12 +42,12 @@ void read_buffer(
  * @param data Array of the data.
  * @param size Number of objects in `data`.
  */
-template<typename T>
+template<typename T, typename Mutex>
 void write_buffer(
-    std::mutex &mutex,
+    Mutex &mutex,
     cl::CommandQueue &queue, cl::Buffer &buffer,
     const T data[], std::size_t size) {
-  std::lock_guard<std::mutex> lock(mutex);
+  std::lock_guard<Mutex> lock(mutex);
 
   // NOTE(odashi):
   // Some devices could not directly write their buffers.
@@ -195,7 +196,7 @@ private:
 public:
   OpenCLInternalState(
       std::uint32_t pf_id, std::uint32_t dev_id, std::uint32_t rng_seed)
-    : mutex()
+    : spinlock()
     , device(::get_device(pf_id, dev_id))
     , context({ device })
     , queue(context, device, 0)
@@ -344,7 +345,7 @@ public:
 #undef CONFIGURE_KERNEL_LIST
     }
 
-  std::mutex mutex;
+  primitiv::Spinlock spinlock;
   cl::Device device;
   cl::Context context;
   cl::CommandQueue queue;
@@ -562,7 +563,7 @@ std::vector<float> OpenCL::tensor_to_vector_impl(const Tensor &x) {
   const std::uint32_t size = x.shape().size();
   std::vector<float> ret(size);
   ::read_buffer(
-      state_->mutex, state_->queue, ::get_buffer(x), ret.data(), size);
+      state_->spinlock, state_->queue, ::get_buffer(x), ret.data(), size);
   return ret;
 }
 
@@ -577,7 +578,7 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(
   std::shared_ptr<void> py = state_->pool.allocate(sizeof(std::uint32_t) * r);
 
   {
-    std::lock_guard<std::mutex> lock(state_->mutex);
+    std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
     switch (group_size) {
 #define CASE(k, m) \
@@ -606,7 +607,8 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(
   }
 
   std::vector<std::uint32_t> ret(r);
-  ::read_buffer(state_->mutex, state_->queue, ::get_buffer(py), ret.data(), r);
+  ::read_buffer(
+      state_->spinlock, state_->queue, ::get_buffer(py), ret.data(), r);
   return ret;
 }
 
@@ -621,7 +623,7 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(
   std::shared_ptr<void> py = state_->pool.allocate(sizeof(std::uint32_t) * r);
 
   {
-    std::lock_guard<std::mutex> lock(state_->mutex);
+    std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
     switch (group_size) {
 #define CASE(k, m) \
@@ -650,7 +652,8 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(
   }
 
   std::vector<std::uint32_t> ret(r);
-  ::read_buffer(state_->mutex, state_->queue, ::get_buffer(py), ret.data(), r);
+  ::read_buffer(
+      state_->spinlock, state_->queue, ::get_buffer(py), ret.data(), r);
   return ret;
 }
 
@@ -662,7 +665,8 @@ void OpenCL::reset_tensor_impl(float k, Tensor &x) {
 
 void OpenCL::reset_tensor_by_array_impl(const float values[], Tensor &x) {
   const std::uint32_t size = x.shape().size();
-  ::write_buffer(state_->mutex, state_->queue, ::get_buffer(x), values, size);
+  ::write_buffer(
+      state_->spinlock, state_->queue, ::get_buffer(x), values, size);
 }
 
 void OpenCL::copy_tensor_impl(const Tensor &x, Tensor &y) {
@@ -676,7 +680,7 @@ void OpenCL::copy_tensor_impl(const Tensor &x, Tensor &y) {
         state_->queue.enqueueCopyBuffer(
             ::get_buffer(x), ::get_buffer(y), 0, 0, sizeof(float) * size);
       } else {
-        std::lock_guard<std::mutex> lock(state_->mutex);
+        std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
         const std::uint32_t size = x.shape().size();
         cl::CommandQueue &queue_x
@@ -705,7 +709,7 @@ void OpenCL::identity_impl(Tensor &y) {
   const std::uint32_t num_blocks = ::calc_num_blocks(
       size, state_->set_identity_group_size);
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   state_->set_identity_kernel.setArg(0, size);
   state_->set_identity_kernel.setArg(1, skip);
@@ -719,7 +723,7 @@ void OpenCL::identity_impl(Tensor &y) {
 void OpenCL::random_bernoulli_impl(float p, Tensor &y) {
   const std::uint32_t size = y.shape().size();
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   float *mapped_ptr = static_cast<float *>(
       state_->queue.enqueueMapBuffer(
@@ -731,7 +735,7 @@ void OpenCL::random_bernoulli_impl(float p, Tensor &y) {
 void OpenCL::random_uniform_impl(float lower, float upper, Tensor &y) {
   const std::uint32_t size = y.shape().size();
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   float *mapped_ptr = static_cast<float *>(
       state_->queue.enqueueMapBuffer(
@@ -743,7 +747,7 @@ void OpenCL::random_uniform_impl(float lower, float upper, Tensor &y) {
 void OpenCL::random_normal_impl(float mean, float sd, Tensor &y) {
   const std::uint32_t size = y.shape().size();
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   float *mapped_ptr = static_cast<float *>(
       state_->queue.enqueueMapBuffer(
@@ -755,7 +759,7 @@ void OpenCL::random_normal_impl(float mean, float sd, Tensor &y) {
 void OpenCL::random_log_normal_impl(float mean, float sd, Tensor &y) {
   const std::uint32_t size = y.shape().size();
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   float *mapped_ptr = static_cast<float *>(
       state_->queue.enqueueMapBuffer(
@@ -777,10 +781,10 @@ void OpenCL::pick_fw_impl(
   std::shared_ptr<void> ids_buf = state_->pool.allocate(
       sizeof(std::uint32_t) * ids.size());
   ::write_buffer(
-      state_->mutex, state_->queue, ::get_buffer(ids_buf),
+      state_->spinlock, state_->queue, ::get_buffer(ids_buf),
       ids.data(), ids.size());
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   state_->pick_fw_kernel.setArg(0, ::get_buffer(x));
   state_->pick_fw_kernel.setArg(1, ::get_buffer(ids_buf));
@@ -806,7 +810,7 @@ void OpenCL::slice_fw_impl(
   const std::uint32_t num_blocks = ::calc_num_blocks(
       size, state_->slice_fw_group_size);
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   state_->slice_fw_kernel.setArg(0, ::get_buffer(x));
   state_->slice_fw_kernel.setArg(1, shift);
@@ -828,7 +832,7 @@ void OpenCL::concat_fw_impl(
   const std::uint32_t repeat = y.shape().volume() / skip;
   std::uint32_t offset = 0;
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   for (const Tensor *x : xs) {
     const std::uint32_t span = base * x->shape()[dim];
@@ -864,10 +868,10 @@ void OpenCL::pick_bw_impl(
   std::shared_ptr<void> ids_buf = state_->pool.allocate(
       sizeof(std::uint32_t) * ids.size());
   ::write_buffer(
-      state_->mutex, state_->queue, ::get_buffer(ids_buf),
+      state_->spinlock, state_->queue, ::get_buffer(ids_buf),
       ids.data(), ids.size());
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   state_->pick_bw_kernel.setArg(0, ::get_buffer(gy));
   state_->pick_bw_kernel.setArg(1, ::get_buffer(ids_buf));
@@ -897,7 +901,7 @@ void OpenCL::slice_bw_impl(
   const std::uint32_t g1 = ::calc_num_blocks(
       wy * std::max(nx, ny), state_->slice_bw_group_size);
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   state_->slice_bw_kernel.setArg(0, ::get_buffer(gy));
   state_->slice_bw_kernel.setArg(1, wx);
@@ -918,7 +922,7 @@ void OpenCL::name##_fw_impl(const Tensor &x, Tensor &y) { \
   const std::uint32_t num_blocks = ::calc_num_blocks( \
       size, state_->name##_fw_group_size); \
   \
-  std::lock_guard<std::mutex> lock(state_->mutex); \
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock); \
   \
   state_->name##_fw_kernel.setArg(0, ::get_buffer(x)); \
   state_->name##_fw_kernel.setArg(1, size); \
@@ -936,7 +940,7 @@ void OpenCL::name##_bw_impl( \
   const std::uint32_t num_blocks = ::calc_num_blocks( \
       size, state_->name##_bw_group_size); \
   \
-  std::lock_guard<std::mutex> lock(state_->mutex); \
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock); \
   \
   state_->name##_bw_kernel.setArg(0, ::get_buffer(x)); \
   state_->name##_bw_kernel.setArg(1, ::get_buffer(y)); \
@@ -955,7 +959,7 @@ void OpenCL::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
   const std::uint32_t num_blocks = ::calc_num_blocks( \
       size, state_->name##_fw_group_size); \
   \
-  std::lock_guard<std::mutex> lock(state_->mutex); \
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock); \
   \
   state_->name##_fw_kernel.setArg(0, ::get_buffer(x)); \
   state_->name##_fw_kernel.setArg(1, k); \
@@ -974,7 +978,7 @@ void OpenCL::name##_bw_impl( \
   const std::uint32_t num_blocks = ::calc_num_blocks( \
       size, state_->name##_bw_group_size); \
   \
-  std::lock_guard<std::mutex> lock(state_->mutex); \
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock); \
   \
   state_->name##_bw_kernel.setArg(0, ::get_buffer(x)); \
   state_->name##_bw_kernel.setArg(1, ::get_buffer(y)); \
@@ -997,7 +1001,7 @@ void OpenCL::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
   const std::uint32_t mbx = x.shape().has_batch(); \
   const std::uint32_t mbk = k.shape().has_batch(); \
   \
-  std::lock_guard<std::mutex> lock(state_->mutex); \
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock); \
   \
   state_->name##_fw_kernel.setArg(0, ::get_buffer(x)); \
   state_->name##_fw_kernel.setArg(1, ::get_buffer(k)); \
@@ -1020,7 +1024,7 @@ void OpenCL::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
   const std::uint32_t mba = a.shape().has_batch(); \
   const std::uint32_t mbb = b.shape().has_batch(); \
   \
-  std::lock_guard<std::mutex> lock(state_->mutex); \
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock); \
   \
   state_->name##_fw_kernel.setArg(0, ::get_buffer(a)); \
   state_->name##_fw_kernel.setArg(1, ::get_buffer(b)); \
@@ -1045,7 +1049,7 @@ void OpenCL::name##_bw_impl( \
   const std::uint32_t mba = a.shape().has_batch(); \
   const std::uint32_t mbb = b.shape().has_batch(); \
   \
-  std::lock_guard<std::mutex> lock(state_->mutex); \
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock); \
   \
   state_->name##_bw_kernel.setArg(0, ::get_buffer(a)); \
   state_->name##_bw_kernel.setArg(1, ::get_buffer(b)); \
@@ -1135,7 +1139,7 @@ void OpenCL::transpose_fw_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t g2 = ::calc_num_blocks(
       cols, state_->transpose_fw_group_size_y);
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   state_->transpose_fw_kernel.setArg(0, ::get_buffer(x));
   state_->transpose_fw_kernel.setArg(1, rows);
@@ -1158,7 +1162,7 @@ void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   const float alpha = 1.f;
   const float beta = 0.f;
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
@@ -1201,7 +1205,7 @@ void OpenCL::transpose_bw_impl(
   const std::uint32_t g2 = ::calc_num_blocks(
       cols, state_->transpose_bw_group_size_y);
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   state_->transpose_bw_kernel.setArg(0, ::get_buffer(gy));
   state_->transpose_bw_kernel.setArg(1, rows);
@@ -1228,7 +1232,7 @@ void OpenCL::matmul_bw_impl(
   const float alpha = 1.f;
   const float beta = 1.f;
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
@@ -1286,7 +1290,7 @@ void OpenCL::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   std::uint32_t group_size = std::min(state_->sum_fw_group_size, 1024u);
   while (group_size >> 1 >= n) group_size >>= 1;
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   switch (group_size) {
 #define CASE(k, m) \
@@ -1321,7 +1325,7 @@ void OpenCL::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   std::uint32_t group_size = std::min(state_->logsumexp_fw_group_size, 1024u);
   while (group_size >> 1 >= n) group_size >>= 1;
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   switch (group_size) {
 #define CASE(k, m) \
@@ -1357,7 +1361,7 @@ void OpenCL::broadcast_fw_impl(
   const std::uint32_t g1 = ::calc_num_blocks(
       total, state_->broadcast_fw_group_size);
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   state_->broadcast_fw_kernel.setArg(0, ::get_buffer(x));
   state_->broadcast_fw_kernel.setArg(1, skip1);
@@ -1376,7 +1380,7 @@ void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t g1 = ::calc_num_blocks(
       size, state_->batch_sum_fw_group_size);
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   state_->batch_sum_fw_kernel.setArg(0, ::get_buffer(x));
   state_->batch_sum_fw_kernel.setArg(1, size);
@@ -1393,7 +1397,7 @@ void OpenCL::inplace_multiply_const_impl(float k, Tensor &x) {
   const std::uint32_t g1 = ::calc_num_blocks(
       size, state_->inplace_multiply_const_group_size);
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   state_->inplace_multiply_const_kernel.setArg(0, k);
   state_->inplace_multiply_const_kernel.setArg(1, size);
@@ -1412,7 +1416,7 @@ void OpenCL::inplace_add_impl(const Tensor &x, Tensor &y) {
       size, state_->inplace_add_group_size);
   const std::uint32_t bs = std::max(x.shape().batch(), y.shape().batch());
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   state_->inplace_add_kernel.setArg(0, ::get_buffer(x));
   state_->inplace_add_kernel.setArg(1, size);
@@ -1433,7 +1437,7 @@ void OpenCL::inplace_subtract_impl(const Tensor &x, Tensor &y) {
       size, state_->inplace_subtract_group_size);
   const std::uint32_t bs = std::max(x.shape().batch(), y.shape().batch());
 
-  std::lock_guard<std::mutex> lock(state_->mutex);
+  std::lock_guard<primitiv::Spinlock> lock(state_->spinlock);
 
   state_->inplace_subtract_kernel.setArg(0, ::get_buffer(x));
   state_->inplace_subtract_kernel.setArg(1, size);
