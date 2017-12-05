@@ -9,6 +9,6 @@
 #include "primitiv_c/parameter.h"
 #include "primitiv_c/shape.h"
 #include "primitiv_c/tensor.h"
-#include "primitiv_c/optimizer_imple.h"
+#include "primitiv_c/optimizer_impl.h"
 
 #endif  // PRIMITIV_C_API_H_
