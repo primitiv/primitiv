@@ -6,15 +6,6 @@
 
 using std::vector;
 
-#ifdef PRIMITIV_NEED_EXPLICIT_STATIC_SYMBOLS
-namespace primitiv {
-namespace mixins {
-template<>
-Device *DefaultSettable<Device>::default_obj_ = nullptr;
-}  // namespace mixins
-}  // namespace primitiv
-#endif  // PRIMITIV_NEED_EXPLICIT_STATIC_SYMBOLS
-
 // NOTE(odashi): This source only checks shape prerequisites of each operation.
 
 #define CHECK_DEVICE(x) \
