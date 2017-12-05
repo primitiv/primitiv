@@ -10,6 +10,7 @@
 #include <vector>
 
 #include <primitiv/mixins.h>
+#include <primitiv/spinlock.h>
 
 namespace primitiv {
 
@@ -39,7 +40,7 @@ class MemoryPool : public mixins::Identifiable<MemoryPool> {
   std::function<void(void *)> deleter_;
   std::vector<std::vector<void *>> reserved_;
   std::unordered_map<void *, std::uint32_t> supplied_;
-  std::recursive_mutex mutex_;
+  RecursiveSpinlock spinlock_;
 
 public:
   /**

@@ -33,7 +33,7 @@ MemoryPool::~MemoryPool() {
   // NOTE(odashi):
   // Due to GC-based languages, we chouldn't assume that all memories were
   // disposed before arriving this code.
-  std::lock_guard<std::recursive_mutex> lock(mutex_);
+  std::lock_guard<RecursiveSpinlock> lock(spinlock_);
 
   while (!supplied_.empty()) {
     free(supplied_.begin()->first);
@@ -51,7 +51,7 @@ std::shared_ptr<void> MemoryPool::allocate(std::size_t size) {
   void *ptr;
 
   {
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    std::lock_guard<RecursiveSpinlock> lock(spinlock_);
 
     if (reserved_[shift].empty()) {
       // Allocates a new block.
@@ -78,7 +78,7 @@ std::shared_ptr<void> MemoryPool::allocate(std::size_t size) {
 }
 
 void MemoryPool::free(void *ptr) {
-  std::lock_guard<std::recursive_mutex> lock(mutex_);
+  std::lock_guard<RecursiveSpinlock> lock(spinlock_);
 
   auto it = supplied_.find(ptr);
   if (it == supplied_.end()) {
@@ -89,7 +89,7 @@ void MemoryPool::free(void *ptr) {
 }
 
 void MemoryPool::release_reserved_blocks() {
-  std::lock_guard<std::recursive_mutex> lock(mutex_);
+  std::lock_guard<RecursiveSpinlock> lock(spinlock_);
 
   for (auto &ptrs : reserved_) {
     while (!ptrs.empty()) {
