@@ -19,7 +19,7 @@ class Parameter;
 /**
  * Set of parameters and specific algorithms.
  */
-class Model : mixins::Nonmovable<Model> {
+class Model : public mixins::Identifiable<Model> {
 public:
   Model() = default;
   virtual ~Model() = default;

@@ -14,7 +14,7 @@ namespace primitiv {
  */
 class Device
     : public mixins::DefaultSettable<Device>
-    , mixins::Nonmovable<Device> {
+    , public mixins::Identifiable<Device> {
   friend Tensor;
 
 public:

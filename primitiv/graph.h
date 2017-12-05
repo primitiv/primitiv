@@ -140,7 +140,7 @@ private:
  */
 class Graph
     : public mixins::DefaultSettable<Graph>
-    , mixins::Nonmovable<Graph> {
+    , public mixins::Identifiable<Graph> {
 public:
   Graph() = default;
   ~Graph() = default;

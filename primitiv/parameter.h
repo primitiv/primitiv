@@ -19,7 +19,7 @@ class Initializer;
 /**
  * Class to manage a trainable tensor parameter.
  */
-class Parameter : mixins::Nonmovable<Parameter> {
+class Parameter : public mixins::Identifiable<Parameter> {
   friend class Model;
 
 private:
