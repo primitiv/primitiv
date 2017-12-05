@@ -14,11 +14,7 @@ primitiv_Shape *primitiv_Shape_new() {
   return new primitiv_Shape;
 }
 
-primitiv_Shape *primitiv_Shape_new_with_dims(const uint32_t *dims, size_t n) {
-  return new primitiv_Shape{std::vector<uint32_t>(dims, dims + n)};
-}
-
-primitiv_Shape *primitiv_Shape_new_with_dims_batch(const uint32_t *dims, size_t n, uint32_t batch) {
+primitiv_Shape *primitiv_Shape_new_with_dims(const uint32_t *dims, size_t n, uint32_t batch) {
   return new primitiv_Shape{Shape{std::vector<uint32_t>(dims, dims + n), batch}};
 }
 

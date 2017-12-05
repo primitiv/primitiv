@@ -11,9 +11,7 @@ typedef struct primitiv_Shape primitiv_Shape;
 
 primitiv_Shape *primitiv_Shape_new();
 
-primitiv_Shape *primitiv_Shape_new_with_dims(const uint32_t *dims, size_t n);
-
-primitiv_Shape *primitiv_Shape_new_with_dims_batch(const uint32_t *dims, size_t n, uint32_t batch);
+primitiv_Shape *primitiv_Shape_new_with_dims(const uint32_t *dims, size_t n, uint32_t batch);
 
 void primitiv_Shape_delete(const primitiv_Shape *shape);
 
