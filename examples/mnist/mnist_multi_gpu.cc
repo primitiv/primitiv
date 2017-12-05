@@ -76,10 +76,14 @@ vector<char> load_labels(const string &filename, const unsigned n) {
 
 int main() {
   // Loads data
-  vector<float> train_inputs = ::load_images("data/train-images-idx3-ubyte", NUM_TRAIN_SAMPLES);
-  vector<char> train_labels = ::load_labels("data/train-labels-idx1-ubyte", NUM_TRAIN_SAMPLES);
-  vector<float> test_inputs = ::load_images("data/t10k-images-idx3-ubyte", NUM_TEST_SAMPLES);
-  vector<char> test_labels = ::load_labels("data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES);
+  vector<float> train_inputs
+    = ::load_images("data/train-images-idx3-ubyte", NUM_TRAIN_SAMPLES);
+  vector<char> train_labels
+    = ::load_labels("data/train-labels-idx1-ubyte", NUM_TRAIN_SAMPLES);
+  vector<float> test_inputs
+    = ::load_images("data/t10k-images-idx3-ubyte", NUM_TEST_SAMPLES);
+  vector<char> test_labels
+    = ::load_labels("data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES);
 
   // Initializes 2 device objects which manage different GPUs.
   devices::CUDA dev0(0);  // GPU 0
@@ -175,10 +179,10 @@ int main() {
       vector<float> y_val = y.to_vector();
       for (unsigned i = 0; i < BATCH_SIZE; ++i) {
         float maxval = -1e10;
-        unsigned argmax = -1;
+        int argmax = -1;
         for (unsigned j = 0; j < NUM_OUTPUT_UNITS; ++j) {
           float v = y_val[j + i * NUM_OUTPUT_UNITS];
-          if (v > maxval) maxval = v, argmax = j;
+          if (v > maxval) maxval = v, argmax = static_cast<int>(j);
         }
         if (argmax == test_labels[i + batch * BATCH_SIZE]) ++match;
       }
