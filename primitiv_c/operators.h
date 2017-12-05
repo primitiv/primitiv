@@ -2,7 +2,11 @@
 #define PRIMITIV_C_OPERATORS_H_
 
 #include "primitiv_c/define.h"
+#include "primitiv_c/device.h"
+#include "primitiv_c/graph.h"
+#include "primitiv_c/parameter.h"
 #include "primitiv_c/shape.h"
+#include "primitiv_c/tensor.h"
 
 #ifdef __cplusplus
 extern "C" {
