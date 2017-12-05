@@ -4,6 +4,7 @@ set(primitiv_c_HDRS
   device.h
   graph.h
   initializer.h
+  initializer_impl.h
   internal.h
   model.h
   naive_device.h
@@ -18,6 +19,7 @@ set(primitiv_c_SRCS
   device.cc
   graph.cc
   initializer.cc
+  initializer_impl.cc
   model.cc
   naive_device.cc
   operators.cc
