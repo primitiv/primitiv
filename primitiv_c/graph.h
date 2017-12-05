@@ -11,17 +11,13 @@
 extern "C" {
 #endif
 
-typedef struct primitiv_Node {
-  void *g;
-  uint32_t fid;
-  uint32_t vid;
-} primitiv_Node;
+typedef struct primitiv_Node primitiv_Node;
 
 typedef struct primitiv_Graph primitiv_Graph;
 
-primitiv_Node primitiv_Node_construct();
+primitiv_Node *primitiv_Node_new();
 
-primitiv_Node primitiv_Node_construct_with_movement(primitiv_Node *node);
+primitiv_Node *primitiv_Node_new_with_movement(primitiv_Node *node);
 
 void primitiv_Node_delete(primitiv_Node *node);
 
@@ -33,9 +29,9 @@ uint32_t primitiv_Node_function_id(const primitiv_Node *node);
 
 uint32_t primitiv_Node_value_id(const primitiv_Node *node);
 
-const primitiv_Shape* primitiv_Node_shape(const primitiv_Node *node);
+const primitiv_Shape *primitiv_Node_shape(const primitiv_Node *node);
 
-primitiv_Device* primitiv_Node_device(const primitiv_Node *node);
+primitiv_Device *primitiv_Node_device(const primitiv_Node *node);
 
 float primitiv_Node_to_float(const primitiv_Node *node);
 

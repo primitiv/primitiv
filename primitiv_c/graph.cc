@@ -11,13 +11,12 @@ using primitiv::Graph;
 
 extern "C" {
 
-primitiv_Node primitiv_Node_construct() {
-  return {};
+primitiv_Node *primitiv_Node_new() {
+  return to_c(new Node);
 }
 
-primitiv_Node primitiv_Node_construct_with_movement(primitiv_Node *node) {
-  Node n = std::move(*to_cc(node));
-  return *to_c(&n);
+primitiv_Node *primitiv_Node_new_with_movement(primitiv_Node *node) {
+  return to_c(new Node(std::move(*to_cc(node))));
 }
 
 void primitiv_Node_delete(primitiv_Node *node) {
@@ -40,11 +39,11 @@ uint32_t primitiv_Node_value_id(const primitiv_Node *node) {
   return to_cc(node)->value_id();
 }
 
-const primitiv_Shape* primitiv_Node_shape(const primitiv_Node *node) {
-  return new primitiv_Shape{to_cc(node)->shape()};
+const primitiv_Shape *primitiv_Node_shape(const primitiv_Node *node) {
+  return to_c(&to_cc(node)->shape());
 }
 
-primitiv_Device* primitiv_Node_device(const primitiv_Node *node) {
+primitiv_Device *primitiv_Node_device(const primitiv_Node *node) {
   return to_c(&to_cc(node)->device());
 }
 
@@ -89,7 +88,7 @@ void primitiv_Graph_clear(primitiv_Graph *graph) {
 }
 
 const primitiv_Tensor *primitiv_Graph_forward(primitiv_Graph *graph, const primitiv_Node *node) {
-  return new primitiv_Tensor{to_cc(graph)->forward(*to_cc(node))};
+  return to_c(&to_cc(graph)->forward(*to_cc(node)));
 }
 
 void primitiv_Graph_backward(primitiv_Graph *graph, const primitiv_Node *node) {

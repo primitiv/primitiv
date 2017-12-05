@@ -1,9 +1,6 @@
 #ifndef PRIMITIV_C_INTERNAL_H_
 #define PRIMITIV_C_INTERNAL_H_
 
-#include "primitiv_c/define.h"
-#include "primitiv_c/graph.h"
-
 #include <primitiv/device.h>
 #include <primitiv/graph.h>
 #include <primitiv/initializer.h>
@@ -13,7 +10,7 @@
 #include <primitiv/tensor.h>
 #include <primitiv/optimizer.h>
 
-#define DEFINE_CONVERSION_AS_CAST(cc_name, c_name) \
+#define DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(cc_name, c_name) \
 inline c_name *to_c(primitiv::cc_name *instance) { \
   return reinterpret_cast<c_name*>(instance); \
 } \
@@ -27,66 +24,51 @@ inline const primitiv::cc_name *to_cc(const c_name *instance) { \
   return reinterpret_cast<const primitiv::cc_name*>(instance); \
 }
 
+#define DEFINE_VALUE_TO_POINTER_CONVERSION_AS_CAST(cc_name, c_name) \
+inline c_name *to_c_from_value(primitiv::cc_name &instance) { \
+  return reinterpret_cast<c_name*>(new primitiv::cc_name(std::move(instance))); \
+} \
+inline const c_name *to_c_from_value(const primitiv::cc_name &instance) { \
+  return reinterpret_cast<const c_name*>(new primitiv::cc_name(instance)); \
+}
+
 struct primitiv_Device;
 
-DEFINE_CONVERSION_AS_CAST(Device, primitiv_Device);
+DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Device, primitiv_Device);
 
-// Definition of Node is in "primitiv_c/graph.h"
+struct primitiv_Node;
 
-DEFINE_CONVERSION_AS_CAST(Node, primitiv_Node);
+DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Node, primitiv_Node);
+DEFINE_VALUE_TO_POINTER_CONVERSION_AS_CAST(Node, primitiv_Node);
 
 struct primitiv_Graph;
 
-DEFINE_CONVERSION_AS_CAST(Graph, primitiv_Graph);
+DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Graph, primitiv_Graph);
 
 struct primitiv_Initializer;
 
-DEFINE_CONVERSION_AS_CAST(Initializer, primitiv_Initializer);
+DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Initializer, primitiv_Initializer);
 
 struct primitiv_Model;
 
-DEFINE_CONVERSION_AS_CAST(Model, primitiv_Model);
+DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Model, primitiv_Model);
 
 struct primitiv_Parameter;
 
-DEFINE_CONVERSION_AS_CAST(Parameter, primitiv_Parameter);
+DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Parameter, primitiv_Parameter);
 
-struct primitiv_Shape {
-  primitiv::Shape shape;
-};
+struct primitiv_Shape;
 
-inline primitiv_Shape *to_c(primitiv::Shape *instance) {
-  return new primitiv_Shape{*instance};
-}
-inline const primitiv_Shape *to_c(const primitiv::Shape *instance) {
-  return const_cast<const primitiv_Shape*>(new primitiv_Shape{*instance});
-}
-inline primitiv::Shape *to_cc(primitiv_Shape *instance) {
-  return &instance->shape;
-}
-inline const primitiv::Shape *to_cc(const primitiv_Shape *instance) {
-  return const_cast<const primitiv::Shape*>(&instance->shape);
-}
+DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Shape, primitiv_Shape);
+DEFINE_VALUE_TO_POINTER_CONVERSION_AS_CAST(Shape, primitiv_Shape);
 
-struct primitiv_Tensor {
-  primitiv::Tensor tensor;
-};
+struct primitiv_Tensor;
 
-inline primitiv_Tensor *to_c(primitiv::Tensor *instance) {
-  return new primitiv_Tensor{*instance};
-}
-inline const primitiv_Tensor *to_c(const primitiv::Tensor *instance) {
-  return const_cast<const primitiv_Tensor*>(new primitiv_Tensor{*instance});
-}
-inline primitiv::Tensor *to_cc(primitiv_Tensor *instance) {
-  return &instance->tensor;
-}
-inline const primitiv::Tensor *to_cc(const primitiv_Tensor *instance) {
-  return const_cast<const primitiv::Tensor*>(&instance->tensor);
-}
+DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Tensor, primitiv_Tensor);
+DEFINE_VALUE_TO_POINTER_CONVERSION_AS_CAST(Tensor, primitiv_Tensor);
 
 struct primitiv_Optimizer;
 
-DEFINE_CONVERSION_AS_CAST(Optimizer, primitiv_Optimizer);
+DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Optimizer, primitiv_Optimizer);
 
 #endif  // PRIMITIV_C_INTERNAL_H_

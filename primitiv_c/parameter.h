@@ -2,6 +2,7 @@
 #define PRIMITIV_C_PARAMETER_H_
 
 #include "primitiv_c/define.h"
+#include "primitiv_c/device.h"
 #include "primitiv_c/shape.h"
 
 #ifdef __cplusplus
