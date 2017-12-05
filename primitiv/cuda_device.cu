@@ -639,9 +639,6 @@ void CUDA::initialize() {
   // Initializes additional libraries
   state_.reset(new CUDAInternalState(dev_id_, rng_seed_));
   state_->prop = prop;
-
-  // Initializes the device pointer for integer IDs.
-  ids_ptr_ = state_->pool.allocate(sizeof(std::uint32_t) * max_batch_);
 }
 
 CUDA::CUDA(std::uint32_t device_id, std::uint32_t rng_seed)
@@ -843,12 +840,15 @@ void CUDA::pick_fw_impl(
   const std::uint32_t g1 = GRID_SIZE(sy, dim1_x_);
   const std::uint32_t bs = y.shape().batch();
 
+  auto temp = state_->pool.allocate(sizeof(std::uint32_t) * max_batch_);
+  void *temp_ptr = temp.get();
+
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CUDA_CALL(::cudaMemcpy(
-        ids_ptr_.get(), ids.data(), sizeof(std::uint32_t) * ids.size(),
+        temp_ptr, ids.data(), sizeof(std::uint32_t) * ids.size(),
         cudaMemcpyHostToDevice));
   ::pick_fw_dev<<<dim3(g1, bs), dim1_x_>>>(
-      CDATA(x), static_cast<const std::uint32_t *>(ids_ptr_.get()),
+      CDATA(x), static_cast<const std::uint32_t *>(temp_ptr),
       wy * x.shape()[dim], wy,
       x.shape().has_batch() * x.shape().volume(), ids.size() > 1, sy,
       DATA(y));
@@ -893,12 +893,15 @@ void CUDA::pick_bw_impl(
   const std::uint32_t g1 = GRID_SIZE(sy, dim1_x_);
   const std::uint32_t bs = gy.shape().batch();
 
+  auto temp = state_->pool.allocate(sizeof(std::uint32_t) * max_batch_);
+  void *temp_ptr = temp.get();
+
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CUDA_CALL(::cudaMemcpy(
-        ids_ptr_.get(), ids.data(), sizeof(std::uint32_t) * ids.size(),
+        temp_ptr, ids.data(), sizeof(std::uint32_t) * ids.size(),
         cudaMemcpyHostToDevice));
   ::pick_bw_dev<<<dim3(g1, bs), dim1_x_>>>(
-      CDATA(gy), static_cast<const std::uint32_t *>(ids_ptr_.get()),
+      CDATA(gy), static_cast<const std::uint32_t *>(temp_ptr),
       wy *gx.shape()[dim], wy,
       gx.shape().has_batch() * gx.shape().volume(), ids.size() > 1, sy,
       DATA(gx));

@@ -175,12 +175,6 @@ private:
   std::uint32_t max_batch_;
   std::unique_ptr<CUDAInternalState> state_;
 
-  // Reserved pointer to store temporary integers given from indexing functions
-  // such as operators::input().
-  // This member is initialized by a pointer provided from `pool_` and should
-  // be declared after `pool_` due to the destruction order of class members.
-  std::shared_ptr<void> ids_ptr_;
-
   /**
    * Internal method to initialize the object.
    */
