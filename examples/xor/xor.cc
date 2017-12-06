@@ -20,7 +20,7 @@
 // Shortcuts
 using namespace std;
 using namespace primitiv;
-namespace F = primitiv::operators;
+namespace F = primitiv::functions;
 namespace I = primitiv::initializers;
 namespace O = primitiv::optimizers;
 

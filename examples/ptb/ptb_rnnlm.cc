@@ -31,7 +31,7 @@
 
 using primitiv::initializers::XavierUniform;
 using primitiv::optimizers::Adam;
-namespace F = primitiv::operators;
+namespace F = primitiv::functions;
 using namespace primitiv;
 using namespace std;
 
