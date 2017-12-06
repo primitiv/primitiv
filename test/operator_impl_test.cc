@@ -2,10 +2,10 @@
 
 #include <vector>
 #include <gtest/gtest.h>
-#include <primitiv/function_impl.h>
+#include <primitiv/functions.h>
 #include <primitiv/initializer_impl.h>
 #include <primitiv/naive_device.h>
-#include <primitiv/operators.h>
+#include <primitiv/operator_impl.h>
 #include <primitiv/parameter.h>
 #include <test_utils.h>
 
@@ -14,16 +14,16 @@ using test_utils::vector_match;
 using test_utils::vector_near;
 
 namespace primitiv {
-namespace functions {
+namespace operators {
 
-class FunctionImplTest : public testing::Test {
+class OperatorImplTest : public testing::Test {
 public:
   void setup_1arg() {
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
     arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
         *arg_shapes[0], {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4})));
     arg_grads.emplace_back(
-        new Tensor(operators::zeros<Tensor>(*arg_shapes[0], *dev)));
+        new Tensor(functions::zeros<Tensor>(*arg_shapes[0], *dev)));
   }
 
   void setup_1arg_nonnegative() {
@@ -31,7 +31,7 @@ public:
     arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
         *arg_shapes[0], {1, 2, 3, 4, .01, .01, .01, .01, 1, 4, 9, 16})));
     arg_grads.emplace_back(
-        new Tensor(operators::zeros<Tensor>(*arg_shapes[0], *dev)));
+        new Tensor(functions::zeros<Tensor>(*arg_shapes[0], *dev)));
   }
 
   void setup_1arg_nonzero() {
@@ -39,7 +39,7 @@ public:
     arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
         *arg_shapes[0], {1, 2, 3, 4, 1, -1, 1, -1, -1, -2, -3, -4})));
     arg_grads.emplace_back(
-        new Tensor(operators::zeros<Tensor>(*arg_shapes[0], *dev)));
+        new Tensor(functions::zeros<Tensor>(*arg_shapes[0], *dev)));
   }
 
   void setup_2args() {
@@ -50,9 +50,9 @@ public:
     arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
         *arg_shapes[1], {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3})));
     arg_grads.emplace_back(
-        new Tensor(operators::zeros<Tensor>(*arg_shapes[0], *dev)));
+        new Tensor(functions::zeros<Tensor>(*arg_shapes[0], *dev)));
     arg_grads.emplace_back(
-        new Tensor(operators::zeros<Tensor>(*arg_shapes[1], *dev)));
+        new Tensor(functions::zeros<Tensor>(*arg_shapes[1], *dev)));
   }
 
   void setup_2args_scalar() {
@@ -63,9 +63,9 @@ public:
     arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
         *arg_shapes[1], {1, 2, 3})));
     arg_grads.emplace_back(
-        new Tensor(operators::zeros<Tensor>(*arg_shapes[0], *dev)));
+        new Tensor(functions::zeros<Tensor>(*arg_shapes[0], *dev)));
     arg_grads.emplace_back(
-        new Tensor(operators::zeros<Tensor>(*arg_shapes[1], *dev)));
+        new Tensor(functions::zeros<Tensor>(*arg_shapes[1], *dev)));
   }
 
   void setup_2args_scalar_nonzero() {
@@ -76,9 +76,9 @@ public:
     arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
         *arg_shapes[1], {1, 2, 3})));
     arg_grads.emplace_back(
-        new Tensor(operators::zeros<Tensor>(*arg_shapes[0], *dev)));
+        new Tensor(functions::zeros<Tensor>(*arg_shapes[0], *dev)));
     arg_grads.emplace_back(
-        new Tensor(operators::zeros<Tensor>(*arg_shapes[1], *dev)));
+        new Tensor(functions::zeros<Tensor>(*arg_shapes[1], *dev)));
   }
 
   void setup_2args_softmax_cross_entropy() {
@@ -89,9 +89,9 @@ public:
     arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
         *arg_shapes[1], {1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1})));
     arg_grads.emplace_back(
-        new Tensor(operators::zeros<Tensor>(*arg_shapes[0], *dev)));
+        new Tensor(functions::zeros<Tensor>(*arg_shapes[0], *dev)));
     arg_grads.emplace_back(
-        new Tensor(operators::zeros<Tensor>(*arg_shapes[1], *dev)));
+        new Tensor(functions::zeros<Tensor>(*arg_shapes[1], *dev)));
   }
 
   void reset_gradients() {
@@ -120,7 +120,7 @@ protected:
   name_ node; \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
-  const Tensor cur_grad = operators::ones<Tensor>(ret_shape, *dev); \
+  const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev); \
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ(#name_, node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
@@ -133,7 +133,7 @@ protected:
   name_ node(k_); \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
-  const Tensor cur_grad = operators::ones<Tensor>(ret_shape, *dev); \
+  const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev); \
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ( \
       std::string(#name_) + '(' + \
@@ -148,7 +148,7 @@ protected:
   name_ node; \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
-  const Tensor cur_grad = operators::ones<Tensor>(ret_shape, *dev); \
+  const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev); \
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ(#name_, node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
@@ -161,7 +161,7 @@ protected:
   name_ node(k_); \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
-  const Tensor cur_grad = operators::ones<Tensor>(ret_shape, *dev); \
+  const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev); \
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ( \
       std::string(#name_) + '(' + \
@@ -176,7 +176,7 @@ protected:
   name_ node; \
   const Shape cur_shape = node.forward_shape(arg_shapes); \
   const Tensor cur_value = node.forward(arg_values); \
-  const Tensor cur_grad = operators::ones<Tensor>(ret_shape, *dev); \
+  const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev); \
   node.backward(cur_value, cur_grad, arg_values, arg_grads); \
   EXPECT_EQ(#name_, node.name()); \
   EXPECT_EQ(ret_shape, cur_shape); \
@@ -186,13 +186,13 @@ protected:
   EXPECT_TRUE(vector_match(bw_grads[1], arg_grads[1]->to_vector())); \
 }
 
-TEST_F(FunctionImplTest, CheckInput) {
+TEST_F(OperatorImplTest, CheckInput) {
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4};
   Input node(ret_shape, ret_data, *dev);
   const Shape cur_shape = node.forward_shape(arg_shapes);
   const Tensor cur_value = node.forward(arg_values);
-  const Tensor cur_grad = operators::ones<Tensor>(ret_shape, *dev);
+  const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev);
   // backward() has no effect.
   EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
   EXPECT_EQ("Input", node.name());
@@ -201,7 +201,7 @@ TEST_F(FunctionImplTest, CheckInput) {
   EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector()));
 }
 
-TEST_F(FunctionImplTest, CheckParameterInput) {
+TEST_F(OperatorImplTest, CheckParameterInput) {
   const Shape ret_shape {2, 2};
   const initializers::Constant init(42);
   Parameter param(ret_shape, init, *dev);
@@ -213,7 +213,7 @@ TEST_F(FunctionImplTest, CheckParameterInput) {
   // ParameterInput could not return values from forward().
   EXPECT_THROW(node.forward(arg_values), Error);
   const Tensor *cur_value = node.get_inner_value();
-  const Tensor cur_grad = operators::ones<Tensor>(ret_shape, *dev);
+  const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev);
   // backward() updates the gradient of `param`.
   EXPECT_NO_THROW(node.backward(*cur_value, cur_grad, arg_values, arg_grads));
   EXPECT_EQ("ParameterInput", node.name());
@@ -225,7 +225,7 @@ TEST_F(FunctionImplTest, CheckParameterInput) {
   EXPECT_EQ(&param.value(), cur_value);
 }
 
-TEST_F(FunctionImplTest, CheckCopy) {
+TEST_F(OperatorImplTest, CheckCopy) {
   devices::Naive dev2;
   const Shape ret_shape({2, 2}, 3);
   setup_1arg();
@@ -242,7 +242,7 @@ TEST_F(FunctionImplTest, CheckCopy) {
   EXPECT_TRUE(vector_match(arg_grads[0]->to_vector(), cur_grad.to_vector()));
 }
 
-TEST_F(FunctionImplTest, CheckConstant) {
+TEST_F(OperatorImplTest, CheckConstant) {
   struct TestCase {
     Shape shape;
     float k;
@@ -258,7 +258,7 @@ TEST_F(FunctionImplTest, CheckConstant) {
     Constant node(tc.shape, tc.k, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = operators::ones<Tensor>(tc.shape, *dev);
+    const Tensor cur_grad = functions::ones<Tensor>(tc.shape, *dev);
     // backward() has no effect.
     EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
     EXPECT_EQ("Constant(" + std::to_string(tc.k) + ')', node.name());
@@ -269,7 +269,7 @@ TEST_F(FunctionImplTest, CheckConstant) {
   }
 }
 
-TEST_F(FunctionImplTest, CheckIdentity) {
+TEST_F(OperatorImplTest, CheckIdentity) {
   struct TestCase {
     std::uint32_t size;
     Shape shape;
@@ -285,7 +285,7 @@ TEST_F(FunctionImplTest, CheckIdentity) {
     IdentityMatrix node(tc.size, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = operators::ones<Tensor>(tc.shape, *dev);
+    const Tensor cur_grad = functions::ones<Tensor>(tc.shape, *dev);
     // backward() has no effect.
     EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
     EXPECT_EQ("IdentityMatrix(" + std::to_string(tc.size) + ')', node.name());
@@ -295,7 +295,7 @@ TEST_F(FunctionImplTest, CheckIdentity) {
   }
 }
 
-TEST_F(FunctionImplTest, CheckRandomBernoulli) {
+TEST_F(OperatorImplTest, CheckRandomBernoulli) {
   struct TestCase {
     Shape shape;
     float p;
@@ -310,7 +310,7 @@ TEST_F(FunctionImplTest, CheckRandomBernoulli) {
     RandomBernoulli node(tc.shape, tc.p, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = operators::ones<Tensor>(tc.shape, *dev);
+    const Tensor cur_grad = functions::ones<Tensor>(tc.shape, *dev);
     // backward() has no effect.
     EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
     EXPECT_EQ("RandomBernoulli(" + std::to_string(tc.p) + ')', node.name());
@@ -320,7 +320,7 @@ TEST_F(FunctionImplTest, CheckRandomBernoulli) {
   }
 }
 
-TEST_F(FunctionImplTest, CheckRandomUniform) {
+TEST_F(OperatorImplTest, CheckRandomUniform) {
   struct TestCase {
     Shape shape;
     float lower, upper;
@@ -344,7 +344,7 @@ TEST_F(FunctionImplTest, CheckRandomUniform) {
     RandomUniform node(tc.shape, tc.lower, tc.upper, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = operators::ones<Tensor>(tc.shape, *dev);
+    const Tensor cur_grad = functions::ones<Tensor>(tc.shape, *dev);
     // backward() has no effect.
     EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
     EXPECT_EQ(
@@ -356,7 +356,7 @@ TEST_F(FunctionImplTest, CheckRandomUniform) {
   }
 }
 
-TEST_F(FunctionImplTest, CheckRandomNormal) {
+TEST_F(OperatorImplTest, CheckRandomNormal) {
   struct TestCase {
     Shape shape;
     float mean, sd;
@@ -404,7 +404,7 @@ TEST_F(FunctionImplTest, CheckRandomNormal) {
     RandomNormal node(tc.shape, tc.mean, tc.sd, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = operators::ones<Tensor>(tc.shape, *dev);
+    const Tensor cur_grad = functions::ones<Tensor>(tc.shape, *dev);
     // backward() has no effect.
     EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
     EXPECT_EQ(
@@ -416,7 +416,7 @@ TEST_F(FunctionImplTest, CheckRandomNormal) {
   }
 }
 
-TEST_F(FunctionImplTest, CheckRandomLogNormal) {
+TEST_F(OperatorImplTest, CheckRandomLogNormal) {
   struct TestCase {
     Shape shape;
     float mean, sd;
@@ -464,7 +464,7 @@ TEST_F(FunctionImplTest, CheckRandomLogNormal) {
     RandomLogNormal node(tc.shape, tc.mean, tc.sd, *dev);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = operators::ones<Tensor>(tc.shape, *dev);
+    const Tensor cur_grad = functions::ones<Tensor>(tc.shape, *dev);
     // backward() has no effect.
     EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
     EXPECT_EQ(
@@ -476,7 +476,7 @@ TEST_F(FunctionImplTest, CheckRandomLogNormal) {
   }
 }
 
-TEST_F(FunctionImplTest, CheckPick) {
+TEST_F(OperatorImplTest, CheckPick) {
   struct TestCase {
     std::uint32_t dim;
     vector<std::uint32_t> ids;
@@ -506,7 +506,7 @@ TEST_F(FunctionImplTest, CheckPick) {
     Pick node(tc.ids, tc.dim);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = operators::ones<Tensor>(tc.ret_shape, *dev);
+    const Tensor cur_grad = functions::ones<Tensor>(tc.ret_shape, *dev);
     reset_gradients();
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ("Pick(" + std::to_string(tc.dim) + ')', node.name());
@@ -517,7 +517,7 @@ TEST_F(FunctionImplTest, CheckPick) {
   }
 }
 
-TEST_F(FunctionImplTest, CheckSlice) {
+TEST_F(OperatorImplTest, CheckSlice) {
   struct TestCase {
     std::uint32_t dim, lower, upper;
     Shape ret_shape;
@@ -555,7 +555,7 @@ TEST_F(FunctionImplTest, CheckSlice) {
     Slice node(tc.dim, tc.lower, tc.upper);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = operators::ones<Tensor>(tc.ret_shape, *dev);
+    const Tensor cur_grad = functions::ones<Tensor>(tc.ret_shape, *dev);
     reset_gradients();
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ(
@@ -569,7 +569,7 @@ TEST_F(FunctionImplTest, CheckSlice) {
   }
 }
 
-TEST_F(FunctionImplTest, CheckConcat) {
+TEST_F(OperatorImplTest, CheckConcat) {
   struct TestCase {
     std::uint32_t dim;
     Shape ret_shape;
@@ -607,7 +607,7 @@ TEST_F(FunctionImplTest, CheckConcat) {
   }
 }
 
-TEST_F(FunctionImplTest, CheckReshape) {
+TEST_F(OperatorImplTest, CheckReshape) {
   // y = reshape(x)
   // dy/dx = 1
   setup_1arg();
@@ -623,7 +623,7 @@ TEST_F(FunctionImplTest, CheckReshape) {
     Reshape node(ret_shape);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = operators::ones<Tensor>(ret_shape.resize_batch(3), *dev);
+    const Tensor cur_grad = functions::ones<Tensor>(ret_shape.resize_batch(3), *dev);
     reset_gradients();
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ("Reshape(" + ret_shape.to_string() + ')', node.name());
@@ -634,7 +634,7 @@ TEST_F(FunctionImplTest, CheckReshape) {
   }
 }
 
-TEST_F(FunctionImplTest, CheckFlatten) {
+TEST_F(OperatorImplTest, CheckFlatten) {
   // y = flatten(x)
   // dy/dx = 1
   setup_1arg();
@@ -644,7 +644,7 @@ TEST_F(FunctionImplTest, CheckFlatten) {
   TEST_1ARG(Flatten);
 }
 
-TEST_F(FunctionImplTest, CheckPositive) {
+TEST_F(OperatorImplTest, CheckPositive) {
   // y = x
   // dy/dx = 1
   setup_1arg();
@@ -654,7 +654,7 @@ TEST_F(FunctionImplTest, CheckPositive) {
   TEST_1ARG(Positive);
 }
 
-TEST_F(FunctionImplTest, CheckNegative) {
+TEST_F(OperatorImplTest, CheckNegative) {
   // y = -x
   // dy/dx = -1
   setup_1arg();
@@ -664,7 +664,7 @@ TEST_F(FunctionImplTest, CheckNegative) {
   TEST_1ARG(Negative);
 }
 
-TEST_F(FunctionImplTest, CheckAddConst) {
+TEST_F(OperatorImplTest, CheckAddConst) {
   // y = x + k
   // dy/dx = 1
   setup_1arg();
@@ -674,7 +674,7 @@ TEST_F(FunctionImplTest, CheckAddConst) {
   TEST_1ARG_K(AddConst, 3);
 }
 
-TEST_F(FunctionImplTest, CheckSubtractConstR) {
+TEST_F(OperatorImplTest, CheckSubtractConstR) {
   // y = x - k
   // dy/dx = 1
   setup_1arg();
@@ -684,7 +684,7 @@ TEST_F(FunctionImplTest, CheckSubtractConstR) {
   TEST_1ARG_K(SubtractConstR, 3);
 }
 
-TEST_F(FunctionImplTest, CheckSubtractConstL) {
+TEST_F(OperatorImplTest, CheckSubtractConstL) {
   // y = k - x
   // dy/dx = -1
   setup_1arg();
@@ -694,7 +694,7 @@ TEST_F(FunctionImplTest, CheckSubtractConstL) {
   TEST_1ARG_K(SubtractConstL, 3);
 }
 
-TEST_F(FunctionImplTest, CheckMultiplyConst) {
+TEST_F(OperatorImplTest, CheckMultiplyConst) {
   // y = kx
   // dy/dx = k
   setup_1arg();
@@ -704,7 +704,7 @@ TEST_F(FunctionImplTest, CheckMultiplyConst) {
   TEST_1ARG_K(MultiplyConst, 3);
 }
 
-TEST_F(FunctionImplTest, CheckDivideConstR) {
+TEST_F(OperatorImplTest, CheckDivideConstR) {
   // y = x/k
   // dy/dx = 1/k
   setup_1arg();
@@ -715,7 +715,7 @@ TEST_F(FunctionImplTest, CheckDivideConstR) {
   TEST_1ARG_K(DivideConstR, 3);
 }
 
-TEST_F(FunctionImplTest, CheckDivideConstL) {
+TEST_F(OperatorImplTest, CheckDivideConstL) {
   // y = k/x
   // dy/dx = -k/(x^2)
   setup_1arg_nonzero();
@@ -727,7 +727,7 @@ TEST_F(FunctionImplTest, CheckDivideConstL) {
   TEST_1ARG_K(DivideConstL, 3);
 }
 
-TEST_F(FunctionImplTest, CheckAddScalar) {
+TEST_F(OperatorImplTest, CheckAddScalar) {
   // y = x + k
   // dy/dx = 1
   // dy/dk = 1
@@ -741,7 +741,7 @@ TEST_F(FunctionImplTest, CheckAddScalar) {
   TEST_2ARGS(AddScalar);
 }
 
-TEST_F(FunctionImplTest, CheckSubtractScalarR) {
+TEST_F(OperatorImplTest, CheckSubtractScalarR) {
   // y = x - k
   // dy/dx = 1
   // dy/dk = -1
@@ -755,7 +755,7 @@ TEST_F(FunctionImplTest, CheckSubtractScalarR) {
   TEST_2ARGS(SubtractScalarR);
 }
 
-TEST_F(FunctionImplTest, CheckSubtractScalarL) {
+TEST_F(OperatorImplTest, CheckSubtractScalarL) {
   // y = k - x
   // dy/dx = -1
   // dy/dk = 1
@@ -769,7 +769,7 @@ TEST_F(FunctionImplTest, CheckSubtractScalarL) {
   TEST_2ARGS(SubtractScalarL);
 }
 
-TEST_F(FunctionImplTest, CheckMultiplyScalar) {
+TEST_F(OperatorImplTest, CheckMultiplyScalar) {
   // y = kx
   // dy/dx = k
   // dy/dk = x
@@ -783,7 +783,7 @@ TEST_F(FunctionImplTest, CheckMultiplyScalar) {
   TEST_2ARGS(MultiplyScalar);
 }
 
-TEST_F(FunctionImplTest, CheckDivideScalarR) {
+TEST_F(OperatorImplTest, CheckDivideScalarR) {
   // y = x/k
   // dy/dx = 1/k
   // dy/dk = -x/(k^2)
@@ -799,7 +799,7 @@ TEST_F(FunctionImplTest, CheckDivideScalarR) {
   TEST_2ARGS(DivideScalarR);
 }
 
-TEST_F(FunctionImplTest, CheckDivideScalarL) {
+TEST_F(OperatorImplTest, CheckDivideScalarL) {
   // y = k/x
   // dy/dx = -k/(x^2)
   // dy/dk = 1/x
@@ -815,7 +815,7 @@ TEST_F(FunctionImplTest, CheckDivideScalarL) {
   TEST_2ARGS(DivideScalarL);
 }
 
-TEST_F(FunctionImplTest, CheckAdd) {
+TEST_F(OperatorImplTest, CheckAdd) {
   // y = a + b
   // dy/da = 1
   // dy/db = 1
@@ -829,7 +829,7 @@ TEST_F(FunctionImplTest, CheckAdd) {
   TEST_2ARGS(Add);
 }
 
-TEST_F(FunctionImplTest, CheckSubtract) {
+TEST_F(OperatorImplTest, CheckSubtract) {
   // y = a - b
   // dy/da = 1
   // dy/db = -1
@@ -843,7 +843,7 @@ TEST_F(FunctionImplTest, CheckSubtract) {
   TEST_2ARGS(Subtract);
 }
 
-TEST_F(FunctionImplTest, CheckMultiply) {
+TEST_F(OperatorImplTest, CheckMultiply) {
   // y = ab
   // dy/da = b
   // dy/db = a
@@ -857,7 +857,7 @@ TEST_F(FunctionImplTest, CheckMultiply) {
   TEST_2ARGS(Multiply);
 }
 
-TEST_F(FunctionImplTest, CheckDivide) {
+TEST_F(OperatorImplTest, CheckDivide) {
   // y = a/b
   // dy/da = 1/b
   // dy/db = -a/(b^2)
@@ -872,7 +872,7 @@ TEST_F(FunctionImplTest, CheckDivide) {
   TEST_2ARGS(Divide);
 }
 
-TEST_F(FunctionImplTest, CheckTranspose) {
+TEST_F(OperatorImplTest, CheckTranspose) {
   // y = x^T
   // dy/dx = 1^T
   setup_1arg();
@@ -882,7 +882,7 @@ TEST_F(FunctionImplTest, CheckTranspose) {
   TEST_1ARG(Transpose);
 }
 
-TEST_F(FunctionImplTest, CheckMatrixMultiply) {
+TEST_F(OperatorImplTest, CheckMatrixMultiply) {
   // y = a . b
   // dy/da = b^T
   // dy/db = a^T
@@ -896,7 +896,7 @@ TEST_F(FunctionImplTest, CheckMatrixMultiply) {
   TEST_2ARGS(MatrixMultiply);
 }
 
-TEST_F(FunctionImplTest, CheckSqrt) {
+TEST_F(OperatorImplTest, CheckSqrt) {
   // y = sqrt(x)
   // dy/dx = 1/(2y)
   setup_1arg_nonnegative();
@@ -910,7 +910,7 @@ TEST_F(FunctionImplTest, CheckSqrt) {
   TEST_1ARG(Sqrt);
 }
 
-TEST_F(FunctionImplTest, CheckExp) {
+TEST_F(OperatorImplTest, CheckExp) {
   // y = exp(x)
   // dy/dx = y
   setup_1arg();
@@ -924,7 +924,7 @@ TEST_F(FunctionImplTest, CheckExp) {
   TEST_1ARG(Exp);
 }
 
-TEST_F(FunctionImplTest, CheckLog) {
+TEST_F(OperatorImplTest, CheckLog) {
   // y = log(x)
   // dy/dx = 1/x
   setup_1arg_nonnegative();
@@ -942,7 +942,7 @@ TEST_F(FunctionImplTest, CheckLog) {
   TEST_1ARG(Log);
 }
 
-TEST_F(FunctionImplTest, CheckTanh) {
+TEST_F(OperatorImplTest, CheckTanh) {
   // y = tanh(x)
   // dy/dx = 1 - y^2
   setup_1arg();
@@ -960,7 +960,7 @@ TEST_F(FunctionImplTest, CheckTanh) {
   TEST_1ARG_NEAR(Tanh, 1e-6);
 }
 
-TEST_F(FunctionImplTest, CheckSin) {
+TEST_F(OperatorImplTest, CheckSin) {
   // y = sin(x)
   // dy/dx = cos(x)
   setup_1arg();
@@ -978,7 +978,7 @@ TEST_F(FunctionImplTest, CheckSin) {
   TEST_1ARG(Sin);
 }
 
-TEST_F(FunctionImplTest, CheckCos) {
+TEST_F(OperatorImplTest, CheckCos) {
   // y = cos(x)
   // dy/dx = -sin(x)
   setup_1arg();
@@ -996,7 +996,7 @@ TEST_F(FunctionImplTest, CheckCos) {
   TEST_1ARG(Cos);
 }
 
-TEST_F(FunctionImplTest, CheckTan) {
+TEST_F(OperatorImplTest, CheckTan) {
   // y = tan(x)
   // dy/dx = 1 + y^2
   setup_1arg();
@@ -1014,7 +1014,7 @@ TEST_F(FunctionImplTest, CheckTan) {
   TEST_1ARG(Tan);
 }
 
-TEST_F(FunctionImplTest, CheckSigmoid) {
+TEST_F(OperatorImplTest, CheckSigmoid) {
   // y = sigmoid(x)
   // dy/dx = y * (1 - y)
   setup_1arg();
@@ -1032,7 +1032,7 @@ TEST_F(FunctionImplTest, CheckSigmoid) {
   TEST_1ARG_NEAR(Sigmoid, 1e-6);
 }
 
-TEST_F(FunctionImplTest, CheckSoftplus) {
+TEST_F(OperatorImplTest, CheckSoftplus) {
   // y = sigmoid(x)
   // dy/dx = y * (1 - y)
   setup_1arg();
@@ -1050,7 +1050,7 @@ TEST_F(FunctionImplTest, CheckSoftplus) {
   TEST_1ARG_NEAR(Softplus, 1e-6);
 }
 
-TEST_F(FunctionImplTest, CheckReLU) {
+TEST_F(OperatorImplTest, CheckReLU) {
   // y = x > 0 ? x : 0
   // dy/dx = x > 0 ? 1 : 0
   setup_1arg();
@@ -1068,7 +1068,7 @@ TEST_F(FunctionImplTest, CheckReLU) {
   TEST_1ARG(ReLU);
 }
 
-TEST_F(FunctionImplTest, CheckLReLU) {
+TEST_F(OperatorImplTest, CheckLReLU) {
   // y = x > 0 ? x : 0.01x
   // dy/dx = x > 0 ? 1 : 0.01
   setup_1arg();
@@ -1086,7 +1086,7 @@ TEST_F(FunctionImplTest, CheckLReLU) {
   TEST_1ARG(LReLU);
 }
 
-TEST_F(FunctionImplTest, CheckPReLU) {
+TEST_F(OperatorImplTest, CheckPReLU) {
   // y = x > 0 ? x : ax
   // dy/dx = x > 0 ? 1 : a
   setup_1arg();
@@ -1104,7 +1104,7 @@ TEST_F(FunctionImplTest, CheckPReLU) {
   TEST_1ARG_K(PReLU, .1);
 }
 
-TEST_F(FunctionImplTest, CheckELU) {
+TEST_F(OperatorImplTest, CheckELU) {
   // y = x > 0 ? x : a * (exp(x) - 1)
   // dy/dx = x > 0 ? 1 : y + a
   setup_1arg();
@@ -1122,7 +1122,7 @@ TEST_F(FunctionImplTest, CheckELU) {
   TEST_1ARG_K_NEAR(ELU, 1, 1e-6);
 }
 
-TEST_F(FunctionImplTest, CheckSum) {
+TEST_F(OperatorImplTest, CheckSum) {
   // y = sum(x, dim)
   // dy/dx = broadcast(1, dim, x.shape[dim])
   setup_1arg();
@@ -1140,7 +1140,7 @@ TEST_F(FunctionImplTest, CheckSum) {
     Sum node(tc.dim);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = operators::ones<Tensor>(tc.ret_shape, *dev);
+    const Tensor cur_grad = functions::ones<Tensor>(tc.ret_shape, *dev);
     reset_gradients();
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ("Sum(" + std::to_string(tc.dim) + ')', node.name());
@@ -1151,7 +1151,7 @@ TEST_F(FunctionImplTest, CheckSum) {
   }
 }
 
-TEST_F(FunctionImplTest, CheckLogSumExp) {
+TEST_F(OperatorImplTest, CheckLogSumExp) {
   // y = logsumexp(x, dim)
   // dy/dx = softmax(x, dim)
   setup_1arg();
@@ -1184,7 +1184,7 @@ TEST_F(FunctionImplTest, CheckLogSumExp) {
     LogSumExp node(tc.dim);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = operators::ones<Tensor>(tc.ret_shape, *dev);
+    const Tensor cur_grad = functions::ones<Tensor>(tc.ret_shape, *dev);
     reset_gradients();
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ("LogSumExp(" + std::to_string(tc.dim) + ')', node.name());
@@ -1195,7 +1195,7 @@ TEST_F(FunctionImplTest, CheckLogSumExp) {
   }
 }
 
-TEST_F(FunctionImplTest, CheckBroadcast) {
+TEST_F(OperatorImplTest, CheckBroadcast) {
   // y = broadcast(x, dim, size)
   // dy/dx = sum(1, dim)
   setup_1arg();
@@ -1222,7 +1222,7 @@ TEST_F(FunctionImplTest, CheckBroadcast) {
     Broadcast node(tc.dim, tc.size);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = operators::ones<Tensor>(tc.ret_shape, *dev);
+    const Tensor cur_grad = functions::ones<Tensor>(tc.ret_shape, *dev);
     reset_gradients();
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ(
@@ -1236,7 +1236,7 @@ TEST_F(FunctionImplTest, CheckBroadcast) {
   }
 }
 
-TEST_F(FunctionImplTest, CheckBatchSum) {
+TEST_F(OperatorImplTest, CheckBatchSum) {
   // y = sum_i x[i]
   // dy/dx = 1 for every minibatch.
   setup_1arg();
@@ -1246,7 +1246,7 @@ TEST_F(FunctionImplTest, CheckBatchSum) {
   TEST_1ARG(BatchSum);
 }
 
-TEST_F(FunctionImplTest, CheckSoftmaxCrossEntropy) {
+TEST_F(OperatorImplTest, CheckSoftmaxCrossEntropy) {
   // y = softmax_cross_entropy(x, t, dim)
   // dy/dx = softmax(x) - t
   // dy/dt = -log(softmax(x))
@@ -1266,7 +1266,7 @@ TEST_F(FunctionImplTest, CheckSoftmaxCrossEntropy) {
   SoftmaxCrossEntropy node(0);
   const Shape cur_shape = node.forward_shape(arg_shapes);
   const Tensor cur_value = node.forward(arg_values);
-  const Tensor cur_grad = operators::ones<Tensor>(ret_shape, *dev);
+  const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev);
   node.backward(cur_value, cur_grad, arg_values, arg_grads);
   EXPECT_EQ("SoftmaxCrossEntropy(0)", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
@@ -1276,7 +1276,7 @@ TEST_F(FunctionImplTest, CheckSoftmaxCrossEntropy) {
   EXPECT_TRUE(vector_near(bw_grads[1], arg_grads[1]->to_vector(), 1e-6));
 }
 
-TEST_F(FunctionImplTest, CheckSparseSoftmaxCrossEntropy) {
+TEST_F(OperatorImplTest, CheckSparseSoftmaxCrossEntropy) {
   struct TestCase {
     std::uint32_t dim;
     vector<std::uint32_t> ids;
@@ -1314,7 +1314,7 @@ TEST_F(FunctionImplTest, CheckSparseSoftmaxCrossEntropy) {
     SparseSoftmaxCrossEntropy node(tc.ids, tc.dim);
     const Shape cur_shape = node.forward_shape(arg_shapes);
     const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = operators::ones<Tensor>(tc.ret_shape, *dev);
+    const Tensor cur_grad = functions::ones<Tensor>(tc.ret_shape, *dev);
     reset_gradients();
     node.backward(cur_value, cur_grad, arg_values, arg_grads);
     EXPECT_EQ(
@@ -1327,5 +1327,5 @@ TEST_F(FunctionImplTest, CheckSparseSoftmaxCrossEntropy) {
   }
 }
 
-}  // namespace functions
+}  // namespace operators
 }  // namespace primitiv

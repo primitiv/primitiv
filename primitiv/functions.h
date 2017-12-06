@@ -1,5 +1,5 @@
-#ifndef PRIMITIV_OPERATORS_H_
-#define PRIMITIV_OPERATORS_H_
+#ifndef PRIMITIV_FUNCTIONS_H_
+#define PRIMITIV_FUNCTIONS_H_
 
 #include <cmath>
 #include <cstdint>
@@ -58,7 +58,7 @@ type_traits::Identity<Var> operator/(float k, const Var &x);
 template<typename Var>
 type_traits::Identity<Var> operator/(const Var &a, const Var &b);
 
-namespace operators {
+namespace functions {
 
 Node input(
     const Shape &shape,
@@ -393,8 +393,8 @@ inline type_traits::Identity<Var> dropout(
   return (1. / p) * x * random::bernoulli<Var>(x.shape(), p, x.device());
 }
 
-}  // namespace operators
+}  // namespace functions
 
 }  // namespace primitiv
 
-#endif  // PRIMITIV_OPERATORS_H_
+#endif  // PRIMITIV_FUNCTIONS_H_

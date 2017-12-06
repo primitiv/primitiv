@@ -2,7 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
-#include <primitiv/operators.h>
+#include <primitiv/functions.h>
 #include <primitiv/parameter.h>
 #include <primitiv/optimizer_impl.h>
 
@@ -78,7 +78,7 @@ void AdaGrad::update_parameter(float scale, Parameter &param) {
   const Tensor &g = param.gradient();
   Tensor &m = param.stats("AdaGrad.m");
   m += g * g;
-  param.value() -= (scale * eta_) * g / (operators::sqrt(m) + eps_);
+  param.value() -= (scale * eta_) * g / (functions::sqrt(m) + eps_);
 }
 
 void AdaGrad::get_configs(
@@ -108,7 +108,7 @@ void RMSProp::update_parameter(float scale, Parameter &param) {
   const Tensor &g = param.gradient();
   Tensor &m = param.stats("RMSProp.m");
   m = alpha_ * m + (1 - alpha_) * g * g;
-  param.value() -= (scale * eta_) * g / (operators::sqrt(m) + eps_);
+  param.value() -= (scale * eta_) * g / (functions::sqrt(m) + eps_);
 }
 
 void RMSProp::get_configs(
@@ -143,7 +143,7 @@ void AdaDelta::update_parameter(float scale, Parameter &param) {
   Tensor &m2 = param.stats("AdaDelta.m2");
   m2 *= rho_;
   m2 += (1 - rho_) * g * g;
-  const Tensor dx = operators::sqrt((m1 + eps_) / (m2 + eps_)) * g;
+  const Tensor dx = functions::sqrt((m1 + eps_) / (m2 + eps_)) * g;
   m1 *= rho_;
   m1 += (1 - rho_) * dx * dx;
   param.value() -= scale * dx;
@@ -182,7 +182,7 @@ void Adam::update_parameter(float scale, Parameter &param) {
   m2 = beta2_ * m2 + (1 - beta2_) * g * g;
   const Tensor mm1 = m1 / (1 - std::pow(beta1_, epoch));
   const Tensor mm2 = m2 / (1 - std::pow(beta2_, epoch));
-  param.value() -= (scale * alpha_) * mm1 / (operators::sqrt(mm2) + eps_);
+  param.value() -= (scale * alpha_) * mm1 / (functions::sqrt(mm2) + eps_);
 }
 
 void Adam::get_configs(

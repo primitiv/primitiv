@@ -5,18 +5,16 @@
 
 #include <vector>
 #include <primitiv/error.h>
-#include <primitiv/function_impl.h>
+#include <primitiv/functions.h>
 #include <primitiv/graph.h>
 #include <primitiv/shape.h>
-#include <primitiv/operators.h>
+#include <primitiv/operator_impl.h>
 #include <primitiv/parameter.h>
 
-namespace F = primitiv::functions;
+#define REG(g, op, ...) \
+  g.add_operator(std::unique_ptr<Operator>(new operators::op), {__VA_ARGS__})
 
-#define REG(g, f, ...) \
-  g.add_function(std::unique_ptr<Function>(new F::f), {__VA_ARGS__})
-
-#define REGX(x, f, ...) REG((x).graph(), f, __VA_ARGS__)
+#define REGX(x, op, ...) REG((x).graph(), op, __VA_ARGS__)
 
 namespace {
 
@@ -92,7 +90,7 @@ Node operator/(const Node &a, const Node &b) {
   else return REGX(a, Divide(), a, b);
 }
 
-namespace operators {
+namespace functions {
 
 Node input(
     const Shape &shape, const std::vector<float> &data, Device &dev, Graph &g) {
@@ -132,8 +130,8 @@ Node slice(const Node &x, std::uint32_t dim, std::uint32_t lower, std::uint32_t 
 template<>
 Node concat(const std::vector<Node> &xs, std::uint32_t dim) {
   if (xs.empty()) THROW_ERROR("No nodes to concat.");
-  return xs[0].graph().add_function(
-      std::unique_ptr<Function>(new F::Concat(dim)), xs);
+  return xs[0].graph().add_operator(
+      std::unique_ptr<Operator>(new operators::Concat(dim)), xs);
 }
 
 template<>
@@ -332,6 +330,6 @@ Node log_normal<Node>(const Shape &shape, float mean, float sd, Device &dev) {
 
 }  // namespace random
 
-}  // namespace operators
+}  // namespace functions
 
 }  // namespace primitiv
