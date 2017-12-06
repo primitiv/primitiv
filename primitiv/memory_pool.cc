@@ -11,16 +11,6 @@ using std::make_pair;
 
 namespace primitiv {
 
-#ifdef PRIMITIV_NEED_EXPLICIT_STATIC_SYMBOLS
-template<>
-  std::uint64_t mixins::Identifiable<MemoryPool>::next_id_ = 0;
-template<>
-  std::unordered_map<std::uint64_t, MemoryPool *>
-  mixins::Identifiable<MemoryPool>::objects_;
-template<>
-  std::mutex mixins::Identifiable<MemoryPool>::mutex_;
-#endif  // PRIMITIV_NEED_EXPLICIT_STATIC_SYMBOLS
-
 MemoryPool::MemoryPool(
     std::function<void *(std::size_t)> allocator,
     std::function<void(void *)> deleter)
