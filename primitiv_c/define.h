@@ -19,4 +19,18 @@ typedef _Bool bool;
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef SWIG
+#define PRIMITIV_CAPI_EXPORT
+#else
+#if defined(COMPILER_MSVC)
+#ifdef PRIMITIV_COMPILE_LIBRARY
+#define PRIMITIV_CAPI_EXPORT __declspec(dllexport)
+#else
+#define PRIMITIV_CAPI_EXPORT __declspec(dllimport)
+#endif  // PRIMITIV_COMPILE_LIBRARY
+#else
+#define PRIMITIV_CAPI_EXPORT __attribute__((visibility("default")))
+#endif  // COMPILER_MSVC
+#endif  // SWIG
+
 #endif  // PRIMITIV_C_DEFINE_H_
