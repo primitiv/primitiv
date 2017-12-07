@@ -310,10 +310,6 @@ Node log_normal(const Shape &shape, float mean, float sd, Device &dev, Graph &g)
   return REG(g, RandomLogNormal(shape, mean, sd, dev));
 }
 
-Node gumbel(const Shape &shape, float mu, float beta, Device &dev, Graph &g) {
-  return mu - beta * log(-log(uniform(shape, 0, .9999999, dev, g)));
-}
-
 template<>
 Node bernoulli<Node>(const Shape &shape, float p, Device &dev) {
   return bernoulli(shape, p, dev, Graph::get_default());

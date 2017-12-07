@@ -7,13 +7,14 @@
 #include <limits>
 #include <vector>
 
-#include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/graph.h>
+#include <primitiv/tensor.h>
 #include <primitiv/type_traits.h>
 
 namespace primitiv {
 
+class Device;
 class Parameter;
 
 template<typename Var>
@@ -60,26 +61,92 @@ type_traits::Identity<Var> operator/(const Var &a, const Var &b);
 
 namespace functions {
 
-Node input(
-    const Shape &shape,
-    const std::vector<float> &data,
-    Device &dev,
-    Graph &g);
+/**
+ * input_tensor(shape, data, &dev)
+ * input_node(shape, data, &dev, &g)
+ * input<Var>(shape, data, dev)
+ * input<Var>(shape, data)
+ */
+
+Tensor input_tensor(
+    const Shape &shape, const std::vector<float> &data, Device *dev);
+
+Node input_node(
+    const Shape &shape, const std::vector<float> &data, Device *dev, Graph *g);
 
 template<typename Var>
 type_traits::Identity<Var> input(
-    const Shape &shape,
-    const std::vector<float> &data,
-    Device &dev = Device::get_default());
+    const Shape &shape, const std::vector<float> &data, Device &dev);
 
-Node parameter(Parameter &param, Graph &g);
+template<>
+inline Tensor input<Tensor>(
+    const Shape &shape, const std::vector<float> &data, Device &dev) {
+  return input_tensor(shape, data, &dev);
+}
+
+template<>
+inline Node input<Node>(
+    const Shape &shape, const std::vector<float> &data, Device &dev) {
+  return input_node(shape, data, &dev, nullptr);
+}
+
+template<typename Var>
+type_traits::Identity<Var> input(
+    const Shape &shape, const std::vector<float> &data);
+
+template<>
+inline Tensor input<Tensor>(
+    const Shape &shape, const std::vector<float> &data) {
+  return input_tensor(shape, data, nullptr);
+}
+
+template<>
+inline Node input<Node>(
+    const Shape &shape, const std::vector<float> &data) {
+  return input_node(shape, data, nullptr, nullptr);
+}
+
+/**
+ * parameter_tensor(param)
+ * parameter_node(param, &g)
+ * parameter<Var>(param)
+ */
+
+Tensor parameter_tensor(Parameter &param);
+
+Node parameter_node(Parameter &param, Graph *g);
 
 template<typename Var>
 type_traits::Identity<Var> parameter(Parameter &param);
 
+template<>
+inline Tensor parameter<Tensor>(Parameter &param) {
+  return parameter_tensor(param);
+}
+
+template<>
+inline Node parameter<Node>(Parameter &param) {
+  return parameter_node(param, nullptr);
+}
+
+/**
+ * copy<Var>(x, *dev)
+ * copy<Var>(x, dev)
+ * copy<Var>(x)
+ */
+
 template<typename Var>
-type_traits::Identity<Var> copy(
-    const Var &x, Device &dev = Device::get_default());
+type_traits::Identity<Var> copy(const Var &x, Device *dev);
+
+template<typename Var>
+inline type_traits::Identity<Var> copy(const Var &x, Device &dev) {
+  return copy(x, &dev);
+}
+
+template<typename Var>
+inline type_traits::Identity<Var> copy(const Var &x) {
+  return copy(x, nullptr);
+}
 
 template<typename Var>
 type_traits::Identity<Var> pick(
@@ -90,20 +157,21 @@ type_traits::Identity<Var> slice(
     const Var &x, std::uint32_t dim, std::uint32_t lower, std::uint32_t upper);
 
 template<typename Var>
-type_traits::Identity<Var> concat(const std::vector<Var> &xs, std::uint32_t dim);
+type_traits::Identity<Var> concat(
+    const std::vector<Var> &xs, std::uint32_t dim);
 
 template<typename Var>
 type_traits::Identity<Var> concat(
     const std::vector<const Var *> &xs, std::uint32_t dim);
 
 template<typename Var>
-type_traits::Identity<Var> concat(
+inline type_traits::Identity<Var> concat(
     const std::initializer_list<Var> xs, std::uint32_t dim) {
   return concat(std::vector<Var>(xs), dim);
 }
 
 template<typename Var>
-type_traits::Identity<Var> concat(
+inline type_traits::Identity<Var> concat(
     const std::initializer_list<const Var *> xs, std::uint32_t dim) {
   return concat(std::vector<const Var *>(xs), dim);
 }
@@ -235,7 +303,8 @@ inline type_traits::ReducePtr<Container> mean(const Container &xs) {
 }
 
 template<typename Var>
-type_traits::Identity<Var> broadcast(const Var &x, std::uint32_t dim, std::uint32_t size);
+type_traits::Identity<Var> broadcast(
+    const Var &x, std::uint32_t dim, std::uint32_t size);
 
 template<typename Var>
 type_traits::Identity<Var> logsumexp(const Var &x, std::uint32_t dim);
@@ -279,41 +348,129 @@ inline type_traits::Identity<Var> normalize(const Var &x) {
 
 }  // namespace batch
 
-Node constant(const Shape &shape, float k, Device &dev, Graph &g);
+/**
+ * constant_tensor(shape, k, &dev)
+ * constant_node(shape, k, &dev, &g)
+ * constant<Var>(shape, k, dev)
+ * constant<Var>(shape, k)
+ */
 
-inline Node zeros(const Shape &shape, Device &dev, Graph &g) {
-  return constant(shape, 0, dev, g);
-}
+Tensor constant_tensor(const Shape &shape, float k, Device *dev);
 
-inline Node ones(const Shape &shape, Device &dev, Graph &g) {
-  return constant(shape, 1, dev, g);
-}
-
-Node identity(std::uint32_t size, Device &dev, Graph &g);
-
-template<typename Var>
-type_traits::Identity<Var> constant(
-    const Shape &shape, float k,
-    Device &dev = Device::get_default());
+Node constant_node(const Shape &shape, float k, Device *dev, Graph *g);
 
 template<typename Var>
-inline type_traits::Identity<Var> zeros(
-    const Shape &shape,
-    Device &dev = Device::get_default()) {
-  return constant<Var>(shape, 0, dev);
+type_traits::Identity<Var> constant(const Shape &shape, float k, Device &dev);
+
+template<>
+inline Tensor constant<Tensor>(const Shape &shape, float k, Device &dev) {
+  return constant_tensor(shape, k, &dev);
 }
 
-template<typename Var>
-inline type_traits::Identity<Var> ones(
-    const Shape &shape,
-    Device &dev = Device::get_default()) {
-  return constant<Var>(shape, 1, dev);
+template<>
+inline Node constant<Node>(const Shape &shape, float k, Device &dev) {
+  return constant_node(shape, k, &dev, nullptr);
 }
 
 template<typename Var>
-type_traits::Identity<Var> identity(
-    std::uint32_t size,
-    Device &dev = Device::get_default());
+type_traits::Identity<Var> constant(const Shape &shape, float k);
+
+template<>
+inline Tensor constant<Tensor>(const Shape &shape, float k) {
+  return constant_tensor(shape, k, nullptr);
+}
+
+template<>
+inline Node constant<Node>(const Shape &shape, float k) {
+  return constant_node(shape, k, nullptr, nullptr);
+}
+
+/**
+ * zeros_tensor(shape, &dev)
+ * zeros_node(shape, &dev, &g)
+ * zeros<Var>(shape, dev)
+ * zeros<Var>(shape)
+ */
+
+inline Tensor zeros_tensor(const Shape &shape, Device *dev) {
+  return constant_tensor(shape, 0., dev);
+}
+
+inline Node zeros_node(const Shape &shape, Device *dev, Graph *g) {
+  return constant_node(shape, 0., dev, g);
+}
+
+template<typename Var>
+inline type_traits::Identity<Var> zeros(const Shape &shape, Device &dev) {
+  return constant<Var>(shape, 0., dev);
+}
+
+template<typename Var>
+inline type_traits::Identity<Var> zeros(const Shape &shape) {
+  return constant<Var>(shape, 0.);
+}
+
+/**
+ * ones_tensor(shape, &dev)
+ * ones_node(shape, &dev, &g)
+ * ones<Var>(shape, dev)
+ * ones<Var>(shape)
+ */
+
+inline Tensor ones_tensor(const Shape &shape, Device *dev) {
+  return constant_tensor(shape, 1., dev);
+}
+
+inline Node ones_node(const Shape &shape, Device *dev, Graph *g) {
+  return constant_node(shape, 1., dev, g);
+}
+
+template<typename Var>
+inline type_traits::Identity<Var> ones(const Shape &shape, Device &dev) {
+  return constant<Var>(shape, 1., dev);
+}
+
+template<typename Var>
+inline type_traits::Identity<Var> ones(const Shape &shape) {
+  return constant<Var>(shape, 1.);
+}
+
+/**
+ * identity_tensor(size, &dev)
+ * identity_node(size, &dev, &g)
+ * identity<Var>(size, dev)
+ * identity<Var>(size)
+ */
+
+Tensor identity_tensor(std::uint32_t size, Device *dev);
+
+Node identity_node(std::uint32_t size, Device *dev, Graph *g);
+
+template<typename Var>
+type_traits::Identity<Var> identity(std::uint32_t size, Device &dev);
+
+template<>
+inline Tensor identity<Tensor>(std::uint32_t size, Device &dev) {
+  return identity_tensor(size, &dev);
+}
+
+template<>
+inline Node identity<Node>(std::uint32_t size, Device &dev) {
+  return identity_node(size, &dev, nullptr);
+}
+
+template<typename Var>
+type_traits::Identity<Var> identity(std::uint32_t size);
+
+template<>
+inline Tensor identity<Tensor>(std::uint32_t size) {
+  return identity_tensor(size, nullptr);
+}
+
+template<>
+inline Node identity<Node>(std::uint32_t size) {
+  return identity_node(size, nullptr, nullptr);
+}
 
 template<typename Var>
 inline type_traits::Identity<Var> ipow(const Var &x, std::int32_t k) {
@@ -343,46 +500,233 @@ inline type_traits::Identity<Var> ipow(const Var &x, std::int32_t k) {
 
 namespace random {
 
-Node bernoulli(
-    const Shape &shape, float p, Device &dev, Graph &g);
+/**
+ * bernoulli_tensor(shape, p, &dev)
+ * bernoulli_node(shape, p, &dev, &g)
+ * bernoulli<Var>(shape, p, dev)
+ * bernoulli<Var>(shape, p)
+ */
 
-Node uniform(
-    const Shape &shape, float lower, float upper, Device &dev, Graph &g);
+Tensor bernoulli_tensor(
+    const Shape &shape, float p, Device *dev);
 
-Node normal(
-    const Shape &shape, float mean, float sd, Device &dev, Graph &g);
-
-Node log_normal(
-    const Shape &shape, float mean, float sd, Device &dev, Graph &g);
-
-Node gumbel(
-    const Shape &shape, float mu, float beta, Device &dev, Graph &g);
+Node bernoulli_node(
+    const Shape &shape, float p, Device *dev, Graph *g);
 
 template<typename Var>
 type_traits::Identity<Var> bernoulli(
-    const Shape &shape, float p,
-    Device &dev = Device::get_default());
+    const Shape &shape, float p, Device &dev);
+
+template<>
+inline Tensor bernoulli<Tensor>(
+    const Shape &shape, float p, Device &dev) {
+  return bernoulli_tensor(shape, p, &dev);
+}
+
+template<>
+inline Node bernoulli<Node>(
+    const Shape &shape, float p, Device &dev) {
+  return bernoulli_node(shape, p, &dev, nullptr);
+}
+
+template<typename Var>
+type_traits::Identity<Var> bernoulli(
+    const Shape &shape, float p);
+
+template<>
+inline Tensor bernoulli<Tensor>(
+    const Shape &shape, float p) {
+  return bernoulli_tensor(shape, p, nullptr);
+}
+
+template<>
+inline Node bernoulli<Node>(
+    const Shape &shape, float p) {
+  return bernoulli_node(shape, p, nullptr, nullptr);
+}
+
+/**
+ * uniform_tensor(shape, lower, upper, &dev)
+ * uniform_node(shape, lower, upper, &dev, &g)
+ * uniform<Var>(shape, lower, upper, dev)
+ * uniform<Var>(shape, lower, upper)
+ */
+
+Tensor uniform_tensor(
+    const Shape &shape, float lower, float upper, Device *dev);
+
+Node uniform_node(
+    const Shape &shape, float lower, float upper, Device *dev, Graph *g);
 
 template<typename Var>
 type_traits::Identity<Var> uniform(
-    const Shape &shape, float lower, float upper,
-    Device &dev = Device::get_default());
+    const Shape &shape, float lower, float upper, Device &dev);
+
+template<>
+inline Tensor uniform<Tensor>(
+    const Shape &shape, float lower, float upper, Device &dev) {
+  return uniform_tensor(shape, lower, upper, &dev);
+}
+
+template<>
+inline Node uniform<Node>(
+    const Shape &shape, float lower, float upper, Device &dev) {
+  return uniform_node(shape, lower, upper, &dev, nullptr);
+}
+
+template<typename Var>
+type_traits::Identity<Var> uniform(
+    const Shape &shape, float lower, float upper);
+
+template<>
+inline Tensor uniform<Tensor>(
+    const Shape &shape, float lower, float upper) {
+  return uniform_tensor(shape, lower, upper, nullptr);
+}
+
+template<>
+inline Node uniform<Node>(
+    const Shape &shape, float lower, float upper) {
+  return uniform_node(shape, lower, upper, nullptr, nullptr);
+}
+
+/**
+ * normal_tensor(shape, mean, sd, &dev)
+ * normal_node(shape, mean, sd, &dev, &g)
+ * normal<Var>(shape, mean, sd, dev)
+ * normal<Var>(shape, mean, sd)
+ */
+
+Tensor normal_tensor(
+    const Shape &shape, float mean, float sd, Device *dev);
+
+Node normal_node(
+    const Shape &shape, float mean, float sd, Device *dev, Graph *g);
 
 template<typename Var>
 type_traits::Identity<Var> normal(
-    const Shape &shape, float mean, float sd,
-    Device &dev = Device::get_default());
+    const Shape &shape, float mean, float sd, Device &dev);
+
+template<>
+inline Tensor normal<Tensor>(
+    const Shape &shape, float mean, float sd, Device &dev) {
+  return normal_tensor(shape, mean, sd, &dev);
+}
+
+template<>
+inline Node normal<Node>(
+    const Shape &shape, float mean, float sd, Device &dev) {
+  return normal_node(shape, mean, sd, &dev, nullptr);
+}
+
+template<typename Var>
+type_traits::Identity<Var> normal(
+    const Shape &shape, float mean, float sd);
+
+template<>
+inline Tensor normal<Tensor>(
+    const Shape &shape, float mean, float sd) {
+  return normal_tensor(shape, mean, sd, nullptr);
+}
+
+template<>
+inline Node normal<Node>(
+    const Shape &shape, float mean, float sd) {
+  return normal_node(shape, mean, sd, nullptr, nullptr);
+}
+
+/**
+ * log_normal_tensor(shape, mean, sd, &dev)
+ * log_normal_node(shape, mean, sd, &dev, &g)
+ * log_normal<Var>(shape, mean, sd, dev)
+ * log_normal<Var>(shape, mean, sd)
+ */
+
+Tensor log_normal_tensor(
+    const Shape &shape, float mean, float sd, Device *dev);
+
+Node log_normal_node(
+    const Shape &shape, float mean, float sd, Device *dev, Graph *g);
 
 template<typename Var>
 type_traits::Identity<Var> log_normal(
-    const Shape &shape, float mean, float sd,
-    Device &dev = Device::get_default());
+    const Shape &shape, float mean, float sd, Device &dev);
+
+template<>
+inline Tensor log_normal<Tensor>(
+    const Shape &shape, float mean, float sd, Device &dev) {
+  return log_normal_tensor(shape, mean, sd, &dev);
+}
+
+template<>
+inline Node log_normal<Node>(
+    const Shape &shape, float mean, float sd, Device &dev) {
+  return log_normal_node(shape, mean, sd, &dev, nullptr);
+}
 
 template<typename Var>
-inline type_traits::Identity<Var> gumbel(
-    const Shape &shape, float mu, float beta,
-    Device &dev = Device::get_default()) {
-  return mu - beta * log(-log(uniform<Var>(shape, 0, .9999999, dev)));
+type_traits::Identity<Var> log_normal(
+    const Shape &shape, float mean, float sd);
+
+template<>
+inline Tensor log_normal<Tensor>(
+    const Shape &shape, float mean, float sd) {
+  return log_normal_tensor(shape, mean, sd, nullptr);
+}
+
+template<>
+inline Node log_normal<Node>(
+    const Shape &shape, float mean, float sd) {
+  return log_normal_node(shape, mean, sd, nullptr, nullptr);
+}
+
+/**
+ * gumbel_tensor(shape, mu, beta, &dev)
+ * gumbel_node(shape, mu, beta, &dev, &g)
+ * gumbel<Var>(shape, mu, beta, dev)
+ * gumbel<Var>(shape, mu, beta)
+ */
+
+inline Tensor gumbel_tensor(
+    const Shape &shape, float mu, float beta, Device *dev) {
+  return mu - beta * log(-log(uniform_tensor(shape, 0, .9999999, dev)));
+}
+
+inline Node gumbel_node(
+    const Shape &shape, float mu, float beta, Device *dev, Graph *g) {
+  return mu - beta * log(-log(uniform_node(shape, 0, .9999999, dev, g)));
+}
+
+template<typename Var>
+type_traits::Identity<Var> gumbel(
+    const Shape &shape, float mu, float beta, Device &dev);
+
+template<>
+inline Tensor gumbel<Tensor>(
+    const Shape &shape, float mu, float beta, Device &dev) {
+  return gumbel_tensor(shape, mu, beta, &dev);
+}
+
+template<>
+inline Node gumbel<Node>(
+    const Shape &shape, float mu, float beta, Device &dev) {
+  return gumbel_node(shape, mu, beta, &dev, nullptr);
+}
+
+template<typename Var>
+type_traits::Identity<Var> gumbel(
+    const Shape &shape, float mu, float beta);
+
+template<>
+inline Tensor gumbel<Tensor>(
+    const Shape &shape, float mu, float beta) {
+  return gumbel_tensor(shape, mu, beta, nullptr);
+}
+
+template<>
+inline Node gumbel<Node>(
+    const Shape &shape, float mu, float beta) {
+  return gumbel_node(shape, mu, beta, nullptr, nullptr);
 }
 
 }  // namespace random
