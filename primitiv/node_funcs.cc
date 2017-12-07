@@ -255,8 +255,14 @@ Node softmax_cross_entropy(const Node &x, const Node &t, std::uint32_t dim) {
 }
 
 template<>
-Node softmax_cross_entropy(const Node &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim) {
+Node softmax_cross_entropy(
+    const Node &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim) {
   return REGX(x, SparseSoftmaxCrossEntropy(ids, dim), x);
+}
+
+template<>
+Node stop_gradient(const Node &x) {
+  return REGX(x, StopGradient(), x);
 }
 
 namespace batch {

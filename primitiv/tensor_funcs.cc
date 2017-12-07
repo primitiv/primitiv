@@ -258,6 +258,9 @@ Tensor softmax_cross_entropy(
   return pick(-log_softmax(x, dim), ids, dim);
 }
 
+template<>
+Tensor stop_gradient(const Tensor &x) { return x; }
+
 namespace batch {
 
 template<>

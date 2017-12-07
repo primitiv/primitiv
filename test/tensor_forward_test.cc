@@ -1876,5 +1876,19 @@ TEST_F(TensorForwardTest, CheckInvalidSparseSoftmaxCrossEntropy) {
   }
 }
 
+TEST_F(TensorForwardTest, CheckStopGradient) {
+  const vector<float> x_data {
+    0, .5, 1, 2, 3, 4,
+    0, -.5, -1, -2, -3, -4,
+  };
+  const vector<float> y_data = x_data;
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
+    const Tensor y = stop_gradient(x);
+    EXPECT_EQ(Shape({2, 3}, 2), y.shape());
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+  }
+}
+
 }  // namespace functions
 }  // namespace primitiv

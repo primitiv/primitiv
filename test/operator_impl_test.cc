@@ -1327,5 +1327,19 @@ TEST_F(OperatorImplTest, CheckSparseSoftmaxCrossEntropy) {
   }
 }
 
+TEST_F(OperatorImplTest, CheckStopGradient) {
+  // y = x
+  // dy/dx = 0
+  setup_1arg();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {
+    1., 2., 3., 4., 0., 0., 0., 0., -1., -2., -3., -4.,
+  };
+  const vector<float> bw_grad {
+    0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+  };
+  TEST_1ARG(StopGradient);
+}
+
 }  // namespace operators
 }  // namespace primitiv
