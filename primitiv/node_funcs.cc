@@ -20,6 +20,16 @@ namespace {
 
 using primitiv::Node;
 
+// Helper to obtain Device object.
+primitiv::Device &get_device(primitiv::Device *dev) {
+  return dev ? *dev : primitiv::Device::get_default();
+}
+
+// Helper to obtain Graph object.
+primitiv::Graph &get_graph(primitiv::Graph *g) {
+  return g ? *g : primitiv::Graph::get_default();
+}
+
 // Helper to transform pointers to nodes.
 std::vector<Node> ptr_to_obj(const std::vector<const Node *> &xs) {
   std::vector<Node> ret;
@@ -92,29 +102,18 @@ Node operator/(const Node &a, const Node &b) {
 
 namespace functions {
 
-Node input(
-    const Shape &shape, const std::vector<float> &data, Device &dev, Graph &g) {
-  return REG(g, Input(shape, data, dev));
+Node input_node(
+    const Shape &shape, const std::vector<float> &data, Device *dev, Graph *g) {
+  return REG(::get_graph(g), Input(shape, data, ::get_device(dev)));
+}
+
+Node parameter_node(Parameter &param, Graph *g) {
+  return REG(::get_graph(g), ParameterInput(param));
 }
 
 template<>
-Node input<Node>(
-    const Shape &shape, const std::vector<float> &data, Device &dev) {
-  return input(shape, data, dev, Graph::get_default());
-}
-
-Node parameter(Parameter &param, Graph &g) {
-  return REG(g, ParameterInput(param));
-}
-
-template<>
-Node parameter<Node>(Parameter &param) {
-  return parameter(param, Graph::get_default());
-}
-
-template<>
-Node copy(const Node &x, Device &dev) {
-  return REGX(x, Copy(dev), x);
+Node copy(const Node &x, Device *dev) {
+  return REGX(x, Copy(::get_device(dev)), x);
 }
 
 template<>
@@ -274,60 +273,43 @@ Node sum(const Node &x) {
 
 }  // namespace batch
 
-Node constant(const Shape &shape, float k, Device &dev, Graph &g) {
-  return REG(g, Constant(shape, k, dev));
+Node constant_node(const Shape &shape, float k, Device *dev, Graph *g) {
+  return REG(::get_graph(g), Constant(shape, k, ::get_device(dev)));
 }
 
-Node identity(std::uint32_t size, Device &dev, Graph &g) {
-  return REG(g, IdentityMatrix(size, dev));
-}
-
-template<>
-Node constant<Node>(const Shape &shape, float k, Device &dev) {
-  return constant(shape, k, dev, Graph::get_default());
-}
-
-template<>
-Node identity<Node>(std::uint32_t size, Device &dev) {
-  return identity(size, dev, Graph::get_default());
+Node identity_node(std::uint32_t size, Device *dev, Graph *g) {
+  return REG(::get_graph(g), IdentityMatrix(size, ::get_device(dev)));
 }
 
 namespace random {
 
-Node bernoulli(const Shape &shape, float p, Device &dev, Graph &g) {
-  return REG(g, RandomBernoulli(shape, p, dev));
+Node bernoulli_node(
+    const Shape &shape, float p, Device *dev, Graph *g) {
+  return REG(
+      ::get_graph(g), RandomBernoulli(shape, p, ::get_device(dev)));
 }
 
-Node uniform(const Shape &shape, float lower, float upper, Device &dev, Graph &g) {
-  return REG(g, RandomUniform(shape, lower, upper, dev));
+Node uniform_node(
+    const Shape &shape, float lower, float upper, Device *dev, Graph *g) {
+  return REG(
+      ::get_graph(g), RandomUniform(shape, lower, upper, ::get_device(dev)));
 }
 
-Node normal(const Shape &shape, float mean, float sd, Device &dev, Graph &g) {
-  return REG(g, RandomNormal(shape, mean, sd, dev));
+Node normal_node(
+    const Shape &shape, float mean, float sd, Device *dev, Graph *g) {
+  return REG(
+      ::get_graph(g), RandomNormal(shape, mean, sd, ::get_device(dev)));
 }
 
-Node log_normal(const Shape &shape, float mean, float sd, Device &dev, Graph &g) {
-  return REG(g, RandomLogNormal(shape, mean, sd, dev));
+Node log_normal_node(
+    const Shape &shape, float mean, float sd, Device *dev, Graph *g) {
+  return REG(
+      ::get_graph(g), RandomLogNormal(shape, mean, sd, ::get_device(dev)));
 }
 
-template<>
-Node bernoulli<Node>(const Shape &shape, float p, Device &dev) {
-  return bernoulli(shape, p, dev, Graph::get_default());
-}
-
-template<>
-Node uniform<Node>(const Shape &shape, float lower, float upper, Device &dev) {
-  return uniform(shape, lower, upper, dev, Graph::get_default());
-}
-
-template<>
-Node normal<Node>(const Shape &shape, float mean, float sd, Device &dev) {
-  return normal(shape, mean, sd, dev, Graph::get_default());
-}
-
-template<>
-Node log_normal<Node>(const Shape &shape, float mean, float sd, Device &dev) {
-  return log_normal(shape, mean, sd, dev, Graph::get_default());
+Node gumbel_node(
+    const Shape &shape, float mu, float beta, Device *dev, Graph *g) {
+  return mu - beta * log(-log(uniform_node(shape, 0., .9999999, dev, g)));
 }
 
 }  // namespace random

@@ -8,6 +8,11 @@ namespace {
 
 using primitiv::Tensor;
 
+// Helper to obtain Device object.
+primitiv::Device &get_device(primitiv::Device *dev) {
+  return dev ? *dev : primitiv::Device::get_default();
+}
+
 // Helper to transform tensors to pointers.
 std::vector<const Tensor *> obj_to_ptr(const std::vector<Tensor> &xs) {
   std::vector<const Tensor *> ret;
@@ -100,20 +105,18 @@ Tensor operator/(const Tensor &a, const Tensor &b) {
 
 namespace functions {
 
-template<>
-Tensor input<Tensor>(
-    const Shape &shape, const std::vector<float> &data, Device &dev) {
-  return dev.new_tensor_by_vector(shape, data);
+Tensor input_tensor(
+    const Shape &shape, const std::vector<float> &data, Device *dev) {
+  return ::get_device(dev).new_tensor_by_vector(shape, data);
 }
 
-template<>
-Tensor parameter<Tensor>(Parameter &param) {
+Tensor parameter_tensor(Parameter &param) {
   return param.value();
 }
 
 template<>
-Tensor copy(const Tensor &x, Device &dev) {
-  return dev.copy_tensor(x);
+Tensor copy(const Tensor &x, Device *dev) {
+  return ::get_device(dev).copy_tensor(x);
 }
 
 template<>
@@ -270,40 +273,39 @@ Tensor sum(const Tensor &x) {
 
 }  // namespace batch
 
-template<>
-Tensor constant<Tensor>(const Shape &shape, float k, Device &dev) {
-  return dev.new_tensor_by_constant(shape, k);
+Tensor constant_tensor(const Shape &shape, float k, Device *dev) {
+  return ::get_device(dev).new_tensor_by_constant(shape, k);
 }
 
-template<>
-Tensor identity<Tensor>(std::uint32_t size, Device &dev) {
-  return dev.identity(size);
+Tensor identity_tensor(std::uint32_t size, Device *dev) {
+  return ::get_device(dev).identity(size);
 }
 
 namespace random {
 
-template<>
-Tensor bernoulli<Tensor>(
-    const Shape &shape, float p, Device &dev) {
-  return dev.random_bernoulli(shape, p);
+Tensor bernoulli_tensor(
+    const Shape &shape, float p, Device *dev) {
+  return ::get_device(dev).random_bernoulli(shape, p);
 }
 
-template<>
-Tensor uniform<Tensor>(
-    const Shape &shape, float lower, float upper, Device &dev) {
-  return dev.random_uniform(shape, lower, upper);
+Tensor uniform_tensor(
+    const Shape &shape, float lower, float upper, Device *dev) {
+  return ::get_device(dev).random_uniform(shape, lower, upper);
 }
 
-template<>
-Tensor normal<Tensor>(
-    const Shape &shape, float mean, float sd, Device &dev) {
-  return dev.random_normal(shape, mean, sd);
+Tensor normal_tensor(
+    const Shape &shape, float mean, float sd, Device *dev) {
+  return ::get_device(dev).random_normal(shape, mean, sd);
 }
 
-template<>
-Tensor log_normal<Tensor>(
-    const Shape &shape, float mean, float sd, Device &dev) {
-  return dev.random_log_normal(shape, mean, sd);
+Tensor log_normal_tensor(
+    const Shape &shape, float mean, float sd, Device *dev) {
+  return ::get_device(dev).random_log_normal(shape, mean, sd);
+}
+
+Tensor gumbel_tensor(
+    const Shape &shape, float mu, float beta, Device *dev) {
+  return mu - beta * log(-log(uniform_tensor(shape, 0., .9999999, dev)));
 }
 
 }  // namespace random
