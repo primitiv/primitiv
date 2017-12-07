@@ -56,7 +56,7 @@ public:
    * Returns the shape of the Tensor.
    * @return Shape of the Tensor.
    */
-  const Shape &shape() const {
+  Shape shape() const {
     if (!valid()) THROW_ERROR("Invalid tensor.");
     return shape_;
   }

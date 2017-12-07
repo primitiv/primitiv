@@ -202,10 +202,20 @@ TEST_F(ShapeOpsTest, CheckConcat) {
     {{Shape({}, 3), Shape({2}, 3), {3}}, 0, Shape({6}, 3)},
   };
   for (const TestCase &tc : test_cases) {
-    vector<const Shape *>xs;
-    for (const Shape &x : tc.inputs) xs.emplace_back(&x);
-    const Shape observed = concat(xs, tc.dim);
-    EXPECT_EQ(tc.expected, observed);
+    {
+      // Using objects
+      vector<Shape> xs;
+      for (const Shape &x : tc.inputs) xs.emplace_back(x);
+      const Shape observed = concat(xs, tc.dim);
+      EXPECT_EQ(tc.expected, observed);
+    }
+    {
+      // Using pointers
+      vector<const Shape *> xs;
+      for (const Shape &x : tc.inputs) xs.emplace_back(&x);
+      const Shape observed = concat(xs, tc.dim);
+      EXPECT_EQ(tc.expected, observed);
+    }
   }
 }
 

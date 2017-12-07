@@ -78,7 +78,7 @@ public:
    * Returns shape of the node.
    * @return A Shape object.
    */
-  const Shape &shape() const;
+  Shape shape() const;
 
   /**
    * Returns device of the node.
@@ -188,7 +188,7 @@ public:
    * @param node Node object specifying the target node.
    * @return The shape of the node.
    */
-  const Shape &get_shape(const Node &node) const;
+  Shape get_shape(const Node &node) const;
 
   /**
    * Retrieves the device of the node.
@@ -245,7 +245,7 @@ private:
   std::vector<OperatorInfo> ops_;
 };
 
-inline const Shape &Node::shape() const {
+inline Shape Node::shape() const {
   if (!valid()) THROW_ERROR("Invalid node.");
   return g_->get_shape(*this);
 }

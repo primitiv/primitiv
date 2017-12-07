@@ -143,7 +143,7 @@ public:
    * Returns the shape of the parameter.
    * @return Shape object.
    */
-  const Shape &shape() const {
+  Shape shape() const {
     if (!valid()) THROW_ERROR("Invalid parameter.");
     return shape_;
   }
