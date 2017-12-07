@@ -188,7 +188,7 @@ void Graph::backward(const Node &node) {
   }
 }
 
-const Shape &Graph::get_shape(const Node &node) const {
+Shape Graph::get_shape(const Node &node) const {
   CHECK_NODE(node);
   return ACCESS(node).shape;
 }
