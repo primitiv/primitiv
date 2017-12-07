@@ -1,8 +1,8 @@
-#ifndef PRIMITIV_FUNCTION_IMPL_H_
-#define PRIMITIV_FUNCTION_IMPL_H_
+#ifndef PRIMITIV_OPERATOR_IMPL_H_
+#define PRIMITIV_OPERATOR_IMPL_H_
 
 #include <cstdint>
-#include <primitiv/function.h>
+#include <primitiv/operator.h>
 #include <primitiv/parameter.h>
 #include <primitiv/shape.h>
 
@@ -10,7 +10,7 @@ namespace primitiv {
 
 class Device;
 
-namespace functions {
+namespace operators {
 
 #define DEFAULT_CLASS_DECL(name_) \
 public: \
@@ -27,7 +27,7 @@ public: \
 private: \
   name_() = delete;
 
-class Input : public primitiv::Function {
+class Input : public Operator {
   NO_CTOR_CLASS_DECL(Input);
 public:
   Input(const Shape &shape, const std::vector<float> &data, Device &device);
@@ -39,7 +39,7 @@ private:
   Device &device_;
 };
 
-class ParameterInput : public primitiv::Function {
+class ParameterInput : public Operator {
   NO_CTOR_CLASS_DECL(ParameterInput);
 public:
   explicit ParameterInput(Parameter &param) : param_(param) {}
@@ -50,7 +50,7 @@ private:
   primitiv::Parameter &param_;
 };
 
-class Copy : public primitiv::Function {
+class Copy : public Operator {
   NO_CTOR_CLASS_DECL(Copy);
 public:
   Copy(Device &device) : device_(device) {}
@@ -60,7 +60,7 @@ private:
   Device &device_;
 };
 
-class Constant : public primitiv::Function {
+class Constant : public Operator {
   NO_CTOR_CLASS_DECL(Constant);
 public:
   Constant(const Shape &shape, float k, Device &device)
@@ -75,7 +75,7 @@ private:
   Device &device_;
 };
 
-class IdentityMatrix : public primitiv::Function {
+class IdentityMatrix : public Operator {
   NO_CTOR_CLASS_DECL(IdentityMatrix);
 public:
   IdentityMatrix(std::uint32_t size, Device &device)
@@ -89,7 +89,7 @@ private:
   Device &device_;
 };
 
-class RandomBernoulli : public primitiv::Function {
+class RandomBernoulli : public Operator {
   NO_CTOR_CLASS_DECL(RandomBernoulli);
 public:
   RandomBernoulli(const Shape &shape, float p, Device &device)
@@ -104,7 +104,7 @@ private:
   Device &device_;
 };
 
-class RandomUniform : public primitiv::Function {
+class RandomUniform : public Operator {
   NO_CTOR_CLASS_DECL(RandomUniform);
 public:
   RandomUniform(const Shape &shape, float lower, float upper, Device &device)
@@ -122,7 +122,7 @@ private:
   Device &device_;
 };
 
-class RandomNormal : public primitiv::Function {
+class RandomNormal : public Operator {
   NO_CTOR_CLASS_DECL(RandomNormal);
 public:
   RandomNormal(const Shape &shape, float mean, float sd, Device &device)
@@ -140,7 +140,7 @@ private:
   Device &device_;
 };
 
-class RandomLogNormal : public primitiv::Function {
+class RandomLogNormal : public Operator {
   NO_CTOR_CLASS_DECL(RandomLogNormal);
 public:
   RandomLogNormal(const Shape &shape, float mean, float sd, Device &device)
@@ -158,7 +158,7 @@ private:
   Device &device_;
 };
 
-class Pick : public primitiv::Function {
+class Pick : public Operator {
   NO_CTOR_CLASS_DECL(Pick);
 public:
   Pick(const std::vector<std::uint32_t> &ids, std::uint32_t dim)
@@ -171,7 +171,7 @@ private:
   std::uint32_t dim_;
 };
 
-class Slice : public primitiv::Function {
+class Slice : public Operator {
   NO_CTOR_CLASS_DECL(Slice);
 public:
   Slice(std::uint32_t dim, std::uint32_t lower, std::uint32_t upper)
@@ -186,7 +186,7 @@ private:
   std::uint32_t upper_;
 };
 
-class Concat : public primitiv::Function {
+class Concat : public Operator {
   NO_CTOR_CLASS_DECL(Concat);
 public:
   Concat(std::uint32_t dim) : dim_(dim) {}
@@ -197,7 +197,7 @@ private:
   std::uint32_t dim_;
 };
 
-class Reshape : public primitiv::Function {
+class Reshape : public Operator {
   NO_CTOR_CLASS_DECL(Reshape);
 public:
   explicit Reshape(const Shape &shape) : shape_(shape) {}
@@ -208,7 +208,7 @@ private:
   Shape shape_;
 };
 
-class Sum : public Function {
+class Sum : public Operator {
   NO_CTOR_CLASS_DECL(Sum);
 public:
   explicit Sum(std::uint32_t dim) : dim_(dim) {}
@@ -219,7 +219,7 @@ private:
   std::uint32_t dim_;
 };
 
-class LogSumExp : public Function {
+class LogSumExp : public Operator {
   NO_CTOR_CLASS_DECL(LogSumExp);
 public:
   explicit LogSumExp(std::uint32_t dim) : dim_(dim) {}
@@ -230,7 +230,7 @@ private:
   std::uint32_t dim_;
 };
 
-class Broadcast : public Function {
+class Broadcast : public Operator {
   NO_CTOR_CLASS_DECL(Broadcast);
 public:
   Broadcast(std::uint32_t dim, std::uint32_t size) : dim_(dim), size_(size) {}
@@ -243,7 +243,7 @@ private:
   std::uint32_t size_;
 };
 
-class SoftmaxCrossEntropy : public Function {
+class SoftmaxCrossEntropy : public Operator {
   NO_CTOR_CLASS_DECL(SoftmaxCrossEntropy);
 public:
   explicit SoftmaxCrossEntropy(std::uint32_t dim) : dim_(dim) {}
@@ -254,7 +254,7 @@ private:
   std::uint32_t dim_;
 };
 
-class SparseSoftmaxCrossEntropy : public Function {
+class SparseSoftmaxCrossEntropy : public Operator {
   NO_CTOR_CLASS_DECL(SparseSoftmaxCrossEntropy);
 public:
   explicit SparseSoftmaxCrossEntropy(
@@ -268,18 +268,18 @@ private:
   Tensor log_softmax_x_;  // Only used when PRIMITIV_USE_CACHE=ON
 };
 
-// Function with no parameter.
-#define DECL_FUNC(name_) \
-  class name_ : public Function { \
+// Operator with no parameter.
+#define DECL_OPERATOR(name_) \
+  class name_ : public Operator { \
     DEFAULT_CLASS_DECL(name_); \
   public: \
     name_() {} \
     std::string name() const override { return #name_; } \
   }
 
-// Function with a constant.
-#define DECL_FUNC_K(name_) \
-  class name_ : public Function { \
+// Operator with a constant.
+#define DECL_OPERATOR_K(name_) \
+  class name_ : public Operator { \
     NO_CTOR_CLASS_DECL(name_); \
   public: \
     explicit name_(float  k) : k_(k) {} \
@@ -290,55 +290,55 @@ private:
     float k_; \
   }
 
-DECL_FUNC(Flatten);
+DECL_OPERATOR(Flatten);
 
-DECL_FUNC(Positive);
-DECL_FUNC(Negative);
+DECL_OPERATOR(Positive);
+DECL_OPERATOR(Negative);
 
-DECL_FUNC_K(AddConst);
-DECL_FUNC_K(SubtractConstR);
-DECL_FUNC_K(SubtractConstL);
-DECL_FUNC_K(MultiplyConst);
-DECL_FUNC_K(DivideConstR);
-DECL_FUNC_K(DivideConstL);
-DECL_FUNC_K(PReLU);
-DECL_FUNC_K(ELU);
+DECL_OPERATOR_K(AddConst);
+DECL_OPERATOR_K(SubtractConstR);
+DECL_OPERATOR_K(SubtractConstL);
+DECL_OPERATOR_K(MultiplyConst);
+DECL_OPERATOR_K(DivideConstR);
+DECL_OPERATOR_K(DivideConstL);
+DECL_OPERATOR_K(PReLU);
+DECL_OPERATOR_K(ELU);
 
-DECL_FUNC(AddScalar);
-DECL_FUNC(SubtractScalarR);
-DECL_FUNC(SubtractScalarL);
-DECL_FUNC(MultiplyScalar);
-DECL_FUNC(DivideScalarR);
-DECL_FUNC(DivideScalarL);
+DECL_OPERATOR(AddScalar);
+DECL_OPERATOR(SubtractScalarR);
+DECL_OPERATOR(SubtractScalarL);
+DECL_OPERATOR(MultiplyScalar);
+DECL_OPERATOR(DivideScalarR);
+DECL_OPERATOR(DivideScalarL);
 
-DECL_FUNC(Add);
-DECL_FUNC(Subtract);
-DECL_FUNC(Multiply);
-DECL_FUNC(Divide);
+DECL_OPERATOR(Add);
+DECL_OPERATOR(Subtract);
+DECL_OPERATOR(Multiply);
+DECL_OPERATOR(Divide);
 
-DECL_FUNC(Transpose);
-DECL_FUNC(MatrixMultiply);
+DECL_OPERATOR(Transpose);
+DECL_OPERATOR(MatrixMultiply);
 
-DECL_FUNC(Sqrt);
-DECL_FUNC(Exp);
-DECL_FUNC(Log);
-DECL_FUNC(Tanh);
-DECL_FUNC(Sigmoid);
-DECL_FUNC(Softplus);
-DECL_FUNC(Sin);
-DECL_FUNC(Cos);
-DECL_FUNC(Tan);
-DECL_FUNC(ReLU);
-DECL_FUNC(LReLU);
+DECL_OPERATOR(Sqrt);
+DECL_OPERATOR(Exp);
+DECL_OPERATOR(Log);
+DECL_OPERATOR(Tanh);
+DECL_OPERATOR(Sigmoid);
+DECL_OPERATOR(Softplus);
+DECL_OPERATOR(Sin);
+DECL_OPERATOR(Cos);
+DECL_OPERATOR(Tan);
+DECL_OPERATOR(ReLU);
+DECL_OPERATOR(LReLU);
 
-DECL_FUNC(BatchSum);
+DECL_OPERATOR(BatchSum);
 
-#undef DECL_FUNC
-#undef DECL_FUNC_K
+#undef DECL_OPERATOR
+#undef DECL_OPERATOR_K
 #undef NO_CTOR_CLASS_DECL
 #undef DEFAULT_CLASS_DECL
 
-}  // namespace functions
+}  // namespace operators
 }  // namespace primitiv
 
-#endif  // PRIMITIV_FUNCTION_IMPL_H_
+#endif  // PRIMITIV_OPERATOR_IMPL_H_

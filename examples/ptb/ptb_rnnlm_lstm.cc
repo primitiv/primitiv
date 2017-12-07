@@ -29,7 +29,7 @@
 using primitiv::initializers::Constant;
 using primitiv::initializers::Uniform;
 using primitiv::optimizers::SGD;
-namespace F = primitiv::operators;
+namespace F = primitiv::functions;
 using namespace primitiv;
 using namespace std;
 

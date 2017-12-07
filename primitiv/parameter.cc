@@ -3,8 +3,8 @@
 #include <fstream>
 #include <primitiv/error.h>
 #include <primitiv/file_format.h>
+#include <primitiv/functions.h>
 #include <primitiv/initializer.h>
-#include <primitiv/operators.h>
 #include <primitiv/parameter.h>
 
 using std::string;
@@ -76,8 +76,8 @@ Parameter::Parameter(
     Device &device)
 : shape_(shape)
 , device_(&device)
-, value_(operators::input<Tensor>(shape, value, device))
-, grad_(operators::zeros<Tensor>(shape, device)) {
+, value_(functions::input<Tensor>(shape, value, device))
+, grad_(functions::zeros<Tensor>(shape, device)) {
   ::assert_shape(value_, grad_);
 }
 
@@ -87,8 +87,8 @@ Parameter::Parameter(
     Device &device)
 : shape_(shape)
 , device_(&device)
-, value_(operators::zeros<Tensor>(shape, device))
-, grad_(operators::zeros<Tensor>(shape, device)) {
+, value_(functions::zeros<Tensor>(shape, device))
+, grad_(functions::zeros<Tensor>(shape, device)) {
   ::assert_shape(value_, grad_);
   initializer.apply(value_);
 }
@@ -97,8 +97,8 @@ void Parameter::init(
     const Shape &shape,
     const std::vector<float> &value,
     Device &device) {
-  Tensor value_temp = operators::input<Tensor>(shape, value, device);
-  Tensor grad_temp = operators::zeros<Tensor>(shape, device);
+  Tensor value_temp = functions::input<Tensor>(shape, value, device);
+  Tensor grad_temp = functions::zeros<Tensor>(shape, device);
   ::assert_shape(value_temp, grad_temp);
 
   // Initialization succeeded. Move all objects to `this`.
@@ -113,8 +113,8 @@ void Parameter::init(
     const Shape &shape,
     const Initializer &initializer,
     Device &device) {
-  Tensor value_temp = operators::zeros<Tensor>(shape, device);
-  Tensor grad_temp = operators::zeros<Tensor>(shape, device);
+  Tensor value_temp = functions::zeros<Tensor>(shape, device);
+  Tensor grad_temp = functions::zeros<Tensor>(shape, device);
   ::assert_shape(value_temp, grad_temp);
   initializer.apply(value_temp);
 
@@ -144,7 +144,7 @@ void Parameter::load_inner(
   }
 
   const Shape &shape_temp = value_temp.shape();
-  Tensor grad_temp = operators::zeros<Tensor>(shape_temp, device);
+  Tensor grad_temp = functions::zeros<Tensor>(shape_temp, device);
   ::assert_shape(value_temp, grad_temp);
 
   // Loading succeeded. Move all data to `this`.
@@ -218,7 +218,7 @@ void Parameter::add_stats(const string &name, const Shape &shape) {
     THROW_ERROR("Statistics with name `" << name << "` already exists.");
   }
   stats_.emplace(
-      std::make_pair(name, operators::zeros<Tensor>(shape, *device_)));
+      std::make_pair(name, functions::zeros<Tensor>(shape, *device_)));
 }
 
 }  // namespace primitiv

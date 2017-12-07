@@ -5,8 +5,7 @@ set(primitiv_base_HDRS
   device.h
   error.h
   file_format.h
-  function.h
-  function_impl.h
+  functions.h
   graph.h
   initializer.h
   initializer_impl.h
@@ -15,7 +14,8 @@ set(primitiv_base_HDRS
   model.h
   naive_device.h
   numeric_utils.h
-  operators.h
+  operator.h
+  operator_impl.h
   optimizer.h
   optimizer_impl.h
   parameter.h
@@ -29,20 +29,20 @@ set(primitiv_base_HDRS
 )
 set(primitiv_base_SRCS
   device.cc
-  function_impl.cc
   graph.cc
   initializer_impl.cc
   memory_pool.cc
   model.cc
   naive_device.cc
-  node_ops.cc
+  node_funcs.cc
+  operator_impl.cc
   optimizer.cc
   optimizer_impl.cc
   parameter.cc
   shape.cc
   shape_ops.cc
   tensor.cc
-  tensor_ops.cc
+  tensor_funcs.cc
 )
 install(FILES ${primitiv_base_HDRS} DESTINATION include/primitiv)
 

@@ -2,21 +2,21 @@
 
 #include <algorithm>
 #include <primitiv/error.h>
-#include <primitiv/function_impl.h>
-#include <primitiv/operators.h>
+#include <primitiv/functions.h>
+#include <primitiv/operator_impl.h>
 #include <primitiv/parameter.h>
 #include <primitiv/shape_ops.h>
 
 using std::vector;
 
 namespace primitiv {
-namespace functions {
+namespace operators {
 
 #define CHECK_ARGNUM(args, n) \
   if (args.size() != n) { \
     THROW_ERROR( \
         "Number of arguments mismatched." \
-        << " function: " << name() \
+        << " operator: " << name() \
         << ", required: " << n \
         << " != actual: " << args.size()); \
   }
@@ -28,7 +28,7 @@ Input::Input(const Shape &shape, const vector<float> &data, Device &device)
   if (data_.size() != shape_.size()) {
     THROW_ERROR(
         "Data sizes mismatched."
-        << " function: Input"
+        << " operator: Input"
         << ", required: " << shape_.size() << " (" << shape_.to_string() << ")"
         << ", actual: " << data_.size());
   }
@@ -41,7 +41,7 @@ Shape Input::forward_shape(const vector<const Shape *> &args) const {
 
 Tensor Input::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 0);
-  return operators::input<Tensor>(shape_, data_, device_);
+  return functions::input<Tensor>(shape_, data_, device_);
 }
 
 void Input::backward(
@@ -73,13 +73,13 @@ Shape Copy::forward_shape(const vector<const Shape *> &args) const {
 
 Tensor Copy::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 1);
-  return operators::copy(*args[0], device_);
+  return functions::copy(*args[0], device_);
 }
 
 void Copy::backward(
     const Tensor &y, const Tensor &gy,
     const vector<const Tensor *> &x, const vector<Tensor *> &gx) const {
-  *gx[0] += operators::copy(gy, gx[0]->device());
+  *gx[0] += functions::copy(gy, gx[0]->device());
 }
 
 Shape Constant::forward_shape(const vector<const Shape *> &args) const {
@@ -89,7 +89,7 @@ Shape Constant::forward_shape(const vector<const Shape *> &args) const {
 
 Tensor Constant::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 0);
-  return operators::constant<Tensor>(shape_, k_, device_);
+  return functions::constant<Tensor>(shape_, k_, device_);
 }
 
 void Constant::backward(
@@ -185,7 +185,7 @@ Shape Pick::forward_shape(const vector<const Shape *> &args) const {
 
 Tensor Pick::forward(const vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 1);
-  return operators::pick(*args[0], ids_, dim_);
+  return functions::pick(*args[0], ids_, dim_);
 }
 
 void Pick::backward(
@@ -201,7 +201,7 @@ Shape Slice::forward_shape(const vector<const Shape *> &args) const {
 
 Tensor Slice::forward(const std::vector<const Tensor *> &args) {
   CHECK_ARGNUM(args, 1);
-  return operators::slice(*args[0], dim_, lower_, upper_);
+  return functions::slice(*args[0], dim_, lower_, upper_);
 }
 
 void Slice::backward(
@@ -215,7 +215,7 @@ Shape Concat::forward_shape(const vector<const Shape *> &args) const {
 }
 
 Tensor Concat::forward(const std::vector<const Tensor *> &args) {
-  return operators::concat(args, dim_);
+  return functions::concat(args, dim_);
 }
 
 void Concat::backward(
@@ -224,7 +224,7 @@ void Concat::backward(
   std::uint32_t offset = 0;
   for (Tensor *gxi : gx) {
     const std::uint32_t span = gxi->shape()[dim_];
-    *gxi += operators::slice(gy, dim_, offset, offset + span);
+    *gxi += functions::slice(gy, dim_, offset, offset + span);
     offset += span;
   }
 }
@@ -339,22 +339,22 @@ Shape SparseSoftmaxCrossEntropy::forward_shape(
 #define FORWARD(name) \
     Tensor name::forward(const vector<const Tensor *> &x)
 
-FORWARD(Reshape) { return operators::reshape(*x[0], shape_); }
-FORWARD(Flatten) { return operators::flatten(*x[0]); }
+FORWARD(Reshape) { return functions::reshape(*x[0], shape_); }
+FORWARD(Flatten) { return functions::flatten(*x[0]); }
 
 FORWARD(Positive) { return *x[0]; }
 FORWARD(Negative) { return -(*x[0]); }
-FORWARD(Sqrt) { return operators::sqrt(*x[0]); }
-FORWARD(Exp) { return operators::exp(*x[0]); }
-FORWARD(Log) { return operators::log(*x[0]); }
-FORWARD(Tanh) { return operators::tanh(*x[0]); }
-FORWARD(Sigmoid) { return operators::sigmoid(*x[0]); }
-FORWARD(Softplus) { return operators::softplus(*x[0]); }
-FORWARD(Sin) { return operators::sin(*x[0]); }
-FORWARD(Cos) { return operators::cos(*x[0]); }
-FORWARD(Tan) { return operators::tan(*x[0]); }
-FORWARD(ReLU) { return operators::relu(*x[0]); }
-FORWARD(LReLU) { return operators::lrelu(*x[0]); }
+FORWARD(Sqrt) { return functions::sqrt(*x[0]); }
+FORWARD(Exp) { return functions::exp(*x[0]); }
+FORWARD(Log) { return functions::log(*x[0]); }
+FORWARD(Tanh) { return functions::tanh(*x[0]); }
+FORWARD(Sigmoid) { return functions::sigmoid(*x[0]); }
+FORWARD(Softplus) { return functions::softplus(*x[0]); }
+FORWARD(Sin) { return functions::sin(*x[0]); }
+FORWARD(Cos) { return functions::cos(*x[0]); }
+FORWARD(Tan) { return functions::tan(*x[0]); }
+FORWARD(ReLU) { return functions::relu(*x[0]); }
+FORWARD(LReLU) { return functions::lrelu(*x[0]); }
 
 FORWARD(AddConst) { return *x[0] + k_; }
 FORWARD(SubtractConstR) { return *x[0] - k_; }
@@ -362,8 +362,8 @@ FORWARD(SubtractConstL) { return k_ - *x[0]; }
 FORWARD(MultiplyConst) { return *x[0] * k_; }
 FORWARD(DivideConstR) { return *x[0] / k_; }
 FORWARD(DivideConstL) { return k_ / *x[0]; }
-FORWARD(PReLU) { return operators::prelu(*x[0], k_); }
-FORWARD(ELU) { return operators::elu(*x[0], k_); }
+FORWARD(PReLU) { return functions::prelu(*x[0], k_); }
+FORWARD(ELU) { return functions::elu(*x[0], k_); }
 
 FORWARD(AddScalar) { return *x[0] + *x[1]; }
 FORWARD(SubtractScalarR) { return *x[0] - *x[1]; }
@@ -377,24 +377,24 @@ FORWARD(Subtract) { return *x[0] - *x[1]; }
 FORWARD(Multiply) { return *x[0] * *x[1]; }
 FORWARD(Divide) { return *x[0] / *x[1]; }
 
-FORWARD(Transpose) { return operators::transpose(*x[0]); }
-FORWARD(MatrixMultiply) { return operators::matmul(*x[0], *x[1]); }
+FORWARD(Transpose) { return functions::transpose(*x[0]); }
+FORWARD(MatrixMultiply) { return functions::matmul(*x[0], *x[1]); }
 
-FORWARD(Sum) { return operators::sum(*x[0], dim_); }
-FORWARD(LogSumExp) { return operators::logsumexp(*x[0], dim_); }
-FORWARD(Broadcast) { return operators::broadcast(*x[0], dim_, size_); }
+FORWARD(Sum) { return functions::sum(*x[0], dim_); }
+FORWARD(LogSumExp) { return functions::logsumexp(*x[0], dim_); }
+FORWARD(Broadcast) { return functions::broadcast(*x[0], dim_, size_); }
 
-FORWARD(BatchSum) { return operators::batch::sum(*x[0]); }
+FORWARD(BatchSum) { return functions::batch::sum(*x[0]); }
 
 FORWARD(SoftmaxCrossEntropy) {
-  return operators::softmax_cross_entropy(*x[0], *x[1], dim_);
+  return functions::softmax_cross_entropy(*x[0], *x[1], dim_);
 }
 FORWARD(SparseSoftmaxCrossEntropy) {
 #ifdef PRIMITIV_USE_CACHE
-  log_softmax_x_ = operators::log_softmax(*x[0], dim_);
-  return operators::pick(-log_softmax_x_, ids_, dim_);
+  log_softmax_x_ = functions::log_softmax(*x[0], dim_);
+  return functions::pick(-log_softmax_x_, ids_, dim_);
 #else
-  return operators::softmax_cross_entropy(*x[0], ids_, dim_);
+  return functions::softmax_cross_entropy(*x[0], ids_, dim_);
 #endif  // PRIMITIV_USE_CACHE
 }
 
@@ -437,29 +437,29 @@ BACKWARD(ELU) { gy.device().elu_bw(*x[0], y, gy, k_, *gx[0]); }
 
 BACKWARD(AddScalar) {
   *gx[0] += gy;
-  *gx[1] += operators::sum(gy.flatten(), 0);
+  *gx[1] += functions::sum(gy.flatten(), 0);
 }
 BACKWARD(SubtractScalarR) {
   *gx[0] += gy;
-  *gx[1] -= operators::sum(gy.flatten(), 0);
+  *gx[1] -= functions::sum(gy.flatten(), 0);
 }
 BACKWARD(SubtractScalarL) {
   *gx[0] -= gy;
-  *gx[1] += operators::sum(gy.flatten(), 0);
+  *gx[1] += functions::sum(gy.flatten(), 0);
 }
 BACKWARD(MultiplyScalar) {
   *gx[0] += *x[1] * gy;
-  *gx[1] += operators::sum((*x[0] * gy).flatten(), 0);
+  *gx[1] += functions::sum((*x[0] * gy).flatten(), 0);
 }
 BACKWARD(DivideScalarR) {
   const Tensor a = gy / *x[1];
   *gx[0] += a;
-  *gx[1] -= operators::sum((a * y).flatten(), 0);
+  *gx[1] -= functions::sum((a * y).flatten(), 0);
 }
 BACKWARD(DivideScalarL) {
   const Tensor a = gy / *x[0];
   *gx[0] -= a * y;
-  *gx[1] += operators::sum(a.flatten(), 0);
+  *gx[1] += functions::sum(a.flatten(), 0);
 }
 
 BACKWARD(Add) { gy.device().add_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
@@ -468,21 +468,22 @@ BACKWARD(Multiply) { gy.device().multiply_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]
 BACKWARD(Divide) { gy.device().divide_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
 BACKWARD(MatrixMultiply) { gy.device().matmul_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
 
-BACKWARD(Sum) { *gx[0] += operators::broadcast(gy, dim_, x[0]->shape()[dim_]); }
+BACKWARD(Sum) { *gx[0] += functions::broadcast(gy, dim_, x[0]->shape()[dim_]); }
 BACKWARD(LogSumExp) {
   // NOTE(odashi): dy/dx = softmax(x) = exp(x - y)
   const std::uint32_t n = x[0]->shape()[dim_];
-  *gx[0] +=
-    operators::exp(*x[0] - operators::broadcast(y, dim_, n)) * operators::broadcast(gy, dim_, n);
+  *gx[0]
+    += functions::exp(*x[0] - functions::broadcast(y, dim_, n))
+    * functions::broadcast(gy, dim_, n);
 }
-BACKWARD(Broadcast) { *gx[0] += operators::sum(gy, dim_); }
+BACKWARD(Broadcast) { *gx[0] += functions::sum(gy, dim_); }
 
 BACKWARD(BatchSum) { *gx[0] += gy; }
 
 BACKWARD(SoftmaxCrossEntropy) {
-  const Tensor log_softmax_x = operators::log_softmax(*x[0], dim_);
-  const Tensor bcast_gy = operators::broadcast(gy, dim_, x[0]->shape()[dim_]);
-  *gx[0] += (operators::exp(log_softmax_x) - *x[1]) * bcast_gy;
+  const Tensor log_softmax_x = functions::log_softmax(*x[0], dim_);
+  const Tensor bcast_gy = functions::broadcast(gy, dim_, x[0]->shape()[dim_]);
+  *gx[0] += (functions::exp(log_softmax_x) - *x[1]) * bcast_gy;
   *gx[1] -= log_softmax_x * bcast_gy;
 }
 
@@ -490,16 +491,18 @@ BACKWARD(SparseSoftmaxCrossEntropy) {
   // dE/dx = gy * (softmax(x) - delta(x, i))
   //       = gy * softmax(x) - gy * delta(x, i)
 #ifdef PRIMITIV_USE_CACHE
-  *gx[0] +=
-    operators::exp(log_softmax_x_) * operators::broadcast(gy, dim_, x[0]->shape()[dim_]);
+  *gx[0]
+    += functions::exp(log_softmax_x_)
+    * functions::broadcast(gy, dim_, x[0]->shape()[dim_]);
 #else
-  *gx[0] +=
-    operators::softmax(*x[0], dim_) * operators::broadcast(gy, dim_, x[0]->shape()[dim_]);
+  *gx[0]
+    += functions::softmax(*x[0], dim_)
+    * functions::broadcast(gy, dim_, x[0]->shape()[dim_]);
 #endif  // PRIMITIV_USE_CACHE
   gy.device().pick_bw(-gy, ids_, dim_, *gx[0]);
 }
 
 #undef BACKWARD
 
-}  // namespace functions
+}  // namespace operators
 }  // namespace primitive

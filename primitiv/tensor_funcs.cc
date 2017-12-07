@@ -1,7 +1,7 @@
 #include <config.h>
 
 #include <primitiv/device.h>
-#include <primitiv/operators.h>
+#include <primitiv/functions.h>
 #include <primitiv/parameter.h>
 
 namespace {
@@ -98,7 +98,7 @@ Tensor operator/(const Tensor &a, const Tensor &b) {
   else return a.device().divide_fw(a, b);
 }
 
-namespace operators {
+namespace functions {
 
 template<>
 Tensor input<Tensor>(
@@ -305,6 +305,6 @@ Tensor log_normal<Tensor>(
 
 }  // namespace random
 
-}  // namespace operators
+}  // namespace functions
 
 }  // namespace primitiv

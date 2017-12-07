@@ -1,5 +1,5 @@
-#ifndef PRIMITIV_FUNCTION_H_
-#define PRIMITIV_FUNCTION_H_
+#ifndef PRIMITIV_OPERATOR_H_
+#define PRIMITIV_OPERATOR_H_
 
 #include <string>
 #include <vector>
@@ -12,12 +12,12 @@ namespace primitiv {
 class Device;
 
 /**
- * Interface of the function on the computation graph.
+ * Interface of the operator on the computation graph.
  */
-class Function : mixins::Nonmovable<Function> {
+class Operator : mixins::Nonmovable<Operator> {
 public:
-  Function() = default;
-  virtual ~Function() = default;
+  Operator() = default;
+  virtual ~Operator() = default;
 
   /**
    * Calculates only the resulting shape.
@@ -35,11 +35,11 @@ public:
   virtual Device *get_device() const { return nullptr; }
 
   /**
-   * Returns the pre-calculated return value of the function if they have it.
+   * Returns the pre-calculated return value of the Operator if they have it.
    * @return A pointer of the Tensor which represents the return value, or
-   *         nullptr if the function does not have such data.
+   *         nullptr if the Operator does not have such data.
    * @remarks If this function returns nullptr, the return values of the
-   *          function could be obtained through forward().
+   *          Operator could be obtained through forward().
    */
   virtual const Tensor *get_inner_value() const { return nullptr; }
 
@@ -47,7 +47,7 @@ public:
    * Calculates the forward path.
    * @param args argument tensors.
    * @return Resulting tensors.
-   * @remarks This function is not const-qualified because some function
+   * @remarks This function is not const-qualified because some Operator
    *          implementations may hold the cache of intermediate results.
    */
   virtual Tensor forward(const std::vector<const Tensor *> &args) = 0;
@@ -67,12 +67,12 @@ public:
       const std::vector<Tensor *> &arg_grads) const = 0;
 
   /**
-   * Returns the name of the function.
-   * @return Name of the function.
+   * Returns the name of the Operator.
+   * @return Name of the Operator.
    */
   virtual std::string name() const = 0;
 };
 
 }  // namespace primitiv
 
-#endif  // PRIMITIV_FUNCTION_H_
+#endif  // PRIMITIV_OPERATOR_H_
