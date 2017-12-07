@@ -336,6 +336,12 @@ Shape SparseSoftmaxCrossEntropy::forward_shape(
   return shape_ops::pick(*args[0], ids_, dim_);
 }
 
+Shape StopGradient::forward_shape(
+    const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 1);
+  return *args[0];
+}
+
 #define FORWARD(name) \
     Tensor name::forward(const vector<const Tensor *> &x)
 
@@ -397,6 +403,8 @@ FORWARD(SparseSoftmaxCrossEntropy) {
   return functions::softmax_cross_entropy(*x[0], ids_, dim_);
 #endif  // PRIMITIV_USE_CACHE
 }
+
+FORWARD(StopGradient) { return *x[0]; }
 
 #undef FORWARD
 
@@ -501,6 +509,8 @@ BACKWARD(SparseSoftmaxCrossEntropy) {
 #endif  // PRIMITIV_USE_CACHE
   gy.device().pick_bw(-gy, ids_, dim_, *gx[0]);
 }
+
+BACKWARD(StopGradient) {}
 
 #undef BACKWARD
 

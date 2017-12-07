@@ -268,6 +268,13 @@ private:
   Tensor log_softmax_x_;  // Only used when PRIMITIV_USE_CACHE=ON
 };
 
+class StopGradient : public Operator {
+  DEFAULT_CLASS_DECL(StopGradient);
+public:
+  StopGradient() {}
+  std::string name() const override { return "StopGradient"; }
+};
+
 // Operator with no parameter.
 #define DECL_OPERATOR(name_) \
   class name_ : public Operator { \
