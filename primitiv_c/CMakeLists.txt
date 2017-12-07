@@ -13,6 +13,7 @@ set(primitiv_c_HDRS
   optimizer_impl.h
   parameter.h
   shape.h
+  status.h
   tensor.h
 )
 set(primitiv_c_SRCS
@@ -27,6 +28,7 @@ set(primitiv_c_SRCS
   optimizer_impl.cc
   parameter.cc
   shape.cc
+  status.cc
   tensor.cc)
 install(FILES ${primitiv_c_HDRS} DESTINATION include/primitiv_c)
 

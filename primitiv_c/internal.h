@@ -1,7 +1,10 @@
 #ifndef PRIMITIV_C_INTERNAL_H_
 #define PRIMITIV_C_INTERNAL_H_
 
+#include "primitiv_c/status.h"
+
 #include <primitiv/device.h>
+#include <primitiv/error.h>
 #include <primitiv/graph.h>
 #include <primitiv/initializer.h>
 #include <primitiv/model.h>
@@ -31,6 +34,10 @@ inline c_name *to_c_from_value(primitiv::cc_name &instance) { \
 inline const c_name *to_c_from_value(const primitiv::cc_name &instance) { \
   return reinterpret_cast<const c_name*>(new primitiv::cc_name(instance)); \
 }
+
+namespace primitiv {
+  void set_status(primitiv_Status *status, primitiv_Code code, const Error &error);
+}  // namespace primitiv
 
 struct primitiv_Device;
 
