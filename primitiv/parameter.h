@@ -4,7 +4,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/mixins.h>
 #include <primitiv/msgpack/reader.h>
@@ -14,6 +13,7 @@
 
 namespace primitiv {
 
+class Device;
 class Initializer;
 
 /**
@@ -52,9 +52,27 @@ public:
    * @param device The device object to manage internal memory.
    */
   Parameter(
-      const Shape &shape,
-      const std::vector<float> &value,
-      Device &device = Device::get_default());
+      const Shape &shape, const std::vector<float> &value, Device *device);
+
+  /**
+   * Creates a new Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param value List of initial values. Order of elements should be the
+   *              column-major (Fortran) order.
+   * @param device The device object to manage internal memory.
+   */
+  Parameter(
+      const Shape &shape, const std::vector<float> &value, Device &device)
+    : Parameter(shape, value, &device) {}
+
+  /**
+   * Creates a new Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param value List of initial values. Order of elements should be the
+   *              column-major (Fortran) order.
+   */
+  Parameter(const Shape &shape, const std::vector<float> &value)
+    : Parameter(shape, value, nullptr) {}
 
   /**
    * Creates a new Parameter object.
@@ -63,9 +81,25 @@ public:
    * @param device The device object to manage internal memory.
    */
   Parameter(
-      const Shape &shape,
-      const Initializer &initializer,
-      Device &device = Device::get_default());
+      const Shape &shape, const Initializer &initializer, Device *device);
+
+  /**
+   * Creates a new Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param init An Initializer object.
+   * @param device The device object to manage internal memory.
+   */
+  Parameter(
+      const Shape &shape, const Initializer &initializer, Device &device)
+    : Parameter(shape, initializer, &device) {}
+
+  /**
+   * Creates a new Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param init An Initializer object.
+   */
+  Parameter(const Shape &shape, const Initializer &initializer)
+    : Parameter(shape, initializer, nullptr) {}
 
   /**
    * Initializes the Parameter object.
@@ -75,9 +109,29 @@ public:
    * @param device The device object to manage internal memory.
    */
   void init(
-      const Shape &shape,
-      const std::vector<float> &value,
-      Device &device = Device::get_default());
+      const Shape &shape, const std::vector<float> &value, Device *device);
+
+  /**
+   * Initializes the Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param value List of initial values. Order of elements should be the
+   *              column-major (Fortran) order.
+   * @param device The device object to manage internal memory.
+   */
+  void init(
+      const Shape &shape, const std::vector<float> &value, Device &device) {
+    init(shape, value, &device);
+  }
+
+  /**
+   * Initializes the Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param value List of initial values. Order of elements should be the
+   *              column-major (Fortran) order.
+   */
+  void init(const Shape &shape, const std::vector<float> &value) {
+    init(shape, value, nullptr);
+  }
 
   /**
    * Initializes the Parameter object.
@@ -86,9 +140,28 @@ public:
    * @param device The device object to manage internal memory.
    */
   void init(
-      const Shape &shape,
-      const Initializer &initializer,
-      Device &device = Device::get_default());
+      const Shape &shape, const Initializer &initializer, Device *device);
+
+  /**
+   * Initializes the Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param init An Initializer object.
+   * @param device The device object to manage internal memory.
+   */
+  void init(
+      const Shape &shape, const Initializer &initializer, Device &device) {
+    init(shape, initializer, &device);
+  }
+
+  /**
+   * Initializes the Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param init An Initializer object.
+   */
+  void init(
+      const Shape &shape, const Initializer &initializer) {
+    init(shape, initializer, nullptr);
+  }
 
   /**
    * Loads parameters from specified file.
@@ -97,10 +170,36 @@ public:
    *                   as parameter values if the file has them.
    * @param device The device object to manage internal memory.
    */
-  void load(
-      const std::string &path,
-      bool with_stats = true,
-      Device &device = Device::get_default());
+  void load(const std::string &path, bool with_stats, Device *device);
+
+  /**
+   * Loads parameters from specified file.
+   * @param path File path to load parameters.
+   * @param with_stats Whether or not to load all additional statistics as well
+   *                   as parameter values if the file has them.
+   * @param device The device object to manage internal memory.
+   */
+  void load(const std::string &path, bool with_stats, Device &device) {
+    load(path, with_stats, &device);
+  }
+
+  /**
+   * Loads parameters from specified file.
+   * @param path File path to load parameters.
+   * @param with_stats Whether or not to load all additional statistics as well
+   *                   as parameter values if the file has them.
+   */
+  void load(const std::string &path, bool with_stats) {
+    load(path, with_stats, nullptr);
+  }
+
+  /**
+   * Loads parameters from specified file.
+   * @param path File path to load parameters.
+   */
+  void load(const std::string &path) {
+    load(path, true, nullptr);
+  }
 
   /**
    * Saves current parameters into specified file.
@@ -108,7 +207,15 @@ public:
    * @param with_stats Whether or not to save all additional statistics as well
    *                   as parameter values if the parameter object has them.
    */
-  void save(const std::string &path, bool with_stats = true) const;
+  void save(const std::string &path, bool with_stats) const;
+
+  /**
+   * Saves current parameters into specified file.
+   * @param path File path to save parameters.
+   */
+  void save(const std::string &path) const {
+    save(path, true);
+  }
 
   /**
    * Returns whether the parameter is valid or not.

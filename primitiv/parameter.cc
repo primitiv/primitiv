@@ -1,6 +1,7 @@
 #include <config.h>
 
 #include <fstream>
+#include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/file_format.h>
 #include <primitiv/functions.h>
@@ -12,6 +13,11 @@ using std::vector;
 
 namespace {
 
+// Obtains reference of the Device object.
+primitiv::Device &get_device(primitiv::Device *device) {
+  return device ? *device : primitiv::Device::get_default();
+}
+
 // Reads Shape data.
 primitiv::Shape read_shape(primitiv::msgpack::Reader &reader) {
   std::vector<std::uint32_t> dims;
@@ -21,7 +27,8 @@ primitiv::Shape read_shape(primitiv::msgpack::Reader &reader) {
 }
 
 // Reads Tensor data.
-primitiv::Tensor read_tensor(primitiv::msgpack::Reader &reader, primitiv::Device &device) {
+primitiv::Tensor read_tensor(
+    primitiv::msgpack::Reader &reader, primitiv::Device &device) {
   primitiv::Shape shape = ::read_shape(reader);
   primitiv::msgpack::objects::Binary data;
   reader >> data;
@@ -31,20 +38,24 @@ primitiv::Tensor read_tensor(primitiv::msgpack::Reader &reader, primitiv::Device
         "shape.size() * sizeof(float): " << (shape.size() * sizeof(float))
         << " != data.size(): " << data.size());
   }
-  return device.new_tensor_by_array(shape, reinterpret_cast<const float *>(data.data()));
+  return device.new_tensor_by_array(
+      shape, reinterpret_cast<const float *>(data.data()));
 }
 
 // Writes Shape data.
-void write_shape(const primitiv::Shape &src, primitiv::msgpack::Writer &writer) {
+void write_shape(
+    const primitiv::Shape &src, primitiv::msgpack::Writer &writer) {
   writer << src.dims() << src.batch();
 }
 
 // Writes Tensor data.
-void write_tensor(const primitiv::Tensor &src, primitiv::msgpack::Writer &writer) {
+void write_tensor(
+    const primitiv::Tensor &src, primitiv::msgpack::Writer &writer) {
   const primitiv::Shape &shape = src.shape();
   const std::vector<float> raw_data = src.to_vector();
   primitiv::msgpack::objects::Binary data(
-      shape.size() * sizeof(float), reinterpret_cast<const char *>(raw_data.data()));
+      shape.size() * sizeof(float),
+      reinterpret_cast<const char *>(raw_data.data()));
   ::write_shape(shape, writer);
   writer << data;
 }
@@ -71,56 +82,52 @@ void assert_shape(
 namespace primitiv {
 
 Parameter::Parameter(
-    const Shape &shape,
-    const vector<float> & value,
-    Device &device)
+    const Shape &shape, const vector<float> & value, Device *device)
 : shape_(shape)
-, device_(&device)
-, value_(functions::input<Tensor>(shape, value, device))
-, grad_(functions::zeros<Tensor>(shape, device)) {
+, device_(&::get_device(device))
+, value_(functions::input<Tensor>(shape, value, device_))
+, grad_(functions::zeros<Tensor>(shape, device_)) {
   ::assert_shape(value_, grad_);
 }
 
 Parameter::Parameter(
-    const Shape &shape,
-    const Initializer &initializer,
-    Device &device)
+    const Shape &shape, const Initializer &initializer, Device *device)
 : shape_(shape)
-, device_(&device)
-, value_(functions::zeros<Tensor>(shape, device))
-, grad_(functions::zeros<Tensor>(shape, device)) {
+, device_(&::get_device(device))
+, value_(functions::zeros<Tensor>(shape, device_))
+, grad_(functions::zeros<Tensor>(shape, device_)) {
   ::assert_shape(value_, grad_);
   initializer.apply(value_);
 }
 
 void Parameter::init(
-    const Shape &shape,
-    const std::vector<float> &value,
-    Device &device) {
-  Tensor value_temp = functions::input<Tensor>(shape, value, device);
-  Tensor grad_temp = functions::zeros<Tensor>(shape, device);
+    const Shape &shape, const std::vector<float> &value, Device *device) {
+  Device &device_temp = ::get_device(device);
+
+  Tensor value_temp = functions::input<Tensor>(shape, value, device_temp);
+  Tensor grad_temp = functions::zeros<Tensor>(shape, device_temp);
   ::assert_shape(value_temp, grad_temp);
 
   // Initialization succeeded. Move all objects to `this`.
   shape_ = shape;
-  device_ = &device;
+  device_ = &device_temp;
   value_ = std::move(value_temp);
   grad_ = std::move(grad_temp);
   stats_.clear();
 }
 
 void Parameter::init(
-    const Shape &shape,
-    const Initializer &initializer,
-    Device &device) {
-  Tensor value_temp = functions::zeros<Tensor>(shape, device);
-  Tensor grad_temp = functions::zeros<Tensor>(shape, device);
+    const Shape &shape, const Initializer &initializer, Device *device) {
+  Device &device_temp = ::get_device(device);
+
+  Tensor value_temp = functions::zeros<Tensor>(shape, device_temp);
+  Tensor grad_temp = functions::zeros<Tensor>(shape, device_temp);
   ::assert_shape(value_temp, grad_temp);
   initializer.apply(value_temp);
 
   // Initialization succeeded. Move all objects to `this`.
   shape_ = shape;
-  device_ = &device;
+  device_ = &device_temp;
   value_ = std::move(value_temp);
   grad_ = std::move(grad_temp);
   stats_.clear();
@@ -173,7 +180,7 @@ void Parameter::save_inner(msgpack::Writer &writer, bool with_stats) const {
   }
 }
 
-void Parameter::load(const string &path, bool with_stats, Device &device) {
+void Parameter::load(const string &path, bool with_stats, Device *device) {
   std::ifstream ifs(path);
   if (!ifs.is_open()) {
     THROW_ERROR("Could not open file: " << path);
@@ -188,7 +195,7 @@ void Parameter::load(const string &path, bool with_stats, Device &device) {
   reader >> datatype;
   FileFormat::assert_datatype(FileFormat::DataType::PARAMETER, datatype);
 
-  load_inner(reader, with_stats, device);
+  load_inner(reader, with_stats, ::get_device(device));
 }
 
 void Parameter::save(const string &path, bool with_stats) const  {
@@ -218,7 +225,7 @@ void Parameter::add_stats(const string &name, const Shape &shape) {
     THROW_ERROR("Statistics with name `" << name << "` already exists.");
   }
   stats_.emplace(
-      std::make_pair(name, functions::zeros<Tensor>(shape, *device_)));
+      std::make_pair(name, functions::zeros<Tensor>(shape, device_)));
 }
 
 }  // namespace primitiv

@@ -5,6 +5,7 @@
 
 #include <vector>
 
+#include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/functions.h>
 #include <primitiv/graph.h>
