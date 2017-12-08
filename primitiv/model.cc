@@ -10,15 +10,6 @@
 #include <primitiv/parameter.h>
 #include <primitiv/string_utils.h>
 
-namespace {
-
-// Helper to obtain a Device object from a pointer.
-primitiv::Device &get_device(primitiv::Device *device) {
-  return device ? *device : primitiv::Device::get_default();
-}
-
-}  // namespace
-
 namespace primitiv {
 
 void Model::load(const std::string &path, bool with_stats, Device *device) {
@@ -49,7 +40,8 @@ void Model::load(const std::string &path, bool with_stats, Device *device) {
           "Model does not have a parameter with name: '"
           << string_utils::join(key, ".") << "'");
     }
-    it->second->load_inner(reader, with_stats, ::get_device(device));
+    it->second->load_inner(
+        reader, with_stats, Device::get_reference_or_default(device));
   }
 }
 

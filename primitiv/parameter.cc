@@ -13,11 +13,6 @@ using std::vector;
 
 namespace {
 
-// Obtains reference of the Device object.
-primitiv::Device &get_device(primitiv::Device *device) {
-  return device ? *device : primitiv::Device::get_default();
-}
-
 // Reads Shape data.
 primitiv::Shape read_shape(primitiv::msgpack::Reader &reader) {
   std::vector<std::uint32_t> dims;
@@ -84,7 +79,7 @@ namespace primitiv {
 Parameter::Parameter(
     const Shape &shape, const vector<float> & value, Device *device)
 : shape_(shape)
-, device_(&::get_device(device))
+, device_(&Device::get_reference_or_default(device))
 , value_(functions::input<Tensor>(shape, value, device_))
 , grad_(functions::zeros<Tensor>(shape, device_)) {
   ::assert_shape(value_, grad_);
@@ -93,7 +88,7 @@ Parameter::Parameter(
 Parameter::Parameter(
     const Shape &shape, const Initializer &initializer, Device *device)
 : shape_(shape)
-, device_(&::get_device(device))
+, device_(&Device::get_reference_or_default(device))
 , value_(functions::zeros<Tensor>(shape, device_))
 , grad_(functions::zeros<Tensor>(shape, device_)) {
   ::assert_shape(value_, grad_);
@@ -102,7 +97,7 @@ Parameter::Parameter(
 
 void Parameter::init(
     const Shape &shape, const std::vector<float> &value, Device *device) {
-  Device &device_temp = ::get_device(device);
+  Device &device_temp = Device::get_reference_or_default(device);
 
   Tensor value_temp = functions::input<Tensor>(shape, value, device_temp);
   Tensor grad_temp = functions::zeros<Tensor>(shape, device_temp);
@@ -118,7 +113,7 @@ void Parameter::init(
 
 void Parameter::init(
     const Shape &shape, const Initializer &initializer, Device *device) {
-  Device &device_temp = ::get_device(device);
+  Device &device_temp = Device::get_reference_or_default(device);
 
   Tensor value_temp = functions::zeros<Tensor>(shape, device_temp);
   Tensor grad_temp = functions::zeros<Tensor>(shape, device_temp);
@@ -195,7 +190,7 @@ void Parameter::load(const string &path, bool with_stats, Device *device) {
   reader >> datatype;
   FileFormat::assert_datatype(FileFormat::DataType::PARAMETER, datatype);
 
-  load_inner(reader, with_stats, ::get_device(device));
+  load_inner(reader, with_stats, Device::get_reference_or_default(device));
 }
 
 void Parameter::save(const string &path, bool with_stats) const  {

@@ -129,6 +129,19 @@ public:
   static void set_default(T &obj) {
     default_obj_ = &obj;
   }
+
+  /**
+   * Obtains the reference of the object pointed by a pointer, or obtains the
+   * default object.
+   * @param ptr Pointer of an object, or `nullptr`.
+   * @return Reference of the object pointed by `ptr`,
+   *         or reference of the default object if `ptr` is `nullptr`.
+   * @throw primitiv::Error `nullptr` is given by `ptr` although the default
+   *                        object is also null.
+   */
+  static T &get_reference_or_default(T *ptr) {
+    return ptr ? *ptr : get_default();
+  }
 };
 
 template<typename T>
