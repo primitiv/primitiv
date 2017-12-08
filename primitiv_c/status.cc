@@ -1,6 +1,8 @@
 #include "primitiv_c/internal.h"
 #include "primitiv_c/status.h"
 
+#include <sstream>
+
 #include <primitiv/error.h>
 
 using primitiv::Error;
@@ -30,7 +32,9 @@ primitiv_Status *primitiv_Status_new() {
 }
 
 void primitiv_Status_delete(primitiv_Status *status) {
-  delete status->error;
+  if (status->error) {
+    delete status->error;
+  }
   delete status;
 }
 
@@ -47,7 +51,10 @@ const char *primitiv_Status_get_message(const primitiv_Status *status) {
   if (status->error) {
     return status->error->what();
   } else {
-    return "Not Set: initial status.";
+    std::stringstream ss;
+    ss << "Status has no error: initial status(" << status->code << ").";
+    static const char *message = ss.str().c_str();
+    return message;
   }
 }
 
