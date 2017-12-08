@@ -27,7 +27,7 @@ protected:
 TEST_F(MemoryPoolTest_CUDA, CheckNew) {
   {
     MemoryPool pool(allocator, deleter);
-    EXPECT_EQ(0, pool.id());
+    EXPECT_EQ(0u, pool.id());
   }  // pool is destroyed at the end of scope.
   SUCCEED();
 }
