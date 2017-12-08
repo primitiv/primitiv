@@ -36,9 +36,7 @@ primitiv_Status *primitiv_Status_new() {
 }
 
 void primitiv_Status_delete(primitiv_Status *status) {
-  if (status->error) {
-    delete status->error;
-  }
+  delete status->error;
   delete status;
 }
 

@@ -255,17 +255,6 @@ primitiv_Tensor *safe_primitiv_tensor_func_divide_tensor_tensor(
   SAFE_RETURN(primitiv_tensor_func_divide_tensor_tensor(a, b), status, nullptr);
 }
 
-primitiv_Node *primitiv_node_func_mean(const primitiv_Node *x, uint32_t dim) {
-  Node y = primitiv::functions::mean<Node>(*to_cc(x), dim);
-  return to_c_from_value(y);
-}
-
-primitiv_Tensor *primitiv_tensor_func_mean(const primitiv_Tensor *x,
-                                           uint32_t dim) {
-  Tensor y = primitiv::functions::mean<Tensor>(*to_cc(x), dim);
-  return to_c_from_value(y);
-}
-
 primitiv_Node *primitiv_node_func_input(
     const primitiv_Shape *shape,
     const float *data,
@@ -403,35 +392,70 @@ primitiv_Tensor *safe_primitiv_tensor_func_slice(const primitiv_Tensor *x,
 }
 
 primitiv_Node *primitiv_node_func_tanh(const primitiv_Node *x) {
-  Node y = primitiv::functions::tanh<Node>(*to_cc(x));
-  return to_c_from_value(y);
+  return to_c_from_value(primitiv::functions::tanh(*to_cc(x)));
 }
-
+primitiv_Node *safe_primitiv_node_func_tanh(const primitiv_Node *x,
+                                            primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_tanh(x), status, nullptr);
+}
 primitiv_Tensor *primitiv_tensor_func_tanh(const primitiv_Tensor *x) {
-  Tensor y = primitiv::functions::tanh<Tensor>(*to_cc(x));
-  return to_c_from_value(y);
+  return to_c_from_value(primitiv::functions::tanh(*to_cc(x)));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_tanh(const primitiv_Tensor *x,
+                                                primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_tanh(x), status, nullptr);
 }
 
 primitiv_Node *primitiv_node_func_matmul(const primitiv_Node *a,
                                          const primitiv_Node *b) {
-  Node y = primitiv::functions::matmul<Node>(*to_cc(a), *to_cc(b));
-  return to_c_from_value(y);
+  return to_c_from_value(primitiv::functions::matmul(*to_cc(a), *to_cc(b)));
 }
-
+primitiv_Node *safe_primitiv_node_func_matmul(const primitiv_Node *a,
+                                              const primitiv_Node *b,
+                                              primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_matmul(a, b), status, nullptr);
+}
 primitiv_Tensor *primitiv_tensor_func_matmul(const primitiv_Tensor *a,
                                              const primitiv_Tensor *b) {
-  Tensor y = primitiv::functions::matmul<Tensor>(*to_cc(a), *to_cc(b));
-  return to_c_from_value(y);
+  return to_c_from_value(primitiv::functions::matmul(*to_cc(a), *to_cc(b)));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_matmul(const primitiv_Tensor *a,
+                                                  const primitiv_Tensor *b,
+                                                  primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_matmul(a, b), status, nullptr);
 }
 
 primitiv_Node *primitiv_node_func_batch_mean(const primitiv_Node *x) {
-  Node y = primitiv::functions::batch::mean<Node>(*to_cc(x));
-  return to_c_from_value(y);
+  return to_c_from_value(primitiv::functions::batch::mean(*to_cc(x)));
+}
+primitiv_Node *safe_primitiv_node_func_batch_mean(const primitiv_Node *x,
+                                                  primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_batch_mean(x), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_batch_mean(const primitiv_Tensor *x) {
+  return to_c_from_value(primitiv::functions::batch::mean(*to_cc(x)));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_batch_mean(const primitiv_Tensor *x,
+                                                      primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_batch_mean(x), status, nullptr);
 }
 
-primitiv_Tensor *primitiv_tensor_func_batch_mean(const primitiv_Tensor *x) {
-  Tensor y = primitiv::functions::batch::mean<Tensor>(*to_cc(x));
-  return to_c_from_value(y);
+primitiv_Node *primitiv_node_func_mean(const primitiv_Node *x, uint32_t dim) {
+  return to_c_from_value(primitiv::functions::mean(*to_cc(x), dim));
+}
+primitiv_Node *safe_primitiv_node_func_mean(const primitiv_Node *x,
+                                            uint32_t dim,
+                                            primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_mean(x, dim), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_mean(const primitiv_Tensor *x,
+                                           uint32_t dim) {
+  return to_c_from_value(primitiv::functions::mean(*to_cc(x), dim));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_mean(const primitiv_Tensor *x,
+                                                uint32_t dim,
+                                                primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_mean(x, dim), status, nullptr);
 }
 
 }  // end extern "C"

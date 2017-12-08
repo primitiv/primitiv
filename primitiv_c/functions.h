@@ -139,12 +139,6 @@ CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_divide_tensor_tensor(
     const primitiv_Tensor *b,
     primitiv_Status *status);
 
-CAPI extern primitiv_Node *primitiv_node_func_mean(const primitiv_Node *x,
-                                                   uint32_t dim);
-
-CAPI extern primitiv_Tensor *primitiv_tensor_func_mean(const primitiv_Tensor *x,
-                                                       uint32_t dim);
-
 CAPI extern primitiv_Node *primitiv_node_func_input(
     const primitiv_Shape *shape,
     const float *data,
@@ -232,21 +226,41 @@ CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_slice(
     primitiv_Status *status);
 
 CAPI extern primitiv_Node *primitiv_node_func_tanh(const primitiv_Node *x);
-
+CAPI extern primitiv_Node *safe_primitiv_node_func_tanh(
+    const primitiv_Node *x, primitiv_Status *status);
 CAPI extern primitiv_Tensor *primitiv_tensor_func_tanh(
     const primitiv_Tensor *x);
+CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_tanh(
+    const primitiv_Tensor *x, primitiv_Status *status);
 
 CAPI extern primitiv_Node *primitiv_node_func_matmul(const primitiv_Node *a,
                                                      const primitiv_Node *b);
-
+CAPI extern primitiv_Node *safe_primitiv_node_func_matmul(
+    const primitiv_Node *a, const primitiv_Node *b, primitiv_Status *status);
 CAPI extern primitiv_Tensor *primitiv_tensor_func_matmul(
     const primitiv_Tensor *a, const primitiv_Tensor *b);
+CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_matmul(
+    const primitiv_Tensor *a,
+    const primitiv_Tensor *b,
+    primitiv_Status *status);
 
 CAPI extern primitiv_Node *primitiv_node_func_batch_mean(
     const primitiv_Node *x);
-
+CAPI extern primitiv_Node *safe_primitiv_node_func_batch_mean(
+    const primitiv_Node *x, primitiv_Status *status);
 CAPI extern primitiv_Tensor *primitiv_tensor_func_batch_mean(
     const primitiv_Tensor *x);
+CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_batch_mean(
+    const primitiv_Tensor *x, primitiv_Status *status);
+
+CAPI extern primitiv_Node *primitiv_node_func_mean(const primitiv_Node *x,
+                                                   uint32_t dim);
+CAPI extern primitiv_Node *safe_primitiv_node_func_mean(
+    const primitiv_Node *x, uint32_t dim, primitiv_Status *status);
+CAPI extern primitiv_Tensor *primitiv_tensor_func_mean(const primitiv_Tensor *x,
+                                                       uint32_t dim);
+CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_mean(
+    const primitiv_Tensor *x, uint32_t dim, primitiv_Status *status);
 
 #ifdef __cplusplus
 }  // end extern "C"
