@@ -32,5 +32,6 @@ typedef _Bool bool;
 #define PRIMITIV_CAPI_EXPORT __attribute__((visibility("default")))
 #endif  // COMPILER_MSVC
 #endif  // SWIG
+#define CAPI PRIMITIV_CAPI_EXPORT
 
 #endif  // PRIMITIV_C_DEFINE_H_

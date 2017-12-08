@@ -20,21 +20,24 @@ primitiv_Device *safe_primitiv_Naive_new(primitiv_Status *status) {
 primitiv_Device *primitiv_Naive_new_with_seed(uint32_t seed) {
   return to_c(new Naive(seed));
 }
-primitiv_Device *safe_primitiv_Naive_new_with_seed(uint32_t seed, primitiv_Status *status) {
+primitiv_Device *safe_primitiv_Naive_new_with_seed(uint32_t seed,
+                                                   primitiv_Status *status) {
   SAFE_RETURN(primitiv_Naive_new_with_seed(seed), status, nullptr);
 }
 
 void primitiv_Naive_delete(primitiv_Device *device) {
   delete CAST_TO_CC_NAIVE(device);
 }
-void safe_primitiv_Naive_delete(primitiv_Device *device, primitiv_Status *status) {
+void safe_primitiv_Naive_delete(primitiv_Device *device,
+                                primitiv_Status *status) {
   SAFE_EXPR(primitiv_Naive_delete(device), status);
 }
 
 void primitiv_Naive_dump_description(const primitiv_Device *device) {
   CAST_TO_CONST_CC_NAIVE(device)->dump_description();
 }
-void safe_primitiv_Naive_dump_description(const primitiv_Device *device, primitiv_Status *status) {
+void safe_primitiv_Naive_dump_description(const primitiv_Device *device,
+                                          primitiv_Status *status) {
   SAFE_EXPR(primitiv_Naive_dump_description(device), status);
 }
 

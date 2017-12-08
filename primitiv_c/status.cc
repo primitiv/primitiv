@@ -18,7 +18,9 @@ struct primitiv_Status {
 
 namespace primitiv {
 
-void set_status(primitiv_Status *status, primitiv_Code code, const Error &error) {
+void set_status(primitiv_Status *status,
+                primitiv_Code code,
+                const Error &error) {
   status->code = code;
   status->error = new Error(error);
 }
@@ -38,7 +40,11 @@ void primitiv_Status_delete(primitiv_Status *status) {
   delete status;
 }
 
-void primitiv_Status_set_status(primitiv_Status *status, primitiv_Code code, const char *file, uint32_t line, const char *message) {
+void primitiv_Status_set_status(primitiv_Status *status,
+                                primitiv_Code code,
+                                const char *file,
+                                uint32_t line,
+                                const char *message) {
   status->code = code;
   status->error = new Error(file, line, message);
 }

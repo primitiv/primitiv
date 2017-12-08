@@ -9,20 +9,25 @@
 extern "C" {
 #endif
 
-primitiv_Device* primitiv_CUDA_new(uint32_t device_id);
-primitiv_Device* safe_primitiv_CUDA_new(uint32_t device_id, primitiv_Status *status);
+CAPI extern primitiv_Device *primitiv_CUDA_new(uint32_t device_id);
+CAPI extern primitiv_Device *safe_primitiv_CUDA_new(uint32_t device_id,
+                                                    primitiv_Status *status);
 
-primitiv_Device* primitiv_CUDA_new_with_seed(uint32_t device_id, uint32_t rng_seed);
-primitiv_Device* safe_primitiv_CUDA_new_with_seed(uint32_t device_id, uint32_t rng_seed, primitiv_Status *status);
+CAPI extern primitiv_Device *primitiv_CUDA_new_with_seed(uint32_t device_id,
+                                                         uint32_t rng_seed);
+CAPI extern primitiv_Device *safe_primitiv_CUDA_new_with_seed(
+    uint32_t device_id, uint32_t rng_seed, primitiv_Status *status);
 
-void primitiv_CUDA_delete(primitiv_Device *device);
-void safe_primitiv_CUDA_delete(primitiv_Device *device, primitiv_Status *status);
+CAPI extern void primitiv_CUDA_delete(primitiv_Device *device);
+CAPI extern void safe_primitiv_CUDA_delete(primitiv_Device *device,
+                                           primitiv_Status *status);
 
-uint32_t primitiv_CUDA_num_devices();
-uint32_t safe_primitiv_CUDA_num_devices(primitiv_Status *status);
+CAPI extern uint32_t primitiv_CUDA_num_devices();
+CAPI extern uint32_t safe_primitiv_CUDA_num_devices(primitiv_Status *status);
 
-void primitiv_CUDA_dump_description(const primitiv_Device *device);
-void safe_primitiv_CUDA_dump_description(const primitiv_Device *device, primitiv_Status *status);
+CAPI extern void primitiv_CUDA_dump_description(const primitiv_Device *device);
+CAPI extern void safe_primitiv_CUDA_dump_description(
+    const primitiv_Device *device, primitiv_Status *status);
 
 #ifdef __cplusplus
 }  // end extern "C"

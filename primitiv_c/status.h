@@ -30,15 +30,21 @@ typedef enum primitiv_Code {
 
 typedef struct primitiv_Status primitiv_Status;
 
-primitiv_Status *primitiv_Status_new();
+CAPI extern primitiv_Status *primitiv_Status_new();
 
-void primitiv_Status_delete(primitiv_Status *status);
+CAPI extern void primitiv_Status_delete(primitiv_Status *status);
 
-void primitiv_Status_set_status(primitiv_Status *status, primitiv_Code code, const char *file, uint32_t line, const char *message);
+CAPI extern void primitiv_Status_set_status(primitiv_Status *status,
+                                            primitiv_Code code,
+                                            const char *file,
+                                            uint32_t line,
+                                            const char *message);
 
-primitiv_Code primitiv_Status_get_code(const primitiv_Status *status);
+CAPI extern primitiv_Code primitiv_Status_get_code(
+    const primitiv_Status *status);
 
-const char *primitiv_Status_get_message(const primitiv_Status *status);
+CAPI extern const char *primitiv_Status_get_message(
+    const primitiv_Status *status);
 
 #ifdef __cplusplus
 }  // end extern "C"

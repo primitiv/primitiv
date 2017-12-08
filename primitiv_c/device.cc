@@ -17,7 +17,8 @@ primitiv_Device *safe_primitiv_Device_get_default(primitiv_Status *status) {
 void primitiv_Device_set_default(primitiv_Device *device) {
   Device::set_default(*to_cc(device));
 }
-void safe_primitiv_Device_set_default(primitiv_Device *device, primitiv_Status *status) {
+void safe_primitiv_Device_set_default(primitiv_Device *device,
+                                      primitiv_Status *status) {
   SAFE_EXPR(primitiv_Device_set_default(device), status);
 }
 

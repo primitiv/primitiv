@@ -38,7 +38,9 @@ inline c_name *to_c_from_value(const primitiv::cc_name &instance) { \
 
 namespace primitiv {
 
-void set_status(primitiv_Status *status, primitiv_Code code, const Error &error);
+void set_status(primitiv_Status *status,
+                primitiv_Code code,
+                const Error &error);
 
 #define SAFE_EXPR(expr, status) \
 try { \
