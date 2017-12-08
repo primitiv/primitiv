@@ -65,19 +65,19 @@ Tensor Tensor::flatten() const {
   return Tensor(shape_ops::flatten(shape_), *device_, data_);
 }
 
-Tensor &Tensor::operator*=(float k) {
+Tensor &Tensor::inplace_multiply_const(float k) {
   if (!valid()) THROW_ERROR("Invalid tensor.");
   device_->inplace_multiply_const(k, *this);
   return *this;
 }
 
-Tensor &Tensor::operator+=(const Tensor &x) {
+Tensor &Tensor::inplace_add(const Tensor &x) {
   if (!valid()) THROW_ERROR("Invalid tensor.");
   device_->inplace_add(x, *this);
   return *this;
 }
 
-Tensor &Tensor::operator-=(const Tensor &x) {
+Tensor &Tensor::inplace_subtract(const Tensor &x) {
   if (!valid()) THROW_ERROR("Invalid tensor.");
   device_->inplace_subtract(x, *this);
   return *this;
