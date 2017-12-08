@@ -15,6 +15,7 @@ set(primitiv_c_HDRS
   shape.h
   status.h
   tensor.h
+  utils.h
 )
 set(primitiv_c_SRCS
   device.cc
@@ -29,7 +30,9 @@ set(primitiv_c_SRCS
   parameter.cc
   shape.cc
   status.cc
-  tensor.cc)
+  tensor.cc
+  utils.cc
+)
 install(FILES ${primitiv_c_HDRS} DESTINATION include/primitiv_c)
 
 add_library(primitiv_c_OBJS OBJECT
