@@ -25,7 +25,7 @@ bool primitiv_Node_valid(const primitiv_Node *node);
 
 primitiv_Graph *primitiv_Node_graph(const primitiv_Node *node);
 
-uint32_t primitiv_Node_function_id(const primitiv_Node *node);
+uint32_t primitiv_Node_operator_id(const primitiv_Node *node);
 
 uint32_t primitiv_Node_value_id(const primitiv_Node *node);
 
@@ -63,7 +63,7 @@ primitiv_Device *primitiv_Graph_get_device(const primitiv_Graph *graph, const pr
 
 char *primitiv_Graph_dump(const primitiv_Graph *graph, const char *format);
 
-uint32_t primitiv_Graph_num_functions(const primitiv_Graph *graph);
+uint32_t primitiv_Graph_num_operators(const primitiv_Graph *graph);
 
 #ifdef __cplusplus
 }  // end extern "C"

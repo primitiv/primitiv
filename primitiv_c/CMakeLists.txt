@@ -2,13 +2,13 @@ set(primitiv_c_HDRS
   api.h
   define.h
   device.h
+  functions.h
   graph.h
   initializer.h
   initializer_impl.h
   internal.h
   model.h
   naive_device.h
-  operators.h
   optimizer.h
   optimizer_impl.h
   parameter.h
@@ -18,12 +18,12 @@ set(primitiv_c_HDRS
 )
 set(primitiv_c_SRCS
   device.cc
+  functions.cc
   graph.cc
   initializer.cc
   initializer_impl.cc
   model.cc
   naive_device.cc
-  operators.cc
   optimizer.cc
   optimizer_impl.cc
   parameter.cc

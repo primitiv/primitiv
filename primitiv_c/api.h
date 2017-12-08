@@ -5,7 +5,7 @@
 #include "primitiv_c/initializer_impl.h"
 #include "primitiv_c/model.h"
 #include "primitiv_c/naive_device.h"
-#include "primitiv_c/operators.h"
+#include "primitiv_c/functions.h"
 #include "primitiv_c/parameter.h"
 #include "primitiv_c/shape.h"
 #include "primitiv_c/tensor.h"

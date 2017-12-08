@@ -31,8 +31,8 @@ primitiv_Graph *primitiv_Node_graph(const primitiv_Node *node) {
   return to_c(&to_cc(node)->graph());
 }
 
-uint32_t primitiv_Node_function_id(const primitiv_Node *node) {
-  return to_cc(node)->function_id();
+uint32_t primitiv_Node_operator_id(const primitiv_Node *node) {
+  return to_cc(node)->operator_id();
 }
 
 uint32_t primitiv_Node_value_id(const primitiv_Node *node) {
@@ -111,8 +111,8 @@ char *primitiv_Graph_dump(const primitiv_Graph *graph, const char *format) {
   return c;
 }
 
-uint32_t primitiv_Graph_num_functions(const primitiv_Graph *graph) {
-  return to_cc(graph)->num_functions();
+uint32_t primitiv_Graph_num_operators(const primitiv_Graph *graph) {
+  return to_cc(graph)->num_operators();
 }
 
 }  // end extern "C"
