@@ -63,7 +63,7 @@ bool primitiv_Parameter_has_stats(
     primitiv_Parameter *parameter,
     const char *name);
 
-const primitiv_Shape *primitiv_Parameter_shape(const primitiv_Parameter *parameter);
+primitiv_Shape *primitiv_Parameter_shape(const primitiv_Parameter *parameter);
 
 primitiv_Device *primitiv_Parameter_device(const primitiv_Parameter *parameter);
 

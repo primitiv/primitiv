@@ -108,8 +108,8 @@ bool primitiv_Parameter_has_stats(
   return to_cc(parameter)->has_stats(name);
 }
 
-const primitiv_Shape *primitiv_Parameter_shape(const primitiv_Parameter *parameter) {
-  return to_c(&to_cc(parameter)->shape());
+primitiv_Shape *primitiv_Parameter_shape(const primitiv_Parameter *parameter) {
+  return to_c_from_value(to_cc(parameter)->shape());
 }
 
 primitiv_Device *primitiv_Parameter_device(const primitiv_Parameter *parameter) {

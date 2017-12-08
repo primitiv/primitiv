@@ -29,7 +29,7 @@ uint32_t primitiv_Node_function_id(const primitiv_Node *node);
 
 uint32_t primitiv_Node_value_id(const primitiv_Node *node);
 
-const primitiv_Shape *primitiv_Node_shape(const primitiv_Node *node);
+primitiv_Shape *primitiv_Node_shape(const primitiv_Node *node);
 
 primitiv_Device *primitiv_Node_device(const primitiv_Node *node);
 
@@ -57,7 +57,7 @@ const primitiv_Tensor *primitiv_Graph_forward(primitiv_Graph *graph, const primi
 
 void primitiv_Graph_backward(primitiv_Graph *graph, const primitiv_Node *node);
 
-const primitiv_Shape *primitiv_Graph_get_shape(const primitiv_Graph *graph, const primitiv_Node *node);
+primitiv_Shape *primitiv_Graph_get_shape(const primitiv_Graph *graph, const primitiv_Node *node);
 
 primitiv_Device *primitiv_Graph_get_device(const primitiv_Graph *graph, const primitiv_Node *node);
 

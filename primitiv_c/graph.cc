@@ -39,8 +39,8 @@ uint32_t primitiv_Node_value_id(const primitiv_Node *node) {
   return to_cc(node)->value_id();
 }
 
-const primitiv_Shape *primitiv_Node_shape(const primitiv_Node *node) {
-  return to_c(&to_cc(node)->shape());
+primitiv_Shape *primitiv_Node_shape(const primitiv_Node *node) {
+  return to_c_from_value(to_cc(node)->shape());
 }
 
 primitiv_Device *primitiv_Node_device(const primitiv_Node *node) {
@@ -95,8 +95,8 @@ void primitiv_Graph_backward(primitiv_Graph *graph, const primitiv_Node *node) {
   to_cc(graph)->backward(*to_cc(node));
 }
 
-const primitiv_Shape *primitiv_Graph_get_shape(const primitiv_Graph *graph, const primitiv_Node *node) {
-  return to_c(&to_cc(graph)->get_shape(*to_cc(node)));
+primitiv_Shape *primitiv_Graph_get_shape(const primitiv_Graph *graph, const primitiv_Node *node) {
+  return to_c_from_value(to_cc(graph)->get_shape(*to_cc(node)));
 }
 
 primitiv_Device *primitiv_Graph_get_device(const primitiv_Graph *graph, const primitiv_Node *node) {
