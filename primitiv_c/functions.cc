@@ -198,36 +198,91 @@ primitiv_Node *primitiv_node_func_input(
     const primitiv_Shape *shape,
     const float *data,
     size_t n,
-    primitiv_Device *device) {
-  if (!device) {
-    device = primitiv_Device_get_default();
-  }
-  Node y = primitiv::functions::input<Node>(
-      *to_cc(shape), std::vector<float>(data, data + n), *to_cc(device));
-  return to_c_from_value(y);
+    primitiv_Device *dev,
+    primitiv_Graph *g) {
+  return to_c_from_value(primitiv::functions::input_node(
+      *to_cc(shape), std::vector<float>(data, data + n), to_cc(dev), to_cc(g)));
 }
-
+primitiv_Node *safe_primitiv_node_func_input(
+    const primitiv_Shape *shape,
+    const float *data,
+    size_t n,
+    primitiv_Device *dev,
+    primitiv_Graph *g,
+    primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_input(shape, data, n, dev, g), status, nullptr);
+}
 primitiv_Tensor *primitiv_tensor_func_input(
     const primitiv_Shape *shape,
     const float *data,
     size_t n,
-    primitiv_Device *device) {
-  if (!device) {
-    device = primitiv_Device_get_default();
-  }
-  Tensor y = primitiv::functions::input<Tensor>(
-      *to_cc(shape), std::vector<float>(data, data + n), *to_cc(device));
-  return to_c_from_value(y);
+    primitiv_Device *dev) {
+  return to_c_from_value(primitiv::functions::input_tensor(
+      *to_cc(shape), std::vector<float>(data, data + n), to_cc(dev)));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_input(
+    const primitiv_Shape *shape,
+    const float *data,
+    size_t n,
+    primitiv_Device *dev,
+    primitiv_Status *status){
+  SAFE_RETURN(primitiv_tensor_func_input(shape, data, n, dev), status, nullptr);
 }
 
-primitiv_Node *primitiv_node_func_parameter(primitiv_Parameter *param) {
-  Node y = primitiv::functions::parameter<Node>(*to_cc(param));
-  return to_c_from_value(y);
+primitiv_Node *primitiv_node_func_parameter(
+    primitiv_Parameter *param, primitiv_Graph *g) {
+  return to_c_from_value(
+      primitiv::functions::parameter_node(*to_cc(param), to_cc(g)));
 }
-
+primitiv_Node *safe_primitiv_node_func_parameter(
+    primitiv_Parameter *param, primitiv_Graph *g, primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_parameter(param, g), status, nullptr);
+}
 primitiv_Tensor *primitiv_tensor_func_parameter(primitiv_Parameter *param) {
-  Tensor y = primitiv::functions::parameter<Tensor>(*to_cc(param));
-  return to_c_from_value(y);
+  return to_c_from_value(primitiv::functions::parameter_tensor(*to_cc(param)));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_parameter(
+    primitiv_Parameter *param, primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_parameter(param), status, nullptr);
+}
+
+primitiv_Node *primitiv_node_func_copy(const primitiv_Node *x, primitiv_Device *dev) {
+  return to_c_from_value(primitiv::functions::copy(*to_cc(x), to_cc(dev)));
+}
+primitiv_Node *safe_primitiv_node_func_copy(const primitiv_Node *x, primitiv_Device *dev, primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_copy(x, dev), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_copy(const primitiv_Tensor *x, primitiv_Device *dev) {
+  return to_c_from_value(primitiv::functions::copy(*to_cc(x), to_cc(dev)));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_copy(const primitiv_Tensor *x, primitiv_Device *dev, primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_copy(x, dev), status, nullptr);
+}
+
+primitiv_Node *primitiv_node_func_pick(const primitiv_Node *x, const uint32_t *ids, size_t n, uint32_t dim) {
+  return to_c_from_value(primitiv::functions::pick(*to_cc(x), std::vector<uint32_t>(ids, ids + n), dim));
+}
+primitiv_Node *safe_primitiv_node_func_pick(const primitiv_Node *x, const uint32_t *ids, size_t n, uint32_t dim, primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_pick(x, ids, n, dim), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_pick(const primitiv_Tensor *x, const uint32_t *ids, size_t n, uint32_t dim) {
+  return to_c_from_value(primitiv::functions::pick(*to_cc(x), std::vector<uint32_t>(ids, ids + n), dim));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_pick(const primitiv_Tensor *x, const uint32_t *ids, size_t n, uint32_t dim, primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_pick(x, ids, n, dim), status, nullptr);
+}
+
+primitiv_Node *primitiv_node_func_slice(const primitiv_Node *x, uint32_t dim, uint32_t lower, uint32_t upper) {
+  return to_c_from_value(primitiv::functions::slice(*to_cc(x), dim, lower, upper));
+}
+primitiv_Node *safe_primitiv_node_func_slice(const primitiv_Node *x, uint32_t dim, uint32_t lower, uint32_t upper, primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_slice(x, dim, lower, upper), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_slice(const primitiv_Tensor *x, uint32_t dim, uint32_t lower, uint32_t upper) {
+  return to_c_from_value(primitiv::functions::slice(*to_cc(x), dim, lower, upper));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_slice(const primitiv_Tensor *x, uint32_t dim, uint32_t lower, uint32_t upper, primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_slice(x, dim, lower, upper), status, nullptr);
 }
 
 primitiv_Node *primitiv_node_func_tanh(const primitiv_Node *x) {

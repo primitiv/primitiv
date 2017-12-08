@@ -83,17 +83,49 @@ primitiv_Node *primitiv_node_func_input(
     const primitiv_Shape *shape,
     const float *data,
     size_t n,
-    primitiv_Device *device);
-
+    primitiv_Device *dev,
+    primitiv_Graph *g);
+primitiv_Node *safe_primitiv_node_func_input(
+    const primitiv_Shape *shape,
+    const float *data,
+    size_t n,
+    primitiv_Device *dev,
+    primitiv_Graph *g,
+    primitiv_Status *status);
 primitiv_Tensor *primitiv_tensor_func_input(
     const primitiv_Shape *shape,
     const float *data,
     size_t n,
-    primitiv_Device *device);
+    primitiv_Device *dev);
+primitiv_Tensor *safe_primitiv_tensor_func_input(
+    const primitiv_Shape *shape,
+    const float *data,
+    size_t n,
+    primitiv_Device *dev,
+    primitiv_Status *status);
 
-primitiv_Node *primitiv_node_func_parameter(primitiv_Parameter *param);
-
+primitiv_Node *primitiv_node_func_parameter(
+    primitiv_Parameter *param, primitiv_Graph *g);
+primitiv_Node *safe_primitiv_node_func_parameter(
+    primitiv_Parameter *param, primitiv_Graph *g, primitiv_Status *status);
 primitiv_Tensor *primitiv_tensor_func_parameter(primitiv_Parameter *param);
+primitiv_Tensor *safe_primitiv_tensor_func_parameter(
+    primitiv_Parameter *param, primitiv_Status *status);
+
+primitiv_Node *primitiv_node_func_copy(const primitiv_Node *x, primitiv_Device *dev);
+primitiv_Node *safe_primitiv_node_func_copy(const primitiv_Node *x, primitiv_Device *dev, primitiv_Status *status);
+primitiv_Tensor *primitiv_tensor_func_copy(const primitiv_Tensor *x, primitiv_Device *dev);
+primitiv_Tensor *safe_primitiv_tensor_func_copy(const primitiv_Tensor *x, primitiv_Device *dev, primitiv_Status *status);
+
+primitiv_Node *primitiv_node_func_pick(const primitiv_Node *x, const uint32_t *ids, size_t n, uint32_t dim);
+primitiv_Node *safe_primitiv_node_func_pick(const primitiv_Node *x, const uint32_t *ids, size_t n, uint32_t dim, primitiv_Status *status);
+primitiv_Tensor *primitiv_tensor_func_pick(const primitiv_Tensor *x, const uint32_t *ids, size_t n, uint32_t dim);
+primitiv_Tensor *safe_primitiv_tensor_func_pick(const primitiv_Tensor *x, const uint32_t *ids, size_t n, uint32_t dim, primitiv_Status *status);
+
+primitiv_Node *primitiv_node_func_slice(const primitiv_Node *x, uint32_t dim, uint32_t lower, uint32_t upper);
+primitiv_Node *safe_primitiv_node_func_slice(const primitiv_Node *x, uint32_t dim, uint32_t lower, uint32_t upper, primitiv_Status *status);
+primitiv_Tensor *primitiv_tensor_func_slice(const primitiv_Tensor *x, uint32_t dim, uint32_t lower, uint32_t upper);
+primitiv_Tensor *safe_primitiv_tensor_func_slice(const primitiv_Tensor *x, uint32_t dim, uint32_t lower, uint32_t upper, primitiv_Status *status);
 
 primitiv_Node *primitiv_node_func_tanh(const primitiv_Node *x);
 
