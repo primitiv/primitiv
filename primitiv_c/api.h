@@ -8,6 +8,7 @@
 #include "primitiv_c/functions.h"
 #include "primitiv_c/parameter.h"
 #include "primitiv_c/shape.h"
+#include "primitiv_c/status.h"
 #include "primitiv_c/tensor.h"
 #include "primitiv_c/optimizer_impl.h"
 
