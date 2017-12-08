@@ -36,7 +36,24 @@ inline const c_name *to_c_from_value(const primitiv::cc_name &instance) { \
 }
 
 namespace primitiv {
-  void set_status(primitiv_Status *status, primitiv_Code code, const Error &error);
+
+void set_status(primitiv_Status *status, primitiv_Code code, const Error &error);
+
+#define SAFE_EXPR(expr, status) \
+try { \
+  expr; \
+} catch (primitiv::Error &e) { \
+  primitiv::set_status(status, primitiv_Code::PRIMITIV_ERROR, e); \
+}
+
+#define SAFE_RETURN(expr, status, default) \
+try { \
+  return expr; \
+} catch (primitiv::Error &e) { \
+  primitiv::set_status(status, primitiv_Code::PRIMITIV_ERROR, e); \
+} \
+return default
+
 }  // namespace primitiv
 
 struct primitiv_Device;
