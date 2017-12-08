@@ -35,28 +35,45 @@ TEST_F(MixinsTest, CheckIdentifiable) {
 TEST_F(MixinsTest, CheckDefaultSettable) {
   class TestClass : public DefaultSettable<TestClass> {};
 
+  TestClass obj0;
+
   EXPECT_THROW(TestClass::get_default(), Error);
+  EXPECT_THROW(TestClass::get_reference_or_default(nullptr), Error);
+  EXPECT_EQ(&obj0, &TestClass::get_reference_or_default(&obj0));
+
   {
     TestClass obj1;
     TestClass::set_default(obj1);
     EXPECT_EQ(&obj1, &TestClass::get_default());
+    EXPECT_EQ(&obj1, &TestClass::get_reference_or_default(nullptr));
+    EXPECT_EQ(&obj0, &TestClass::get_reference_or_default(&obj0));
 
     {
       TestClass obj2;
       TestClass::set_default(obj2);
       EXPECT_EQ(&obj2, &TestClass::get_default());
+      EXPECT_EQ(&obj2, &TestClass::get_reference_or_default(nullptr));
+      EXPECT_EQ(&obj0, &TestClass::get_reference_or_default(&obj0));
 
       TestClass obj3;
       TestClass::set_default(obj3);
       EXPECT_EQ(&obj3, &TestClass::get_default());
+      EXPECT_EQ(&obj3, &TestClass::get_reference_or_default(nullptr));
+      EXPECT_EQ(&obj0, &TestClass::get_reference_or_default(&obj0));
     }
     EXPECT_THROW(TestClass::get_default(), Error);
+    EXPECT_THROW(TestClass::get_reference_or_default(nullptr), Error);
+    EXPECT_EQ(&obj0, &TestClass::get_reference_or_default(&obj0));
 
     TestClass obj4;
     TestClass::set_default(obj4);
     EXPECT_EQ(&obj4, &TestClass::get_default());
+    EXPECT_EQ(&obj4, &TestClass::get_reference_or_default(nullptr));
+    EXPECT_EQ(&obj0, &TestClass::get_reference_or_default(&obj0));
   }
   EXPECT_THROW(TestClass::get_default(), Error);
+  EXPECT_THROW(TestClass::get_reference_or_default(nullptr), Error);
+  EXPECT_EQ(&obj0, &TestClass::get_reference_or_default(&obj0));
 }
 
 }  // namespace mixins
