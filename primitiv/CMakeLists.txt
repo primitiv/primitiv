@@ -2,6 +2,9 @@
 
 # Base libraries.
 set(primitiv_base_HDRS
+  arithmetic.h
+  basic_functions.h
+  composite_functions.h
   device.h
   error.h
   file_format.h

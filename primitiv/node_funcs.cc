@@ -4,6 +4,7 @@
 #include <config.h>
 
 #include <vector>
+
 #include <primitiv/error.h>
 #include <primitiv/functions.h>
 #include <primitiv/graph.h>
@@ -42,65 +43,65 @@ std::vector<Node> ptr_to_obj(const std::vector<const Node *> &xs) {
 
 namespace primitiv {
 
-template<>
-Node operator+(const Node &x) { return REGX(x, Positive(), x); }
+namespace functions {
 
 template<>
-Node operator-(const Node &x) { return REGX(x, Negative(), x); }
+Node positive(const Node &x) { return REGX(x, Positive(), x); }
 
 template<>
-Node operator+(const Node &x, float k) { return REGX(x, AddConst(k), x); }
+Node negative(const Node &x) { return REGX(x, Negative(), x); }
 
 template<>
-Node operator+(float k, const Node &x) { return REGX(x, AddConst(k), x); }
+Node add(const Node &x, float k) { return REGX(x, AddConst(k), x); }
 
 template<>
-Node operator+(const Node &a, const Node &b) {
+Node add(float k, const Node &x) { return REGX(x, AddConst(k), x); }
+
+template<>
+Node add(const Node &a, const Node &b) {
   if (a.shape().is_scalar()) return REGX(a, AddScalar(), b, a);
   else if (b.shape().is_scalar()) return REGX(a, AddScalar(), a, b);
   else return REGX(a, Add(), a, b);
 }
 
 template<>
-Node operator-(const Node &x, float k) { return REGX(x, SubtractConstR(k), x); }
+Node subtract(const Node &x, float k) { return REGX(x, SubtractConstR(k), x); }
 
 template<>
-Node operator-(float k, const Node &x) { return REGX(x, SubtractConstL(k), x); }
+Node subtract(float k, const Node &x) { return REGX(x, SubtractConstL(k), x); }
 
 template<>
-Node operator-(const Node &a, const Node &b) {
+Node subtract(const Node &a, const Node &b) {
   if (a.shape().is_scalar()) return REGX(a, SubtractScalarL(), b, a);
   else if (b.shape().is_scalar()) return REGX(a, SubtractScalarR(), a, b);
   else return REGX(a, Subtract(), a, b);
 }
 
 template<>
-Node operator*(const Node &x, float k) { return REGX(x, MultiplyConst(k), x); }
+Node multiply(const Node &x, float k) { return REGX(x, MultiplyConst(k), x); }
 
 template<>
-Node operator*(float k, const Node &x) { return REGX(x, MultiplyConst(k), x); }
+Node multiply(float k, const Node &x) { return REGX(x, MultiplyConst(k), x); }
 
 template<>
-Node operator*(const Node &a, const Node &b) {
+Node multiply(const Node &a, const Node &b) {
   if (a.shape().is_scalar()) return REGX(a, MultiplyScalar(), b, a);
   else if (b.shape().is_scalar()) return REGX(a, MultiplyScalar(), a, b);
   else return REGX(a, Multiply(), a, b);
 }
 
 template<>
-Node operator/(const Node &x, float k) { return REGX(x, DivideConstR(k), x); }
+Node divide(const Node &x, float k) { return REGX(x, DivideConstR(k), x); }
 
 template<>
-Node operator/(float k, const Node &x) { return REGX(x, DivideConstL(k), x); }
+Node divide(float k, const Node &x) { return REGX(x, DivideConstL(k), x); }
 
 template<>
-Node operator/(const Node &a, const Node &b) {
+Node divide(const Node &a, const Node &b) {
   if (a.shape().is_scalar()) return REGX(a, DivideScalarL(), b, a);
   else if (b.shape().is_scalar()) return REGX(a, DivideScalarR(), a, b);
   else return REGX(a, Divide(), a, b);
 }
-
-namespace functions {
 
 Node input_node(
     const Shape &shape, const std::vector<float> &data, Device *dev, Graph *g) {

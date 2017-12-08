@@ -160,13 +160,6 @@ public:
   Tensor &inplace_multiply_const(float k);
 
   /**
-   * Directly multiplies a constant.
-   * @param k A constant to multiply.
-   * @return `*this`
-   */
-  Tensor &operator*=(float k) { return inplace_multiply_const(k); }
-
-  /**
    * Directly adds a value.
    * @param x A tensor to add.
    * @return `*this`
@@ -174,25 +167,11 @@ public:
   Tensor &inplace_add(const Tensor &x);
 
   /**
-   * Directly adds a value.
-   * @param x A tensor to add.
-   * @return `*this`
-   */
-  Tensor &operator+=(const Tensor &x) { return inplace_add(x); }
-
-  /**
    * Directly subtracts a value.
    * @param x A tensor to subtract.
    * @return `*this`
    */
   Tensor &inplace_subtract(const Tensor &x);
-
-  /**
-   * Directly subtracts a value.
-   * @param x A tensor to subtract.
-   * @return `*this`
-   */
-  Tensor &operator-=(const Tensor &x) { return inplace_subtract(x); }
 
 private:
   /**

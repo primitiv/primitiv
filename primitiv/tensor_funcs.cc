@@ -25,85 +25,85 @@ std::vector<const Tensor *> obj_to_ptr(const std::vector<Tensor> &xs) {
 
 namespace primitiv {
 
+namespace functions {
+
 template<>
-Tensor operator+(const Tensor &x) {
+Tensor positive(const Tensor &x) {
   return x;
 }
 
 template<>
-Tensor operator-(const Tensor &x) {
+Tensor negative(const Tensor &x) {
   return x.device().negate_fw(x);
 }
 
 template<>
-Tensor operator+(const Tensor &x, float k) {
+Tensor add(const Tensor &x, float k) {
   return x.device().add_const_fw(x, k);
 }
 
 template<>
-Tensor operator+(float k, const Tensor &x) {
+Tensor add(float k, const Tensor &x) {
   return x.device().add_const_fw(x, k);
 }
 
 template<>
-Tensor operator+(const Tensor &a, const Tensor &b) {
+Tensor add(const Tensor &a, const Tensor &b) {
   if (a.shape().is_scalar()) return a.device().add_scalar_fw(b, a);
   else if (b.shape().is_scalar()) return a.device().add_scalar_fw(a, b);
   else return a.device().add_fw(a, b);
 }
 
 template<>
-Tensor operator-(const Tensor &x, float k) {
+Tensor subtract(const Tensor &x, float k) {
   return x.device().subtract_const_r_fw(x, k);
 }
 
 template<>
-Tensor operator-(float k, const Tensor &x) {
+Tensor subtract(float k, const Tensor &x) {
   return x.device().subtract_const_l_fw(x, k);
 }
 
 template<>
-Tensor operator-(const Tensor &a, const Tensor &b) {
+Tensor subtract(const Tensor &a, const Tensor &b) {
   if (a.shape().is_scalar()) return a.device().subtract_scalar_l_fw(b, a);
   else if (b.shape().is_scalar()) return a.device().subtract_scalar_r_fw(a, b);
   else return a.device().subtract_fw(a, b);
 }
 
 template<>
-Tensor operator*(const Tensor &x, float k) {
+Tensor multiply(const Tensor &x, float k) {
   return x.device().multiply_const_fw(x, k);
 }
 
 template<>
-Tensor operator*(float k, const Tensor &x) {
+Tensor multiply(float k, const Tensor &x) {
   return x.device().multiply_const_fw(x, k);
 }
 
 template<>
-Tensor operator*(const Tensor &a, const Tensor &b) {
+Tensor multiply(const Tensor &a, const Tensor &b) {
   if (a.shape().is_scalar()) return a.device().multiply_scalar_fw(b, a);
   else if (b.shape().is_scalar()) return a.device().multiply_scalar_fw(a, b);
   else return a.device().multiply_fw(a, b);
 }
 
 template<>
-Tensor operator/(const Tensor &x, float k) {
+Tensor divide(const Tensor &x, float k) {
   return x.device().divide_const_r_fw(x, k);
 }
 
 template<>
-Tensor operator/(float k, const Tensor &x) {
+Tensor divide(float k, const Tensor &x) {
   return x.device().divide_const_l_fw(x, k);
 }
 
 template<>
-Tensor operator/(const Tensor &a, const Tensor &b) {
+Tensor divide(const Tensor &a, const Tensor &b) {
   if (a.shape().is_scalar()) return a.device().divide_scalar_l_fw(b, a);
   else if (b.shape().is_scalar()) return a.device().divide_scalar_r_fw(a, b);
   else return a.device().divide_fw(a, b);
 }
-
-namespace functions {
 
 Tensor input_tensor(
     const Shape &shape, const std::vector<float> &data, Device *dev) {
