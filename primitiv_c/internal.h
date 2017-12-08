@@ -43,20 +43,20 @@ namespace primitiv {
 
 void set_status(primitiv_Status *status,
                 primitiv_Code code,
-                const Error &error);
+                const Error *error);
 
 #define SAFE_EXPR(expr, status) \
 try { \
   expr; \
 } catch (primitiv::Error &e) { \
-  primitiv::set_status(status, primitiv_Code::PRIMITIV_ERROR, e); \
+  primitiv::set_status(status, primitiv_Code::PRIMITIV_ERROR, &e); \
 }
 
 #define SAFE_RETURN(expr, status, default) \
 try { \
   return expr; \
 } catch (primitiv::Error &e) { \
-  primitiv::set_status(status, primitiv_Code::PRIMITIV_ERROR, e); \
+  primitiv::set_status(status, primitiv_Code::PRIMITIV_ERROR, &e); \
 } \
 return default
 

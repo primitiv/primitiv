@@ -2,8 +2,6 @@
 
 #include <primitiv/error.h>
 
-#include <sstream>
-
 #include "primitiv_c/internal.h"
 #include "primitiv_c/status.h"
 
@@ -22,9 +20,13 @@ namespace primitiv {
 
 void set_status(primitiv_Status *status,
                 primitiv_Code code,
-                const Error &error) {
+                const Error *error) {
   status->code = code;
-  status->error = new Error(error);
+  if (error) {
+    status->error = new Error(*error);
+  } else {
+    status->error = nullptr;
+  }
 }
 
 }  // namespace primitiv
@@ -32,7 +34,7 @@ void set_status(primitiv_Status *status,
 extern "C" {
 
 primitiv_Status *primitiv_Status_new() {
-  return new primitiv_Status{PRIMITIV_UNKNOWN, nullptr};
+  return new primitiv_Status{PRIMITIV_OK, nullptr};
 }
 
 void primitiv_Status_delete(primitiv_Status *status) {
@@ -57,9 +59,7 @@ const char *primitiv_Status_get_message(const primitiv_Status *status) {
   if (status->error) {
     return status->error->what();
   } else {
-    std::stringstream ss;
-    ss << "Status has no error: initial status(" << status->code << ").";
-    static const char *message = ss.str().c_str();
+    static const char *message = "";
     return message;
   }
 }
