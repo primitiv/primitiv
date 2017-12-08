@@ -1,7 +1,7 @@
+#include <primitiv/optimizer_impl.h>
+
 #include "primitiv_c/internal.h"
 #include "primitiv_c/optimizer_impl.h"
-
-#include <primitiv/optimizer_impl.h>
 
 using primitiv::optimizers::SGD;
 using primitiv::optimizers::MomentumSGD;

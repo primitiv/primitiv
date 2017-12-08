@@ -1,7 +1,7 @@
+#include <primitiv/device.h>
+
 #include "primitiv_c/internal.h"
 #include "primitiv_c/device.h"
-
-#include <primitiv/device.h>
 
 using primitiv::Device;
 

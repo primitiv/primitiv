@@ -1,10 +1,10 @@
-#include "primitiv_c/internal.h"
-#include "primitiv_c/graph.h"
+#include <primitiv/graph.h>
 
 #include <string>
 #include <utility>
 
-#include <primitiv/graph.h>
+#include "primitiv_c/internal.h"
+#include "primitiv_c/graph.h"
 
 using primitiv::Node;
 using primitiv::Graph;
@@ -201,8 +201,8 @@ primitiv_Device *safe_primitiv_Graph_get_device(const primitiv_Graph *graph,
 
 char *primitiv_Graph_dump(const primitiv_Graph *graph, const char *format) {
   std::string str = to_cc(graph)->dump(format);
-  unsigned long len = str.length();
-  char *c = new char[len + 1];
+  uint64_t len = str.length();
+  auto *c = new char[len + 1];
   std::strncpy(c, str.c_str(), len);
   return c;
 }

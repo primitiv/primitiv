@@ -1,9 +1,9 @@
-#include "primitiv_c/internal.h"
-#include "primitiv_c/functions.h"
+#include <primitiv/functions.h>
 
 #include <vector>
 
-#include <primitiv/functions.h>
+#include "primitiv_c/internal.h"
+#include "primitiv_c/functions.h"
 
 using primitiv::Node;
 using primitiv::Tensor;
@@ -124,7 +124,8 @@ primitiv_Tensor *primitiv_tensor_func_subtract_tensor_const(
 }
 primitiv_Tensor *safe_primitiv_tensor_func_subtract_tensor_const(
     const primitiv_Tensor *x, float k, primitiv_Status *status) {
-  SAFE_RETURN(primitiv_tensor_func_subtract_tensor_const(x, k), status, nullptr);
+  SAFE_RETURN(
+      primitiv_tensor_func_subtract_tensor_const(x, k), status, nullptr);
 }
 primitiv_Tensor *primitiv_tensor_func_subtract_const_tensor(
     float k, const primitiv_Tensor *x) {
@@ -295,7 +296,7 @@ primitiv_Tensor *safe_primitiv_tensor_func_input(
     const float *data,
     size_t n,
     primitiv_Device *dev,
-    primitiv_Status *status){
+    primitiv_Status *status) {
   SAFE_RETURN(
       primitiv_tensor_func_input(shape, data, n, dev), status, nullptr);
 }

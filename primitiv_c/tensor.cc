@@ -1,7 +1,7 @@
+#include <primitiv/tensor.h>
+
 #include "primitiv_c/internal.h"
 #include "primitiv_c/tensor.h"
-
-#include <primitiv/tensor.h>
 
 using primitiv::Tensor;
 

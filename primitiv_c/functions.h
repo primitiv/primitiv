@@ -1,5 +1,5 @@
-#ifndef PRIMITIV_C_OPERATORS_H_
-#define PRIMITIV_C_OPERATORS_H_
+#ifndef PRIMITIV_C_FUNCTIONS_H_
+#define PRIMITIV_C_FUNCTIONS_H_
 
 #include "primitiv_c/define.h"
 #include "primitiv_c/device.h"
@@ -52,7 +52,9 @@ CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_add_const_tensor(
 CAPI extern primitiv_Tensor *primitiv_tensor_func_add_tensor_tensor(
     const primitiv_Tensor *a, const primitiv_Tensor *b);
 CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_add_tensor_tensor(
-    const primitiv_Tensor *a, const primitiv_Tensor *b, primitiv_Status *status);
+    const primitiv_Tensor *a,
+    const primitiv_Tensor *b,
+    primitiv_Status *status);
 
 CAPI extern primitiv_Node *primitiv_node_func_subtract_node_const(
     const primitiv_Node *x, float k);
@@ -188,11 +190,12 @@ CAPI extern primitiv_Node *primitiv_node_func_pick(const primitiv_Node *x,
                                                    const uint32_t *ids,
                                                    size_t n,
                                                    uint32_t dim);
-CAPI extern primitiv_Node *safe_primitiv_node_func_pick(const primitiv_Node *x,
-                                                        const uint32_t *ids,
-                                                        size_t n,
-                                                        uint32_t dim,
-                                                        primitiv_Status *status);
+CAPI extern primitiv_Node *safe_primitiv_node_func_pick(
+    const primitiv_Node *x,
+    const uint32_t *ids,
+    size_t n,
+    uint32_t dim,
+    primitiv_Status *status);
 CAPI extern primitiv_Tensor *primitiv_tensor_func_pick(const primitiv_Tensor *x,
                                                        const uint32_t *ids,
                                                        size_t n,
@@ -228,7 +231,8 @@ CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_slice(
 
 CAPI extern primitiv_Node *primitiv_node_func_tanh(const primitiv_Node *x);
 
-CAPI extern primitiv_Tensor *primitiv_tensor_func_tanh(const primitiv_Tensor *x);
+CAPI extern primitiv_Tensor *primitiv_tensor_func_tanh(
+    const primitiv_Tensor *x);
 
 CAPI extern primitiv_Node *primitiv_node_func_matmul(const primitiv_Node *a,
                                                      const primitiv_Node *b);
@@ -236,7 +240,8 @@ CAPI extern primitiv_Node *primitiv_node_func_matmul(const primitiv_Node *a,
 CAPI extern primitiv_Tensor *primitiv_tensor_func_matmul(
     const primitiv_Tensor *a, const primitiv_Tensor *b);
 
-CAPI extern primitiv_Node *primitiv_node_func_batch_mean(const primitiv_Node *x);
+CAPI extern primitiv_Node *primitiv_node_func_batch_mean(
+    const primitiv_Node *x);
 
 CAPI extern primitiv_Tensor *primitiv_tensor_func_batch_mean(
     const primitiv_Tensor *x);
@@ -245,4 +250,4 @@ CAPI extern primitiv_Tensor *primitiv_tensor_func_batch_mean(
 }  // end extern "C"
 #endif
 
-#endif  // PRIMITIV_C_OPERATORS_H_
+#endif  // PRIMITIV_C_FUNCTIONS_H_

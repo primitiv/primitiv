@@ -1,7 +1,7 @@
+#include <primitiv/cuda_device.h>
+
 #include "primitiv_c/internal.h"
 #include "primitiv_c/cuda_device.h"
-
-#include <primitiv/cuda_device.h>
 
 using primitiv::devices::CUDA;
 
@@ -25,7 +25,8 @@ primitiv_Device *primitiv_CUDA_new_with_seed(uint32_t device_id,
 primitiv_Device *safe_primitiv_CUDA_new_with_seed(uint32_t device_id,
                                                   uint32_t rng_seed,
                                                   primitiv_Status *status) {
-  SAFE_RETURN(primitiv_CUDA_new_with_seed(device_id, rng_seed), status, nullptr);
+  SAFE_RETURN(
+      primitiv_CUDA_new_with_seed(device_id, rng_seed), status, nullptr);
 }
 
 void primitiv_CUDA_delete(primitiv_Device *device) {

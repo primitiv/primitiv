@@ -1,10 +1,10 @@
-#include "primitiv_c/internal.h"
-#include "primitiv_c/shape.h"
+#include <primitiv/shape.h>
 
 #include <string>
 #include <vector>
 
-#include <primitiv/shape.h>
+#include "primitiv_c/internal.h"
+#include "primitiv_c/shape.h"
 
 using primitiv::Shape;
 
@@ -98,8 +98,8 @@ uint32_t safe_primitiv_Shape_size(const primitiv_Shape *shape,
 
 char *primitiv_Shape_to_string(const primitiv_Shape *shape) {
   std::string str = to_cc(shape)->to_string();
-  unsigned long len = str.length();
-  char *c = new char[len + 1];
+  uint64_t len = str.length();
+  auto *c = new char[len + 1];
   std::strncpy(c, str.c_str(), len);
   return c;
 }

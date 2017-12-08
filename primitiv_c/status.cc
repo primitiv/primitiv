@@ -1,9 +1,9 @@
-#include "primitiv_c/internal.h"
-#include "primitiv_c/status.h"
+#include <primitiv/error.h>
 
 #include <sstream>
 
-#include <primitiv/error.h>
+#include "primitiv_c/internal.h"
+#include "primitiv_c/status.h"
 
 using primitiv::Error;
 

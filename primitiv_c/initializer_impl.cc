@@ -1,7 +1,7 @@
+#include <primitiv/initializer_impl.h>
+
 #include "primitiv_c/internal.h"
 #include "primitiv_c/initializer_impl.h"
-
-#include <primitiv/initializer_impl.h>
 
 using primitiv::initializers::Constant;
 using primitiv::initializers::Uniform;

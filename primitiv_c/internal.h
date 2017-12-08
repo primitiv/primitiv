@@ -1,12 +1,6 @@
 #ifndef PRIMITIV_C_INTERNAL_H_
 #define PRIMITIV_C_INTERNAL_H_
 
-#include "primitiv_c/status.h"
-
-#include <cstdint>
-#include <string>
-#include <unordered_map>
-
 #include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/graph.h>
@@ -16,6 +10,13 @@
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
 #include <primitiv/optimizer.h>
+
+#include <cstdint>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+#include "primitiv_c/status.h"
 
 #define DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(cc_name, c_name) \
 inline c_name *to_c(primitiv::cc_name *instance) { \
@@ -100,7 +101,7 @@ DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Optimizer, primitiv_Optimizer);
 
 template<typename T>
 class StrValMap : public std::unordered_map<std::string, T> {
-public:
+ public:
   StrValMap() : keys_{}, values_() {}
 
   std::vector<const char*> &keys() {
@@ -119,7 +120,7 @@ public:
     return values_;
   }
 
-protected:
+ protected:
   std::vector<const char*> keys_;
   std::vector<T> values_;
 };

@@ -1,9 +1,9 @@
-#include "primitiv_c/internal.h"
-#include "primitiv_c/parameter.h"
+#include <primitiv/parameter.h>
 
 #include <vector>
 
-#include <primitiv/parameter.h>
+#include "primitiv_c/internal.h"
+#include "primitiv_c/parameter.h"
 
 using primitiv::Parameter;
 
