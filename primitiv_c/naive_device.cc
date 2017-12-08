@@ -1,3 +1,5 @@
+/* Copyright 2017 The primitiv Authors. All Rights Reserved. */
+
 #include <primitiv/naive_device.h>
 
 #include "primitiv_c/internal.h"

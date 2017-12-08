@@ -1,3 +1,5 @@
+/* Copyright 2017 The primitiv Authors. All Rights Reserved. */
+
 #include "primitiv_c/internal.h"
 #include "primitiv_c/utils.h"
 

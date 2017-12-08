@@ -1,3 +1,5 @@
+/* Copyright 2017 The primitiv Authors. All Rights Reserved. */
+
 #ifndef PRIMITIV_C_GRAPH_H_
 #define PRIMITIV_C_GRAPH_H_
 
@@ -114,7 +116,9 @@ CAPI extern primitiv_Shape *safe_primitiv_Graph_get_shape(
 CAPI extern primitiv_Device *primitiv_Graph_get_device(
     const primitiv_Graph *graph, const primitiv_Node *node);
 CAPI extern primitiv_Device *safe_primitiv_Graph_get_device(
-    const primitiv_Graph *graph, const primitiv_Node *node, primitiv_Status *status);
+    const primitiv_Graph *graph,
+    const primitiv_Node *node,
+    primitiv_Status *status);
 
 CAPI extern char *primitiv_Graph_dump(const primitiv_Graph *graph,
                                       const char *format);
