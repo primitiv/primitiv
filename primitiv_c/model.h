@@ -2,6 +2,7 @@
 #define PRIMITIV_C_MODEL_H_
 
 #include "primitiv_c/define.h"
+#include "primitiv_c/status.h"
 
 #ifdef __cplusplus
 extern "C" {
