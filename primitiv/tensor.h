@@ -119,7 +119,7 @@ public:
    * Reset internal values using a constant.
    * @param k A value to be used to initialize each element.
    */
-  void reset(const float k);
+  void reset(float k);
 
   /**
    * Reset internal values using a vector.
