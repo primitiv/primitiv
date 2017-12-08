@@ -9,6 +9,9 @@ option(PRIMITIV_BUILD_TESTS "Builds test binaries." OFF)
 option(PRIMITIV_BUILD_TESTS_PROBABILISTIC "Builds test cases that probabilistically fails." OFF)
 option(PRIMITIV_GTEST_SOURCE_DIR "Source directory of Google Test library." "")
 option(PRIMITIV_USE_CACHE "Enables cached values in some functions but needs more memory." OFF)
+option(PRIMITIV_USE_BLAS "Enables BLAS acceleration on the CPU backend." OFF)
+option(PRIMITIV_BLAS_INCLUDE_DIR "Include directory of the BLAS library." "")
+option(PRIMITIV_BLAS_LIBRARIES "Library file of the BLAS library." "")
 option(PRIMITIV_USE_CUDA "Enables the CUDA backend." OFF)
 option(PRIMITIV_USE_OPENCL "Enables the OpenCL backend." OFF)
 
@@ -31,6 +34,15 @@ configure_file(
 )
 
 # External packages.
+if(PRIMITIV_USE_BLAS)
+  if(NOT PRIMITIV_BLAS_INCLUDE_DIR)
+    message(FATAL_ERROR "PRIMITIV_USE_BLAS is set, but PRIMITIV_BLAS_INCLUDE_DIR is not set.")
+  endif()
+  if(NOT PRIMITIV_BLAS_LIBRARIES)
+    message(FATAL_ERROR "PRIMITIV_USE_BLAS is set, but PRIMITIV_BLAS_LIBRARIES is not set.")
+  endif()
+endif()
+
 if(PRIMITIV_USE_CUDA)
   find_package(CUDA REQUIRED)
 endif()
@@ -45,6 +57,9 @@ endif()
 include_directories(
   ${PROJECT_SOURCE_DIR}
   ${PROJECT_BINARY_DIR})
+if(PRIMITIV_USE_BLAS)
+  include_directories(${PRIMITIV_BLAS_INCLUDE_DIR})
+endif()
 if(PRIMITIV_USE_CUDA)
   include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
 endif()

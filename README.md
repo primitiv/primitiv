@@ -35,6 +35,8 @@ Prerequisites
 - C++11 compiler (GCC, Clang)
 - (optional) [Google Test](https://github.com/google/googletest)
   - Required only when `-DPRIMITIV_BUILD_TESTS=ON`.
+- (optional) CBLAS (any vendor)
+  - Required only when `-DPRIMITIV_USE_BLAS=ON`
 - (optional) CUDA 7.5 or later
   - Required only when `-DPRIMITIV_USE_CUDA=ON`
 - (optional) OpenCL 1.2/OpenCL C++ binding v2
@@ -69,6 +71,10 @@ Building Options
 - `PRIMITIV_USE_CACHE` (default=`OFF`)
   - Whether or not to use cached values to prevent increasing computation amount.
   - Libraries built with this flag will tend to consume more memory.
+- `PRIMITIV_USE_BLAS` (default=`OFF`)
+  - Enables BLAS backend (used in `devices::Naive` class).
+  - Users must specify also `PRIMITIV_BLAS_INCLUDE_DIR` and `PRIMITIV_BLAS_LIBRARIES`
+    options when using this option.
 - `PRIMITIV_USE_CUDA` (default=`OFF`)
   - Enables CUDA backend (`devices::CUDA` class).
 - `PRIMITIV_USE_OPENCL` (default=`OFF`)

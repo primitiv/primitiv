@@ -68,6 +68,11 @@ add_library(primitiv_core_OBJS OBJECT
 set(primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_core_OBJS>)
 set(primitiv_all_DEPS)
 
+# Linking BLAS
+if(PRIMITIV_USE_BLAS)
+  set(primitiv_all_DEPS ${PRIMITIV_BLAS_LIBRARIES})
+endif()
+
 # Build rules of the CUDA backend.
 if(PRIMITIV_USE_CUDA)
   set(primitiv_cuda_HDRS
