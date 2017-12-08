@@ -4,6 +4,7 @@
 #include <config.h>
 
 #include <vector>
+
 #include <primitiv/error.h>
 #include <primitiv/functions.h>
 #include <primitiv/graph.h>
@@ -20,6 +21,16 @@ namespace {
 
 using primitiv::Node;
 
+// Helper to obtain Device object.
+primitiv::Device &get_device(primitiv::Device *dev) {
+  return dev ? *dev : primitiv::Device::get_default();
+}
+
+// Helper to obtain Graph object.
+primitiv::Graph &get_graph(primitiv::Graph *g) {
+  return g ? *g : primitiv::Graph::get_default();
+}
+
 // Helper to transform pointers to nodes.
 std::vector<Node> ptr_to_obj(const std::vector<const Node *> &xs) {
   std::vector<Node> ret;
@@ -32,89 +43,78 @@ std::vector<Node> ptr_to_obj(const std::vector<const Node *> &xs) {
 
 namespace primitiv {
 
-template<>
-Node operator+(const Node &x) { return REGX(x, Positive(), x); }
+namespace functions {
 
 template<>
-Node operator-(const Node &x) { return REGX(x, Negative(), x); }
+Node positive(const Node &x) { return REGX(x, Positive(), x); }
 
 template<>
-Node operator+(const Node &x, float k) { return REGX(x, AddConst(k), x); }
+Node negative(const Node &x) { return REGX(x, Negative(), x); }
 
 template<>
-Node operator+(float k, const Node &x) { return REGX(x, AddConst(k), x); }
+Node add(const Node &x, float k) { return REGX(x, AddConst(k), x); }
 
 template<>
-Node operator+(const Node &a, const Node &b) {
+Node add(float k, const Node &x) { return REGX(x, AddConst(k), x); }
+
+template<>
+Node add(const Node &a, const Node &b) {
   if (a.shape().is_scalar()) return REGX(a, AddScalar(), b, a);
   else if (b.shape().is_scalar()) return REGX(a, AddScalar(), a, b);
   else return REGX(a, Add(), a, b);
 }
 
 template<>
-Node operator-(const Node &x, float k) { return REGX(x, SubtractConstR(k), x); }
+Node subtract(const Node &x, float k) { return REGX(x, SubtractConstR(k), x); }
 
 template<>
-Node operator-(float k, const Node &x) { return REGX(x, SubtractConstL(k), x); }
+Node subtract(float k, const Node &x) { return REGX(x, SubtractConstL(k), x); }
 
 template<>
-Node operator-(const Node &a, const Node &b) {
+Node subtract(const Node &a, const Node &b) {
   if (a.shape().is_scalar()) return REGX(a, SubtractScalarL(), b, a);
   else if (b.shape().is_scalar()) return REGX(a, SubtractScalarR(), a, b);
   else return REGX(a, Subtract(), a, b);
 }
 
 template<>
-Node operator*(const Node &x, float k) { return REGX(x, MultiplyConst(k), x); }
+Node multiply(const Node &x, float k) { return REGX(x, MultiplyConst(k), x); }
 
 template<>
-Node operator*(float k, const Node &x) { return REGX(x, MultiplyConst(k), x); }
+Node multiply(float k, const Node &x) { return REGX(x, MultiplyConst(k), x); }
 
 template<>
-Node operator*(const Node &a, const Node &b) {
+Node multiply(const Node &a, const Node &b) {
   if (a.shape().is_scalar()) return REGX(a, MultiplyScalar(), b, a);
   else if (b.shape().is_scalar()) return REGX(a, MultiplyScalar(), a, b);
   else return REGX(a, Multiply(), a, b);
 }
 
 template<>
-Node operator/(const Node &x, float k) { return REGX(x, DivideConstR(k), x); }
+Node divide(const Node &x, float k) { return REGX(x, DivideConstR(k), x); }
 
 template<>
-Node operator/(float k, const Node &x) { return REGX(x, DivideConstL(k), x); }
+Node divide(float k, const Node &x) { return REGX(x, DivideConstL(k), x); }
 
 template<>
-Node operator/(const Node &a, const Node &b) {
+Node divide(const Node &a, const Node &b) {
   if (a.shape().is_scalar()) return REGX(a, DivideScalarL(), b, a);
   else if (b.shape().is_scalar()) return REGX(a, DivideScalarR(), a, b);
   else return REGX(a, Divide(), a, b);
 }
 
-namespace functions {
+Node input_node(
+    const Shape &shape, const std::vector<float> &data, Device *dev, Graph *g) {
+  return REG(::get_graph(g), Input(shape, data, ::get_device(dev)));
+}
 
-Node input(
-    const Shape &shape, const std::vector<float> &data, Device &dev, Graph &g) {
-  return REG(g, Input(shape, data, dev));
+Node parameter_node(Parameter &param, Graph *g) {
+  return REG(::get_graph(g), ParameterInput(param));
 }
 
 template<>
-Node input<Node>(
-    const Shape &shape, const std::vector<float> &data, Device &dev) {
-  return input(shape, data, dev, Graph::get_default());
-}
-
-Node parameter(Parameter &param, Graph &g) {
-  return REG(g, ParameterInput(param));
-}
-
-template<>
-Node parameter<Node>(Parameter &param) {
-  return parameter(param, Graph::get_default());
-}
-
-template<>
-Node copy(const Node &x, Device &dev) {
-  return REGX(x, Copy(dev), x);
+Node copy(const Node &x, Device *dev) {
+  return REGX(x, Copy(::get_device(dev)), x);
 }
 
 template<>
@@ -274,64 +274,43 @@ Node sum(const Node &x) {
 
 }  // namespace batch
 
-Node constant(const Shape &shape, float k, Device &dev, Graph &g) {
-  return REG(g, Constant(shape, k, dev));
+Node constant_node(const Shape &shape, float k, Device *dev, Graph *g) {
+  return REG(::get_graph(g), Constant(shape, k, ::get_device(dev)));
 }
 
-Node identity(std::uint32_t size, Device &dev, Graph &g) {
-  return REG(g, IdentityMatrix(size, dev));
-}
-
-template<>
-Node constant<Node>(const Shape &shape, float k, Device &dev) {
-  return constant(shape, k, dev, Graph::get_default());
-}
-
-template<>
-Node identity<Node>(std::uint32_t size, Device &dev) {
-  return identity(size, dev, Graph::get_default());
+Node identity_node(std::uint32_t size, Device *dev, Graph *g) {
+  return REG(::get_graph(g), IdentityMatrix(size, ::get_device(dev)));
 }
 
 namespace random {
 
-Node bernoulli(const Shape &shape, float p, Device &dev, Graph &g) {
-  return REG(g, RandomBernoulli(shape, p, dev));
+Node bernoulli_node(
+    const Shape &shape, float p, Device *dev, Graph *g) {
+  return REG(
+      ::get_graph(g), RandomBernoulli(shape, p, ::get_device(dev)));
 }
 
-Node uniform(const Shape &shape, float lower, float upper, Device &dev, Graph &g) {
-  return REG(g, RandomUniform(shape, lower, upper, dev));
+Node uniform_node(
+    const Shape &shape, float lower, float upper, Device *dev, Graph *g) {
+  return REG(
+      ::get_graph(g), RandomUniform(shape, lower, upper, ::get_device(dev)));
 }
 
-Node normal(const Shape &shape, float mean, float sd, Device &dev, Graph &g) {
-  return REG(g, RandomNormal(shape, mean, sd, dev));
+Node normal_node(
+    const Shape &shape, float mean, float sd, Device *dev, Graph *g) {
+  return REG(
+      ::get_graph(g), RandomNormal(shape, mean, sd, ::get_device(dev)));
 }
 
-Node log_normal(const Shape &shape, float mean, float sd, Device &dev, Graph &g) {
-  return REG(g, RandomLogNormal(shape, mean, sd, dev));
+Node log_normal_node(
+    const Shape &shape, float mean, float sd, Device *dev, Graph *g) {
+  return REG(
+      ::get_graph(g), RandomLogNormal(shape, mean, sd, ::get_device(dev)));
 }
 
-Node gumbel(const Shape &shape, float mu, float beta, Device &dev, Graph &g) {
-  return mu - beta * log(-log(uniform(shape, 0, .9999999, dev, g)));
-}
-
-template<>
-Node bernoulli<Node>(const Shape &shape, float p, Device &dev) {
-  return bernoulli(shape, p, dev, Graph::get_default());
-}
-
-template<>
-Node uniform<Node>(const Shape &shape, float lower, float upper, Device &dev) {
-  return uniform(shape, lower, upper, dev, Graph::get_default());
-}
-
-template<>
-Node normal<Node>(const Shape &shape, float mean, float sd, Device &dev) {
-  return normal(shape, mean, sd, dev, Graph::get_default());
-}
-
-template<>
-Node log_normal<Node>(const Shape &shape, float mean, float sd, Device &dev) {
-  return log_normal(shape, mean, sd, dev, Graph::get_default());
+Node gumbel_node(
+    const Shape &shape, float mu, float beta, Device *dev, Graph *g) {
+  return mu - beta * log(-log(uniform_node(shape, 0., .9999999, dev, g)));
 }
 
 }  // namespace random
