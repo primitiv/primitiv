@@ -5,6 +5,7 @@
 
 #include <vector>
 
+#include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/functions.h>
 #include <primitiv/graph.h>
@@ -21,16 +22,6 @@ namespace {
 
 using primitiv::Node;
 
-// Helper to obtain Device object.
-primitiv::Device &get_device(primitiv::Device *dev) {
-  return dev ? *dev : primitiv::Device::get_default();
-}
-
-// Helper to obtain Graph object.
-primitiv::Graph &get_graph(primitiv::Graph *g) {
-  return g ? *g : primitiv::Graph::get_default();
-}
-
 // Helper to transform pointers to nodes.
 std::vector<Node> ptr_to_obj(const std::vector<const Node *> &xs) {
   std::vector<Node> ret;
@@ -42,7 +33,6 @@ std::vector<Node> ptr_to_obj(const std::vector<const Node *> &xs) {
 }  // namespace
 
 namespace primitiv {
-
 namespace functions {
 
 template<>
@@ -105,25 +95,30 @@ Node divide(const Node &a, const Node &b) {
 
 Node input_node(
     const Shape &shape, const std::vector<float> &data, Device *dev, Graph *g) {
-  return REG(::get_graph(g), Input(shape, data, ::get_device(dev)));
+  return REG(
+      Graph::get_reference_or_default(g),
+      Input(shape, data, Device::get_reference_or_default(dev)));
 }
 
 Node parameter_node(Parameter &param, Graph *g) {
-  return REG(::get_graph(g), ParameterInput(param));
+  return REG(Graph::get_reference_or_default(g), ParameterInput(param));
 }
 
 template<>
 Node copy(const Node &x, Device *dev) {
-  return REGX(x, Copy(::get_device(dev)), x);
+  return REGX(x, Copy(Device::get_reference_or_default(dev)), x);
 }
 
 template<>
-Node pick(const Node &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim) {
+Node pick(
+    const Node &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim) {
   return REGX(x, Pick(ids, dim), x);
 }
 
 template<>
-Node slice(const Node &x, std::uint32_t dim, std::uint32_t lower, std::uint32_t upper) {
+Node slice(
+    const Node &x, std::uint32_t dim,
+    std::uint32_t lower, std::uint32_t upper) {
   return REGX(x, Slice(dim, lower, upper), x);
 }
 
@@ -275,11 +270,15 @@ Node sum(const Node &x) {
 }  // namespace batch
 
 Node constant_node(const Shape &shape, float k, Device *dev, Graph *g) {
-  return REG(::get_graph(g), Constant(shape, k, ::get_device(dev)));
+  return REG(
+      Graph::get_reference_or_default(g),
+      Constant(shape, k, Device::get_reference_or_default(dev)));
 }
 
 Node identity_node(std::uint32_t size, Device *dev, Graph *g) {
-  return REG(::get_graph(g), IdentityMatrix(size, ::get_device(dev)));
+  return REG(
+      Graph::get_reference_or_default(g),
+      IdentityMatrix(size, Device::get_reference_or_default(dev)));
 }
 
 namespace random {
@@ -287,25 +286,30 @@ namespace random {
 Node bernoulli_node(
     const Shape &shape, float p, Device *dev, Graph *g) {
   return REG(
-      ::get_graph(g), RandomBernoulli(shape, p, ::get_device(dev)));
+      Graph::get_reference_or_default(g),
+      RandomBernoulli(shape, p, Device::get_reference_or_default(dev)));
 }
 
 Node uniform_node(
     const Shape &shape, float lower, float upper, Device *dev, Graph *g) {
   return REG(
-      ::get_graph(g), RandomUniform(shape, lower, upper, ::get_device(dev)));
+      Graph::get_reference_or_default(g),
+      RandomUniform(
+        shape, lower, upper, Device::get_reference_or_default(dev)));
 }
 
 Node normal_node(
     const Shape &shape, float mean, float sd, Device *dev, Graph *g) {
   return REG(
-      ::get_graph(g), RandomNormal(shape, mean, sd, ::get_device(dev)));
+      Graph::get_reference_or_default(g),
+      RandomNormal(shape, mean, sd, Device::get_reference_or_default(dev)));
 }
 
 Node log_normal_node(
     const Shape &shape, float mean, float sd, Device *dev, Graph *g) {
   return REG(
-      ::get_graph(g), RandomLogNormal(shape, mean, sd, ::get_device(dev)));
+      Graph::get_reference_or_default(g),
+      RandomLogNormal(shape, mean, sd, Device::get_reference_or_default(dev)));
 }
 
 Node gumbel_node(
@@ -316,5 +320,4 @@ Node gumbel_node(
 }  // namespace random
 
 }  // namespace functions
-
 }  // namespace primitiv

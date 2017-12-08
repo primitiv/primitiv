@@ -1,6 +1,7 @@
 #include <config.h>
 
 #include <fstream>
+#include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/file_format.h>
 #include <primitiv/model.h>
@@ -11,8 +12,7 @@
 
 namespace primitiv {
 
-void Model::load(
-    const std::string &path, bool with_stats, Device &device) {
+void Model::load(const std::string &path, bool with_stats, Device *device) {
   std::ifstream ifs(path);
   if (!ifs.is_open()) {
     THROW_ERROR("Could not open file: " << path);
@@ -40,7 +40,8 @@ void Model::load(
           "Model does not have a parameter with name: '"
           << string_utils::join(key, ".") << "'");
     }
-    it->second->load_inner(reader, with_stats, device);
+    it->second->load_inner(
+        reader, with_stats, Device::get_reference_or_default(device));
   }
 }
 
@@ -138,7 +139,8 @@ const Model &Model::get_submodel(const std::vector<std::string> &names) const {
   return *it->second;
 }
 
-std::map<std::vector<std::string>, Parameter *> Model::get_all_parameters() const {
+std::map<std::vector<std::string>, Parameter *> Model::get_all_parameters(
+    ) const {
   std::map<std::vector<std::string>, Parameter *> params;
   for (const auto &kv : param_kv_) {
     params.emplace(std::vector<std::string> { kv.first }, kv.second);

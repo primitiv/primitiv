@@ -1,6 +1,7 @@
 #include <config.h>
 
 #include <algorithm>
+#include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/functions.h>
 #include <primitiv/operator_impl.h>

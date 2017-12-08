@@ -40,7 +40,7 @@ void *Tensor::data() {
   return data_.get();
 }
 
-void Tensor::reset(const float k) {
+void Tensor::reset(float k) {
   if (!valid()) THROW_ERROR("Invalid tensor.");
   device_->reset_tensor(k, *this);
 }
