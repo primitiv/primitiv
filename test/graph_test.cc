@@ -4,11 +4,11 @@
 #include <vector>
 #include <gtest/gtest.h>
 #include <primitiv/error.h>
-#include <primitiv/function_impl.h>
+#include <primitiv/functions.h>
 #include <primitiv/graph.h>
 #include <primitiv/initializer_impl.h>
 #include <primitiv/naive_device.h>
-#include <primitiv/operators.h>
+#include <primitiv/operator_impl.h>
 #include <primitiv/parameter.h>
 #include <test_utils.h>
 
@@ -47,7 +47,7 @@ TEST_F(GraphTest, CheckInvalidNode) {
   Node node;
   EXPECT_FALSE(node.valid());
   EXPECT_THROW(node.graph(), Error);
-  EXPECT_THROW(node.function_id(), Error);
+  EXPECT_THROW(node.operator_id(), Error);
   EXPECT_THROW(node.value_id(), Error);
   EXPECT_THROW(node.shape(), Error);
   EXPECT_THROW(node.device(), Error);
@@ -62,16 +62,16 @@ TEST_F(GraphTest, CheckMoveNode) {
   Graph g;
   Graph::set_default(g);
 
-  Node x1 = operators::zeros<Node>({2, 2});
+  Node x1 = functions::zeros<Node>({2, 2});
   ASSERT_TRUE(x1.valid());
-  const std::uint32_t fid = x1.function_id();
+  const std::uint32_t fid = x1.operator_id();
   const std::uint32_t vid = x1.value_id();
 
   // c-tor
   Node x2 = std::move(x1);
   EXPECT_FALSE(x1.valid());
   EXPECT_TRUE(x2.valid());
-  EXPECT_EQ(fid, x2.function_id());
+  EXPECT_EQ(fid, x2.operator_id());
   EXPECT_EQ(vid, x2.value_id());
 
   // assignment
@@ -79,7 +79,7 @@ TEST_F(GraphTest, CheckMoveNode) {
   x3 = std::move(x2);
   EXPECT_FALSE(x2.valid());
   EXPECT_TRUE(x3.valid());
-  EXPECT_EQ(fid, x3.function_id());
+  EXPECT_EQ(fid, x3.operator_id());
   EXPECT_EQ(vid, x3.value_id());
 }
 
@@ -93,9 +93,9 @@ TEST_F(GraphTest, CheckMultipleDevices) {
   const vector<float> data2 {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
   const vector<float> data3 {1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6};
   const vector<float> grad(12, 1);
-  const Node x1 = operators::input<Node>(Shape({2, 2}, 3), data1);
-  const Node x2 = operators::input<Node>(Shape({2, 2}, 3), data2, dev2);
-  const Node x3 = operators::copy(x1, dev2) + x2;
+  const Node x1 = functions::input<Node>(Shape({2, 2}, 3), data1);
+  const Node x2 = functions::input<Node>(Shape({2, 2}, 3), data2, dev2);
+  const Node x3 = functions::copy(x1, dev2) + x2;
   EXPECT_EQ(Shape({2, 2}, 3), x3.shape());
   EXPECT_EQ(&dev, &x1.device());
   EXPECT_EQ(&dev2, &x2.device());
@@ -122,8 +122,8 @@ TEST_F(GraphTest, CheckInvalidMultipleDevices) {
   Graph::set_default(g);
 
   const vector<float> dummy(12);
-  const Node x1 = operators::input<Node>(Shape({2, 2}, 3), dummy);
-  const Node x2 = operators::input<Node>(Shape({2, 2}, 3), dummy, dev2);
+  const Node x1 = functions::input<Node>(Shape({2, 2}, 3), dummy);
+  const Node x2 = functions::input<Node>(Shape({2, 2}, 3), dummy, dev2);
   const Node x3 = x1 + x2;
   EXPECT_THROW(g.forward(x3), Error);
 }
@@ -134,30 +134,30 @@ TEST_F(GraphTest, CheckClear) {
   Graph g;
   Graph::set_default(g);
 
-  EXPECT_EQ(0u, g.num_functions());
+  EXPECT_EQ(0u, g.num_operators());
 
   {
-    operators::input<Node>({}, {1});
-    operators::input<Node>({}, {1});
-    EXPECT_EQ(2u, g.num_functions());
+    functions::input<Node>({}, {1});
+    functions::input<Node>({}, {1});
+    EXPECT_EQ(2u, g.num_operators());
   }
 
   g.clear();
-  EXPECT_EQ(0u, g.num_functions());
+  EXPECT_EQ(0u, g.num_operators());
 
   {
-    operators::input<Node>({}, {1});
-    operators::input<Node>({}, {1});
-    operators::input<Node>({}, {1});
-    EXPECT_EQ(3u, g.num_functions());
+    functions::input<Node>({}, {1});
+    functions::input<Node>({}, {1});
+    functions::input<Node>({}, {1});
+    EXPECT_EQ(3u, g.num_operators());
   }
 
   g.clear();
-  EXPECT_EQ(0u, g.num_functions());
+  EXPECT_EQ(0u, g.num_operators());
 
   // Clear empty graph.
   g.clear();
-  EXPECT_EQ(0u, g.num_functions());
+  EXPECT_EQ(0u, g.num_operators());
 }
 
 TEST_F(GraphTest, CheckForwardBackward) {
@@ -169,19 +169,19 @@ TEST_F(GraphTest, CheckForwardBackward) {
   const vector<float> data1 {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4};
   const vector<float> data3 {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
   vector<Node> nodes;
-  nodes.emplace_back(operators::input<Node>(Shape({2, 2}, 3), data1));
-  nodes.emplace_back(operators::ones<Node>({2, 2}));
-  nodes.emplace_back(operators::input<Node>(Shape({2, 2}, 3), data3));
+  nodes.emplace_back(functions::input<Node>(Shape({2, 2}, 3), data1));
+  nodes.emplace_back(functions::ones<Node>({2, 2}));
+  nodes.emplace_back(functions::input<Node>(Shape({2, 2}, 3), data3));
   nodes.emplace_back(nodes[0] + nodes[1]);
   nodes.emplace_back(nodes[1] - nodes[2]);
   nodes.emplace_back(nodes[3] * nodes[4]);
   nodes.emplace_back(nodes[5] + 1);
-  nodes.emplace_back(operators::sum(nodes[6], 0));
-  nodes.emplace_back(operators::sum(nodes[7], 1));
-  nodes.emplace_back(operators::batch::sum(nodes[8]));
+  nodes.emplace_back(functions::sum(nodes[6], 0));
+  nodes.emplace_back(functions::sum(nodes[7], 1));
+  nodes.emplace_back(functions::batch::sum(nodes[8]));
 
   EXPECT_EQ(10u, nodes.size());
-  EXPECT_EQ(10u, g.num_functions());
+  EXPECT_EQ(10u, g.num_operators());
 
   // Dump the graph to the output log.
   std::cout << g.dump("dot");
@@ -265,24 +265,24 @@ TEST_F(GraphTest, CheckXor) {
 
   vector<Node> nodes;
   // sources
-  nodes.emplace_back(operators::input<Node>(Shape({2}, 4), inputs));
-  nodes.emplace_back(operators::parameter<Node>(w1));
-  nodes.emplace_back(operators::parameter<Node>(b1));
-  nodes.emplace_back(operators::parameter<Node>(w2));
-  nodes.emplace_back(operators::parameter<Node>(b2));
+  nodes.emplace_back(functions::input<Node>(Shape({2}, 4), inputs));
+  nodes.emplace_back(functions::parameter<Node>(w1));
+  nodes.emplace_back(functions::parameter<Node>(b1));
+  nodes.emplace_back(functions::parameter<Node>(w2));
+  nodes.emplace_back(functions::parameter<Node>(b2));
   // calculation
-  nodes.emplace_back(operators::matmul(nodes[1], nodes[0]));
+  nodes.emplace_back(functions::matmul(nodes[1], nodes[0]));
   nodes.emplace_back(nodes[5] + nodes[2]);
-  nodes.emplace_back(operators::tanh(nodes[6]));
-  nodes.emplace_back(operators::matmul(nodes[3], nodes[7]));
+  nodes.emplace_back(functions::tanh(nodes[6]));
+  nodes.emplace_back(functions::matmul(nodes[3], nodes[7]));
   nodes.emplace_back(nodes[8] + nodes[4]);
   // losses
-  nodes.emplace_back(operators::input<Node>(Shape({}, 4), outputs));
+  nodes.emplace_back(functions::input<Node>(Shape({}, 4), outputs));
   nodes.emplace_back(nodes[9] - nodes[10]);
   nodes.emplace_back(nodes[11] * nodes[11]);
-  nodes.emplace_back(operators::batch::sum(nodes[12]));
+  nodes.emplace_back(functions::batch::sum(nodes[12]));
 
-  EXPECT_EQ(nodes.size(), g.num_functions());
+  EXPECT_EQ(nodes.size(), g.num_operators());
   std::cout << g.dump("dot");
 
   g.forward(nodes.back());
@@ -347,14 +347,14 @@ TEST_F(GraphTest, CheckLSTM) {
   Graph g;
   Graph::set_default(g);
 
-  namespace batch = operators::batch;
-  using operators::matmul;
-  using operators::input;
-  using operators::parameter;
-  using operators::sigmoid;
-  using operators::sum;
-  using operators::tanh;
-  using operators::zeros;
+  namespace batch = functions::batch;
+  using functions::matmul;
+  using functions::input;
+  using functions::parameter;
+  using functions::sigmoid;
+  using functions::sum;
+  using functions::tanh;
+  using functions::zeros;
 
   const Node x = input<Node>(Shape({2}, 2), {2, -2, 0.5, -0.5});
   const Node h = input<Node>(Shape({2}, 2), {-1, 1, -0.5, 0.5});
@@ -384,7 +384,7 @@ TEST_F(GraphTest, CheckLSTM) {
   const Node loss = diff * diff;
   const Node sum_loss = batch::sum(sum(loss, 0));
 
-  EXPECT_EQ(45u, g.num_functions());
+  EXPECT_EQ(45u, g.num_operators());
 
   const Tensor loss_tensor = g.forward(loss);
   const Tensor sum_loss_tensor = g.forward(sum_loss);
@@ -453,15 +453,15 @@ TEST_F(GraphTest, CheckConcatLSTM) {
   Graph g;
   Graph::set_default(g);
 
-  namespace batch = operators::batch;
-  using operators::matmul;
-  using operators::input;
-  using operators::parameter;
-  using operators::sigmoid;
-  using operators::slice;
-  using operators::sum;
-  using operators::tanh;
-  using operators::zeros;
+  namespace batch = functions::batch;
+  using functions::matmul;
+  using functions::input;
+  using functions::parameter;
+  using functions::sigmoid;
+  using functions::slice;
+  using functions::sum;
+  using functions::tanh;
+  using functions::zeros;
 
   const Node x = input<Node>(Shape({2}, 2), {2, -2, 0.5, -0.5});
   const Node h = input<Node>(Shape({2}, 2), {-1, 1, -0.5, 0.5});
@@ -483,7 +483,7 @@ TEST_F(GraphTest, CheckConcatLSTM) {
   const Node loss = diff * diff;
   const Node sum_loss = batch::sum(sum(loss, 0));
 
-  EXPECT_EQ(28u, g.num_functions());
+  EXPECT_EQ(28u, g.num_operators());
 
   const Tensor loss_tensor = g.forward(loss);
   const Tensor sum_loss_tensor = g.forward(sum_loss);

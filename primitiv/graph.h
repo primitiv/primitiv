@@ -4,8 +4,8 @@
 #include <cstdint>
 #include <memory>
 #include <vector>
-#include <primitiv/function.h>
 #include <primitiv/mixins.h>
+#include <primitiv/operator.h>
 #include <primitiv/shape.h>
 
 namespace primitiv {
@@ -23,7 +23,7 @@ class Node {
 public:
   Node(const Node &) = default;
 
-  Node(Node &&src) : g_(src.g_), fid_(src.fid_), vid_(src.vid_) {
+  Node(Node &&src) : g_(src.g_), op_id_(src.op_id_), val_id_(src.val_id_) {
     src.g_ = nullptr;
   }
 
@@ -32,14 +32,14 @@ public:
   Node &operator=(Node &&src) {
     if (&src != this) {
       g_ = src.g_;
-      fid_ = src.fid_;
-      vid_ = src.vid_;
+      op_id_ = src.op_id_;
+      val_id_ = src.val_id_;
       src.g_ = nullptr;
     }
     return *this;
   }
 
-  Node() : g_(nullptr), fid_(), vid_() {}
+  Node() : g_(nullptr), op_id_(), val_id_() {}
 
   /**
    * Returns whether the node is valid or not.
@@ -57,28 +57,28 @@ public:
   }
 
   /**
-   * Returns the function ID.
-   * @return Function ID.
+   * Returns the operator ID.
+   * @return Operator ID.
    */
-  std::uint32_t function_id() const {
+  std::uint32_t operator_id() const {
     if (!valid()) THROW_ERROR("Invalid node.");
-    return fid_;
+    return op_id_;
   }
 
   /**
-   * Returns the value ID of the function.
+   * Returns the value ID of the operator.
    * @return Value ID.
    */
   std::uint32_t value_id() const {
     if (!valid()) THROW_ERROR("Invalid node.");
-    return vid_;
+    return val_id_;
   }
 
   /**
    * Returns shape of the node.
    * @return A Shape object.
    */
-  const Shape &shape() const;
+  Shape shape() const;
 
   /**
    * Returns device of the node.
@@ -125,14 +125,15 @@ private:
   /**
    * Creates a new node pointer.
    * @param g Pointer of the computation graph.
-   * @param fid Function ID.
-   * @param vid Value ID.
+   * @param op_id Operator ID.
+   * @param val_id Value ID.
    */
-  Node(Graph &g, std::uint32_t fid, std::uint32_t vid) : g_(&g), fid_(fid), vid_(vid) {}
+  Node(Graph &g, std::uint32_t op_id, std::uint32_t val_id)
+    : g_(&g), op_id_(op_id), val_id_(val_id) {}
 
   Graph *g_;
-  std::uint32_t fid_;
-  std::uint32_t vid_;
+  std::uint32_t op_id_;
+  std::uint32_t val_id_;
 };
 
 /**
@@ -146,21 +147,21 @@ public:
   ~Graph() = default;
 
   /**
-   * Clear all functions in the graph.
+   * Clear all operators in the graph.
    * @remarks After calling this method, all Node objects supplied by the graph
    *          itself is invalidated.
    */
   void clear();
 
   /**
-   * Adds a function subgraph.
-   * @param func Interface of the new function.
+   * Adds a operator subgraph.
+   * @param op Interface of the new operator.
    * @param args List of arguments. Each node should point a node in the same
    *        computation graph.
    * @return A new Node object of the resulting value.
    */
-  Node add_function(
-      std::unique_ptr<Function> &&func, const std::vector<Node> &args);
+  Node add_operator(
+      std::unique_ptr<Operator> &&op, const std::vector<Node> &args);
 
   /**
    * Calculates the value of given node.
@@ -187,7 +188,7 @@ public:
    * @param node Node object specifying the target node.
    * @return The shape of the node.
    */
-  const Shape &get_shape(const Node &node) const;
+  Shape get_shape(const Node &node) const;
 
   /**
    * Retrieves the device of the node.
@@ -205,18 +206,18 @@ public:
   std::string dump(const std::string &format) const;
 
   /**
-   * Returns the number of functions in the computation graph.
+   * Returns the number of operators in the computation graph.
    * @return Number of nodes.
    */
-  std::uint32_t num_functions() const { return funcs_.size(); }
+  std::uint32_t num_operators() const { return ops_.size(); }
 
 private:
   /**
    * Tuple of values to determine the location of the node.
    */
   struct Address {
-    std::uint32_t fid;
-    std::uint32_t vid;
+    std::uint32_t op_id;
+    std::uint32_t val_id;
   };
 
   /**
@@ -231,20 +232,20 @@ private:
   };
 
   /**
-   * Set of informations that represents the function: an implementation of the
-   * function, its arguments, and its return values.
+   * Set of informations that represents the operator: an implementation of the
+   * operator, its arguments, and its return values.
    */
-  struct FunctionInfo {
-    std::unique_ptr<Function> func;
+  struct OperatorInfo {
+    std::unique_ptr<Operator> op;
     std::vector<Address> args;
     std::vector<NodeInfo> rets;
   };
 
   static Graph *default_obj_;
-  std::vector<FunctionInfo> funcs_;
+  std::vector<OperatorInfo> ops_;
 };
 
-inline const Shape &Node::shape() const {
+inline Shape Node::shape() const {
   if (!valid()) THROW_ERROR("Invalid node.");
   return g_->get_shape(*this);
 }

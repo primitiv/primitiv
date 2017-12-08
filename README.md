@@ -1,9 +1,9 @@
 [![c++](https://img.shields.io/badge/c%2B%2B-11-blue.svg)](https://isocpp.org/)
-[![python](https://img.shields.io/badge/python-3.5-blue.svg)](https://www.python.org/)
+[![backend](https://img.shields.io/badge/backend-CPU%2c%20CUDA%2c%20OpenCL-blue.svg)](README.md)
 [![os](https://img.shields.io/badge/os-Ubuntu%2c%20Debian%2c%20Fedora%2c%20OSX-blue.svg)](https://travis-ci.org/odashi/primitiv)
 [![license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Build Status (master)](https://img.shields.io/travis/odashi/primitiv/master.svg?label=build+%28master%29)](https://travis-ci.org/odashi/primitiv)
-[![Build Status (develop)](https://img.shields.io/travis/odashi/primitiv/develop.svg?label=build+%28develop%29)](https://travis-ci.org/odashi/primitiv)
+[![Build Status (master)](https://img.shields.io/travis/primitiv/primitiv/master.svg?label=build+%28master%29)](https://travis-ci.org/primitiv/primitiv)
+[![Build Status (develop)](https://img.shields.io/travis/primitiv/primitiv/develop.svg?label=build+%28develop%29)](https://travis-ci.org/primitiv/primitiv)
 
 primitiv
 ========
@@ -14,11 +14,18 @@ A Neural Network Toolkit.
 Features
 --------
 
-- Dynamic and incremental graph construction
+- Dynamic and incremental graph construction (a.k.a. "define-by-run" style)
 - On-demand memory allocation
 - Automatic minibatch broadcasting
 - Mostly device-independent
 - Simple usage
+
+
+Languages
+---------
+
+This repository contains only the core C++ library of *primitiv*.
+Some bindings for other programming languages (e.g., Python) can be found in [the official repository](https://github.com/primitiv).
 
 
 Prerequisites
@@ -30,6 +37,8 @@ Prerequisites
   - Required only when `-DPRIMITIV_BUILD_TESTS=ON`.
 - (optional) CUDA 7.5 or later
   - Required only when `-DPRIMITIV_USE_CUDA=ON`
+- (optional) OpenCL 1.2/OpenCL C++ binding v2
+  - Required only when `-DPRIMITIV_USE_OPENCL=ON`
 
 Install
 -------
@@ -38,7 +47,7 @@ Install
     cd primitiv
     mkdir build
     cd build
-    cmake .. [-DPRIMITIV_USE_CUDA=ON] [(Other options)]
+    cmake .. [-D(Options you need)]
     make [-j <threads>]
     [make test]
     [make install]
@@ -62,16 +71,19 @@ Building Options
   - Libraries built with this flag will tend to consume more memory.
 - `PRIMITIV_USE_CUDA` (default=`OFF`)
   - Enables CUDA backend (`devices::CUDA` class).
+- `PRIMITIV_USE_OPENCL` (default=`OFF`)
+  - Enables OpenCL backend(`devices::OpenCL` class).
 - Other available options:
   - CMake standard options.
-  - [FindCUDA](https://cmake.org/cmake/help/v3.1/module/FindCUDA.html) options.
   - [FindGTest](https://cmake.org/cmake/help/v3.1/module/FindGTest.html) options.
+  - [FindCUDA](https://cmake.org/cmake/help/v3.1/module/FindCUDA.html) options.
+  - [FindOpenCL](https://cmake.org/cmake/help/v3.1/module/FindOpenCL.html) options.
 
 Usage
 -----
 
 - [Short Python tutorial](https://github.com/odashi/primitiv/tree/develop/examples/tutorial1_xor.ipynb) with solving XOR problem.
-- [Other examples](https://github.com/odashi/primitiv/tree/develop/examples).
+- [Examples](https://github.com/odashi/primitiv/tree/develop/examples).
 
 
 Contact

@@ -12,13 +12,6 @@
 #include <primitiv/tensor.h>
 #include <test_utils.h>
 
-#ifdef PRIMITIV_USE_CUDA
-#include <primitiv/cuda_device.h>
-#endif  // PRIMITIV_USE_CUDA
-#ifdef PRIMITIV_USE_OPENCL
-#include <primitiv/opencl_device.h>
-#endif  // PRIMITIV_USE_OPENCL
-
 using std::vector;
 using test_utils::vector_match;
 
@@ -29,65 +22,7 @@ protected:
   static vector<Device *> devices;
 
   static void SetUpTestCase() {
-    {
-      devices.emplace_back(new devices::Naive());
-      std::cout << "Add Naive device." << std::endl;
-      devices.emplace_back(new devices::Naive());
-      std::cout << "Add Naive device." << std::endl;
-    }
-#ifdef PRIMITIV_USE_CUDA
-    {
-      const std::uint32_t num_devs = devices::CUDA::num_devices();
-      if (num_devs > 0) {
-        for (std::uint32_t dev_id = 0; dev_id < num_devs; ++dev_id) {
-          devices.emplace_back(new devices::CUDA(dev_id));
-          std::cout <<
-            "Add CUDA device (device_id = " << dev_id << ")." << std::endl;
-          if (dev_id == 0) {
-            // Add another device object on the device 0.
-            devices.emplace_back(new devices::CUDA(dev_id));
-            std::cout <<
-              "Add CUDA device (device_id = " << dev_id << ")." << std::endl;
-          }
-        }
-      } else {
-        std::cout << "No CUDA devices are installed." << std::endl;
-      }
-    }
-#endif  // PRIMITIV_USE_CUDA
-#ifdef PRIMITIV_USE_OPENCL
-    {
-      const std::uint32_t num_pfs = devices::OpenCL::num_platforms();
-      if (num_pfs > 0) {
-        for (std::uint32_t pf_id = 0; pf_id < num_pfs; ++pf_id) {
-          const std::uint32_t num_devs = devices::OpenCL::num_devices(pf_id);
-          if (num_devs > 0) {
-            for (std::uint32_t dev_id = 0; dev_id < num_devs; ++dev_id) {
-              devices.emplace_back(new devices::OpenCL(pf_id, dev_id));
-              std::cout <<
-                "Add OpenCL device (platform_id = " << pf_id <<
-                ", device_id = " << dev_id << ")." << std::endl;
-              if (dev_id == 0) {
-                // Add another device object on the device 0.
-                devices.emplace_back(new devices::OpenCL(pf_id, dev_id));
-                std::cout <<
-                  "Add OpenCL device (platform_id = " << pf_id <<
-                  ", device_id = " << dev_id << ")." << std::endl;
-              }
-            }
-          } else {
-            std::cout << "No OpenCL devices on the platform " << pf_id <<
-              " are installed." << std::endl;
-          }
-        }
-      } else {
-        std::cout << "No OpenCL platforms are installed." << std::endl;
-      }
-    }
-#endif  // PRIMITIV_USE_OPENCL
-    for (Device *dev : devices) {
-      dev->dump_description();
-    }
+    test_utils::add_available_devices(devices);
   }
 
   static void TearDownTestCase() {
@@ -488,142 +423,242 @@ TEST_F(TensorTest, CheckResetValuesByVector) {
 }
 
 TEST_F(TensorTest, CheckInplaceMultiplyConst) {
+  const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  const vector<float> y1_data {2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24};
+  const vector<float> y2_data {.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6};
+
   for (Device *dev : devices) {
-    const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    const vector<float> y_data {2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24};
-    Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
-    x *= 2;
-    EXPECT_TRUE(vector_match(y_data, x.to_vector()));
+    {
+      Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
+      x.inplace_multiply_const(2);
+      EXPECT_TRUE(vector_match(y1_data, x.to_vector()));
+    }
+    {
+      Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
+      x *= 2;
+      EXPECT_TRUE(vector_match(y1_data, x.to_vector()));
+    }
   }
   for (Device *dev : devices) {
-    const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    const vector<float> y_data {.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6};
-    Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
-    x *= .5;
-    EXPECT_TRUE(vector_match(y_data, x.to_vector()));
+    {
+      Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
+      x.inplace_multiply_const(.5);
+      EXPECT_TRUE(vector_match(y2_data, x.to_vector()));
+    }
+    {
+      Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
+      x *= .5;
+      EXPECT_TRUE(vector_match(y2_data, x.to_vector()));
+    }
   }
 }
 
 TEST_F(TensorTest, CheckInplaceAddNN) {
+  const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  const vector<float> b_data {0, -1, -2, -3, -3, -4, -5, -6, -6, -7, -8, -9};
+  const vector<float> y_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
+
   for (Device *dev : devices) {
-    const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    const vector<float> b_data {0, -1, -2, -3, -3, -4, -5, -6, -6, -7, -8, -9};
-    const vector<float> y_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
-    Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
-    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
-    a += b;
-    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    {
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+      a.inplace_add(b);
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    }
+    {
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+      a += b;
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    }
   }
 }
 
 TEST_F(TensorTest, CheckInplaceAdd1N) {
+  const vector<float> a_data {1, 2, 3, 4};
+  const vector<float> b_data {0, -1, -2, -3, -3, -4, -5, -6, -6, -7, -8, -9};
+  const vector<float> y_data {-8, -10, -12, -14};
+
   for (Device *dev : devices) {
-    const vector<float> a_data {1, 2, 3, 4};
-    const vector<float> b_data {0, -1, -2, -3, -3, -4, -5, -6, -6, -7, -8, -9};
-    const vector<float> y_data {-8, -10, -12, -14};
-    Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
-    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
-    a += b;
-    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    {
+      Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
+      const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+      a.inplace_add(b);
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    }
+    {
+      Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
+      const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+      a += b;
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    }
   }
 }
 
 TEST_F(TensorTest, CheckInplaceAddN1) {
+  const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  const vector<float> b_data {0, -1, -2, -3};
+  const vector<float> y_data {1, 1, 1, 1, 5, 5, 5, 5, 9, 9, 9, 9};
+
   for (Device *dev : devices) {
-    const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    const vector<float> b_data {0, -1, -2, -3};
-    const vector<float> y_data {1, 1, 1, 1, 5, 5, 5, 5, 9, 9, 9, 9};
-    Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
-    const Tensor b = dev->new_tensor_by_vector({2, 2}, b_data);
-    a += b;
-    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    {
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector({2, 2}, b_data);
+      a.inplace_add(b);
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    }
+    {
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector({2, 2}, b_data);
+      a += b;
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    }
   }
 }
 
 TEST_F(TensorTest, CheckCopyAndInplaceAdd) {
+  const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  const vector<float> b_data {0, -1, -2, -3, -3, -4, -5, -6, -6, -7, -8, -9};
+  const vector<float> y_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
+
   for (Device *dev : devices) {
-    const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    const vector<float> b_data {0, -1, -2, -3, -3, -4, -5, -6, -6, -7, -8, -9};
-    const vector<float> y_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
-    Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
-    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+    {
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
 
-    const Tensor copied = a;
-    EXPECT_EQ(static_cast<const Tensor>(a).data(), copied.data());
+      const Tensor copied = a;
+      EXPECT_EQ(static_cast<const Tensor>(a).data(), copied.data());
 
-    a += b;
-    EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
-    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
-    EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
+      a.inplace_add(b);
+      EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+      EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
+    }
+    {
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+
+      const Tensor copied = a;
+      EXPECT_EQ(static_cast<const Tensor>(a).data(), copied.data());
+
+      a += b;
+      EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+      EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
+    }
   }
 }
 
 TEST_F(TensorTest, CheckInplaceSubtractNN) {
+  const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  const vector<float> b_data {0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9};
+  const vector<float> y_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
+
   for (Device *dev : devices) {
-    const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    const vector<float> b_data {0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9};
-    const vector<float> y_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
-    Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
-    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
-    a -= b;
-    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    {
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+      a.inplace_subtract(b);
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    }
+    {
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+      a -= b;
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    }
   }
 }
 
 TEST_F(TensorTest, CheckInplaceSubtract1N) {
+  const vector<float> a_data {1, 2, 3, 4};
+  const vector<float> b_data {0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9};
+  const vector<float> y_data {-8, -10, -12, -14};
   for (Device *dev : devices) {
-    const vector<float> a_data {1, 2, 3, 4};
-    const vector<float> b_data {0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9};
-    const vector<float> y_data {-8, -10, -12, -14};
-    Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
-    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
-    a -= b;
-    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    {
+      Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
+      const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+      a.inplace_subtract(b);
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    }
+    {
+      Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
+      const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+      a -= b;
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    }
   }
 }
 
 TEST_F(TensorTest, CheckInplaceSubtractN1) {
+  const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  const vector<float> b_data {0, 1, 2, 3};
+  const vector<float> y_data {1, 1, 1, 1, 5, 5, 5, 5, 9, 9, 9, 9};
+
   for (Device *dev : devices) {
-    const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    const vector<float> b_data {0, 1, 2, 3};
-    const vector<float> y_data {1, 1, 1, 1, 5, 5, 5, 5, 9, 9, 9, 9};
-    Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
-    const Tensor b = dev->new_tensor_by_vector({2, 2}, b_data);
-    a -= b;
-    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    {
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector({2, 2}, b_data);
+      a.inplace_subtract(b);
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    }
+    {
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector({2, 2}, b_data);
+      a -= b;
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    }
   }
 }
 
 TEST_F(TensorTest, CheckCopyAndInplaceSubtract) {
+  const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  const vector<float> b_data {0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9};
+  const vector<float> y_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
+
   for (Device *dev : devices) {
-    const vector<float> a_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    const vector<float> b_data {0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9};
-    const vector<float> y_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
-    Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
-    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+    {
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
 
-    const Tensor copied = a;
-    EXPECT_EQ(static_cast<const Tensor>(a).data(), copied.data());
+      const Tensor copied = a;
+      EXPECT_EQ(static_cast<const Tensor>(a).data(), copied.data());
 
-    a -= b;
-    EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
-    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
-    EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
+      a.inplace_subtract(b);
+      EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+      EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
+    }
+    {
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+
+      const Tensor copied = a;
+      EXPECT_EQ(static_cast<const Tensor>(a).data(), copied.data());
+
+      a -= b;
+      EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
+      EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+      EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
+    }
   }
 }
 
 TEST_F(TensorTest, CheckInvalidInplaceOps) {
+  const vector<Shape> shapes {
+    Shape(),
+    Shape({}, 3),
+    Shape({2, 2}, 2),
+  };
+
   for (Device *dev : devices) {
-    vector<Shape> shapes {
-      Shape(),
-      Shape({}, 3),
-      Shape({2, 2}, 2),
-    };
     Tensor a = dev->new_tensor_by_constant(Shape({2, 2}, 3), 0);
 
     for (const Shape &shape : shapes) {
       Tensor b = dev->new_tensor_by_constant(shape, 0);
+      EXPECT_THROW(a.inplace_add(b), Error);
       EXPECT_THROW(a += b, Error);
+      EXPECT_THROW(a.inplace_subtract(b), Error);
       EXPECT_THROW(a -= b, Error);
     }
   }

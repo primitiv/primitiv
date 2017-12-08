@@ -32,14 +32,14 @@
 #include <random>
 
 #include <primitiv/primitiv.h>
-#include <primitiv/primitiv_cuda.h>
+//#include <primitiv/primitiv_cuda.h>
 
 #include "lstm.h"
 #include "utils.h"
 
 using namespace primitiv;
 using namespace std;
-namespace F = primitiv::operators;
+namespace F = primitiv::functions;
 
 static const unsigned SRC_VOCAB_SIZE = 4000;
 static const unsigned TRG_VOCAB_SIZE = 5000;
@@ -65,12 +65,12 @@ class EncoderDecoder : public Model {
 
 public:
   EncoderDecoder() : dropout_rate_(DROPOUT_RATE) {
-    add_parameter("src_lookup", psrc_lookup_);
-    add_parameter("trg_lookup", ptrg_lookup_);
-    add_parameter("why", pwhy_);
-    add_parameter("by", pby_);
-    add_submodel("src_lstm", src_lstm_);
-    add_submodel("trg_lstm", trg_lstm_);
+    add("src_lookup", psrc_lookup_);
+    add("trg_lookup", ptrg_lookup_);
+    add("why", pwhy_);
+    add("by", pby_);
+    add("src_lstm", src_lstm_);
+    add("trg_lstm", trg_lstm_);
   }
 
   // Initializes the model.
@@ -130,7 +130,7 @@ void train(
     ::EncoderDecoder<Node> &encdec, Optimizer &optimizer,
     const string &prefix, float best_valid_ppl) {
   // Registers all parameters to the optimizer.
-  optimizer.add_model(encdec);
+  optimizer.add(encdec);
 
   // Loads vocab.
   const auto src_vocab = ::make_vocab(SRC_TRAIN_FILE, SRC_VOCAB_SIZE);
@@ -281,8 +281,7 @@ int main(const int argc, const char *argv[]) {
   }
 
   cerr << "initializing device ... " << flush;
-  //devices::Naive dev;
-  devices::CUDA dev(0);
+  devices::Naive dev;  // devices::CUDA dev(0);
   Device::set_default(dev);
   cerr << "done." << endl;
 

@@ -4,10 +4,10 @@
 #include <fstream>
 #include <primitiv/error.h>
 #include <primitiv/file_format.h>
+#include <primitiv/functions.h>
 #include <primitiv/model.h>
 #include <primitiv/msgpack/reader.h>
 #include <primitiv/msgpack/writer.h>
-#include <primitiv/operators.h>
 #include <primitiv/parameter.h>
 #include <primitiv/optimizer.h>
 
@@ -22,11 +22,11 @@ void Optimizer::load(const std::string &path) {
 
   std::uint32_t major, minor;
   reader >> major >> minor;
-  FileFormat::check_version(major, minor);
+  FileFormat::assert_version(major, minor);
 
   std::uint32_t datatype;
   reader >> datatype;
-  FileFormat::check_datatype(FileFormat::DataType::OPTIMIZER, datatype);
+  FileFormat::assert_datatype(FileFormat::DataType::OPTIMIZER, datatype);
 
   std::unordered_map<std::string, std::uint32_t> uint_configs;
   std::unordered_map<std::string, float> float_configs;
@@ -51,7 +51,7 @@ void Optimizer::save(const std::string &path) const {
   writer << uint_configs << float_configs;
 }
 
-void Optimizer::add_parameter(Parameter &param) {
+void Optimizer::add_inner(Parameter &param) {
   if (params_.find(&param) != params_.end()) {
     THROW_ERROR("Parameter '" << &param << "' is already registered.");
   }
@@ -59,9 +59,9 @@ void Optimizer::add_parameter(Parameter &param) {
   configure_parameter(param);
 }
 
-void Optimizer::add_model(const Model &model) {
+void Optimizer::add_inner(const Model &model) {
   for (const auto &kv : model.get_trainable_parameters()) {
-    add_parameter(*kv.second);
+    add_inner(*kv.second);
   }
 }
 
@@ -84,7 +84,7 @@ void Optimizer::update() {
     float sq_norm = 0;
     for (const Parameter *param : params_) {
       const Tensor &g = param->gradient();
-      sq_norm += operators::sum(operators::flatten(g * g), 0).to_float();
+      sq_norm += functions::sum(functions::flatten(g * g), 0).to_float();
     }
     if (sq_norm > clip_threshold_ * clip_threshold_) {
       float clip_scale = clip_threshold_ / std::sqrt(sq_norm);

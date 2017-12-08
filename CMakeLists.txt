@@ -25,13 +25,6 @@ else()
   message(WARNING "primitiv may not support the detected compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
-if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
-  # NOTE(odashi):
-  # This option is a workaround to avoid a FreeBSD linker bug
-  # in terms of template static members.
-  set(PRIMITIV_NEED_EXPLICIT_STATIC_SYMBOLS ON)
-endif()
-
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/config.h

@@ -25,11 +25,13 @@
 #include <vector>
 
 #include <primitiv/primitiv.h>
-#include <primitiv/primitiv_cuda.h>
+//#include <primitiv/primitiv_cuda.h>
+
+#include "utils.h"
 
 using primitiv::initializers::XavierUniform;
 using primitiv::optimizers::Adam;
-namespace F = primitiv::operators;
+namespace F = primitiv::functions;
 using namespace primitiv;
 using namespace std;
 
@@ -39,87 +41,15 @@ static const unsigned NUM_HIDDEN_UNITS = 256;
 static const unsigned BATCH_SIZE = 64;
 static const unsigned MAX_EPOCH = 100;
 
-// Gathers the set of words from space-separated corpus.
-unordered_map<string, unsigned> make_vocab(const string &filename) {
-  ifstream ifs(filename);
-  if (!ifs.is_open()) {
-    cerr << "File could not be opened: " << filename << endl;
-    exit(1);
-  }
-  unordered_map<string, unsigned> vocab;
-  string line, word;
-  while (getline(ifs, line)) {
-    line = "<s>" + line + "<s>";
-    stringstream ss(line);
-    while (getline(ss, word, ' ')) {
-      if (vocab.find(word) == vocab.end()) {
-        const unsigned id = vocab.size();
-        vocab.emplace(make_pair(word, id));
-      }
-    }
-  }
-  return vocab;
-}
-
-// Generates word ID list using corpus and vocab.
-vector<vector<unsigned>> load_corpus(
-    const string &filename, const unordered_map<string, unsigned> &vocab) {
-  ifstream ifs(filename);
-  if (!ifs.is_open()) {
-    cerr << "File could not be opened: " << filename << endl;
-    exit(1);
-  }
-  vector<vector<unsigned>> corpus;
-  string line, word;
-  while (getline(ifs, line)) {
-    line = "<s>" + line + "<s>";
-    stringstream ss (line);
-    vector<unsigned> sentence;
-    while (getline(ss, word, ' ')) {
-      sentence.emplace_back(vocab.at(word));
-    }
-    corpus.emplace_back(move(sentence));
-  }
-  return corpus;
-}
-
-// Counts output labels in the corpus.
-unsigned count_labels(const vector<vector<unsigned>> &corpus) {
-  unsigned ret = 0;
-  for (const auto &sent :corpus) ret += sent.size() - 1;
-  return ret;
-}
-
-// Extracts a minibatch from loaded corpus
-vector<vector<unsigned>> make_batch(
-    const vector<vector<unsigned>> &corpus,
-    const vector<unsigned> &sent_ids,
-    unsigned eos_id) {
-  const unsigned batch_size = sent_ids.size();
-  unsigned max_len = 0;
-  for (const unsigned sid : sent_ids) {
-    max_len = std::max<unsigned>(max_len, corpus[sid].size());
-  }
-  vector<vector<unsigned>> batch(max_len, vector<unsigned>(batch_size, eos_id));
-  for (unsigned i = 0; i < batch_size; ++i) {
-    const auto &sent = corpus[sent_ids[i]];
-    for (unsigned j = 0; j < sent.size(); ++j) {
-      batch[j][i] = sent[j];
-    }
-  }
-  return batch;
-}
-
-class RNNLM {
+class RNNLM : public Model {
 public:
-  RNNLM(unsigned vocab_size, unsigned eos_id, Optimizer &optimizer)
-    : eos_id_(eos_id)
-    , pwlookup_({NUM_HIDDEN_UNITS, vocab_size}, XavierUniform())
+  RNNLM(unsigned vocab_size)
+    : pwlookup_({NUM_HIDDEN_UNITS, vocab_size}, XavierUniform())
     , pwxs_({NUM_HIDDEN_UNITS, NUM_HIDDEN_UNITS}, XavierUniform())
     , pwsy_({vocab_size, NUM_HIDDEN_UNITS}, XavierUniform()) {
-      optimizer.add_parameter(pwlookup_);
-      optimizer.add_parameter(pwxs_);
-      optimizer.add_parameter(pwsy_);
+      add("pwlookup", pwlookup_);
+      add("pwxs", pwxs_);
+      add("pwsy", pwsy_);
     }
 
   // Forward function of RNNLM. Input data should be arranged below:
@@ -157,7 +87,6 @@ public:
   }
 
 private:
-  unsigned eos_id_;
   Parameter pwlookup_;
   Parameter pwxs_;
   Parameter pwsy_;
@@ -167,35 +96,35 @@ private:
 
 int main() {
   // Loads vocab.
-  const auto vocab = ::make_vocab("data/ptb.train.txt");
+  const auto vocab = utils::make_vocab("data/ptb.train.txt");
   cout << "#vocab: " << vocab.size() << endl;  // maybe 10000
   const unsigned eos_id = vocab.at("<s>");
 
   // Loads all corpus.
-  const auto train_corpus = ::load_corpus("data/ptb.train.txt", vocab);
-  const auto valid_corpus = ::load_corpus("data/ptb.valid.txt", vocab);
+  const auto train_corpus = utils::load_corpus("data/ptb.train.txt", vocab);
+  const auto valid_corpus = utils::load_corpus("data/ptb.valid.txt", vocab);
   const unsigned num_train_sents = train_corpus.size();
   const unsigned num_valid_sents = valid_corpus.size();
-  const unsigned num_train_labels = ::count_labels(train_corpus);
-  const unsigned num_valid_labels = ::count_labels(valid_corpus);
+  const unsigned num_train_labels = utils::count_labels(train_corpus);
+  const unsigned num_valid_labels = utils::count_labels(valid_corpus);
   cout << "train: " << num_train_sents << " sentences, "
                     << num_train_labels << " labels" << endl;
   cout << "valid: " << num_valid_sents << " sentences, "
                     << num_valid_labels << " labels" << endl;
 
-  // Uses GPU.
-  devices::CUDA dev(0);
+  devices::Naive dev;  //devices::CUDA dev(0);
   Device::set_default(dev);
   Graph g;
   Graph::set_default(g);
+
+  // Our LM.
+  ::RNNLM lm(vocab.size());
 
   // Optimizer.
   Adam optimizer;
   optimizer.set_weight_decay(1e-6);
   optimizer.set_gradient_clipping(5);
-
-  // Our LM.
-  ::RNNLM lm(vocab.size(), eos_id, optimizer);
+  optimizer.add(lm);
 
   // Batch randomizer.
   random_device rd;
@@ -220,7 +149,7 @@ int main() {
           begin(train_ids) + ofs,
           begin(train_ids) + std::min<unsigned>(
             ofs + BATCH_SIZE, num_train_sents));
-      const auto batch = ::make_batch(train_corpus, batch_ids, eos_id);
+      const auto batch = utils::make_batch(train_corpus, batch_ids, eos_id);
 
       g.clear();
       const auto outputs = lm.forward(batch);
@@ -244,7 +173,7 @@ int main() {
           begin(valid_ids) + ofs,
           begin(valid_ids) + std::min<unsigned>(
             ofs + BATCH_SIZE, num_valid_sents));
-      const auto batch = ::make_batch(valid_corpus, batch_ids, eos_id);
+      const auto batch = utils::make_batch(valid_corpus, batch_ids, eos_id);
 
       g.clear();
       const auto outputs = lm.forward(batch);

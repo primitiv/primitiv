@@ -7,11 +7,10 @@ docker run --name travis-ci -v $TRAVIS_BUILD_DIR:/primitiv -td fedora:latest /bi
 
 # install
 docker exec travis-ci bash -c "dnf update -y"
-docker exec travis-ci bash -c "dnf install -y gcc-c++ cmake gtest-devel python3-devel python3-numpy"
-docker exec travis-ci bash -c "pip3 install cython"
+docker exec travis-ci bash -c "dnf install -y rpm-build gcc-c++ cmake gtest-devel"
 
 # install OpenCL environment
-docker exec travis-ci bash -c "dnf install -y opencl-headers git hwloc-devel libtool-ltdl-devel ocl-icd-devel ocl-icd clang llvm-devel clang-devel zlib-devel blas-devel boost-devel patch"
+docker exec travis-ci bash -c "dnf install -y opencl-headers git hwloc-devel libtool-ltdl-devel ocl-icd-devel ocl-icd clang llvm-devel clang-devel zlib-devel blas-devel boost-devel patch --setopt=install_weak_deps=False"
 docker exec travis-ci bash -c "git clone https://github.com/clMathLibraries/clBLAS.git"
 docker exec travis-ci bash -c "cd ./clBLAS/src && cmake . -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TEST=OFF -DBUILD_KTEST=OFF"
 docker exec travis-ci bash -c "cd ./clBLAS/src && make && make install"
@@ -27,8 +26,6 @@ docker exec travis-ci bash -c "cd /primitiv && cmake . -DPRIMITIV_USE_OPENCL=ON 
 docker exec travis-ci bash -c "cd /primitiv && make VERBOSE=1"
 docker exec travis-ci bash -c "cd /primitiv && make test ARGS='-V'"
 docker exec travis-ci bash -c "cd /primitiv && make install"
-docker exec travis-ci bash -c "cd /primitiv/python-primitiv && ./setup.py build --enable-opencl"
-docker exec travis-ci bash -c "export LD_LIBRARY_PATH=/usr/local/lib && cd /primitiv/python-primitiv && ./setup.py test"
 
 # after_script
 docker stop travis-ci

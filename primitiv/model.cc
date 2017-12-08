@@ -1,6 +1,7 @@
 #include <config.h>
 
 #include <fstream>
+#include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/file_format.h>
 #include <primitiv/model.h>
@@ -11,8 +12,7 @@
 
 namespace primitiv {
 
-void Model::load(
-    const std::string &path, bool with_stats, Device &device) {
+void Model::load(const std::string &path, bool with_stats, Device *device) {
   std::ifstream ifs(path);
   if (!ifs.is_open()) {
     THROW_ERROR("Could not open file: " << path);
@@ -21,11 +21,11 @@ void Model::load(
 
   std::uint32_t major, minor;
   reader >> major >> minor;
-  FileFormat::check_version(major, minor);
+  FileFormat::assert_version(major, minor);
 
   std::uint32_t datatype;
   reader >> datatype;
-  FileFormat::check_datatype(FileFormat::DataType::MODEL, datatype);
+  FileFormat::assert_datatype(FileFormat::DataType::MODEL, datatype);
 
   std::uint32_t num_params;
   reader >> num_params;
@@ -40,7 +40,8 @@ void Model::load(
           "Model does not have a parameter with name: '"
           << string_utils::join(key, ".") << "'");
     }
-    it->second->load_inner(reader, with_stats, device);
+    it->second->load_inner(
+        reader, with_stats, Device::get_reference_or_default(device));
   }
 }
 
@@ -68,7 +69,7 @@ void Model::save(const std::string &path, bool with_stats) const {
   }
 }
 
-void Model::add_parameter(const std::string &name, Parameter &param) {
+void Model::add(const std::string &name, Parameter &param) {
   if (name_set_.find(name) != name_set_.end()) {
     THROW_ERROR(
         "Name '" << name << "' already exists in the model.");
@@ -82,7 +83,7 @@ void Model::add_parameter(const std::string &name, Parameter &param) {
   param_kv_.emplace(name, &param);
 }
 
-void Model::add_submodel(const std::string &name, Model &model) {
+void Model::add(const std::string &name, Model &model) {
   if (&model == this) {
     THROW_ERROR("Can't add self as a submodel.");
   }
@@ -138,7 +139,8 @@ const Model &Model::get_submodel(const std::vector<std::string> &names) const {
   return *it->second;
 }
 
-std::map<std::vector<std::string>, Parameter *> Model::get_all_parameters() const {
+std::map<std::vector<std::string>, Parameter *> Model::get_all_parameters(
+    ) const {
   std::map<std::vector<std::string>, Parameter *> params;
   for (const auto &kv : param_kv_) {
     params.emplace(std::vector<std::string> { kv.first }, kv.second);

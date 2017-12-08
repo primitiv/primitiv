@@ -2,24 +2,27 @@
 
 # Base libraries.
 set(primitiv_base_HDRS
+  arithmetic.h
+  basic_functions.h
+  composite_functions.h
   device.h
   error.h
   file_format.h
-  function.h
-  function_impl.h
+  functions.h
   graph.h
   initializer.h
   initializer_impl.h
+  memory_pool.h
   mixins.h
   model.h
   naive_device.h
   numeric_utils.h
-  operators.h
+  operator.h
+  operator_impl.h
   optimizer.h
   optimizer_impl.h
   parameter.h
   primitiv.h
-  primitiv_cuda.h
   random.h
   shape.h
   shape_ops.h
@@ -29,19 +32,20 @@ set(primitiv_base_HDRS
 )
 set(primitiv_base_SRCS
   device.cc
-  function_impl.cc
   graph.cc
   initializer_impl.cc
+  memory_pool.cc
   model.cc
   naive_device.cc
-  node_ops.cc
+  node_funcs.cc
+  operator_impl.cc
   optimizer.cc
   optimizer_impl.cc
   parameter.cc
   shape.cc
   shape_ops.cc
   tensor.cc
-  tensor_ops.cc
+  tensor_funcs.cc
 )
 install(FILES ${primitiv_base_HDRS} DESTINATION include/primitiv)
 
@@ -67,12 +71,11 @@ set(primitiv_all_DEPS)
 # Build rules of the CUDA backend.
 if(PRIMITIV_USE_CUDA)
   set(primitiv_cuda_HDRS
+    primitiv_cuda.h
     cuda_device.h
-    cuda_memory_pool.h
     cuda_utils.h)
   set(primitiv_cuda_SRCS
     cuda_device.cu
-    cuda_memory_pool.cu
     cuda_utils.cu)
   install(FILES ${primitiv_cuda_HDRS} DESTINATION include/primitiv)
 
@@ -103,7 +106,18 @@ endif()
 
 # Build rules of the OpenCL backend.
 if(PRIMITIV_USE_OPENCL)
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc
+    COMMAND
+      ${CMAKE_COMMAND}
+      -P
+      ${PROJECT_SOURCE_DIR}/cmake/generate_char_array.cmake
+      ${CMAKE_CURRENT_SOURCE_DIR}/opencl_device_kernel.cl
+      ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/opencl_device_kernel.cl)
+  add_custom_target(primitiv_opencl_KERNEL_DATA DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc)
+
   set(primitiv_opencl_HDRS
+    primitiv_opencl.h
     opencl_device.h)
   set(primitiv_opencl_SRCS
     opencl_device.cc)
@@ -113,6 +127,8 @@ if(PRIMITIV_USE_OPENCL)
     ${primitiv_base_HDRS}
     ${primitiv_opencl_HDRS}
     ${primitiv_opencl_SRCS})
+  add_dependencies(primitiv_opencl_OBJS primitiv_opencl_KERNEL_DATA)
+
   list(APPEND primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_opencl_OBJS>)
   list(APPEND primitiv_all_DEPS
     ${OpenCL_LIBRARIES}

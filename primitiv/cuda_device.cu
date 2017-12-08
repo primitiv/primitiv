@@ -8,6 +8,7 @@
 #include <primitiv/cuda_device.h>
 #include <primitiv/cuda_utils.h>
 #include <primitiv/error.h>
+#include <primitiv/memory_pool.h>
 
 using std::cerr;
 using std::endl;
@@ -465,10 +466,6 @@ __global__ void inplace_subtract_dev(
 #undef IDX
 #undef IDY
 
-// Minimum requirements of the compute capability.
-static const int MIN_CC_MAJOR = 3;
-static const int MIN_CC_MINOR = 0;
-
 /*
  * CUBLAS initializer/finalizer.
  */
@@ -532,13 +529,25 @@ namespace primitiv {
 namespace devices {
 
 /*
- * Hidden objects of CUDA device.
+ * Hidden objects of CUDA devices.
  */
 struct CUDAInternalState {
   CUDAInternalState(std::uint32_t dev_id, std::uint32_t rng_seed)
-    : cublas(dev_id) , curand(dev_id, rng_seed) {}
+    : cublas(dev_id)
+    , curand(dev_id, rng_seed)
+    , pool(
+        [dev_id](std::size_t size) -> void * {  // allocator
+          void *ptr;
+          CUDA_CALL(::cudaSetDevice(dev_id));
+          CUDA_CALL(::cudaMalloc(&ptr, size));
+          return ptr;
+        },
+        [](void *ptr) -> void {  // deleter
+          CUDA_CALL(::cudaFree(ptr));
+        }) {}
   ::CUBLASHandle cublas;
   ::CURANDHandle curand;
+  MemoryPool pool;
   ::cudaDeviceProp prop;
 };
 
@@ -548,20 +557,70 @@ std::uint32_t CUDA::num_devices() {
   return ret;
 }
 
+void CUDA::assert_support(std::uint32_t device_id) {
+  if (device_id >= num_devices()) {
+    THROW_ERROR("Invalid device ID: " << device_id);
+  }
+
+  ::cudaDeviceProp prop;
+  CUDA_CALL(::cudaGetDeviceProperties(&prop, device_id));
+
+  // Checks compute capability
+  static const int MIN_CC_MAJOR = 3;
+  static const int MIN_CC_MINOR = 0;
+  if (prop.major < MIN_CC_MAJOR ||
+      (prop.major == MIN_CC_MAJOR && prop.minor < MIN_CC_MINOR)) {
+    THROW_ERROR(
+        "CUDA Device " << device_id << " does not satisfy the "
+        "minimum requirement of the compute capability: "
+        << prop.major << '.' << prop.minor << " < "
+        << MIN_CC_MAJOR << '.' << MIN_CC_MINOR);
+  }
+
+  // Checks other minimum requirements.
+#define CHECK_REQUIREMENT(name, value) \
+  { \
+    if (prop.name < (value)) { \
+      THROW_ERROR( \
+          "CUDA Device " << device_id \
+          << " does not satisfy the minimum requirement by primitiv. " \
+          << "property: " << #name << ", " \
+          << "value: " << prop.name << ", " \
+          << "required at least: " << (value)); \
+    } \
+  }
+#define CHECK_REQUIREMENT_VECTOR(name, index, value) \
+  { \
+    if (prop.name[index] < (value)) { \
+      THROW_ERROR( \
+          "CUDA Device " << device_id \
+          << " does not satisfy the minimum requirement by primitiv. " \
+          << "property: " << #name << "[" << #index << "], " \
+          << "value: " << prop.name[index] << ", " \
+          << "required at least: " << (value)); \
+    } \
+  }
+
+  CHECK_REQUIREMENT(totalGlobalMem, 1ull * (1ull << 30));
+  CHECK_REQUIREMENT(sharedMemPerBlock, 16ull * (1ull << 10));
+  CHECK_REQUIREMENT(maxThreadsPerBlock, 256);
+  CHECK_REQUIREMENT_VECTOR(maxThreadsDim, 0, 256);
+  CHECK_REQUIREMENT_VECTOR(maxThreadsDim, 1, 16);
+  CHECK_REQUIREMENT_VECTOR(maxThreadsDim, 2, 1);
+  CHECK_REQUIREMENT_VECTOR(maxGridSize, 0, 32767);
+  CHECK_REQUIREMENT_VECTOR(maxGridSize, 1, 32767);
+  CHECK_REQUIREMENT_VECTOR(maxGridSize, 2, 32767);
+
+#undef CHECK_REQUIREMENT
+#undef CHECK_REQUIREMENT_VECTOR
+}
+
 void CUDA::initialize() {
+  assert_support(dev_id_);
+
   // Retrieves device properties.
   ::cudaDeviceProp prop;
   CUDA_CALL(::cudaGetDeviceProperties(&prop, dev_id_));
-
-  // Check compute capability requirements.
-  if (prop.major < ::MIN_CC_MAJOR ||
-      (prop.major == ::MIN_CC_MAJOR && prop.minor < ::MIN_CC_MINOR)) {
-    THROW_ERROR(
-        "CUDA Device " << dev_id_ << " does not satisfy the "
-        "minimum requirement of the compute capability: "
-        << prop.major << '.' << prop.minor << " < "
-        << ::MIN_CC_MAJOR << '.' << ::MIN_CC_MINOR);
-  }
 
   // Calculates size of dims to be used in CUDA kernels.
   dim1_x_ = 1;
@@ -582,22 +641,16 @@ void CUDA::initialize() {
   state_->prop = prop;
 
   // Initializes the device pointer for integer IDs.
-  ids_ptr_ = pool_.allocate(sizeof(std::uint32_t) * max_batch_);
-}
-
-CUDA::CUDA(std::uint32_t device_id)
-: dev_id_(device_id)
-, rng_seed_(std::random_device()())
-, pool_(device_id) {
-  initialize();
+  ids_ptr_ = state_->pool.allocate(sizeof(std::uint32_t) * max_batch_);
 }
 
 CUDA::CUDA(std::uint32_t device_id, std::uint32_t rng_seed)
 : dev_id_(device_id)
-, rng_seed_(rng_seed)
-, pool_(device_id) {
+, rng_seed_(rng_seed) {
   initialize();
 }
+
+CUDA::CUDA(std::uint32_t device_id) : CUDA(device_id, std::random_device()()) {}
 
 CUDA::~CUDA() {
   // Nothing to do for now.
@@ -609,18 +662,18 @@ void CUDA::dump_description() const {
 
   const ::cudaDeviceProp &prop = state_->prop;
   cerr << "  Device ID: " << dev_id_ << endl;
-  cerr << "    Name ................. " << prop.name << endl;
-  cerr << "    Global Memory ........ " << prop.totalGlobalMem << endl;
-  cerr << "    Shared Memory ........ " << prop.sharedMemPerBlock << endl;
-  cerr << "    Threads/block ........ " << prop.maxThreadsPerBlock << endl;
-  cerr << "    Threads dim .......... " << prop.maxThreadsDim[0] << ", "
-                                      << prop.maxThreadsDim[1] << ", "
-                                      << prop.maxThreadsDim[2] << endl;
-  cerr << "    Grid size ............ " << prop.maxGridSize[0] << ", "
-                                      << prop.maxGridSize[1] << ", "
-                                      << prop.maxGridSize[2] << endl;
-  cerr << "    Compute Capability ... " << prop.major << '.'
-                                      << prop.minor << endl;
+  cerr << "    Name .................. " << prop.name << endl;
+  cerr << "    Global memory ......... " << prop.totalGlobalMem << endl;
+  cerr << "    Shared memory/block ... " << prop.sharedMemPerBlock << endl;
+  cerr << "    Threads/block ......... " << prop.maxThreadsPerBlock << endl;
+  cerr << "    Block size ............ " << prop.maxThreadsDim[0] << ", "
+                                         << prop.maxThreadsDim[1] << ", "
+                                         << prop.maxThreadsDim[2] << endl;
+  cerr << "    Grid size ............. " << prop.maxGridSize[0] << ", "
+                                         << prop.maxGridSize[1] << ", "
+                                         << prop.maxGridSize[2] << endl;
+  cerr << "    Compute capability .... " << prop.major << '.'
+                                         << prop.minor << endl;
   /*
   cerr << "  Configurations:" << endl;
   cerr << "    1 dim ........... " << dim1_x_ << " threads" << endl;
@@ -631,7 +684,7 @@ void CUDA::dump_description() const {
 }
 
 std::shared_ptr<void> CUDA::new_handle(const Shape &shape) {
-  return pool_.allocate(sizeof(float) * shape.size());
+  return state_->pool.allocate(sizeof(float) * shape.size());
 }
 
 #define GRID_SIZE(x, threads) (((x) + (threads) - 1) / (threads))
@@ -654,7 +707,7 @@ std::vector<std::uint32_t> CUDA::argmax_impl(const Tensor &x, std::uint32_t dim)
   const std::uint32_t s = shape.lower_volume(dim);
   std::uint32_t block_size = dim1_x_;
   while (block_size >> 1 >= n) block_size >>= 1;
-  std::shared_ptr<void> py = pool_.allocate(sizeof(std::uint32_t) * r);
+  std::shared_ptr<void> py = state_->pool.allocate(sizeof(std::uint32_t) * r);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   switch (block_size) {
 #define CASE(k) \
@@ -686,7 +739,7 @@ std::vector<std::uint32_t> CUDA::argmin_impl(const Tensor &x, std::uint32_t dim)
   const std::uint32_t s = shape.lower_volume(dim);
   std::uint32_t block_size = dim1_x_;
   while (block_size >> 1 >= n) block_size >>= 1;
-  std::shared_ptr<void> py = pool_.allocate(sizeof(std::uint32_t) * r);
+  std::shared_ptr<void> py = state_->pool.allocate(sizeof(std::uint32_t) * r);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   switch (block_size) {
 #define CASE(k) \

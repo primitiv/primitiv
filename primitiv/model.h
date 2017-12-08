@@ -8,12 +8,12 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/mixins.h>
 
 namespace primitiv {
 
+class Device;
 class Parameter;
 
 /**
@@ -30,16 +30,50 @@ public:
    * @param with_stats Whether or not to load all additional statistics.
    * @param device Device object to manage parameters.
    */
-  void load(const std::string &path,
-      bool with_stats = true,
-      Device &device = Device::get_default());
+  void load(const std::string &path, bool with_stats, Device *device);
+
+  /**
+   * Loads all parameters from a file.
+   * @param path Path of the file.
+   * @param with_stats Whether or not to load all additional statistics.
+   * @param device Device object to manage parameters.
+   */
+  void load(const std::string &path, bool with_stats, Device &device) {
+    load(path, with_stats, &device);
+  }
+
+  /**
+   * Loads all parameters from a file.
+   * @param path Path of the file.
+   * @param with_stats Whether or not to load all additional statistics.
+   */
+  void load(const std::string &path, bool with_stats) {
+    load(path, with_stats, nullptr);
+  }
+
+  /**
+   * Loads all parameters from a file.
+   * @param path Path of the file.
+   * @param with_stats Whether or not to load all additional statistics.
+   */
+  void load(const std::string &path) {
+    load(path, true, nullptr);
+  }
 
   /**
    * Saves all parameters to a file.
    * @param path Path of the file.
    * @param with_stats Whether or not to save all additional statistics.
    */
-  void save(const std::string &path, bool with_stats = true) const;
+  void save(const std::string &path, bool with_stats) const;
+
+  /**
+   * Saves all parameters to a file.
+   * @param path Path of the file.
+   */
+  void save(const std::string &path) const {
+    save(path, true);
+  }
 
   /**
    * Registers a new parameter.
@@ -48,7 +82,7 @@ public:
    * @remarks `name` should not be overlapped with all registered parameters and
    *          submodels.
    */
-  void add_parameter(const std::string &name, Parameter &param);
+  void add(const std::string &name, Parameter &param);
 
   /**
    * Registers a new submodel.
@@ -57,7 +91,7 @@ public:
    * @remarks `name` should not be overlapped with all registered parameters and
    *          submodels.
    */
-  void add_submodel(const std::string &name, Model &model);
+  void add(const std::string &name, Model &model);
 
   /**
    * Retrieves a parameter with specified name.
@@ -199,7 +233,8 @@ public:
    * Retrieves trainable parameters in the model.
    * @return Dictionary of parameters.
    */
-  std::map<std::vector<std::string>, Parameter *> get_trainable_parameters() const {
+  std::map<std::vector<std::string>, Parameter *> get_trainable_parameters(
+      ) const {
     // NOTE(odashi):
     // Currently this function returns all parameters.
     return get_all_parameters();
