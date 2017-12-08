@@ -1,6 +1,7 @@
 #include <config.h>
 
 #include <fstream>
+#include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/file_format.h>
 #include <primitiv/model.h>
@@ -9,10 +10,18 @@
 #include <primitiv/parameter.h>
 #include <primitiv/string_utils.h>
 
+namespace {
+
+// Helper to obtain a Device object from a pointer.
+primitiv::Device &get_device(primitiv::Device *device) {
+  return device ? *device : primitiv::Device::get_default();
+}
+
+}  // namespace
+
 namespace primitiv {
 
-void Model::load(
-    const std::string &path, bool with_stats, Device &device) {
+void Model::load(const std::string &path, bool with_stats, Device *device) {
   std::ifstream ifs(path);
   if (!ifs.is_open()) {
     THROW_ERROR("Could not open file: " << path);
@@ -40,7 +49,7 @@ void Model::load(
           "Model does not have a parameter with name: '"
           << string_utils::join(key, ".") << "'");
     }
-    it->second->load_inner(reader, with_stats, device);
+    it->second->load_inner(reader, with_stats, ::get_device(device));
   }
 }
 
@@ -138,7 +147,8 @@ const Model &Model::get_submodel(const std::vector<std::string> &names) const {
   return *it->second;
 }
 
-std::map<std::vector<std::string>, Parameter *> Model::get_all_parameters() const {
+std::map<std::vector<std::string>, Parameter *> Model::get_all_parameters(
+    ) const {
   std::map<std::vector<std::string>, Parameter *> params;
   for (const auto &kv : param_kv_) {
     params.emplace(std::vector<std::string> { kv.first }, kv.second);
