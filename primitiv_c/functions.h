@@ -11,6 +11,17 @@
 #include "primitiv_c/status.h"
 #include "primitiv_c/tensor.h"
 
+#define _CONCAT_EVAL(A, B) A ## B
+#define _CONCAT(A, B) _CONCAT_EVAL(A, B)
+#define _NODE_FUN(name) _CONCAT(primitiv_node_func_, name)
+#define _S_NODE_FUN(name) _CONCAT(safe_primitiv_node_func_, name)
+#define _TENSOR_FUN(name) _CONCAT(primitiv_tensor_func_, name)
+#define _S_TENSOR_FUN(name) _CONCAT(safe_primitiv_tensor_func_, name)
+#define _NODE_OP(A, B) _NODE_FUN(_CONCAT(A, B))
+#define _S_NODE_OP(A, B) _S_NODE_FUN(_CONCAT(A, B))
+#define _TENSOR_OP(A, B) _TENSOR_FUN(_CONCAT(A, B))
+#define _S_TENSOR_OP(A, B) _S_TENSOR_FUN(_CONCAT(A, B))
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -31,113 +42,38 @@ CAPI extern primitiv_Tensor *primitiv_tensor_func_negative(
 CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_negative(
     const primitiv_Tensor *x, primitiv_Status *status);
 
-CAPI extern primitiv_Node *primitiv_node_func_add_node_const(
-    const primitiv_Node *x, float k);
-CAPI extern primitiv_Node *safe_primitiv_node_func_add_node_const(
-    const primitiv_Node *x, float k, primitiv_Status *status);
-CAPI extern primitiv_Node *primitiv_node_func_add_const_node(
-    float k, const primitiv_Node *x);
-CAPI extern primitiv_Node *safe_primitiv_node_func_add_const_node(
-    float k, const primitiv_Node *x, primitiv_Status *status);
-CAPI extern primitiv_Node *primitiv_node_func_add_node_node(
-    const primitiv_Node *a, const primitiv_Node *b);
-CAPI extern primitiv_Node *safe_primitiv_node_func_add_node_node(
-    const primitiv_Node *a, const primitiv_Node *b, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_add_tensor_const(
-    const primitiv_Tensor *x, float k);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_add_tensor_const(
-    const primitiv_Tensor *x, float k, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_add_const_tensor(
-    float k, const primitiv_Tensor *x);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_add_const_tensor(
-    float k, const primitiv_Tensor *x, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_add_tensor_tensor(
-    const primitiv_Tensor *a, const primitiv_Tensor *b);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_add_tensor_tensor(
-    const primitiv_Tensor *a,
-    const primitiv_Tensor *b,
-    primitiv_Status *status);
+#define DEFINE_BINARY_OPERATOR(op_name) \
+CAPI extern primitiv_Node *_NODE_OP(op_name, _node_const)( \
+    const primitiv_Node *x, float k); \
+CAPI extern primitiv_Node *_S_NODE_OP(op_name, _node_const)( \
+    const primitiv_Node *x, float k, primitiv_Status *status); \
+CAPI extern primitiv_Node *_NODE_OP(op_name, _const_node)( \
+    float k, const primitiv_Node *x); \
+CAPI extern primitiv_Node *_S_NODE_OP(op_name, _const_node)( \
+    float k, const primitiv_Node *x, primitiv_Status *status); \
+CAPI extern primitiv_Node *_NODE_OP(op_name, _node_node)( \
+    const primitiv_Node *a, const primitiv_Node *b); \
+CAPI extern primitiv_Node *_S_NODE_OP(op_name, _node_node)( \
+    const primitiv_Node *a, const primitiv_Node *b, primitiv_Status *status); \
+CAPI extern primitiv_Tensor *_TENSOR_OP(op_name, _tensor_const)( \
+    const primitiv_Tensor *x, float k); \
+CAPI extern primitiv_Tensor *_S_TENSOR_OP(op_name, _tensor_const)( \
+    const primitiv_Tensor *x, float k, primitiv_Status *status); \
+CAPI extern primitiv_Tensor *_TENSOR_OP(op_name, _const_tensor)( \
+    float k, const primitiv_Tensor *x); \
+CAPI extern primitiv_Tensor *_S_TENSOR_OP(op_name, _const_tensor)( \
+    float k, const primitiv_Tensor *x, primitiv_Status *status); \
+CAPI extern primitiv_Tensor *_TENSOR_OP(op_name, _tensor_tensor)( \
+    const primitiv_Tensor *a, const primitiv_Tensor *b); \
+CAPI extern primitiv_Tensor *_S_TENSOR_OP(op_name, _tensor_tensor)( \
+    const primitiv_Tensor *a, \
+    const primitiv_Tensor *b, \
+    primitiv_Status *status)
 
-CAPI extern primitiv_Node *primitiv_node_func_subtract_node_const(
-    const primitiv_Node *x, float k);
-CAPI extern primitiv_Node *safe_primitiv_node_func_subtract_node_const(
-    const primitiv_Node *x, float k, primitiv_Status *status);
-CAPI extern primitiv_Node *primitiv_node_func_subtract_const_node(
-    float k, const primitiv_Node *x);
-CAPI extern primitiv_Node *safe_primitiv_node_func_subtract_const_node(
-    float k, const primitiv_Node *x, primitiv_Status *status);
-CAPI extern primitiv_Node *primitiv_node_func_subtract_node_node(
-    const primitiv_Node *a, const primitiv_Node *b);
-CAPI extern primitiv_Node *safe_primitiv_node_func_subtract_node_node(
-    const primitiv_Node *a, const primitiv_Node *b, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_subtract_tensor_const(
-    const primitiv_Tensor *x, float k);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_subtract_tensor_const(
-    const primitiv_Tensor *x, float k, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_subtract_const_tensor(
-    float k, const primitiv_Tensor *x);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_subtract_const_tensor(
-    float k, const primitiv_Tensor *x, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_subtract_tensor_tensor(
-    const primitiv_Tensor *a, const primitiv_Tensor *b);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_subtract_tensor_tensor(
-    const primitiv_Tensor *a,
-    const primitiv_Tensor *b,
-    primitiv_Status *status);
-
-CAPI extern primitiv_Node *primitiv_node_func_multiply_node_const(
-    const primitiv_Node *x, float k);
-CAPI extern primitiv_Node *safe_primitiv_node_func_multiply_node_const(
-    const primitiv_Node *x, float k, primitiv_Status *status);
-CAPI extern primitiv_Node *primitiv_node_func_multiply_const_node(
-    float k, const primitiv_Node *x);
-CAPI extern primitiv_Node *safe_primitiv_node_func_multiply_const_node(
-    float k, const primitiv_Node *x, primitiv_Status *status);
-CAPI extern primitiv_Node *primitiv_node_func_multiply_node_node(
-    const primitiv_Node *a, const primitiv_Node *b);
-CAPI extern primitiv_Node *safe_primitiv_node_func_multiply_node_node(
-    const primitiv_Node *a, const primitiv_Node *b, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_multiply_tensor_const(
-    const primitiv_Tensor *x, float k);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_multiply_tensor_const(
-    const primitiv_Tensor *x, float k, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_multiply_const_tensor(
-    float k, const primitiv_Tensor *x);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_multiply_const_tensor(
-    float k, const primitiv_Tensor *x, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_multiply_tensor_tensor(
-    const primitiv_Tensor *a, const primitiv_Tensor *b);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_multiply_tensor_tensor(
-    const primitiv_Tensor *a,
-    const primitiv_Tensor *b,
-    primitiv_Status *status);
-
-CAPI extern primitiv_Node *primitiv_node_func_divide_node_const(
-    const primitiv_Node *x, float k);
-CAPI extern primitiv_Node *safe_primitiv_node_func_divide_node_const(
-    const primitiv_Node *x, float k, primitiv_Status *status);
-CAPI extern primitiv_Node *primitiv_node_func_divide_const_node(
-    float k, const primitiv_Node *x);
-CAPI extern primitiv_Node *safe_primitiv_node_func_divide_const_node(
-    float k, const primitiv_Node *x, primitiv_Status *status);
-CAPI extern primitiv_Node *primitiv_node_func_divide_node_node(
-    const primitiv_Node *a, const primitiv_Node *b);
-CAPI extern primitiv_Node *safe_primitiv_node_func_divide_node_node(
-    const primitiv_Node *a, const primitiv_Node *b, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_divide_tensor_const(
-    const primitiv_Tensor *x, float k);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_divide_tensor_const(
-    const primitiv_Tensor *x, float k, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_divide_const_tensor(
-    float k, const primitiv_Tensor *x);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_divide_const_tensor(
-    float k, const primitiv_Tensor *x, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_divide_tensor_tensor(
-    const primitiv_Tensor *a, const primitiv_Tensor *b);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_divide_tensor_tensor(
-    const primitiv_Tensor *a,
-    const primitiv_Tensor *b,
-    primitiv_Status *status);
+DEFINE_BINARY_OPERATOR(add);
+DEFINE_BINARY_OPERATOR(subtract);
+DEFINE_BINARY_OPERATOR(multiply);
+DEFINE_BINARY_OPERATOR(divide);
 
 CAPI extern primitiv_Node *primitiv_node_func_input(
     const primitiv_Shape *shape,

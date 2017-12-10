@@ -42,218 +42,62 @@ primitiv_Tensor *safe_primitiv_tensor_func_negative(const primitiv_Tensor *x,
   SAFE_RETURN(primitiv_tensor_func_negative(x), status, nullptr);
 }
 
-primitiv_Node *primitiv_node_func_add_node_const(const primitiv_Node *x,
-                                                 float k) {
-  return to_c_from_value(primitiv::functions::add(*to_cc(x), k));
-}
-primitiv_Node *safe_primitiv_node_func_add_node_const(const primitiv_Node *x,
-                                                      float k,
-                                                      primitiv_Status *status) {
-  SAFE_RETURN(primitiv_node_func_add_node_const(x, k), status, nullptr);
-}
-primitiv_Node *primitiv_node_func_add_const_node(float k,
-                                                 const primitiv_Node *x) {
-  return to_c_from_value(primitiv::functions::add(k, *to_cc(x)));
-}
-primitiv_Node *safe_primitiv_node_func_add_const_node(float k,
-                                                      const primitiv_Node *x,
-                                                      primitiv_Status *status) {
-  SAFE_RETURN(primitiv_node_func_add_const_node(k, x), status, nullptr);
-}
-primitiv_Node *primitiv_node_func_add_node_node(const primitiv_Node *a,
-                                                const primitiv_Node *b) {
-  return to_c_from_value(primitiv::functions::add(*to_cc(a), *to_cc(b)));
-}
-primitiv_Node *safe_primitiv_node_func_add_node_node(const primitiv_Node *a,
-                                                     const primitiv_Node *b,
-                                                     primitiv_Status *status) {
-  SAFE_RETURN(primitiv_node_func_add_node_node(a, b), status, nullptr);
-}
-primitiv_Tensor *primitiv_tensor_func_add_tensor_const(const primitiv_Tensor *x,
-                                                       float k) {
-  return to_c_from_value(primitiv::functions::add(*to_cc(x), k));
-}
-primitiv_Tensor *safe_primitiv_tensor_func_add_tensor_const(
-    const primitiv_Tensor *x, float k, primitiv_Status *status) {
-  SAFE_RETURN(primitiv_tensor_func_add_tensor_const(x, k), status, nullptr);
-}
-primitiv_Tensor *primitiv_tensor_func_add_const_tensor(
-    float k, const primitiv_Tensor *x) {
-  return to_c_from_value(primitiv::functions::add(k, *to_cc(x)));
-}
-primitiv_Tensor *safe_primitiv_tensor_func_add_const_tensor(
-    float k, const primitiv_Tensor *x, primitiv_Status *status) {
-  SAFE_RETURN(primitiv_tensor_func_add_const_tensor(k, x), status, nullptr);
-}
-primitiv_Tensor *primitiv_tensor_func_add_tensor_tensor(
-    const primitiv_Tensor *a, const primitiv_Tensor *b) {
-  return to_c_from_value(primitiv::functions::add(*to_cc(a), *to_cc(b)));
-}
-primitiv_Tensor *safe_primitiv_tensor_func_add_tensor_tensor(
-    const primitiv_Tensor *a,
-    const primitiv_Tensor *b,
-    primitiv_Status *status) {
-  SAFE_RETURN(primitiv_tensor_func_add_tensor_tensor(a, b), status, nullptr);
+#define IMPL_BINARY_OPERATOR(op_name) \
+primitiv_Node *_NODE_OP(op_name, _node_const)( \
+    const primitiv_Node *x, float k) { \
+  return to_c_from_value(primitiv::functions::op_name(*to_cc(x), k)); \
+} \
+primitiv_Node *_S_NODE_OP(op_name, _node_const)( \
+    const primitiv_Node *x, float k, primitiv_Status *status) { \
+  SAFE_RETURN(_NODE_OP(op_name, _node_const)(x, k), status, nullptr); \
+} \
+primitiv_Node *_NODE_OP(op_name, _const_node)( \
+    float k, const primitiv_Node *x) { \
+  return to_c_from_value(primitiv::functions::op_name(k, *to_cc(x))); \
+} \
+primitiv_Node *_S_NODE_OP(op_name, _const_node)( \
+    float k, const primitiv_Node *x, primitiv_Status *status) { \
+  SAFE_RETURN(_NODE_OP(op_name, _const_node)(k, x), status, nullptr); \
+} \
+primitiv_Node *_NODE_OP(op_name, _node_node)( \
+    const primitiv_Node *a, const primitiv_Node *b) { \
+  return to_c_from_value(primitiv::functions::op_name(*to_cc(a), *to_cc(b))); \
+} \
+primitiv_Node *_S_NODE_OP(op_name, _node_node)( \
+    const primitiv_Node *a, const primitiv_Node *b, primitiv_Status *status) { \
+  SAFE_RETURN(_NODE_OP(op_name, _node_node)(a, b), status, nullptr); \
+} \
+primitiv_Tensor *_TENSOR_OP(op_name, _tensor_const)( \
+    const primitiv_Tensor *x, float k) { \
+  return to_c_from_value(primitiv::functions::op_name(*to_cc(x), k)); \
+} \
+primitiv_Tensor *_S_TENSOR_OP(op_name, _tensor_const)( \
+    const primitiv_Tensor *x, float k, primitiv_Status *status) { \
+  SAFE_RETURN(_TENSOR_OP(op_name, _tensor_const)(x, k), status, nullptr); \
+} \
+primitiv_Tensor *_TENSOR_OP(op_name, _const_tensor)( \
+    float k, const primitiv_Tensor *x) { \
+  return to_c_from_value(primitiv::functions::op_name(k, *to_cc(x))); \
+} \
+primitiv_Tensor *_S_TENSOR_OP(op_name, _const_tensor)( \
+    float k, const primitiv_Tensor *x, primitiv_Status *status) { \
+  SAFE_RETURN(_TENSOR_OP(op_name, _const_tensor)(k, x), status, nullptr); \
+} \
+primitiv_Tensor *_TENSOR_OP(op_name, _tensor_tensor)( \
+    const primitiv_Tensor *a, const primitiv_Tensor *b) { \
+  return to_c_from_value(primitiv::functions::op_name(*to_cc(a), *to_cc(b))); \
+} \
+primitiv_Tensor *_S_TENSOR_OP(op_name, _tensor_tensor)( \
+    const primitiv_Tensor *a, \
+    const primitiv_Tensor *b, \
+    primitiv_Status *status) { \
+  SAFE_RETURN(_TENSOR_OP(op_name, _tensor_tensor)(a, b), status, nullptr); \
 }
 
-primitiv_Node *primitiv_node_func_subtract_node_const(const primitiv_Node *x,
-                                                      float k) {
-  return to_c_from_value(primitiv::functions::subtract(*to_cc(x), k));
-}
-primitiv_Node *safe_primitiv_node_func_subtract_node_const(
-    const primitiv_Node *x, float k, primitiv_Status *status) {
-  SAFE_RETURN(primitiv_node_func_subtract_node_const(x, k), status, nullptr);
-}
-primitiv_Node *primitiv_node_func_subtract_const_node(float k,
-                                                      const primitiv_Node *x) {
-  return to_c_from_value(primitiv::functions::subtract(k, *to_cc(x)));
-}
-primitiv_Node *safe_primitiv_node_func_subtract_const_node(
-    float k, const primitiv_Node *x, primitiv_Status *status) {
-  SAFE_RETURN(primitiv_node_func_subtract_const_node(k, x), status, nullptr);
-}
-primitiv_Node *primitiv_node_func_subtract_node_node(const primitiv_Node *a,
-                                                     const primitiv_Node *b) {
-  return to_c_from_value(primitiv::functions::subtract(*to_cc(a), *to_cc(b)));
-}
-primitiv_Node *safe_primitiv_node_func_subtract_node_node(
-    const primitiv_Node *a, const primitiv_Node *b, primitiv_Status *status) {
-  SAFE_RETURN(primitiv_node_func_subtract_node_node(a, b), status, nullptr);
-}
-primitiv_Tensor *primitiv_tensor_func_subtract_tensor_const(
-    const primitiv_Tensor *x, float k) {
-  return to_c_from_value(primitiv::functions::subtract(*to_cc(x), k));
-}
-primitiv_Tensor *safe_primitiv_tensor_func_subtract_tensor_const(
-    const primitiv_Tensor *x, float k, primitiv_Status *status) {
-  SAFE_RETURN(
-      primitiv_tensor_func_subtract_tensor_const(x, k), status, nullptr);
-}
-primitiv_Tensor *primitiv_tensor_func_subtract_const_tensor(
-    float k, const primitiv_Tensor *x) {
-  return to_c_from_value(primitiv::functions::subtract(k, *to_cc(x)));
-}
-primitiv_Tensor *safe_primitiv_tensor_func_subtract_const_tensor(
-    float k, const primitiv_Tensor *x, primitiv_Status *status) {
-  SAFE_RETURN(
-      primitiv_tensor_func_subtract_const_tensor(k, x), status, nullptr);
-}
-primitiv_Tensor *primitiv_tensor_func_subtract_tensor_tensor(
-    const primitiv_Tensor *a, const primitiv_Tensor *b) {
-  return to_c_from_value(primitiv::functions::subtract(*to_cc(a), *to_cc(b)));
-}
-primitiv_Tensor *safe_primitiv_tensor_func_subtract_tensor_tensor(
-    const primitiv_Tensor *a,
-    const primitiv_Tensor *b,
-    primitiv_Status *status) {
-  SAFE_RETURN(
-      primitiv_tensor_func_subtract_tensor_tensor(a, b), status, nullptr);
-}
-
-primitiv_Node *primitiv_node_func_multiply_node_const(const primitiv_Node *x,
-                                                      float k) {
-  return to_c_from_value(primitiv::functions::multiply(*to_cc(x), k));
-}
-primitiv_Node *safe_primitiv_node_func_multiply_node_const(
-    const primitiv_Node *x, float k, primitiv_Status *status) {
-  SAFE_RETURN(primitiv_node_func_multiply_node_const(x, k), status, nullptr);
-}
-primitiv_Node *primitiv_node_func_multiply_const_node(float k,
-                                                      const primitiv_Node *x) {
-  return to_c_from_value(primitiv::functions::multiply(k, *to_cc(x)));
-}
-primitiv_Node *safe_primitiv_node_func_multiply_const_node(
-    float k, const primitiv_Node *x, primitiv_Status *status) {
-  SAFE_RETURN(primitiv_node_func_multiply_const_node(k, x), status, nullptr);
-}
-primitiv_Node *primitiv_node_func_multiply_node_node(const primitiv_Node *a,
-                                                     const primitiv_Node *b) {
-  return to_c_from_value(primitiv::functions::multiply(*to_cc(a), *to_cc(b)));
-}
-primitiv_Node *safe_primitiv_node_func_multiply_node_node(
-    const primitiv_Node *a, const primitiv_Node *b, primitiv_Status *status) {
-  SAFE_RETURN(primitiv_node_func_multiply_node_node(a, b), status, nullptr);
-}
-primitiv_Tensor *primitiv_tensor_func_multiply_tensor_const(
-    const primitiv_Tensor *x, float k) {
-  return to_c_from_value(primitiv::functions::multiply(*to_cc(x), k));
-}
-primitiv_Tensor *safe_primitiv_tensor_func_multiply_tensor_const(
-    const primitiv_Tensor *x, float k, primitiv_Status *status) {
-  SAFE_RETURN(
-      primitiv_tensor_func_multiply_tensor_const(x, k), status, nullptr);
-}
-primitiv_Tensor *primitiv_tensor_func_multiply_const_tensor(
-    float k, const primitiv_Tensor *x) {
-  return to_c_from_value(primitiv::functions::multiply(k, *to_cc(x)));
-}
-primitiv_Tensor *safe_primitiv_tensor_func_multiply_const_tensor(
-    float k, const primitiv_Tensor *x, primitiv_Status *status) {
-  SAFE_RETURN(
-      primitiv_tensor_func_multiply_const_tensor(k, x), status, nullptr);
-}
-primitiv_Tensor *primitiv_tensor_func_multiply_tensor_tensor(
-    const primitiv_Tensor *a, const primitiv_Tensor *b) {
-  return to_c_from_value(primitiv::functions::multiply(*to_cc(a), *to_cc(b)));
-}
-primitiv_Tensor *safe_primitiv_tensor_func_multiply_tensor_tensor(
-    const primitiv_Tensor *a,
-    const primitiv_Tensor *b,
-    primitiv_Status *status) {
-  SAFE_RETURN(
-      primitiv_tensor_func_multiply_tensor_tensor(a, b), status, nullptr);
-}
-
-primitiv_Node *primitiv_node_func_divide_node_const(const primitiv_Node *x,
-                                                    float k) {
-  return to_c_from_value(primitiv::functions::divide(*to_cc(x), k));
-}
-primitiv_Node *safe_primitiv_node_func_divide_node_const(
-    const primitiv_Node *x, float k, primitiv_Status *status) {
-  SAFE_RETURN(primitiv_node_func_divide_node_const(x, k), status, nullptr);
-}
-primitiv_Node *primitiv_node_func_divide_const_node(float k,
-                                                    const primitiv_Node *x) {
-  return to_c_from_value(primitiv::functions::divide(k, *to_cc(x)));
-}
-primitiv_Node *safe_primitiv_node_func_divide_const_node(
-    float k, const primitiv_Node *x, primitiv_Status *status) {
-  SAFE_RETURN(primitiv_node_func_divide_const_node(k, x), status, nullptr);
-}
-primitiv_Node *primitiv_node_func_divide_node_node(const primitiv_Node *a,
-                                                   const primitiv_Node *b) {
-  return to_c_from_value(primitiv::functions::divide(*to_cc(a), *to_cc(b)));
-}
-primitiv_Node *safe_primitiv_node_func_divide_node_node(
-    const primitiv_Node *a, const primitiv_Node *b, primitiv_Status *status) {
-  SAFE_RETURN(primitiv_node_func_divide_node_node(a, b), status, nullptr);
-}
-primitiv_Tensor *primitiv_tensor_func_divide_tensor_const(
-    const primitiv_Tensor *x, float k) {
-  return to_c_from_value(primitiv::functions::divide(*to_cc(x), k));
-}
-primitiv_Tensor *safe_primitiv_tensor_func_divide_tensor_const(
-    const primitiv_Tensor *x, float k, primitiv_Status *status) {
-  SAFE_RETURN(primitiv_tensor_func_divide_tensor_const(x, k), status, nullptr);
-}
-primitiv_Tensor *primitiv_tensor_func_divide_const_tensor(
-    float k, const primitiv_Tensor *x) {
-  return to_c_from_value(primitiv::functions::divide(k, *to_cc(x)));
-}
-primitiv_Tensor *safe_primitiv_tensor_func_divide_const_tensor(
-    float k, const primitiv_Tensor *x, primitiv_Status *status) {
-  SAFE_RETURN(primitiv_tensor_func_divide_const_tensor(k, x), status, nullptr);
-}
-primitiv_Tensor *primitiv_tensor_func_divide_tensor_tensor(
-    const primitiv_Tensor *a, const primitiv_Tensor *b) {
-  return to_c_from_value(primitiv::functions::divide(*to_cc(a), *to_cc(b)));
-}
-primitiv_Tensor *safe_primitiv_tensor_func_divide_tensor_tensor(
-    const primitiv_Tensor *a,
-    const primitiv_Tensor *b,
-    primitiv_Status *status) {
-  SAFE_RETURN(primitiv_tensor_func_divide_tensor_tensor(a, b), status, nullptr);
-}
+IMPL_BINARY_OPERATOR(add);
+IMPL_BINARY_OPERATOR(subtract);
+IMPL_BINARY_OPERATOR(multiply);
+IMPL_BINARY_OPERATOR(divide);
 
 primitiv_Node *primitiv_node_func_input(
     const primitiv_Shape *shape,
