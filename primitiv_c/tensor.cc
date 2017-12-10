@@ -2,6 +2,9 @@
 
 #include <primitiv/tensor.h>
 
+#include <algorithm>
+#include <vector>
+
 #include "primitiv_c/internal.h"
 #include "primitiv_c/tensor.h"
 
@@ -64,12 +67,14 @@ float safe_primitiv_Tensor_to_float(const primitiv_Tensor *tensor,
   SAFE_RETURN(primitiv_Tensor_to_float(tensor), status, 0.0);
 }
 
-float *primitiv_Tensor_to_array(const primitiv_Tensor *tensor) {
-  return &(to_cc(tensor)->to_vector())[0];
+void primitiv_Tensor_to_array(const primitiv_Tensor *tensor, float *array) {
+  std::vector<float> v = to_cc(tensor)->to_vector();
+  std::copy(v.begin(), v.end(), array);
 }
-float *safe_primitiv_Tensor_to_array(const primitiv_Tensor *tensor,
-                                     primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Tensor_to_array(tensor), status, nullptr);
+void safe_primitiv_Tensor_to_array(const primitiv_Tensor *tensor,
+                                   float *array,
+                                   primitiv_Status *status) {
+  SAFE_EXPR(primitiv_Tensor_to_array(tensor, array), status);
 }
 
 uint32_t *primitiv_Tensor_argmax(const primitiv_Tensor *tensor, uint32_t dim) {

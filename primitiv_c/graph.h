@@ -56,9 +56,11 @@ CAPI extern float primitiv_Node_to_float(const primitiv_Node *node);
 CAPI extern float safe_primitiv_Node_to_float(const primitiv_Node *node,
                                               primitiv_Status *status);
 
-CAPI extern float *primitiv_Node_to_array(const primitiv_Node *node);
-CAPI extern float *safe_primitiv_Node_to_array(const primitiv_Node *node,
-                                               primitiv_Status *status);
+CAPI extern void primitiv_Node_to_array(const primitiv_Node *node,
+                                        float *array);
+CAPI extern void safe_primitiv_Node_to_array(const primitiv_Node *node,
+                                             float *array,
+                                             primitiv_Status *status);
 
 CAPI extern uint32_t *primitiv_Node_argmax(const primitiv_Node *node,
                                            uint32_t dim);

@@ -2,8 +2,10 @@
 
 #include <primitiv/graph.h>
 
+#include <algorithm>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "primitiv_c/internal.h"
 #include "primitiv_c/graph.h"
@@ -91,12 +93,14 @@ float safe_primitiv_Node_to_float(const primitiv_Node *node,
   SAFE_RETURN(primitiv_Node_to_float(node), status, 0.0);
 }
 
-float *primitiv_Node_to_array(const primitiv_Node *node) {
-  return &(to_cc(node)->to_vector())[0];
+void primitiv_Node_to_array(const primitiv_Node *node, float *array) {
+  std::vector<float> v = to_cc(node)->to_vector();
+  std::copy(v.begin(), v.end(), array);
 }
-float *safe_primitiv_Node_to_array(const primitiv_Node *node,
-                                   primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Node_to_array(node), status, nullptr);
+void safe_primitiv_Node_to_array(const primitiv_Node *node,
+                                 float *array,
+                                 primitiv_Status *status) {
+  SAFE_EXPR(primitiv_Node_to_array(node, array), status);
 }
 
 uint32_t *primitiv_Node_argmax(const primitiv_Node *node, uint32_t dim) {

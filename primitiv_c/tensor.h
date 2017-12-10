@@ -43,9 +43,11 @@ CAPI extern float primitiv_Tensor_to_float(const primitiv_Tensor *tensor);
 CAPI extern float safe_primitiv_Tensor_to_float(const primitiv_Tensor *tensor,
                                                 primitiv_Status *status);
 
-CAPI extern float *primitiv_Tensor_to_array(const primitiv_Tensor *tensor);
-CAPI extern float *safe_primitiv_Tensor_to_array(const primitiv_Tensor *tensor,
-                                                 primitiv_Status *status);
+CAPI extern void primitiv_Tensor_to_array(const primitiv_Tensor *tensor,
+                                          float *array);
+CAPI extern void safe_primitiv_Tensor_to_array(const primitiv_Tensor *tensor,
+                                               float *array,
+                                               primitiv_Status *status);
 
 CAPI extern uint32_t *primitiv_Tensor_argmax(const primitiv_Tensor *tensor,
                                              uint32_t dim);
