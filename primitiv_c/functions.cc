@@ -361,9 +361,8 @@ primitiv_Tensor *primitiv_tensor_func_log_softmax(const primitiv_Tensor *x,
                                                   uint32_t dim) {
   return to_c_from_value(primitiv::functions::log_softmax(*to_cc(x), dim));
 }
-primitiv_Tensor *safe_primitiv_tensor_func_log_softmax(const primitiv_Tensor *x,
-                                                       uint32_t dim,
-                                                       primitiv_Status *status) {
+primitiv_Tensor *safe_primitiv_tensor_func_log_softmax(
+    const primitiv_Tensor *x, uint32_t dim, primitiv_Status *status) {
   SAFE_RETURN(primitiv_tensor_func_log_softmax(x, dim), status, nullptr);
 }
 
@@ -459,21 +458,6 @@ primitiv_Tensor *safe_primitiv_tensor_func_softmax_cross_entropy_with_array(
 
 IMPL_UNARY_FUNC(stop_gradient);
 
-primitiv_Node *primitiv_node_func_batch_mean(const primitiv_Node *x) {
-  return to_c_from_value(primitiv::functions::batch::mean(*to_cc(x)));
-}
-primitiv_Node *safe_primitiv_node_func_batch_mean(const primitiv_Node *x,
-                                                  primitiv_Status *status) {
-  SAFE_RETURN(primitiv_node_func_batch_mean(x), status, nullptr);
-}
-primitiv_Tensor *primitiv_tensor_func_batch_mean(const primitiv_Tensor *x) {
-  return to_c_from_value(primitiv::functions::batch::mean(*to_cc(x)));
-}
-primitiv_Tensor *safe_primitiv_tensor_func_batch_mean(const primitiv_Tensor *x,
-                                                      primitiv_Status *status) {
-  SAFE_RETURN(primitiv_tensor_func_batch_mean(x), status, nullptr);
-}
-
 primitiv_Node *primitiv_node_func_mean(const primitiv_Node *x, uint32_t dim) {
   return to_c_from_value(primitiv::functions::mean(*to_cc(x), dim));
 }
@@ -490,6 +474,44 @@ primitiv_Tensor *safe_primitiv_tensor_func_mean(const primitiv_Tensor *x,
                                                 uint32_t dim,
                                                 primitiv_Status *status) {
   SAFE_RETURN(primitiv_tensor_func_mean(x, dim), status, nullptr);
+}
+
+primitiv_Node *primitiv_node_func_batch_mean(const primitiv_Node *x) {
+  return to_c_from_value(primitiv::functions::batch::mean(*to_cc(x)));
+}
+primitiv_Node *safe_primitiv_node_func_batch_mean(const primitiv_Node *x,
+                                                  primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_batch_mean(x), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_batch_mean(const primitiv_Tensor *x) {
+  return to_c_from_value(primitiv::functions::batch::mean(*to_cc(x)));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_batch_mean(const primitiv_Tensor *x,
+                                                      primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_batch_mean(x), status, nullptr);
+}
+
+primitiv_Node *primitiv_node_func_dropout(const primitiv_Node *x,
+                                          float rate,
+                                          bool enabled) {
+  return to_c_from_value(
+      primitiv::functions::dropout(*to_cc(x), rate, enabled));
+}
+primitiv_Node *safe_primitiv_node_func_dropout(
+    const primitiv_Node *x, float rate, bool enabled, primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_dropout(x, rate, enabled), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_dropout(const primitiv_Tensor *x,
+                                              float rate,
+                                              bool enabled) {
+  return to_c_from_value(
+      primitiv::functions::dropout(*to_cc(x), rate, enabled));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_dropout(const primitiv_Tensor *x,
+                                                   float rate,
+                                                   bool enabled,
+                                                   primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_dropout(x, rate, enabled), status, nullptr);
 }
 
 }  // end extern "C"

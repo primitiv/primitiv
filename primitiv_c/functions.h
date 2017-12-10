@@ -297,6 +297,15 @@ CAPI extern primitiv_Tensor
 
 DEFINE_UNARY_FUNC(stop_gradient);
 
+CAPI extern primitiv_Node *primitiv_node_func_mean(const primitiv_Node *x,
+                                                   uint32_t dim);
+CAPI extern primitiv_Node *safe_primitiv_node_func_mean(
+    const primitiv_Node *x, uint32_t dim, primitiv_Status *status);
+CAPI extern primitiv_Tensor *primitiv_tensor_func_mean(const primitiv_Tensor *x,
+                                                       uint32_t dim);
+CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_mean(
+    const primitiv_Tensor *x, uint32_t dim, primitiv_Status *status);
+
 CAPI extern primitiv_Node *primitiv_node_func_batch_mean(
     const primitiv_Node *x);
 CAPI extern primitiv_Node *safe_primitiv_node_func_batch_mean(
@@ -306,14 +315,18 @@ CAPI extern primitiv_Tensor *primitiv_tensor_func_batch_mean(
 CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_batch_mean(
     const primitiv_Tensor *x, primitiv_Status *status);
 
-CAPI extern primitiv_Node *primitiv_node_func_mean(const primitiv_Node *x,
-                                                   uint32_t dim);
-CAPI extern primitiv_Node *safe_primitiv_node_func_mean(
-    const primitiv_Node *x, uint32_t dim, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_mean(const primitiv_Tensor *x,
-                                                       uint32_t dim);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_mean(
-    const primitiv_Tensor *x, uint32_t dim, primitiv_Status *status);
+CAPI extern primitiv_Node *primitiv_node_func_dropout(const primitiv_Node *x,
+                                                      float rate,
+                                                      bool enabled);
+CAPI extern primitiv_Node *safe_primitiv_node_func_dropout(
+    const primitiv_Node *x, float rate, bool enabled, primitiv_Status *status);
+CAPI extern primitiv_Tensor *primitiv_tensor_func_dropout(
+    const primitiv_Tensor *x, float rate, bool enabled);
+CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_dropout(
+    const primitiv_Tensor *x,
+    float rate,
+    bool enabled,
+    primitiv_Status *status);
 
 #ifdef __cplusplus
 }  // end extern "C"
