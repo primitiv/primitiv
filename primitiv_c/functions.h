@@ -167,37 +167,17 @@ CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_matmul(
     const primitiv_Tensor *b,
     primitiv_Status *status);
 
-CAPI extern primitiv_Node *primitiv_node_func_sqrt(const primitiv_Node *x);
-CAPI extern primitiv_Node *safe_primitiv_node_func_sqrt(
-    const primitiv_Node *x, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_sqrt(
-    const primitiv_Tensor *x);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_sqrt(
-    const primitiv_Tensor *x, primitiv_Status *status);
-
-CAPI extern primitiv_Node *primitiv_node_func_exp(const primitiv_Node *x);
-CAPI extern primitiv_Node *safe_primitiv_node_func_exp(
-    const primitiv_Node *x, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_exp(
-    const primitiv_Tensor *x);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_exp(
-    const primitiv_Tensor *x, primitiv_Status *status);
-
-CAPI extern primitiv_Node *primitiv_node_func_log(const primitiv_Node *x);
-CAPI extern primitiv_Node *safe_primitiv_node_func_log(
-    const primitiv_Node *x, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_log(
-    const primitiv_Tensor *x);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_log(
-    const primitiv_Tensor *x, primitiv_Status *status);
-
-CAPI extern primitiv_Node *primitiv_node_func_tanh(const primitiv_Node *x);
-CAPI extern primitiv_Node *safe_primitiv_node_func_tanh(
-    const primitiv_Node *x, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_tanh(
-    const primitiv_Tensor *x);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_tanh(
-    const primitiv_Tensor *x, primitiv_Status *status);
+DEFINE_UNARY_FUNC(sqrt);
+DEFINE_UNARY_FUNC(exp);
+DEFINE_UNARY_FUNC(log);
+DEFINE_UNARY_FUNC(tanh);
+DEFINE_UNARY_FUNC(sigmoid);
+DEFINE_UNARY_FUNC(softplus);
+DEFINE_UNARY_FUNC(sin);
+DEFINE_UNARY_FUNC(cos);
+DEFINE_UNARY_FUNC(tan);
+DEFINE_UNARY_FUNC(relu);
+DEFINE_UNARY_FUNC(lrelu);
 
 CAPI extern primitiv_Node *primitiv_node_func_batch_mean(
     const primitiv_Node *x);
