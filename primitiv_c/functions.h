@@ -26,21 +26,14 @@
 extern "C" {
 #endif
 
-CAPI extern primitiv_Node *primitiv_node_func_positive(const primitiv_Node *x);
-CAPI extern primitiv_Node *safe_primitiv_node_func_positive(
-    const primitiv_Node *x, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_positive(
-    const primitiv_Tensor *x);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_positive(
-    const primitiv_Tensor *x, primitiv_Status *status);
-
-CAPI extern primitiv_Node *primitiv_node_func_negative(const primitiv_Node *x);
-CAPI extern primitiv_Node *safe_primitiv_node_func_negative(
-    const primitiv_Node *x, primitiv_Status *status);
-CAPI extern primitiv_Tensor *primitiv_tensor_func_negative(
-    const primitiv_Tensor *x);
-CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_negative(
-    const primitiv_Tensor *x, primitiv_Status *status);
+#define DEFINE_UNARY_FUNC(name) \
+CAPI extern primitiv_Node *_NODE_FUN(name)(const primitiv_Node *x); \
+CAPI extern primitiv_Node *_S_NODE_FUN(name)( \
+    const primitiv_Node *x, primitiv_Status *status); \
+CAPI extern primitiv_Tensor *_TENSOR_FUN(name)( \
+    const primitiv_Tensor *x); \
+CAPI extern primitiv_Tensor *_S_TENSOR_FUN(name)( \
+    const primitiv_Tensor *x, primitiv_Status *status)
 
 #define DEFINE_BINARY_OPERATOR(op_name) \
 CAPI extern primitiv_Node *_NODE_OP(op_name, _node_const)( \
@@ -70,6 +63,8 @@ CAPI extern primitiv_Tensor *_S_TENSOR_OP(op_name, _tensor_tensor)( \
     const primitiv_Tensor *b, \
     primitiv_Status *status)
 
+DEFINE_UNARY_FUNC(positive);
+DEFINE_UNARY_FUNC(negative);
 DEFINE_BINARY_OPERATOR(add);
 DEFINE_BINARY_OPERATOR(subtract);
 DEFINE_BINARY_OPERATOR(multiply);

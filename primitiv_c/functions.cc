@@ -12,34 +12,20 @@ using primitiv::Tensor;
 
 extern "C" {
 
-primitiv_Node *primitiv_node_func_positive(const primitiv_Node *x) {
-  return to_c_from_value(primitiv::functions::positive(*to_cc(x)));
-}
-primitiv_Node *safe_primitiv_node_func_positive(const primitiv_Node *x,
-                                                primitiv_Status *status) {
-  SAFE_RETURN(primitiv_node_func_positive(x), status, nullptr);
-}
-primitiv_Tensor *primitiv_tensor_func_positive(const primitiv_Tensor *x) {
-  return to_c_from_value(primitiv::functions::positive(*to_cc(x)));
-}
-primitiv_Tensor *safe_primitiv_tensor_func_positive(const primitiv_Tensor *x,
-                                                    primitiv_Status *status) {
-  SAFE_RETURN(primitiv_tensor_func_positive(x), status, nullptr);
-}
-
-primitiv_Node *primitiv_node_func_negative(const primitiv_Node *x) {
-  return to_c_from_value(primitiv::functions::negative(*to_cc(x)));
-}
-primitiv_Node *safe_primitiv_node_func_negative(const primitiv_Node *x,
-                                                primitiv_Status *status) {
-  SAFE_RETURN(primitiv_node_func_negative(x), status, nullptr);
-}
-primitiv_Tensor *primitiv_tensor_func_negative(const primitiv_Tensor *x) {
-  return to_c_from_value(primitiv::functions::negative(*to_cc(x)));
-}
-primitiv_Tensor *safe_primitiv_tensor_func_negative(const primitiv_Tensor *x,
-                                                    primitiv_Status *status) {
-  SAFE_RETURN(primitiv_tensor_func_negative(x), status, nullptr);
+#define IMPL_UNARY_FUNC(name) \
+primitiv_Node *_NODE_FUN(name)(const primitiv_Node *x) { \
+  return to_c_from_value(primitiv::functions::name(*to_cc(x))); \
+} \
+primitiv_Node *_S_NODE_FUN(name)(const primitiv_Node *x, \
+                                 primitiv_Status *status) { \
+  SAFE_RETURN(_NODE_FUN(name)(x), status, nullptr); \
+} \
+primitiv_Tensor *_TENSOR_FUN(name)(const primitiv_Tensor *x) { \
+  return to_c_from_value(primitiv::functions::name(*to_cc(x))); \
+} \
+primitiv_Tensor *_S_TENSOR_FUN(name)(const primitiv_Tensor *x, \
+                                     primitiv_Status *status) { \
+  SAFE_RETURN(_TENSOR_FUN(name)(x), status, nullptr); \
 }
 
 #define IMPL_BINARY_OPERATOR(op_name) \
@@ -94,6 +80,8 @@ primitiv_Tensor *_S_TENSOR_OP(op_name, _tensor_tensor)( \
   SAFE_RETURN(_TENSOR_OP(op_name, _tensor_tensor)(a, b), status, nullptr); \
 }
 
+IMPL_UNARY_FUNC(positive);
+IMPL_UNARY_FUNC(negative);
 IMPL_BINARY_OPERATOR(add);
 IMPL_BINARY_OPERATOR(subtract);
 IMPL_BINARY_OPERATOR(multiply);
