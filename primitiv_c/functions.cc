@@ -391,21 +391,6 @@ primitiv_Tensor *safe_primitiv_tensor_func_slice(const primitiv_Tensor *x,
       primitiv_tensor_func_slice(x, dim, lower, upper), status, nullptr);
 }
 
-primitiv_Node *primitiv_node_func_tanh(const primitiv_Node *x) {
-  return to_c_from_value(primitiv::functions::tanh(*to_cc(x)));
-}
-primitiv_Node *safe_primitiv_node_func_tanh(const primitiv_Node *x,
-                                            primitiv_Status *status) {
-  SAFE_RETURN(primitiv_node_func_tanh(x), status, nullptr);
-}
-primitiv_Tensor *primitiv_tensor_func_tanh(const primitiv_Tensor *x) {
-  return to_c_from_value(primitiv::functions::tanh(*to_cc(x)));
-}
-primitiv_Tensor *safe_primitiv_tensor_func_tanh(const primitiv_Tensor *x,
-                                                primitiv_Status *status) {
-  SAFE_RETURN(primitiv_tensor_func_tanh(x), status, nullptr);
-}
-
 primitiv_Node *primitiv_node_func_matmul(const primitiv_Node *a,
                                          const primitiv_Node *b) {
   return to_c_from_value(primitiv::functions::matmul(*to_cc(a), *to_cc(b)));
@@ -423,6 +408,66 @@ primitiv_Tensor *safe_primitiv_tensor_func_matmul(const primitiv_Tensor *a,
                                                   const primitiv_Tensor *b,
                                                   primitiv_Status *status) {
   SAFE_RETURN(primitiv_tensor_func_matmul(a, b), status, nullptr);
+}
+
+primitiv_Node *primitiv_node_func_sqrt(const primitiv_Node *x) {
+  return to_c_from_value(primitiv::functions::sqrt(*to_cc(x)));
+}
+primitiv_Node *safe_primitiv_node_func_sqrt(const primitiv_Node *x,
+                                            primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_sqrt(x), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_sqrt(const primitiv_Tensor *x) {
+  return to_c_from_value(primitiv::functions::sqrt(*to_cc(x)));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_sqrt(const primitiv_Tensor *x,
+                                                primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_sqrt(x), status, nullptr);
+}
+
+primitiv_Node *primitiv_node_func_exp(const primitiv_Node *x) {
+  return to_c_from_value(primitiv::functions::exp(*to_cc(x)));
+}
+primitiv_Node *safe_primitiv_node_func_exp(const primitiv_Node *x,
+                                            primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_exp(x), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_exp(const primitiv_Tensor *x) {
+  return to_c_from_value(primitiv::functions::exp(*to_cc(x)));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_exp(const primitiv_Tensor *x,
+                                                primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_exp(x), status, nullptr);
+}
+
+primitiv_Node *primitiv_node_func_log(const primitiv_Node *x) {
+  return to_c_from_value(primitiv::functions::log(*to_cc(x)));
+}
+primitiv_Node *safe_primitiv_node_func_log(const primitiv_Node *x,
+                                            primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_log(x), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_log(const primitiv_Tensor *x) {
+  return to_c_from_value(primitiv::functions::log(*to_cc(x)));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_log(const primitiv_Tensor *x,
+                                                primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_log(x), status, nullptr);
+}
+
+primitiv_Node *primitiv_node_func_tanh(const primitiv_Node *x) {
+  return to_c_from_value(primitiv::functions::tanh(*to_cc(x)));
+}
+primitiv_Node *safe_primitiv_node_func_tanh(const primitiv_Node *x,
+                                            primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_tanh(x), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_tanh(const primitiv_Tensor *x) {
+  return to_c_from_value(primitiv::functions::tanh(*to_cc(x)));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_tanh(const primitiv_Tensor *x,
+                                                primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_tanh(x), status, nullptr);
 }
 
 primitiv_Node *primitiv_node_func_batch_mean(const primitiv_Node *x) {
