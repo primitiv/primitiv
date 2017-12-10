@@ -179,6 +179,124 @@ DEFINE_UNARY_FUNC(tan);
 DEFINE_UNARY_FUNC(relu);
 DEFINE_UNARY_FUNC(lrelu);
 
+CAPI extern primitiv_Node *primitiv_node_func_prelu(const primitiv_Node *x,
+                                                    float a);
+CAPI extern primitiv_Node *safe_primitiv_node_func_prelu(
+    const primitiv_Node *x, float a, primitiv_Status *status);
+CAPI extern primitiv_Tensor *primitiv_tensor_func_prelu(
+    const primitiv_Tensor *x, float a);
+CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_prelu(
+    const primitiv_Tensor *x, float a, primitiv_Status *status);
+
+CAPI extern primitiv_Node *primitiv_node_func_elu(const primitiv_Node *x,
+                                                    float a);
+CAPI extern primitiv_Node *safe_primitiv_node_func_elu(
+    const primitiv_Node *x, float a, primitiv_Status *status);
+CAPI extern primitiv_Tensor *primitiv_tensor_func_elu(
+    const primitiv_Tensor *x, float a);
+CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_elu(
+    const primitiv_Tensor *x, float a, primitiv_Status *status);
+
+CAPI extern primitiv_Node *primitiv_node_func_sum(const primitiv_Node *x,
+                                                  uint32_t dim);
+CAPI extern primitiv_Node *safe_primitiv_node_func_sum(
+    const primitiv_Node *x, uint32_t dim, primitiv_Status *status);
+CAPI extern primitiv_Tensor *primitiv_tensor_func_sum(
+    const primitiv_Tensor *x, uint32_t dim);
+CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_sum(
+    const primitiv_Tensor *x, uint32_t dim, primitiv_Status *status);
+
+CAPI extern primitiv_Node *primitiv_node_func_broadcast(const primitiv_Node *x,
+                                                        uint32_t dim,
+                                                        uint32_t size);
+CAPI extern primitiv_Node *safe_primitiv_node_func_broadcast(
+    const primitiv_Node *x,
+    uint32_t dim,
+    uint32_t size,
+    primitiv_Status *status);
+CAPI extern primitiv_Tensor *primitiv_tensor_func_broadcast(
+    const primitiv_Tensor *x, uint32_t dim, uint32_t size);
+CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_broadcast(
+    const primitiv_Tensor *x,
+    uint32_t dim,
+    uint32_t size,
+    primitiv_Status *status);
+
+CAPI extern primitiv_Node *primitiv_node_func_logsumexp(const primitiv_Node *x,
+                                                        uint32_t dim);
+CAPI extern primitiv_Node *safe_primitiv_node_func_logsumexp(
+    const primitiv_Node *x, uint32_t dim, primitiv_Status *status);
+CAPI extern primitiv_Tensor *primitiv_tensor_func_logsumexp(
+    const primitiv_Tensor *x, uint32_t dim);
+CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_logsumexp(
+    const primitiv_Tensor *x, uint32_t dim, primitiv_Status *status);
+
+CAPI extern primitiv_Node *primitiv_node_func_log_softmax(
+    const primitiv_Node *x, uint32_t dim);
+CAPI extern primitiv_Node *safe_primitiv_node_func_log_softmax(
+    const primitiv_Node *x, uint32_t dim, primitiv_Status *status);
+CAPI extern primitiv_Tensor *primitiv_tensor_func_log_softmax(
+    const primitiv_Tensor *x, uint32_t dim);
+CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_log_softmax(
+    const primitiv_Tensor *x, uint32_t dim, primitiv_Status *status);
+
+CAPI extern primitiv_Node *primitiv_node_func_softmax(const primitiv_Node *x,
+                                                      uint32_t dim);
+CAPI extern primitiv_Node *safe_primitiv_node_func_softmax(
+    const primitiv_Node *x, uint32_t dim, primitiv_Status *status);
+CAPI extern primitiv_Tensor *primitiv_tensor_func_softmax(
+    const primitiv_Tensor *x, uint32_t dim);
+CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_softmax(
+    const primitiv_Tensor *x, uint32_t dim, primitiv_Status *status);
+
+CAPI extern primitiv_Node *primitiv_node_func_softmax_cross_entropy(
+    const primitiv_Node *x,
+    const primitiv_Node *t,
+    uint32_t dim);
+CAPI extern primitiv_Node *safe_primitiv_node_func_softmax_cross_entropy(
+    const primitiv_Node *x,
+    const primitiv_Node *t,
+    uint32_t dim,
+    primitiv_Status *status);
+CAPI extern primitiv_Tensor *primitiv_tensor_func_softmax_cross_entropy(
+    const primitiv_Tensor *x,
+    const primitiv_Tensor *t,
+    uint32_t dim);
+CAPI extern primitiv_Tensor *safe_primitiv_tensor_func_softmax_cross_entropy(
+    const primitiv_Tensor *x,
+    const primitiv_Tensor *t,
+    uint32_t dim,
+    primitiv_Status *status);
+
+CAPI extern primitiv_Node
+*primitiv_node_func_softmax_cross_entropy_with_array(
+    const primitiv_Node *x,
+    const uint32_t *ids,
+    size_t n,
+    uint32_t dim);
+CAPI extern primitiv_Node
+*safe_primitiv_node_func_softmax_cross_entropy_with_array(
+    const primitiv_Node *x,
+    const uint32_t *ids,
+    size_t n,
+    uint32_t dim,
+    primitiv_Status *status);
+CAPI extern primitiv_Tensor
+*primitiv_tensor_func_softmax_cross_entropy_with_array(
+    const primitiv_Tensor *x,
+    const uint32_t *ids,
+    size_t n,
+    uint32_t dim);
+CAPI extern primitiv_Tensor
+*safe_primitiv_tensor_func_softmax_cross_entropy_with_array(
+    const primitiv_Tensor *x,
+    const uint32_t *ids,
+    size_t n,
+    uint32_t dim,
+    primitiv_Status *status);
+
+DEFINE_UNARY_FUNC(stop_gradient);
+
 CAPI extern primitiv_Node *primitiv_node_func_batch_mean(
     const primitiv_Node *x);
 CAPI extern primitiv_Node *safe_primitiv_node_func_batch_mean(

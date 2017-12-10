@@ -254,6 +254,211 @@ IMPL_UNARY_FUNC(tan);
 IMPL_UNARY_FUNC(relu);
 IMPL_UNARY_FUNC(lrelu);
 
+primitiv_Node *primitiv_node_func_prelu(const primitiv_Node *x, float a) {
+  return to_c_from_value(primitiv::functions::prelu(*to_cc(x), a));
+}
+primitiv_Node *safe_primitiv_node_func_prelu(const primitiv_Node *x,
+                                             float a,
+                                             primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_prelu(x, a), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_prelu(const primitiv_Tensor *x, float a) {
+  return to_c_from_value(primitiv::functions::prelu(*to_cc(x), a));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_prelu(const primitiv_Tensor *x,
+                                                 float a,
+                                                 primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_prelu(x, a), status, nullptr);
+}
+
+primitiv_Node *primitiv_node_func_elu(const primitiv_Node *x, float a) {
+  return to_c_from_value(primitiv::functions::elu(*to_cc(x), a));
+}
+primitiv_Node *safe_primitiv_node_func_elu(const primitiv_Node *x,
+                                           float a,
+                                           primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_elu(x, a), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_elu(const primitiv_Tensor *x, float a) {
+  return to_c_from_value(primitiv::functions::elu(*to_cc(x), a));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_elu(const primitiv_Tensor *x,
+                                               float a,
+                                               primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_elu(x, a), status, nullptr);
+}
+
+primitiv_Node *primitiv_node_func_sum(const primitiv_Node *x, uint32_t dim) {
+  return to_c_from_value(primitiv::functions::sum(*to_cc(x), dim));
+}
+primitiv_Node *safe_primitiv_node_func_sum(const primitiv_Node *x,
+                                           uint32_t dim,
+                                           primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_sum(x, dim), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_sum(const primitiv_Tensor *x,
+                                          uint32_t dim) {
+  return to_c_from_value(primitiv::functions::sum(*to_cc(x), dim));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_sum(const primitiv_Tensor *x,
+                                               uint32_t dim,
+                                               primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_sum(x, dim), status, nullptr);
+}
+
+primitiv_Node *primitiv_node_func_broadcast(const primitiv_Node *x,
+                                            uint32_t dim,
+                                            uint32_t size) {
+  return to_c_from_value(primitiv::functions::broadcast(*to_cc(x), dim, size));
+}
+primitiv_Node *safe_primitiv_node_func_broadcast(const primitiv_Node *x,
+                                                 uint32_t dim,
+                                                 uint32_t size,
+                                                 primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_broadcast(x, dim, size), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_broadcast(const primitiv_Tensor *x,
+                                                uint32_t dim,
+                                                uint32_t size) {
+  return to_c_from_value(primitiv::functions::broadcast(*to_cc(x), dim, size));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_broadcast(const primitiv_Tensor *x,
+                                                     uint32_t dim,
+                                                     uint32_t size,
+                                                     primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_broadcast(x, dim, size), status, nullptr);
+}
+
+primitiv_Node *primitiv_node_func_logsumexp(const primitiv_Node *x,
+                                            uint32_t dim) {
+  return to_c_from_value(primitiv::functions::logsumexp(*to_cc(x), dim));
+}
+primitiv_Node *safe_primitiv_node_func_logsumexp(const primitiv_Node *x,
+                                                 uint32_t dim,
+                                                 primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_logsumexp(x, dim), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_logsumexp(const primitiv_Tensor *x,
+                                                uint32_t dim) {
+  return to_c_from_value(primitiv::functions::logsumexp(*to_cc(x), dim));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_logsumexp(const primitiv_Tensor *x,
+                                                     uint32_t dim,
+                                                     primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_logsumexp(x, dim), status, nullptr);
+}
+
+primitiv_Node *primitiv_node_func_log_softmax(const primitiv_Node *x,
+                                              uint32_t dim) {
+  return to_c_from_value(primitiv::functions::log_softmax(*to_cc(x), dim));
+}
+primitiv_Node *safe_primitiv_node_func_log_softmax(const primitiv_Node *x,
+                                                   uint32_t dim,
+                                                   primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_log_softmax(x, dim), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_log_softmax(const primitiv_Tensor *x,
+                                                  uint32_t dim) {
+  return to_c_from_value(primitiv::functions::log_softmax(*to_cc(x), dim));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_log_softmax(const primitiv_Tensor *x,
+                                                       uint32_t dim,
+                                                       primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_log_softmax(x, dim), status, nullptr);
+}
+
+primitiv_Node *primitiv_node_func_softmax(const primitiv_Node *x,
+                                          uint32_t dim) {
+  return to_c_from_value(primitiv::functions::softmax(*to_cc(x), dim));
+}
+primitiv_Node *safe_primitiv_node_func_softmax(const primitiv_Node *x,
+                                               uint32_t dim,
+                                               primitiv_Status *status) {
+  SAFE_RETURN(primitiv_node_func_softmax(x, dim), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_softmax(const primitiv_Tensor *x,
+                                              uint32_t dim) {
+  return to_c_from_value(primitiv::functions::softmax(*to_cc(x), dim));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_softmax(const primitiv_Tensor *x,
+                                                   uint32_t dim,
+                                                   primitiv_Status *status) {
+  SAFE_RETURN(primitiv_tensor_func_softmax(x, dim), status, nullptr);
+}
+
+primitiv_Node *primitiv_node_func_softmax_cross_entropy(const primitiv_Node *x,
+                                                        const primitiv_Node *t,
+                                                        uint32_t dim) {
+  return to_c_from_value(
+      primitiv::functions::softmax_cross_entropy(*to_cc(x), *to_cc(t), dim));
+}
+primitiv_Node *safe_primitiv_node_func_softmax_cross_entropy(
+    const primitiv_Node *x,
+    const primitiv_Node *t,
+    uint32_t dim,
+    primitiv_Status *status) {
+  SAFE_RETURN(
+      primitiv_node_func_softmax_cross_entropy(x, t, dim), status, nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_softmax_cross_entropy(
+    const primitiv_Tensor *x,
+    const primitiv_Tensor *t,
+    uint32_t dim) {
+  return to_c_from_value(
+      primitiv::functions::softmax_cross_entropy(*to_cc(x), *to_cc(t), dim));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_softmax_cross_entropy(
+    const primitiv_Tensor *x,
+    const primitiv_Tensor *t,
+    uint32_t dim,
+    primitiv_Status *status) {
+  SAFE_RETURN(
+      primitiv_tensor_func_softmax_cross_entropy(x, t, dim), status, nullptr);
+}
+
+primitiv_Node *primitiv_node_func_softmax_cross_entropy_with_array(
+    const primitiv_Node *x,
+    const uint32_t *ids,
+    size_t n,
+    uint32_t dim) {
+  return to_c_from_value(
+      primitiv::functions::softmax_cross_entropy(
+          *to_cc(x), std::vector<uint32_t>(ids, ids + n), dim));
+}
+primitiv_Node *safe_primitiv_node_func_softmax_cross_entropy_with_array(
+    const primitiv_Node *x,
+    const uint32_t *ids,
+    size_t n,
+    uint32_t dim,
+    primitiv_Status *status) {
+  SAFE_RETURN(
+      primitiv_node_func_softmax_cross_entropy_with_array(x, ids, n, dim),
+      status,
+      nullptr);
+}
+primitiv_Tensor *primitiv_tensor_func_softmax_cross_entropy_with_array(
+    const primitiv_Tensor *x,
+    const uint32_t *ids,
+    size_t n,
+    uint32_t dim) {
+  return to_c_from_value(
+      primitiv::functions::softmax_cross_entropy(
+          *to_cc(x), std::vector<uint32_t>(ids, ids + n), dim));
+}
+primitiv_Tensor *safe_primitiv_tensor_func_softmax_cross_entropy_with_array(
+    const primitiv_Tensor *x,
+    const uint32_t *ids,
+    size_t n,
+    uint32_t dim,
+    primitiv_Status *status) {
+  SAFE_RETURN(
+      primitiv_tensor_func_softmax_cross_entropy_with_array(x, ids, n, dim),
+      status,
+      nullptr);
+}
+
+IMPL_UNARY_FUNC(stop_gradient);
+
 primitiv_Node *primitiv_node_func_batch_mean(const primitiv_Node *x) {
   return to_c_from_value(primitiv::functions::batch::mean(*to_cc(x)));
 }
