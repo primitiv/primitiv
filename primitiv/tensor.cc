@@ -50,13 +50,9 @@ void *Tensor::data() {
   return data_.get();
 }
 
-<<<<<<< HEAD
-void Tensor::reset(const float k) {
+void Tensor::reset(float k) {
   std::lock_guard<RecursiveSpinlock> lock(spinlock_);
 
-=======
-void Tensor::reset(float k) {
->>>>>>> develop
   if (!valid()) THROW_ERROR("Invalid tensor.");
   device_->reset_tensor(k, *this);
 }
