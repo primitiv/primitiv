@@ -23,7 +23,7 @@ TEST_F(BinaryTest, CheckExternalData) {
   Binary obj(10, data);
   EXPECT_TRUE(obj.valid());
   EXPECT_NO_THROW(obj.check_valid());
-  EXPECT_EQ(10, obj.size());
+  EXPECT_EQ(10u, obj.size());
   EXPECT_EQ(data, obj.data());
   EXPECT_THROW(obj.allocate(42), Error);
 }
@@ -33,7 +33,7 @@ TEST_F(BinaryTest, CheckInternalData) {
   EXPECT_NO_THROW(obj.allocate(42));
   EXPECT_TRUE(obj.valid());
   EXPECT_NO_THROW(obj.check_valid());
-  EXPECT_EQ(42, obj.size());
+  EXPECT_EQ(42u, obj.size());
   EXPECT_NE(nullptr, obj.data());
   EXPECT_THROW(obj.allocate(123), Error);
 }
@@ -45,7 +45,7 @@ TEST_F(BinaryTest, CheckMoveCtorWithExternalData) {
   Binary moved = std::move(org);
   ASSERT_FALSE(org.valid());
   ASSERT_TRUE(moved.valid());
-  EXPECT_EQ(10, moved.size());
+  EXPECT_EQ(10u, moved.size());
   EXPECT_EQ(data, moved.data());
 }
 
@@ -57,7 +57,7 @@ TEST_F(BinaryTest, CheckMoveAssignWithExternalData) {
   moved = std::move(org);
   ASSERT_FALSE(org.valid());
   ASSERT_TRUE(moved.valid());
-  EXPECT_EQ(10, moved.size());
+  EXPECT_EQ(10u, moved.size());
   EXPECT_EQ(data, moved.data());
 }
 
@@ -68,7 +68,7 @@ TEST_F(BinaryTest, CheckMoveCtorWithInternalData) {
   Binary moved = std::move(org);
   ASSERT_FALSE(org.valid());
   ASSERT_TRUE(moved.valid());
-  EXPECT_EQ(42, moved.size());
+  EXPECT_EQ(42u, moved.size());
   EXPECT_EQ(data, moved.data());
 }
 
@@ -80,7 +80,7 @@ TEST_F(BinaryTest, CheckMoveAssignWithInternalData) {
   moved = std::move(org);
   ASSERT_FALSE(org.valid());
   ASSERT_TRUE(moved.valid());
-  EXPECT_EQ(42, moved.size());
+  EXPECT_EQ(42u, moved.size());
   EXPECT_EQ(data, moved.data());
 }
 
@@ -101,7 +101,7 @@ TEST_F(ExtensionTest, CheckExternalData) {
   EXPECT_TRUE(obj.valid());
   EXPECT_NO_THROW(obj.check_valid());
   EXPECT_EQ('X', obj.type());
-  EXPECT_EQ(10, obj.size());
+  EXPECT_EQ(10u, obj.size());
   EXPECT_EQ(data, obj.data());
   EXPECT_THROW(obj.allocate('Y', 42), Error);
 }
@@ -112,7 +112,7 @@ TEST_F(ExtensionTest, CheckInternalData) {
   EXPECT_TRUE(obj.valid());
   EXPECT_NO_THROW(obj.check_valid());
   EXPECT_EQ('Y', obj.type());
-  EXPECT_EQ(42, obj.size());
+  EXPECT_EQ(42u, obj.size());
   EXPECT_NE(nullptr, obj.data());
   EXPECT_THROW(obj.allocate('Z', 123), Error);
 }
@@ -125,7 +125,7 @@ TEST_F(ExtensionTest, CheckMoveCtorWithExternalData) {
   ASSERT_FALSE(org.valid());
   ASSERT_TRUE(moved.valid());
   EXPECT_EQ('X', moved.type());
-  EXPECT_EQ(10, moved.size());
+  EXPECT_EQ(10u, moved.size());
   EXPECT_EQ(data, moved.data());
 }
 
@@ -138,7 +138,7 @@ TEST_F(ExtensionTest, CheckMoveAssignWithExternalData) {
   ASSERT_FALSE(org.valid());
   ASSERT_TRUE(moved.valid());
   EXPECT_EQ('X', moved.type());
-  EXPECT_EQ(10, moved.size());
+  EXPECT_EQ(10u, moved.size());
   EXPECT_EQ(data, moved.data());
 }
 
@@ -150,7 +150,7 @@ TEST_F(ExtensionTest, CheckMoveCtorWithInternalData) {
   ASSERT_FALSE(org.valid());
   ASSERT_TRUE(moved.valid());
   EXPECT_EQ('X', moved.type());
-  EXPECT_EQ(42, moved.size());
+  EXPECT_EQ(42u, moved.size());
   EXPECT_EQ(data, moved.data());
 }
 
@@ -163,7 +163,7 @@ TEST_F(ExtensionTest, CheckMoveAssignWithInternalData) {
   ASSERT_FALSE(org.valid());
   ASSERT_TRUE(moved.valid());
   EXPECT_EQ('X', moved.type());
-  EXPECT_EQ(42, moved.size());
+  EXPECT_EQ(42u, moved.size());
   EXPECT_EQ(data, moved.data());
 }
 

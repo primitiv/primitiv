@@ -50,9 +50,13 @@ void *Tensor::data() {
   return data_.get();
 }
 
+<<<<<<< HEAD
 void Tensor::reset(const float k) {
   std::lock_guard<RecursiveSpinlock> lock(spinlock_);
 
+=======
+void Tensor::reset(float k) {
+>>>>>>> develop
   if (!valid()) THROW_ERROR("Invalid tensor.");
   device_->reset_tensor(k, *this);
 }
@@ -85,7 +89,7 @@ Tensor Tensor::flatten() const {
   return Tensor(shape_ops::flatten(shape_), *device_, data_);
 }
 
-Tensor &Tensor::operator*=(float k) {
+Tensor &Tensor::inplace_multiply_const(float k) {
   std::lock_guard<RecursiveSpinlock> lock(spinlock_);
 
   if (!valid()) THROW_ERROR("Invalid tensor.");
@@ -93,7 +97,7 @@ Tensor &Tensor::operator*=(float k) {
   return *this;
 }
 
-Tensor &Tensor::operator+=(const Tensor &x) {
+Tensor &Tensor::inplace_add(const Tensor &x) {
   std::lock_guard<RecursiveSpinlock> lock(spinlock_);
 
   if (!valid()) THROW_ERROR("Invalid tensor.");
@@ -101,7 +105,7 @@ Tensor &Tensor::operator+=(const Tensor &x) {
   return *this;
 }
 
-Tensor &Tensor::operator-=(const Tensor &x) {
+Tensor &Tensor::inplace_subtract(const Tensor &x) {
   std::lock_guard<RecursiveSpinlock> lock(spinlock_);
 
   if (!valid()) THROW_ERROR("Invalid tensor.");

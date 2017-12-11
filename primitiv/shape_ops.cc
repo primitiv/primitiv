@@ -49,6 +49,13 @@ Shape slice(const Shape &x, std::uint32_t dim, std::uint32_t lower, std::uint32_
   return dim >= x.depth() ? x : x.resize_dim(dim, upper - lower);
 }
 
+Shape concat(const std::vector<Shape> &xs, std::uint32_t dim) {
+  std::vector<const Shape *> ptrs;
+  ptrs.reserve(xs.size());
+  for (const Shape &x : xs) ptrs.emplace_back(&x);
+  return concat(ptrs, dim);
+}
+
 Shape concat(const std::vector<const Shape *> &xs, std::uint32_t dim) {
   if (xs.empty()) {
     THROW_ERROR("No tensors to be concatenated.");

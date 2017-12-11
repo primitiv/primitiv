@@ -36,7 +36,7 @@ public:
 
   // Initializes internal values.
   void restart(const Var &init_c = Var(), const Var &init_h = Var()) {
-    namespace F = primitiv::operators;
+    namespace F = primitiv::functions;
     const unsigned out_size = pwhh_.shape()[1];
     wxh_ = F::parameter<Var>(pwxh_);
     whh_ = F::parameter<Var>(pwhh_);
@@ -47,7 +47,7 @@ public:
 
   // One step forwarding.
   Var forward(const Var &x) {
-    namespace F = primitiv::operators;
+    namespace F = primitiv::functions;
     const unsigned out_size = pwhh_.shape()[1];
     const auto u = F::matmul(wxh_, x) + F::matmul(whh_, h_) + bh_;
     const auto i = F::sigmoid(F::slice(u, 0, 0, out_size));

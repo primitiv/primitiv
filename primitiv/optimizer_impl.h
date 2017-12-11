@@ -29,7 +29,7 @@ public:
    * Creates a new SGD object.
    * @param eta Learning rate.
    */
-  explicit SGD(const float eta = 0.1) : eta_(eta) {}
+  explicit SGD(float eta = 0.1) : eta_(eta) {}
 
   /**
    * Returns the learning rate.

@@ -113,11 +113,11 @@ TEST_F(ReaderTest, CheckUInt32) {
   EXPECT_NO_THROW(*reader >> x[0] >> x[1] >> x[2] >> x[3] >> x[4]);
   EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
 
-  EXPECT_EQ(0x00000000, x[0]);
-  EXPECT_EQ(0x7fffffff, x[1]);
-  EXPECT_EQ(0x80000000, x[2]);
-  EXPECT_EQ(0xffffffff, x[3]);
-  EXPECT_EQ(0xdeadbeef, x[4]);
+  EXPECT_EQ(0x00000000u, x[0]);
+  EXPECT_EQ(0x7fffffffu, x[1]);
+  EXPECT_EQ(0x80000000u, x[2]);
+  EXPECT_EQ(0xffffffffu, x[3]);
+  EXPECT_EQ(0xdeadbeefu, x[4]);
 }
 
 TEST_F(ReaderTest, CheckUInt64) {
@@ -178,11 +178,11 @@ TEST_F(ReaderTest, CheckInt32) {
   EXPECT_NO_THROW(*reader >> x[0] >> x[1] >> x[2] >> x[3] >> x[4]);
   EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
 
-  EXPECT_EQ(0x00000000, x[0]);
-  EXPECT_EQ(0x7fffffff, x[1]);
-  EXPECT_EQ(0x80000000, x[2]);
-  EXPECT_EQ(0xffffffff, x[3]);
-  EXPECT_EQ(0xdeadbeef, x[4]);
+  EXPECT_EQ(0x00000000u, static_cast<std::uint32_t>(x[0]));
+  EXPECT_EQ(0x7fffffffu, static_cast<std::uint32_t>(x[1]));
+  EXPECT_EQ(0x80000000u, static_cast<std::uint32_t>(x[2]));
+  EXPECT_EQ(0xffffffffu, static_cast<std::uint32_t>(x[3]));
+  EXPECT_EQ(0xdeadbeefu, static_cast<std::uint32_t>(x[4]));
 }
 
 TEST_F(ReaderTest, CheckInt64) {
@@ -197,11 +197,11 @@ TEST_F(ReaderTest, CheckInt64) {
   EXPECT_NO_THROW(*reader >> x[0] >> x[1] >> x[2] >> x[3] >> x[4]);
   EXPECT_NO_THROW(*reader >> nullptr);  // Sentinel
 
-  EXPECT_EQ(0x0000000000000000ll, x[0]);
-  EXPECT_EQ(0x7fffffffffffffffll, x[1]);
-  EXPECT_EQ(0x8000000000000000ll, x[2]);
-  EXPECT_EQ(0xffffffffffffffffll, x[3]);
-  EXPECT_EQ(0xdeadbeeffee1deadll, x[4]);
+  EXPECT_EQ(0x0000000000000000ull, static_cast<std::uint64_t>(x[0]));
+  EXPECT_EQ(0x7fffffffffffffffull, static_cast<std::uint64_t>(x[1]));
+  EXPECT_EQ(0x8000000000000000ull, static_cast<std::uint64_t>(x[2]));
+  EXPECT_EQ(0xffffffffffffffffull, static_cast<std::uint64_t>(x[3]));
+  EXPECT_EQ(0xdeadbeeffee1deadull, static_cast<std::uint64_t>(x[4]));
 }
 
 TEST_F(ReaderTest, CheckFloat) {

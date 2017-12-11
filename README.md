@@ -5,6 +5,7 @@
 [![Build Status (master)](https://img.shields.io/travis/primitiv/primitiv/master.svg?label=build+%28master%29)](https://travis-ci.org/primitiv/primitiv)
 [![Build Status (develop)](https://img.shields.io/travis/primitiv/primitiv/develop.svg?label=build+%28develop%29)](https://travis-ci.org/primitiv/primitiv)
 
+
 primitiv
 ========
 
@@ -40,6 +41,7 @@ Prerequisites
 - (optional) OpenCL 1.2/OpenCL C++ binding v2
   - Required only when `-DPRIMITIV_USE_OPENCL=ON`
 
+
 Install
 -------
 
@@ -51,6 +53,7 @@ Install
     make [-j <threads>]
     [make test]
     [make install]
+
 
 Building Options
 ----------------
@@ -79,17 +82,17 @@ Building Options
   - [FindCUDA](https://cmake.org/cmake/help/v3.1/module/FindCUDA.html) options.
   - [FindOpenCL](https://cmake.org/cmake/help/v3.1/module/FindOpenCL.html) options.
 
+
 Usage
 -----
 
-- [Short Python tutorial](https://github.com/odashi/primitiv/tree/develop/examples/tutorial1_xor.ipynb) with solving XOR problem.
 - [Examples](https://github.com/odashi/primitiv/tree/develop/examples).
 
 
 Contact
 -------
 
-- yus.takara at gmail.com
-- [@odashi_t on Twitter](https://twitter.com/odashi_t)
+- [primitiv Developer Group](https://groups.google.com/forum/#!forum/primitiv-developer-group)
+- [@odashi_t (maintainer) on Twitter](https://twitter.com/odashi_t)
 
 This project is supported by [ASTREC](http://astrec.nict.go.jp/) in [NICT](http://nict.go.jp/).

@@ -5,9 +5,9 @@
 #include <numeric>
 #include <random>
 #include <gtest/gtest.h>
+#include <primitiv/functions.h>
 #include <primitiv/graph.h>
 #include <primitiv/naive_device.h>
-#include <primitiv/operators.h>
 #include <test_utils.h>
 
 using std::vector;
@@ -35,7 +35,7 @@ TEST_F(NodeTest, CheckArgMaxDims) {
     {1, 1, 1, 1, 1, 1},
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
   };
-  const Node a = operators::input<Node>(Shape({3, 3}, 2), data);
+  const Node a = functions::input<Node>(Shape({3, 3}, 2), data);
   for (const std::uint32_t i : {0u, 1u, 2u}) {
     EXPECT_TRUE(vector_match(expected[i], a.argmax(i)));
   }
@@ -52,7 +52,7 @@ TEST_F(NodeTest, CheckArgMaxLarge) {
     std::shuffle(begin(data), end(data), rng);
     const auto it = std::find(begin(data), end(data), n - 1);
     const std::uint32_t pos = std::distance(begin(data), it);
-    const Node a = operators::input<Node>({n}, data);
+    const Node a = functions::input<Node>({n}, data);
     EXPECT_EQ(pos, a.argmax(0)[0]);
   }
 }
@@ -66,7 +66,7 @@ TEST_F(NodeTest, CheckArgMinDims) {
     {1, 1, 1, 1, 1, 1},
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
   };
-  const Node a = operators::input<Node>(Shape({3, 3}, 2), data);
+  const Node a = functions::input<Node>(Shape({3, 3}, 2), data);
   for (const std::uint32_t i : {0u, 1u, 2u}) {
     EXPECT_TRUE(vector_match(expected[i], a.argmin(i)));
   }
@@ -83,7 +83,7 @@ TEST_F(NodeTest, CheckArgMinLarge) {
     std::shuffle(begin(data), end(data), rng);
     const auto it = std::find(begin(data), end(data), 0);
     const std::uint32_t pos = std::distance(begin(data), it);
-    const Node a = operators::input<Node>({n}, data);
+    const Node a = functions::input<Node>({n}, data);
     EXPECT_EQ(pos, a.argmin(0)[0]);
   }
 }

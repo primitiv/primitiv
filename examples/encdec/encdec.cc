@@ -39,7 +39,7 @@
 
 using namespace primitiv;
 using namespace std;
-namespace F = primitiv::operators;
+namespace F = primitiv::functions;
 
 static const unsigned SRC_VOCAB_SIZE = 4000;
 static const unsigned TRG_VOCAB_SIZE = 5000;

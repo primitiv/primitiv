@@ -56,6 +56,14 @@ Shape slice(const Shape &x, std::uint32_t dim, std::uint32_t lower, std::uint32_
  * @param dim Dimension to be concatenated.
  * @return A shape.
  */
+Shape concat(const std::vector<Shape> &xs, std::uint32_t dim);
+
+/**
+ * Calculates the concatenated shape.
+ * @param xs A list of shapes.
+ * @param dim Dimension to be concatenated.
+ * @return A shape.
+ */
 Shape concat(const std::vector<const Shape *> &xs, std::uint32_t dim);
 
 /**

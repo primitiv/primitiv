@@ -23,7 +23,7 @@
 
 using namespace primitiv;
 using namespace std;
-namespace F = primitiv::operators;
+namespace F = primitiv::functions;
 namespace I = primitiv::initializers;
 namespace O = primitiv::optimizers;
 

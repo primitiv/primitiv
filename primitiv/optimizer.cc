@@ -4,10 +4,10 @@
 #include <fstream>
 #include <primitiv/error.h>
 #include <primitiv/file_format.h>
+#include <primitiv/functions.h>
 #include <primitiv/model.h>
 #include <primitiv/msgpack/reader.h>
 #include <primitiv/msgpack/writer.h>
-#include <primitiv/operators.h>
 #include <primitiv/parameter.h>
 #include <primitiv/optimizer.h>
 
@@ -84,7 +84,7 @@ void Optimizer::update() {
     float sq_norm = 0;
     for (const Parameter *param : params_) {
       const Tensor &g = param->gradient();
-      sq_norm += operators::sum(operators::flatten(g * g), 0).to_float();
+      sq_norm += functions::sum(functions::flatten(g * g), 0).to_float();
     }
     if (sq_norm > clip_threshold_ * clip_threshold_) {
       float clip_scale = clip_threshold_ / std::sqrt(sq_norm);
