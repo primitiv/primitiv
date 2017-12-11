@@ -20,14 +20,16 @@ else()
   message(WARNING "primitiv may not support the detected compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
+find_package(Primitiv REQUIRED)
+
 include_directories(
   ${PROJECT_SOURCE_DIR}
   ${PROJECT_BINARY_DIR}
   ${PRIMITIV_INCLUDE_DIR}
 )
 
-# link_directories(
-#   ${PRIMITIIV_LIBRARY_DIR}
-# )
+link_directories(
+  ${PRIMITIV_LIBRARY_DIR}
+)
 
 add_subdirectory(primitiv_c)
