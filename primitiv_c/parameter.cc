@@ -23,9 +23,6 @@ primitiv_Parameter *primitiv_Parameter_new_with_values(
     const float *value,
     size_t n,
     primitiv_Device *device) {
-  if (!device) {
-    device = primitiv_Device_get_default();
-  }
   return to_c(new Parameter(*to_cc(shape),
                             std::vector<float>(value, value + n),
                             *to_cc(device)));
@@ -46,9 +43,6 @@ primitiv_Parameter *primitiv_Parameter_new_with_initializer(
     const primitiv_Shape *shape,
     const primitiv_Initializer *initializer,
     primitiv_Device *device) {
-  if (!device) {
-    device = primitiv_Device_get_default();
-  }
   return to_c(new Parameter(*to_cc(shape),
                             *to_cc(initializer),
                             *to_cc(device)));
@@ -78,9 +72,6 @@ void primitiv_Parameter_init_with_values(
     const float *value,
     size_t n,
     primitiv_Device *device) {
-  if (!device) {
-    device = primitiv_Device_get_default();
-  }
   to_cc(parameter)->init(*to_cc(shape),
                          std::vector<float>(value, value + n),
                          *to_cc(device));
@@ -102,9 +93,6 @@ void primitiv_Parameter_init_with_initializer(
     const primitiv_Shape *shape,
     const primitiv_Initializer *initializer,
     primitiv_Device *device) {
-  if (!device) {
-    device = primitiv_Device_get_default();
-  }
   to_cc(parameter)->init(*to_cc(shape),
                          *to_cc(initializer),
                          *to_cc(device));
@@ -125,9 +113,6 @@ void primitiv_Parameter_load(
     const char *path,
     bool with_stats,
     primitiv_Device *device) {
-  if (!device) {
-    device = primitiv_Device_get_default();
-  }
   to_cc(parameter)->load(path, with_stats, *to_cc(device));
 }
 void safe_primitiv_Parameter_load(
