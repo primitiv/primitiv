@@ -6,9 +6,28 @@
 
 namespace primitiv {
 
+float Tensor::to_float() const {
+  if (!valid()) THROW_ERROR("Invalid tensor.");
+  if (shape_.size() != 1) {
+    THROW_ERROR(
+        "Tensor has more than 1 values. shape = " << shape_.to_string());
+  }
+  return device_->tensor_to_vector(*this)[0];
+}
+
 std::vector<float> Tensor::to_vector() const {
   if (!valid()) THROW_ERROR("Invalid tensor.");
   return device_->tensor_to_vector(*this);
+}
+
+std::vector<std::uint32_t> Tensor::argmax(std::uint32_t dim) const {
+  if (!valid()) THROW_ERROR("Invalid tensor.");
+  return device_->argmax(*this, dim);
+}
+
+std::vector<std::uint32_t> Tensor::argmin(std::uint32_t dim) const {
+  if (!valid()) THROW_ERROR("Invalid tensor.");
+  return device_->argmin(*this, dim);
 }
 
 void *Tensor::data() {
@@ -21,7 +40,7 @@ void *Tensor::data() {
   return data_.get();
 }
 
-void Tensor::reset(const float k) {
+void Tensor::reset(float k) {
   if (!valid()) THROW_ERROR("Invalid tensor.");
   device_->reset_tensor(k, *this);
 }
@@ -46,19 +65,19 @@ Tensor Tensor::flatten() const {
   return Tensor(shape_ops::flatten(shape_), *device_, data_);
 }
 
-Tensor &Tensor::operator*=(float k) {
+Tensor &Tensor::inplace_multiply_const(float k) {
   if (!valid()) THROW_ERROR("Invalid tensor.");
   device_->inplace_multiply_const(k, *this);
   return *this;
 }
 
-Tensor &Tensor::operator+=(const Tensor &x) {
+Tensor &Tensor::inplace_add(const Tensor &x) {
   if (!valid()) THROW_ERROR("Invalid tensor.");
   device_->inplace_add(x, *this);
   return *this;
 }
 
-Tensor &Tensor::operator-=(const Tensor &x) {
+Tensor &Tensor::inplace_subtract(const Tensor &x) {
   if (!valid()) THROW_ERROR("Invalid tensor.");
   device_->inplace_subtract(x, *this);
   return *this;

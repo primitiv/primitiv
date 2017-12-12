@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_SHAPE_OPS_H_
 #define PRIMITIV_SHAPE_OPS_H_
 
+#include <cstdint>
 #include <vector>
 #include <primitiv/shape.h>
 
@@ -47,7 +48,7 @@ Shape elementwise(const Shape &a, const Shape &b);
  * @param upper Lower bound of the dimension `dim`.
  * @return A shape.
  */
-Shape slice(const Shape &x, unsigned dim, unsigned lower, unsigned upper);
+Shape slice(const Shape &x, std::uint32_t dim, std::uint32_t lower, std::uint32_t upper);
 
 /**
  * Calculates the concatenated shape.
@@ -55,7 +56,15 @@ Shape slice(const Shape &x, unsigned dim, unsigned lower, unsigned upper);
  * @param dim Dimension to be concatenated.
  * @return A shape.
  */
-Shape concat(const std::vector<const Shape *> &xs, unsigned dim);
+Shape concat(const std::vector<Shape> &xs, std::uint32_t dim);
+
+/**
+ * Calculates the concatenated shape.
+ * @param xs A list of shapes.
+ * @param dim Dimension to be concatenated.
+ * @return A shape.
+ */
+Shape concat(const std::vector<const Shape *> &xs, std::uint32_t dim);
 
 /**
  * Calculates the broadcasted shape.
@@ -64,7 +73,7 @@ Shape concat(const std::vector<const Shape *> &xs, unsigned dim);
  * @param size New size of the dimension `dim`.
  * @return A shape.
  */
-Shape broadcast(const Shape &x, unsigned dim, unsigned size);
+Shape broadcast(const Shape &x, std::uint32_t dim, std::uint32_t size);
 
 /**
  * Calculates the picked shape.
@@ -73,7 +82,7 @@ Shape broadcast(const Shape &x, unsigned dim, unsigned size);
  * @param dim Dimension to pick.
  * @return A shape.
  */
-Shape pick(const Shape &x, const std::vector<unsigned> &ids, unsigned dim);
+Shape pick(const Shape &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim);
 
 /**
  * Calculates the transposed shape.

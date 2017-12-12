@@ -1,5 +1,5 @@
-build
-example/*/a.out
-example/*/*.config
-example/*/*.param
-example/*/data
+/build
+/examples/*/a.out
+/examples/*/*.config
+/examples/*/*.param
+/examples/*/data

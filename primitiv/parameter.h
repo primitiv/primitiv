@@ -4,105 +4,224 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <primitiv/device.h>
 #include <primitiv/error.h>
+#include <primitiv/mixins.h>
+#include <primitiv/msgpack/reader.h>
+#include <primitiv/msgpack/writer.h>
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
 
 namespace primitiv {
 
+class Device;
 class Initializer;
 
 /**
  * Class to manage a trainable tensor parameter.
  */
-class Parameter {
-  Parameter(const Parameter &) = delete;
-  Parameter &operator=(const Parameter &) = delete;
+class Parameter : mixins::Nonmovable<Parameter> {
+  friend class Model;
+
+private:
+  /**
+   * Loads parameters from msgpack::Reader w/o checking the header.
+   * @param reader msgpack::Reader object.
+   * @param with_stats Whether or not to load all additional statistics.
+   * @param device Device object to manage the parameter.
+   */
+  void load_inner(msgpack::Reader &reader, bool with_stats, Device &device);
+
+  /**
+   * Saves parameters to msgpack::Writer.
+   * @param writer msgpack::Writer object.
+   * @param with_stats Whether or not to save all additional statistics.
+   */
+  void save_inner(msgpack::Writer &writer, bool with_stats) const;
 
 public:
-  Parameter(Parameter &&src)
-    : name_(std::move(src.name_))
-    , shape_(std::move(src.shape_))
-    , device_(src.device_)
-    , value_(std::move(src.value_))
-    , grad_(std::move(src.grad_))
-    , stats_(std::move(src.stats_)) {
-      src.device_ = nullptr;
-    }
-
-  Parameter &operator=(Parameter &&src) {
-    if (&src != this) {
-      name_ = std::move(src.name_);
-      shape_ = std::move(src.shape_);
-      device_ = src.device_;
-      value_ = std::move(src.value_);
-      grad_ = std::move(src.grad_);
-      stats_ = std::move(src.stats_);
-      src.device_ = nullptr;
-    }
-    return *this;
-  }
-
   /**
    * Creates an invalid parameter object.
    */
-  Parameter() : name_(), shape_(), device_(nullptr), value_(), grad_() {}
+  Parameter() : shape_(), device_(nullptr), value_(), grad_() {}
 
   /**
    * Creates a new Parameter object.
-   * @param name Name of the parameter.
    * @param shape The shape of the parameter. The batch size should be 1.
+   * @param value List of initial values. Order of elements should be the
+   *              column-major (Fortran) order.
    * @param device The device object to manage internal memory.
    */
   Parameter(
-      const std::string &name,
-      const Shape &shape,
-      Device &device = Device::get_default());
+      const Shape &shape, const std::vector<float> &value, Device *device);
 
   /**
    * Creates a new Parameter object.
-   * @param name Name of the parameter.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @param value List of initial values. Order of elements should be of
-   *              `Tensor::set_values()`.
+   * @param value List of initial values. Order of elements should be the
+   *              column-major (Fortran) order.
    * @param device The device object to manage internal memory.
    */
   Parameter(
-      const std::string &name, const Shape &shape,
-      const std::vector<float> &value,
-      Device &device = Device::get_default());
+      const Shape &shape, const std::vector<float> &value, Device &device)
+    : Parameter(shape, value, &device) {}
 
   /**
    * Creates a new Parameter object.
-   * @param name Name of the parameter.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param value List of initial values. Order of elements should be the
+   *              column-major (Fortran) order.
+   */
+  Parameter(const Shape &shape, const std::vector<float> &value)
+    : Parameter(shape, value, nullptr) {}
+
+  /**
+   * Creates a new Parameter object.
    * @param shape The shape of the parameter. The batch size should be 1.
    * @param init An Initializer object.
    * @param device The device object to manage internal memory.
    */
   Parameter(
-      const std::string &name, const Shape &shape,
-      const Initializer &init,
-      Device &device = Device::get_default());
+      const Shape &shape, const Initializer &initializer, Device *device);
+
+  /**
+   * Creates a new Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param init An Initializer object.
+   * @param device The device object to manage internal memory.
+   */
+  Parameter(
+      const Shape &shape, const Initializer &initializer, Device &device)
+    : Parameter(shape, initializer, &device) {}
+
+  /**
+   * Creates a new Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param init An Initializer object.
+   */
+  Parameter(const Shape &shape, const Initializer &initializer)
+    : Parameter(shape, initializer, nullptr) {}
+
+  /**
+   * Initializes the Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param value List of initial values. Order of elements should be the
+   *              column-major (Fortran) order.
+   * @param device The device object to manage internal memory.
+   */
+  void init(
+      const Shape &shape, const std::vector<float> &value, Device *device);
+
+  /**
+   * Initializes the Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param value List of initial values. Order of elements should be the
+   *              column-major (Fortran) order.
+   * @param device The device object to manage internal memory.
+   */
+  void init(
+      const Shape &shape, const std::vector<float> &value, Device &device) {
+    init(shape, value, &device);
+  }
+
+  /**
+   * Initializes the Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param value List of initial values. Order of elements should be the
+   *              column-major (Fortran) order.
+   */
+  void init(const Shape &shape, const std::vector<float> &value) {
+    init(shape, value, nullptr);
+  }
+
+  /**
+   * Initializes the Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param init An Initializer object.
+   * @param device The device object to manage internal memory.
+   */
+  void init(
+      const Shape &shape, const Initializer &initializer, Device *device);
+
+  /**
+   * Initializes the Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param init An Initializer object.
+   * @param device The device object to manage internal memory.
+   */
+  void init(
+      const Shape &shape, const Initializer &initializer, Device &device) {
+    init(shape, initializer, &device);
+  }
+
+  /**
+   * Initializes the Parameter object.
+   * @param shape The shape of the parameter. The batch size should be 1.
+   * @param init An Initializer object.
+   */
+  void init(
+      const Shape &shape, const Initializer &initializer) {
+    init(shape, initializer, nullptr);
+  }
+
+  /**
+   * Loads parameters from specified file.
+   * @param path File path to load parameters.
+   * @param with_stats Whether or not to load all additional statistics as well
+   *                   as parameter values if the file has them.
+   * @param device The device object to manage internal memory.
+   */
+  void load(const std::string &path, bool with_stats, Device *device);
+
+  /**
+   * Loads parameters from specified file.
+   * @param path File path to load parameters.
+   * @param with_stats Whether or not to load all additional statistics as well
+   *                   as parameter values if the file has them.
+   * @param device The device object to manage internal memory.
+   */
+  void load(const std::string &path, bool with_stats, Device &device) {
+    load(path, with_stats, &device);
+  }
+
+  /**
+   * Loads parameters from specified file.
+   * @param path File path to load parameters.
+   * @param with_stats Whether or not to load all additional statistics as well
+   *                   as parameter values if the file has them.
+   */
+  void load(const std::string &path, bool with_stats) {
+    load(path, with_stats, nullptr);
+  }
+
+  /**
+   * Loads parameters from specified file.
+   * @param path File path to load parameters.
+   */
+  void load(const std::string &path) {
+    load(path, true, nullptr);
+  }
+
+  /**
+   * Saves current parameters into specified file.
+   * @param path File path to save parameters.
+   * @param with_stats Whether or not to save all additional statistics as well
+   *                   as parameter values if the parameter object has them.
+   */
+  void save(const std::string &path, bool with_stats) const;
+
+  /**
+   * Saves current parameters into specified file.
+   * @param path File path to save parameters.
+   */
+  void save(const std::string &path) const {
+    save(path, true);
+  }
 
   /**
    * Returns whether the parameter is valid or not.
    * @return true or false w.r.t. the parameter is valid or not.
    */
   bool valid() const { return !!device_; }
-
-  /**
-   * Set all values.
-   * @param value List of new parameter values. Order of the values should be
-   *              of `Tensor::set_values()`.
-   */
-  void reset_value(const std::vector<float> &value);
-
-  /**
-   * Set all values using a specific initialization criteria.
-   * @param init An Initializer object.
-   */
-  void reset_value(const Initializer &init);
 
   /**
    * Set all gradients to 0.
@@ -113,6 +232,7 @@ public:
    * Adds a new optional statistics tensor.
    * @param name Name of the statistics.
    * @param shape Shape of the tensor.
+   * @remarks All elements in the new statistics tensor is initialized by 0.
    */
   void add_stats(const std::string &name, const Shape &shape);
 
@@ -127,19 +247,10 @@ public:
   }
 
   /**
-   * Returns the name of the parameter.
-   * @return Name of the parameter.
-   */
-  const std::string &name() const {
-    if (!valid()) THROW_ERROR("Invalid parameter.");
-    return name_;
-  }
-
-  /**
    * Returns the shape of the parameter.
    * @return Shape object.
    */
-  const Shape &shape() const {
+  Shape shape() const {
     if (!valid()) THROW_ERROR("Invalid parameter.");
     return shape_;
   }
@@ -208,44 +319,7 @@ public:
     return stats_.at(name);
   }
 
-  /**
-   * Saves current parameters into specified file with YAML format.
-   * @param path File path to write parameters.
-   * @param with_stats Whether or not to save all additional statistics as well
-   *                   as parameter values if the parameter object has them.
-   */
-  void save(const std::string &path, bool with_stats = true) const;
-
-  /**
-   * Loads parameters and returns a new Parameter object.
-   * @param path File path to load parameters.
-   * @param with_stats Whether or not to load all additional statistics as well
-   *                   as parameter values if the file contains them.
-   * @param device Device object to manage internal memories.
-   * @return A new Parameter object.
-   */
-  static Parameter load(
-      const std::string &path,
-      bool with_stats = true,
-      Device &device = Device::get_default());
-
 private:
-  /**
-   * Makes a Parameter object directly from its values.
-   * @param name Name of the parameter.
-   * @param value Value of the parameter.
-   * @param stats Map of optional statistics.
-   */
-  void initialize_by_data(
-      std::string &&name, Tensor &&value,
-      std::unordered_map<std::string, Tensor> &&stats);
-
-  /**
-   * Checks the shape of the parameter.
-   */
-  void check_shape();
-
-  std::string name_;
   Shape shape_;
   Device *device_;
   Tensor value_;

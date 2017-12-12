@@ -15,12 +15,12 @@ namespace primitiv {
 namespace devices {
 
 void Naive::dump_description() const {
-  cerr << "Device " << this << ':' << endl;
+  cerr << "Device " << this << endl;
   cerr << "  Type: Naive" << endl;
 }
 
 std::shared_ptr<void> Naive::new_handle(const Shape &shape) {
-  const unsigned mem_size = sizeof(float) * shape.size();
+  const std::uint32_t mem_size = sizeof(float) * shape.size();
   void *data = std::malloc(mem_size);
   if (!data) {
     THROW_ERROR("Memory allocation failed. Requested size: " << mem_size);
@@ -32,18 +32,68 @@ std::shared_ptr<void> Naive::new_handle(const Shape &shape) {
 #define CDATA(x) static_cast<const float *>((x).data())
 
 #define REPEAT_OP(i, n, op) \
-  for (unsigned (i) = 0; (i) < (n); ++(i)) { (op); }
+  for (std::uint32_t (i) = 0; (i) < (n); ++(i)) { (op); }
 
 std::vector<float> Naive::tensor_to_vector_impl(const Tensor &x) {
-  const unsigned num_elements = x.shape().size();
+  const std::uint32_t num_elements = x.shape().size();
   std::vector<float> ret(num_elements);
   std::memcpy(&ret[0], x.data(), sizeof(float) * num_elements);
   return ret;
 }
 
+std::vector<std::uint32_t> Naive::argmax_impl(const Tensor &x, std::uint32_t dim) {
+  const Shape &s = x.shape();
+  const std::uint32_t n = s[dim];
+  const std::uint32_t repeat = s.size() / n;
+  const std::uint32_t skip1 = s.lower_volume(dim);
+  const std::uint32_t skip2 = skip1 * n;
+  const float *src = CDATA(x);
+  std::vector<std::uint32_t> ret;
+  ret.reserve(repeat);
+  for (std::uint32_t i = 0; i < repeat; ++i) {
+    std::uint32_t offset = i % skip1 + (i / skip1) * skip2;
+    float max_val = src[offset];
+    std::uint32_t argmax_val = 0;
+    for (std::uint32_t j = 1; j < n; ++j) {
+      offset += skip1;
+      if (src[offset] > max_val) {
+        max_val = src[offset];
+        argmax_val = j;
+      }
+    }
+    ret.emplace_back(argmax_val);
+  }
+  return ret;
+}
+
+std::vector<std::uint32_t> Naive::argmin_impl(const Tensor &x, std::uint32_t dim) {
+  const Shape &s = x.shape();
+  const std::uint32_t n = s[dim];
+  const std::uint32_t repeat = s.size() / n;
+  const std::uint32_t skip1 = s.lower_volume(dim);
+  const std::uint32_t skip2 = skip1 * n;
+  const float *src = CDATA(x);
+  std::vector<std::uint32_t> ret;
+  ret.reserve(repeat);
+  for (std::uint32_t i = 0; i < repeat; ++i) {
+    std::uint32_t offset = i % skip1 + (i / skip1) * skip2;
+    float max_val = src[offset];
+    std::uint32_t argmax_val = 0;
+    for (std::uint32_t j = 1; j < n; ++j) {
+      offset += skip1;
+      if (src[offset] < max_val) {
+        max_val = src[offset];
+        argmax_val = j;
+      }
+    }
+    ret.emplace_back(argmax_val);
+  }
+  return ret;
+}
+
 void Naive::reset_tensor_impl(float k, Tensor &x) {
   float *dest = DATA(x);
-  const unsigned size = x.shape().size();
+  const std::uint32_t size = x.shape().size();
   REPEAT_OP(i, size, dest[i] = k);
 }
 
@@ -53,7 +103,7 @@ void Naive::reset_tensor_by_array_impl(const float values[], Tensor &x) {
 
 void Naive::copy_tensor_impl(const Tensor &x, Tensor &y) {
   switch (x.device().type()) {
-    case Device::DEVICE_TYPE_CPU:
+    case Device::DeviceType::CPU:
       reset_tensor_by_array(CDATA(x), y);
       break;
     default:
@@ -64,55 +114,40 @@ void Naive::copy_tensor_impl(const Tensor &x, Tensor &y) {
 void Naive::identity_impl(Tensor &y) {
   reset_tensor_impl(0, y);
   float *dest = DATA(y);
-  const unsigned size = y.shape()[0];
+  const std::uint32_t size = y.shape()[0];
   REPEAT_OP(i, size, dest[i * (size + 1)] = 1);
 }
 
 void Naive::random_bernoulli_impl(float p, Tensor &y) {
-  std::bernoulli_distribution dist(p);
-  float *dest = DATA(y);
-  const unsigned size = y.shape().size();
-  REPEAT_OP(i, size, dest[i] = dist(rng_));
+  randomizer_.fill_bernoulli(p, y.shape().size(), DATA(y));
 }
 
 void Naive::random_uniform_impl(float lower, float upper, Tensor &y) {
-  std::uniform_real_distribution<float> dist(lower, upper);
-  float *dest = DATA(y);
-  const unsigned size = y.shape().size();
-  for (unsigned i = 0; i < size; ++i) {
-    const float x = dist(rng_);
-    dest[i] = x == lower ? upper : x;
-  }
+  randomizer_.fill_uniform(lower, upper, y.shape().size(), DATA(y));
 }
 
 void Naive::random_normal_impl(float mean, float sd, Tensor &y) {
-  std::normal_distribution<float> dist(mean, sd);
-  float *dest = DATA(y);
-  const unsigned size = y.shape().size();
-  REPEAT_OP(i, size, dest[i] = dist(rng_));
+  randomizer_.fill_normal(mean, sd, y.shape().size(), DATA(y));
 }
 
 void Naive::random_log_normal_impl(float mean, float sd, Tensor &y) {
-  std::lognormal_distribution<float> dist(mean, sd);
-  float *dest = DATA(y);
-  const unsigned size = y.shape().size();
-  REPEAT_OP(i, size, dest[i] = dist(rng_));
+  randomizer_.fill_log_normal(mean, sd, y.shape().size(), DATA(y));
 }
 
 void Naive::pick_fw_impl(
-    const Tensor &x, const std::vector<unsigned> &ids, unsigned dim,
+    const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim,
     Tensor &y) {
-  const unsigned bs = y.shape().batch();
-  const unsigned skip_x = x.shape().has_batch() * x.shape().volume();
-  const unsigned skip_i = ids.size() > 1;
-  const unsigned base = y.shape().lower_volume(dim);
-  const unsigned skip = base * x.shape()[dim];
-  const unsigned repeat = y.shape().volume() / base;
+  const std::uint32_t bs = y.shape().batch();
+  const std::uint32_t skip_x = x.shape().has_batch() * x.shape().volume();
+  const std::uint32_t skip_i = ids.size() > 1;
+  const std::uint32_t base = y.shape().lower_volume(dim);
+  const std::uint32_t skip = base * x.shape()[dim];
+  const std::uint32_t repeat = y.shape().volume() / base;
 
   float *dest = DATA(y);
-  for (unsigned batch = 0; batch < bs; ++batch) {
+  for (std::uint32_t batch = 0; batch < bs; ++batch) {
     const float *src = CDATA(x) + batch * skip_x + base * ids[batch * skip_i];
-    for (unsigned i = 0; i < repeat; ++i) {
+    for (std::uint32_t i = 0; i < repeat; ++i) {
       const float *sp = src;
       REPEAT_OP(j, base, *dest++ = *sp++);
       src += skip;
@@ -121,15 +156,15 @@ void Naive::pick_fw_impl(
 }
 
 void Naive::slice_fw_impl(
-    const Tensor &x, unsigned dim, unsigned offset, Tensor &y) {
-  const unsigned base = y.shape().lower_volume(dim);
-  const unsigned span = base * y.shape()[dim];
-  const unsigned skip = base * x.shape()[dim];
-  const unsigned repeat = y.shape().size() / span;
+    const Tensor &x, std::uint32_t dim, std::uint32_t offset, Tensor &y) {
+  const std::uint32_t base = y.shape().lower_volume(dim);
+  const std::uint32_t span = base * y.shape()[dim];
+  const std::uint32_t skip = base * x.shape()[dim];
+  const std::uint32_t repeat = y.shape().size() / span;
 
   float *dest = DATA(y);
   const float *src = CDATA(x) + base * offset;
-  for (unsigned i = 0; i < repeat; ++i) {
+  for (std::uint32_t i = 0; i < repeat; ++i) {
     const float *sp = src;
     REPEAT_OP(j, span, *dest++ = *sp++);
     src += skip;
@@ -137,22 +172,22 @@ void Naive::slice_fw_impl(
 }
 
 void Naive::concat_fw_impl(
-    const std::vector<const Tensor *> &xs, unsigned dim, Tensor &y) {
-  const unsigned new_bs = y.shape().batch();
-  const unsigned base = y.shape().lower_volume(dim);
-  const unsigned skip = base * y.shape()[dim];
-  const unsigned repeat = y.shape().volume() / skip;
+    const std::vector<const Tensor *> &xs, std::uint32_t dim, Tensor &y) {
+  const std::uint32_t new_bs = y.shape().batch();
+  const std::uint32_t base = y.shape().lower_volume(dim);
+  const std::uint32_t skip = base * y.shape()[dim];
+  const std::uint32_t repeat = y.shape().volume() / skip;
 
-  unsigned offset = 0;
+  std::uint32_t offset = 0;
   for (const Tensor *x : xs) {
-    const unsigned src_dim = x->shape()[dim];
-    const unsigned span = base * src_dim;
-    const unsigned b_skip = x->shape().has_batch() * span * repeat;
+    const std::uint32_t src_dim = x->shape()[dim];
+    const std::uint32_t span = base * src_dim;
+    const std::uint32_t b_skip = x->shape().has_batch() * span * repeat;
     float *dest = DATA(y) + offset;
     const float *src = CDATA(*x);
-    for (unsigned batch = 0; batch < new_bs; ++batch) {
+    for (std::uint32_t batch = 0; batch < new_bs; ++batch) {
       const float *sp = src;
-      for (unsigned i = 0; i < repeat; ++i) {
+      for (std::uint32_t i = 0; i < repeat; ++i) {
         float *dp = dest;
         REPEAT_OP(j, span, *dp++ = *sp++);
         dest += skip;
@@ -164,18 +199,18 @@ void Naive::concat_fw_impl(
 }
 
 void Naive::pick_bw_impl(
-    const Tensor &gy, const std::vector<unsigned>& ids, unsigned dim,
+    const Tensor &gy, const std::vector<std::uint32_t>& ids, std::uint32_t dim,
     Tensor &gx) {
-  const unsigned bs = gy.shape().batch();
-  const unsigned skip_x = gx.shape().has_batch() * gx.shape().volume();
-  const unsigned skip_i = ids.size() > 1;
-  const unsigned base = gy.shape().lower_volume(dim);
-  const unsigned skip = base * gx.shape()[dim];
-  const unsigned repeat = gy.shape().volume() / base;
+  const std::uint32_t bs = gy.shape().batch();
+  const std::uint32_t skip_x = gx.shape().has_batch() * gx.shape().volume();
+  const std::uint32_t skip_i = ids.size() > 1;
+  const std::uint32_t base = gy.shape().lower_volume(dim);
+  const std::uint32_t skip = base * gx.shape()[dim];
+  const std::uint32_t repeat = gy.shape().volume() / base;
   const float *src = CDATA(gy);
-  for (unsigned batch = 0; batch < bs; ++batch) {
+  for (std::uint32_t batch = 0; batch < bs; ++batch) {
     float *dest = DATA(gx) + batch * skip_x + base * ids[batch * skip_i];
-    for (unsigned i = 0; i < repeat; ++i) {
+    for (std::uint32_t i = 0; i < repeat; ++i) {
       float *dp = dest;
       REPEAT_OP(j, base, *dp++ += *src++);
       dest += skip;
@@ -184,22 +219,22 @@ void Naive::pick_bw_impl(
 }
 
 void Naive::slice_bw_impl(
-    const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) {
+    const Tensor &gy, std::uint32_t dim, std::uint32_t offset, Tensor &gx) {
   const Shape &sy = gy.shape();
   const Shape &sx = gx.shape();
-  const unsigned base = sx.lower_volume(dim);
-  const unsigned span = base * sy[dim];
-  const unsigned skip = base * sx[dim];
-  const unsigned repeat = sx.volume() / skip;
-  const unsigned bs = std::max(sx.batch(), sy.batch());
-  const unsigned b_skip_d = sx.has_batch() * sx.volume();
-  const unsigned b_skip_s = sy.has_batch() * sy.volume();
+  const std::uint32_t base = sx.lower_volume(dim);
+  const std::uint32_t span = base * sy[dim];
+  const std::uint32_t skip = base * sx[dim];
+  const std::uint32_t repeat = sx.volume() / skip;
+  const std::uint32_t bs = std::max(sx.batch(), sy.batch());
+  const std::uint32_t b_skip_d = sx.has_batch() * sx.volume();
+  const std::uint32_t b_skip_s = sy.has_batch() * sy.volume();
   float *dest = DATA(gx) + base * offset;
   const float *src = CDATA(gy);
-  for (unsigned batch = 0; batch < bs; ++batch) {
+  for (std::uint32_t batch = 0; batch < bs; ++batch) {
     float *dp = dest;
     const float *sp = src;
-    for (unsigned i = 0; i < repeat; ++i) {
+    for (std::uint32_t i = 0; i < repeat; ++i) {
       float *ddp = dp;
       REPEAT_OP(j, span, *ddp++ += *sp++);
       dp += skip;
@@ -213,7 +248,7 @@ void Naive::slice_bw_impl(
 void Naive::name##_fw_impl(const Tensor &x, Tensor &y) { \
   float *dest = DATA(y); \
   const float *src = CDATA(x); \
-  const unsigned size = x.shape().size(); \
+  const std::uint32_t size = x.shape().size(); \
   REPEAT_OP(i, size, dest[i] = (op)); \
 }
 
@@ -224,7 +259,7 @@ void Naive::name##_bw_impl( \
   const float *py = CDATA(y); static_cast<void>(py); \
   const float *pgy = CDATA(gy); \
   float *pgx = DATA(gx); \
-  const unsigned size = x.shape().size(); \
+  const std::uint32_t size = x.shape().size(); \
   REPEAT_OP(i, size, pgx[i] += (op)); \
 }
 
@@ -232,7 +267,7 @@ void Naive::name##_bw_impl( \
 void Naive::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
   float *dest = DATA(y); \
   const float *src = CDATA(x); \
-  const unsigned size = x.shape().size(); \
+  const std::uint32_t size = x.shape().size(); \
   REPEAT_OP(i, size, dest[i] = (op)); \
 }
 
@@ -243,20 +278,20 @@ void Naive::name##_bw_impl( \
   const float *py = CDATA(y); static_cast<void>(py); \
   const float *pgy = CDATA(gy); \
   float *pgx = DATA(gx); \
-  const unsigned size = x.shape().size(); \
+  const std::uint32_t size = x.shape().size(); \
   REPEAT_OP(i, size, pgx[i] += (op)); \
 }
 
 #define CPUDEV_FW_X_SCALAR(name, op) \
 void Naive::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
-  const unsigned size = y.shape().volume(); \
-  const unsigned bs = y.shape().batch(); \
-  const unsigned skip_x = x.shape().has_batch() * size; \
-  const unsigned skip_k = k.shape().has_batch(); \
+  const std::uint32_t size = y.shape().volume(); \
+  const std::uint32_t bs = y.shape().batch(); \
+  const std::uint32_t skip_x = x.shape().has_batch() * size; \
+  const std::uint32_t skip_k = k.shape().has_batch(); \
   float *dest = DATA(y); \
   const float *src_x = CDATA(x); \
   const float *src_k = CDATA(k); \
-  for (unsigned batch = 0; batch < bs; ++batch) { \
+  for (std::uint32_t batch = 0; batch < bs; ++batch) { \
     REPEAT_OP(i, size, dest[i] = (op)); \
     dest += size; \
     src_x += skip_x; \
@@ -266,14 +301,14 @@ void Naive::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
 
 #define CPUDEV_FW_AB(name, op) \
 void Naive::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
-  const unsigned size = y.shape().volume(); \
-  const unsigned bs = y.shape().batch(); \
-  const unsigned skip_a = a.shape().has_batch() * size; \
-  const unsigned skip_b = b.shape().has_batch() * size; \
+  const std::uint32_t size = y.shape().volume(); \
+  const std::uint32_t bs = y.shape().batch(); \
+  const std::uint32_t skip_a = a.shape().has_batch() * size; \
+  const std::uint32_t skip_b = b.shape().has_batch() * size; \
   float *dest = DATA(y); \
   const float *src_a = CDATA(a); \
   const float *src_b = CDATA(b); \
-  for (unsigned batch = 0; batch < bs; ++batch) { \
+  for (std::uint32_t batch = 0; batch < bs; ++batch) { \
     REPEAT_OP(i, size, dest[i] = (op)); \
     dest += size; \
     src_a += skip_a; \
@@ -346,15 +381,15 @@ CPUDEV_FW_AB(divide, src_a[i] / src_b[i]);
 void Naive::add_bw_impl(
     const Tensor &, const Tensor &, const Tensor &, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
-  const unsigned size = gy.shape().volume();
-  const unsigned bs = gy.shape().batch();
-  const unsigned skip_a = ga.shape().has_batch() * size;
-  const unsigned skip_b = gb.shape().has_batch() * size;
+  const std::uint32_t size = gy.shape().volume();
+  const std::uint32_t bs = gy.shape().batch();
+  const std::uint32_t skip_a = ga.shape().has_batch() * size;
+  const std::uint32_t skip_b = gb.shape().has_batch() * size;
   const float *pgy = CDATA(gy);
   float *pga = DATA(ga);
   float *pgb = DATA(gb);
-  for (unsigned batch = 0; batch < bs; ++batch) {
-    for (unsigned i = 0; i < size; ++i) {
+  for (std::uint32_t batch = 0; batch < bs; ++batch) {
+    for (std::uint32_t i = 0; i < size; ++i) {
       const float k = pgy[i];
       pga[i] += k;
       pgb[i] += k;
@@ -368,15 +403,15 @@ void Naive::add_bw_impl(
 void Naive::subtract_bw_impl(
     const Tensor &, const Tensor &, const Tensor &, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
-  const unsigned size = gy.shape().volume();
-  const unsigned bs = gy.shape().batch();
-  const unsigned skip_a = ga.shape().has_batch() * size;
-  const unsigned skip_b = gb.shape().has_batch() * size;
+  const std::uint32_t size = gy.shape().volume();
+  const std::uint32_t bs = gy.shape().batch();
+  const std::uint32_t skip_a = ga.shape().has_batch() * size;
+  const std::uint32_t skip_b = gb.shape().has_batch() * size;
   const float *pgy = CDATA(gy);
   float *pga = DATA(ga);
   float *pgb = DATA(gb);
-  for (unsigned batch = 0; batch < bs; ++batch) {
-    for (unsigned i = 0; i < size; ++i) {
+  for (std::uint32_t batch = 0; batch < bs; ++batch) {
+    for (std::uint32_t i = 0; i < size; ++i) {
       const float k = pgy[i];
       pga[i] += k;
       pgb[i] -= k;
@@ -390,17 +425,17 @@ void Naive::subtract_bw_impl(
 void Naive::multiply_bw_impl(
     const Tensor &a, const Tensor &b, const Tensor &, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
-  const unsigned size = gy.shape().volume();
-  const unsigned bs = gy.shape().batch();
-  const unsigned skip_a = ga.shape().has_batch() * size;
-  const unsigned skip_b = gb.shape().has_batch() * size;
+  const std::uint32_t size = gy.shape().volume();
+  const std::uint32_t bs = gy.shape().batch();
+  const std::uint32_t skip_a = ga.shape().has_batch() * size;
+  const std::uint32_t skip_b = gb.shape().has_batch() * size;
   const float *pa = CDATA(a);
   const float *pb = CDATA(b);
   const float *pgy = CDATA(gy);
   float *pga = DATA(ga);
   float *pgb = DATA(gb);
-  for (unsigned batch = 0; batch < bs; ++batch) {
-    for (unsigned i = 0; i < size; ++i) {
+  for (std::uint32_t batch = 0; batch < bs; ++batch) {
+    for (std::uint32_t i = 0; i < size; ++i) {
       const float k = pgy[i];
       pga[i] += k * pb[i];
       pgb[i] += k * pa[i];
@@ -416,17 +451,17 @@ void Naive::multiply_bw_impl(
 void Naive::divide_bw_impl(
     const Tensor &, const Tensor &b, const Tensor &y, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
-  const unsigned size = gy.shape().volume();
-  const unsigned bs = gy.shape().batch();
-  const unsigned skip_a = ga.shape().has_batch() * size;
-  const unsigned skip_b = gb.shape().has_batch() * size;
+  const std::uint32_t size = gy.shape().volume();
+  const std::uint32_t bs = gy.shape().batch();
+  const std::uint32_t skip_a = ga.shape().has_batch() * size;
+  const std::uint32_t skip_b = gb.shape().has_batch() * size;
   const float *pb = CDATA(b);
   const float *py = CDATA(y);
   const float *pgy = CDATA(gy);
   float *pga = DATA(ga);
   float *pgb = DATA(gb);
-  for (unsigned batch = 0; batch < bs; ++batch) {
-    for (unsigned i = 0; i < size; ++i) {
+  for (std::uint32_t batch = 0; batch < bs; ++batch) {
+    for (std::uint32_t i = 0; i < size; ++i) {
       const float k = pgy[i] / pb[i];
       pga[i] += k;
       pgb[i] -= k * py[i];
@@ -440,18 +475,18 @@ void Naive::divide_bw_impl(
 }
 
 void Naive::transpose_fw_impl(const Tensor &x, Tensor &y) {
-  const unsigned d1 = x.shape()[0];
-  const unsigned d2 = x.shape()[1];
-  const unsigned ms = d1 * d2;
-  const unsigned bs = y.shape().batch();
+  const std::uint32_t d1 = x.shape()[0];
+  const std::uint32_t d2 = x.shape()[1];
+  const std::uint32_t ms = d1 * d2;
+  const std::uint32_t bs = y.shape().batch();
   float *dest = DATA(y);
   const float *src = CDATA(x);
 
-  for (unsigned k = 0; k < bs; ++k) {
+  for (std::uint32_t k = 0; k < bs; ++k) {
     float *pd = dest;
-    for (unsigned j = 0; j < d2; ++j) {
+    for (std::uint32_t j = 0; j < d2; ++j) {
       float *ppd = pd;
-      for (unsigned i = 0; i < d1; ++i) {
+      for (std::uint32_t i = 0; i < d1; ++i) {
         *ppd = *src++;
         ppd += d2;
       }
@@ -462,25 +497,40 @@ void Naive::transpose_fw_impl(const Tensor &x, Tensor &y) {
 }
 
 void Naive::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
-  const unsigned d1 = a.shape()[0];
-  const unsigned d2 = a.shape()[1];
-  const unsigned d3 = b.shape()[1];
-  const unsigned bs = y.shape().batch();
-  const unsigned dest_shift = d1 * d3;
-  const unsigned src_a_shift = a.shape().has_batch() * d1 * d2;
-  const unsigned src_b_shift = b.shape().has_batch() * d2 * d3;
+  const std::uint32_t d1 = a.shape()[0];
+  const std::uint32_t d2 = a.shape()[1];
+  const std::uint32_t d3 = b.shape()[1];
+  const std::uint32_t bs = y.shape().batch();
+  const std::uint32_t dest_shift = d1 * d3;
+  const std::uint32_t src_a_shift = a.shape().has_batch() * d1 * d2;
+  const std::uint32_t src_b_shift = b.shape().has_batch() * d2 * d3;
 
   float *dest = DATA(y);
   const float *src_a = CDATA(a);
   const float *src_b = CDATA(b);
-  for (unsigned batch = 0; batch < bs; ++batch) {
-    for (unsigned i = 0; i < d1; ++i) {
-      for (unsigned ky = 0, kb = 0; ky < dest_shift; ky += d1, kb += d2) {
-        float tmp = 0;
-        for (unsigned ja = 0, jb = 0; jb < d2; ja += d1, ++jb) {
-          tmp += src_a[i + ja] * src_b[jb + kb];
+
+  for (std::uint32_t batch = 0; batch < bs; ++batch) {
+    for (std::uint32_t n = 0; n < dest_shift; ++n) {
+      dest[n] = 0;
+    }
+    for (std::uint32_t k = 0; k < d3; k += 8) {
+      const std::uint32_t ek = std::min(k + 8, d3);
+      for (std::uint32_t i = 0; i < d1; i += 8) {
+        const std::uint32_t ei = std::min(i + 8, d1);
+        for (std::uint32_t j = 0; j < d2; j += 8) {
+          const std::uint32_t ej = std::min(j + 8, d2);
+          for (std::uint32_t kk = k; kk < ek; ++kk) {
+            const std::uint32_t kk_d1 = kk * d1;
+            const std::uint32_t kk_d2 = kk * d2;
+            for (std::uint32_t ii = i; ii < ei; ++ii) {
+              float tmp = 0;
+              for (std::uint32_t jj = j; jj < ej; ++jj) {
+                tmp += src_a[ii + jj * d1] * src_b[jj + kk_d2];
+              }
+              dest[ii + kk_d1] += tmp;
+            }
+          }
         }
-        dest[i + ky] = tmp;
       }
     }
     dest += dest_shift;
@@ -503,17 +553,17 @@ void Naive::matmul_bw_impl(
   inplace_add_impl(matmul_fw(transpose_fw(a), gy), gb);
 }
 
-void Naive::sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
-  const unsigned n = x.shape()[dim];
-  const unsigned repeat = y.shape().size();
-  const unsigned skip1 = y.shape().lower_volume(dim);
-  const unsigned skip2 = skip1 * n;
+void Naive::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
+  const std::uint32_t n = x.shape()[dim];
+  const std::uint32_t repeat = y.shape().size();
+  const std::uint32_t skip1 = y.shape().lower_volume(dim);
+  const std::uint32_t skip2 = skip1 * n;
   float *dest = DATA(y);
   const float *src = CDATA(x);
-  for (unsigned i = 0; i < repeat; ++i) {
-    unsigned offset = i % skip1 + (i / skip1) * skip2;
+  for (std::uint32_t i = 0; i < repeat; ++i) {
+    std::uint32_t offset = i % skip1 + (i / skip1) * skip2;
     float tmp = 0;
-    for (unsigned j = 0; j < n; ++j) {
+    for (std::uint32_t j = 0; j < n; ++j) {
       tmp += src[offset];
       offset += skip1;
     }
@@ -521,18 +571,18 @@ void Naive::sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
   }
 }
 
-void Naive::logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
-  const unsigned n = x.shape()[dim];
-  const unsigned repeat = y.shape().size();
-  const unsigned skip1 = y.shape().lower_volume(dim);
-  const unsigned skip2 = skip1 * n;
+void Naive::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
+  const std::uint32_t n = x.shape()[dim];
+  const std::uint32_t repeat = y.shape().size();
+  const std::uint32_t skip1 = y.shape().lower_volume(dim);
+  const std::uint32_t skip2 = skip1 * n;
   float *dest = DATA(y);
   const float *src = CDATA(x);
-  for (unsigned i = 0; i < repeat; ++i) {
+  for (std::uint32_t i = 0; i < repeat; ++i) {
     // TODO(odashi): This calculation might generate large errors.
-    unsigned offset = i % skip1 + (i / skip1) * skip2;
+    std::uint32_t offset = i % skip1 + (i / skip1) * skip2;
     float tmp = src[offset];
-    for (unsigned j = 1; j < n; ++j) {
+    for (std::uint32_t j = 1; j < n; ++j) {
       offset += skip1;
       float arg = src[offset];
       tmp = tmp > arg
@@ -544,16 +594,16 @@ void Naive::logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) {
 }
 
 void Naive::broadcast_fw_impl(
-    const Tensor &x, unsigned dim, unsigned size, Tensor &y) {
-  const unsigned repeat = x.shape().size();
-  const unsigned skip1 = y.shape().lower_volume(dim);
-  const unsigned skip2 = skip1 * size;
+    const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) {
+  const std::uint32_t repeat = x.shape().size();
+  const std::uint32_t skip1 = y.shape().lower_volume(dim);
+  const std::uint32_t skip2 = skip1 * size;
   float *dest = DATA(y);
   const float *src = CDATA(x);
-  for (unsigned i = 0; i < repeat; ++i) {
-    unsigned offset = i % skip1 + (i / skip1) * skip2;
+  for (std::uint32_t i = 0; i < repeat; ++i) {
+    std::uint32_t offset = i % skip1 + (i / skip1) * skip2;
     float tmp = src[i];
-    for (unsigned j = 0; j < size; ++j) {
+    for (std::uint32_t j = 0; j < size; ++j) {
       dest[offset] = tmp;
       offset += skip1;
     }
@@ -563,11 +613,11 @@ void Naive::broadcast_fw_impl(
 void Naive::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   float *dest = DATA(y);
   const float *src = CDATA(x);
-  const unsigned bs = x.shape().batch();
-  const unsigned size = y.shape().size();
-  for (unsigned i = 0; i < size; ++i) {
+  const std::uint32_t bs = x.shape().batch();
+  const std::uint32_t size = y.shape().size();
+  for (std::uint32_t i = 0; i < size; ++i) {
     float temp = 0;
-    for (unsigned batch = 0, pos = i; batch < bs; ++batch, pos += size) {
+    for (std::uint32_t batch = 0, pos = i; batch < bs; ++batch, pos += size) {
       temp += src[pos];
     }
     dest[i] = temp;
@@ -575,7 +625,7 @@ void Naive::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
 }
 
 void Naive::inplace_multiply_const_impl(float k, Tensor &x) {
-  const unsigned size = x.shape().size();
+  const std::uint32_t size = x.shape().size();
   float *dest = DATA(x);
   REPEAT_OP(i, size, dest[i] *= k);
 }
@@ -583,13 +633,13 @@ void Naive::inplace_multiply_const_impl(float k, Tensor &x) {
 void Naive::inplace_add_impl(const Tensor &x, Tensor &y) {
   const Shape &sx = x.shape();
   const Shape &sy = y.shape();
-  const unsigned size = sy.volume();
-  const unsigned bs = std::max(sx.batch(), sy.batch());
-  const unsigned b_skip_d = sy.has_batch() * size;
-  const unsigned b_skip_s = sx.has_batch() * size;
+  const std::uint32_t size = sy.volume();
+  const std::uint32_t bs = std::max(sx.batch(), sy.batch());
+  const std::uint32_t b_skip_d = sy.has_batch() * size;
+  const std::uint32_t b_skip_s = sx.has_batch() * size;
   float *dest = DATA(y);
   const float *src = CDATA(x);
-  for (unsigned batch = 0; batch < bs; ++batch) {
+  for (std::uint32_t batch = 0; batch < bs; ++batch) {
     REPEAT_OP(i, size, dest[i] += src[i]);
     dest += b_skip_d;
     src += b_skip_s;
@@ -599,13 +649,13 @@ void Naive::inplace_add_impl(const Tensor &x, Tensor &y) {
 void Naive::inplace_subtract_impl(const Tensor &x, Tensor &y) {
   const Shape &sx = x.shape();
   const Shape &sy = y.shape();
-  const unsigned size = sy.volume();
-  const unsigned bs = std::max(sx.batch(), sy.batch());
-  const unsigned b_skip_d = sy.has_batch() * size;
-  const unsigned b_skip_s = sx.has_batch() * size;
+  const std::uint32_t size = sy.volume();
+  const std::uint32_t bs = std::max(sx.batch(), sy.batch());
+  const std::uint32_t b_skip_d = sy.has_batch() * size;
+  const std::uint32_t b_skip_s = sx.has_batch() * size;
   float *dest = DATA(y);
   const float *src = CDATA(x);
-  for (unsigned batch = 0; batch < bs; ++batch) {
+  for (std::uint32_t batch = 0; batch < bs; ++batch) {
     REPEAT_OP(i, size, dest[i] -= src[i]);
     dest += b_skip_d;
     src += b_skip_s;

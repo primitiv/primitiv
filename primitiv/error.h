@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_ERROR_H_
 #define PRIMITIV_ERROR_H_
 
+#include <cstdint>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -14,7 +15,7 @@ class Error : public std::exception {
   Error() = delete;
 
 public:
-  Error(const std::string &file, unsigned line, const std::string &message)
+  Error(const std::string &file, std::uint32_t line, const std::string &message)
   : file_(file), line_(line), msg_(message) {
     std::stringstream ss;
     ss << file_ << ": " << line_ << ": " << msg_;
@@ -25,7 +26,7 @@ public:
 
 private:
   std::string file_;
-  unsigned line_;
+  std::uint32_t line_;
   std::string msg_;
   std::string full_msg_;
 };

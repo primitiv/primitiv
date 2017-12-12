@@ -148,7 +148,7 @@ TEST_F(ShapeOpsTest, CheckInvalidElementwise) {
 
 TEST_F(ShapeOpsTest, CheckSlice) {
   struct TestCase {
-    unsigned dim, lower, upper;
+    std::uint32_t dim, lower, upper;
     Shape input, expected;
   };
   const vector<TestCase> test_cases {
@@ -168,7 +168,7 @@ TEST_F(ShapeOpsTest, CheckSlice) {
 
 TEST_F(ShapeOpsTest, CheckInvalidSlice) {
   struct TestCase {
-    unsigned dim, lower, upper;
+    std::uint32_t dim, lower, upper;
     Shape input;
   };
   const vector<TestCase> test_cases {
@@ -186,7 +186,7 @@ TEST_F(ShapeOpsTest, CheckInvalidSlice) {
 TEST_F(ShapeOpsTest, CheckConcat) {
   struct TestCase {
     vector<Shape> inputs;
-    unsigned dim;
+    std::uint32_t dim;
     Shape expected;
   };
   const vector<TestCase> test_cases {
@@ -202,17 +202,27 @@ TEST_F(ShapeOpsTest, CheckConcat) {
     {{Shape({}, 3), Shape({2}, 3), {3}}, 0, Shape({6}, 3)},
   };
   for (const TestCase &tc : test_cases) {
-    vector<const Shape *>xs;
-    for (const Shape &x : tc.inputs) xs.emplace_back(&x);
-    const Shape observed = concat(xs, tc.dim);
-    EXPECT_EQ(tc.expected, observed);
+    {
+      // Using objects
+      vector<Shape> xs;
+      for (const Shape &x : tc.inputs) xs.emplace_back(x);
+      const Shape observed = concat(xs, tc.dim);
+      EXPECT_EQ(tc.expected, observed);
+    }
+    {
+      // Using pointers
+      vector<const Shape *> xs;
+      for (const Shape &x : tc.inputs) xs.emplace_back(&x);
+      const Shape observed = concat(xs, tc.dim);
+      EXPECT_EQ(tc.expected, observed);
+    }
   }
 }
 
 TEST_F(ShapeOpsTest, CheckInvalidConcat) {
   struct TestCase {
     vector<Shape> inputs;
-    unsigned dim;
+    std::uint32_t dim;
   };
   const vector<TestCase> test_cases {
     {{}, 0},
@@ -232,8 +242,8 @@ TEST_F(ShapeOpsTest, CheckInvalidConcat) {
 TEST_F(ShapeOpsTest, CheckPick) {
   struct TestCase {
     Shape input;
-    unsigned dim;
-    vector<unsigned> ids;
+    std::uint32_t dim;
+    vector<std::uint32_t> ids;
     Shape expected;
   };
   const vector<TestCase> test_cases {
@@ -253,8 +263,8 @@ TEST_F(ShapeOpsTest, CheckPick) {
 TEST_F(ShapeOpsTest, CheckInvalidPick) {
   struct TestCase {
     Shape input;
-    unsigned dim;
-    vector<unsigned> ids;
+    std::uint32_t dim;
+    vector<std::uint32_t> ids;
   };
   const vector<TestCase> test_cases {
      {Shape({2, 2, 2}, 3), 0, {}},

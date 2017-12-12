@@ -1,66 +1,83 @@
 # Build rules of the primitiv core library.
 
-# Builds Protobuf messages.
-protobuf_generate_cpp(primitiv_proto_SRCS primitiv_proto_HDRS messages.proto)
-
-# Core headers.
+# Base libraries.
 set(primitiv_base_HDRS
-  ${primitiv_proto_HDRS}
+  arithmetic.h
+  basic_functions.h
+  composite_functions.h
   device.h
   error.h
-  function.h
-  function_impl.h
+  file_format.h
+  functions.h
   graph.h
   initializer.h
   initializer_impl.h
+  memory_pool.h
+  mixins.h
+  model.h
   naive_device.h
-  operators.h
+  numeric_utils.h
+  operator.h
+  operator_impl.h
+  optimizer.h
+  optimizer_impl.h
   parameter.h
   primitiv.h
-  primitiv_cuda.h
+  random.h
   shape.h
   shape_ops.h
+  string_utils.h
   tensor.h
-  trainer.h
-  trainer_impl.h
   type_traits.h
 )
-
-# Core sources.
 set(primitiv_base_SRCS
-  ${primitiv_proto_SRCS}
   device.cc
-  function_impl.cc
   graph.cc
   initializer_impl.cc
+  memory_pool.cc
+  model.cc
   naive_device.cc
-  node_ops.cc
+  node_funcs.cc
+  operator_impl.cc
+  optimizer.cc
+  optimizer_impl.cc
   parameter.cc
   shape.cc
   shape_ops.cc
   tensor.cc
-  tensor_ops.cc
-  trainer.cc
-  trainer_impl.cc
+  tensor_funcs.cc
 )
+install(FILES ${primitiv_base_HDRS} DESTINATION include/primitiv)
+
+# MessagePack libraries.
+set(primitiv_msgpack_HDRS
+  msgpack/objects.h
+  msgpack/reader.h
+  msgpack/writer.h
+)
+install(FILES ${primitiv_msgpack_HDRS} DESTINATION include/primitiv/msgpack)
+
+# Core library: all of above libraries.
+set(primitiv_core_HDRS ${primitiv_base_HDRS} ${primitiv_msgpack_HDRS})
+set(primitiv_core_SRCS ${primitiv_base_SRCS})
 
 # Builds core library.
-add_library(primitiv_base OBJECT ${primitiv_base_HDRS} ${primitiv_base_SRCS})
-
-set(primitiv_OBJS $<TARGET_OBJECTS:primitiv_base>)
-set(primitiv_DEPS ${PROTOBUF_LIBRARIES})
-set(primitiv_HDRS ${primitiv_base_HDRS})
+add_library(primitiv_core_OBJS OBJECT
+  ${primitiv_core_HDRS}
+  ${primitiv_core_SRCS})
+set(primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_core_OBJS>)
+set(primitiv_all_DEPS)
 
 # Build rules of the CUDA backend.
 if(PRIMITIV_USE_CUDA)
   set(primitiv_cuda_HDRS
+    primitiv_cuda.h
     cuda_device.h
-    cuda_memory_pool.h
     cuda_utils.h)
   set(primitiv_cuda_SRCS
     cuda_device.cu
-    cuda_memory_pool.cu
     cuda_utils.cu)
+  install(FILES ${primitiv_cuda_HDRS} DESTINATION include/primitiv)
 
   list(APPEND CUDA_NVCC_FLAGS "-std=c++11 -O3 -Xcompiler -fPIC")
 
@@ -77,25 +94,53 @@ if(PRIMITIV_USE_CUDA)
   list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=compute_52")
 
   cuda_compile(primitiv_cuda_OBJS
-    ${primitiv_base_HDRS}
+    ${primitiv_core_HDRS}
     ${primitiv_cuda_HDRS}
     ${primitiv_cuda_SRCS})
-  list(APPEND primitiv_OBJS ${primitiv_cuda_OBJS})
-  list(APPEND primitiv_DEPS
+  list(APPEND primitiv_all_OBJS ${primitiv_cuda_OBJS})
+  list(APPEND primitiv_all_DEPS
     ${CUDA_LIBRARIES}
     ${CUDA_cublas_LIBRARY}
     ${CUDA_curand_LIBRARY})
-  list(APPEND primitiv_HDRS ${primitiv_cuda_HDRS})
+endif()
+
+# Build rules of the OpenCL backend.
+if(PRIMITIV_USE_OPENCL)
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc
+    COMMAND
+      ${CMAKE_COMMAND}
+      -P
+      ${PROJECT_SOURCE_DIR}/cmake/generate_char_array.cmake
+      ${CMAKE_CURRENT_SOURCE_DIR}/opencl_device_kernel.cl
+      ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/opencl_device_kernel.cl)
+  add_custom_target(primitiv_opencl_KERNEL_DATA DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc)
+
+  set(primitiv_opencl_HDRS
+    primitiv_opencl.h
+    opencl_device.h)
+  set(primitiv_opencl_SRCS
+    opencl_device.cc)
+  install(FILES ${primitiv_opencl_HDRS} DESTINATION include/primitiv)
+
+  add_library(primitiv_opencl_OBJS OBJECT
+    ${primitiv_base_HDRS}
+    ${primitiv_opencl_HDRS}
+    ${primitiv_opencl_SRCS})
+  add_dependencies(primitiv_opencl_OBJS primitiv_opencl_KERNEL_DATA)
+
+  list(APPEND primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_opencl_OBJS>)
+  list(APPEND primitiv_all_DEPS
+    ${OpenCL_LIBRARIES}
+    ${CLBLAS_LIBRARIES})
 endif()
 
 # Builds the integrated binary.
 if(PRIMITIV_BUILD_STATIC_LIBRARY)
-  add_library(primitiv STATIC ${primitiv_OBJS})
+  add_library(primitiv STATIC ${primitiv_all_OBJS})
 else()
-  add_library(primitiv SHARED ${primitiv_OBJS})
+  add_library(primitiv SHARED ${primitiv_all_OBJS})
 endif()
-target_link_libraries(primitiv ${primitiv_DEPS})
+target_link_libraries(primitiv ${primitiv_all_DEPS})
 
-# Installs built files.
 install(TARGETS primitiv DESTINATION lib)
-install(FILES ${primitiv_HDRS} DESTINATION include/primitiv)

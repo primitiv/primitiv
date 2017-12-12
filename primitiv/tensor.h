@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_TENSOR_H_
 #define PRIMITIV_TENSOR_H_
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 #include <primitiv/error.h>
@@ -55,7 +56,7 @@ public:
    * Returns the shape of the Tensor.
    * @return Shape of the Tensor.
    */
-  const Shape &shape() const {
+  Shape shape() const {
     if (!valid()) THROW_ERROR("Invalid tensor.");
     return shape_;
   }
@@ -85,7 +86,15 @@ public:
   }
 
   /**
-   * Retrieves internal values of the tensor as a vector.
+   * Retrieves one internal value in the tensor.
+   * @return An internal float value.
+   * @remarks This function can be used only when the tensor is a scalar and
+   *          non-minibatched (i.e., shape() == Shape()).
+   */
+  float to_float() const;
+
+  /**
+   * Retrieves internal values in the tensor as a vector.
    * @return A list of the internal values.
    * @remarks Each resulting values a re ordered by the column-major order, and
    *          the batch size is assumed as the last dimension of the tensor.
@@ -93,10 +102,24 @@ public:
   std::vector<float> to_vector() const;
 
   /**
+   * Retrieves argmax indices along an axis.
+   * @param dim A specified axis.
+   * @return A list of integers that indicates positions of the maximum values.
+   */
+  std::vector<std::uint32_t> argmax(std::uint32_t dim) const;
+
+  /**
+   * Retrieves argmin indices along an axis.
+   * @param dim A specified axis.
+   * @return A list of integers that indicates positions of the minimum values.
+   */
+  std::vector<std::uint32_t> argmin(std::uint32_t dim) const;
+
+  /**
    * Reset internal values using a constant.
    * @param k A value to be used to initialize each element.
    */
-  void reset(const float k);
+  void reset(float k);
 
   /**
    * Reset internal values using a vector.
@@ -134,21 +157,21 @@ public:
    * @param k A constant to multiply.
    * @return `*this`
    */
-  Tensor &operator*=(float k);
+  Tensor &inplace_multiply_const(float k);
 
   /**
    * Directly adds a value.
    * @param x A tensor to add.
    * @return `*this`
    */
-  Tensor &operator+=(const Tensor &x);
+  Tensor &inplace_add(const Tensor &x);
 
   /**
    * Directly subtracts a value.
    * @param x A tensor to subtract.
    * @return `*this`
    */
-  Tensor &operator-=(const Tensor &x);
+  Tensor &inplace_subtract(const Tensor &x);
 
 private:
   /**

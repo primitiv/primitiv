@@ -6,14 +6,23 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 option(PRIMITIV_BUILD_STATIC_LIBRARY "Builds static library." OFF)
 option(PRIMITIV_BUILD_TESTS "Builds test binaries." OFF)
+option(PRIMITIV_BUILD_TESTS_PROBABILISTIC "Builds test cases that probabilistically fails." OFF)
+option(PRIMITIV_GTEST_SOURCE_DIR "Source directory of Google Test library." "")
 option(PRIMITIV_USE_CACHE "Enables cached values in some functions but needs more memory." OFF)
-option(PRIMITIV_USE_CUDA "Finds CUDA library ant use it." OFF)
+option(PRIMITIV_USE_CUDA "Enables the CUDA backend." OFF)
+option(PRIMITIV_USE_OPENCL "Enables the OpenCL backend." OFF)
 
-# compiler requirements and settings
+# C++ version
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-if(CMAKE_COMPILER_IS_GNUCXX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast -Wall -Werror -fPIC")
+
+# compiler settings
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -Werror -fPIC")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -Werror -fPIC")
+else()
+  message(WARNING "primitiv may not support the detected compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
 configure_file(
@@ -22,18 +31,25 @@ configure_file(
 )
 
 # External packages.
-find_package(Protobuf REQUIRED)
 if(PRIMITIV_USE_CUDA)
   find_package(CUDA REQUIRED)
+endif()
+
+if(PRIMITIV_USE_OPENCL)
+  find_package(OpenCL REQUIRED)
+  find_package(CLHPP REQUIRED)
+  find_package(clBLAS REQUIRED)
 endif()
 
 # Include directories.
 include_directories(
   ${PROJECT_SOURCE_DIR}
-  ${PROJECT_BINARY_DIR}
-  ${PROTOBUF_INCLUDE_DIR})
+  ${PROJECT_BINARY_DIR})
 if(PRIMITIV_USE_CUDA)
   include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
+endif()
+if(PRIMITIV_USE_OPENCL)
+  include_directories(${CLHPP_INCLUDE_DIR})
 endif()
 
 # core library

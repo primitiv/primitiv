@@ -5,10 +5,12 @@
 #include <gtest/gtest.h>
 #include <primitiv/error.h>
 #include <primitiv/shape.h>
+#include <test_utils.h>
 
 using std::pair;
 using std::string;
 using std::vector;
+using test_utils::vector_match;
 
 namespace primitiv {
 
@@ -20,6 +22,7 @@ TEST_F(ShapeTest, CheckNewDefault) {
     EXPECT_EQ(1u, shape[0]);
     EXPECT_EQ(1u, shape[1]);
     EXPECT_EQ(1u, shape[100]);
+    EXPECT_TRUE(vector_match(vector<std::uint32_t> {}, shape.dims()));
     EXPECT_EQ(0u, shape.depth());
     EXPECT_EQ(1u, shape.batch());
     EXPECT_EQ(1u, shape.volume());
@@ -33,6 +36,7 @@ TEST_F(ShapeTest, CheckNewByInitializerList) {
     EXPECT_EQ(1u, shape[0]);
     EXPECT_EQ(1u, shape[1]);
     EXPECT_EQ(1u, shape[100]);
+    EXPECT_TRUE(vector_match(vector<std::uint32_t> {}, shape.dims()));
     EXPECT_EQ(0u, shape.depth());
     EXPECT_EQ(1u, shape.batch());
     EXPECT_EQ(1u, shape.volume());
@@ -45,6 +49,7 @@ TEST_F(ShapeTest, CheckNewByInitializerList) {
     EXPECT_EQ(3u, shape[2]);
     EXPECT_EQ(1u, shape[3]);
     EXPECT_EQ(1u, shape[100]);
+    EXPECT_TRUE(vector_match(vector<std::uint32_t> { 1, 2, 3 }, shape.dims()));
     EXPECT_EQ(3u, shape.depth());
     EXPECT_EQ(4u, shape.batch());
     EXPECT_EQ(6u, shape.volume());
@@ -54,22 +59,24 @@ TEST_F(ShapeTest, CheckNewByInitializerList) {
 
 TEST_F(ShapeTest, CheckNewByVector) {
   {
-    const Shape shape(vector<unsigned> {});
+    const Shape shape(vector<std::uint32_t> {});
     EXPECT_EQ(1u, shape[0]);
     EXPECT_EQ(1u, shape[1]);
     EXPECT_EQ(1u, shape[100]);
+    EXPECT_TRUE(vector_match(vector<std::uint32_t> {}, shape.dims()));
     EXPECT_EQ(0u, shape.depth());
     EXPECT_EQ(1u, shape.batch());
     EXPECT_EQ(1u, shape.volume());
     EXPECT_EQ(1u, shape.size());
   }
   {
-    const Shape shape(vector<unsigned> {1, 2, 3}, 4);
+    const Shape shape(vector<std::uint32_t> {1, 2, 3}, 4);
     EXPECT_EQ(1u, shape[0]);
     EXPECT_EQ(2u, shape[1]);
     EXPECT_EQ(3u, shape[2]);
     EXPECT_EQ(1u, shape[3]);
     EXPECT_EQ(1u, shape[100]);
+    EXPECT_TRUE(vector_match(vector<std::uint32_t> { 1, 2, 3 }, shape.dims()));
     EXPECT_EQ(3u, shape.depth());
     EXPECT_EQ(4u, shape.batch());
     EXPECT_EQ(6u, shape.volume());
@@ -87,8 +94,8 @@ TEST_F(ShapeTest, CheckInvalidNew) {
   EXPECT_THROW(Shape({}, 0), Error);
   EXPECT_NO_THROW(Shape({1, 2, 3, 4, 5, 6, 7, 8}, 10));
   EXPECT_THROW(Shape({1, 2, 3, 4, 5, 6, 7, 8, 9}, 10), Error);
-  EXPECT_NO_THROW(Shape(vector<unsigned> {1, 2, 3, 4, 5, 6, 7, 8}, 10));
-  EXPECT_THROW(Shape(vector<unsigned> {1, 2, 3, 4, 5, 6, 7, 8, 9}, 10), Error);
+  EXPECT_NO_THROW(Shape(vector<std::uint32_t> {1, 2, 3, 4, 5, 6, 7, 8}, 10));
+  EXPECT_THROW(Shape(vector<std::uint32_t> {1, 2, 3, 4, 5, 6, 7, 8, 9}, 10), Error);
 }
 
 TEST_F(ShapeTest, CheckNumElementsUnderRank) {
@@ -216,11 +223,14 @@ TEST_F(ShapeTest, CheckMove) {
   EXPECT_EQ(trg2, moved);
 }
 
+#if 0
+// Some compilers does not compile this test due to "-Wself-move".
 TEST_F(ShapeTest, CheckMoveToThis) {
   Shape a({2, 3, 5}, 7);
   a = std::move(a);
   EXPECT_EQ(Shape({2, 3, 5}, 7), a);
 }
+#endif
 
 TEST_F(ShapeTest, CheckHasBatch) {
   EXPECT_FALSE(Shape().has_batch());

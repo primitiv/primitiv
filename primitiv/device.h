@@ -1,7 +1,9 @@
 #ifndef PRIMITIV_DEVICE_H_
 #define PRIMITIV_DEVICE_H_
 
+#include <cstdint>
 #include <memory>
+#include <primitiv/mixins.h>
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
 
@@ -10,39 +12,23 @@ namespace primitiv {
 /**
  * Interface of the Tensor provider.
  */
-class Device {
+class Device
+    : public mixins::DefaultSettable<Device>
+    , mixins::Nonmovable<Device> {
   friend Tensor;
-
-  static Device *default_obj_;
-
-  Device(const Device &) = delete;
-  Device(Device &&) = delete;
-  Device &operator=(const Device &) = delete;
-  Device &operator=(Device &&) = delete;
 
 public:
   /**
    * Device type.
    */
-  enum DeviceType {
-    DEVICE_TYPE_CPU = 0x0,
-    DEVICE_TYPE_CUDA = 0x10000,
+  enum class DeviceType : std::uint32_t {
+    CPU = 0x0,
+    CUDA = 0x10000,
+    OPENCL = 0x20000,
   };
 
-  /**
-   * Retrieves the current default device.
-   * @return Reference of the default device.
-   */
-  static Device &get_default();
-
-  /**
-   * Registers a new default device.
-   * @param dev New default device.
-   */
-  static void set_default(Device &dev);
-
   Device() = default;
-  virtual ~Device();
+  virtual ~Device() = default;
 
   /**
    * Prints device description to stderr.
@@ -55,20 +41,22 @@ public:
    */
   virtual DeviceType type() const = 0;
 
+private:
   /**
    * Provides a new Tensor object on the device.
    * @param shape Shape of the tensor.
    * @return A new Tensor object.
    */
-  Tensor new_tensor(const Shape &shape);
+  Tensor new_raw_tensor(const Shape &shape);
 
+public:
   /**
    * Provides a new Tensor object with same-value elements.
    * @param shape Shape of the tensor.
    * @param k Constant to initialize elements.
    * @return A new Tensor object.
    */
-  Tensor new_tensor(const Shape &shape, float k);
+  Tensor new_tensor_by_constant(const Shape &shape, float k);
 
   /**
    * Provides a new Tensor object with specific values.
@@ -98,7 +86,7 @@ public:
   Tensor copy_tensor(const Tensor &x);
 
   // Provides an identity matrix.
-  Tensor identity(unsigned size);
+  Tensor identity(std::uint32_t size);
 
   // Random value generators.
   Tensor random_bernoulli(const Shape &shape, float p);
@@ -107,12 +95,12 @@ public:
   Tensor random_log_normal(const Shape &shape, float mean, float sd);
 
   // Tensor manipulations.
-  Tensor pick_fw(const Tensor &x, const std::vector<unsigned> &ids, unsigned dim);
-  Tensor slice_fw(const Tensor &x, unsigned dim, unsigned lower, unsigned upper);
-  Tensor concat_fw(const std::vector<const Tensor *> &xs, unsigned dim);
+  Tensor pick_fw(const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim);
+  Tensor slice_fw(const Tensor &x, std::uint32_t dim, std::uint32_t lower, std::uint32_t upper);
+  Tensor concat_fw(const std::vector<const Tensor *> &xs, std::uint32_t dim);
 
-  void pick_bw(const Tensor &gy, const std::vector<unsigned> &ids, unsigned dim, Tensor &gx);
-  void slice_bw(const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx);
+  void pick_bw(const Tensor &gy, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &gx);
+  void slice_bw(const Tensor &gy, std::uint32_t dim, std::uint32_t offset, Tensor &gx);
 
   // Unary operations.
   Tensor negate_fw(const Tensor &x);
@@ -189,9 +177,9 @@ public:
       Tensor &ga, Tensor &gb);
 
   // Dimension operations.
-  Tensor sum_fw(const Tensor &x, unsigned dim);
-  Tensor logsumexp_fw(const Tensor &x, unsigned dim);
-  Tensor broadcast_fw(const Tensor &x, unsigned dim, unsigned size);
+  Tensor sum_fw(const Tensor &x, std::uint32_t dim);
+  Tensor logsumexp_fw(const Tensor &x, std::uint32_t dim);
+  Tensor broadcast_fw(const Tensor &x, std::uint32_t dim, std::uint32_t size);
   Tensor batch_sum_fw(const Tensor &x);
 
   /**
@@ -233,6 +221,22 @@ private:
    */
   std::vector<float> tensor_to_vector(const Tensor &x);
 
+  /**
+   * Retrieves argmax indices along an axis.
+   * @param x A tensor.
+   * @param dim A specified axis.
+   * @return A list of integers that indicates positions of the maximum values.
+   */
+  std::vector<std::uint32_t> argmax(const Tensor &x, std::uint32_t dim);
+
+  /**
+   * Retrieves argmin indices along an axis.
+   * @param x A tensor.
+   * @param dim A specified axis.
+   * @return A list of integers that indicates positions of the minimum values.
+   */
+  std::vector<std::uint32_t> argmin(const Tensor &x, std::uint32_t dim);
+
 protected:
   /**
    * Reset internal values of the tensor using a constant.
@@ -267,6 +271,8 @@ private:
   virtual std::shared_ptr<void> new_handle(const Shape &shape) = 0;
 
   virtual std::vector<float> tensor_to_vector_impl(const Tensor &x) = 0;
+  virtual std::vector<std::uint32_t> argmax_impl(const Tensor &x, std::uint32_t dim) = 0;
+  virtual std::vector<std::uint32_t> argmin_impl(const Tensor &x, std::uint32_t dim) = 0;
 
   virtual void reset_tensor_impl(float k, Tensor &x) = 0;
   virtual void reset_tensor_by_array_impl(const float values[], Tensor &x) = 0;
@@ -280,12 +286,12 @@ private:
   virtual void random_normal_impl(float mean, float sd, Tensor &y) = 0;
   virtual void random_log_normal_impl(float mean, float sd, Tensor &y) = 0;
 
-  virtual void pick_fw_impl(const Tensor &x, const std::vector<unsigned> &ids, unsigned dim, Tensor &y) = 0;
-  virtual void slice_fw_impl(const Tensor &x, unsigned dim, unsigned offset, Tensor &y) = 0;
-  virtual void concat_fw_impl(const std::vector<const Tensor *> &xs, unsigned dim, Tensor &y) = 0;
+  virtual void pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &y) = 0;
+  virtual void slice_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t offset, Tensor &y) = 0;
+  virtual void concat_fw_impl(const std::vector<const Tensor *> &xs, std::uint32_t dim, Tensor &y) = 0;
 
-  virtual void pick_bw_impl(const Tensor &gy, const std::vector<unsigned> &ids, unsigned dim, Tensor &gx) = 0;
-  virtual void slice_bw_impl(const Tensor &gy, unsigned dim, unsigned offset, Tensor &gx) = 0;
+  virtual void pick_bw_impl(const Tensor &gy, const std::vector<std::uint32_t> &ids, std::uint32_t dim, Tensor &gx) = 0;
+  virtual void slice_bw_impl(const Tensor &gy, std::uint32_t dim, std::uint32_t offset, Tensor &gx) = 0;
 
   virtual void negate_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void sqrt_fw_impl(const Tensor &x, Tensor &y) = 0;
@@ -357,9 +363,9 @@ private:
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
       Tensor &ga, Tensor &gb) = 0;
 
-  virtual void sum_fw_impl(const Tensor &x, unsigned dim, Tensor &y) = 0;
-  virtual void logsumexp_fw_impl(const Tensor &x, unsigned dim, Tensor &y) = 0;
-  virtual void broadcast_fw_impl(const Tensor &x, unsigned dim, unsigned size, Tensor &y) = 0;
+  virtual void sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
+  virtual void logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
+  virtual void broadcast_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) = 0;
   virtual void batch_sum_fw_impl(const Tensor &x, Tensor &y) = 0;
 
   virtual void inplace_multiply_const_impl(float k, Tensor &x) = 0;
