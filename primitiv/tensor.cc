@@ -30,14 +30,14 @@ std::vector<std::uint32_t> Tensor::argmin(std::uint32_t dim) const {
   return device_->argmin(*this, dim);
 }
 
-void *Tensor::data() {
+void *Tensor::mutable_handle() {
   check_valid();
   // If the internal memory is shared with other objects, the memory will be
   // duplicated to maintain the safety of other objects.
-  if (data_.use_count() > 1) {
+  if (handle_.use_count() > 1) {
     *this = device_->copy_tensor(*this);
   }
-  return data_.get();
+  return handle_.get();
 }
 
 void Tensor::reset(float k) {
@@ -57,12 +57,12 @@ void Tensor::reset_by_vector(const std::vector<float> &values) {
 
 Tensor Tensor::reshape(const Shape &new_shape) const {
   check_valid();
-  return Tensor(shape_ops::reshape(shape_, new_shape), *device_, data_);
+  return Tensor(shape_ops::reshape(shape_, new_shape), *device_, handle_);
 }
 
 Tensor Tensor::flatten() const {
   check_valid();
-  return Tensor(shape_ops::flatten(shape_), *device_, data_);
+  return Tensor(shape_ops::flatten(shape_), *device_, handle_);
 }
 
 Tensor &Tensor::inplace_multiply_const(float k) {

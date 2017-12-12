@@ -193,10 +193,8 @@ TEST_F(TensorBackwardTest, CheckCopyAndSlice) {
       const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
 
       const Tensor copied = a;
-      EXPECT_EQ(static_cast<const Tensor>(a).data(), copied.data());
 
       dev->slice_bw(b, i, 0, a);
-      EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
       EXPECT_TRUE(vector_match(y_data, a.to_vector()));
       EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
     }
@@ -353,10 +351,8 @@ TEST_F(TensorBackwardTest, CheckCopyAndPick) {
     const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
 
     const Tensor copied = a;
-    EXPECT_EQ(static_cast<const Tensor>(a).data(), copied.data());
 
     dev->pick_bw(b, {0, 0, 0}, 2, a);
-    EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
     EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
   }
