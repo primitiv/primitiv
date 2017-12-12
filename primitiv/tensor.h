@@ -23,7 +23,7 @@ public:
   Tensor(Tensor &&src)
     : shape_(std::move(src.shape_))
     , device_(src.device_)
-    , data_(std::move(src.data_)) {
+    , handle_(std::move(src.handle_)) {
       src.device_ = nullptr;
     }
 
@@ -33,7 +33,7 @@ public:
     if (&src != this) {
       shape_ = std::move(src.shape_);
       device_ = src.device_;
-      data_ = std::move(src.data_);
+      handle_ = std::move(src.handle_);
       src.device_ = nullptr;
     }
     return *this;
@@ -42,7 +42,7 @@ public:
   /**
    * Creates an invalid Tensor.
    */
-  Tensor() : shape_(), device_(nullptr), data_() {}
+  Tensor() : shape_(), device_(nullptr), handle_() {}
 
   /**
    * Check whether the object is valid or not.
@@ -78,21 +78,6 @@ public:
   Device &device() const {
     check_valid();
     return *device_;
-  }
-
-  /**
-   * Returns the raw pointer of the internal memory.
-   * @return Pointer of the internal memory.
-   */
-  void *data();
-
-  /**
-   * Returns the raw const-pointer of the internal memory.
-   * @return Const-pointer of the internal memory.
-   */
-  const void *data() const {
-    check_valid();
-    return data_.get();
   }
 
   /**
@@ -188,17 +173,32 @@ private:
    * Creates a new uninitialized Tensor.
    * @param shape Shape of the new Tensor.
    * @param device Device object to manage the internal memory.
-   * @param data Pointer of the device-specific object.
+   * @param handle Pointer of the device-specific object.
    */
   template <typename ShapeT, typename SharedPtrT>
-  Tensor(ShapeT &&shape, Device &device, SharedPtrT &&data)
+  Tensor(ShapeT &&shape, Device &device, SharedPtrT &&handle)
     : shape_(std::forward<ShapeT>(shape))
     , device_(&device)
-    , data_(std::forward<SharedPtrT>(data)) {}
+    , handle_(std::forward<SharedPtrT>(handle)) {}
+
+  /**
+   * Returns the raw const-pointer of the internal memory.
+   * @return Const-pointer of the internal memory.
+   */
+  const void *handle() const {
+    check_valid();
+    return handle_.get();
+  }
+
+  /**
+   * Returns the raw pointer of the internal memory.
+   * @return Pointer of the internal memory.
+   */
+  void *mutable_handle();
 
   Shape shape_;
   Device *device_;
-  std::shared_ptr<void> data_;
+  std::shared_ptr<void> handle_;
 };
 
 }  // namespace primitiv
