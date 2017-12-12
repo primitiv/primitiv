@@ -98,13 +98,24 @@ public:
   bool valid() const { return !!device_; }
 
   /**
+   * Check whether the object is valid or not.
+   * If the object is invalid, this functions throws an exception.
+   * @throw primitiv::Error This object is invalid.
+   */
+  void check_valid() const {
+    if (!valid()) {
+      THROW_ERROR("Invalid Tensor object.");
+    }
+  }
+
+  /**
    * Returns the shape of the Tensor.
    * @return Shape of the Tensor.
    */
   Shape shape() const {
     std::lock_guard<RecursiveSpinlock> lock(spinlock_);
 
-    if (!valid()) THROW_ERROR("Invalid tensor.");
+    check_valid();
     return shape_;
   }
 
@@ -115,7 +126,7 @@ public:
   Device &device() const {
     std::lock_guard<RecursiveSpinlock> lock(spinlock_);
 
-    if (!valid()) THROW_ERROR("Invalid tensor.");
+    check_valid();
     return *device_;
   }
 
@@ -132,7 +143,7 @@ public:
   const void *data() const {
     std::lock_guard<RecursiveSpinlock> lock(spinlock_);
 
-    if (!valid()) THROW_ERROR("Invalid tensor.");
+    check_valid();
     return data_.get();
   }
 
