@@ -53,11 +53,21 @@ public:
   bool valid() const { return !!device_; }
 
   /**
+   * Check whether the object is valid or not.
+   * @throw primitiv::Error This object is invalid.
+   */
+  void check_valid() const {
+    if (!valid()) {
+      THROW_ERROR("Invalid Tensor object.");
+    }
+  }
+
+  /**
    * Returns the shape of the Tensor.
    * @return Shape of the Tensor.
    */
   Shape shape() const {
-    if (!valid()) THROW_ERROR("Invalid tensor.");
+    check_valid();
     return shape_;
   }
 
@@ -66,7 +76,7 @@ public:
    * @return Device object.
    */
   Device &device() const {
-    if (!valid()) THROW_ERROR("Invalid tensor.");
+    check_valid();
     return *device_;
   }
 
@@ -81,7 +91,7 @@ public:
    * @return Const-pointer of the internal memory.
    */
   const void *data() const {
-    if (!valid()) THROW_ERROR("Invalid tensor.");
+    check_valid();
     return data_.get();
   }
 
