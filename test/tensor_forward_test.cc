@@ -70,7 +70,6 @@ TEST_F(TensorForwardTest, CheckCopy) {
       const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), data);
       const Tensor y = copy(x, *dev2);
       EXPECT_EQ(Shape({2, 2}, 3), y.shape());
-      EXPECT_TRUE(&y.device() != &x.device() || y.data() != x.data());
       EXPECT_TRUE(vector_match(data, y.to_vector()));
     }
   }

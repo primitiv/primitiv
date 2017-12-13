@@ -23,35 +23,29 @@ public:
   /**
    * Creates an invalid Tensor.
    */
-  Tensor() : shape_(), device_(nullptr), data_() {}
+  Tensor() : shape_(), device_(nullptr), handle_() {}
 
   /**
    * Copy constructor.
    */
   Tensor(const Tensor &src) {
-    std::lock(spinlock_, src.spinlock_);
+    std::lock_guard<RecursiveSpinlock> src_lock(src.spinlock_);
 
     shape_ = src.shape_;
     device_ = src.device_;
-    data_ = src.data_;
-
-    spinlock_.unlock();
-    src.spinlock_.unlock();
+    handle_ = src.handle_;
   }
 
   /**
    * Move constructor.
    */
   Tensor(Tensor &&src) {
-    std::lock(spinlock_, src.spinlock_);
+    std::lock_guard<RecursiveSpinlock> src_lock(src.spinlock_);
 
     shape_ = std::move(src.shape_);
     device_ = src.device_;
-    data_ = std::move(src.data_);
+    handle_ = std::move(src.handle_);
     src.device_ = nullptr;
-
-    spinlock_.unlock();
-    src.spinlock_.unlock();
   }
 
   /**
@@ -59,14 +53,15 @@ public:
    */
   Tensor &operator=(const Tensor &src) {
     if (&src != this) {
-      std::lock(spinlock_, src.spinlock_);
+      std::unique_lock<RecursiveSpinlock> this_lock(
+          spinlock_, std::defer_lock);
+      std::unique_lock<RecursiveSpinlock> src_lock(
+          src.spinlock_, std::defer_lock);
+      std::lock(this_lock, src_lock);
 
       shape_ = src.shape_;
       device_ = src.device_;
-      data_ = src.data_;
-
-      spinlock_.unlock();
-      src.spinlock_.unlock();
+      handle_ = src.handle_;
     }
     return *this;
   }
@@ -76,15 +71,16 @@ public:
    */
   Tensor &operator=(Tensor &&src) {
     if (&src != this) {
-      std::lock(spinlock_, src.spinlock_);
+      std::unique_lock<RecursiveSpinlock> this_lock(
+          spinlock_, std::defer_lock);
+      std::unique_lock<RecursiveSpinlock> src_lock(
+          src.spinlock_, std::defer_lock);
+      std::lock(this_lock, src_lock);
 
       shape_ = std::move(src.shape_);
       device_ = src.device_;
-      data_ = std::move(src.data_);
+      handle_ = std::move(src.handle_);
       src.device_ = nullptr;
-
-      spinlock_.unlock();
-      src.spinlock_.unlock();
     }
     return *this;
   }
@@ -98,13 +94,23 @@ public:
   bool valid() const { return !!device_; }
 
   /**
+   * Check whether the object is valid or not.
+   * @throw primitiv::Error This object is invalid.
+   */
+  void check_valid() const {
+    if (!valid()) {
+      THROW_ERROR("Invalid Tensor object.");
+    }
+  }
+
+  /**
    * Returns the shape of the Tensor.
    * @return Shape of the Tensor.
    */
   Shape shape() const {
     std::lock_guard<RecursiveSpinlock> lock(spinlock_);
 
-    if (!valid()) THROW_ERROR("Invalid tensor.");
+    check_valid();
     return shape_;
   }
 
@@ -115,25 +121,8 @@ public:
   Device &device() const {
     std::lock_guard<RecursiveSpinlock> lock(spinlock_);
 
-    if (!valid()) THROW_ERROR("Invalid tensor.");
+    check_valid();
     return *device_;
-  }
-
-  /**
-   * Returns the raw pointer of the internal memory.
-   * @return Pointer of the internal memory.
-   */
-  void *data();
-
-  /**
-   * Returns the raw const-pointer of the internal memory.
-   * @return Const-pointer of the internal memory.
-   */
-  const void *data() const {
-    std::lock_guard<RecursiveSpinlock> lock(spinlock_);
-
-    if (!valid()) THROW_ERROR("Invalid tensor.");
-    return data_.get();
   }
 
   /**
@@ -229,17 +218,34 @@ private:
    * Creates a new uninitialized Tensor.
    * @param shape Shape of the new Tensor.
    * @param device Device object to manage the internal memory.
-   * @param data Pointer of the device-specific object.
+   * @param handle Pointer of the device-specific object.
    */
   template <typename ShapeT, typename SharedPtrT>
-  Tensor(ShapeT &&shape, Device &device, SharedPtrT &&data)
+  Tensor(ShapeT &&shape, Device &device, SharedPtrT &&handle)
     : shape_(std::forward<ShapeT>(shape))
     , device_(&device)
-    , data_(std::forward<SharedPtrT>(data)) {}
+    , handle_(std::forward<SharedPtrT>(handle)) {}
+
+  /**
+   * Returns the raw const-pointer of the internal memory.
+   * @return Const-pointer of the internal memory.
+   */
+  const void *handle() const {
+    std::lock_guard<RecursiveSpinlock> lock(spinlock_);
+
+    check_valid();
+    return handle_.get();
+  }
+
+  /**
+   * Returns the raw pointer of the internal memory.
+   * @return Pointer of the internal memory.
+   */
+  void *mutable_handle();
 
   Shape shape_;
   Device *device_;
-  std::shared_ptr<void> data_;
+  std::shared_ptr<void> handle_;
   mutable RecursiveSpinlock spinlock_;
 };
 

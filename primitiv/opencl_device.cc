@@ -65,24 +65,6 @@ void write_buffer(
 }
 
 /**
- * Obtains mutable cl::Buffer from Tensor.
- * @param x Target Tensor object.
- * @return cl::Buffer object which the tensor object holds.
- */
-cl::Buffer &get_buffer(primitiv::Tensor &x) {
-  return *static_cast<cl::Buffer *>(x.data());
-}
-
-/**
- * Obtains immutable cl::Buffer from Tensor.
- * @param x Target Tensor object.
- * @return cl::Buffer object which the tensor object holds.
- */
-const cl::Buffer &get_buffer(const primitiv::Tensor &x) {
-  return *static_cast<const cl::Buffer *>(x.data());
-}
-
-/**
  * Obtains mutable cl::Buffer from shared_ptr<void>.
  * @param ptr Target shared_ptr object.
  * @return cl::Buffer object which the shared_ptr holds.
@@ -154,6 +136,9 @@ cl::Device get_device(std::uint32_t platform_id, std::uint32_t device_id) {
 
 }  // namespace
 
+#define CDATA(x) (*static_cast<const cl::Buffer *>(get_handle(x)))
+#define MDATA(x) (*static_cast<cl::Buffer *>(get_mutable_handle(x)))
+
 namespace primitiv {
 namespace devices {
 
@@ -217,6 +202,7 @@ public:
           // We have to manually wait for finishing all kernel functions to
           // prevent memory corruption.
           queue.finish();
+
           // Then, we can delete the buffer safely.
           delete static_cast<cl::Buffer *>(ptr);
         }) {
@@ -562,8 +548,7 @@ std::shared_ptr<void> OpenCL::new_handle(const Shape &shape) {
 std::vector<float> OpenCL::tensor_to_vector_impl(const Tensor &x) {
   const std::uint32_t size = x.shape().size();
   std::vector<float> ret(size);
-  ::read_buffer(
-      state_->spinlock, state_->queue, ::get_buffer(x), ret.data(), size);
+  ::read_buffer(state_->spinlock, state_->queue, CDATA(x), ret.data(), size);
   return ret;
 }
 
@@ -583,7 +568,7 @@ std::vector<std::uint32_t> OpenCL::argmax_impl(
     switch (group_size) {
 #define CASE(k, m) \
       case k: \
-        state_->argmax_kernel[m].setArg(0, ::get_buffer(x)); \
+        state_->argmax_kernel[m].setArg(0, CDATA(x)); \
         state_->argmax_kernel[m].setArg(1, s); \
         state_->argmax_kernel[m].setArg(2, n); \
         state_->argmax_kernel[m].setArg(3, ::get_buffer(py)); \
@@ -628,7 +613,7 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(
     switch (group_size) {
 #define CASE(k, m) \
       case k: \
-        state_->argmin_kernel[m].setArg(0, ::get_buffer(x)); \
+        state_->argmin_kernel[m].setArg(0, CDATA(x)); \
         state_->argmin_kernel[m].setArg(1, s); \
         state_->argmin_kernel[m].setArg(2, n); \
         state_->argmin_kernel[m].setArg(3, ::get_buffer(py)); \
@@ -659,43 +644,49 @@ std::vector<std::uint32_t> OpenCL::argmin_impl(
 
 void OpenCL::reset_tensor_impl(float k, Tensor &x) {
   const std::uint32_t size = x.shape().size();
-  state_->queue.enqueueFillBuffer<float>(
-      ::get_buffer(x), k, 0, sizeof(float) * size);
+  state_->queue.enqueueFillBuffer<float>(MDATA(x), k, 0, sizeof(float) * size);
 }
 
 void OpenCL::reset_tensor_by_array_impl(const float values[], Tensor &x) {
   const std::uint32_t size = x.shape().size();
-  ::write_buffer(
-      state_->spinlock, state_->queue, ::get_buffer(x), values, size);
+  ::write_buffer(state_->spinlock, state_->queue, MDATA(x), values, size);
 }
 
 void OpenCL::copy_tensor_impl(const Tensor &x, Tensor &y) {
   switch (x.device().type()) {
     case Device::DeviceType::CPU:
-      reset_tensor_by_array(static_cast<const float *>((x).data()), y);
+      reset_tensor_by_array(static_cast<const float *>(get_handle(x)), y);
       break;
     case Device::DeviceType::OPENCL:
-      if(&x.device() == this) {
-        const std::uint32_t size = x.shape().size();
-        state_->queue.enqueueCopyBuffer(
-            ::get_buffer(x), ::get_buffer(y), 0, 0, sizeof(float) * size);
-      } else {
-        std::lock_guard<Spinlock> lock(state_->spinlock);
+      {
+        const std::size_t size = sizeof(float) * x.shape().size();
 
-        const std::uint32_t size = x.shape().size();
-        cl::CommandQueue &queue_x
-          = static_cast<OpenCL &>(x.device()).state_->queue;
-        float *mapped_ptr_x = static_cast<float *>(
-            queue_x.enqueueMapBuffer(
-              ::get_buffer(x), CL_TRUE, CL_MAP_READ,
-              0, sizeof(float) * size, 0));
-        float *mapped_ptr_y = static_cast<float *>(
-            state_->queue.enqueueMapBuffer(
-              ::get_buffer(y), CL_TRUE, CL_MAP_WRITE,
-              0, sizeof(float) * size, 0));
-        std::memcpy(mapped_ptr_y, mapped_ptr_x, sizeof(float) * size);
-        queue_x.enqueueUnmapMemObject(::get_buffer(x), mapped_ptr_x);
-        state_->queue.enqueueUnmapMemObject(::get_buffer(y), mapped_ptr_y);
+        if(&x.device() == this) {
+          state_->queue.enqueueCopyBuffer(CDATA(x), MDATA(y), 0, 0, size);
+        } else {
+          auto &src_state = static_cast<OpenCL &>(x.device()).state_;
+
+          std::unique_lock<Spinlock> this_lock(
+              state_->spinlock, std::defer_lock);
+          std::unique_lock<Spinlock> src_lock(
+              src_state->spinlock, std::defer_lock);
+          std::lock(this_lock, src_lock);
+
+          cl::CommandQueue &this_queue = state_->queue;
+          cl::CommandQueue &src_queue = src_state->queue;
+
+          float *y_ptr = static_cast<float *>(
+              this_queue.enqueueMapBuffer(
+                MDATA(y), CL_TRUE, CL_MAP_WRITE, 0, size, 0));
+          const float *x_ptr = static_cast<const float *>(
+              src_queue.enqueueMapBuffer(
+                CDATA(x), CL_TRUE, CL_MAP_READ, 0, size, 0));
+
+          std::memcpy(y_ptr, x_ptr, size);
+
+          this_queue.enqueueUnmapMemObject(MDATA(y), y_ptr);
+          src_queue.enqueueUnmapMemObject(CDATA(x), const_cast<float *>(x_ptr));
+        }
       }
       break;
     default:
@@ -713,7 +704,7 @@ void OpenCL::identity_impl(Tensor &y) {
 
   state_->set_identity_kernel.setArg(0, size);
   state_->set_identity_kernel.setArg(1, skip);
-  state_->set_identity_kernel.setArg(2, ::get_buffer(y));
+  state_->set_identity_kernel.setArg(2, MDATA(y));
   state_->queue.enqueueNDRangeKernel(
       state_->set_identity_kernel, cl::NullRange,
       cl::NDRange(num_blocks * state_->set_identity_group_size),
@@ -727,9 +718,9 @@ void OpenCL::random_bernoulli_impl(float p, Tensor &y) {
 
   float *mapped_ptr = static_cast<float *>(
       state_->queue.enqueueMapBuffer(
-        ::get_buffer(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0));
+        MDATA(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0));
   state_->randomizer.fill_bernoulli(p, size, mapped_ptr);
-  state_->queue.enqueueUnmapMemObject(::get_buffer(y), mapped_ptr);
+  state_->queue.enqueueUnmapMemObject(MDATA(y), mapped_ptr);
 }
 
 void OpenCL::random_uniform_impl(float lower, float upper, Tensor &y) {
@@ -739,9 +730,9 @@ void OpenCL::random_uniform_impl(float lower, float upper, Tensor &y) {
 
   float *mapped_ptr = static_cast<float *>(
       state_->queue.enqueueMapBuffer(
-        ::get_buffer(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0));
+        MDATA(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0));
   state_->randomizer.fill_uniform(lower, upper, size, mapped_ptr);
-  state_->queue.enqueueUnmapMemObject(::get_buffer(y), mapped_ptr);
+  state_->queue.enqueueUnmapMemObject(MDATA(y), mapped_ptr);
 }
 
 void OpenCL::random_normal_impl(float mean, float sd, Tensor &y) {
@@ -751,9 +742,9 @@ void OpenCL::random_normal_impl(float mean, float sd, Tensor &y) {
 
   float *mapped_ptr = static_cast<float *>(
       state_->queue.enqueueMapBuffer(
-        ::get_buffer(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0));
+        MDATA(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0));
   state_->randomizer.fill_normal(mean, sd, size, mapped_ptr);
-  state_->queue.enqueueUnmapMemObject(::get_buffer(y), mapped_ptr);
+  state_->queue.enqueueUnmapMemObject(MDATA(y), mapped_ptr);
 }
 
 void OpenCL::random_log_normal_impl(float mean, float sd, Tensor &y) {
@@ -763,9 +754,9 @@ void OpenCL::random_log_normal_impl(float mean, float sd, Tensor &y) {
 
   float *mapped_ptr = static_cast<float *>(
       state_->queue.enqueueMapBuffer(
-        ::get_buffer(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0));
+        MDATA(y), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * size, 0));
   state_->randomizer.fill_log_normal(mean, sd, size, mapped_ptr);
-  state_->queue.enqueueUnmapMemObject(::get_buffer(y), mapped_ptr);
+  state_->queue.enqueueUnmapMemObject(MDATA(y), mapped_ptr);
 }
 
 void OpenCL::pick_fw_impl(
@@ -786,14 +777,14 @@ void OpenCL::pick_fw_impl(
 
   std::lock_guard<Spinlock> lock(state_->spinlock);
 
-  state_->pick_fw_kernel.setArg(0, ::get_buffer(x));
+  state_->pick_fw_kernel.setArg(0, CDATA(x));
   state_->pick_fw_kernel.setArg(1, ::get_buffer(ids_buf));
   state_->pick_fw_kernel.setArg(2, wx);
   state_->pick_fw_kernel.setArg(3, wy);
   state_->pick_fw_kernel.setArg(4, sx);
   state_->pick_fw_kernel.setArg(5, si);
   state_->pick_fw_kernel.setArg(6, sy);
-  state_->pick_fw_kernel.setArg(7, ::get_buffer(y));
+  state_->pick_fw_kernel.setArg(7, MDATA(y));
   state_->queue.enqueueNDRangeKernel(
       state_->pick_fw_kernel, cl::NullRange,
       cl::NDRange(g1 * state_->pick_fw_group_size, bs),
@@ -812,12 +803,12 @@ void OpenCL::slice_fw_impl(
 
   std::lock_guard<Spinlock> lock(state_->spinlock);
 
-  state_->slice_fw_kernel.setArg(0, ::get_buffer(x));
+  state_->slice_fw_kernel.setArg(0, CDATA(x));
   state_->slice_fw_kernel.setArg(1, shift);
   state_->slice_fw_kernel.setArg(2, span);
   state_->slice_fw_kernel.setArg(3, skip);
   state_->slice_fw_kernel.setArg(4, size);
-  state_->slice_fw_kernel.setArg(5, ::get_buffer(y));
+  state_->slice_fw_kernel.setArg(5, MDATA(y));
   state_->queue.enqueueNDRangeKernel(
       state_->slice_fw_kernel, cl::NullRange,
       cl::NDRange(num_blocks * state_->slice_fw_group_size),
@@ -840,12 +831,12 @@ void OpenCL::concat_fw_impl(
     const std::uint32_t y_size = span * repeat * new_bs;
     const std::uint32_t num_blocks = ::calc_num_blocks(
         y_size, state_->concat_fw_group_size);
-    state_->concat_fw_kernel.setArg(0, ::get_buffer(*x));
+    state_->concat_fw_kernel.setArg(0, CDATA(*x));
     state_->concat_fw_kernel.setArg(1, span);
     state_->concat_fw_kernel.setArg(2, skip);
     state_->concat_fw_kernel.setArg(3, x_size);
     state_->concat_fw_kernel.setArg(4, y_size);
-    state_->concat_fw_kernel.setArg(5, ::get_buffer(y));
+    state_->concat_fw_kernel.setArg(5, MDATA(y));
     state_->concat_fw_kernel.setArg(6, offset);
     state_->queue.enqueueNDRangeKernel(
         state_->concat_fw_kernel, cl::NullRange,
@@ -873,14 +864,14 @@ void OpenCL::pick_bw_impl(
 
   std::lock_guard<Spinlock> lock(state_->spinlock);
 
-  state_->pick_bw_kernel.setArg(0, ::get_buffer(gy));
+  state_->pick_bw_kernel.setArg(0, CDATA(gy));
   state_->pick_bw_kernel.setArg(1, ::get_buffer(ids_buf));
   state_->pick_bw_kernel.setArg(2, wx);
   state_->pick_bw_kernel.setArg(3, wy);
   state_->pick_bw_kernel.setArg(4, sx);
   state_->pick_bw_kernel.setArg(5, si);
   state_->pick_bw_kernel.setArg(6, sy);
-  state_->pick_bw_kernel.setArg(7, ::get_buffer(gx));
+  state_->pick_bw_kernel.setArg(7, MDATA(gx));
   state_->queue.enqueueNDRangeKernel(
       state_->pick_bw_kernel, cl::NullRange,
       cl::NDRange(g1 * state_->concat_fw_group_size, bs),
@@ -903,12 +894,12 @@ void OpenCL::slice_bw_impl(
 
   std::lock_guard<Spinlock> lock(state_->spinlock);
 
-  state_->slice_bw_kernel.setArg(0, ::get_buffer(gy));
+  state_->slice_bw_kernel.setArg(0, CDATA(gy));
   state_->slice_bw_kernel.setArg(1, wx);
   state_->slice_bw_kernel.setArg(2, wy);
   state_->slice_bw_kernel.setArg(3, nx);
   state_->slice_bw_kernel.setArg(4, ny);
-  state_->slice_bw_kernel.setArg(5, ::get_buffer(gx));
+  state_->slice_bw_kernel.setArg(5, MDATA(gx));
   state_->slice_bw_kernel.setArg(6, ox);
   state_->queue.enqueueNDRangeKernel(
       state_->slice_bw_kernel, cl::NullRange,
@@ -924,9 +915,9 @@ void OpenCL::name##_fw_impl(const Tensor &x, Tensor &y) { \
   \
   std::lock_guard<Spinlock> lock(state_->spinlock); \
   \
-  state_->name##_fw_kernel.setArg(0, ::get_buffer(x)); \
+  state_->name##_fw_kernel.setArg(0, CDATA(x)); \
   state_->name##_fw_kernel.setArg(1, size); \
-  state_->name##_fw_kernel.setArg(2, ::get_buffer(y)); \
+  state_->name##_fw_kernel.setArg(2, MDATA(y)); \
   state_->queue.enqueueNDRangeKernel( \
       state_->name##_fw_kernel, cl::NullRange, \
       cl::NDRange(num_blocks * state_->name##_fw_group_size), \
@@ -942,11 +933,11 @@ void OpenCL::name##_bw_impl( \
   \
   std::lock_guard<Spinlock> lock(state_->spinlock); \
   \
-  state_->name##_bw_kernel.setArg(0, ::get_buffer(x)); \
-  state_->name##_bw_kernel.setArg(1, ::get_buffer(y)); \
-  state_->name##_bw_kernel.setArg(2, ::get_buffer(gy)); \
+  state_->name##_bw_kernel.setArg(0, CDATA(x)); \
+  state_->name##_bw_kernel.setArg(1, CDATA(y)); \
+  state_->name##_bw_kernel.setArg(2, CDATA(gy)); \
   state_->name##_bw_kernel.setArg(3, size); \
-  state_->name##_bw_kernel.setArg(4, ::get_buffer(gx)); \
+  state_->name##_bw_kernel.setArg(4, MDATA(gx)); \
   state_->queue.enqueueNDRangeKernel( \
       state_->name##_bw_kernel, cl::NullRange, \
       cl::NDRange(num_blocks * state_->name##_bw_group_size), \
@@ -961,10 +952,10 @@ void OpenCL::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
   \
   std::lock_guard<Spinlock> lock(state_->spinlock); \
   \
-  state_->name##_fw_kernel.setArg(0, ::get_buffer(x)); \
+  state_->name##_fw_kernel.setArg(0, CDATA(x)); \
   state_->name##_fw_kernel.setArg(1, k); \
   state_->name##_fw_kernel.setArg(2, size); \
-  state_->name##_fw_kernel.setArg(3, ::get_buffer(y)); \
+  state_->name##_fw_kernel.setArg(3, MDATA(y)); \
   state_->queue.enqueueNDRangeKernel( \
       state_->name##_fw_kernel, cl::NullRange, \
       cl::NDRange(num_blocks * state_->name##_fw_group_size), \
@@ -980,12 +971,12 @@ void OpenCL::name##_bw_impl( \
   \
   std::lock_guard<Spinlock> lock(state_->spinlock); \
   \
-  state_->name##_bw_kernel.setArg(0, ::get_buffer(x)); \
-  state_->name##_bw_kernel.setArg(1, ::get_buffer(y)); \
-  state_->name##_bw_kernel.setArg(2, ::get_buffer(gy)); \
+  state_->name##_bw_kernel.setArg(0, CDATA(x)); \
+  state_->name##_bw_kernel.setArg(1, CDATA(y)); \
+  state_->name##_bw_kernel.setArg(2, CDATA(gy)); \
   state_->name##_bw_kernel.setArg(3, k); \
   state_->name##_bw_kernel.setArg(4, size); \
-  state_->name##_bw_kernel.setArg(5, ::get_buffer(gx)); \
+  state_->name##_bw_kernel.setArg(5, MDATA(gx)); \
   state_->queue.enqueueNDRangeKernel( \
       state_->name##_bw_kernel, cl::NullRange, \
       cl::NDRange(num_blocks * state_->name##_bw_group_size), \
@@ -1003,12 +994,12 @@ void OpenCL::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
   \
   std::lock_guard<Spinlock> lock(state_->spinlock); \
   \
-  state_->name##_fw_kernel.setArg(0, ::get_buffer(x)); \
-  state_->name##_fw_kernel.setArg(1, ::get_buffer(k)); \
+  state_->name##_fw_kernel.setArg(0, CDATA(x)); \
+  state_->name##_fw_kernel.setArg(1, CDATA(k)); \
   state_->name##_fw_kernel.setArg(2, size); \
   state_->name##_fw_kernel.setArg(3, mbx); \
   state_->name##_fw_kernel.setArg(4, mbk); \
-  state_->name##_fw_kernel.setArg(5, ::get_buffer(y)); \
+  state_->name##_fw_kernel.setArg(5, MDATA(y)); \
   state_->queue.enqueueNDRangeKernel( \
       state_->name##_fw_kernel, cl::NullRange, \
       cl::NDRange(g1 * state_->name##_fw_group_size, g2, 1), \
@@ -1026,12 +1017,12 @@ void OpenCL::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
   \
   std::lock_guard<Spinlock> lock(state_->spinlock); \
   \
-  state_->name##_fw_kernel.setArg(0, ::get_buffer(a)); \
-  state_->name##_fw_kernel.setArg(1, ::get_buffer(b)); \
+  state_->name##_fw_kernel.setArg(0, CDATA(a)); \
+  state_->name##_fw_kernel.setArg(1, CDATA(b)); \
   state_->name##_fw_kernel.setArg(2, size); \
   state_->name##_fw_kernel.setArg(3, mba); \
   state_->name##_fw_kernel.setArg(4, mbb); \
-  state_->name##_fw_kernel.setArg(5, ::get_buffer(y)); \
+  state_->name##_fw_kernel.setArg(5, MDATA(y)); \
   state_->queue.enqueueNDRangeKernel( \
       state_->name##_fw_kernel, cl::NullRange, \
       cl::NDRange(g1 * state_->name##_fw_group_size, g2, 1), \
@@ -1051,15 +1042,15 @@ void OpenCL::name##_bw_impl( \
   \
   std::lock_guard<Spinlock> lock(state_->spinlock); \
   \
-  state_->name##_bw_kernel.setArg(0, ::get_buffer(a)); \
-  state_->name##_bw_kernel.setArg(1, ::get_buffer(b)); \
-  state_->name##_bw_kernel.setArg(2, ::get_buffer(y)); \
-  state_->name##_bw_kernel.setArg(3, ::get_buffer(gy)); \
+  state_->name##_bw_kernel.setArg(0, CDATA(a)); \
+  state_->name##_bw_kernel.setArg(1, CDATA(b)); \
+  state_->name##_bw_kernel.setArg(2, CDATA(y)); \
+  state_->name##_bw_kernel.setArg(3, CDATA(gy)); \
   state_->name##_bw_kernel.setArg(4, size); \
   state_->name##_bw_kernel.setArg(5, mba); \
   state_->name##_bw_kernel.setArg(6, mbb); \
-  state_->name##_bw_kernel.setArg(7, ::get_buffer(ga)); \
-  state_->name##_bw_kernel.setArg(8, ::get_buffer(gb)); \
+  state_->name##_bw_kernel.setArg(7, MDATA(ga)); \
+  state_->name##_bw_kernel.setArg(8, MDATA(gb)); \
   state_->queue.enqueueNDRangeKernel( \
       state_->name##_bw_kernel, cl::NullRange, \
       cl::NDRange(g1 * state_->name##_bw_group_size, g2, 1), \
@@ -1141,10 +1132,10 @@ void OpenCL::transpose_fw_impl(const Tensor &x, Tensor &y) {
 
   std::lock_guard<Spinlock> lock(state_->spinlock);
 
-  state_->transpose_fw_kernel.setArg(0, ::get_buffer(x));
+  state_->transpose_fw_kernel.setArg(0, CDATA(x));
   state_->transpose_fw_kernel.setArg(1, rows);
   state_->transpose_fw_kernel.setArg(2, cols);
-  state_->transpose_fw_kernel.setArg(3, ::get_buffer(y));
+  state_->transpose_fw_kernel.setArg(3, MDATA(y));
   state_->queue.enqueueNDRangeKernel(
       state_->transpose_fw_kernel, cl::NullRange,
       cl::NDRange(
@@ -1175,10 +1166,10 @@ void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
           clblasColumnMajor, clblasNoTrans, clblasNoTrans,
           di, dk, dj,
           alpha,
-          ::get_buffer(a)(), n * a_skip, di,
-          ::get_buffer(b)(), n * b_skip, dj,
+          CDATA(a)(), n * a_skip, di,
+          CDATA(b)(), n * b_skip, dj,
           beta,
-          ::get_buffer(y)(), n * y_skip, di,
+          MDATA(y)(), n * y_skip, di,
           1, &state_->queue(), 0, NULL, NULL);
     }
   } else {
@@ -1187,10 +1178,10 @@ void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
         clblasColumnMajor, clblasNoTrans, clblasNoTrans,
         di, dk * b.shape().batch(), dj,
         alpha,
-        ::get_buffer(a)(), 0, di,
-        ::get_buffer(b)(), 0, dj,
+        CDATA(a)(), 0, di,
+        CDATA(b)(), 0, dj,
         beta,
-        ::get_buffer(y)(), 0, di,
+        MDATA(y)(), 0, di,
         1, &state_->queue(), 0, NULL, NULL);
   }
 }
@@ -1207,10 +1198,10 @@ void OpenCL::transpose_bw_impl(
 
   std::lock_guard<Spinlock> lock(state_->spinlock);
 
-  state_->transpose_bw_kernel.setArg(0, ::get_buffer(gy));
+  state_->transpose_bw_kernel.setArg(0, CDATA(gy));
   state_->transpose_bw_kernel.setArg(1, rows);
   state_->transpose_bw_kernel.setArg(2, cols);
-  state_->transpose_bw_kernel.setArg(3, ::get_buffer(gx));
+  state_->transpose_bw_kernel.setArg(3, MDATA(gx));
   state_->queue.enqueueNDRangeKernel(
       state_->transpose_bw_kernel, cl::NullRange,
       cl::NDRange(
@@ -1245,19 +1236,19 @@ void OpenCL::matmul_bw_impl(
           clblasColumnMajor, clblasNoTrans, clblasTrans,
           di, dj, dk,
           alpha,
-          ::get_buffer(gy)(), n * y_skip, di,
-          ::get_buffer(b)(), n * b_skip, dj,
+          CDATA(gy)(), n * y_skip, di,
+          CDATA(b)(), n * b_skip, dj,
           beta,
-          ::get_buffer(ga)(), n * a_skip, di,
+          MDATA(ga)(), n * a_skip, di,
           1, &state_->queue(), 0, NULL, NULL);
       ::clblasSgemm(
           clblasColumnMajor, clblasTrans, clblasNoTrans,
           dj, dk, di,
           alpha,
-          ::get_buffer(a)(), n * a_skip, di,
-          ::get_buffer(gy)(), n * y_skip, di,
+          CDATA(a)(), n * a_skip, di,
+          CDATA(gy)(), n * y_skip, di,
           beta,
-          ::get_buffer(gb)(), n * b_skip, dj,
+          MDATA(gb)(), n * b_skip, dj,
           1, &state_->queue(), 0, NULL, NULL);
     }
   } else {
@@ -1266,19 +1257,19 @@ void OpenCL::matmul_bw_impl(
         clblasColumnMajor, clblasNoTrans, clblasTrans,
         di, dj, dk * b.shape().batch(),
         alpha,
-        ::get_buffer(gy)(), 0, di,
-        ::get_buffer(b)(), 0, dj,
+        CDATA(gy)(), 0, di,
+        CDATA(b)(), 0, dj,
         beta,
-        ::get_buffer(ga)(), 0, di,
+        MDATA(ga)(), 0, di,
         1, &state_->queue(), 0, NULL, NULL);
     ::clblasSgemm(
         clblasColumnMajor, clblasTrans, clblasNoTrans,
         dj, dk * b.shape().batch(), di,
         alpha,
-        ::get_buffer(a)(), 0, di,
-        ::get_buffer(gy)(), 0, di,
+        CDATA(a)(), 0, di,
+        CDATA(gy)(), 0, di,
         beta,
-        ::get_buffer(gb)(), 0, dj,
+        MDATA(gb)(), 0, dj,
         1, &state_->queue(), 0, NULL, NULL);
   }
 }
@@ -1295,10 +1286,10 @@ void OpenCL::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   switch (group_size) {
 #define CASE(k, m) \
     case k: \
-      state_->sum_fw_kernel[m].setArg(0, ::get_buffer(x)); \
+      state_->sum_fw_kernel[m].setArg(0, CDATA(x)); \
       state_->sum_fw_kernel[m].setArg(1, s); \
       state_->sum_fw_kernel[m].setArg(2, n); \
-      state_->sum_fw_kernel[m].setArg(3, ::get_buffer(y)); \
+      state_->sum_fw_kernel[m].setArg(3, MDATA(y)); \
       state_->queue.enqueueNDRangeKernel( \
           state_->sum_fw_kernel[m], \
           cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
@@ -1330,10 +1321,10 @@ void OpenCL::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   switch (group_size) {
 #define CASE(k, m) \
     case k: \
-      state_->logsumexp_fw_kernel[m].setArg(0, ::get_buffer(x)); \
+      state_->logsumexp_fw_kernel[m].setArg(0, CDATA(x)); \
       state_->logsumexp_fw_kernel[m].setArg(1, s); \
       state_->logsumexp_fw_kernel[m].setArg(2, n); \
-      state_->logsumexp_fw_kernel[m].setArg(3, ::get_buffer(y)); \
+      state_->logsumexp_fw_kernel[m].setArg(3, MDATA(y)); \
       state_->queue.enqueueNDRangeKernel( \
           state_->logsumexp_fw_kernel[m], \
           cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
@@ -1363,11 +1354,11 @@ void OpenCL::broadcast_fw_impl(
 
   std::lock_guard<Spinlock> lock(state_->spinlock);
 
-  state_->broadcast_fw_kernel.setArg(0, ::get_buffer(x));
+  state_->broadcast_fw_kernel.setArg(0, CDATA(x));
   state_->broadcast_fw_kernel.setArg(1, skip1);
   state_->broadcast_fw_kernel.setArg(2, skip2);
   state_->broadcast_fw_kernel.setArg(3, total);
-  state_->broadcast_fw_kernel.setArg(4, ::get_buffer(y));
+  state_->broadcast_fw_kernel.setArg(4, MDATA(y));
   state_->queue.enqueueNDRangeKernel(
       state_->broadcast_fw_kernel, cl::NullRange,
       cl::NDRange(g1 * state_->broadcast_fw_group_size),
@@ -1382,10 +1373,10 @@ void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
 
   std::lock_guard<Spinlock> lock(state_->spinlock);
 
-  state_->batch_sum_fw_kernel.setArg(0, ::get_buffer(x));
+  state_->batch_sum_fw_kernel.setArg(0, CDATA(x));
   state_->batch_sum_fw_kernel.setArg(1, size);
   state_->batch_sum_fw_kernel.setArg(2, batch);
-  state_->batch_sum_fw_kernel.setArg(3, ::get_buffer(y));
+  state_->batch_sum_fw_kernel.setArg(3, MDATA(y));
   state_->queue.enqueueNDRangeKernel(
       state_->batch_sum_fw_kernel, cl::NullRange,
       cl::NDRange(g1 * state_->batch_sum_fw_group_size),
@@ -1401,7 +1392,7 @@ void OpenCL::inplace_multiply_const_impl(float k, Tensor &x) {
 
   state_->inplace_multiply_const_kernel.setArg(0, k);
   state_->inplace_multiply_const_kernel.setArg(1, size);
-  state_->inplace_multiply_const_kernel.setArg(2, ::get_buffer(x));
+  state_->inplace_multiply_const_kernel.setArg(2, MDATA(x));
   state_->queue.enqueueNDRangeKernel(
       state_->inplace_multiply_const_kernel, cl::NullRange,
       cl::NDRange(g1 * state_->inplace_multiply_const_group_size),
@@ -1418,11 +1409,11 @@ void OpenCL::inplace_add_impl(const Tensor &x, Tensor &y) {
 
   std::lock_guard<Spinlock> lock(state_->spinlock);
 
-  state_->inplace_add_kernel.setArg(0, ::get_buffer(x));
+  state_->inplace_add_kernel.setArg(0, CDATA(x));
   state_->inplace_add_kernel.setArg(1, size);
   state_->inplace_add_kernel.setArg(2, mbx);
   state_->inplace_add_kernel.setArg(3, mby);
-  state_->inplace_add_kernel.setArg(4, ::get_buffer(y));
+  state_->inplace_add_kernel.setArg(4, MDATA(y));
   state_->queue.enqueueNDRangeKernel(
       state_->inplace_add_kernel, cl::NullRange,
       cl::NDRange(g1 * state_->inplace_add_group_size, bs, 1),
@@ -1439,11 +1430,11 @@ void OpenCL::inplace_subtract_impl(const Tensor &x, Tensor &y) {
 
   std::lock_guard<Spinlock> lock(state_->spinlock);
 
-  state_->inplace_subtract_kernel.setArg(0, ::get_buffer(x));
+  state_->inplace_subtract_kernel.setArg(0, CDATA(x));
   state_->inplace_subtract_kernel.setArg(1, size);
   state_->inplace_subtract_kernel.setArg(2, mbx);
   state_->inplace_subtract_kernel.setArg(3, mby);
-  state_->inplace_subtract_kernel.setArg(4, ::get_buffer(y));
+  state_->inplace_subtract_kernel.setArg(4, MDATA(y));
   state_->queue.enqueueNDRangeKernel(
       state_->inplace_subtract_kernel, cl::NullRange,
       cl::NDRange(g1 * state_->inplace_subtract_group_size, bs, 1),

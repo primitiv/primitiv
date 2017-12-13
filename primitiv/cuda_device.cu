@@ -685,15 +685,15 @@ std::shared_ptr<void> CUDA::new_handle(const Shape &shape) {
 }
 
 #define GRID_SIZE(x, threads) (((x) + (threads) - 1) / (threads))
-#define DATA(x) static_cast<float *>((x).data())
-#define CDATA(x) static_cast<const float *>((x).data())
+#define CDATA(x) static_cast<const float *>(get_handle(x))
+#define MDATA(x) static_cast<float *>(get_mutable_handle(x))
 
 std::vector<float> CUDA::tensor_to_vector_impl(const Tensor &x) {
   const std::uint32_t size = x.shape().size();
   std::vector<float> ret(size);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CUDA_CALL(::cudaMemcpy(
-        &ret[0], x.data(), sizeof(float) * size, cudaMemcpyDeviceToHost));
+        &ret[0], CDATA(x), sizeof(float) * size, cudaMemcpyDeviceToHost));
   return ret;
 }
 
@@ -765,14 +765,14 @@ void CUDA::reset_tensor_impl(float k, Tensor &x) {
   const std::uint32_t size = x.shape().size();
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  ::set_const_dev<<<num_blocks, dim1_x_>>>(k, size, DATA(x));
+  ::set_const_dev<<<num_blocks, dim1_x_>>>(k, size, MDATA(x));
 }
 
 void CUDA::reset_tensor_by_array_impl(const float values[], Tensor &x) {
   const std::uint32_t size = x.shape().size();
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CUDA_CALL(::cudaMemcpy(
-        x.data(), values, sizeof(float) * size, cudaMemcpyHostToDevice));
+        MDATA(x), values, sizeof(float) * size, cudaMemcpyHostToDevice));
 }
 
 void CUDA::copy_tensor_impl(const Tensor &x, Tensor &y) {
@@ -786,7 +786,7 @@ void CUDA::copy_tensor_impl(const Tensor &x, Tensor &y) {
       // If source/destination devices use the unified memory space on the 64
       // bits machine, we can perform ::cudaMemcpy to copy data beyond devices.
       CUDA_CALL(::cudaMemcpyAsync(
-            DATA(y), CDATA(x),
+            MDATA(y), CDATA(x),
             sizeof(float) * x.shape().size(),
             cudaMemcpyDeviceToDevice, 0));
       break;
@@ -800,15 +800,15 @@ void CUDA::identity_impl(Tensor &y) {
   const std::uint32_t skip = y.shape()[0] + 1;
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  ::set_identity_dev<<<num_blocks, dim1_x_>>>(size, skip, DATA(y));
+  ::set_identity_dev<<<num_blocks, dim1_x_>>>(size, skip, MDATA(y));
 }
 
 void CUDA::random_bernoulli_impl(float p, Tensor &y) {
   const std::uint32_t size = y.shape().size();
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  CURAND_CALL(::curandGenerateUniform(state_->curand.get(), DATA(y), size));
-  ::rand_bernoulli_dev<<<num_blocks, dim1_x_>>>(p, size, DATA(y));
+  CURAND_CALL(::curandGenerateUniform(state_->curand.get(), MDATA(y), size));
+  ::rand_bernoulli_dev<<<num_blocks, dim1_x_>>>(p, size, MDATA(y));
 }
 
 void CUDA::random_uniform_impl(float lower, float upper, Tensor &y) {
@@ -816,20 +816,20 @@ void CUDA::random_uniform_impl(float lower, float upper, Tensor &y) {
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
   const float scale = upper - lower;
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  CURAND_CALL(::curandGenerateUniform(state_->curand.get(), DATA(y), size));
-  ::rand_affine_dev<<<num_blocks, dim1_x_>>>(lower, scale, size, DATA(y));
+  CURAND_CALL(::curandGenerateUniform(state_->curand.get(), MDATA(y), size));
+  ::rand_affine_dev<<<num_blocks, dim1_x_>>>(lower, scale, size, MDATA(y));
 }
 
 void CUDA::random_normal_impl(float mean, float sd, Tensor &y) {
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CURAND_CALL(::curandGenerateNormal(
-        state_->curand.get(), DATA(y), y.shape().size(), mean, sd));
+        state_->curand.get(), MDATA(y), y.shape().size(), mean, sd));
 }
 
 void CUDA::random_log_normal_impl(float mean, float sd, Tensor &y) {
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CURAND_CALL(::curandGenerateLogNormal(
-        state_->curand.get(), DATA(y), y.shape().size(), mean, sd));
+        state_->curand.get(), MDATA(y), y.shape().size(), mean, sd));
 }
 
 void CUDA::pick_fw_impl(
@@ -851,7 +851,7 @@ void CUDA::pick_fw_impl(
       CDATA(x), static_cast<const std::uint32_t *>(temp_ptr),
       wy * x.shape()[dim], wy,
       x.shape().has_batch() * x.shape().volume(), ids.size() > 1, sy,
-      DATA(y));
+      MDATA(y));
 }
 
 void CUDA::slice_fw_impl(
@@ -863,7 +863,7 @@ void CUDA::slice_fw_impl(
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::slice_fw_dev<<<num_blocks, dim1_x_>>>(
-      CDATA(x) + base * offset, span, skip, size, DATA(y));
+      CDATA(x) + base * offset, span, skip, size, MDATA(y));
 }
 
 void CUDA::concat_fw_impl(
@@ -880,7 +880,7 @@ void CUDA::concat_fw_impl(
     const std::uint32_t y_size = span * repeat * new_bs;
     const std::uint32_t num_blocks = GRID_SIZE(y_size, dim1_x_);
     ::concat_fw_dev<<<num_blocks, dim1_x_>>>(
-       CDATA(*x), span, skip, x_size, y_size, DATA(y) + offset);
+       CDATA(*x), span, skip, x_size, y_size, MDATA(y) + offset);
     offset += span;
   }
 }
@@ -904,7 +904,7 @@ void CUDA::pick_bw_impl(
       CDATA(gy), static_cast<const std::uint32_t *>(temp_ptr),
       wy *gx.shape()[dim], wy,
       gx.shape().has_batch() * gx.shape().volume(), ids.size() > 1, sy,
-      DATA(gx));
+      MDATA(gx));
 }
 
 void CUDA::slice_bw_impl(
@@ -920,7 +920,7 @@ void CUDA::slice_bw_impl(
   const std::uint32_t ny = repeat * sy.batch();
   const std::uint32_t g1 = GRID_SIZE(wy * std::max(nx, ny), dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  ::slice_bw_dev<<<g1, dim1_x_>>>(CDATA(gy), wx, wy, nx, ny, DATA(gx) + ox);
+  ::slice_bw_dev<<<g1, dim1_x_>>>(CDATA(gy), wx, wy, nx, ny, MDATA(gx) + ox);
 }
 
 #define CUDADEV_FW_X(name) \
@@ -928,7 +928,7 @@ void CUDA::name##_fw_impl(const Tensor &x, Tensor &y) { \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_); \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
-  ::name##_fw_dev<<<num_blocks, dim1_x_>>>(CDATA(x), size, DATA(y)); \
+  ::name##_fw_dev<<<num_blocks, dim1_x_>>>(CDATA(x), size, MDATA(y)); \
 }
 
 #define CUDADEV_BW_X(name) \
@@ -938,7 +938,7 @@ void CUDA::name##_bw_impl( \
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_); \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_bw_dev<<<num_blocks, dim1_x_>>>( \
-      CDATA(x), CDATA(y), CDATA(gy), size, DATA(gx)); \
+      CDATA(x), CDATA(y), CDATA(gy), size, MDATA(gx)); \
 }
 
 #define CUDADEV_FW_X_CONST(name) \
@@ -946,7 +946,7 @@ void CUDA::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = GRID_SIZE(size,dim1_x_); \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
-  ::name##_fw_dev<<<num_blocks, dim1_x_>>>(CDATA(x), k, size, DATA(y)); \
+  ::name##_fw_dev<<<num_blocks, dim1_x_>>>(CDATA(x), k, size, MDATA(y)); \
 }
 
 #define CUDADEV_BW_X_CONST(name) \
@@ -956,7 +956,7 @@ void CUDA::name##_bw_impl( \
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_); \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_bw_dev<<<num_blocks, dim1_x_>>>( \
-      CDATA(x), CDATA(y), CDATA(gy), k, size, DATA(gx)); \
+      CDATA(x), CDATA(y), CDATA(gy), k, size, MDATA(gx)); \
 }
 
 #define CUDADEV_FW_X_SCALAR(name) \
@@ -967,7 +967,7 @@ void CUDA::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_fw_dev<<<dim3(g1, g2, 1), dim1_x_>>>( \
       CDATA(x), CDATA(k), size, \
-      x.shape().has_batch(), k.shape().has_batch(), DATA(y)); \
+      x.shape().has_batch(), k.shape().has_batch(), MDATA(y)); \
 }
 
 #define CUDADEV_FW_AB(name) \
@@ -978,7 +978,7 @@ void CUDA::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_fw_dev<<<dim3(g1, g2, 1), dim1_x_>>>( \
       CDATA(a), CDATA(b), size, \
-      a.shape().has_batch(), b.shape().has_batch(), DATA(y)); \
+      a.shape().has_batch(), b.shape().has_batch(), MDATA(y)); \
 }
 
 #define CUDADEV_BW_AB(name) \
@@ -991,7 +991,7 @@ void CUDA::name##_bw_impl( \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_bw_dev<<<dim3(g1, g2, 1), dim1_x_>>>( \
       CDATA(a), CDATA(b), CDATA(y), CDATA(gy), size, \
-      a.shape().has_batch(), b.shape().has_batch(), DATA(ga), DATA(gb)); \
+      a.shape().has_batch(), b.shape().has_batch(), MDATA(ga), MDATA(gb)); \
 }
 
 CUDADEV_FW_X(negate);
@@ -1066,7 +1066,7 @@ void CUDA::transpose_fw_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t g2 = GRID_SIZE(cols, dim2_y_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::transpose_fw_dev<<<dim3(g1, g2, bs), dim3(dim2_x_, dim2_y_, 1)>>>(
-      CDATA(x), rows, cols, DATA(y));
+      CDATA(x), rows, cols, MDATA(y));
 }
 
 void CUDA::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
@@ -1087,7 +1087,7 @@ void CUDA::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
             state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_N,
             di, dk, dj,
             &alpha, CDATA(a) + n * a_skip, di, CDATA(b) + n * b_skip, dj,
-            &beta, DATA(y) + n * y_skip, di));
+            &beta, MDATA(y) + n * y_skip, di));
     }
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
@@ -1095,7 +1095,7 @@ void CUDA::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
           state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_N,
           di, dk * b.shape().batch(), dj,
           &alpha, CDATA(a), di, CDATA(b), dj,
-          &beta, DATA(y), di));
+          &beta, MDATA(y), di));
   }
 }
 
@@ -1108,7 +1108,7 @@ void CUDA::transpose_bw_impl(
   const std::uint32_t g2 = GRID_SIZE(cols, dim2_y_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::transpose_bw_dev<<<dim3(g1, g2, bs), dim3(dim2_x_, dim2_y_, 1)>>>(
-      CDATA(gy), rows, cols, DATA(gx));
+      CDATA(gy), rows, cols, MDATA(gx));
 }
 
 void CUDA::matmul_bw_impl(
@@ -1133,12 +1133,12 @@ void CUDA::matmul_bw_impl(
             state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_T,
             di, dj, dk,
             &alpha, CDATA(gy) + n * y_skip, di, CDATA(b) + n * b_skip, dj,
-            &beta, DATA(ga) + n * a_skip, di));
+            &beta, MDATA(ga) + n * a_skip, di));
       CUBLAS_CALL(::cublasSgemm(
             state_->cublas.get(), ::CUBLAS_OP_T, ::CUBLAS_OP_N,
             dj, dk, di,
             &alpha, CDATA(a) + n * a_skip, di, CDATA(gy) + n * y_skip, di,
-            &beta, DATA(gb) + n * b_skip, dj));
+            &beta, MDATA(gb) + n * b_skip, dj));
     }
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
@@ -1146,12 +1146,12 @@ void CUDA::matmul_bw_impl(
           state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_T,
           di, dj, dk * b.shape().batch(),
           &alpha, CDATA(gy), di, CDATA(b), dj,
-          &beta, DATA(ga), di));
+          &beta, MDATA(ga), di));
     CUBLAS_CALL(::cublasSgemm(
           state_->cublas.get(), ::CUBLAS_OP_T, ::CUBLAS_OP_N,
           dj, dk * b.shape().batch(), di,
           &alpha, CDATA(a), di, CDATA(gy), di,
-          &beta, DATA(gb), dj));
+          &beta, MDATA(gb), dj));
   }
 }
 
@@ -1164,7 +1164,7 @@ void CUDA::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   CUDA_CALL(::cudaSetDevice(dev_id_));
   switch (block_size) {
 #define CASE(k) \
-    case k: ::sum_fw_dev<k><<<r, k>>>(CDATA(x), s, n, DATA(y)); break
+    case k: ::sum_fw_dev<k><<<r, k>>>(CDATA(x), s, n, MDATA(y)); break
     CASE(1024);
     CASE(512);
     CASE(256);
@@ -1189,7 +1189,7 @@ void CUDA::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   CUDA_CALL(::cudaSetDevice(dev_id_));
   switch (block_size) {
 #define CASE(k) \
-    case k: ::logsumexp_fw_dev<k><<<r, k>>>(CDATA(x), s, n, DATA(y)); break
+    case k: ::logsumexp_fw_dev<k><<<r, k>>>(CDATA(x), s, n, MDATA(y)); break
     CASE(1024);
     CASE(512);
     CASE(256);
@@ -1212,7 +1212,7 @@ void CUDA::broadcast_fw_impl(
   const std::uint32_t total = y.shape().size();
   const std::uint32_t g1 = GRID_SIZE(total, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  ::broadcast_fw_dev<<<g1, dim1_x_>>>(CDATA(x), skip1, skip2, total, DATA(y));
+  ::broadcast_fw_dev<<<g1, dim1_x_>>>(CDATA(x), skip1, skip2, total, MDATA(y));
 }
 
 void CUDA::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
@@ -1220,14 +1220,14 @@ void CUDA::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t g1 = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::batch_sum_fw_dev<<<g1, dim1_x_>>>(
-      CDATA(x), size, x.shape().batch(), DATA(y));
+      CDATA(x), size, x.shape().batch(), MDATA(y));
 }
 
 void CUDA::inplace_multiply_const_impl(float k, Tensor &x) {
   const std::uint32_t size = x.shape().size();
   const std::uint32_t g1 = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  ::inplace_multiply_const_dev<<<g1, dim1_x_>>>(k, size, DATA(x));
+  ::inplace_multiply_const_dev<<<g1, dim1_x_>>>(k, size, MDATA(x));
 }
 
 void CUDA::inplace_add_impl(const Tensor &x, Tensor &y) {
@@ -1236,7 +1236,7 @@ void CUDA::inplace_add_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t bs = std::max(x.shape().batch(), y.shape().batch());
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::inplace_add_dev<<<dim3(g1, bs, 1), dim1_x_>>>(
-      CDATA(x), size, x.shape().has_batch(), y.shape().has_batch(), DATA(y));
+      CDATA(x), size, x.shape().has_batch(), y.shape().has_batch(), MDATA(y));
 }
 
 void CUDA::inplace_subtract_impl(const Tensor &x, Tensor &y) {
@@ -1245,7 +1245,7 @@ void CUDA::inplace_subtract_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t bs = std::max(x.shape().batch(), y.shape().batch());
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::inplace_subtract_dev<<<dim3(g1, bs, 1), dim1_x_>>>(
-      CDATA(x), size, x.shape().has_batch(), y.shape().has_batch(), DATA(y));
+      CDATA(x), size, x.shape().has_batch(), y.shape().has_batch(), MDATA(y));
 }
 
 }  // namespace devices
