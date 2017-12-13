@@ -95,6 +95,7 @@ public:
 
   /**
    * Check whether the object is valid or not.
+   * If the object is invalid, this functions throws an exception.
    * @throw primitiv::Error This object is invalid.
    */
   void check_valid() const {
