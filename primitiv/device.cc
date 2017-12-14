@@ -320,6 +320,8 @@ DEV_FW_X_CONST(subtract_const_l);
 DEV_FW_X_CONST(multiply_const);
 DEV_FW_X_CONST(divide_const_r);
 DEV_FW_X_CONST(divide_const_l);
+DEV_FW_X_CONST(pow_const_r);
+DEV_FW_X_CONST(pow_const_l);
 DEV_FW_X_CONST(prelu);
 DEV_FW_X_CONST(elu);
 
@@ -329,6 +331,8 @@ DEV_BW_X_CONST(subtract_const_l);
 DEV_BW_X_CONST(multiply_const);
 DEV_BW_X_CONST(divide_const_r);
 DEV_BW_X_CONST(divide_const_l);
+DEV_BW_X_CONST(pow_const_r);
+DEV_BW_X_CONST(pow_const_l);
 DEV_BW_X_CONST(prelu);
 DEV_BW_X_CONST(elu);
 
@@ -338,17 +342,21 @@ DEV_FW_AB(subtract_scalar_l, shape_ops::scalar_op);
 DEV_FW_AB(multiply_scalar, shape_ops::scalar_op);
 DEV_FW_AB(divide_scalar_r, shape_ops::scalar_op);
 DEV_FW_AB(divide_scalar_l, shape_ops::scalar_op);
+DEV_FW_AB(pow_scalar_r, shape_ops::scalar_op);
+DEV_FW_AB(pow_scalar_l, shape_ops::scalar_op);
 
 DEV_FW_AB(add, shape_ops::elementwise);
 DEV_FW_AB(subtract, shape_ops::elementwise);
 DEV_FW_AB(multiply, shape_ops::elementwise);
 DEV_FW_AB(divide, shape_ops::elementwise);
+DEV_FW_AB(pow, shape_ops::elementwise);
 DEV_FW_AB(matmul, shape_ops::matmul);
 
 DEV_BW_AB(add, shape_ops::elementwise);
 DEV_BW_AB(subtract, shape_ops::elementwise);
 DEV_BW_AB(multiply, shape_ops::elementwise);
 DEV_BW_AB(divide, shape_ops::elementwise);
+DEV_BW_AB(pow, shape_ops::elementwise);
 DEV_BW_AB(matmul, shape_ops::matmul);
 
 #undef DEV_FW_X
