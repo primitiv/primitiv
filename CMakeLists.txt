@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
 
-project(primitiv VERSION 0.3.1 LANGUAGES CXX)
+project(primitiv VERSION 0.4.0 LANGUAGES CXX)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
+option(PRIMITIV_BUILD_C_API "Builds C API corresponding to the core library." OFF)
 option(PRIMITIV_BUILD_STATIC_LIBRARY "Builds static library." OFF)
 option(PRIMITIV_BUILD_TESTS "Builds test binaries." OFF)
 option(PRIMITIV_BUILD_TESTS_PROBABILISTIC "Builds test cases that probabilistically fails." OFF)
