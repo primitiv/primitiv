@@ -2,6 +2,9 @@
 
 #include <primitiv/model.h>
 
+#include <string>
+#include <vector>
+
 #include "primitiv/c/internal.h"
 #include "primitiv/c/model.h"
 
