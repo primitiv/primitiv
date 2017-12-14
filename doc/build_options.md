@@ -1,5 +1,5 @@
-*primitiv* Building Options
-===========================
+*primitiv* Build Options
+=========================
 
 
 Standard Options
@@ -15,43 +15,51 @@ Unique Options
 <table>
   <tbody>
     <tr>
+    <tr>
       <th>Name</th>
       <th>Default value</th>
       <th>Description</th>
     </tr>
-    <tr>
-      <td>`PRIMITIV_BUILD_STATIC_LIBRARY`</td>
-      <td>`OFF`</td>
-      <td>Builds a static library instead of a shared object.</td>
+      <td><code>PRIMITIV_BUILD_C_API</code></td>
+      <td><code>OFF</code></td>
+      <td>
+        Builds C APIs.
+        <code>libprimitiv_c</code> library file will also be generated.
+      </td>
     </tr>
     <tr>
-      <td>`PRIMITIV_BUILD_TESTS`</td>
-      <td>`OFF`</td>
+      <td><code>PRIMITIV_BUILD_STATIC_LIBRARY</code></td>
+      <td><code>OFF</code></td>
+      <td>Builds static libraries instead of shared objects.</td>
+    </tr>
+    <tr>
+      <td><code>PRIMITIV_BUILD_TESTS</code></td>
+      <td><code>OFF</code></td>
       <td>
-        Builds test binaries and generates `make test` command.
+        Builds test binaries and generates <code>make test</code> command.
         This option introduces a dependency to the
-        [Google Test Library](https://github.com/google/googletest), and
-        [FindGTest](https://cmake.org/cmake/help/v3.1/module/FindGTest.html)
+        <a href="https://github.com/google/googletest">Google Test</a>, and
+        <a href="https://cmake.org/cmake/help/v3.1/module/FindGTest.html">FindGTest</a>
         options can also be used.
       </td>
     </tr>
-      <td>`PRIMITIV_BUILD_TESTS_PROBABILISTIC`</td>
-      <td>`OFF`</td>
+      <td><code>PRIMITIV_BUILD_TESTS_PROBABILISTIC</code></td>
+      <td><code>OFF</code></td>
       <td>Builds test cases that probabilistically fails.</td>
     </tr>
     <tr>
-      <td>`PRIMITIV_GTEST_SOURCE_DIR`</td>
-      <td>`""`</td>
+      <td><code>PRIMITIV_GTEST_SOURCE_DIR</code></td>
+      <td><code>""</code></td>
       <td>
         Specifies the source directory of Google Test. If you want to use
-        `googletest` module provided from Debian/Ubuntu repository, add
-        `-DPRIMITIV_GTEST_SOURCE_DIR=/usr/src/googletest/googletest` together
-        with `-PRIMITIV_BUILD_TESTS=ON` option.
+        Google Test provided from Debian/Ubuntu repository, add
+        <code>-DPRIMITIV_GTEST_SOURCE_DIR=/usr/src/googletest/googletest</code>
+        together with <code>-PRIMITIV_BUILD_TESTS=ON</code> option.
       </td>
     </tr>
     <tr>
-      <td>`PRIMITIV_USE_CACHE`</td>
-      <td>`OFF`</td>
+      <td><code>PRIMITIV_USE_CACHE</code></td>
+      <td><code>OFF</code></td>
       <td>
         Whether or not to use cached values to prevent increasing computation
         amount.
@@ -59,27 +67,28 @@ Unique Options
       </td>
     </tr>
     <tr>
-      <td>`PRIMITIV_USE_CUDA`</td>
-      <td>`OFF`</td>
+      <td><code>PRIMITIV_USE_CUDA</code></td>
+      <td><code>OFF</code></td>
       <td>
-        Enables CUDA backend (`devices::CUDA` class).
+        Enables CUDA backend (<code>devices::CUDA</code> class).
         This option introduces a dependency to the
-        [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit), and
-        [FindCUDA](https://cmake.org/cmake/help/v3.1/module/FindCUDA.html)
+        <a href="https://developer.nvidia.com/cuda-toolkit">NVIDIA CUDA Toolkit v7.5 or later</a>,
+        and
+        <a href="https://cmake.org/cmake/help/v3.1/module/FindCUDA.html">FindCUDA</a>
         options can also be used.
       </td>
     </tr>
     <tr>
-      <td>`PRIMITIV_USE_OPENCL`</td>
-      <td>`OFF`</td>
+      <td><code>PRIMITIV_USE_OPENCL</code></td>
+      <td><code>OFF</code></td>
       <td>
-        Enables OpenCL backend(`devices::OpenCL` class).
-        This option introduces dependencies to a
-        [OpenCL](https://www.khronos.org/opencl/) implementation and
-        [OpenCL C++ Bindings v2](http://github.khronos.org/OpenCL-CLHPP/).
-        [FindOpenCL](https://cmake.org/cmake/help/v3.1/module/FindOpenCL.html)
-        options can also be used, and `cl2.hpp` should be found in
-        `/path/to/include/CL`.
+        Enables OpenCL backend(<code>devices::OpenCL</code> class).
+        This option introduces dependencies to an
+        <a href="https://www.khronos.org/opencl/">OpenCL v1.2</a> implementation and
+        <a href="http://github.khronos.org/OpenCL-CLHPP/">OpenCL C++ Bindings v2</a>.
+        <a href="https://cmake.org/cmake/help/v3.1/module/FindOpenCL.html">FindOpenCL</a>
+        options can also be used, and <code>cl2.hpp</code> should be found in
+        <code>/path/to/include/CL</code>.
       </td>
     </tr>
   </tbody>
