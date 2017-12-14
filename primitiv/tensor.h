@@ -111,6 +111,17 @@ public:
   std::vector<std::uint32_t> argmin(std::uint32_t dim) const;
 
   /**
+   * Invalidates this object.
+   */
+  void invalidate() {
+    // NOTE(odashi):
+    // Not necessary to update `shape_` because it is never accessed anywhere.
+    //shape_ = Shape();
+    handle_.reset();
+    device_ = nullptr;
+  }
+
+  /**
    * Reset internal values using a constant.
    * @param k A value to be used to initialize each element.
    */
