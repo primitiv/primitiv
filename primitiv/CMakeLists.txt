@@ -1,0 +1,64 @@
+set(primitiv_c_HDRS
+  c/api.h
+  c/define.h
+  c/device.h
+  c/functions.h
+  c/graph.h
+  c/initializer.h
+  c/initializer_impl.h
+  c/internal.h
+  c/model.h
+  c/naive_device.h
+  c/optimizer.h
+  c/optimizer_impl.h
+  c/parameter.h
+  c/shape.h
+  c/status.h
+  c/tensor.h
+  c/utils.h
+)
+set(primitiv_c_SRCS
+  c/device.cc
+  c/functions.cc
+  c/graph.cc
+  c/initializer.cc
+  c/initializer_impl.cc
+  c/model.cc
+  c/naive_device.cc
+  c/optimizer.cc
+  c/optimizer_impl.cc
+  c/parameter.cc
+  c/shape.cc
+  c/status.cc
+  c/tensor.cc
+  c/utils.cc
+)
+install(FILES ${primitiv_c_HDRS} DESTINATION include/primitiv/c)
+
+add_library(primitiv_c_OBJS OBJECT
+    ${primitiv_c_HDRS}
+    ${primitiv_c_SRCS})
+set(primitiv_c_all_OBJS $<TARGET_OBJECTS:primitiv_c_OBJS>)
+
+if(PRIMITIV_USE_CUDA)
+  set(primitiv_c_cuda_HDRS
+      c/api_cuda.h
+    cuda_device.h)
+  set(primitiv_c_cuda_SRCS
+    cuda_device.cc)
+  install(FILES ${primitiv_c_cuda_HDRS} DESTINATION include/primitiv/c)
+
+  add_library(primitiv_c_cuda_OBJS OBJECT
+    ${primitiv_c_cuda_HDRS}
+    ${primitiv_c_cuda_SRCS})
+  list(APPEND primitiv_c_all_OBJS ${primitiv_c_cuda_OBJS})
+endif()
+
+if(PRIMITIV_BUILD_STATIC_LIBRARY)
+  add_library(primitiv_c STATIC ${primitiv_c_all_OBJS})
+else()
+  add_library(primitiv_c SHARED ${primitiv_c_all_OBJS})
+endif()
+target_link_libraries(primitiv_c primitiv)
+
+install(TARGETS primitiv_c DESTINATION lib)

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 
-project(primitiv_c)
+project(primitiv)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 option(PRIMITIV_BUILD_STATIC_LIBRARY "Builds static library." OFF)
@@ -32,4 +32,4 @@ link_directories(
   ${PRIMITIV_LIBRARY_DIR}
 )
 
-add_subdirectory(primitiv_c)
+add_subdirectory(primitiv)
