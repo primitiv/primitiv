@@ -42,16 +42,30 @@ set(primitiv_c_all_OBJS $<TARGET_OBJECTS:primitiv_c_OBJS>)
 
 if(PRIMITIV_USE_CUDA)
   set(primitiv_c_cuda_HDRS
-      c/api_cuda.h
-    cuda_device.h)
+    c/api_cuda.h
+    c/cuda_device.h)
   set(primitiv_c_cuda_SRCS
-    cuda_device.cc)
+    c/cuda_device.cc)
   install(FILES ${primitiv_c_cuda_HDRS} DESTINATION include/primitiv/c)
 
   add_library(primitiv_c_cuda_OBJS OBJECT
     ${primitiv_c_cuda_HDRS}
     ${primitiv_c_cuda_SRCS})
   list(APPEND primitiv_c_all_OBJS ${primitiv_c_cuda_OBJS})
+endif()
+
+if(PRIMITIV_USE_OPENCL)
+  set(primitiv_c_opencl_HDRS
+    c/api_opencl.h
+    c/opencl_device.h)
+  set(primitiv_c_opencl_SRCS
+    c/opencl_device.cc)
+  install(FILES ${primitiv_c_opencl_HDRS} DESTINATION include/primitiv/c)
+
+  add_library(primitiv_c_opencl_OBJS OBJECT
+    ${primitiv_c_opencl_HDRS}
+    ${primitiv_c_opencl_SRCS})
+  list(APPEND primitiv_c_all_OBJS ${primitiv_c_opencl_OBJS})
 endif()
 
 if(PRIMITIV_BUILD_STATIC_LIBRARY)
