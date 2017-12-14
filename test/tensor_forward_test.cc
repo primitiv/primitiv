@@ -1136,6 +1136,27 @@ TEST_F(TensorForwardTest, CheckDivideBatchBroadcast) {
   }
 }
 
+TEST_F(TensorForwardTest, CheckPow) {
+  // float index pow
+  const vector<float> x_data {
+    0.01, .5, 1, 2, 4, 8,
+    0.01, .5, 1, 2, 4, 8,
+  };
+  const vector<float> y_data {
+    1e-5, 0.17677670, 1, 5.6568542, 32, 181.01934,
+    1e-5, 0.17677670, 1, 5.6568542, 32, 181.01934,
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
+    const Tensor y = pow(x, 2.5);
+    EXPECT_EQ(Shape({2, 3}, 2), y.shape());
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+  }
+}
+
+// TODO(odashi): Add test cases for pow() functions with the same style of
+// divide() tests.
+
 TEST_F(TensorForwardTest, CheckInvalidArithmeticOps) {
   const vector<Shape> sa {
     Shape({2, 2}, 2), Shape({2, 2}, 2), Shape({2, 2}, 2),
@@ -1400,24 +1421,6 @@ TEST_F(TensorForwardTest, CheckLog) {
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
     const Tensor y = log(x);
-    EXPECT_EQ(Shape({2, 3}, 2), y.shape());
-    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
-  }
-}
-
-TEST_F(TensorForwardTest, CheckPow) {
-  // float index pow
-  const vector<float> x_data {
-    0.01, .5, 1, 2, 4, 8,
-    0.01, .5, 1, 2, 4, 8,
-  };
-  const vector<float> y_data {
-    9.99999338e-06, 0.176776695, 1, 5.656854249, 32, 181.019335984,
-    9.99999338e-06, 0.176776695, 1, 5.656854249, 32, 181.019335984,
-  };
-  for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
-    const Tensor y = pow(x, 2.5);
     EXPECT_EQ(Shape({2, 3}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }

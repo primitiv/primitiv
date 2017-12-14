@@ -496,8 +496,9 @@ void Naive::pow_bw_impl(
   float *pgb = MDATA(gb);
   for (std::uint32_t batch = 0; batch < bs; ++batch) {
     for (std::uint32_t i = 0; i < size; ++i) {
-      pga[i] += pgy[i] * py[i] * pb[i] / pa[i];
-      pgb[i] += pgy[i] * py[i] * std::log(pa[i]);
+      const float a = pgy[i] * py[i];
+      pga[i] += a * pb[i] / pa[i];
+      pgb[i] += a * std::log(pa[i]);
     }
     pa += skip_a;
     pb += skip_b;

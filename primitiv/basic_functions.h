@@ -61,6 +61,15 @@ type_traits::Identity<Var> divide(float k, const Var &x);
 template<typename Var>
 type_traits::Identity<Var> divide(const Var &a, const Var &b);
 
+template<typename Var>
+type_traits::Identity<Var> pow(const Var &x, float k);
+
+template<typename Var>
+type_traits::Identity<Var> pow(float k, const Var &x);
+
+template<typename Var>
+type_traits::Identity<Var> pow(const Var &a, const Var &b);
+
 /**
  * input_tensor(shape, data, &dev)
  * input_node(shape, data, &dev, &g)
