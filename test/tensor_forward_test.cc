@@ -1423,7 +1423,7 @@ TEST_F(TensorForwardTest, CheckPow) {
   }
 }
 
-TEST_F(TensorForwardTest, CheckIPowPositive) {
+TEST_F(TensorForwardTest, CheckPowNPositive) {
   const vector<float> x_data {
     0.01, .5, 1, 2, 4, 8,
     -0.01, -.5, -1, -2, -4, -8,
@@ -1434,13 +1434,13 @@ TEST_F(TensorForwardTest, CheckIPowPositive) {
   };
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
-    const Tensor y = ipow(x, 3);
+    const Tensor y = pown(x, 3);
     EXPECT_EQ(Shape({2, 3}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
 }
 
-TEST_F(TensorForwardTest, CheckIPowNegative) {
+TEST_F(TensorForwardTest, CheckPowNNegative) {
   const vector<float> x_data {
     0.01, .5, 1, 2, 4, 8,
     -0.01, -.5, -1, -2, -4, -8,
@@ -1451,13 +1451,13 @@ TEST_F(TensorForwardTest, CheckIPowNegative) {
   };
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
-    const Tensor y = ipow(x, -3);
+    const Tensor y = pown(x, -3);
     EXPECT_EQ(Shape({2, 3}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
 }
 
-TEST_F(TensorForwardTest, CheckIPowUpperBound) {
+TEST_F(TensorForwardTest, CheckPowNUpperBound) {
   const vector<float> x_data {
     1, -1, 1, -1, 1, -1,
     1, -1, 1, -1, 1, -1,
@@ -1468,13 +1468,13 @@ TEST_F(TensorForwardTest, CheckIPowUpperBound) {
   };
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
-    const Tensor y = ipow(x, 0x7fffffff);
+    const Tensor y = pown(x, 0x7fffffff);
     EXPECT_EQ(Shape({2, 3}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
 }
 
-TEST_F(TensorForwardTest, CheckIPowLowerBound) {
+TEST_F(TensorForwardTest, CheckPowNLowerBound) {
   const vector<float> x_data {
     1, -1, 1, -1, 1, -1,
     1, -1, 1, -1, 1, -1,
@@ -1485,13 +1485,13 @@ TEST_F(TensorForwardTest, CheckIPowLowerBound) {
   };
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
-    const Tensor y = ipow(x, 0x80000000);
+    const Tensor y = pown(x, 0x80000000);
     EXPECT_EQ(Shape({2, 3}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
 }
 
-TEST_F(TensorForwardTest, CheckIPowPositiveConvergence) {
+TEST_F(TensorForwardTest, CheckPowNPositiveConvergence) {
   const vector<float> x_data {
     0.9999999, -0.9999999, 0.9999999, -0.9999999, 0.9999999, -0.9999999,
     0.9999999, -0.9999999, 0.9999999, -0.9999999, 0.9999999, -0.9999999,
@@ -1502,13 +1502,13 @@ TEST_F(TensorForwardTest, CheckIPowPositiveConvergence) {
   };
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
-    const Tensor y = ipow(x, 0x7fffffff);
+    const Tensor y = pown(x, 0x7fffffff);
     EXPECT_EQ(Shape({2, 3}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
 }
 
-TEST_F(TensorForwardTest, CheckIPowNegativeConvergence) {
+TEST_F(TensorForwardTest, CheckPowNNegativeConvergence) {
   const vector<float> x_data {
     1.000001, -1.000001, 1.000001, -1.000001, 1.000001, -1.000001,
     1.000001, -1.000001, 1.000001, -1.000001, 1.000001, -1.000001,
@@ -1519,7 +1519,7 @@ TEST_F(TensorForwardTest, CheckIPowNegativeConvergence) {
   };
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
-    const Tensor y = ipow(x, 0x80000000);
+    const Tensor y = pown(x, 0x80000000);
     EXPECT_EQ(Shape({2, 3}, 2), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
   }
