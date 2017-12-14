@@ -239,6 +239,24 @@ private:
 
 protected:
   /**
+   * Obtains an inner handle from a Tensor.
+   * @param x Target Tensor object.
+   * @return Inner handle of `x`.
+   */
+  static const void *get_handle(const Tensor &x) {
+    return x.handle();
+  }
+
+  /**
+   * Obtains a mutable inner handle from a Tensor.
+   * @param x Target Tensor object.
+   * @return Mutable inner handle of `x`.
+   */
+  static void *get_mutable_handle(Tensor &x) {
+    return x.mutable_handle();
+  }
+
+  /**
    * Reset internal values of the tensor using a constant.
    * @param k A value used to initialize each element.
    * @param x A tensor to be updated.

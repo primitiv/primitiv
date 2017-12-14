@@ -23,7 +23,7 @@ public:
   Tensor(Tensor &&src)
     : shape_(std::move(src.shape_))
     , device_(src.device_)
-    , data_(std::move(src.data_)) {
+    , handle_(std::move(src.handle_)) {
       src.device_ = nullptr;
     }
 
@@ -33,7 +33,7 @@ public:
     if (&src != this) {
       shape_ = std::move(src.shape_);
       device_ = src.device_;
-      data_ = std::move(src.data_);
+      handle_ = std::move(src.handle_);
       src.device_ = nullptr;
     }
     return *this;
@@ -42,7 +42,7 @@ public:
   /**
    * Creates an invalid Tensor.
    */
-  Tensor() : shape_(), device_(nullptr), data_() {}
+  Tensor() : shape_(), device_(nullptr), handle_() {}
 
   /**
    * Check whether the object is valid or not.
@@ -53,11 +53,21 @@ public:
   bool valid() const { return !!device_; }
 
   /**
+   * Check whether the object is valid or not.
+   * @throw primitiv::Error This object is invalid.
+   */
+  void check_valid() const {
+    if (!valid()) {
+      THROW_ERROR("Invalid Tensor object.");
+    }
+  }
+
+  /**
    * Returns the shape of the Tensor.
    * @return Shape of the Tensor.
    */
   Shape shape() const {
-    if (!valid()) THROW_ERROR("Invalid tensor.");
+    check_valid();
     return shape_;
   }
 
@@ -66,23 +76,8 @@ public:
    * @return Device object.
    */
   Device &device() const {
-    if (!valid()) THROW_ERROR("Invalid tensor.");
+    check_valid();
     return *device_;
-  }
-
-  /**
-   * Returns the raw pointer of the internal memory.
-   * @return Pointer of the internal memory.
-   */
-  void *data();
-
-  /**
-   * Returns the raw const-pointer of the internal memory.
-   * @return Const-pointer of the internal memory.
-   */
-  const void *data() const {
-    if (!valid()) THROW_ERROR("Invalid tensor.");
-    return data_.get();
   }
 
   /**
@@ -114,6 +109,17 @@ public:
    * @return A list of integers that indicates positions of the minimum values.
    */
   std::vector<std::uint32_t> argmin(std::uint32_t dim) const;
+
+  /**
+   * Invalidates this object.
+   */
+  void invalidate() {
+    // NOTE(odashi):
+    // Not necessary to update `shape_` because it is never accessed anywhere.
+    //shape_ = Shape();
+    handle_.reset();
+    device_ = nullptr;
+  }
 
   /**
    * Reset internal values using a constant.
@@ -178,17 +184,32 @@ private:
    * Creates a new uninitialized Tensor.
    * @param shape Shape of the new Tensor.
    * @param device Device object to manage the internal memory.
-   * @param data Pointer of the device-specific object.
+   * @param handle Pointer of the device-specific object.
    */
   template <typename ShapeT, typename SharedPtrT>
-  Tensor(ShapeT &&shape, Device &device, SharedPtrT &&data)
+  Tensor(ShapeT &&shape, Device &device, SharedPtrT &&handle)
     : shape_(std::forward<ShapeT>(shape))
     , device_(&device)
-    , data_(std::forward<SharedPtrT>(data)) {}
+    , handle_(std::forward<SharedPtrT>(handle)) {}
+
+  /**
+   * Returns the raw const-pointer of the internal memory.
+   * @return Const-pointer of the internal memory.
+   */
+  const void *handle() const {
+    check_valid();
+    return handle_.get();
+  }
+
+  /**
+   * Returns the raw pointer of the internal memory.
+   * @return Pointer of the internal memory.
+   */
+  void *mutable_handle();
 
   Shape shape_;
   Device *device_;
-  std::shared_ptr<void> data_;
+  std::shared_ptr<void> handle_;
 };
 
 }  // namespace primitiv

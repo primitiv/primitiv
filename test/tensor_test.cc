@@ -39,9 +39,17 @@ TEST_F(TensorTest, CheckInvalid) {
   EXPECT_FALSE(x.valid());
   EXPECT_THROW(x.shape(), Error);
   EXPECT_THROW(x.device(), Error);
-  EXPECT_THROW(x.data(), Error);
   EXPECT_THROW(x.to_float(), Error);
   EXPECT_THROW(x.to_vector(), Error);
+}
+
+TEST_F(TensorTest, CheckInvalidate) {
+  for (Device *dev : devices) {
+    Tensor x = dev->new_tensor_by_constant({}, 1);
+    ASSERT_TRUE(x.valid());
+    x.invalidate();
+    EXPECT_FALSE(x.valid());
+  }
 }
 
 TEST_F(TensorTest, CheckNewScalarWithData) {
@@ -50,7 +58,6 @@ TEST_F(TensorTest, CheckNewScalarWithData) {
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(dev, &x.device());
     EXPECT_EQ(Shape(), x.shape());
-    EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     EXPECT_TRUE(vector_match(vector<float> {1}, x.to_vector()));
     EXPECT_FLOAT_EQ(1.0f, x.to_float());
   }
@@ -63,7 +70,6 @@ TEST_F(TensorTest, CheckNewMatrixWithData) {
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(dev, &x.device());
     EXPECT_EQ(Shape({2, 3}), x.shape());
-    EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     EXPECT_TRUE(vector_match(data, x.to_vector()));
     EXPECT_THROW(x.to_float(), Error);
   }
@@ -79,7 +85,6 @@ TEST_F(TensorTest, CheckNewMatrixMinibatchWithData) {
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(dev, &x.device());
     EXPECT_EQ(Shape({2, 3}, 4), x.shape());
-    EXPECT_NE(nullptr, const_cast<Tensor &>(x).data());
     EXPECT_TRUE(vector_match(data, x.to_vector()));
     EXPECT_THROW(x.to_float(), Error);
   }
@@ -88,13 +93,11 @@ TEST_F(TensorTest, CheckNewMatrixMinibatchWithData) {
 TEST_F(TensorTest, CheckMoveValidToNew) {
   for (Device *dev : devices) {
     Tensor tmp = dev->new_tensor_by_vector(Shape({2}, 3), {1, 2, 3, 4, 5, 6});
-    void *ptr = tmp.data();
 
     const Tensor x = std::move(tmp);
     EXPECT_TRUE(x.valid());
     EXPECT_FALSE(tmp.valid());
     EXPECT_EQ(Shape({2}, 3), x.shape());
-    EXPECT_EQ(ptr, x.data());
     EXPECT_TRUE(vector_match({1, 2, 3, 4, 5, 6}, x.to_vector()));
   }
 }
@@ -102,7 +105,6 @@ TEST_F(TensorTest, CheckMoveValidToNew) {
 TEST_F(TensorTest, CheckMoveValidToValid) {
   for (Device *dev : devices) {
     Tensor tmp = dev->new_tensor_by_vector({6}, {2, 4, 6, 8, 10 ,12});
-    void *ptr = tmp.data();
 
     Tensor x = dev->new_tensor_by_constant({}, 1);
     ASSERT_TRUE(x.valid());
@@ -111,7 +113,6 @@ TEST_F(TensorTest, CheckMoveValidToValid) {
     EXPECT_TRUE(x.valid());
     EXPECT_FALSE(tmp.valid());
     EXPECT_EQ(Shape({6}), x.shape());
-    EXPECT_EQ(ptr, x.data());
     EXPECT_TRUE(vector_match({2, 4, 6, 8, 10 ,12}, x.to_vector()));
   }
 }
@@ -120,7 +121,6 @@ TEST_F(TensorTest, CheckMoveValidToInvalid) {
   for (Device *dev : devices) {
     Tensor tmp = dev->new_tensor_by_vector(
         Shape({1}, 6), {3, 6, 9, 12, 15, 18});
-    void *ptr = tmp.data();
 
     Tensor x;
     ASSERT_FALSE(x.valid());
@@ -129,7 +129,6 @@ TEST_F(TensorTest, CheckMoveValidToInvalid) {
     EXPECT_TRUE(x.valid());
     EXPECT_FALSE(tmp.valid());
     EXPECT_EQ(Shape({1}, 6), x.shape());
-    EXPECT_EQ(ptr, x.data());
     EXPECT_TRUE(vector_match({3, 6, 9, 12, 15, 18}, x.to_vector()));
   }
 }
@@ -139,12 +138,10 @@ TEST_F(TensorTest, CheckMoveValidToInvalid) {
 TEST_F(TensorTest, CheckMoveValidToThis) {
   for (Device *dev : devices) {
     Tensor x = dev->new_tensor_by_vector({6}, {2, 4, 6, 8, 10 ,12});
-    void *ptr = x.data();
 
     x = std::move(x);
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({6}), x.shape());
-    EXPECT_EQ(ptr, x.data());
     EXPECT_TRUE(vector_match({2, 4, 6, 8, 10 ,12}, x.to_vector()));
   }
 }
@@ -199,15 +196,12 @@ TEST_F(TensorTest, CheckMoveInvalidToThis) {
 TEST_F(TensorTest, CheckCopyValidToNew) {
   for (Device *dev : devices) {
     const Tensor tmp = dev->new_tensor_by_vector(Shape({2}, 3), {1, 2, 3, 4, 5, 6});
-    const void *ptr = tmp.data();
 
     const Tensor x = tmp;
     EXPECT_TRUE(x.valid());
     EXPECT_TRUE(tmp.valid());
     EXPECT_EQ(Shape({2}, 3), x.shape());
     EXPECT_EQ(Shape({2}, 3), tmp.shape());
-    EXPECT_EQ(ptr, x.data());
-    EXPECT_EQ(ptr, tmp.data());
     EXPECT_TRUE(vector_match({1, 2, 3, 4, 5, 6}, x.to_vector()));
     EXPECT_TRUE(vector_match({1, 2, 3, 4, 5, 6}, tmp.to_vector()));
   }
@@ -216,7 +210,6 @@ TEST_F(TensorTest, CheckCopyValidToNew) {
 TEST_F(TensorTest, CheckCopyValidToValid) {
   for (Device *dev : devices) {
     const Tensor tmp = dev->new_tensor_by_vector({6}, {2, 4, 6, 8, 10 ,12});
-    const void *ptr = tmp.data();
 
     Tensor x = dev->new_tensor_by_constant({}, 1);
     ASSERT_TRUE(x.valid());
@@ -226,8 +219,6 @@ TEST_F(TensorTest, CheckCopyValidToValid) {
     EXPECT_TRUE(tmp.valid());
     EXPECT_EQ(Shape({6}), x.shape());
     EXPECT_EQ(Shape({6}), tmp.shape());
-    EXPECT_EQ(ptr, static_cast<const Tensor>(x).data());
-    EXPECT_EQ(ptr, tmp.data());
     EXPECT_TRUE(vector_match({2, 4, 6, 8, 10 ,12}, x.to_vector()));
     EXPECT_TRUE(vector_match({2, 4, 6, 8, 10 ,12}, tmp.to_vector()));
   }
@@ -237,7 +228,6 @@ TEST_F(TensorTest, CheckCopyValidToInvalid) {
   for (Device *dev : devices) {
     const Tensor tmp = dev->new_tensor_by_vector(
         Shape({1}, 6), {3, 6, 9, 12, 15, 18});
-    const void *ptr = tmp.data();
 
     Tensor x;
     ASSERT_FALSE(x.valid());
@@ -247,8 +237,6 @@ TEST_F(TensorTest, CheckCopyValidToInvalid) {
     EXPECT_TRUE(tmp.valid());
     EXPECT_EQ(Shape({1}, 6), x.shape());
     EXPECT_EQ(Shape({1}, 6), tmp.shape());
-    EXPECT_EQ(ptr, static_cast<const Tensor>(x).data());
-    EXPECT_EQ(ptr, tmp.data());
     EXPECT_TRUE(vector_match({3, 6, 9, 12, 15, 18}, x.to_vector()));
     EXPECT_TRUE(vector_match({3, 6, 9, 12, 15, 18}, tmp.to_vector()));
   }
@@ -257,12 +245,10 @@ TEST_F(TensorTest, CheckCopyValidToInvalid) {
 TEST_F(TensorTest, CheckCopyValidToThis) {
   for (Device *dev : devices) {
     Tensor x = dev->new_tensor_by_vector({6}, {2, 4, 6, 8, 10 ,12});
-    void *ptr = x.data();
 
     x = x;
     EXPECT_TRUE(x.valid());
     EXPECT_EQ(Shape({6}), x.shape());
-    EXPECT_EQ(ptr, x.data());
     EXPECT_TRUE(vector_match({2, 4, 6, 8, 10 ,12}, x.to_vector()));
   }
 }
@@ -310,31 +296,6 @@ TEST_F(TensorTest, CheckCopyInvalidToThis) {
   EXPECT_FALSE(x.valid());
 }
 
-TEST_F(TensorTest, CheckUnique) {
-  for (Device *dev : devices) {
-    Tensor x = dev->new_tensor_by_constant({}, 1);
-    const void *ptr11 = static_cast<const Tensor>(x).data();
-    void *ptr12 = x.data();
-    const void *ptr13 = static_cast<const Tensor>(x).data();
-    void *ptr14 = x.data();
-    EXPECT_EQ(ptr12, ptr11);
-    EXPECT_EQ(ptr13, ptr11);
-    EXPECT_EQ(ptr14, ptr11);
-
-    const Tensor copied = x;
-    const void *ptr21 = static_cast<const Tensor>(x).data();
-    void *ptr22 = x.data();
-    const void *ptr23 = static_cast<const Tensor>(x).data();
-    void *ptr24 = x.data();
-    EXPECT_EQ(ptr21, ptr11);
-    EXPECT_NE(ptr22, ptr11);
-    EXPECT_NE(ptr23, ptr11);
-    EXPECT_NE(ptr24, ptr11);
-    EXPECT_EQ(ptr23, ptr22);
-    EXPECT_EQ(ptr24, ptr22);
-  }
-}
-
 TEST_F(TensorTest, CheckResetValuesByConstant) {
   for (Device *dev : devices) {
     {
@@ -343,18 +304,15 @@ TEST_F(TensorTest, CheckResetValuesByConstant) {
     }
     {
       Tensor x = dev->new_tensor_by_constant(Shape({2, 2}, 2), 0);
-      const void *ptr = x.data();
+
       x.reset(42);
-      EXPECT_EQ(ptr, x.data());
       EXPECT_TRUE(vector_match(vector<float>(8, 42), x.to_vector()));
     }
     {
       Tensor x = dev->new_tensor_by_constant(Shape({2, 2}, 2), 123);
       const Tensor copied = x;
-      EXPECT_EQ(static_cast<const Tensor>(x).data(), copied.data());
 
       x.reset(42);
-      EXPECT_NE(static_cast<const Tensor>(x).data(), copied.data());
       EXPECT_TRUE(vector_match(vector<float>(8, 42), x.to_vector()));
       EXPECT_TRUE(vector_match(vector<float>(8, 123), copied.to_vector()));
     }
@@ -372,9 +330,7 @@ TEST_F(TensorTest, CheckResetValuesByArray) {
     {
       const float data[] {1, 2, 3, 4, 5, 6, 7, 8};
       Tensor x = dev->new_tensor_by_constant(Shape({2, 2}, 2), 0);
-      const void *ptr = x.data();
       x.reset_by_array(data);
-      EXPECT_EQ(ptr, x.data());
       EXPECT_TRUE(
           vector_match(vector<float> {1, 2, 3, 4, 5, 6, 7, 8}, x.to_vector()));
     }
@@ -382,10 +338,8 @@ TEST_F(TensorTest, CheckResetValuesByArray) {
       const float data[] {1, 2, 3, 4, 5, 6, 7, 8};
       Tensor x = dev->new_tensor_by_constant(Shape({2, 2}, 2), 123);
       const Tensor copied = x;
-      EXPECT_EQ(static_cast<const Tensor>(x).data(), copied.data());
 
       x.reset_by_array(data);
-      EXPECT_NE(static_cast<const Tensor>(x).data(), copied.data());
       EXPECT_TRUE(
           vector_match(vector<float> {1, 2, 3, 4, 5, 6, 7, 8}, x.to_vector()));
       EXPECT_TRUE(vector_match(vector<float>(8, 123), copied.to_vector()));
@@ -403,19 +357,15 @@ TEST_F(TensorTest, CheckResetValuesByVector) {
     {
       const vector<float> data {1, 2, 3, 4, 5, 6, 7, 8};
       Tensor x = dev->new_tensor_by_constant(Shape({2, 2}, 2), 0);
-      const void *ptr = x.data();
       x.reset_by_vector(data);
-      EXPECT_EQ(ptr, x.data());
       EXPECT_TRUE(vector_match(data, x.to_vector()));
     }
     {
       const vector<float> data {1, 2, 3, 4, 5, 6, 7, 8};
       Tensor x = dev->new_tensor_by_constant(Shape({2, 2}, 2), 123);
       const Tensor copied = x;
-      EXPECT_EQ(static_cast<const Tensor>(x).data(), copied.data());
 
       x.reset_by_vector(data);
-      EXPECT_NE(static_cast<const Tensor>(x).data(), copied.data());
       EXPECT_TRUE(vector_match(data, x.to_vector()));
       EXPECT_TRUE(vector_match(vector<float>(8, 123), copied.to_vector()));
     }
@@ -438,8 +388,6 @@ TEST_F(TensorTest, CheckInplaceMultiplyConst) {
       x *= 2;
       EXPECT_TRUE(vector_match(y1_data, x.to_vector()));
     }
-  }
-  for (Device *dev : devices) {
     {
       Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
       x.inplace_multiply_const(.5);
@@ -449,6 +397,51 @@ TEST_F(TensorTest, CheckInplaceMultiplyConst) {
       Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
       x *= .5;
       EXPECT_TRUE(vector_match(y2_data, x.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorTest, CheckCopyAndInplaceMultiplyConst) {
+  const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  const vector<float> y1_data {2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24};
+  const vector<float> y2_data {.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6};
+
+  for (Device *dev : devices) {
+    {
+      Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
+
+      const Tensor copied = x;
+
+      x.inplace_multiply_const(2);
+      EXPECT_TRUE(vector_match(y1_data, x.to_vector()));
+      EXPECT_TRUE(vector_match(x_data, copied.to_vector()));
+    }
+    {
+      Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
+
+      const Tensor copied = x;
+
+      x *= 2;
+      EXPECT_TRUE(vector_match(y1_data, x.to_vector()));
+      EXPECT_TRUE(vector_match(x_data, copied.to_vector()));
+    }
+    {
+      Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
+
+      const Tensor copied = x;
+
+      x.inplace_multiply_const(.5);
+      EXPECT_TRUE(vector_match(y2_data, x.to_vector()));
+      EXPECT_TRUE(vector_match(x_data, copied.to_vector()));
+    }
+    {
+      Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
+
+      const Tensor copied = x;
+
+      x *= .5;
+      EXPECT_TRUE(vector_match(y2_data, x.to_vector()));
+      EXPECT_TRUE(vector_match(x_data, copied.to_vector()));
     }
   }
 }
@@ -527,10 +520,8 @@ TEST_F(TensorTest, CheckCopyAndInplaceAdd) {
       const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
 
       const Tensor copied = a;
-      EXPECT_EQ(static_cast<const Tensor>(a).data(), copied.data());
 
       a.inplace_add(b);
-      EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
       EXPECT_TRUE(vector_match(y_data, a.to_vector()));
       EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
     }
@@ -539,10 +530,8 @@ TEST_F(TensorTest, CheckCopyAndInplaceAdd) {
       const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
 
       const Tensor copied = a;
-      EXPECT_EQ(static_cast<const Tensor>(a).data(), copied.data());
 
       a += b;
-      EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
       EXPECT_TRUE(vector_match(y_data, a.to_vector()));
       EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
     }
@@ -622,10 +611,8 @@ TEST_F(TensorTest, CheckCopyAndInplaceSubtract) {
       const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
 
       const Tensor copied = a;
-      EXPECT_EQ(static_cast<const Tensor>(a).data(), copied.data());
 
       a.inplace_subtract(b);
-      EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
       EXPECT_TRUE(vector_match(y_data, a.to_vector()));
       EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
     }
@@ -634,10 +621,8 @@ TEST_F(TensorTest, CheckCopyAndInplaceSubtract) {
       const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
 
       const Tensor copied = a;
-      EXPECT_EQ(static_cast<const Tensor>(a).data(), copied.data());
 
       a -= b;
-      EXPECT_NE(static_cast<const Tensor>(a).data(), copied.data());
       EXPECT_TRUE(vector_match(y_data, a.to_vector()));
       EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
     }
@@ -673,6 +658,7 @@ TEST_F(TensorTest, CheckArgMaxDims) {
     {1, 1, 1, 1, 1, 1},
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
   };
+
   for (Device *dev : devices) {
     const Tensor a = dev->new_tensor_by_vector(Shape({3, 3}, 2), data);
     for (const std::uint32_t i : {0u, 1u, 2u}) {
@@ -686,6 +672,7 @@ TEST_F(TensorTest, CheckArgMaxLarge) {
   const vector<std::uint32_t> ns {
     1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025, 65535, 65536, 65537,
   };
+
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
       vector<float> data(n);
@@ -708,6 +695,7 @@ TEST_F(TensorTest, CheckArgMinDims) {
     {1, 1, 1, 1, 1, 1},
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
   };
+
   for (Device *dev : devices) {
     const Tensor a = dev->new_tensor_by_vector(Shape({3, 3}, 2), data);
     for (const std::uint32_t i : {0u, 1u, 2u}) {
@@ -721,6 +709,7 @@ TEST_F(TensorTest, CheckArgMinLarge) {
   const vector<std::uint32_t> ns {
     1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025, 65535, 65536, 65537,
   };
+
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
       vector<float> data(n);
