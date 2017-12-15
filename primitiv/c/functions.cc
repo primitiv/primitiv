@@ -760,22 +760,22 @@ primitiv_Tensor *safe_primitiv_tensor_func_random_gumbel(
 
 IMPL_BINARY_OPERATOR(pow);
 
-primitiv_Node *primitiv_node_func_ipow(const primitiv_Node *x, uint32_t k) {
-  return to_c_from_value(primitiv::functions::ipow(*to_cc(x), k));
+primitiv_Node *primitiv_node_func_pown(const primitiv_Node *x, uint32_t k) {
+  return to_c_from_value(primitiv::functions::pown(*to_cc(x), k));
 }
-primitiv_Node *safe_primitiv_node_func_ipow(const primitiv_Node *x,
+primitiv_Node *safe_primitiv_node_func_pown(const primitiv_Node *x,
                                             uint32_t k,
                                             primitiv_Status *status) {
-  SAFE_RETURN(primitiv_node_func_ipow(x, k), status, nullptr);
+  SAFE_RETURN(primitiv_node_func_pown(x, k), status, nullptr);
 }
-primitiv_Tensor *primitiv_tensor_func_ipow(const primitiv_Tensor *x,
+primitiv_Tensor *primitiv_tensor_func_pown(const primitiv_Tensor *x,
                                            uint32_t k) {
-  return to_c_from_value(primitiv::functions::ipow(*to_cc(x), k));
+  return to_c_from_value(primitiv::functions::pown(*to_cc(x), k));
 }
-primitiv_Tensor *safe_primitiv_tensor_func_ipow(const primitiv_Tensor *x,
+primitiv_Tensor *safe_primitiv_tensor_func_pown(const primitiv_Tensor *x,
                                                 uint32_t k,
                                                 primitiv_Status *status) {
-  SAFE_RETURN(primitiv_tensor_func_ipow(x, k), status, nullptr);
+  SAFE_RETURN(primitiv_tensor_func_pown(x, k), status, nullptr);
 }
 
 IMPL_UNARY_FUNC(selu);
