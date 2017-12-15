@@ -32,17 +32,6 @@ configure_file(
   ${CMAKE_CURRENT_BINARY_DIR}/config.h
 )
 
-# Version header
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/primitiv/version.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/primitiv/version.h
-  @ONLY
-)
-install(
-  FILES ${CMAKE_CURRENT_BINARY_DIR}/primitiv/version.h
-  DESTINATION include/primitiv
-)
-
 # External packages.
 if(PRIMITIV_USE_CUDA)
   find_package(CUDA REQUIRED)
