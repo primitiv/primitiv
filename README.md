@@ -25,7 +25,7 @@ Features
 Languages
 ---------
 
-This repository contains only the core C++ library of *primitiv*.
+This repository contains only the core C++ library and its C APIs.
 Some bindings for other programming languages (e.g., Python) can be found in [the official repository](https://github.com/primitiv).
 
 

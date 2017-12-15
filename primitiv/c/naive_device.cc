@@ -1,9 +1,10 @@
 /* Copyright 2017 The primitiv Authors. All Rights Reserved. */
+#include <config.h>
 
 #include <primitiv/naive_device.h>
 
-#include "primitiv/c/internal.h"
-#include "primitiv/c/naive_device.h"
+#include <primitiv/c/internal.h>
+#include <primitiv/c/naive_device.h>
 
 using primitiv::devices::Naive;
 

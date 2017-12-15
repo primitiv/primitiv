@@ -1,14 +1,15 @@
 /* Copyright 2017 The primitiv Authors. All Rights Reserved. */
-
-#include <primitiv/graph.h>
+#include <config.h>
 
 #include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "primitiv/c/internal.h"
-#include "primitiv/c/graph.h"
+#include <primitiv/graph.h>
+
+#include <primitiv/c/internal.h>
+#include <primitiv/c/graph.h>
 
 using primitiv::Node;
 using primitiv::Graph;

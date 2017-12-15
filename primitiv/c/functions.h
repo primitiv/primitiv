@@ -3,13 +3,13 @@
 #ifndef PRIMITIV_C_FUNCTIONS_H_
 #define PRIMITIV_C_FUNCTIONS_H_
 
-#include "primitiv/c/define.h"
-#include "primitiv/c/device.h"
-#include "primitiv/c/graph.h"
-#include "primitiv/c/parameter.h"
-#include "primitiv/c/shape.h"
-#include "primitiv/c/status.h"
-#include "primitiv/c/tensor.h"
+#include <primitiv/c/define.h>
+#include <primitiv/c/device.h>
+#include <primitiv/c/graph.h>
+#include <primitiv/c/parameter.h>
+#include <primitiv/c/shape.h>
+#include <primitiv/c/status.h>
+#include <primitiv/c/tensor.h>
 
 #define _CONCAT_EVAL(A, B) A ## B
 #define _CONCAT(A, B) _CONCAT_EVAL(A, B)
