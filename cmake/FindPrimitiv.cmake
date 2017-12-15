@@ -22,7 +22,7 @@
 #
 # Author: Yusuke Oda (odashi) <yus.takara@gmail.com>
 # Created: 2017/08/13
-# Updated: 2017/12/15
+# Updated: 2017/12/16
 #
 # This script is provided as a part of the primitiv core library.
 # Redistributing and using this script is allowed according to
