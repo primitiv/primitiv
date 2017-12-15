@@ -26,9 +26,21 @@ else()
   message(WARNING "primitiv may not support the detected compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
+# Global configuration header
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/config.h
+)
+
+# Version header
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/primitiv/version.h.in
+  ${CMAKE_CURRENT_BINARY_DIR}/primitiv/version.h
+  @ONLY
+)
+install(
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/primitiv/version.h
+  DESTINATION include/primitiv
 )
 
 # External packages.
