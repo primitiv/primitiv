@@ -1,12 +1,13 @@
 /* Copyright 2017 The primitiv Authors. All Rights Reserved. */
-
-#include <primitiv/shape.h>
+#include <config.h>
 
 #include <string>
 #include <vector>
 
-#include "primitiv/c/internal.h"
-#include "primitiv/c/shape.h"
+#include <primitiv/shape.h>
+
+#include <primitiv/c/internal.h>
+#include <primitiv/c/shape.h>
 
 using primitiv::Shape;
 

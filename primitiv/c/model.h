@@ -3,10 +3,10 @@
 #ifndef PRIMITIV_C_MODEL_H_
 #define PRIMITIV_C_MODEL_H_
 
-#include "primitiv/c/define.h"
-#include "primitiv/c/device.h"
-#include "primitiv/c/parameter.h"
-#include "primitiv/c/status.h"
+#include <primitiv/c/define.h>
+#include <primitiv/c/device.h>
+#include <primitiv/c/parameter.h>
+#include <primitiv/c/status.h>
 
 #ifdef __cplusplus
 extern "C" {

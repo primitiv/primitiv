@@ -3,6 +3,11 @@
 #ifndef PRIMITIV_C_INTERNAL_H_
 #define PRIMITIV_C_INTERNAL_H_
 
+#include <cstdint>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include <primitiv/device.h>
 #include <primitiv/error.h>
 #include <primitiv/graph.h>
@@ -13,12 +18,7 @@
 #include <primitiv/tensor.h>
 #include <primitiv/optimizer.h>
 
-#include <cstdint>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-#include "primitiv/c/status.h"
+#include <primitiv/c/status.h>
 
 #define DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(cc_name, c_name) \
 inline c_name *to_c(primitiv::cc_name *instance) { \

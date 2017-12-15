@@ -1,9 +1,10 @@
 /* Copyright 2017 The primitiv Authors. All Rights Reserved. */
+#include <config.h>
 
 #include <primitiv/error.h>
 
-#include "primitiv/c/internal.h"
-#include "primitiv/c/status.h"
+#include <primitiv/c/internal.h>
+#include <primitiv/c/status.h>
 
 using primitiv::Error;
 

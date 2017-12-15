@@ -3,7 +3,7 @@
 #ifndef PRIMITIV_C_STATUS_H_
 #define PRIMITIV_C_STATUS_H_
 
-#include "primitiv/c/define.h"
+#include <primitiv/c/define.h>
 
 #ifdef __cplusplus
 extern "C" {

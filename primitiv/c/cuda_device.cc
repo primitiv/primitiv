@@ -1,9 +1,10 @@
 /* Copyright 2017 The primitiv Authors. All Rights Reserved. */
+#include <config.h>
 
 #include <primitiv/cuda_device.h>
 
-#include "primitiv/c/internal.h"
-#include "primitiv/c/cuda_device.h"
+#include <primitiv/c/internal.h>
+#include <primitiv/c/cuda_device.h>
 
 using primitiv::devices::CUDA;
 
