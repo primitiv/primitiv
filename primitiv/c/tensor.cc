@@ -1,12 +1,13 @@
 /* Copyright 2017 The primitiv Authors. All Rights Reserved. */
-
-#include <primitiv/tensor.h>
+#include <config.h>
 
 #include <algorithm>
 #include <vector>
 
-#include "primitiv/c/internal.h"
-#include "primitiv/c/tensor.h"
+#include <primitiv/tensor.h>
+
+#include <primitiv/c/internal.h>
+#include <primitiv/c/tensor.h>
 
 using primitiv::Tensor;
 

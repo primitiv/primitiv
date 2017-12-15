@@ -3,10 +3,10 @@
 #ifndef PRIMITIV_C_OPTIMIZER_IMPL_H_
 #define PRIMITIV_C_OPTIMIZER_IMPL_H_
 
-#include "primitiv/c/define.h"
-#include "primitiv/c/optimizer.h"
-#include "primitiv/c/status.h"
-#include "primitiv/c/utils.h"
+#include <primitiv/c/define.h>
+#include <primitiv/c/optimizer.h>
+#include <primitiv/c/status.h>
+#include <primitiv/c/utils.h>
 
 #ifdef __cplusplus
 extern "C" {

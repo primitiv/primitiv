@@ -1,11 +1,12 @@
 /* Copyright 2017 The primitiv Authors. All Rights Reserved. */
-
-#include <primitiv/functions.h>
+#include <config.h>
 
 #include <vector>
 
-#include "primitiv/c/internal.h"
-#include "primitiv/c/functions.h"
+#include <primitiv/functions.h>
+
+#include <primitiv/c/internal.h>
+#include <primitiv/c/functions.h>
 
 using primitiv::Node;
 using primitiv::Tensor;

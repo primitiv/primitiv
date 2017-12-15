@@ -3,10 +3,10 @@
 #ifndef PRIMITIV_C_INITIALIZER_IMPL_H_
 #define PRIMITIV_C_INITIALIZER_IMPL_H_
 
-#include "primitiv/c/define.h"
-#include "primitiv/c/initializer.h"
-#include "primitiv/c/status.h"
-#include "primitiv/c/tensor.h"
+#include <primitiv/c/define.h>
+#include <primitiv/c/initializer.h>
+#include <primitiv/c/status.h>
+#include <primitiv/c/tensor.h>
 
 #ifdef __cplusplus
 extern "C" {
