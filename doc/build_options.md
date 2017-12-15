@@ -24,7 +24,8 @@ Unique Options
       <td><code>OFF</code></td>
       <td>
         Builds C APIs.
-        <code>libprimitiv_c</code> library file will also be generated.
+        <code>libprimitiv_c</code> library file and headers in the
+        <code>primitiv/c</code> directory will also be installed.
       </td>
     </tr>
     <tr>
