@@ -86,7 +86,7 @@ if (PRIMITIV_C_INCLUDE_DIR AND PRIMITIV_C_LIBRARIES)
   #message("-- primitiv C API libraries: " ${PRIMITIV_C_LIBRARIES})
   set(PRIMITIV_C_FOUND ON)
 else()
-  message(STATUS "Primitiv C API is not installed.")
+  message(STATUS "primitiv C API is not installed.")
   set(PRIMITIV_C_FOUND OFF)
 endif()
 
@@ -124,7 +124,7 @@ set(PRIMITIV_VERSION_PATCH "${CMAKE_MATCH_1}")
 
 set(PRIMITIV_VERSION "${PRIMITIV_VERSION_MAJOR}.${PRIMITIV_VERSION_MINOR}.${PRIMITIV_VERSION_PATCH}")
 
-#message("primitiv version requested: ${PRIMITIV_FIND_VERSION}")
+#message("primitiv version requested: ${Primitiv_FIND_VERSION}")
 #message("primitiv version found: ${PRIMITIV_VERSION}")
 
 if(${PRIMITIV_VERSION} VERSION_LESS ${Primitiv_FIND_VERSION})
