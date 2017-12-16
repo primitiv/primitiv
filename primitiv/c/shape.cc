@@ -49,13 +49,13 @@ uint32_t safe_primitiv_Shape_op_getitem(const primitiv_Shape *shape,
   SAFE_RETURN(primitiv_Shape_op_getitem(shape, i), status, 0);
 }
 
-const void primitiv_Shape_dims(const primitiv_Shape *shape, uint32_t *array) {
+void primitiv_Shape_dims(const primitiv_Shape *shape, uint32_t *array) {
   std::vector<uint32_t> v = to_cc(shape)->dims();
   std::copy(v.begin(), v.end(), array);
 }
-const void safe_primitiv_Shape_dims(const primitiv_Shape *shape,
-                                    uint32_t *array,
-                                    primitiv_Status *status) {
+void safe_primitiv_Shape_dims(const primitiv_Shape *shape,
+                              uint32_t *array,
+                              primitiv_Status *status) {
   SAFE_EXPR(primitiv_Shape_dims(shape, array), status);
 }
 
