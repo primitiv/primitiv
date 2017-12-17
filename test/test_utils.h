@@ -91,6 +91,54 @@ inline testing::AssertionResult vector_near(
   return testing::AssertionSuccess();
 }
 
+// helper to check array equality.
+template<typename T>
+inline testing::AssertionResult array_match(
+    const T expected[],
+    const T actual[],
+    size_t n) {
+  for (std::uint32_t i = 0; i < n; ++i) {
+    if (expected[i] != actual[i]) {
+      return testing::AssertionFailure()
+          << "expected[" << i << "]: " << expected[i]
+          << " != actual[" << i << "]: " << actual[i];
+    }
+  }
+  return testing::AssertionSuccess();
+}
+
+// helper to check float array equality.
+template<>
+inline testing::AssertionResult array_match(
+    const float expected[],
+    const float actual[],
+    size_t n) {
+  for (std::uint32_t i = 0; i < n; ++i) {
+    if (!test_utils::float_eq(expected[i], actual[i])) {
+      return testing::AssertionFailure()
+          << "expected[" << i << "]: " << expected[i]
+          << " != actual[" << i << "]: " << actual[i];
+    }
+  }
+  return testing::AssertionSuccess();
+}
+
+// helper to check closeness of float arrays.
+inline testing::AssertionResult array_near(
+    const float expected[],
+    const float actual[],
+    size_t n,
+    const float err) {
+  for (std::uint32_t i = 0; i < n; ++i) {
+    if (!test_utils::float_near(expected[i], actual[i], err)) {
+      return testing::AssertionFailure()
+          << "expected[" << i << "]: " << expected[i]
+          << " != actual[" << i << "]: " << actual[i];
+    }
+  }
+  return testing::AssertionSuccess();
+}
+
 // helper to generate std::string from a byte array.
 inline std::string bin_to_str(const std::initializer_list<int> data) {
   return std::string(data.begin(), data.end());
