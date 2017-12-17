@@ -19,10 +19,6 @@ TEST_F(CShapeTest, CheckNewDefault) {
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 0));
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 1));
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 100));
-    std::uint32_t lhs[] = {};
-    std::uint32_t rhs[::primitiv_Shape_depth(shape)];
-    ::primitiv_Shape_dims(shape, rhs);
-    EXPECT_TRUE(array_match(lhs, rhs, 0));
     EXPECT_EQ(0u, ::primitiv_Shape_depth(shape));
     EXPECT_EQ(1u, ::primitiv_Shape_batch(shape));
     EXPECT_EQ(1u, ::primitiv_Shape_volume(shape));
@@ -38,10 +34,6 @@ TEST_F(CShapeTest, CheckNewByArray) {
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 0));
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 1));
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 100));
-    std::uint32_t lhs[] = {};
-    std::uint32_t rhs[::primitiv_Shape_depth(shape)];
-    ::primitiv_Shape_dims(shape, rhs);
-    EXPECT_TRUE(array_match(lhs, rhs, 0));
     EXPECT_EQ(0u, ::primitiv_Shape_depth(shape));
     EXPECT_EQ(1u, ::primitiv_Shape_batch(shape));
     EXPECT_EQ(1u, ::primitiv_Shape_volume(shape));
