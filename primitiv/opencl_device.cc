@@ -629,7 +629,7 @@ void OpenCL::reset_tensor_by_array_impl(const float values[], Tensor &x) {
 
 void OpenCL::copy_tensor_impl(const Tensor &x, Tensor &y) {
   switch (x.device().type()) {
-    case Device::DeviceType::CPU:
+    case Device::DeviceType::NAIVE:
       reset_tensor_by_array(static_cast<const float *>(get_handle(x)), y);
       break;
     case Device::DeviceType::OPENCL:

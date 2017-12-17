@@ -5,7 +5,7 @@
 #include <cstring>
 #include <cmath>
 #include <iostream>
-#include <primitiv/naive_device.h>
+#include <primitiv/eigen_device.h>
 #include <primitiv/error.h>
 
 using std::cerr;
@@ -14,12 +14,12 @@ using std::endl;
 namespace primitiv {
 namespace devices {
 
-void Naive::dump_description() const {
+void Eigen::dump_description() const {
   cerr << "Device " << this << endl;
-  cerr << "  Type: Naive" << endl;
+  cerr << "  Type: Eigen" << endl;
 }
 
-std::shared_ptr<void> Naive::new_handle(const Shape &shape) {
+std::shared_ptr<void> Eigen::new_handle(const Shape &shape) {
   const std::uint32_t mem_size = sizeof(float) * shape.size();
   void *data = std::malloc(mem_size);
   if (!data) {
@@ -34,14 +34,14 @@ std::shared_ptr<void> Naive::new_handle(const Shape &shape) {
 #define REPEAT_OP(i, n, op) \
   for (std::uint32_t (i) = 0; (i) < (n); ++(i)) { (op); }
 
-std::vector<float> Naive::tensor_to_vector_impl(const Tensor &x) {
+std::vector<float> Eigen::tensor_to_vector_impl(const Tensor &x) {
   const std::uint32_t num_elements = x.shape().size();
   std::vector<float> ret(num_elements);
   std::memcpy(&ret[0], CDATA(x), sizeof(float) * num_elements);
   return ret;
 }
 
-std::vector<std::uint32_t> Naive::argmax_impl(const Tensor &x, std::uint32_t dim) {
+std::vector<std::uint32_t> Eigen::argmax_impl(const Tensor &x, std::uint32_t dim) {
   const Shape &s = x.shape();
   const std::uint32_t n = s[dim];
   const std::uint32_t repeat = s.size() / n;
@@ -66,7 +66,7 @@ std::vector<std::uint32_t> Naive::argmax_impl(const Tensor &x, std::uint32_t dim
   return ret;
 }
 
-std::vector<std::uint32_t> Naive::argmin_impl(const Tensor &x, std::uint32_t dim) {
+std::vector<std::uint32_t> Eigen::argmin_impl(const Tensor &x, std::uint32_t dim) {
   const Shape &s = x.shape();
   const std::uint32_t n = s[dim];
   const std::uint32_t repeat = s.size() / n;
@@ -91,19 +91,22 @@ std::vector<std::uint32_t> Naive::argmin_impl(const Tensor &x, std::uint32_t dim
   return ret;
 }
 
-void Naive::reset_tensor_impl(float k, Tensor &x) {
+void Eigen::reset_tensor_impl(float k, Tensor &x) {
   float *dest = MDATA(x);
   const std::uint32_t size = x.shape().size();
   REPEAT_OP(i, size, dest[i] = k);
 }
 
-void Naive::reset_tensor_by_array_impl(const float values[], Tensor &x) {
+void Eigen::reset_tensor_by_array_impl(const float values[], Tensor &x) {
   std::memcpy(MDATA(x), values, sizeof(float) * x.shape().size());
 }
 
-void Naive::copy_tensor_impl(const Tensor &x, Tensor &y) {
+void Eigen::copy_tensor_impl(const Tensor &x, Tensor &y) {
   switch (x.device().type()) {
     case Device::DeviceType::NAIVE:
+      reset_tensor_by_array(CDATA(x), y);
+      break;
+    case Device::DeviceType::EIGEN:
       reset_tensor_by_array(CDATA(x), y);
       break;
     default:
@@ -111,30 +114,30 @@ void Naive::copy_tensor_impl(const Tensor &x, Tensor &y) {
   }
 }
 
-void Naive::identity_impl(Tensor &y) {
+void Eigen::identity_impl(Tensor &y) {
   reset_tensor_impl(0, y);
   float *dest = MDATA(y);
   const std::uint32_t size = y.shape()[0];
   REPEAT_OP(i, size, dest[i * (size + 1)] = 1);
 }
 
-void Naive::random_bernoulli_impl(float p, Tensor &y) {
+void Eigen::random_bernoulli_impl(float p, Tensor &y) {
   randomizer_.fill_bernoulli(p, y.shape().size(), MDATA(y));
 }
 
-void Naive::random_uniform_impl(float lower, float upper, Tensor &y) {
+void Eigen::random_uniform_impl(float lower, float upper, Tensor &y) {
   randomizer_.fill_uniform(lower, upper, y.shape().size(), MDATA(y));
 }
 
-void Naive::random_normal_impl(float mean, float sd, Tensor &y) {
+void Eigen::random_normal_impl(float mean, float sd, Tensor &y) {
   randomizer_.fill_normal(mean, sd, y.shape().size(), MDATA(y));
 }
 
-void Naive::random_log_normal_impl(float mean, float sd, Tensor &y) {
+void Eigen::random_log_normal_impl(float mean, float sd, Tensor &y) {
   randomizer_.fill_log_normal(mean, sd, y.shape().size(), MDATA(y));
 }
 
-void Naive::pick_fw_impl(
+void Eigen::pick_fw_impl(
     const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim,
     Tensor &y) {
   const std::uint32_t bs = y.shape().batch();
@@ -155,7 +158,7 @@ void Naive::pick_fw_impl(
   }
 }
 
-void Naive::slice_fw_impl(
+void Eigen::slice_fw_impl(
     const Tensor &x, std::uint32_t dim, std::uint32_t offset, Tensor &y) {
   const std::uint32_t base = y.shape().lower_volume(dim);
   const std::uint32_t span = base * y.shape()[dim];
@@ -171,7 +174,7 @@ void Naive::slice_fw_impl(
   }
 }
 
-void Naive::concat_fw_impl(
+void Eigen::concat_fw_impl(
     const std::vector<const Tensor *> &xs, std::uint32_t dim, Tensor &y) {
   const std::uint32_t new_bs = y.shape().batch();
   const std::uint32_t base = y.shape().lower_volume(dim);
@@ -198,7 +201,7 @@ void Naive::concat_fw_impl(
   }
 }
 
-void Naive::pick_bw_impl(
+void Eigen::pick_bw_impl(
     const Tensor &gy, const std::vector<std::uint32_t>& ids, std::uint32_t dim,
     Tensor &gx) {
   const std::uint32_t bs = gy.shape().batch();
@@ -218,7 +221,7 @@ void Naive::pick_bw_impl(
   }
 }
 
-void Naive::slice_bw_impl(
+void Eigen::slice_bw_impl(
     const Tensor &gy, std::uint32_t dim, std::uint32_t offset, Tensor &gx) {
   const Shape &sy = gy.shape();
   const Shape &sx = gx.shape();
@@ -245,7 +248,7 @@ void Naive::slice_bw_impl(
 }
 
 #define CPUDEV_FW_X(name, op) \
-void Naive::name##_fw_impl(const Tensor &x, Tensor &y) { \
+void Eigen::name##_fw_impl(const Tensor &x, Tensor &y) { \
   float *dest = MDATA(y); \
   const float *src = CDATA(x); \
   const std::uint32_t size = x.shape().size(); \
@@ -253,7 +256,7 @@ void Naive::name##_fw_impl(const Tensor &x, Tensor &y) { \
 }
 
 #define CPUDEV_BW_X(name, op) \
-void Naive::name##_bw_impl( \
+void Eigen::name##_bw_impl( \
     const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) { \
   const float *px = CDATA(x); static_cast<void>(px); \
   const float *py = CDATA(y); static_cast<void>(py); \
@@ -264,7 +267,7 @@ void Naive::name##_bw_impl( \
 }
 
 #define CPUDEV_FW_X_CONST(name, op) \
-void Naive::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
+void Eigen::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
   float *dest = MDATA(y); \
   const float *src = CDATA(x); \
   const std::uint32_t size = x.shape().size(); \
@@ -272,7 +275,7 @@ void Naive::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
 }
 
 #define CPUDEV_BW_X_CONST(name, op) \
-void Naive::name##_bw_impl( \
+void Eigen::name##_bw_impl( \
     const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) { \
   const float *px = CDATA(x); static_cast<void>(px); \
   const float *py = CDATA(y); static_cast<void>(py); \
@@ -283,7 +286,7 @@ void Naive::name##_bw_impl( \
 }
 
 #define CPUDEV_FW_X_SCALAR(name, op) \
-void Naive::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
+void Eigen::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
   const std::uint32_t size = y.shape().volume(); \
   const std::uint32_t bs = y.shape().batch(); \
   const std::uint32_t skip_x = x.shape().has_batch() * size; \
@@ -300,7 +303,7 @@ void Naive::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
 }
 
 #define CPUDEV_FW_AB(name, op) \
-void Naive::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
+void Eigen::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
   const std::uint32_t size = y.shape().volume(); \
   const std::uint32_t bs = y.shape().batch(); \
   const std::uint32_t skip_a = a.shape().has_batch() * size; \
@@ -378,7 +381,7 @@ CPUDEV_FW_AB(divide, src_a[i] / src_b[i]);
 #undef CPUDEV_FW_X_SCALAR
 #undef CPUDEV_FW_AB
 
-void Naive::add_bw_impl(
+void Eigen::add_bw_impl(
     const Tensor &, const Tensor &, const Tensor &, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
   const std::uint32_t size = gy.shape().volume();
@@ -400,7 +403,7 @@ void Naive::add_bw_impl(
   }
 }
 
-void Naive::subtract_bw_impl(
+void Eigen::subtract_bw_impl(
     const Tensor &, const Tensor &, const Tensor &, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
   const std::uint32_t size = gy.shape().volume();
@@ -422,7 +425,7 @@ void Naive::subtract_bw_impl(
   }
 }
 
-void Naive::multiply_bw_impl(
+void Eigen::multiply_bw_impl(
     const Tensor &a, const Tensor &b, const Tensor &, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
   const std::uint32_t size = gy.shape().volume();
@@ -448,7 +451,7 @@ void Naive::multiply_bw_impl(
   }
 }
 
-void Naive::divide_bw_impl(
+void Eigen::divide_bw_impl(
     const Tensor &, const Tensor &b, const Tensor &y, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
   const std::uint32_t size = gy.shape().volume();
@@ -474,7 +477,7 @@ void Naive::divide_bw_impl(
   }
 }
 
-void Naive::transpose_fw_impl(const Tensor &x, Tensor &y) {
+void Eigen::transpose_fw_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t d1 = x.shape()[0];
   const std::uint32_t d2 = x.shape()[1];
   const std::uint32_t ms = d1 * d2;
@@ -496,7 +499,7 @@ void Naive::transpose_fw_impl(const Tensor &x, Tensor &y) {
   }
 }
 
-void Naive::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
+void Eigen::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   const std::uint32_t d1 = a.shape()[0];
   const std::uint32_t d2 = a.shape()[1];
   const std::uint32_t d3 = b.shape()[1];
@@ -539,13 +542,13 @@ void Naive::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   }
 }
 
-void Naive::transpose_bw_impl(
+void Eigen::transpose_bw_impl(
     const Tensor &, const Tensor &, const Tensor &gy, Tensor &gx) {
   // TODO(odashi): This code could be slow and requires memory. Fix this.
   inplace_add_impl(transpose_fw(gy), gx);
 }
 
-void Naive::matmul_bw_impl(
+void Eigen::matmul_bw_impl(
     const Tensor &a, const Tensor &b, const Tensor &, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
   // TODO(odashi): This code could be slow and requires memory. Fix this.
@@ -553,7 +556,7 @@ void Naive::matmul_bw_impl(
   inplace_add_impl(matmul_fw(transpose_fw(a), gy), gb);
 }
 
-void Naive::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
+void Eigen::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   const std::uint32_t n = x.shape()[dim];
   const std::uint32_t repeat = y.shape().size();
   const std::uint32_t skip1 = y.shape().lower_volume(dim);
@@ -571,7 +574,7 @@ void Naive::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   }
 }
 
-void Naive::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
+void Eigen::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   const std::uint32_t n = x.shape()[dim];
   const std::uint32_t repeat = y.shape().size();
   const std::uint32_t skip1 = y.shape().lower_volume(dim);
@@ -593,7 +596,7 @@ void Naive::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   }
 }
 
-void Naive::broadcast_fw_impl(
+void Eigen::broadcast_fw_impl(
     const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) {
   const std::uint32_t repeat = x.shape().size();
   const std::uint32_t skip1 = y.shape().lower_volume(dim);
@@ -610,7 +613,7 @@ void Naive::broadcast_fw_impl(
   }
 }
 
-void Naive::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
+void Eigen::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   float *dest = MDATA(y);
   const float *src = CDATA(x);
   const std::uint32_t bs = x.shape().batch();
@@ -624,13 +627,13 @@ void Naive::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   }
 }
 
-void Naive::inplace_multiply_const_impl(float k, Tensor &x) {
+void Eigen::inplace_multiply_const_impl(float k, Tensor &x) {
   const std::uint32_t size = x.shape().size();
   float *dest = MDATA(x);
   REPEAT_OP(i, size, dest[i] *= k);
 }
 
-void Naive::inplace_add_impl(const Tensor &x, Tensor &y) {
+void Eigen::inplace_add_impl(const Tensor &x, Tensor &y) {
   const Shape &sx = x.shape();
   const Shape &sy = y.shape();
   const std::uint32_t size = sy.volume();
@@ -646,7 +649,7 @@ void Naive::inplace_add_impl(const Tensor &x, Tensor &y) {
   }
 }
 
-void Naive::inplace_subtract_impl(const Tensor &x, Tensor &y) {
+void Eigen::inplace_subtract_impl(const Tensor &x, Tensor &y) {
   const Shape &sx = x.shape();
   const Shape &sy = y.shape();
   const std::uint32_t size = sy.volume();

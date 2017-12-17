@@ -79,6 +79,23 @@ add_library(primitiv_core_OBJS OBJECT
 set(primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_core_OBJS>)
 set(primitiv_all_DEPS)
 
+# Build rules of the Eigen backend.
+if(PRIMITIV_USE_EIGEN)
+  set(primitiv_eigen_HDRS
+    primitiv_eigen.h
+    eigen_device.h)
+  set(primitiv_eigen_SRCS
+    eigen_device.cc)
+  install(FILES ${primitiv_eigen_HDRS} DESTINATION include/primitiv)
+
+  add_library(primitiv_eigen_OBJS OBJECT
+    ${primitiv_base_HDRS}
+    ${primitiv_eigen_HDRS}
+    ${primitiv_eigen_SRCS})
+
+  list(APPEND primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_eigen_OBJS>)
+endif()
+
 # Build rules of the CUDA backend.
 if(PRIMITIV_USE_CUDA)
   set(primitiv_cuda_HDRS
