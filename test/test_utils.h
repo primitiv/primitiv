@@ -147,6 +147,7 @@ inline std::string bin_to_str(const std::initializer_list<int> data) {
 // helper to add all available devices.
 void add_available_devices(std::vector<primitiv::Device *> &devices);
 void add_available_naive_devices(std::vector<primitiv::Device *> &devices);
+void add_available_eigen_devices(std::vector<primitiv::Device *> &devices);
 void add_available_cuda_devices(std::vector<primitiv::Device *> &devices);
 void add_available_opencl_devices(std::vector<primitiv::Device *> &devices);
 
