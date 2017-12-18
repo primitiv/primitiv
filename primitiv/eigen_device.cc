@@ -14,6 +14,11 @@
 using std::cerr;
 using std::endl;
 
+template<typename T>
+using EMap = ::Eigen::Map<T>;
+
+using EMatrixXf = ::Eigen::MatrixXf;
+
 namespace primitiv {
 namespace devices {
 
@@ -481,31 +486,22 @@ void Eigen::divide_bw_impl(
 }
 
 void Eigen::transpose_fw_impl(const Tensor &x, Tensor &y) {
-  const std::uint32_t d1 = x.shape()[0];
-  const std::uint32_t d2 = x.shape()[1];
-  const std::uint32_t ms = d1 * d2;
-  const std::uint32_t bs = y.shape().batch();
-  float *dest = MDATA(y);
-  const float *src = CDATA(x);
+  const std::uint32_t di = x.shape()[0];
+  const std::uint32_t dj = x.shape()[1];
+  const std::uint32_t ms = di * dj;
+  const std::uint32_t bs = x.shape().batch();
 
-  for (std::uint32_t k = 0; k < bs; ++k) {
-    float *pd = dest;
-    for (std::uint32_t j = 0; j < d2; ++j) {
-      float *ppd = pd;
-      for (std::uint32_t i = 0; i < d1; ++i) {
-        *ppd = *src++;
-        ppd += d2;
-      }
-      ++pd;
-    }
-    dest += ms;
+  const float *src = CDATA(x);
+  float *dest = MDATA(y);
+
+  for (std::uint32_t n = 0; n < bs; ++n) {
+    EMap<const EMatrixXf> xx(src + n * ms, di, dj);
+    EMap<EMatrixXf> yy(dest + n * ms, dj, di);
+    yy.noalias() = xx.transpose();
   }
 }
 
 void Eigen::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
-  using ::Eigen::Map;
-  using ::Eigen::MatrixXf;
-
   const std::uint32_t di = a.shape()[0];
   const std::uint32_t dj = a.shape()[1];
   const std::uint32_t dk = b.shape()[1];
@@ -521,33 +517,41 @@ void Eigen::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
     const std::uint32_t y_skip = di * dk;
     const std::uint32_t bs = a.shape().batch();
     for (std::uint32_t n = 0; n < bs; ++n) {
-      Map<const MatrixXf> aa(src_a + n * a_skip, di, dj);
-      Map<const MatrixXf> bb(src_b + n * b_skip, dj, dk);
-      Map<MatrixXf> yy(dest + n * y_skip, di, dk);
+      EMap<const EMatrixXf> aa(src_a + n * a_skip, di, dj);
+      EMap<const EMatrixXf> bb(src_b + n * b_skip, dj, dk);
+      EMap<EMatrixXf> yy(dest + n * y_skip, di, dk);
       yy.noalias() = aa * bb;
     }
   } else {
     // Do multiplication only once using a combined matrix.
     const std::uint32_t dk_batch = dk * b.shape().batch();
-    Map<const MatrixXf> aa(src_a, di, dj);
-    Map<const MatrixXf> bb(src_b, dj, dk_batch);
-    Map<MatrixXf> yy(dest, di, dk_batch);
+    EMap<const EMatrixXf> aa(src_a, di, dj);
+    EMap<const EMatrixXf> bb(src_b, dj, dk_batch);
+    EMap<EMatrixXf> yy(dest, di, dk_batch);
     yy.noalias() = aa * bb;
   }
 }
 
 void Eigen::transpose_bw_impl(
     const Tensor &, const Tensor &, const Tensor &gy, Tensor &gx) {
-  // TODO(odashi): This code could be slow and requires memory. Fix this.
-  inplace_add_impl(transpose_fw(gy), gx);
+  const std::uint32_t di = gx.shape()[0];
+  const std::uint32_t dj = gx.shape()[1];
+  const std::uint32_t ms = di * dj;
+  const std::uint32_t bs = gx.shape().batch();
+
+  const float *src = CDATA(gy);
+  float *dest = MDATA(gx);
+
+  for (std::uint32_t n = 0; n < bs; ++n) {
+    EMap<const EMatrixXf> gyy(src + n * ms, dj, di);
+    EMap<EMatrixXf> gxx(dest + n * ms, di, dj);
+    gxx.noalias() += gyy.transpose();
+  }
 }
 
 void Eigen::matmul_bw_impl(
     const Tensor &a, const Tensor &b, const Tensor &, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
-  using ::Eigen::Map;
-  using ::Eigen::MatrixXf;
-
   const std::uint32_t di = a.shape()[0];
   const std::uint32_t dj = a.shape()[1];
   const std::uint32_t dk = b.shape()[1];
@@ -565,22 +569,22 @@ void Eigen::matmul_bw_impl(
     const std::uint32_t y_skip = di * dk;
     const std::uint32_t bs = a.shape().batch();
     for (std::uint32_t n = 0; n < bs; ++n) {
-      Map<const MatrixXf> aa(src_a + n * a_skip, di, dj);
-      Map<const MatrixXf> bb(src_b + n * b_skip, dj, dk);
-      Map<const MatrixXf> gyy(src_gy + n * y_skip, di, dk);
-      Map<MatrixXf> gaa(dest_ga + n * a_skip, di, dj);
-      Map<MatrixXf> gbb(dest_gb + n * b_skip, dj, dk);
+      EMap<const EMatrixXf> aa(src_a + n * a_skip, di, dj);
+      EMap<const EMatrixXf> bb(src_b + n * b_skip, dj, dk);
+      EMap<const EMatrixXf> gyy(src_gy + n * y_skip, di, dk);
+      EMap<EMatrixXf> gaa(dest_ga + n * a_skip, di, dj);
+      EMap<EMatrixXf> gbb(dest_gb + n * b_skip, dj, dk);
       gaa.noalias() += gyy * bb.transpose();
       gbb.noalias() += aa.transpose() * gyy;
     }
   } else {
     // Do multiplication only once using a combined matrix.
     const std::uint32_t dk_batch = dk * b.shape().batch();
-    Map<const MatrixXf> aa(src_a, di, dj);
-    Map<const MatrixXf> bb(src_b, dj, dk_batch);
-    Map<const MatrixXf> gyy(src_gy, di, dk_batch);
-    Map<MatrixXf> gaa(dest_ga, di, dj);
-    Map<MatrixXf> gbb(dest_gb, dj, dk_batch);
+    EMap<const EMatrixXf> aa(src_a, di, dj);
+    EMap<const EMatrixXf> bb(src_b, dj, dk_batch);
+    EMap<const EMatrixXf> gyy(src_gy, di, dk_batch);
+    EMap<EMatrixXf> gaa(dest_ga, di, dj);
+    EMap<EMatrixXf> gbb(dest_gb, dj, dk_batch);
     gaa.noalias() += gyy * bb.transpose();
     gbb.noalias() += aa.transpose() * gyy;
   }
