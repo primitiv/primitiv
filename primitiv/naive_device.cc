@@ -347,6 +347,8 @@ CPUDEV_FW_X_CONST(subtract_const_l, k - src[i]);
 CPUDEV_FW_X_CONST(multiply_const, src[i] * k);
 CPUDEV_FW_X_CONST(divide_const_r, src[i] / k);
 CPUDEV_FW_X_CONST(divide_const_l, k / src[i]);
+CPUDEV_FW_X_CONST(pow_const_r, std::pow(src[i], k));
+CPUDEV_FW_X_CONST(pow_const_l, std::pow(k, src[i]));
 CPUDEV_FW_X_CONST(prelu, src[i] * ((src[i] > 0) + k * (src[i] <= 0)));
 CPUDEV_FW_X_CONST(
     elu, src[i] * (src[i] > 0) + k * (std::exp(src[i] * (src[i] <= 0)) - 1));
@@ -357,6 +359,8 @@ CPUDEV_BW_X_CONST(subtract_const_l, -pgy[i]);
 CPUDEV_BW_X_CONST(multiply_const, k * pgy[i]);
 CPUDEV_BW_X_CONST(divide_const_r, pgy[i] / k);
 CPUDEV_BW_X_CONST(divide_const_l, -py[i] * pgy[i] / px[i]);
+CPUDEV_BW_X_CONST(pow_const_r, k * pgy[i] * py[i] / px[i]);
+CPUDEV_BW_X_CONST(pow_const_l, std::log(k) * pgy[i] * py[i]);
 CPUDEV_BW_X_CONST(prelu, pgy[i] * ((px[i] > 0) + k * (px[i] <= 0)));
 CPUDEV_BW_X_CONST(elu, pgy[i] * ((px[i] > 0) + (py[i] + k) * (px[i] <= 0)));
 
@@ -366,11 +370,14 @@ CPUDEV_FW_X_SCALAR(subtract_scalar_l, *src_k - src_x[i]);
 CPUDEV_FW_X_SCALAR(multiply_scalar, src_x[i] * *src_k);
 CPUDEV_FW_X_SCALAR(divide_scalar_r, src_x[i] / *src_k);
 CPUDEV_FW_X_SCALAR(divide_scalar_l, *src_k / src_x[i]);
+CPUDEV_FW_X_SCALAR(pow_scalar_r, std::pow(src_x[i], *src_k));
+CPUDEV_FW_X_SCALAR(pow_scalar_l, std::pow(*src_k, src_x[i]));
 
 CPUDEV_FW_AB(add, src_a[i] + src_b[i]);
 CPUDEV_FW_AB(subtract, src_a[i] - src_b[i]);
 CPUDEV_FW_AB(multiply, src_a[i] * src_b[i]);
 CPUDEV_FW_AB(divide, src_a[i] / src_b[i]);
+CPUDEV_FW_AB(pow, std::pow(src_a[i], src_b[i]));
 
 #undef CPUDEV_FW_X
 #undef CPUDEV_BW_X
@@ -467,6 +474,34 @@ void Naive::divide_bw_impl(
       pga[i] += k;
       pgb[i] -= k * py[i];
     }
+    pb += skip_b;
+    py += size;
+    pgy += size;
+    pga += skip_a;
+    pgb += skip_b;
+  }
+}
+
+void Naive::pow_bw_impl(
+    const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+    Tensor &ga, Tensor &gb) {
+  const std::uint32_t size = gy.shape().volume();
+  const std::uint32_t bs = gy.shape().batch();
+  const std::uint32_t skip_a = ga.shape().has_batch() * size;
+  const std::uint32_t skip_b = gb.shape().has_batch() * size;
+  const float *pa = CDATA(a);
+  const float *pb = CDATA(b);
+  const float *py = CDATA(y);
+  const float *pgy = CDATA(gy);
+  float *pga = MDATA(ga);
+  float *pgb = MDATA(gb);
+  for (std::uint32_t batch = 0; batch < bs; ++batch) {
+    for (std::uint32_t i = 0; i < size; ++i) {
+      const float a = pgy[i] * py[i];
+      pga[i] += a * pb[i] / pa[i];
+      pgb[i] += a * std::log(pa[i]);
+    }
+    pa += skip_a;
     pb += skip_b;
     py += size;
     pgy += size;

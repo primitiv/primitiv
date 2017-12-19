@@ -174,6 +174,8 @@ CUDADEV_KERNEL_FW_X_CONST(subtract_const_l, k - px[i]);
 CUDADEV_KERNEL_FW_X_CONST(multiply_const, px[i] * k);
 CUDADEV_KERNEL_FW_X_CONST(divide_const_r, px[i] / k);
 CUDADEV_KERNEL_FW_X_CONST(divide_const_l, k / px[i]);
+CUDADEV_KERNEL_FW_X_CONST(pow_const_r, ::powf(px[i], k));
+CUDADEV_KERNEL_FW_X_CONST(pow_const_l, ::powf(k, px[i]));
 CUDADEV_KERNEL_FW_X_CONST(prelu, ::fmaxf(px[i], .0f) + k * ::fminf(px[i], .0f));
 CUDADEV_KERNEL_FW_X_CONST(
     elu, ::fmaxf(px[i], .0f) + k * (::expf(::fminf(px[i], .0f)) - 1.0f));
@@ -184,6 +186,8 @@ CUDADEV_KERNEL_BW_X_CONST(subtract_const_l, -pgy[i]);
 CUDADEV_KERNEL_BW_X_CONST(multiply_const, k * pgy[i]);
 CUDADEV_KERNEL_BW_X_CONST(divide_const_r, pgy[i] / k);
 CUDADEV_KERNEL_BW_X_CONST(divide_const_l, -py[i] * pgy[i] / px[i]);
+CUDADEV_KERNEL_BW_X_CONST(pow_const_r, k * pgy[i] * py[i] / px[i]);
+CUDADEV_KERNEL_BW_X_CONST(pow_const_l, ::logf(k) * pgy[i] * py[i]);
 CUDADEV_KERNEL_BW_X_CONST(prelu, pgy[i] * ((px[i] > .0f) + k * (px[i] <= .0f)));
 CUDADEV_KERNEL_BW_X_CONST(
     elu, pgy[i] * ((px[i] > .0f) + (py[i] + k) * (px[i] <= .0f)));
@@ -194,11 +198,14 @@ CUDADEV_KERNEL_FW_X_SCALAR_L(subtract_scalar_l, ::__fsub_rn);
 CUDADEV_KERNEL_FW_X_SCALAR_R(multiply_scalar, ::__fmul_rn);
 CUDADEV_KERNEL_FW_X_SCALAR_R(divide_scalar_r, ::__fdiv_rn);
 CUDADEV_KERNEL_FW_X_SCALAR_L(divide_scalar_l, ::__fdiv_rn);
+CUDADEV_KERNEL_FW_X_SCALAR_R(pow_scalar_r, ::powf);
+CUDADEV_KERNEL_FW_X_SCALAR_L(pow_scalar_l, ::powf);
 
 CUDADEV_KERNEL_FW_AB(add, ::__fadd_rn);
 CUDADEV_KERNEL_FW_AB(subtract, ::__fsub_rn);
 CUDADEV_KERNEL_FW_AB(multiply, ::__fmul_rn);
 CUDADEV_KERNEL_FW_AB(divide, ::__fdiv_rn);
+CUDADEV_KERNEL_FW_AB(pow, ::powf);
 
 #undef CUDADEV_KERNEL_FW_X
 #undef CUDADEV_KERNEL_BW_X
@@ -257,6 +264,21 @@ __global__ void divide_bw_dev(
     const float k = pgy[y_ofs] / pb[b_ofs];
     ::atomicAdd(pga + i + mba * shift, k);
     ::atomicAdd(pgb + b_ofs, -k * py[y_ofs]);
+  }
+}
+
+__global__ void pow_bw_dev(
+    const float *pa, const float *pb, const float *py, const float *pgy,
+    std::uint32_t size, std::uint32_t mba, std::uint32_t mbb, float *pga, float *pgb) {
+  const std::uint32_t i = IDX;
+  const std::uint32_t shift = blockIdx.y * size;
+  if (i < size) {
+    const std::uint32_t a_ofs = i + mba * shift;
+    const std::uint32_t b_ofs = i + mbb * shift;
+    const std::uint32_t y_ofs = i + shift;
+    const float k = pgy[y_ofs] * py[y_ofs];
+    ::atomicAdd(pga + a_ofs, k * pb[b_ofs] / pa[a_ofs]);
+    ::atomicAdd(pgb + b_ofs, k * ::logf(pa[a_ofs]));
   }
 }
 
@@ -1021,6 +1043,8 @@ CUDADEV_FW_X_CONST(subtract_const_l);
 CUDADEV_FW_X_CONST(multiply_const);
 CUDADEV_FW_X_CONST(divide_const_r);
 CUDADEV_FW_X_CONST(divide_const_l);
+CUDADEV_FW_X_CONST(pow_const_r);
+CUDADEV_FW_X_CONST(pow_const_l);
 CUDADEV_FW_X_CONST(prelu);
 CUDADEV_FW_X_CONST(elu);
 
@@ -1030,6 +1054,8 @@ CUDADEV_BW_X_CONST(subtract_const_l);
 CUDADEV_BW_X_CONST(multiply_const);
 CUDADEV_BW_X_CONST(divide_const_r);
 CUDADEV_BW_X_CONST(divide_const_l);
+CUDADEV_BW_X_CONST(pow_const_r);
+CUDADEV_BW_X_CONST(pow_const_l);
 CUDADEV_BW_X_CONST(prelu);
 CUDADEV_BW_X_CONST(elu);
 
@@ -1039,16 +1065,20 @@ CUDADEV_FW_X_SCALAR(subtract_scalar_l);
 CUDADEV_FW_X_SCALAR(multiply_scalar);
 CUDADEV_FW_X_SCALAR(divide_scalar_r);
 CUDADEV_FW_X_SCALAR(divide_scalar_l);
+CUDADEV_FW_X_SCALAR(pow_scalar_r);
+CUDADEV_FW_X_SCALAR(pow_scalar_l);
 
 CUDADEV_FW_AB(add);
 CUDADEV_FW_AB(subtract);
 CUDADEV_FW_AB(multiply);
 CUDADEV_FW_AB(divide);
+CUDADEV_FW_AB(pow);
 
 CUDADEV_BW_AB(add);
 CUDADEV_BW_AB(subtract);
 CUDADEV_BW_AB(multiply);
 CUDADEV_BW_AB(divide);
+CUDADEV_BW_AB(pow);
 
 #undef CUDADEV_FW_X
 #undef CUDADEV_BW_X

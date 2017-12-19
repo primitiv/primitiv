@@ -284,6 +284,8 @@ public:
       CONFIGURE_KERNEL(multiply_const_fw);
       CONFIGURE_KERNEL(divide_const_r_fw);
       CONFIGURE_KERNEL(divide_const_l_fw);
+      CONFIGURE_KERNEL(pow_const_r_fw);
+      CONFIGURE_KERNEL(pow_const_l_fw);
 
       CONFIGURE_KERNEL(add_const_bw);
       CONFIGURE_KERNEL(subtract_const_r_bw);
@@ -291,6 +293,8 @@ public:
       CONFIGURE_KERNEL(multiply_const_bw);
       CONFIGURE_KERNEL(divide_const_r_bw);
       CONFIGURE_KERNEL(divide_const_l_bw);
+      CONFIGURE_KERNEL(pow_const_r_bw);
+      CONFIGURE_KERNEL(pow_const_l_bw);
 
       CONFIGURE_KERNEL(prelu_fw);
       CONFIGURE_KERNEL(elu_fw);
@@ -304,16 +308,20 @@ public:
       CONFIGURE_KERNEL(multiply_scalar_fw);
       CONFIGURE_KERNEL(divide_scalar_r_fw);
       CONFIGURE_KERNEL(divide_scalar_l_fw);
+      CONFIGURE_KERNEL(pow_scalar_r_fw);
+      CONFIGURE_KERNEL(pow_scalar_l_fw);
 
       CONFIGURE_KERNEL(add_fw);
       CONFIGURE_KERNEL(subtract_fw);
       CONFIGURE_KERNEL(multiply_fw);
       CONFIGURE_KERNEL(divide_fw);
+      CONFIGURE_KERNEL(pow_fw);
 
       CONFIGURE_KERNEL(add_bw);
       CONFIGURE_KERNEL(subtract_bw);
       CONFIGURE_KERNEL(multiply_bw);
       CONFIGURE_KERNEL(divide_bw);
+      CONFIGURE_KERNEL(pow_bw);
 
       CONFIGURE_KERNEL_LIST(sum_fw);
       CONFIGURE_KERNEL_LIST(logsumexp_fw);
@@ -392,6 +400,8 @@ public:
   DECL_KERNEL(multiply_const_fw);
   DECL_KERNEL(divide_const_r_fw);
   DECL_KERNEL(divide_const_l_fw);
+  DECL_KERNEL(pow_const_r_fw);
+  DECL_KERNEL(pow_const_l_fw);
   DECL_KERNEL(prelu_fw);
   DECL_KERNEL(elu_fw);
 
@@ -401,6 +411,8 @@ public:
   DECL_KERNEL(multiply_const_bw);
   DECL_KERNEL(divide_const_r_bw);
   DECL_KERNEL(divide_const_l_bw);
+  DECL_KERNEL(pow_const_r_bw);
+  DECL_KERNEL(pow_const_l_bw);
   DECL_KERNEL(prelu_bw);
   DECL_KERNEL(elu_bw);
 
@@ -410,16 +422,20 @@ public:
   DECL_KERNEL(multiply_scalar_fw);
   DECL_KERNEL(divide_scalar_r_fw);
   DECL_KERNEL(divide_scalar_l_fw);
+  DECL_KERNEL(pow_scalar_r_fw);
+  DECL_KERNEL(pow_scalar_l_fw);
 
   DECL_KERNEL(add_fw);
   DECL_KERNEL(subtract_fw);
   DECL_KERNEL(multiply_fw);
   DECL_KERNEL(divide_fw);
+  DECL_KERNEL(pow_fw);
 
   DECL_KERNEL(add_bw);
   DECL_KERNEL(subtract_bw);
   DECL_KERNEL(multiply_bw);
   DECL_KERNEL(divide_bw);
+  DECL_KERNEL(pow_bw);
 
   DECL_KERNEL_LIST(sum_fw, 11);
   DECL_KERNEL_LIST(logsumexp_fw, 11);
@@ -1084,6 +1100,8 @@ OPENCLDEV_FW_X_CONST(subtract_const_l);
 OPENCLDEV_FW_X_CONST(multiply_const);
 OPENCLDEV_FW_X_CONST(divide_const_r);
 OPENCLDEV_FW_X_CONST(divide_const_l);
+OPENCLDEV_FW_X_CONST(pow_const_r);
+OPENCLDEV_FW_X_CONST(pow_const_l);
 OPENCLDEV_FW_X_CONST(prelu);
 OPENCLDEV_FW_X_CONST(elu);
 
@@ -1093,6 +1111,8 @@ OPENCLDEV_BW_X_CONST(subtract_const_l);
 OPENCLDEV_BW_X_CONST(multiply_const);
 OPENCLDEV_BW_X_CONST(divide_const_r);
 OPENCLDEV_BW_X_CONST(divide_const_l);
+OPENCLDEV_BW_X_CONST(pow_const_r);
+OPENCLDEV_BW_X_CONST(pow_const_l);
 OPENCLDEV_BW_X_CONST(prelu);
 OPENCLDEV_BW_X_CONST(elu);
 
@@ -1102,16 +1122,20 @@ OPENCLDEV_FW_X_SCALAR(subtract_scalar_l);
 OPENCLDEV_FW_X_SCALAR(multiply_scalar);
 OPENCLDEV_FW_X_SCALAR(divide_scalar_r);
 OPENCLDEV_FW_X_SCALAR(divide_scalar_l);
+OPENCLDEV_FW_X_SCALAR(pow_scalar_r);
+OPENCLDEV_FW_X_SCALAR(pow_scalar_l);
 
 OPENCLDEV_FW_AB(add);
 OPENCLDEV_FW_AB(subtract);
 OPENCLDEV_FW_AB(multiply);
 OPENCLDEV_FW_AB(divide);
+OPENCLDEV_FW_AB(pow);
 
 OPENCLDEV_BW_AB(add);
 OPENCLDEV_BW_AB(subtract);
 OPENCLDEV_BW_AB(multiply);
 OPENCLDEV_BW_AB(divide);
+OPENCLDEV_BW_AB(pow);
 
 #undef OPENCLDEV_FW_X
 #undef OPENCLDEV_BW_X
