@@ -93,6 +93,19 @@ Node divide(const Node &a, const Node &b) {
   else return REGX(a, Divide(), a, b);
 }
 
+template<>
+Node pow(const Node &x, float k) { return REGX(x, PowConstR(k), x); }
+
+template<>
+Node pow(float k, const Node &x) { return REGX(x, PowConstL(k), x); }
+
+template<>
+Node pow(const Node &a, const Node &b) {
+  if (a.shape().is_scalar()) return REGX(a, PowScalarL(), b, a);
+  else if (b.shape().is_scalar()) return REGX(a, PowScalarR(), a, b);
+  else return REGX(a, Pow(), a, b);
+}
+
 Node input_node(
     const Shape &shape, const std::vector<float> &data, Device *dev, Graph *g) {
   return REG(

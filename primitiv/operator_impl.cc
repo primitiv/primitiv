@@ -266,6 +266,8 @@ FWD_SHAPE_UNARY(SubtractConstL);
 FWD_SHAPE_UNARY(MultiplyConst);
 FWD_SHAPE_UNARY(DivideConstR);
 FWD_SHAPE_UNARY(DivideConstL);
+FWD_SHAPE_UNARY(PowConstR);
+FWD_SHAPE_UNARY(PowConstL);
 FWD_SHAPE_UNARY(Sqrt);
 FWD_SHAPE_UNARY(Exp);
 FWD_SHAPE_UNARY(Log);
@@ -285,10 +287,13 @@ FWD_SHAPE_SCALAR(SubtractScalarL);
 FWD_SHAPE_SCALAR(MultiplyScalar);
 FWD_SHAPE_SCALAR(DivideScalarR);
 FWD_SHAPE_SCALAR(DivideScalarL);
+FWD_SHAPE_SCALAR(PowScalarR);
+FWD_SHAPE_SCALAR(PowScalarL);
 FWD_SHAPE_ELEMENTWISE(Add);
 FWD_SHAPE_ELEMENTWISE(Subtract);
 FWD_SHAPE_ELEMENTWISE(Multiply);
 FWD_SHAPE_ELEMENTWISE(Divide);
+FWD_SHAPE_ELEMENTWISE(Pow);
 
 #undef FWD_SHAPE_UNARY
 #undef FWD_SHAPE_ELEMENTWISE
@@ -369,6 +374,8 @@ FORWARD(SubtractConstL) { return k_ - *x[0]; }
 FORWARD(MultiplyConst) { return *x[0] * k_; }
 FORWARD(DivideConstR) { return *x[0] / k_; }
 FORWARD(DivideConstL) { return k_ / *x[0]; }
+FORWARD(PowConstR) { return functions::pow(*x[0], k_); }
+FORWARD(PowConstL) { return functions::pow(k_, *x[0]); }
 FORWARD(PReLU) { return functions::prelu(*x[0], k_); }
 FORWARD(ELU) { return functions::elu(*x[0], k_); }
 
@@ -378,11 +385,14 @@ FORWARD(SubtractScalarL) { return *x[1] - *x[0]; }
 FORWARD(MultiplyScalar) { return *x[0] * *x[1]; }
 FORWARD(DivideScalarR) { return *x[0] / *x[1]; }
 FORWARD(DivideScalarL) { return *x[1] / *x[0]; }
+FORWARD(PowScalarR) { return functions::pow(*x[0], *x[1]); }
+FORWARD(PowScalarL) { return functions::pow(*x[1], *x[0]); }
 
 FORWARD(Add) { return *x[0] + *x[1]; }
 FORWARD(Subtract) { return *x[0] - *x[1]; }
 FORWARD(Multiply) { return *x[0] * *x[1]; }
 FORWARD(Divide) { return *x[0] / *x[1]; }
+FORWARD(Pow) { return functions::pow(*x[0], *x[1]); }
 
 FORWARD(Transpose) { return functions::transpose(*x[0]); }
 FORWARD(MatrixMultiply) { return functions::matmul(*x[0], *x[1]); }
@@ -441,6 +451,8 @@ BACKWARD(SubtractConstL) { gy.device().subtract_const_l_bw(*x[0], y, gy, k_, *gx
 BACKWARD(MultiplyConst) { gy.device().multiply_const_bw(*x[0], y, gy, k_, *gx[0]); }
 BACKWARD(DivideConstR) { gy.device().divide_const_r_bw(*x[0], y, gy, k_, *gx[0]); }
 BACKWARD(DivideConstL) { gy.device().divide_const_l_bw(*x[0], y, gy, k_, *gx[0]); }
+BACKWARD(PowConstR) { gy.device().pow_const_r_bw(*x[0], y, gy, k_, *gx[0]); }
+BACKWARD(PowConstL) { gy.device().pow_const_l_bw(*x[0], y, gy, k_, *gx[0]); }
 BACKWARD(PReLU) { gy.device().prelu_bw(*x[0], y, gy, k_, *gx[0]); }
 BACKWARD(ELU) { gy.device().elu_bw(*x[0], y, gy, k_, *gx[0]); }
 
@@ -470,11 +482,22 @@ BACKWARD(DivideScalarL) {
   *gx[0] -= a * y;
   *gx[1] += functions::sum(a.flatten(), 0);
 }
+BACKWARD(PowScalarR) {
+  const Tensor a = gy * y;
+  *gx[0] += a * *x[1] / *x[0];
+  *gx[1] += functions::sum((a * functions::log(*x[0])).flatten(), 0);
+}
+BACKWARD(PowScalarL) {
+  const Tensor a = gy * y;
+  *gx[0] += a * functions::log(*x[1]);
+  *gx[1] += functions::sum((a * *x[0] / *x[1]).flatten(), 0);
+}
 
 BACKWARD(Add) { gy.device().add_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
 BACKWARD(Subtract) { gy.device().subtract_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
 BACKWARD(Multiply) { gy.device().multiply_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
 BACKWARD(Divide) { gy.device().divide_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
+BACKWARD(Pow) { gy.device().pow_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
 BACKWARD(MatrixMultiply) { gy.device().matmul_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]); }
 
 BACKWARD(Sum) { *gx[0] += functions::broadcast(gy, dim_, x[0]->shape()[dim_]); }

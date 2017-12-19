@@ -1,3 +1,8 @@
+inline float inline_add(const float a, const float b) { return a + b; }
+inline float inline_sub(const float a, const float b) { return a - b; }
+inline float inline_mul(const float a, const float b) { return a * b; }
+inline float inline_div(const float a, const float b) { return a / b; }
+
 #define REDUCE(k, GROUP_SIZE) \
   if (GROUP_SIZE >= k << 1) { \
     if (tid < k) { \
@@ -214,7 +219,7 @@ kernel void name##_bw_kernel( \
   if (i < size) pgx[i] += (op) ; \
 }
 
-#define OPENCLDEV_KERNEL_FW_X_SCALAR_R_INFIX(name, op) \
+#define OPENCLDEV_KERNEL_FW_X_SCALAR_R(name, op) \
 kernel void name##_fw_kernel( \
     const global float *px, const global float *pk, const unsigned size, \
     const unsigned mbx, const unsigned mbk, global float *py) { \
@@ -222,11 +227,11 @@ kernel void name##_fw_kernel( \
   const unsigned bid_y = get_group_id(1); \
   const unsigned shift = bid_y * size; \
   if (i < size) { \
-    py[i + shift] = px[i + mbx * shift] op pk[mbk * bid_y]; \
+    py[i + shift] = op(px[i + mbx * shift], pk[mbk * bid_y]); \
   } \
 }
 
-#define OPENCLDEV_KERNEL_FW_X_SCALAR_L_INFIX(name, op) \
+#define OPENCLDEV_KERNEL_FW_X_SCALAR_L(name, op) \
 kernel void name##_fw_kernel( \
     const global float *px, const global float *pk, const unsigned size, \
     const unsigned mbx, const unsigned mbk, global float *py) { \
@@ -234,11 +239,11 @@ kernel void name##_fw_kernel( \
   const unsigned bid_y = get_group_id(1); \
   const unsigned shift = bid_y * size; \
   if (i < size) { \
-    py[i + shift] = pk[mbk * bid_y] op px[i + mbx * shift]; \
+    py[i + shift] = op(pk[mbk * bid_y], px[i + mbx * shift]); \
   } \
 }
 
-#define OPENCLDEV_KERNEL_FW_AB_INFIX(name, op) \
+#define OPENCLDEV_KERNEL_FW_AB(name, op) \
 kernel void name##_fw_kernel( \
     const global float *pa, const global float *pb, const unsigned size, \
     const unsigned mba, const unsigned mbb, global float *py) { \
@@ -246,8 +251,7 @@ kernel void name##_fw_kernel( \
   const unsigned bid_y = get_group_id(1); \
   const unsigned shift = bid_y * size; \
   if (i < size) { \
-    py[i + shift] = pa[i + mba * shift] op \
-        pb[i + mbb * shift]; \
+    py[i + shift] = op(pa[i + mba * shift], pb[i + mbb * shift]); \
   } \
 }
 
@@ -279,6 +283,8 @@ OPENCLDEV_KERNEL_FW_X_CONST(subtract_const_l, k - px[i])
 OPENCLDEV_KERNEL_FW_X_CONST(multiply_const, px[i] * k)
 OPENCLDEV_KERNEL_FW_X_CONST(divide_const_r, px[i] / k)
 OPENCLDEV_KERNEL_FW_X_CONST(divide_const_l, k / px[i])
+OPENCLDEV_KERNEL_FW_X_CONST(pow_const_r, pow(px[i], k))
+OPENCLDEV_KERNEL_FW_X_CONST(pow_const_l, pow(k, px[i]))
 OPENCLDEV_KERNEL_FW_X_CONST(prelu, max(px[i], .0f) + k * min(px[i], .0f))
 OPENCLDEV_KERNEL_FW_X_CONST(
     elu, max(px[i], .0f) + k * (exp(min(px[i], .0f)) - 1.0f))
@@ -289,22 +295,27 @@ OPENCLDEV_KERNEL_BW_X_CONST(subtract_const_l, -pgy[i])
 OPENCLDEV_KERNEL_BW_X_CONST(multiply_const, k * pgy[i])
 OPENCLDEV_KERNEL_BW_X_CONST(divide_const_r, pgy[i] / k)
 OPENCLDEV_KERNEL_BW_X_CONST(divide_const_l, -py[i] * pgy[i] / px[i])
+OPENCLDEV_KERNEL_BW_X_CONST(pow_const_r, k * pgy[i] * py[i] / px[i])
+OPENCLDEV_KERNEL_BW_X_CONST(pow_const_l, log(k) * pgy[i] * py[i])
 OPENCLDEV_KERNEL_BW_X_CONST(
     prelu, pgy[i] * ((px[i] > .0f) + k * (px[i] <= .0f)))
 OPENCLDEV_KERNEL_BW_X_CONST(
     elu, pgy[i] * ((px[i] > .0f) + (py[i] + k) * (px[i] <= .0f)))
 
-OPENCLDEV_KERNEL_FW_X_SCALAR_R_INFIX(add_scalar, +)
-OPENCLDEV_KERNEL_FW_X_SCALAR_R_INFIX(subtract_scalar_r, -)
-OPENCLDEV_KERNEL_FW_X_SCALAR_L_INFIX(subtract_scalar_l, -)
-OPENCLDEV_KERNEL_FW_X_SCALAR_R_INFIX(multiply_scalar, *)
-OPENCLDEV_KERNEL_FW_X_SCALAR_R_INFIX(divide_scalar_r, /)
-OPENCLDEV_KERNEL_FW_X_SCALAR_L_INFIX(divide_scalar_l, /)
+OPENCLDEV_KERNEL_FW_X_SCALAR_R(add_scalar, inline_add)
+OPENCLDEV_KERNEL_FW_X_SCALAR_R(subtract_scalar_r, inline_sub)
+OPENCLDEV_KERNEL_FW_X_SCALAR_L(subtract_scalar_l, inline_sub)
+OPENCLDEV_KERNEL_FW_X_SCALAR_R(multiply_scalar, inline_mul)
+OPENCLDEV_KERNEL_FW_X_SCALAR_R(divide_scalar_r, inline_div)
+OPENCLDEV_KERNEL_FW_X_SCALAR_L(divide_scalar_l, inline_div)
+OPENCLDEV_KERNEL_FW_X_SCALAR_R(pow_scalar_r, pow)
+OPENCLDEV_KERNEL_FW_X_SCALAR_L(pow_scalar_l, pow)
 
-OPENCLDEV_KERNEL_FW_AB_INFIX(add, +)
-OPENCLDEV_KERNEL_FW_AB_INFIX(subtract, -)
-OPENCLDEV_KERNEL_FW_AB_INFIX(multiply, *)
-OPENCLDEV_KERNEL_FW_AB_INFIX(divide, /)
+OPENCLDEV_KERNEL_FW_AB(add, inline_add)
+OPENCLDEV_KERNEL_FW_AB(subtract, inline_sub)
+OPENCLDEV_KERNEL_FW_AB(multiply, inline_mul)
+OPENCLDEV_KERNEL_FW_AB(divide, inline_div)
+OPENCLDEV_KERNEL_FW_AB(pow, pow)
 
 #undef OPENCLDEV_KERNEL_FW_X
 #undef OPENCLDEV_KERNEL_BW_X
@@ -375,6 +386,24 @@ kernel void divide_bw_kernel(
     const float k = pgy[y_ofs] / pb[b_ofs];
     atomic_add_float(pga + i + mba * shift, k);
     atomic_add_float(pgb + b_ofs, -k * py[y_ofs]);
+  }
+}
+
+kernel void pow_bw_kernel(
+    const global float *pa, const global float *pb,
+    const global float *py, const global float *pgy,
+    const unsigned size, const unsigned mba, const unsigned mbb,
+    global float *pga, global float *pgb) {
+  const unsigned i = get_global_id(0);
+  const unsigned bid_y = get_group_id(1);
+  const unsigned shift = bid_y * size;
+  if (i < size) {
+    const unsigned a_ofs = i + mba * shift;
+    const unsigned b_ofs = i + mbb * shift;
+    const unsigned y_ofs = i + shift;
+    const float k = pgy[y_ofs] * py[y_ofs];
+    atomic_add_float(pga + a_ofs, k * pb[b_ofs] / pa[a_ofs]);
+    atomic_add_float(pgb + b_ofs, k * log(pa[a_ofs]));
   }
 }
 

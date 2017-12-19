@@ -146,6 +146,8 @@ public:
   Tensor multiply_const_fw(const Tensor &x, float k);
   Tensor divide_const_r_fw(const Tensor &x, float k);
   Tensor divide_const_l_fw(const Tensor &x, float k);
+  Tensor pow_const_r_fw(const Tensor &x, float k);
+  Tensor pow_const_l_fw(const Tensor &x, float k);
   Tensor prelu_fw(const Tensor &x, float k);
   Tensor elu_fw(const Tensor &x, float k);
 
@@ -155,6 +157,8 @@ public:
   void multiply_const_bw(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx);
   void divide_const_r_bw(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx);
   void divide_const_l_bw(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx);
+  void pow_const_r_bw(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx);
+  void pow_const_l_bw(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx);
   void prelu_bw(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx);
   void elu_bw(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx);
 
@@ -165,12 +169,15 @@ public:
   Tensor multiply_scalar_fw(const Tensor &x, const Tensor &k);
   Tensor divide_scalar_r_fw(const Tensor &x, const Tensor &k);
   Tensor divide_scalar_l_fw(const Tensor &x, const Tensor &k);
+  Tensor pow_scalar_r_fw(const Tensor &x, const Tensor &k);
+  Tensor pow_scalar_l_fw(const Tensor &x, const Tensor &k);
 
   // Binary operations.
   Tensor add_fw(const Tensor &a, const Tensor &b);
   Tensor subtract_fw(const Tensor &a, const Tensor &b);
   Tensor multiply_fw(const Tensor &a, const Tensor &b);
   Tensor divide_fw(const Tensor &a, const Tensor &b);
+  Tensor pow_fw(const Tensor &a, const Tensor &b);
   Tensor matmul_fw(const Tensor &a, const Tensor &b);
 
   void add_bw(
@@ -183,6 +190,9 @@ public:
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
       Tensor &ga, Tensor &gb);
   void divide_bw(
+      const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+      Tensor &ga, Tensor &gb);
+  void pow_bw(
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
       Tensor &ga, Tensor &gb);
   void matmul_bw(
@@ -353,6 +363,8 @@ private:
   virtual void multiply_const_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
   virtual void divide_const_r_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
   virtual void divide_const_l_fw_impl(const Tensor &x, float k, Tensor &y)  = 0;
+  virtual void pow_const_r_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
+  virtual void pow_const_l_fw_impl(const Tensor &x, float k, Tensor &y)  = 0;
   virtual void prelu_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
   virtual void elu_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
 
@@ -362,6 +374,8 @@ private:
   virtual void multiply_const_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) = 0;
   virtual void divide_const_r_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) = 0;
   virtual void divide_const_l_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) = 0;
+  virtual void pow_const_r_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) = 0;
+  virtual void pow_const_l_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) = 0;
   virtual void prelu_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) = 0;
   virtual void elu_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) = 0;
 
@@ -371,11 +385,14 @@ private:
   virtual void multiply_scalar_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) = 0;
   virtual void divide_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) = 0;
   virtual void divide_scalar_l_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) = 0;
+  virtual void pow_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) = 0;
+  virtual void pow_scalar_l_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) = 0;
 
   virtual void add_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) = 0;
   virtual void subtract_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) = 0;
   virtual void multiply_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) = 0;
   virtual void divide_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) = 0;
+  virtual void pow_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) = 0;
   virtual void matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) = 0;
 
   virtual void add_bw_impl(
@@ -388,6 +405,9 @@ private:
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
       Tensor &ga, Tensor &gb) = 0;
   virtual void divide_bw_impl(
+      const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+      Tensor &ga, Tensor &gb) = 0;
+  virtual void pow_bw_impl(
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
       Tensor &ga, Tensor &gb) = 0;
   virtual void matmul_bw_impl(
