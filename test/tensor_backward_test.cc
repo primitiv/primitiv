@@ -8,6 +8,7 @@
 #include <test_utils.h>
 
 using std::vector;
+using test_utils::vector_match_ulps;
 using test_utils::vector_match;
 using test_utils::vector_near;
 
@@ -433,7 +434,7 @@ TEST_F(TensorBackwardTest, CheckSigmoid) {
       .25, -.19661193, .20998717, -.090353319,
       .5, -.39322387, .10499359, -.045176660,
     };
-    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), 6));
   }
 }
 
