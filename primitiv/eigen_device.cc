@@ -636,6 +636,8 @@ void Eigen::matmul_bw_impl(
 }
 
 void Eigen::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
+  // TODO(odashi): Optimize this functions using Eigen operations.
+
   const std::uint32_t n = x.shape()[dim];
   const std::uint32_t repeat = y.shape().size();
   const std::uint32_t skip1 = y.shape().lower_volume(dim);
@@ -654,6 +656,8 @@ void Eigen::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
 }
 
 void Eigen::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
+  // TODO(odashi): Optimize this functions using Eigen operations.
+
   const std::uint32_t n = x.shape()[dim];
   const std::uint32_t repeat = y.shape().size();
   const std::uint32_t skip1 = y.shape().lower_volume(dim);
@@ -677,6 +681,8 @@ void Eigen::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
 
 void Eigen::broadcast_fw_impl(
     const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) {
+  // TODO(odashi): Optimize this functions using Eigen operations.
+
   const std::uint32_t repeat = x.shape().size();
   const std::uint32_t skip1 = y.shape().lower_volume(dim);
   const std::uint32_t skip2 = skip1 * size;
@@ -692,24 +698,23 @@ void Eigen::broadcast_fw_impl(
   }
 }
 
-void Eigen::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
-  float *dest = MDATA(y);
-  const float *src = CDATA(x);
-  const std::uint32_t bs = x.shape().batch();
-  const std::uint32_t size = y.shape().size();
-  for (std::uint32_t i = 0; i < size; ++i) {
-    float temp = 0;
-    for (std::uint32_t batch = 0, pos = i; batch < bs; ++batch, pos += size) {
-      temp += src[pos];
-    }
-    dest[i] = temp;
+void Eigen::batch_sum_fw_impl(const Tensor &x_, Tensor &y_) {
+  const std::size_t size = x_.shape().volume();
+  const std::size_t bs = x_.shape().batch();
+
+  const float *px = CDATA(x_);
+  EMap<EArrayXf> y(MDATA(y_), size);
+  y = EMap<const EArrayXf>(px, size);
+  px += size;
+
+  for (std::size_t i = 1; i < bs; ++i) {
+    y += EMap<const EArrayXf>(px, size);
+    px += size;
   }
 }
 
 void Eigen::inplace_multiply_const_impl(float k, Tensor &x) {
-  const std::uint32_t size = x.shape().size();
-  float *dest = MDATA(x);
-  REPEAT_OP(i, size, dest[i] *= k);
+  EMap<EArrayXf>(MDATA(x), x.shape().size()) *= k;
 }
 
 void Eigen::inplace_add_impl(const Tensor &x, Tensor &y) {
@@ -717,14 +722,14 @@ void Eigen::inplace_add_impl(const Tensor &x, Tensor &y) {
   const Shape &sy = y.shape();
   const std::uint32_t size = sy.volume();
   const std::uint32_t bs = std::max(sx.batch(), sy.batch());
-  const std::uint32_t b_skip_d = sy.has_batch() * size;
-  const std::uint32_t b_skip_s = sx.has_batch() * size;
-  float *dest = MDATA(y);
-  const float *src = CDATA(x);
+  const std::uint32_t skip_y = sy.has_batch() * size;
+  const std::uint32_t skip_x = sx.has_batch() * size;
+  float *py = MDATA(y);
+  const float *px = CDATA(x);
   for (std::uint32_t batch = 0; batch < bs; ++batch) {
-    REPEAT_OP(i, size, dest[i] += src[i]);
-    dest += b_skip_d;
-    src += b_skip_s;
+    EMap<EArrayXf>(py, size) += EMap<const EArrayXf>(px, size);
+    py += skip_y;
+    px += skip_x;
   }
 }
 
@@ -733,14 +738,14 @@ void Eigen::inplace_subtract_impl(const Tensor &x, Tensor &y) {
   const Shape &sy = y.shape();
   const std::uint32_t size = sy.volume();
   const std::uint32_t bs = std::max(sx.batch(), sy.batch());
-  const std::uint32_t b_skip_d = sy.has_batch() * size;
-  const std::uint32_t b_skip_s = sx.has_batch() * size;
-  float *dest = MDATA(y);
-  const float *src = CDATA(x);
+  const std::uint32_t skip_y = sy.has_batch() * size;
+  const std::uint32_t skip_x = sx.has_batch() * size;
+  float *py = MDATA(y);
+  const float *px = CDATA(x);
   for (std::uint32_t batch = 0; batch < bs; ++batch) {
-    REPEAT_OP(i, size, dest[i] -= src[i]);
-    dest += b_skip_d;
-    src += b_skip_s;
+    EMap<EArrayXf>(py, size) -= EMap<const EArrayXf>(px, size);
+    py += skip_y;
+    px += skip_x;
   }
 }
 
