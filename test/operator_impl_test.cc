@@ -727,6 +727,8 @@ TEST_F(OperatorImplTest, CheckDivideConstL) {
   TEST_1ARG_K(DivideConstL, 3);
 }
 
+// TODO(odashi): Add tests for PowConstR/L.
+
 TEST_F(OperatorImplTest, CheckAddScalar) {
   // y = x + k
   // dy/dx = 1
@@ -815,6 +817,8 @@ TEST_F(OperatorImplTest, CheckDivideScalarL) {
   TEST_2ARGS(DivideScalarL);
 }
 
+// TODO(odashi): Add tests for PowScalarR/L.
+
 TEST_F(OperatorImplTest, CheckAdd) {
   // y = a + b
   // dy/da = 1
@@ -871,6 +875,8 @@ TEST_F(OperatorImplTest, CheckDivide) {
   };
   TEST_2ARGS(Divide);
 }
+
+// TODO(odashi): Add tests for Pow.
 
 TEST_F(OperatorImplTest, CheckTranspose) {
   // y = x^T

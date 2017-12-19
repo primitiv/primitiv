@@ -619,6 +619,8 @@ TEST_F(TensorBackwardTest, CheckDivideConstL) {
   }
 }
 
+// TODO(odashi): Add tests for PowConstR/L.
+
 TEST_F(TensorBackwardTest, CheckPReLU) {
   const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
   for (Device *dev : devices) {
@@ -932,6 +934,8 @@ TEST_F(TensorBackwardTest, CheckDivideN1) {
     EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
   }
 }
+
+// TODO(odashi): Add tests for Pow(11, NN, 1N, N1).
 
 TEST_F(TensorBackwardTest, CheckMatMul11) {
   for (Device *dev : devices) {
