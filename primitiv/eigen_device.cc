@@ -372,6 +372,8 @@ EIGEN_DEV_FW_X_CONST(subtract_const_l, k - x);
 EIGEN_DEV_FW_X_CONST(multiply_const, x * k);
 EIGEN_DEV_FW_X_CONST(divide_const_r, x / k);
 EIGEN_DEV_FW_X_CONST(divide_const_l, k / x);
+EIGEN_DEV_FW_X_CONST(pow_const_r, x.pow(k));
+EIGEN_DEV_FW_X_CONST(pow_const_l, ::Eigen::pow(k, x));
 EIGEN_DEV_FW_X_CONST(prelu, (x > 0.).select(x, k * x));
 EIGEN_DEV_FW_X_CONST(elu, (x > 0.).select(x, k * (x.exp() - 1.)));
 
@@ -381,6 +383,8 @@ EIGEN_DEV_BW_X_CONST(subtract_const_l, -gy);
 EIGEN_DEV_BW_X_CONST(multiply_const, k * gy);
 EIGEN_DEV_BW_X_CONST(divide_const_r, gy / k);
 EIGEN_DEV_BW_X_CONST(divide_const_l, -gy * y / x);
+EIGEN_DEV_BW_X_CONST(pow_const_r, k * gy * y / x);
+EIGEN_DEV_BW_X_CONST(pow_const_l, std::log(k) * gy * y);
 EIGEN_DEV_BW_X_CONST(prelu, (x > 0.).select(gy, k * gy));
 EIGEN_DEV_BW_X_CONST(elu, (x > 0.).select(gy, (y + k) * gy));
 
@@ -390,11 +394,14 @@ EIGEN_DEV_FW_X_SCALAR(subtract_scalar_l, k - x);
 EIGEN_DEV_FW_X_SCALAR(multiply_scalar, x * k);
 EIGEN_DEV_FW_X_SCALAR(divide_scalar_r, x / k);
 EIGEN_DEV_FW_X_SCALAR(divide_scalar_l, k / x);
+EIGEN_DEV_FW_X_SCALAR(pow_scalar_r, x.pow(k));
+EIGEN_DEV_FW_X_SCALAR(pow_scalar_l, ::Eigen::pow(k, x));
 
 EIGEN_DEV_FW_AB(add, a + b);
 EIGEN_DEV_FW_AB(subtract, a - b);
 EIGEN_DEV_FW_AB(multiply, a * b);
 EIGEN_DEV_FW_AB(divide, a / b);
+EIGEN_DEV_FW_AB(pow, a.pow(b));
 
 #undef EIGEN_DEV_FW_X
 #undef EIGEN_DEV_BW_X
@@ -486,6 +493,35 @@ void Eigen::divide_bw_impl(
     EMap<const EArrayXf> gy(pgy, size);
     EMap<EArrayXf>(pga, size) += gy / b;
     EMap<EArrayXf>(pgb, size) -= gy * EMap<const EArrayXf>(py, size) / b;
+    pb += skip_b;
+    py += size;
+    pgy += size;
+    pga += skip_a;
+    pgb += skip_b;
+  }
+}
+
+void Eigen::pow_bw_impl(
+    const Tensor &a_, const Tensor &b_, const Tensor &y_, const Tensor &gy_,
+    Tensor &ga_, Tensor &gb_) {
+  const std::uint32_t size = gy_.shape().volume();
+  const std::uint32_t bs = gy_.shape().batch();
+  const std::uint32_t skip_a = ga_.shape().has_batch() * size;
+  const std::uint32_t skip_b = gb_.shape().has_batch() * size;
+  const float *pa = CDATA(a_);
+  const float *pb = CDATA(b_);
+  const float *py = CDATA(y_);
+  const float *pgy = CDATA(gy_);
+  float *pga = MDATA(ga_);
+  float *pgb = MDATA(gb_);
+  for (std::uint32_t batch = 0; batch < bs; ++batch) {
+    EMap<const EArrayXf> a(pa, size);
+    EMap<const EArrayXf> b(pb, size);
+    EMap<const EArrayXf> y(py, size);
+    EMap<const EArrayXf> gy(pgy, size);
+    EMap<EArrayXf>(pga, size) += gy * y * b / a;
+    EMap<EArrayXf>(pgb, size) += gy * y * a.log();
+    pa += skip_a;
     pb += skip_b;
     py += size;
     pgy += size;
