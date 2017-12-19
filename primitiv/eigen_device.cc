@@ -17,7 +17,7 @@ using std::endl;
 template<typename T>
 using EMap = ::Eigen::Map<T>;
 
-using EVectorXf = ::Eigen::VectorXf;
+using EArrayXf = ::Eigen::ArrayXf;
 using EMatrixXf = ::Eigen::MatrixXf;
 
 namespace primitiv {
@@ -105,13 +105,12 @@ std::vector<std::uint32_t> Eigen::argmin_impl(const Tensor &x, std::uint32_t dim
 }
 
 void Eigen::reset_tensor_impl(float k, Tensor &x) {
-  EMap<EVectorXf>(MDATA(x), x.shape().size()).setConstant(k);
+  EMap<EArrayXf>(MDATA(x), x.shape().size()).setConstant(k);
 }
 
 void Eigen::reset_tensor_by_array_impl(const float values[], Tensor &x) {
   const std::size_t size = x.shape().size();
-  EMap<EVectorXf>(MDATA(x), size).noalias()
-    = EMap<const EVectorXf>(values, size);
+  EMap<EArrayXf>(MDATA(x), size) = EMap<const EArrayXf>(values, size);
 }
 
 void Eigen::copy_tensor_impl(const Tensor &x, Tensor &y) {
@@ -151,6 +150,8 @@ void Eigen::random_log_normal_impl(float mean, float sd, Tensor &y) {
 void Eigen::pick_fw_impl(
     const Tensor &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim,
     Tensor &y) {
+  // TODO(odashi): Optimize this functions using Eigen operations.
+
   const std::uint32_t bs = y.shape().batch();
   const std::uint32_t skip_x = x.shape().has_batch() * x.shape().volume();
   const std::uint32_t skip_i = ids.size() > 1;
@@ -171,6 +172,8 @@ void Eigen::pick_fw_impl(
 
 void Eigen::slice_fw_impl(
     const Tensor &x, std::uint32_t dim, std::uint32_t offset, Tensor &y) {
+  // TODO(odashi): Optimize this functions using Eigen operations.
+
   const std::uint32_t base = y.shape().lower_volume(dim);
   const std::uint32_t span = base * y.shape()[dim];
   const std::uint32_t skip = base * x.shape()[dim];
@@ -187,6 +190,8 @@ void Eigen::slice_fw_impl(
 
 void Eigen::concat_fw_impl(
     const std::vector<const Tensor *> &xs, std::uint32_t dim, Tensor &y) {
+  // TODO(odashi): Optimize this functions using Eigen operations.
+
   const std::uint32_t new_bs = y.shape().batch();
   const std::uint32_t base = y.shape().lower_volume(dim);
   const std::uint32_t skip = base * y.shape()[dim];
@@ -215,6 +220,8 @@ void Eigen::concat_fw_impl(
 void Eigen::pick_bw_impl(
     const Tensor &gy, const std::vector<std::uint32_t>& ids, std::uint32_t dim,
     Tensor &gx) {
+  // TODO(odashi): Optimize this functions using Eigen operations.
+
   const std::uint32_t bs = gy.shape().batch();
   const std::uint32_t skip_x = gx.shape().has_batch() * gx.shape().volume();
   const std::uint32_t skip_i = ids.size() > 1;
@@ -234,6 +241,8 @@ void Eigen::pick_bw_impl(
 
 void Eigen::slice_bw_impl(
     const Tensor &gy, std::uint32_t dim, std::uint32_t offset, Tensor &gx) {
+  // TODO(odashi): Optimize this functions using Eigen operations.
+
   const Shape &sy = gy.shape();
   const Shape &sx = gx.shape();
   const std::uint32_t base = sx.lower_volume(dim);
@@ -259,11 +268,10 @@ void Eigen::slice_bw_impl(
 }
 
 #define CPUDEV_FW_X(name, op) \
-void Eigen::name##_fw_impl(const Tensor &x, Tensor &y) { \
-  float *dest = MDATA(y); \
-  const float *src = CDATA(x); \
-  const std::uint32_t size = x.shape().size(); \
-  REPEAT_OP(i, size, dest[i] = (op)); \
+void Eigen::name##_fw_impl(const Tensor &x_, Tensor &y_) { \
+  const std::uint32_t size = x_.shape().size(); \
+  EMap<const EArrayXf> x(CDATA(x_), size); \
+  EMap<EArrayXf>(MDATA(y_), size) = (op);\
 }
 
 #define CPUDEV_BW_X(name, op) \
@@ -330,19 +338,19 @@ void Eigen::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
   } \
 }
 
-CPUDEV_FW_X(negate, -src[i]);
-CPUDEV_FW_X(sqrt, std::sqrt(src[i]));
-CPUDEV_FW_X(exp, std::exp(src[i]));
-CPUDEV_FW_X(log, std::log(src[i]));
-CPUDEV_FW_X(tanh, std::tanh(src[i]));
-CPUDEV_FW_X(sigmoid, .5 + .5 * std::tanh(.5 * src[i]));
+CPUDEV_FW_X(negate, -x);
+CPUDEV_FW_X(sqrt, x.sqrt());
+CPUDEV_FW_X(exp, x.exp());
+CPUDEV_FW_X(log, x.log());
+CPUDEV_FW_X(tanh, x.tanh());
+CPUDEV_FW_X(sigmoid, .5 + .5 * (.5 * x).tanh());
 CPUDEV_FW_X(
-    softplus, src[i] > 0
-      ? src[i] + std::log(1 + std::exp(-src[i]))
-      : std::log(1 + std::exp(src[i])));
-CPUDEV_FW_X(sin, std::sin(src[i]));
-CPUDEV_FW_X(cos, std::cos(src[i]));
-CPUDEV_FW_X(tan, std::tan(src[i]));
+    softplus, (x > 0).select(
+      x + (1 + (-x).exp()).log(),
+      (1 + x.exp()).log()));
+CPUDEV_FW_X(sin, x.sin());
+CPUDEV_FW_X(cos, x.cos());
+CPUDEV_FW_X(tan, x.tan());
 
 CPUDEV_BW_X(sqrt, .5 * pgy[i] / py[i]);
 CPUDEV_BW_X(exp, py[i] * pgy[i]);
