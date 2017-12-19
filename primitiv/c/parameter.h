@@ -5,6 +5,7 @@
 
 #include <primitiv/c/define.h>
 #include <primitiv/c/device.h>
+#include <primitiv/c/initializer.h>
 #include <primitiv/c/shape.h>
 #include <primitiv/c/status.h>
 
