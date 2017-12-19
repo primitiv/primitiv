@@ -1,5 +1,12 @@
 #include <config.h>
 
+// NOTE(odashi):
+// Currently, primitiv::devices::Eigen partially supports limited number of
+// functions that can easily be replaced to Eigen-native operations.
+// Other functions such as array manipulators (pick/slice/concat) and reduction
+// operators (sum/logsumexp/argmax/argmin) are implemented by the same
+// implementations as primitiv::devices::Naive.
+
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
