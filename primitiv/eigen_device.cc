@@ -273,7 +273,7 @@ void Eigen::slice_bw_impl(
 void Eigen::name##_fw_impl(const Tensor &x_, Tensor &y_) { \
   const std::size_t size = x_.shape().size(); \
   EMap<const EArrayXf> x(CDATA(x_), size); \
-  EMap<EArrayXf>(MDATA(y_), size) = (op);\
+  EMap<EArrayXf>(MDATA(y_), size) = (op); \
 }
 
 #define CPUDEV_BW_X(name, op) \
@@ -287,22 +287,21 @@ void Eigen::name##_bw_impl( \
 }
 
 #define CPUDEV_FW_X_CONST(name, op) \
-void Eigen::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
-  float *dest = MDATA(y); \
-  const float *src = CDATA(x); \
-  const std::uint32_t size = x.shape().size(); \
-  REPEAT_OP(i, size, dest[i] = (op)); \
+void Eigen::name##_fw_impl(const Tensor &x_, float k, Tensor &y_) { \
+  const std::size_t size = x_.shape().size(); \
+  EMap<const EArrayXf> x(CDATA(x_), size); \
+  EMap<EArrayXf>(MDATA(y_), size) = (op); \
 }
 
 #define CPUDEV_BW_X_CONST(name, op) \
 void Eigen::name##_bw_impl( \
-    const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) { \
-  const float *px = CDATA(x); MAYBE_USED(px); \
-  const float *py = CDATA(y); MAYBE_USED(py); \
-  const float *pgy = CDATA(gy); \
-  float *pgx = MDATA(gx); \
-  const std::uint32_t size = x.shape().size(); \
-  REPEAT_OP(i, size, pgx[i] += (op)); \
+    const Tensor &x_, const Tensor &y_, const Tensor &gy_, float k, \
+    Tensor &gx_) { \
+  const std::size_t size = x_.shape().size(); \
+  EMap<const EArrayXf> x(CDATA(x_), size); MAYBE_USED(x); \
+  EMap<const EArrayXf> y(CDATA(y_), size); MAYBE_USED(y); \
+  EMap<const EArrayXf> gy(CDATA(gy_), size); \
+  EMap<EArrayXf>(MDATA(gx_), size) += (op); \
 }
 
 #define CPUDEV_FW_X_SCALAR(name, op) \
@@ -346,9 +345,9 @@ CPUDEV_FW_X(log, x.log());
 CPUDEV_FW_X(tanh, x.tanh());
 CPUDEV_FW_X(sigmoid, .5 + .5 * (.5 * x).tanh());
 CPUDEV_FW_X(
-    softplus, (x > 0).select(
-      x + (1 + (-x).exp()).log(),
-      (1 + x.exp()).log()));
+    softplus, (x > 0.).select(
+      x + (1. + (-x).exp()).log(),
+      (1. + x.exp()).log()));
 CPUDEV_FW_X(sin, x.sin());
 CPUDEV_FW_X(cos, x.cos());
 CPUDEV_FW_X(tan, x.tan());
@@ -363,24 +362,23 @@ CPUDEV_BW_X(sin, gy * x.cos());
 CPUDEV_BW_X(cos, -gy * x.sin());
 CPUDEV_BW_X(tan, gy * (1. + y * y));
 
-CPUDEV_FW_X_CONST(add_const, src[i] + k);
-CPUDEV_FW_X_CONST(subtract_const_r, src[i] - k);
-CPUDEV_FW_X_CONST(subtract_const_l, k - src[i]);
-CPUDEV_FW_X_CONST(multiply_const, src[i] * k);
-CPUDEV_FW_X_CONST(divide_const_r, src[i] / k);
-CPUDEV_FW_X_CONST(divide_const_l, k / src[i]);
-CPUDEV_FW_X_CONST(prelu, src[i] * ((src[i] > 0) + k * (src[i] <= 0)));
-CPUDEV_FW_X_CONST(
-    elu, src[i] * (src[i] > 0) + k * (std::exp(src[i] * (src[i] <= 0)) - 1));
+CPUDEV_FW_X_CONST(add_const, x + k);
+CPUDEV_FW_X_CONST(subtract_const_r, x - k);
+CPUDEV_FW_X_CONST(subtract_const_l, k - x);
+CPUDEV_FW_X_CONST(multiply_const, x * k);
+CPUDEV_FW_X_CONST(divide_const_r, x / k);
+CPUDEV_FW_X_CONST(divide_const_l, k / x);
+CPUDEV_FW_X_CONST(prelu, (x > 0.).select(x, k * x));
+CPUDEV_FW_X_CONST(elu, (x > 0.).select(x, k * (x.exp() - 1.)));
 
-CPUDEV_BW_X_CONST(add_const, pgy[i]);
-CPUDEV_BW_X_CONST(subtract_const_r, pgy[i]);
-CPUDEV_BW_X_CONST(subtract_const_l, -pgy[i]);
-CPUDEV_BW_X_CONST(multiply_const, k * pgy[i]);
-CPUDEV_BW_X_CONST(divide_const_r, pgy[i] / k);
-CPUDEV_BW_X_CONST(divide_const_l, -py[i] * pgy[i] / px[i]);
-CPUDEV_BW_X_CONST(prelu, pgy[i] * ((px[i] > 0) + k * (px[i] <= 0)));
-CPUDEV_BW_X_CONST(elu, pgy[i] * ((px[i] > 0) + (py[i] + k) * (px[i] <= 0)));
+CPUDEV_BW_X_CONST(add_const, gy);
+CPUDEV_BW_X_CONST(subtract_const_r, gy);
+CPUDEV_BW_X_CONST(subtract_const_l, -gy);
+CPUDEV_BW_X_CONST(multiply_const, k * gy);
+CPUDEV_BW_X_CONST(divide_const_r, gy / k);
+CPUDEV_BW_X_CONST(divide_const_l, -gy * y / x);
+CPUDEV_BW_X_CONST(prelu, (x > 0.).select(gy, k * gy));
+CPUDEV_BW_X_CONST(elu, (x > 0.).select(gy, (y + k) * gy));
 
 CPUDEV_FW_X_SCALAR(add_scalar, src_x[i] + *src_k);
 CPUDEV_FW_X_SCALAR(subtract_scalar_r, src_x[i] - *src_k);
