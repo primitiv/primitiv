@@ -3,11 +3,11 @@
 #ifndef PRIMITIV_C_GRAPH_H_
 #define PRIMITIV_C_GRAPH_H_
 
-#include "primitiv/c/define.h"
-#include "primitiv/c/device.h"
-#include "primitiv/c/shape.h"
-#include "primitiv/c/status.h"
-#include "primitiv/c/tensor.h"
+#include <primitiv/c/define.h>
+#include <primitiv/c/device.h>
+#include <primitiv/c/shape.h>
+#include <primitiv/c/status.h>
+#include <primitiv/c/tensor.h>
 
 #ifdef __cplusplus
 extern "C" {

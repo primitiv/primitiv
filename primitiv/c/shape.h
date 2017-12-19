@@ -3,8 +3,8 @@
 #ifndef PRIMITIV_C_SHAPE_H_
 #define PRIMITIV_C_SHAPE_H_
 
-#include "primitiv/c/define.h"
-#include "primitiv/c/status.h"
+#include <primitiv/c/define.h>
+#include <primitiv/c/status.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,9 +31,11 @@ CAPI extern uint32_t safe_primitiv_Shape_op_getitem(const primitiv_Shape *shape,
                                                     uint32_t i,
                                                     primitiv_Status *status);
 
-CAPI extern const uint32_t *primitiv_Shape_dims(const primitiv_Shape *shape);
-CAPI extern const uint32_t *safe_primitiv_Shape_dims(
-    const primitiv_Shape *shape, primitiv_Status *status);
+CAPI extern void primitiv_Shape_dims(const primitiv_Shape *shape,
+                                     uint32_t *array);
+CAPI extern void safe_primitiv_Shape_dims(const primitiv_Shape *shape,
+                                          uint32_t *array,
+                                          primitiv_Status *status);
 
 CAPI extern uint32_t primitiv_Shape_depth(const primitiv_Shape *shape);
 CAPI extern uint32_t safe_primitiv_Shape_depth(const primitiv_Shape *shape,

@@ -25,7 +25,7 @@ Features
 Languages
 ---------
 
-This repository contains only the core C++ library of *primitiv*.
+This repository contains only the core C++ library and its C APIs.
 Some bindings for other programming languages (e.g., Python) can be found in [the official repository](https://github.com/primitiv).
 
 
@@ -55,38 +55,16 @@ Install
     [make install]
 
 
-Building Options
-----------------
+Build Options
+-------------
 
-- `PRIMITIV_BUILD_STATIC_LIBRARY` (default=`OFF`)
-  - Builds a static library instead of a shared object.
-- `PRIMITIV_BUILD_TESTS` (default=`OFF`)
-  - Builds test binaries and generates `make test` command.
-- `PRIMITIV_BUILD_TESTS_PROBABILISTIC` (default=`OFF`)
-  - Builds test cases that probabilistically fails.
-- `PRIMITIV_GTEST_SOURCE_DIR` (default=`""`)
-  - Specifies the source directory of Google Test. If you want to use
-    `googletest` module provided from Debian/Ubuntu repository,
-    add `-DPRIMITIV_GTEST_SOURCE_DIR=/usr/src/googletest/googletest`
-    together with `-PRIMITIV_BUILD_TESTS=ON` option.
-- `PRIMITIV_USE_CACHE` (default=`OFF`)
-  - Whether or not to use cached values to prevent increasing computation amount.
-  - Libraries built with this flag will tend to consume more memory.
-- `PRIMITIV_USE_CUDA` (default=`OFF`)
-  - Enables CUDA backend (`devices::CUDA` class).
-- `PRIMITIV_USE_OPENCL` (default=`OFF`)
-  - Enables OpenCL backend(`devices::OpenCL` class).
-- Other available options:
-  - CMake standard options.
-  - [FindGTest](https://cmake.org/cmake/help/v3.1/module/FindGTest.html) options.
-  - [FindCUDA](https://cmake.org/cmake/help/v3.1/module/FindCUDA.html) options.
-  - [FindOpenCL](https://cmake.org/cmake/help/v3.1/module/FindOpenCL.html) options.
+- See [Build Options](doc/build_options.md).
 
 
 Usage
 -----
 
-- [Examples](https://github.com/odashi/primitiv/tree/develop/examples).
+- See [Examples](examples).
 
 
 Contact

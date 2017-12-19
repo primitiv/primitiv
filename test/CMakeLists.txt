@@ -77,3 +77,22 @@ endif()
 if(PRIMITIV_USE_OPENCL)
   primitiv_test(opencl_device)
 endif()
+
+if(PRIMITIV_BUILD_C_API)
+  function(primitiv_c_test name)
+    add_executable(c_${name}_test
+        test_utils.h c/${name}_test.cc $<TARGET_OBJECTS:test_utils_OBJS>)
+    if(PRIMITIV_GTEST_SOURCE_DIR)
+      add_dependencies(c_${name}_test GTest)
+    endif()
+    target_link_libraries(c_${name}_test primitiv_c
+        ${GTEST_BOTH_LIBRARIES} pthread)
+    add_test(
+        NAME c_${name}_test
+        COMMAND c_${name}_test
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+  endfunction()
+
+  primitiv_c_test(shape)
+endif()

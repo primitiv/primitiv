@@ -1,5 +1,16 @@
 # Build rules of the primitiv core library.
 
+# Version header.
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/version.h.in
+  ${CMAKE_CURRENT_BINARY_DIR}/version.h
+  @ONLY
+)
+install(
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/version.h
+  DESTINATION include/primitiv
+)
+
 # Base libraries.
 set(primitiv_base_HDRS
   arithmetic.h

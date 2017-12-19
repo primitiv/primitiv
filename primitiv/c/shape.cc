@@ -1,12 +1,13 @@
 /* Copyright 2017 The primitiv Authors. All Rights Reserved. */
-
-#include <primitiv/shape.h>
+#include <config.h>
 
 #include <string>
 #include <vector>
 
-#include "primitiv/c/internal.h"
-#include "primitiv/c/shape.h"
+#include <primitiv/shape.h>
+
+#include <primitiv/c/internal.h>
+#include <primitiv/c/shape.h>
 
 using primitiv::Shape;
 
@@ -48,12 +49,14 @@ uint32_t safe_primitiv_Shape_op_getitem(const primitiv_Shape *shape,
   SAFE_RETURN(primitiv_Shape_op_getitem(shape, i), status, 0);
 }
 
-const uint32_t *primitiv_Shape_dims(const primitiv_Shape *shape) {
-  return &(to_cc(shape)->dims())[0];
+void primitiv_Shape_dims(const primitiv_Shape *shape, uint32_t *array) {
+  std::vector<uint32_t> v = to_cc(shape)->dims();
+  std::copy(v.begin(), v.end(), array);
 }
-const uint32_t *safe_primitiv_Shape_dims(const primitiv_Shape *shape,
-                                         primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Shape_dims(shape), status, 0);
+void safe_primitiv_Shape_dims(const primitiv_Shape *shape,
+                              uint32_t *array,
+                              primitiv_Status *status) {
+  SAFE_EXPR(primitiv_Shape_dims(shape, array), status);
 }
 
 uint32_t primitiv_Shape_depth(const primitiv_Shape *shape) {
