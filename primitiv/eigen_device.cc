@@ -17,6 +17,7 @@ using std::endl;
 template<typename T>
 using EMap = ::Eigen::Map<T>;
 
+using EVectorXf = ::Eigen::VectorXf;
 using EMatrixXf = ::Eigen::MatrixXf;
 
 namespace primitiv {
@@ -50,6 +51,8 @@ std::vector<float> Eigen::tensor_to_vector_impl(const Tensor &x) {
 }
 
 std::vector<std::uint32_t> Eigen::argmax_impl(const Tensor &x, std::uint32_t dim) {
+  // TODO(odashi): Optimize this functions using Eigen operations.
+
   const Shape &s = x.shape();
   const std::uint32_t n = s[dim];
   const std::uint32_t repeat = s.size() / n;
@@ -75,6 +78,8 @@ std::vector<std::uint32_t> Eigen::argmax_impl(const Tensor &x, std::uint32_t dim
 }
 
 std::vector<std::uint32_t> Eigen::argmin_impl(const Tensor &x, std::uint32_t dim) {
+  // TODO(odashi): Optimize this functions using Eigen operations.
+
   const Shape &s = x.shape();
   const std::uint32_t n = s[dim];
   const std::uint32_t repeat = s.size() / n;
@@ -100,13 +105,13 @@ std::vector<std::uint32_t> Eigen::argmin_impl(const Tensor &x, std::uint32_t dim
 }
 
 void Eigen::reset_tensor_impl(float k, Tensor &x) {
-  float *dest = MDATA(x);
-  const std::uint32_t size = x.shape().size();
-  REPEAT_OP(i, size, dest[i] = k);
+  EMap<EVectorXf>(MDATA(x), x.shape().size()).setConstant(k);
 }
 
 void Eigen::reset_tensor_by_array_impl(const float values[], Tensor &x) {
-  std::memcpy(MDATA(x), values, sizeof(float) * x.shape().size());
+  const std::size_t size = x.shape().size();
+  EMap<EVectorXf>(MDATA(x), size).noalias()
+    = EMap<const EVectorXf>(values, size);
 }
 
 void Eigen::copy_tensor_impl(const Tensor &x, Tensor &y) {
@@ -123,10 +128,8 @@ void Eigen::copy_tensor_impl(const Tensor &x, Tensor &y) {
 }
 
 void Eigen::identity_impl(Tensor &y) {
-  reset_tensor_impl(0, y);
-  float *dest = MDATA(y);
-  const std::uint32_t size = y.shape()[0];
-  REPEAT_OP(i, size, dest[i * (size + 1)] = 1);
+  const std::size_t size = y.shape()[0];
+  EMap<EMatrixXf>(MDATA(y), size, size).setIdentity();
 }
 
 void Eigen::random_bernoulli_impl(float p, Tensor &y) {
