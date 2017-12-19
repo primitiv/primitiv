@@ -1,5 +1,7 @@
 #include <config.h>
 
+#include <algorithm>
+#include <cmath>
 #include <vector>
 #include <gtest/gtest.h>
 #include <primitiv/functions.h>
@@ -55,6 +57,19 @@ public:
         new Tensor(functions::zeros<Tensor>(*arg_shapes[1], *dev)));
   }
 
+  void setup_2args_swapped() {
+    arg_shapes.emplace_back(new Shape({2, 2}, 3));
+    arg_shapes.emplace_back(new Shape({2, 2}, 3));
+    arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
+        *arg_shapes[0], {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3})));
+    arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
+        *arg_shapes[1], {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4})));
+    arg_grads.emplace_back(
+        new Tensor(functions::zeros<Tensor>(*arg_shapes[0], *dev)));
+    arg_grads.emplace_back(
+        new Tensor(functions::zeros<Tensor>(*arg_shapes[1], *dev)));
+  }
+
   void setup_2args_scalar() {
     arg_shapes.emplace_back(new Shape({2, 2}, 3));
     arg_shapes.emplace_back(new Shape({}, 3));
@@ -73,6 +88,19 @@ public:
     arg_shapes.emplace_back(new Shape({}, 3));
     arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
         *arg_shapes[0], {1, 2, 3, 4, 1, -1, 1, -1, -1, -2, -3, -4})));
+    arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
+        *arg_shapes[1], {1, 2, 3})));
+    arg_grads.emplace_back(
+        new Tensor(functions::zeros<Tensor>(*arg_shapes[0], *dev)));
+    arg_grads.emplace_back(
+        new Tensor(functions::zeros<Tensor>(*arg_shapes[1], *dev)));
+  }
+
+  void setup_2args_scalar_nonnegative() {
+    arg_shapes.emplace_back(new Shape({2, 2}, 3));
+    arg_shapes.emplace_back(new Shape({}, 3));
+    arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
+        *arg_shapes[0], {1, 2, 3, 4, .01, .01, .01, .01, 1, 4, 9, 16})));
     arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
         *arg_shapes[1], {1, 2, 3})));
     arg_grads.emplace_back(
@@ -727,7 +755,33 @@ TEST_F(OperatorImplTest, CheckDivideConstL) {
   TEST_1ARG_K(DivideConstL, 3);
 }
 
-// TODO(odashi): Add tests for PowConstR/L.
+TEST_F(OperatorImplTest, CheckPowConstR) {
+  // y = x^k
+  // dy/dx = k * x^(k-1)
+  auto fy = [](float x) { return std::pow(x, 3); };
+  auto fgx = [](float x) { return 3 * std::pow(x, 2); };
+  setup_1arg_nonnegative();
+  const Shape ret_shape({2, 2}, 3);
+  vector<float> ret_data, bw_grad;
+  const vector<float> x_val = arg_values[0]->to_vector();
+  std::transform(x_val.begin(), x_val.end(), std::back_inserter(ret_data), fy);
+  std::transform(x_val.begin(), x_val.end(), std::back_inserter(bw_grad), fgx);
+  TEST_1ARG_K(PowConstR, 3);
+}
+
+TEST_F(OperatorImplTest, CheckPowConstL) {
+  // y = k^x
+  // dy/dx = log(k) k^x
+  auto fy = [](float x) { return std::pow(3, x); };
+  auto fgx = [](float x) { return std::log(3) * std::pow(3, x); };
+  setup_1arg();
+  const Shape ret_shape({2, 2}, 3);
+  vector<float> ret_data, bw_grad;
+  const vector<float> x_val = arg_values[0]->to_vector();
+  std::transform(x_val.begin(), x_val.end(), std::back_inserter(ret_data), fy);
+  std::transform(x_val.begin(), x_val.end(), std::back_inserter(bw_grad), fgx);
+  TEST_1ARG_K(PowConstL, 3);
+}
 
 TEST_F(OperatorImplTest, CheckAddScalar) {
   // y = x + k
@@ -817,7 +871,55 @@ TEST_F(OperatorImplTest, CheckDivideScalarL) {
   TEST_2ARGS(DivideScalarL);
 }
 
-// TODO(odashi): Add tests for PowScalarR/L.
+TEST_F(OperatorImplTest, CheckPowScalarR) {
+  // y = x^k
+  // dy/dx = k * x^(k-1)
+  // dy/dk = log(x) * x^k
+  auto fy = [](float x, float k) { return std::pow(x, k); };
+  auto fgx = [](float x, float k) { return k * std::pow(x, k - 1); };
+  auto fgk = [](float x, float k) { return std::log(x) * std::pow(x, k); };
+  setup_2args_scalar_nonnegative();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> x_val = arg_values[0]->to_vector();
+  const vector<float> k_val = arg_values[1]->to_vector();
+  vector<float> ret_data(ret_shape.size(), 0);
+  vector<vector<float>> bw_grads {
+    vector<float>(x_val.size(), 0),
+    vector<float>(k_val.size(), 0),
+  };
+  for (std::size_t ix = 0; ix < x_val.size(); ++ix) {
+    const std::size_t ik = ix * k_val.size() / x_val.size();
+    ret_data[ix] += fy(x_val[ix], k_val[ik]);
+    bw_grads[0][ix] += fgx(x_val[ix], k_val[ik]);
+    bw_grads[1][ik] += fgk(x_val[ix], k_val[ik]);
+  }
+  TEST_2ARGS(PowScalarR);
+}
+
+TEST_F(OperatorImplTest, CheckPowScalarL) {
+  // y = k^x
+  // dy/dx = log(k) * k^x
+  // dy/dk = x * k^(x-1)
+  auto fy = [](float x, float k) { return std::pow(k, x); };
+  auto fgx = [](float x, float k) { return std::log(k) * std::pow(k, x); };
+  auto fgk = [](float x, float k) { return x * std::pow(k, x - 1); };
+  setup_2args_scalar();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> x_val = arg_values[0]->to_vector();
+  const vector<float> k_val = arg_values[1]->to_vector();
+  vector<float> ret_data(ret_shape.size(), 0);
+  vector<vector<float>> bw_grads {
+    vector<float>(x_val.size(), 0),
+    vector<float>(k_val.size(), 0),
+  };
+  for (std::size_t ix = 0; ix < x_val.size(); ++ix) {
+    const std::size_t ik = ix * k_val.size() / x_val.size();
+    ret_data[ix] += fy(x_val[ix], k_val[ik]);
+    bw_grads[0][ix] += fgx(x_val[ix], k_val[ik]);
+    bw_grads[1][ik] += fgk(x_val[ix], k_val[ik]);
+  }
+  TEST_2ARGS(PowScalarL);
+}
 
 TEST_F(OperatorImplTest, CheckAdd) {
   // y = a + b
@@ -876,7 +978,26 @@ TEST_F(OperatorImplTest, CheckDivide) {
   TEST_2ARGS(Divide);
 }
 
-// TODO(odashi): Add tests for Pow.
+TEST_F(OperatorImplTest, CheckPow) {
+  // y = a^b
+  // dy/da = b * a^(b-1)
+  // dy/db = log(a) a^b
+  auto fy = [](float a, float b) { return std::pow(a, b); };
+  auto fga = [](float a, float b) { return b * std::pow(a, b - 1); };
+  auto fgb = [](float a, float b) { return std::log(a) * std::pow(a, b); };
+  setup_2args_swapped();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> a_val = arg_values[0]->to_vector();
+  const vector<float> b_val = arg_values[1]->to_vector();
+  vector<float> ret_data;
+  vector<vector<float>> bw_grads(2);
+  for (std::size_t i = 0; i < ret_shape.size(); ++i) {
+    ret_data.emplace_back(fy(a_val[i], b_val[i]));
+    bw_grads[0].emplace_back(fga(a_val[i], b_val[i]));
+    bw_grads[1].emplace_back(fgb(a_val[i], b_val[i]));
+  }
+  TEST_2ARGS(Pow);
+}
 
 TEST_F(OperatorImplTest, CheckTranspose) {
   // y = x^T
