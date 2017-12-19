@@ -267,22 +267,23 @@ void Eigen::slice_bw_impl(
   }
 }
 
+#define MAYBE_USED(x) static_cast<void>(x)
+
 #define CPUDEV_FW_X(name, op) \
 void Eigen::name##_fw_impl(const Tensor &x_, Tensor &y_) { \
-  const std::uint32_t size = x_.shape().size(); \
+  const std::size_t size = x_.shape().size(); \
   EMap<const EArrayXf> x(CDATA(x_), size); \
   EMap<EArrayXf>(MDATA(y_), size) = (op);\
 }
 
 #define CPUDEV_BW_X(name, op) \
 void Eigen::name##_bw_impl( \
-    const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) { \
-  const float *px = CDATA(x); static_cast<void>(px); \
-  const float *py = CDATA(y); static_cast<void>(py); \
-  const float *pgy = CDATA(gy); \
-  float *pgx = MDATA(gx); \
-  const std::uint32_t size = x.shape().size(); \
-  REPEAT_OP(i, size, pgx[i] += (op)); \
+    const Tensor &x_, const Tensor &y_, const Tensor &gy_, Tensor &gx_) { \
+  const std::size_t size = x_.shape().size(); \
+  EMap<const EArrayXf> x(CDATA(x_), size); MAYBE_USED(x); \
+  EMap<const EArrayXf> y(CDATA(y_), size); MAYBE_USED(y); \
+  EMap<const EArrayXf> gy(CDATA(gy_), size); \
+  EMap<EArrayXf>(MDATA(gx_), size) += (op); \
 }
 
 #define CPUDEV_FW_X_CONST(name, op) \
@@ -296,8 +297,8 @@ void Eigen::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
 #define CPUDEV_BW_X_CONST(name, op) \
 void Eigen::name##_bw_impl( \
     const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) { \
-  const float *px = CDATA(x); static_cast<void>(px); \
-  const float *py = CDATA(y); static_cast<void>(py); \
+  const float *px = CDATA(x); MAYBE_USED(px); \
+  const float *py = CDATA(y); MAYBE_USED(py); \
   const float *pgy = CDATA(gy); \
   float *pgx = MDATA(gx); \
   const std::uint32_t size = x.shape().size(); \
@@ -352,15 +353,15 @@ CPUDEV_FW_X(sin, x.sin());
 CPUDEV_FW_X(cos, x.cos());
 CPUDEV_FW_X(tan, x.tan());
 
-CPUDEV_BW_X(sqrt, .5 * pgy[i] / py[i]);
-CPUDEV_BW_X(exp, py[i] * pgy[i]);
-CPUDEV_BW_X(log, pgy[i] / px[i]);
-CPUDEV_BW_X(tanh, (1. - py[i] * py[i]) * pgy[i]);
-CPUDEV_BW_X(sigmoid, py[i] * (1. - py[i]) * pgy[i]);
-CPUDEV_BW_X(softplus, (.5 + .5 * std::tanh(.5 * px[i])) * pgy[i]);
-CPUDEV_BW_X(sin, std::cos(px[i]) * pgy[i]);
-CPUDEV_BW_X(cos, -std::sin(px[i]) * pgy[i]);
-CPUDEV_BW_X(tan, (1 + py[i] * py[i]) * pgy[i]);
+CPUDEV_BW_X(sqrt, .5 * gy / y);
+CPUDEV_BW_X(exp, gy * y);
+CPUDEV_BW_X(log, gy / x);
+CPUDEV_BW_X(tanh, gy * (1. - y * y));
+CPUDEV_BW_X(sigmoid, gy * y * (1. - y));
+CPUDEV_BW_X(softplus, gy * (.5 + .5 * (.5 * x).tanh()));
+CPUDEV_BW_X(sin, gy * x.cos());
+CPUDEV_BW_X(cos, -gy * x.sin());
+CPUDEV_BW_X(tan, gy * (1. + y * y));
 
 CPUDEV_FW_X_CONST(add_const, src[i] + k);
 CPUDEV_FW_X_CONST(subtract_const_r, src[i] - k);
@@ -399,6 +400,8 @@ CPUDEV_FW_AB(divide, src_a[i] / src_b[i]);
 #undef CPUDEV_BW_X_CONST
 #undef CPUDEV_FW_X_SCALAR
 #undef CPUDEV_FW_AB
+
+#undef MAYBE_USED
 
 void Eigen::add_bw_impl(
     const Tensor &, const Tensor &, const Tensor &, const Tensor &gy,

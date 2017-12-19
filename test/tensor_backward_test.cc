@@ -451,7 +451,7 @@ TEST_F(TensorBackwardTest, CheckSoftplus) {
       .5, -.73105858, 1.7615942, -1.9051483,
       1, -.53788284, .11920292, -.047425873,
     };
-    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), 6));
   }
 }
 
