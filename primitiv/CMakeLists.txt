@@ -182,12 +182,14 @@ if(PRIMITIV_BUILD_C_API)
     c/graph.cc
     c/initializer.cc
     c/initializer_impl.cc
+    c/internal.cc
     c/model.cc
     c/naive_device.cc
     c/optimizer.cc
     c/optimizer_impl.cc
     c/parameter.cc
     c/shape.cc
+    c/status.cc
     c/tensor.cc
   )
   install(FILES ${primitiv_c_HDRS} DESTINATION include/primitiv/c)

@@ -39,8 +39,10 @@ inline c_name *to_c_from_value(const primitiv::cc_name &instance) { \
 }
 
 #define HANDLE_EXCEPTION \
-catch (const std::exception &e) { \
-  return primitiv_c::internal::handle_exception(e); \
+catch (const primitiv::Error &e) { \
+  return primitiv_c::internal::ErrorHandler::get_instance().handle(e); \
+} catch (const std::exception &e) { \
+  return primitiv_c::internal::ErrorHandler::get_instance().handle(e); \
 }
 
 struct primitiv_Device;
@@ -57,9 +59,44 @@ namespace primitiv_c {
 
 namespace internal {
 
-inline ::primitiv_Status handle_exception(const std::exception &e) {
-  return ::primitiv_Status::PRIMITIV_ERROR;
-}
+template<typename T>
+using Throwable = typename std::enable_if<
+    std::is_base_of<std::exception, T>::value>::type;
+
+class ErrorHandler {
+ public:
+  ErrorHandler() noexcept : exception_(nullptr), message_("OK") {}
+  ~ErrorHandler() = default;
+
+  template<typename T, typename = Throwable<T>>
+  ::primitiv_Status handle(const T &e) {
+    exception_ = std::make_exception_ptr(e);
+    message_ = e.what();
+    return ::primitiv_Status::PRIMITIV_ERROR;
+  }
+
+  std::exception rethrow() {
+    if (has_exception()) {
+      std::rethrow_exception(exception_);
+    } else {
+      throw std::bad_exception();
+    }
+  }
+
+  bool has_exception() const noexcept {
+    return !exception_;
+  }
+
+  const char *get_message() const noexcept {
+    return message_.c_str();
+  }
+
+  static ErrorHandler &get_instance();
+
+ private:
+  std::exception_ptr exception_;
+  std::string message_;
+};
 
 DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Device, primitiv_Device);
 DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Node, primitiv_Node);

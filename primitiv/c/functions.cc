@@ -138,7 +138,7 @@ primitiv_Status primitiv_node_func_pick(
     const primitiv_Node *x, const uint32_t *ids, size_t n, uint32_t dim,
     primitiv_Node **y) {
   try {
-   *y = to_c_from_value(primitiv::functions::pick(
+    *y = to_c_from_value(primitiv::functions::pick(
        *to_cc(x), std::vector<uint32_t>(ids, ids + n), dim));
     return ::primitiv_Status::PRIMITIV_OK;
   } HANDLE_EXCEPTION
@@ -193,7 +193,8 @@ primitiv_Status primitiv_tensor_func_concat(
 }
 
 primitiv_Status primitiv_node_func_reshape(
-    const primitiv_Node *x, const primitiv_Shape *new_shape, primitiv_Node **y) {
+    const primitiv_Node *x, const primitiv_Shape *new_shape,
+    primitiv_Node **y) {
   try {
     *y = to_c_from_value(
         primitiv::functions::reshape(*to_cc(x), *to_cc(new_shape)));
