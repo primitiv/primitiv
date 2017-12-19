@@ -10,16 +10,24 @@
 extern "C" {
 #endif
 
+/**
+ * Opaque type of Device.
+ */
 typedef struct primitiv_Device primitiv_Device;
 
-CAPI extern primitiv_Device *primitiv_Device_get_default();
-CAPI extern primitiv_Device *safe_primitiv_Device_get_default(
-    primitiv_Status *status);
+/**
+ * Retrieves the current default device.
+ * @param device Pointer to receive the current default device.
+ * @return Status code.
+ */
+CAPI extern primitiv_Status primitiv_Device_get_default(
+    primitiv_Device **device);
 
-CAPI extern void primitiv_Device_set_default(
-    primitiv_Device *device);
-CAPI extern void safe_primitiv_Device_set_default(primitiv_Device *device,
-                                                  primitiv_Status *status);
+/**
+ * Specifies a new default device.
+ * @param device Pointer of the new default device.
+ */
+CAPI extern void primitiv_Device_set_default(primitiv_Device *device);
 
 #ifdef __cplusplus
 }  // end extern "C"

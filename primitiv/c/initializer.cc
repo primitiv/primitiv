@@ -2,7 +2,6 @@
 #include <config.h>
 
 #include <primitiv/initializer.h>
-
 #include <primitiv/c/internal.h>
 #include <primitiv/c/initializer.h>
 

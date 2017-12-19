@@ -13,6 +13,5 @@
 #include <primitiv/c/status.h>
 #include <primitiv/c/tensor.h>
 #include <primitiv/c/optimizer_impl.h>
-#include <primitiv/c/utils.h>
 
 #endif  // PRIMITIV_C_API_H_

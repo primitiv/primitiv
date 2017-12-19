@@ -11,20 +11,30 @@
 extern "C" {
 #endif
 
+/**
+ * Creates a new Device object.
+ * @return Pointer of a handler.
+ */
 CAPI extern primitiv_Device *primitiv_Naive_new();
-CAPI extern primitiv_Device *safe_primitiv_Naive_new(primitiv_Status *status);
 
+/**
+ * Creates a new Device object.
+ * @param seed The seed value of internal random number generator.
+ * @return Pointer of a handler.
+ */
 CAPI extern primitiv_Device *primitiv_Naive_new_with_seed(uint32_t seed);
-CAPI extern primitiv_Device *safe_primitiv_Naive_new_with_seed(
-    uint32_t seed, primitiv_Status *status);
 
+/**
+ * Deletes the Device object.
+ * @param shape Pointer of a handler.
+ */
 CAPI extern void primitiv_Naive_delete(primitiv_Device *device);
-CAPI extern void safe_primitiv_Naive_delete(primitiv_Device *device,
-                                            primitiv_Status *status);
 
+/**
+ * Deletes the Device object.
+ * @param shape Pointer of a handler.
+ */
 CAPI extern void primitiv_Naive_dump_description(const primitiv_Device *device);
-CAPI extern void safe_primitiv_Naive_dump_description(
-    const primitiv_Device *device, primitiv_Status *status);
 
 #ifdef __cplusplus
 }  // end extern "C"

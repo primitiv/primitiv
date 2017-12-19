@@ -175,7 +175,6 @@ if(PRIMITIV_BUILD_C_API)
     c/shape.h
     c/status.h
     c/tensor.h
-    c/utils.h
   )
   set(primitiv_c_SRCS
     c/device.cc
@@ -189,9 +188,7 @@ if(PRIMITIV_BUILD_C_API)
     c/optimizer_impl.cc
     c/parameter.cc
     c/shape.cc
-    c/status.cc
     c/tensor.cc
-    c/utils.cc
   )
   install(FILES ${primitiv_c_HDRS} DESTINATION include/primitiv/c)
 

@@ -10,6 +10,9 @@
 extern "C" {
 #endif
 
+/**
+ * Opaque type of Initializer.
+ */
 typedef struct primitiv_Initializer primitiv_Initializer;
 
 #ifdef __cplusplus

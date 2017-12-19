@@ -9,7 +9,7 @@
 using std::vector;
 using test_utils::array_match;
 
-namespace primitiv {
+namespace primitiv_c {
 
 class CShapeTest : public testing::Test {};
 
@@ -29,8 +29,10 @@ TEST_F(CShapeTest, CheckNewDefault) {
 
 TEST_F(CShapeTest, CheckNewByArray) {
   {
+    ::primitiv_Shape *shape;
     std::uint32_t dims[] = {};
-    ::primitiv_Shape *shape = ::primitiv_Shape_new_with_dims(dims, 0, 1);
+    EXPECT_EQ(::primitiv_Status::PRIMITIV_OK,
+        ::primitiv_Shape_new_with_dims(&shape, dims, 0, 1));
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 0));
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 1));
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 100));
@@ -41,8 +43,10 @@ TEST_F(CShapeTest, CheckNewByArray) {
     ::primitiv_Shape_delete(shape);
   }
   {
+    ::primitiv_Shape *shape;
     std::uint32_t dims[] = {1, 2, 3};
-    ::primitiv_Shape *shape = ::primitiv_Shape_new_with_dims(dims, 3, 4);
+    EXPECT_EQ(::primitiv_Status::PRIMITIV_OK,
+        ::primitiv_Shape_new_with_dims(&shape, dims, 3, 4));
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 0));
     EXPECT_EQ(2u, ::primitiv_Shape_op_getitem(shape, 1));
     EXPECT_EQ(3u, ::primitiv_Shape_op_getitem(shape, 2));
@@ -60,4 +64,76 @@ TEST_F(CShapeTest, CheckNewByArray) {
   }
 }
 
-}  // namespace primitiv
+TEST_F(CShapeTest, CheckInvalidNew) {
+  {
+    ::primitiv_Shape* shape;
+    std::uint32_t dims[] = {0};
+    EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,
+              ::primitiv_Shape_new_with_dims(&shape, dims, 1, 1));
+  }
+  {
+    ::primitiv_Shape* shape;
+    std::uint32_t dims[] = {2, 0};
+    EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,
+              ::primitiv_Shape_new_with_dims(&shape, dims, 2, 1));
+  }
+  {
+    ::primitiv_Shape* shape;
+    std::uint32_t dims[] = {2, 3, 0};
+    EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,
+              ::primitiv_Shape_new_with_dims(&shape, dims, 3, 1));
+  }
+  {
+    ::primitiv_Shape* shape;
+    std::uint32_t dims[] = {0};
+    EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,
+              ::primitiv_Shape_new_with_dims(&shape, dims, 1, 0));
+  }
+  {
+    ::primitiv_Shape* shape;
+    std::uint32_t dims[] = {2, 0};
+    EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,
+              ::primitiv_Shape_new_with_dims(&shape, dims, 2, 0));
+  }
+  {
+    ::primitiv_Shape* shape;
+    std::uint32_t dims[] = {2, 3, 0};
+    EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,
+              ::primitiv_Shape_new_with_dims(&shape, dims, 3, 0));
+  }
+  {
+    ::primitiv_Shape* shape;
+    std::uint32_t dims[] = {};
+    EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,
+              ::primitiv_Shape_new_with_dims(&shape, dims, 0, 0));
+  }
+  {
+    ::primitiv_Shape* shape;
+    std::uint32_t dims[] = {1, 2, 3, 4, 5, 6, 7, 8};
+    EXPECT_EQ(::primitiv_Status::PRIMITIV_OK,
+              ::primitiv_Shape_new_with_dims(&shape, dims, 8, 10));
+  }
+  {
+    ::primitiv_Shape* shape;
+    std::uint32_t dims[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,
+              ::primitiv_Shape_new_with_dims(&shape, dims, 9, 10));
+  }
+}
+
+TEST_F(CShapeTest, CheckNumElementsUnderRank) {
+  ::primitiv_Shape *src;
+  std::uint32_t dims[] = {2, 3, 5, 7, 11, 13};
+  EXPECT_EQ(::primitiv_Status::PRIMITIV_OK,
+            ::primitiv_Shape_new_with_dims(&src, dims, 6, 17));
+  EXPECT_EQ(1u, ::primitiv_Shape_lower_volume(src, 0));
+  EXPECT_EQ(2u, ::primitiv_Shape_lower_volume(src, 1));
+  EXPECT_EQ(2u * 3u, ::primitiv_Shape_lower_volume(src, 2));
+  EXPECT_EQ(2u * 3u * 5u, ::primitiv_Shape_lower_volume(src, 3));
+  EXPECT_EQ(2u * 3u * 5u * 7u, ::primitiv_Shape_lower_volume(src, 4));
+  EXPECT_EQ(2u * 3u * 5u * 7u * 11u, ::primitiv_Shape_lower_volume(src, 5));
+  EXPECT_EQ(2u * 3u * 5u * 7u * 11u * 13u,
+      ::primitiv_Shape_lower_volume(src, 6));
+}
+
+}  // namespace primitiv_c

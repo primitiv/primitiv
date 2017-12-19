@@ -36,4 +36,7 @@ typedef _Bool bool;
 #endif  // SWIG
 #define CAPI PRIMITIV_CAPI_EXPORT
 
+#define _CONCAT_EVAL(A, B) A ## B
+#define _CONCAT(A, B) _CONCAT_EVAL(A, B)
+
 #endif  // PRIMITIV_C_DEFINE_H_
