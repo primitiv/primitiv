@@ -269,14 +269,14 @@ void Eigen::slice_bw_impl(
 
 #define MAYBE_USED(x) static_cast<void>(x)
 
-#define CPUDEV_FW_X(name, op) \
+#define EIGEN_DEV_FW_X(name, op) \
 void Eigen::name##_fw_impl(const Tensor &x_, Tensor &y_) { \
   const std::size_t size = x_.shape().size(); \
   EMap<const EArrayXf> x(CDATA(x_), size); \
   EMap<EArrayXf>(MDATA(y_), size) = (op); \
 }
 
-#define CPUDEV_BW_X(name, op) \
+#define EIGEN_DEV_BW_X(name, op) \
 void Eigen::name##_bw_impl( \
     const Tensor &x_, const Tensor &y_, const Tensor &gy_, Tensor &gx_) { \
   const std::size_t size = x_.shape().size(); \
@@ -286,14 +286,14 @@ void Eigen::name##_bw_impl( \
   EMap<EArrayXf>(MDATA(gx_), size) += (op); \
 }
 
-#define CPUDEV_FW_X_CONST(name, op) \
+#define EIGEN_DEV_FW_X_CONST(name, op) \
 void Eigen::name##_fw_impl(const Tensor &x_, float k, Tensor &y_) { \
   const std::size_t size = x_.shape().size(); \
   EMap<const EArrayXf> x(CDATA(x_), size); \
   EMap<EArrayXf>(MDATA(y_), size) = (op); \
 }
 
-#define CPUDEV_BW_X_CONST(name, op) \
+#define EIGEN_DEV_BW_X_CONST(name, op) \
 void Eigen::name##_bw_impl( \
     const Tensor &x_, const Tensor &y_, const Tensor &gy_, float k, \
     Tensor &gx_) { \
@@ -304,119 +304,121 @@ void Eigen::name##_bw_impl( \
   EMap<EArrayXf>(MDATA(gx_), size) += (op); \
 }
 
-#define CPUDEV_FW_X_SCALAR(name, op) \
-void Eigen::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
-  const std::uint32_t size = y.shape().volume(); \
-  const std::uint32_t bs = y.shape().batch(); \
-  const std::uint32_t skip_x = x.shape().has_batch() * size; \
-  const std::uint32_t skip_k = k.shape().has_batch(); \
-  float *dest = MDATA(y); \
-  const float *src_x = CDATA(x); \
-  const float *src_k = CDATA(k); \
+#define EIGEN_DEV_FW_X_SCALAR(name, op) \
+void Eigen::name##_fw_impl(const Tensor &x_, const Tensor &k_, Tensor &y_) { \
+  const std::uint32_t size = y_.shape().volume(); \
+  const std::uint32_t bs = y_.shape().batch(); \
+  const std::uint32_t skip_x = x_.shape().has_batch() * size; \
+  const std::uint32_t skip_k = k_.shape().has_batch(); \
+  const float *src_x = CDATA(x_); \
+  const float *src_k = CDATA(k_); \
+  float *dest = MDATA(y_); \
   for (std::uint32_t batch = 0; batch < bs; ++batch) { \
-    REPEAT_OP(i, size, dest[i] = (op)); \
+    EMap<const EArrayXf> x(src_x, size); \
+    const float k = *src_k; \
+    EMap<EArrayXf>(dest, size) = (op); \
     dest += size; \
     src_x += skip_x; \
     src_k += skip_k; \
   } \
 }
 
-#define CPUDEV_FW_AB(name, op) \
-void Eigen::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
-  const std::uint32_t size = y.shape().volume(); \
-  const std::uint32_t bs = y.shape().batch(); \
-  const std::uint32_t skip_a = a.shape().has_batch() * size; \
-  const std::uint32_t skip_b = b.shape().has_batch() * size; \
-  float *dest = MDATA(y); \
-  const float *src_a = CDATA(a); \
-  const float *src_b = CDATA(b); \
+#define EIGEN_DEV_FW_AB(name, op) \
+void Eigen::name##_fw_impl(const Tensor &a_, const Tensor &b_, Tensor &y_) { \
+  const std::uint32_t size = y_.shape().volume(); \
+  const std::uint32_t bs = y_.shape().batch(); \
+  const std::uint32_t skip_a = a_.shape().has_batch() * size; \
+  const std::uint32_t skip_b = b_.shape().has_batch() * size; \
+  const float *src_a = CDATA(a_); \
+  const float *src_b = CDATA(b_); \
+  float *dest = MDATA(y_); \
   for (std::uint32_t batch = 0; batch < bs; ++batch) { \
-    REPEAT_OP(i, size, dest[i] = (op)); \
+    EMap<const EArrayXf> a(src_a, size); \
+    EMap<const EArrayXf> b(src_b, size); \
+    EMap<EArrayXf>(dest, size) = (op); \
     dest += size; \
     src_a += skip_a; \
     src_b += skip_b; \
   } \
 }
 
-CPUDEV_FW_X(negate, -x);
-CPUDEV_FW_X(sqrt, x.sqrt());
-CPUDEV_FW_X(exp, x.exp());
-CPUDEV_FW_X(log, x.log());
-CPUDEV_FW_X(tanh, x.tanh());
-CPUDEV_FW_X(sigmoid, .5 + .5 * (.5 * x).tanh());
-CPUDEV_FW_X(
+EIGEN_DEV_FW_X(negate, -x);
+EIGEN_DEV_FW_X(sqrt, x.sqrt());
+EIGEN_DEV_FW_X(exp, x.exp());
+EIGEN_DEV_FW_X(log, x.log());
+EIGEN_DEV_FW_X(tanh, x.tanh());
+EIGEN_DEV_FW_X(sigmoid, .5 + .5 * (.5 * x).tanh());
+EIGEN_DEV_FW_X(
     softplus, (x > 0.).select(
       x + (1. + (-x).exp()).log(),
       (1. + x.exp()).log()));
-CPUDEV_FW_X(sin, x.sin());
-CPUDEV_FW_X(cos, x.cos());
-CPUDEV_FW_X(tan, x.tan());
+EIGEN_DEV_FW_X(sin, x.sin());
+EIGEN_DEV_FW_X(cos, x.cos());
+EIGEN_DEV_FW_X(tan, x.tan());
 
-CPUDEV_BW_X(sqrt, .5 * gy / y);
-CPUDEV_BW_X(exp, gy * y);
-CPUDEV_BW_X(log, gy / x);
-CPUDEV_BW_X(tanh, gy * (1. - y * y));
-CPUDEV_BW_X(sigmoid, gy * y * (1. - y));
-CPUDEV_BW_X(softplus, gy * (.5 + .5 * (.5 * x).tanh()));
-CPUDEV_BW_X(sin, gy * x.cos());
-CPUDEV_BW_X(cos, -gy * x.sin());
-CPUDEV_BW_X(tan, gy * (1. + y * y));
+EIGEN_DEV_BW_X(sqrt, .5 * gy / y);
+EIGEN_DEV_BW_X(exp, gy * y);
+EIGEN_DEV_BW_X(log, gy / x);
+EIGEN_DEV_BW_X(tanh, gy * (1. - y * y));
+EIGEN_DEV_BW_X(sigmoid, gy * y * (1. - y));
+EIGEN_DEV_BW_X(softplus, gy * (.5 + .5 * (.5 * x).tanh()));
+EIGEN_DEV_BW_X(sin, gy * x.cos());
+EIGEN_DEV_BW_X(cos, -gy * x.sin());
+EIGEN_DEV_BW_X(tan, gy * (1. + y * y));
 
-CPUDEV_FW_X_CONST(add_const, x + k);
-CPUDEV_FW_X_CONST(subtract_const_r, x - k);
-CPUDEV_FW_X_CONST(subtract_const_l, k - x);
-CPUDEV_FW_X_CONST(multiply_const, x * k);
-CPUDEV_FW_X_CONST(divide_const_r, x / k);
-CPUDEV_FW_X_CONST(divide_const_l, k / x);
-CPUDEV_FW_X_CONST(prelu, (x > 0.).select(x, k * x));
-CPUDEV_FW_X_CONST(elu, (x > 0.).select(x, k * (x.exp() - 1.)));
+EIGEN_DEV_FW_X_CONST(add_const, x + k);
+EIGEN_DEV_FW_X_CONST(subtract_const_r, x - k);
+EIGEN_DEV_FW_X_CONST(subtract_const_l, k - x);
+EIGEN_DEV_FW_X_CONST(multiply_const, x * k);
+EIGEN_DEV_FW_X_CONST(divide_const_r, x / k);
+EIGEN_DEV_FW_X_CONST(divide_const_l, k / x);
+EIGEN_DEV_FW_X_CONST(prelu, (x > 0.).select(x, k * x));
+EIGEN_DEV_FW_X_CONST(elu, (x > 0.).select(x, k * (x.exp() - 1.)));
 
-CPUDEV_BW_X_CONST(add_const, gy);
-CPUDEV_BW_X_CONST(subtract_const_r, gy);
-CPUDEV_BW_X_CONST(subtract_const_l, -gy);
-CPUDEV_BW_X_CONST(multiply_const, k * gy);
-CPUDEV_BW_X_CONST(divide_const_r, gy / k);
-CPUDEV_BW_X_CONST(divide_const_l, -gy * y / x);
-CPUDEV_BW_X_CONST(prelu, (x > 0.).select(gy, k * gy));
-CPUDEV_BW_X_CONST(elu, (x > 0.).select(gy, (y + k) * gy));
+EIGEN_DEV_BW_X_CONST(add_const, gy);
+EIGEN_DEV_BW_X_CONST(subtract_const_r, gy);
+EIGEN_DEV_BW_X_CONST(subtract_const_l, -gy);
+EIGEN_DEV_BW_X_CONST(multiply_const, k * gy);
+EIGEN_DEV_BW_X_CONST(divide_const_r, gy / k);
+EIGEN_DEV_BW_X_CONST(divide_const_l, -gy * y / x);
+EIGEN_DEV_BW_X_CONST(prelu, (x > 0.).select(gy, k * gy));
+EIGEN_DEV_BW_X_CONST(elu, (x > 0.).select(gy, (y + k) * gy));
 
-CPUDEV_FW_X_SCALAR(add_scalar, src_x[i] + *src_k);
-CPUDEV_FW_X_SCALAR(subtract_scalar_r, src_x[i] - *src_k);
-CPUDEV_FW_X_SCALAR(subtract_scalar_l, *src_k - src_x[i]);
-CPUDEV_FW_X_SCALAR(multiply_scalar, src_x[i] * *src_k);
-CPUDEV_FW_X_SCALAR(divide_scalar_r, src_x[i] / *src_k);
-CPUDEV_FW_X_SCALAR(divide_scalar_l, *src_k / src_x[i]);
+EIGEN_DEV_FW_X_SCALAR(add_scalar, x + k);
+EIGEN_DEV_FW_X_SCALAR(subtract_scalar_r, x - k);
+EIGEN_DEV_FW_X_SCALAR(subtract_scalar_l, k - x);
+EIGEN_DEV_FW_X_SCALAR(multiply_scalar, x * k);
+EIGEN_DEV_FW_X_SCALAR(divide_scalar_r, x / k);
+EIGEN_DEV_FW_X_SCALAR(divide_scalar_l, k / x);
 
-CPUDEV_FW_AB(add, src_a[i] + src_b[i]);
-CPUDEV_FW_AB(subtract, src_a[i] - src_b[i]);
-CPUDEV_FW_AB(multiply, src_a[i] * src_b[i]);
-CPUDEV_FW_AB(divide, src_a[i] / src_b[i]);
+EIGEN_DEV_FW_AB(add, a + b);
+EIGEN_DEV_FW_AB(subtract, a - b);
+EIGEN_DEV_FW_AB(multiply, a * b);
+EIGEN_DEV_FW_AB(divide, a / b);
 
-#undef CPUDEV_FW_X
-#undef CPUDEV_BW_X
-#undef CPUDEV_FW_X_CONST
-#undef CPUDEV_BW_X_CONST
-#undef CPUDEV_FW_X_SCALAR
-#undef CPUDEV_FW_AB
+#undef EIGEN_DEV_FW_X
+#undef EIGEN_DEV_BW_X
+#undef EIGEN_DEV_FW_X_CONST
+#undef EIGEN_DEV_BW_X_CONST
+#undef EIGEN_DEV_FW_X_SCALAR
+#undef EIGEN_DEV_FW_AB
 
 #undef MAYBE_USED
 
 void Eigen::add_bw_impl(
-    const Tensor &, const Tensor &, const Tensor &, const Tensor &gy,
-    Tensor &ga, Tensor &gb) {
-  const std::uint32_t size = gy.shape().volume();
-  const std::uint32_t bs = gy.shape().batch();
-  const std::uint32_t skip_a = ga.shape().has_batch() * size;
-  const std::uint32_t skip_b = gb.shape().has_batch() * size;
-  const float *pgy = CDATA(gy);
-  float *pga = MDATA(ga);
-  float *pgb = MDATA(gb);
+    const Tensor &, const Tensor &, const Tensor &, const Tensor &gy_,
+    Tensor &ga_, Tensor &gb_) {
+  const std::uint32_t size = gy_.shape().volume();
+  const std::uint32_t bs = gy_.shape().batch();
+  const std::uint32_t skip_a = ga_.shape().has_batch() * size;
+  const std::uint32_t skip_b = gb_.shape().has_batch() * size;
+  const float *pgy = CDATA(gy_);
+  float *pga = MDATA(ga_);
+  float *pgb = MDATA(gb_);
   for (std::uint32_t batch = 0; batch < bs; ++batch) {
-    for (std::uint32_t i = 0; i < size; ++i) {
-      const float k = pgy[i];
-      pga[i] += k;
-      pgb[i] += k;
-    }
+    EMap<const EArrayXf> gy(pgy, size);
+    EMap<EArrayXf>(pga, size) += gy;
+    EMap<EArrayXf>(pgb, size) += gy;
     pgy += size;
     pga += skip_a;
     pgb += skip_b;
@@ -424,21 +426,19 @@ void Eigen::add_bw_impl(
 }
 
 void Eigen::subtract_bw_impl(
-    const Tensor &, const Tensor &, const Tensor &, const Tensor &gy,
-    Tensor &ga, Tensor &gb) {
-  const std::uint32_t size = gy.shape().volume();
-  const std::uint32_t bs = gy.shape().batch();
-  const std::uint32_t skip_a = ga.shape().has_batch() * size;
-  const std::uint32_t skip_b = gb.shape().has_batch() * size;
-  const float *pgy = CDATA(gy);
-  float *pga = MDATA(ga);
-  float *pgb = MDATA(gb);
+    const Tensor &, const Tensor &, const Tensor &, const Tensor &gy_,
+    Tensor &ga_, Tensor &gb_) {
+  const std::uint32_t size = gy_.shape().volume();
+  const std::uint32_t bs = gy_.shape().batch();
+  const std::uint32_t skip_a = ga_.shape().has_batch() * size;
+  const std::uint32_t skip_b = gb_.shape().has_batch() * size;
+  const float *pgy = CDATA(gy_);
+  float *pga = MDATA(ga_);
+  float *pgb = MDATA(gb_);
   for (std::uint32_t batch = 0; batch < bs; ++batch) {
-    for (std::uint32_t i = 0; i < size; ++i) {
-      const float k = pgy[i];
-      pga[i] += k;
-      pgb[i] -= k;
-    }
+    EMap<const EArrayXf> gy(pgy, size);
+    EMap<EArrayXf>(pga, size) += gy;
+    EMap<EArrayXf>(pgb, size) -= gy;
     pgy += size;
     pga += skip_a;
     pgb += skip_b;
@@ -446,23 +446,21 @@ void Eigen::subtract_bw_impl(
 }
 
 void Eigen::multiply_bw_impl(
-    const Tensor &a, const Tensor &b, const Tensor &, const Tensor &gy,
-    Tensor &ga, Tensor &gb) {
-  const std::uint32_t size = gy.shape().volume();
-  const std::uint32_t bs = gy.shape().batch();
-  const std::uint32_t skip_a = ga.shape().has_batch() * size;
-  const std::uint32_t skip_b = gb.shape().has_batch() * size;
-  const float *pa = CDATA(a);
-  const float *pb = CDATA(b);
-  const float *pgy = CDATA(gy);
-  float *pga = MDATA(ga);
-  float *pgb = MDATA(gb);
+    const Tensor &a_, const Tensor &b_, const Tensor &, const Tensor &gy_,
+    Tensor &ga_, Tensor &gb_) {
+  const std::uint32_t size = gy_.shape().volume();
+  const std::uint32_t bs = gy_.shape().batch();
+  const std::uint32_t skip_a = ga_.shape().has_batch() * size;
+  const std::uint32_t skip_b = gb_.shape().has_batch() * size;
+  const float *pa = CDATA(a_);
+  const float *pb = CDATA(b_);
+  const float *pgy = CDATA(gy_);
+  float *pga = MDATA(ga_);
+  float *pgb = MDATA(gb_);
   for (std::uint32_t batch = 0; batch < bs; ++batch) {
-    for (std::uint32_t i = 0; i < size; ++i) {
-      const float k = pgy[i];
-      pga[i] += k * pb[i];
-      pgb[i] += k * pa[i];
-    }
+    EMap<const EArrayXf> gy(pgy, size);
+    EMap<EArrayXf>(pga, size) += gy * EMap<const EArrayXf>(pb, size);
+    EMap<EArrayXf>(pgb, size) += gy * EMap<const EArrayXf>(pa, size);
     pa += skip_a;
     pb += skip_b;
     pgy += size;
@@ -472,23 +470,22 @@ void Eigen::multiply_bw_impl(
 }
 
 void Eigen::divide_bw_impl(
-    const Tensor &, const Tensor &b, const Tensor &y, const Tensor &gy,
-    Tensor &ga, Tensor &gb) {
-  const std::uint32_t size = gy.shape().volume();
-  const std::uint32_t bs = gy.shape().batch();
-  const std::uint32_t skip_a = ga.shape().has_batch() * size;
-  const std::uint32_t skip_b = gb.shape().has_batch() * size;
-  const float *pb = CDATA(b);
-  const float *py = CDATA(y);
-  const float *pgy = CDATA(gy);
-  float *pga = MDATA(ga);
-  float *pgb = MDATA(gb);
+    const Tensor &, const Tensor &b_, const Tensor &y_, const Tensor &gy_,
+    Tensor &ga_, Tensor &gb_) {
+  const std::uint32_t size = gy_.shape().volume();
+  const std::uint32_t bs = gy_.shape().batch();
+  const std::uint32_t skip_a = ga_.shape().has_batch() * size;
+  const std::uint32_t skip_b = gb_.shape().has_batch() * size;
+  const float *pb = CDATA(b_);
+  const float *py = CDATA(y_);
+  const float *pgy = CDATA(gy_);
+  float *pga = MDATA(ga_);
+  float *pgb = MDATA(gb_);
   for (std::uint32_t batch = 0; batch < bs; ++batch) {
-    for (std::uint32_t i = 0; i < size; ++i) {
-      const float k = pgy[i] / pb[i];
-      pga[i] += k;
-      pgb[i] -= k * py[i];
-    }
+    EMap<const EArrayXf> b(pb, size);
+    EMap<const EArrayXf> gy(pgy, size);
+    EMap<EArrayXf>(pga, size) += gy / b;
+    EMap<EArrayXf>(pgb, size) -= gy * EMap<const EArrayXf>(py, size) / b;
     pb += skip_b;
     py += size;
     pgy += size;
