@@ -92,6 +92,8 @@ if(PRIMITIV_BUILD_C_API)
     )
   endfunction()
 
+  primitiv_c_test(device)
+  primitiv_c_test(graph)
   primitiv_c_test(shape)
   primitiv_c_test(status)
 endif()
