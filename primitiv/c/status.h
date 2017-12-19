@@ -16,6 +16,8 @@ typedef enum primitiv_Status {
 
 CAPI extern const char *primitiv_Status_get_message();
 
+CAPI extern void primitiv_Status_reset();
+
 #ifdef __cplusplus
 }  // end extern "C"
 #endif

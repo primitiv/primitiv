@@ -83,6 +83,11 @@ class ErrorHandler {
     }
   }
 
+  void reset() noexcept {
+    exception_ = nullptr;
+    message_ = "OK";
+  }
+
   bool has_exception() const noexcept {
     return !exception_;
   }
