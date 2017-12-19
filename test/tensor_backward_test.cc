@@ -1,5 +1,6 @@
 #include <config.h>
 
+#include <cmath>
 #include <vector>
 #include <gtest/gtest.h>
 #include <primitiv/error.h>
@@ -619,6 +620,46 @@ TEST_F(TensorBackwardTest, CheckDivideConstL) {
   }
 }
 
+TEST_F(TensorBackwardTest, CheckPowConstR) {
+  const vector<float> x_val {1, 2, 4, 8, 16, 32, 64, 128};
+  const vector<float> ks {2., 1., .5, 0, -.5, -1., -2., -4.};
+  auto fgx = [](float x, float k) { return k * std::pow(x, k - 1); };
+
+  for (const float k : ks) {
+    vector<float> gx_val;
+    for (float x : x_val) { gx_val.emplace_back(fgx(x, k)); }
+
+    for (Device *dev : devices) {
+      const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), x_val);
+      const Tensor y = dev->pow_const_r_fw(x, k);
+      const Tensor gy = dev->new_tensor_by_constant(y.shape(), 1);
+      Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
+      dev->pow_const_r_bw(x, y, gy, k, gx);
+      EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckPowConstL) {
+  const vector<float> x_val {2., 1., .5, 0, -.5, -1., -2., -4.};
+  const vector<float> ks {1, 2, 4, 8, 16, 32, 64, 128};
+  auto fgx = [](float x, float k) { return std::log(k) * std::pow(k, x); };
+
+  for (const float k : ks) {
+    vector<float> gx_val;
+    for (float x : x_val) { gx_val.emplace_back(fgx(x, k)); }
+
+    for (Device *dev : devices) {
+      const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), x_val);
+      const Tensor y = dev->pow_const_l_fw(x, k);
+      const Tensor gy = dev->new_tensor_by_constant(y.shape(), 1);
+      Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
+      dev->pow_const_l_bw(x, y, gy, k, gx);
+      EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    }
+  }
+}
+
 TEST_F(TensorBackwardTest, CheckPReLU) {
   const vector<float> ks {.01, .1, 1., 10., 100., -.01, -.1, -1., -10., -100.};
   for (Device *dev : devices) {
@@ -928,6 +969,108 @@ TEST_F(TensorBackwardTest, CheckDivideN1) {
     dev->divide_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {.1, -1, .2, -2};
     const vector<float> gb_val {.01, -10};
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckPow11) {
+  auto fga = [](float a, float b) { return b * std::pow(a, b - 1); };
+  auto fgb = [](float a, float b) { return std::log(a) * std::pow(a, b); };
+
+  const vector<float> a_val {1, 2, 4, 8};
+  const vector<float> b_val {2, 1, 0, -1};
+  vector<float> ga_val, gb_val;
+  for (std::size_t i = 0; i < a_val.size(); ++i) {
+    ga_val.emplace_back(fga(a_val[i], b_val[i]));
+    gb_val.emplace_back(fgb(a_val[i], b_val[i]));
+  }
+
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector({2, 2}, a_val);
+    const Tensor b = dev->new_tensor_by_vector({2, 2}, b_val);
+    const Tensor y = dev->pow_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_constant(y.shape(), 1);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
+    dev->pow_bw(a, b, y, gy, ga, gb);
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckPowNN) {
+  auto fga = [](float a, float b) { return b * std::pow(a, b - 1); };
+  auto fgb = [](float a, float b) { return std::log(a) * std::pow(a, b); };
+
+  const vector<float> a_val {1, 2, 4, 8, 16, 32, 64, 128};
+  const vector<float> b_val {3, 2, 1, 0, -1, -2, -3, -4};
+  vector<float> ga_val, gb_val;
+  for (std::size_t i = 0; i < a_val.size(); ++i) {
+    ga_val.emplace_back(fga(a_val[i], b_val[i]));
+    gb_val.emplace_back(fgb(a_val[i], b_val[i]));
+  }
+
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 2), a_val);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 2), b_val);
+    const Tensor y = dev->pow_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_constant(y.shape(), 1);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
+    dev->pow_bw(a, b, y, gy, ga, gb);
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckPow1N) {
+  auto fga = [](float a, float b) { return b * std::pow(a, b - 1); };
+  auto fgb = [](float a, float b) { return std::log(a) * std::pow(a, b); };
+
+  const vector<float> a_val {1, 2, 4, 8};
+  const vector<float> b_val {3, 2, 1, 0, -1, -2, -3, -4};
+  vector<float> ga_val(a_val.size(), 0), gb_val(b_val.size(), 0);
+  for (std::size_t ib = 0; ib < b_val.size(); ++ib) {
+    const std::size_t ia = ib % a_val.size();
+    ga_val[ia] += fga(a_val[ia], b_val[ib]);
+    gb_val[ib] += fgb(a_val[ia], b_val[ib]);
+  }
+
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector({2, 2}, a_val);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 2), b_val);
+    const Tensor y = dev->pow_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_constant(y.shape(), 1);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
+    dev->pow_bw(a, b, y, gy, ga, gb);
+    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
+    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckPowN1) {
+  auto fga = [](float a, float b) { return b * std::pow(a, b - 1); };
+  auto fgb = [](float a, float b) { return std::log(a) * std::pow(a, b); };
+
+  const vector<float> a_val {1, 2, 4, 8, 16, 32, 64, 128};
+  const vector<float> b_val {2, 1, 0, -1};
+  vector<float> ga_val(a_val.size(), 0), gb_val(b_val.size(), 0);
+  for (std::size_t ia = 0; ia < a_val.size(); ++ia) {
+    const std::size_t ib = ia % b_val.size();
+    ga_val[ia] += fga(a_val[ia], b_val[ib]);
+    gb_val[ib] += fgb(a_val[ia], b_val[ib]);
+  }
+
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 2), a_val);
+    const Tensor b = dev->new_tensor_by_vector({2, 2}, b_val);
+    const Tensor y = dev->pow_fw(a, b);
+    const Tensor gy = dev->new_tensor_by_constant(y.shape(), 1);
+    Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
+    Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
+    dev->pow_bw(a, b, y, gy, ga, gb);
     EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
     EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
   }

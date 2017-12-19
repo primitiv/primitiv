@@ -540,17 +540,17 @@ primitiv_Status primitiv_tensor_func_random_gumbel(
 
 IMPL_BINARY_OPERATOR(pow);
 
-primitiv_Status primitiv_node_func_ipow(
+primitiv_Status primitiv_node_func_pown(
     const primitiv_Node *x, uint32_t k, primitiv_Node **y) {
   try {
-    *y = to_c_from_value(primitiv::functions::ipow(*to_cc(x), k));
+    *y = to_c_from_value(primitiv::functions::pown(*to_cc(x), k));
     return ::primitiv_Status::PRIMITIV_OK;
   } HANDLE_EXCEPTION
 }
-primitiv_Status primitiv_tensor_func_ipow(
+primitiv_Status primitiv_tensor_func_pown(
     const primitiv_Tensor *x, uint32_t k, primitiv_Tensor **y) {
   try {
-    *y = to_c_from_value(primitiv::functions::ipow(*to_cc(x), k));
+    *y = to_c_from_value(primitiv::functions::pown(*to_cc(x), k));
     return ::primitiv_Status::PRIMITIV_OK;
   } HANDLE_EXCEPTION
 }
