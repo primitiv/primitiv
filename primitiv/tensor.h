@@ -160,6 +160,8 @@ public:
    * Invalidates this object.
    */
   void invalidate() {
+    std::lock_guard<RecursiveSpinlock> lock(spinlock_);
+
     // NOTE(odashi):
     // Not necessary to update `shape_` because it is never accessed anywhere.
     //shape_ = Shape();
