@@ -83,6 +83,8 @@ private:
   void multiply_const_fw_impl(const Tensor &x, float k, Tensor &y) override;
   void divide_const_r_fw_impl(const Tensor &x, float k, Tensor &y) override;
   void divide_const_l_fw_impl(const Tensor &x, float k, Tensor &y) override;
+  void pow_const_r_fw_impl(const Tensor &x, float k, Tensor &y) override;
+  void pow_const_l_fw_impl(const Tensor &x, float k, Tensor &y) override;
   void prelu_fw_impl(const Tensor &x, float k, Tensor &y) override;
   void elu_fw_impl(const Tensor &x, float k, Tensor &y) override;
 
@@ -92,6 +94,8 @@ private:
   void multiply_const_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
   void divide_const_r_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
   void divide_const_l_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
+  void pow_const_r_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
+  void pow_const_l_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
   void prelu_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
   void elu_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
 
@@ -101,11 +105,14 @@ private:
   void multiply_scalar_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override;
   void divide_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override;
   void divide_scalar_l_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override;
+  void pow_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override;
+  void pow_scalar_l_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override;
 
   void add_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override;
   void subtract_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override;
   void multiply_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override;
   void divide_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override;
+  void pow_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override;
   void matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) override;
 
   void add_bw_impl(
@@ -118,6 +125,9 @@ private:
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
       Tensor &ga, Tensor &gb) override;
   void divide_bw_impl(
+      const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+      Tensor &ga, Tensor &gb) override;
+  void pow_bw_impl(
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
       Tensor &ga, Tensor &gb) override;
   void matmul_bw_impl(

@@ -105,6 +105,23 @@ Tensor divide(const Tensor &a, const Tensor &b) {
   else return a.device().divide_fw(a, b);
 }
 
+template<>
+Tensor pow(const Tensor &x, float k) {
+  return x.device().pow_const_r_fw(x, k);
+}
+
+template<>
+Tensor pow(float k, const Tensor &x) {
+  return x.device().pow_const_l_fw(x, k);
+}
+
+template<>
+Tensor pow(const Tensor &a, const Tensor &b) {
+  if (a.shape().is_scalar()) return a.device().pow_scalar_l_fw(b, a);
+  else if (b.shape().is_scalar()) return a.device().pow_scalar_r_fw(a, b);
+  else return a.device().pow_fw(a, b);
+}
+
 Tensor input_tensor(
     const Shape &shape, const std::vector<float> &data, Device *dev) {
   return ::get_device(dev).new_tensor_by_vector(shape, data);

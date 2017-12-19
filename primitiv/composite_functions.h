@@ -8,22 +8,7 @@ namespace primitiv {
 namespace functions {
 
 template<typename Var>
-inline type_traits::Identity<Var> pow(const Var &x, float k) {
-  return exp(k * log(x));
-}
-
-template<typename Var>
-inline type_traits::Identity<Var> pow(float x, const Var &k) {
-  return exp(k * std::log(x));
-}
-
-template<typename Var>
-inline type_traits::Identity<Var> pow(const Var &x, const Var &k) {
-  return exp(k * log(x));
-}
-
-template<typename Var>
-inline type_traits::Identity<Var> ipow(const Var &x, std::int32_t k) {
+inline type_traits::Identity<Var> pown(const Var &x, std::int32_t k) {
   /*
    * NOTE(odashi):
    * std::abs(-0x800..000) generates undefined behavior under 2's complement
