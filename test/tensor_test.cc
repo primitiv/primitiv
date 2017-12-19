@@ -44,6 +44,15 @@ TEST_F(TensorTest, CheckInvalid) {
   EXPECT_THROW(x.to_vector(), Error);
 }
 
+TEST_F(TensorTest, CheckInvalidate) {
+  for (Device *dev : devices) {
+    Tensor x = dev->new_tensor_by_constant({}, 1);
+    ASSERT_TRUE(x.valid());
+    x.invalidate();
+    EXPECT_FALSE(x.valid());
+  }
+}
+
 TEST_F(TensorTest, CheckNewScalarWithData) {
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_constant({}, 1);

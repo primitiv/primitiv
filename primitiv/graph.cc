@@ -184,7 +184,7 @@ void Graph::backward(const Node &node) {
     cur_f.op->backward(*cur_v, cur_n.grad, arg_values, arg_grads);
 
     // Deletes current gradient to suppress memory.
-    cur_n.grad = Tensor();
+    cur_n.grad.invalidate();
   }
 }
 
