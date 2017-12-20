@@ -239,7 +239,7 @@ CAPI extern primitiv_Status primitiv_Graph_get_device(
  * @return Status code.
  */
 CAPI extern primitiv_Status primitiv_Graph_dump(
-    const primitiv_Graph *graph, const char *format, char *string);
+    const primitiv_Graph *graph, const char *format, char **string);
 
 /**
  * Returns the number of operators in the computation graph.

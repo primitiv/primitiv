@@ -179,11 +179,11 @@ primitiv_Status primitiv_Graph_get_device(const primitiv_Graph *graph,
 }
 
 primitiv_Status primitiv_Graph_dump(
-    const primitiv_Graph *graph, const char *format, char *string) {
+    const primitiv_Graph *graph, const char *format, char **string) {
   try {
     std::string str = to_cc(graph)->dump(format);
-    uint64_t len = str.length();
-    std::strncpy(string, str.c_str(), len);
+    *string = new char[str.size() + 1];
+    std::strcpy(*string, str.c_str());
     return ::primitiv_Status::PRIMITIV_OK;
   } HANDLE_EXCEPTION
 }
