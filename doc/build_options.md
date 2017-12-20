@@ -68,10 +68,22 @@ Unique Options
       </td>
     </tr>
     <tr>
+      <td><code>PRIMITIV_USE_EIGEN</code></td>
+      <td><code>OFF</code></td>
+      <td>
+        Enables Eigen backend (<code>primitiv::devices::Eigen</code> class).
+        This option introduces a dependency to the
+        <a href="http://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen3 library</a>,
+        and
+        <a href="/cmake/FindEigen3.cmake">FindEigen3</a>
+        options can also be used.
+      </td>
+    </tr>
+    <tr>
       <td><code>PRIMITIV_USE_CUDA</code></td>
       <td><code>OFF</code></td>
       <td>
-        Enables CUDA backend (<code>devices::CUDA</code> class).
+        Enables CUDA backend (<code>primitiv::devices::CUDA</code> class).
         This option introduces a dependency to the
         <a href="https://developer.nvidia.com/cuda-toolkit">NVIDIA CUDA Toolkit v7.5 or later</a>,
         and
@@ -83,7 +95,7 @@ Unique Options
       <td><code>PRIMITIV_USE_OPENCL</code></td>
       <td><code>OFF</code></td>
       <td>
-        Enables OpenCL backend(<code>devices::OpenCL</code> class).
+        Enables OpenCL backend(<code>primitiv::devices::OpenCL</code> class).
         This option introduces dependencies to an
         <a href="https://www.khronos.org/opencl/">OpenCL v1.2</a> implementation and
         <a href="http://github.khronos.org/OpenCL-CLHPP/">OpenCL C++ Bindings v2</a>.

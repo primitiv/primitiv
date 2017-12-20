@@ -4,8 +4,8 @@
 #include <thread>
 #include <vector>
 #include <gtest/gtest.h>
+#include <primitiv/eigen_device.h>
 #include <primitiv/error.h>
-#include <primitiv/naive_device.h>
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
 #include <test_utils.h>
@@ -15,16 +15,16 @@ using test_utils::vector_match;
 
 namespace primitiv {
 
-class NaiveDeviceTest : public testing::Test {};
+class EigenDeviceTest : public testing::Test {};
 
-TEST_F(NaiveDeviceTest, CheckDeviceType) {
-  devices::Naive dev;
-  EXPECT_EQ(Device::DeviceType::NAIVE, dev.type());
+TEST_F(EigenDeviceTest, CheckDeviceType) {
+  devices::Eigen dev;
+  EXPECT_EQ(Device::DeviceType::EIGEN, dev.type());
 }
 
-TEST_F(NaiveDeviceTest, CheckNewDelete) {
+TEST_F(EigenDeviceTest, CheckNewDelete) {
   {
-    devices::Naive dev;
+    devices::Eigen dev;
     {
       // 1 value
       Tensor x1 = dev.new_tensor_by_constant(Shape(), 0);
@@ -38,11 +38,11 @@ TEST_F(NaiveDeviceTest, CheckNewDelete) {
   SUCCEED();
 }
 
-TEST_F(NaiveDeviceTest, CheckDanglingTensor) {
+TEST_F(EigenDeviceTest, CheckDanglingTensor) {
   {
     Tensor x1;
     {
-      devices::Naive dev;
+      devices::Eigen dev;
       x1 = dev.new_tensor_by_constant(Shape(), 0);
     }
     // x1 still has valid object,
@@ -53,10 +53,10 @@ TEST_F(NaiveDeviceTest, CheckDanglingTensor) {
 }
 
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
-TEST_F(NaiveDeviceTest, CheckRandomBernoulli) {
+TEST_F(EigenDeviceTest, CheckRandomBernoulli) {
   vector<vector<float>> history;
   for (std::uint32_t i = 0; i < 10; ++i) {
-    devices::Naive dev;
+    devices::Eigen dev;
     const Tensor x = dev.random_bernoulli(Shape({3, 3}, 3), 0.3);
     const vector<float> x_val = x.to_vector();
 
@@ -77,23 +77,23 @@ TEST_F(NaiveDeviceTest, CheckRandomBernoulli) {
 }
 #endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
-TEST_F(NaiveDeviceTest, CheckRandomBernoulliWithSeed) {
+TEST_F(EigenDeviceTest, CheckRandomBernoulliWithSeed) {
   const vector<float> expected {
     0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0,
     0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0,
   };
-  devices::Naive dev(12345);
+  devices::Eigen dev(12345);
   const Tensor x = dev.random_bernoulli(Shape({4, 4}, 4), 0.3);
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
 }
 
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
-TEST_F(NaiveDeviceTest, CheckRandomUniform) {
+TEST_F(EigenDeviceTest, CheckRandomUniform) {
   vector<vector<float>> history;
   for (std::uint32_t i = 0; i < 10; ++i) {
-    devices::Naive dev;
+    devices::Eigen dev;
     const Tensor x = dev.random_uniform(Shape({2, 2}, 2), -9, 9);
     const vector<float> x_val = x.to_vector();
 
@@ -114,21 +114,21 @@ TEST_F(NaiveDeviceTest, CheckRandomUniform) {
 }
 #endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
-TEST_F(NaiveDeviceTest, CheckRandomUniformWithSeed) {
+TEST_F(EigenDeviceTest, CheckRandomUniformWithSeed) {
   const vector<float> expected {
     7.7330894e+00, 7.0227852e+00, -3.3052402e+00, -6.6472688e+00,
     -5.6894612e+00, -8.2843294e+00, -5.3179150e+00, 5.8758497e+00,
   };
-  devices::Naive dev(12345);
+  devices::Eigen dev(12345);
   const Tensor x = dev.random_uniform(Shape({2, 2}, 2), -9, 9);
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
 }
 
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
-TEST_F(NaiveDeviceTest, CheckRandomNormal) {
+TEST_F(EigenDeviceTest, CheckRandomNormal) {
   vector<vector<float>> history;
   for (std::uint32_t i = 0; i < 10; ++i) {
-    devices::Naive dev;
+    devices::Eigen dev;
     const Tensor x = dev.random_normal(Shape({2, 2}, 2), 1, 3);
     const vector<float> x_val = x.to_vector();
 
@@ -149,7 +149,7 @@ TEST_F(NaiveDeviceTest, CheckRandomNormal) {
 }
 #endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
-TEST_F(NaiveDeviceTest, CheckRandomNormalWithSeed) {
+TEST_F(EigenDeviceTest, CheckRandomNormalWithSeed) {
 #ifdef __GLIBCXX__
   const vector<float> expected {
     -1.3574908e+00, -1.7222166e-01, 2.5865970e+00, -4.3594337e-01,
@@ -164,16 +164,16 @@ TEST_F(NaiveDeviceTest, CheckRandomNormalWithSeed) {
   const vector<float> expected {};
   std::cerr << "Unknown C++ library. Expected results can't be defined." << std::endl;
 #endif
-  devices::Naive dev(12345);
+  devices::Eigen dev(12345);
   const Tensor x = dev.random_normal(Shape({2, 2}, 2), 1, 3);
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
 }
 
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
-TEST_F(NaiveDeviceTest, CheckRandomLogNormal) {
+TEST_F(EigenDeviceTest, CheckRandomLogNormal) {
   vector<vector<float>> history;
   for (std::uint32_t i = 0; i < 10; ++i) {
-    devices::Naive dev;
+    devices::Eigen dev;
     const Tensor x = dev.random_log_normal(Shape({2, 2}, 2), 1, 3);
     const vector<float> x_val = x.to_vector();
 
@@ -194,7 +194,7 @@ TEST_F(NaiveDeviceTest, CheckRandomLogNormal) {
 }
 #endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
-TEST_F(NaiveDeviceTest, CheckRandomLogNormalWithSeed) {
+TEST_F(EigenDeviceTest, CheckRandomLogNormalWithSeed) {
 #ifdef __GLIBCXX__
   const vector<float> expected {
     2.5730559e-01, 8.4179258e-01, 1.3284487e+01, 6.4665437e-01,
@@ -209,7 +209,7 @@ TEST_F(NaiveDeviceTest, CheckRandomLogNormalWithSeed) {
   const vector<float> expected {};
   std::cerr << "Unknown C++ library. Expected results can't be defined." << std::endl;
 #endif
-  devices::Naive dev(12345);
+  devices::Eigen dev(12345);
   const Tensor x = dev.random_log_normal(Shape({2, 2}, 2), 1, 3);
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
 }

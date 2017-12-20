@@ -1,5 +1,5 @@
-#ifndef PRIMITIV_NAIVE_DEVICE_H_
-#define PRIMITIV_NAIVE_DEVICE_H_
+#ifndef PRIMITIV_EIGEN_DEVICE_H_
+#define PRIMITIV_EIGEN_DEVICE_H_
 
 #include <primitiv/device.h>
 #include <primitiv/random.h>
@@ -8,25 +8,25 @@ namespace primitiv {
 namespace devices {
 
 /**
- * Device class for the naive function implementations on CPU.
+ * Device class for the Eigen3 backend.
  */
-class Naive : public Device {
+class Eigen : public Device {
 public:
   /**
-   * Creates a Naive object.
+   * Creates a Eigen object.
    */
-  Naive() = default;
+  Eigen() = default;
 
   /**
-   * Creates a Naive object.
+   * Creates a Eigen object.
    * @param seed The seed value of internal random number generator.
    */
-  explicit Naive(std::uint32_t seed) : randomizer_(seed) {}
+  explicit Eigen(std::uint32_t seed) : randomizer_(seed) {}
 
-  ~Naive() override = default;
+  ~Eigen() override = default;
 
   void dump_description() const override;
-  Device::DeviceType type() const override { return Device::DeviceType::NAIVE; }
+  Device::DeviceType type() const override { return Device::DeviceType::EIGEN; }
 
 private:
   std::shared_ptr<void> new_handle(const Shape &shape) override;
@@ -151,4 +151,4 @@ private:
 }  // namespace devices
 }  // namespace primitiv
 
-#endif  // PRIMITIV_NAIVE_DEVICE_H_
+#endif  // PRIMITIV_EIGEN_DEVICE_H_

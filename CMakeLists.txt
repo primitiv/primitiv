@@ -10,6 +10,7 @@ option(PRIMITIV_BUILD_TESTS "Builds test binaries." OFF)
 option(PRIMITIV_BUILD_TESTS_PROBABILISTIC "Builds test cases that probabilistically fails." OFF)
 option(PRIMITIV_GTEST_SOURCE_DIR "Source directory of Google Test library." "")
 option(PRIMITIV_USE_CACHE "Enables cached values in some functions but needs more memory." OFF)
+option(PRIMITIV_USE_EIGEN "Enables the Eigen backend." OFF)
 option(PRIMITIV_USE_CUDA "Enables the CUDA backend." OFF)
 option(PRIMITIV_USE_OPENCL "Enables the OpenCL backend." OFF)
 
@@ -19,9 +20,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # compiler settings
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -Werror -fPIC")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -Werror -fPIC -march=native")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -Werror -fPIC")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -Werror -fPIC -march=native")
 else()
   message(WARNING "primitiv may not support the detected compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
@@ -33,10 +34,12 @@ configure_file(
 )
 
 # External packages.
+if(PRIMITIV_USE_EIGEN)
+  find_package(Eigen3 3.3.0 REQUIRED)
+endif()
 if(PRIMITIV_USE_CUDA)
   find_package(CUDA REQUIRED)
 endif()
-
 if(PRIMITIV_USE_OPENCL)
   find_package(OpenCL REQUIRED)
   find_package(CLHPP REQUIRED)
@@ -47,6 +50,9 @@ endif()
 include_directories(
   ${PROJECT_SOURCE_DIR}
   ${PROJECT_BINARY_DIR})
+if(PRIMITIV_USE_EIGEN)
+  include_directories(${EIGEN3_INCLUDE_DIR})
+endif()
 if(PRIMITIV_USE_CUDA)
   include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
 endif()

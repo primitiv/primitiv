@@ -9,6 +9,11 @@
 #include <primitiv/naive_device.h>
 using primitiv::devices::Naive;
 
+#ifdef PRIMITIV_USE_EIGEN
+#include <primitiv/eigen_device.h>
+using primitiv::devices::Eigen;
+#endif  // PRIMITIV_USE_EIGEN
+
 #ifdef PRIMITIV_USE_CUDA
 #include <primitiv/cuda_device.h>
 using primitiv::devices::CUDA;
@@ -32,6 +37,7 @@ namespace test_utils {
 
 void add_available_devices(std::vector<primitiv::Device *> &devs) {
   add_available_naive_devices(devs);
+  add_available_eigen_devices(devs);
   add_available_cuda_devices(devs);
   add_available_opencl_devices(devs);
 }
@@ -40,6 +46,13 @@ void add_available_naive_devices(std::vector<primitiv::Device *> &devs) {
   // We can always add Naive devices.
   ::add_device(devs, new Naive());
   ::add_device(devs, new Naive());
+}
+
+void add_available_eigen_devices(std::vector<primitiv::Device *> &devs) {
+#ifdef PRIMITIV_USE_EIGEN
+  ::add_device(devs, new Eigen());
+  ::add_device(devs, new Eigen());
+#endif  // PRIMITIV_USE_EIGEN
 }
 
 void add_available_cuda_devices(std::vector<primitiv::Device *> &devs) {

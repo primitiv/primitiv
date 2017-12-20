@@ -103,7 +103,7 @@ void Naive::reset_tensor_by_array_impl(const float values[], Tensor &x) {
 
 void Naive::copy_tensor_impl(const Tensor &x, Tensor &y) {
   switch (x.device().type()) {
-    case Device::DeviceType::CPU:
+    case Device::DeviceType::NAIVE:
       reset_tensor_by_array(CDATA(x), y);
       break;
     default:
