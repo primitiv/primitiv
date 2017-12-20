@@ -21,7 +21,6 @@
 #include <vector>
 
 #include <primitiv/primitiv.h>
-#include <primitiv/primitiv_cuda.h>
 
 using namespace std;
 using namespace primitiv;

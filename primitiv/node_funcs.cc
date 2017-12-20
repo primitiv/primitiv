@@ -1,7 +1,7 @@
 // TODO(odashi):
 // Write unit tests of node_ops.
 
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <vector>
 

@@ -1,13 +1,22 @@
 # Build rules of the primitiv core library.
 
+# Global configuration header
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
+  ${CMAKE_CURRENT_BINARY_DIR}/config.h
+)
+
 # Version header.
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/version.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/version.h
   @ONLY
 )
+
 install(
-  FILES ${CMAKE_CURRENT_BINARY_DIR}/version.h
+  FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/config.h
+  ${CMAKE_CURRENT_BINARY_DIR}/version.h
   DESTINATION include/primitiv
 )
 
@@ -79,15 +88,24 @@ add_library(primitiv_core_OBJS OBJECT
 set(primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_core_OBJS>)
 set(primitiv_all_DEPS)
 
+# Build rules of the Eigen backend.
+if(PRIMITIV_USE_EIGEN)
+  set(primitiv_eigen_HDRS eigen_device.h)
+  set(primitiv_eigen_SRCS eigen_device.cc)
+  install(FILES ${primitiv_eigen_HDRS} DESTINATION include/primitiv)
+
+  add_library(primitiv_eigen_OBJS OBJECT
+    ${primitiv_base_HDRS}
+    ${primitiv_eigen_HDRS}
+    ${primitiv_eigen_SRCS})
+
+  list(APPEND primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_eigen_OBJS>)
+endif()
+
 # Build rules of the CUDA backend.
 if(PRIMITIV_USE_CUDA)
-  set(primitiv_cuda_HDRS
-    primitiv_cuda.h
-    cuda_device.h
-    cuda_utils.h)
-  set(primitiv_cuda_SRCS
-    cuda_device.cu
-    cuda_utils.cu)
+  set(primitiv_cuda_HDRS cuda_device.h cuda_utils.h)
+  set(primitiv_cuda_SRCS cuda_device.cu cuda_utils.cu)
   install(FILES ${primitiv_cuda_HDRS} DESTINATION include/primitiv)
 
   list(APPEND CUDA_NVCC_FLAGS "-std=c++11 -O3 -Xcompiler -fPIC")
@@ -127,11 +145,8 @@ if(PRIMITIV_USE_OPENCL)
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/opencl_device_kernel.cl)
   add_custom_target(primitiv_opencl_KERNEL_DATA DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc)
 
-  set(primitiv_opencl_HDRS
-    primitiv_opencl.h
-    opencl_device.h)
-  set(primitiv_opencl_SRCS
-    opencl_device.cc)
+  set(primitiv_opencl_HDRS opencl_device.h)
+  set(primitiv_opencl_SRCS opencl_device.cc)
   install(FILES ${primitiv_opencl_HDRS} DESTINATION include/primitiv)
 
   add_library(primitiv_opencl_OBJS OBJECT

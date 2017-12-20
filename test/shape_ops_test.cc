@@ -1,4 +1,4 @@
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <vector>
 #include <gtest/gtest.h>

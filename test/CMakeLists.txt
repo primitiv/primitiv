@@ -67,6 +67,10 @@ primitiv_test(tensor)
 primitiv_test(tensor_backward)
 primitiv_test(tensor_forward)
 
+if(PRIMITIV_USE_EIGEN)
+  primitiv_test(eigen_device)
+endif()
+
 if(PRIMITIV_USE_CUDA)
   primitiv_test(cuda_device)
   primitiv_test(cuda_memory_pool)
