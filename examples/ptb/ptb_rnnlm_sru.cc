@@ -22,7 +22,6 @@
 #include <vector>
 
 #include <primitiv/primitiv.h>
-//#include <primitiv/primitiv_cuda.h>
 
 #include "utils.h"
 

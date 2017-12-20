@@ -1,4 +1,4 @@
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>

@@ -1,4 +1,4 @@
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <primitiv/device.h>
 #include <primitiv/shape_ops.h>

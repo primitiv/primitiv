@@ -1,4 +1,4 @@
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <primitiv/cuda_utils.h>
 

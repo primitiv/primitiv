@@ -36,7 +36,6 @@
 #include <random>
 
 #include <primitiv/primitiv.h>
-//#include <primitiv/primitiv_cuda.h>
 
 #include "lstm.h"
 #include "utils.h"
