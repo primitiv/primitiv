@@ -7,7 +7,7 @@ docker run --name travis-ci -v $TRAVIS_BUILD_DIR:/primitiv -td fedora:latest /bi
 
 # install
 docker exec travis-ci bash -c "dnf update -y"
-docker exec travis-ci bash -c "dnf install -y rpm-build gcc-c++ cmake gtest-devel"
+docker exec travis-ci bash -c "dnf install -y rpm-build gcc-c++ cmake gtest-devel eigen3-devel"
 
 # install OpenCL environment
 docker exec travis-ci bash -c "dnf install -y opencl-headers git hwloc-devel libtool-ltdl-devel ocl-icd-devel ocl-icd clang llvm-devel clang-devel zlib-devel blas-devel boost-devel patch --setopt=install_weak_deps=False"
@@ -22,7 +22,7 @@ docker exec travis-ci bash -c "cd ./pocl && cmake . -DCMAKE_INSTALL_PREFIX=/usr"
 docker exec travis-ci bash -c "cd ./pocl && make && make install"
 
 # script
-docker exec travis-ci bash -c "cd /primitiv && cmake . -DPRIMITIV_USE_OPENCL=ON -DPRIMITIV_BUILD_TESTS=ON"
+docker exec travis-ci bash -c "cd /primitiv && cmake . -DPRIMITIV_USE_EIGEN=ON -DPRIMITIV_USE_OPENCL=ON -DPRIMITIV_BUILD_TESTS=ON"
 docker exec travis-ci bash -c "cd /primitiv && make VERBOSE=1"
 docker exec travis-ci bash -c "cd /primitiv && make test ARGS='-V'"
 docker exec travis-ci bash -c "cd /primitiv && make install"
