@@ -12,7 +12,8 @@
 using std::vector;
 using test_utils::array_match;
 
-namespace primitiv_c {
+namespace primitiv {
+namespace c {
 
 class CGraphTest : public testing::Test {
   void SetUp() override {
@@ -269,4 +270,5 @@ TEST_F(CGraphTest, CheckForward) {
   ::primitiv_Graph_delete(g);
 }
 
-}  // namespace primitiv_c
+}  // namespace c
+}  // namespace primitiv

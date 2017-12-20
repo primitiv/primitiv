@@ -8,7 +8,8 @@
 
 class CStatusTest : public testing::Test {};
 
-namespace primitiv_c {
+namespace primitiv {
+namespace c {
 namespace internal {
 
 TEST_F(CStatusTest, CheckMessage) {
@@ -22,4 +23,5 @@ TEST_F(CStatusTest, CheckMessage) {
 }
 
 }  // namespace internal
-}  // namespace primitiv_c
+}  // namespace c
+}  // namespace primitiv

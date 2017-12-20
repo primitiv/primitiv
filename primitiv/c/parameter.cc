@@ -8,9 +8,9 @@
 #include <primitiv/c/parameter.h>
 
 using primitiv::Parameter;
-using primitiv_c::internal::to_c;
-using primitiv_c::internal::to_cc;
-using primitiv_c::internal::to_c_from_value;
+using primitiv::c::internal::to_c;
+using primitiv::c::internal::to_cc;
+using primitiv::c::internal::to_c_from_value;
 
 extern "C" {
 

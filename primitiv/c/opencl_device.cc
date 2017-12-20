@@ -6,7 +6,7 @@
 #include <primitiv/c/opencl_device.h>
 
 using primitiv::devices::OpenCL;
-using primitiv_c::internal::to_c;
+using primitiv::c::internal::to_c;
 
 #define CAST_TO_CC_OPENCL(x) reinterpret_cast<OpenCL*>(x)
 #define CAST_TO_CONST_CC_OPENCL(x) reinterpret_cast<const OpenCL*>(x)

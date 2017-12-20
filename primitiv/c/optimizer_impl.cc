@@ -11,7 +11,7 @@ using primitiv::optimizers::AdaGrad;
 using primitiv::optimizers::RMSProp;
 using primitiv::optimizers::AdaDelta;
 using primitiv::optimizers::Adam;
-using primitiv_c::internal::to_c;
+using primitiv::c::internal::to_c;
 
 #define CAST_TO_CC_SGD(x) reinterpret_cast<SGD*>(x)
 #define CAST_TO_CONST_CC_SGD(x) reinterpret_cast<const SGD*>(x)

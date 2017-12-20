@@ -9,9 +9,9 @@
 
 using primitiv::Node;
 using primitiv::Tensor;
-using primitiv_c::internal::to_c;
-using primitiv_c::internal::to_cc;
-using primitiv_c::internal::to_c_from_value;
+using primitiv::c::internal::to_c;
+using primitiv::c::internal::to_cc;
+using primitiv::c::internal::to_c_from_value;
 
 #define IMPL_UNARY_FUNC(name) \
 primitiv_Status _NODE_FUN(name)( \

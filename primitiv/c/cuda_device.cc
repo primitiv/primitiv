@@ -6,7 +6,7 @@
 #include <primitiv/c/cuda_device.h>
 
 using primitiv::devices::CUDA;
-using primitiv_c::internal::to_c;
+using primitiv::c::internal::to_c;
 
 #define CAST_TO_CC_CUDA(x) reinterpret_cast<CUDA*>(x)
 #define CAST_TO_CONST_CC_CUDA(x) reinterpret_cast<const CUDA*>(x)

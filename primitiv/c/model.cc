@@ -9,8 +9,8 @@
 #include <primitiv/c/model.h>
 
 using primitiv::Model;
-using primitiv_c::internal::to_c;
-using primitiv_c::internal::to_cc;
+using primitiv::c::internal::to_c;
+using primitiv::c::internal::to_cc;
 
 extern "C" {
 

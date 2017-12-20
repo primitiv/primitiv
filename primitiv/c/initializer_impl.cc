@@ -11,8 +11,8 @@ using primitiv::initializers::Normal;
 using primitiv::initializers::Identity;
 using primitiv::initializers::XavierUniform;
 using primitiv::initializers::XavierNormal;
-using primitiv_c::internal::to_c;
-using primitiv_c::internal::to_cc;
+using primitiv::c::internal::to_c;
+using primitiv::c::internal::to_cc;
 
 #define CAST_TO_CC_CONSTANT(x) reinterpret_cast<Constant*>(x)
 #define CAST_TO_CONST_CC_CONSTANT(x) reinterpret_cast<const Constant*>(x)

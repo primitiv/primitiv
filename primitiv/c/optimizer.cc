@@ -6,8 +6,8 @@
 #include <primitiv/c/optimizer.h>
 
 using primitiv::Optimizer;
-using primitiv_c::internal::to_c;
-using primitiv_c::internal::to_cc;
+using primitiv::c::internal::to_c;
+using primitiv::c::internal::to_cc;
 
 extern "C" {
 

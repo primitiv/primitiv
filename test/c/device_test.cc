@@ -3,7 +3,8 @@
 #include <gtest/gtest.h>
 #include <primitiv/c/naive_device.h>
 
-namespace primitiv_c {
+namespace primitiv {
+namespace c {
 
 class CDeviceTest : public testing::Test {};
 
@@ -36,4 +37,5 @@ TEST_F(CDeviceTest, CheckDefault) {
             ::primitiv_Device_get_default(&device));
 }
 
-}  // namespace primitiv_c
+}  // namespace c
+}  // namespace primitiv

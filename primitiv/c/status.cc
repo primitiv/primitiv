@@ -4,7 +4,7 @@
 #include <primitiv/c/internal.h>
 #include <primitiv/c/status.h>
 
-using primitiv_c::internal::ErrorHandler;
+using primitiv::c::internal::ErrorHandler;
 
 extern "C" {
 

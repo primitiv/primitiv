@@ -40,9 +40,9 @@ inline c_name *to_c_from_value(const primitiv::cc_name &instance) { \
 
 #define HANDLE_EXCEPTION \
 catch (const primitiv::Error &e) { \
-  return primitiv_c::internal::ErrorHandler::get_instance().handle(e); \
+  return primitiv::c::internal::ErrorHandler::get_instance().handle(e); \
 } catch (const std::exception &e) { \
-  return primitiv_c::internal::ErrorHandler::get_instance().handle(e); \
+  return primitiv::c::internal::ErrorHandler::get_instance().handle(e); \
 }
 
 struct primitiv_Device;
@@ -55,7 +55,9 @@ struct primitiv_Shape;
 struct primitiv_Tensor;
 struct primitiv_Optimizer;
 
-namespace primitiv_c {
+namespace primitiv {
+
+namespace c {
 
 namespace internal {
 
@@ -118,6 +120,8 @@ DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Optimizer, primitiv_Optimizer);
 
 }  // namespace internal
 
-}  // namespace primitiv_c
+}  // namespace c
+
+}  // namespace primitiv
 
 #endif  // PRIMITIV_C_INTERNAL_H_

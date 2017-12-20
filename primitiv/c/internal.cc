@@ -3,7 +3,9 @@
 
 #include <primitiv/c/internal.h>
 
-namespace primitiv_c {
+namespace primitiv {
+
+namespace c {
 
 namespace internal {
 
@@ -15,4 +17,6 @@ ErrorHandler &ErrorHandler::get_instance() {
 
 }  // namespace internal
 
-}  // namespace primitiv_c
+}  // namespace c
+
+}  // namespace primitiv

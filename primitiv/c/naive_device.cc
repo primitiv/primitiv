@@ -6,7 +6,7 @@
 #include <primitiv/c/naive_device.h>
 
 using primitiv::devices::Naive;
-using primitiv_c::internal::to_c;
+using primitiv::c::internal::to_c;
 
 #define CAST_TO_CC_NAIVE(x) reinterpret_cast<Naive*>(x)
 #define CAST_TO_CONST_CC_NAIVE(x) reinterpret_cast<const Naive*>(x)

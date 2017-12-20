@@ -9,7 +9,8 @@
 using std::vector;
 using test_utils::array_match;
 
-namespace primitiv_c {
+namespace primitiv {
+namespace c {
 
 class CShapeTest : public testing::Test {};
 
@@ -136,4 +137,5 @@ TEST_F(CShapeTest, CheckNumElementsUnderRank) {
       ::primitiv_Shape_lower_volume(src, 6));
 }
 
-}  // namespace primitiv_c
+}  // namespace c
+}  // namespace primitiv
