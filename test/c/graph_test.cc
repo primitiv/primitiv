@@ -185,7 +185,7 @@ TEST_F(CGraphTest, CheckForward) {
   EXPECT_EQ(10u, ::primitiv_Graph_num_operators(g));
 
   // Dump the graph to the output log.
-  size_t length;
+  std::size_t length;
   ::primitiv_Graph_dump(g, "dot", nullptr, &length);
   EXPECT_GT(length, 0u);
   char str[length];
@@ -245,17 +245,18 @@ TEST_F(CGraphTest, CheckForward) {
 
     ::primitiv_Shape *shape1;
     ::primitiv_Tensor_shape(val, &shape1);
-    size_t size1 = ::primitiv_Shape_size(shape1);
+    std::size_t size1 = ::primitiv_Shape_size(shape1);
     float array1[size1];
     ::primitiv_Tensor_to_array(val, array1);
-    EXPECT_TRUE(array_match(&(expected_values[i])[0], array1, size1));
+    float *expected_array = const_cast<float*>(&(expected_values[i])[0]);
+    EXPECT_TRUE(array_match(expected_array, array1, size1));
 
     ::primitiv_Shape *shape2;
     ::primitiv_Node_shape(nodes[i], &shape2);
-    size_t size2 = ::primitiv_Shape_size(shape2);
+    std::size_t size2 = ::primitiv_Shape_size(shape2);
     float array2[size2];
     ::primitiv_Node_to_array(nodes[i], array2);
-    EXPECT_TRUE(array_match(&(expected_values[i])[0], array2, size2));
+    EXPECT_TRUE(array_match(expected_array, array2, size2));
 
     ::primitiv_Shape_delete(shape1);
     ::primitiv_Shape_delete(shape2);
