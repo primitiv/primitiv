@@ -31,12 +31,12 @@ CAPI extern primitiv_Node *primitiv_Node_new();
 
 /**
  * Creates a new Node object.
- * @param node Pointer to receive a handler.
  * @param src Pointer to a source Node.
+ * @param node Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Node_new_from_node(primitiv_Node **node,
-                                                        primitiv_Node *src);
+CAPI extern primitiv_Status primitiv_Node_new_from_node(primitiv_Node *src,
+                                                        primitiv_Node **node);
 
 /**
  * Deletes the Node object.

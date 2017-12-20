@@ -13,24 +13,24 @@ extern "C" {
 
 /**
  * Creates a new Device object.
- * @param device Pointer to receive a handler.
  * @param device_id ID of the physical GPU.
+ * @param device Pointer to receive a handler.
  * @return Status code.
  * @remarks The random number generator is initialized using
  *          `std::random_device`.
  */
 CAPI extern primitiv_Status primitiv_devices_CUDA_new(
-    primitiv_Device **device, uint32_t device_id);
+    uint32_t device_id, primitiv_Device **device);
 
 /**
  * Creates a new Device object.
- * @param device Pointer to receive a handler.
  * @param device_id ID of the physical GPU.
  * @param rng_seed The seed value of the random number generator.
+ * @param device Pointer to receive a handler.
  * @return Status code.
  */
 CAPI extern primitiv_Status primitiv_devices_CUDA_new_with_seed(
-    primitiv_Device **device, uint32_t device_id, uint32_t rng_seed);
+    uint32_t device_id, uint32_t rng_seed, primitiv_Device **device);
 
 /**
  * Deletes the Device object.

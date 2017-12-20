@@ -147,12 +147,12 @@ TEST_F(CGraphTest, CheckForward) {
   vector<::primitiv_Node*> nodes;
   const uint32_t dims1[] = {2, 2};
   ::primitiv_Shape *shape1;
-  ::primitiv_Shape_new_with_dims(&shape1, dims1, 2, 3);
+  ::primitiv_Shape_new_with_dims(dims1, 2, 3, &shape1);
   ::primitiv_Node *node1;
   ::primitiv_node_func_input(shape1, data1, 12, nullptr, nullptr, &node1);
   nodes.emplace_back(node1);
   ::primitiv_Shape *shape2;
-  ::primitiv_Shape_new_with_dims(&shape2, dims1, 2, 1);
+  ::primitiv_Shape_new_with_dims(dims1, 2, 1, &shape2);
   ::primitiv_Node *node2;
   ::primitiv_node_func_ones(shape2, nullptr, nullptr, &node2);
   nodes.emplace_back(node2);
@@ -193,12 +193,12 @@ TEST_F(CGraphTest, CheckForward) {
   // Check all shapes and devices.
   const uint32_t dims2[] = {1, 2};
   ::primitiv_Shape *shape3;
-  ::primitiv_Shape_new_with_dims(&shape3, dims2, 2, 3);
+  ::primitiv_Shape_new_with_dims(dims2, 2, 3, &shape3);
   const uint32_t dims3[] = {};
   ::primitiv_Shape *shape4;
-  ::primitiv_Shape_new_with_dims(&shape4, dims3, 0, 3);
+  ::primitiv_Shape_new_with_dims(dims3, 0, 3, &shape4);
   ::primitiv_Shape *shape5;
-  ::primitiv_Shape_new_with_dims(&shape5, dims3, 0, 1);
+  ::primitiv_Shape_new_with_dims(dims3, 0, 1, &shape5);
   const vector<::primitiv_Shape*> expected_shapes {
     shape1, shape2, shape1,
     shape1, shape1, shape1,

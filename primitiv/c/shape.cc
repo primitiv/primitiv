@@ -19,10 +19,10 @@ primitiv_Shape *primitiv_Shape_new() {
   return to_c_ptr(new Shape());
 }
 
-primitiv_Status primitiv_Shape_new_with_dims(primitiv_Shape **shape,
-                                             const uint32_t *dims,
+primitiv_Status primitiv_Shape_new_with_dims(const uint32_t *dims,
                                              size_t n,
-                                             uint32_t batch) {
+                                             uint32_t batch,
+                                             primitiv_Shape **shape) {
   try {
     *shape = to_c_ptr(new Shape(std::vector<uint32_t>(dims, dims + n), batch));
     return ::primitiv_Status::PRIMITIV_OK;

@@ -13,26 +13,26 @@ extern "C" {
 
 /**
  * Creates a new Device object.
- * @param device Pointer to receive a handler.
  * @param platform_id Platform ID.
  * @param device_id Device ID on the selected platform.
  * @param rng_seed Seed value of the random number generator.
+ * @param device Pointer to receive a handler.
  * @return Status code.
  */
 CAPI extern primitiv_Status primitiv_devices_OpenCL_new(
-    primitiv_Device **device, uint32_t platform_id, uint32_t device_id);
+    uint32_t platform_id, uint32_t device_id, primitiv_Device **device);
 
 /**
  * Creates a new Device object.
- * @param device Pointer to receive a handler.
  * @param platform_id Platform ID.
  * @param device_id Device ID on the selected platform.
  * @param rng_seed Seed value of the random number generator.
+ * @param device Pointer to receive a handler.
  * @return Status code.
  */
 CAPI extern primitiv_Status primitiv_devices_OpenCL_new_with_seed(
-    primitiv_Device **device, uint32_t platform_id, uint32_t device_id,
-    uint32_t rng_seed);
+    uint32_t platform_id, uint32_t device_id, uint32_t rng_seed,
+    primitiv_Device **device);
 
 /**
  * Deletes the Device object.

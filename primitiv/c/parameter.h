@@ -26,29 +26,29 @@ CAPI extern primitiv_Parameter *primitiv_Parameter_new();
 
 /**
  * Creates a new Parameter object.
- * @param parameter Pointer to receive a handler.
  * @param shape The shape of the parameter. The batch size should be 1.
  * @param value List of initial values. Order of elements should be the
  *              column-major (Fortran) order.
  * @param n Number of values.
  * @param device The device object to manage internal memory.
+ * @param parameter Pointer to receive a handler.
  * @return Status code.
  */
 CAPI extern primitiv_Status primitiv_Parameter_new_with_values(
-    primitiv_Parameter **parameter, const primitiv_Shape *shape,
-    const float *value, size_t n, primitiv_Device *device);
+    const primitiv_Shape *shape, const float *value, size_t n,
+    primitiv_Device *device, primitiv_Parameter **parameter);
 
 /**
  * Creates a new Parameter object.
- * @param parameter Pointer to receive a handler.
  * @param shape The shape of the parameter. The batch size should be 1.
  * @param init An Initializer object.
  * @param device The device object to manage internal memory.
+ * @param parameter Pointer to receive a handler.
  * @return Status code.
  */
 CAPI extern primitiv_Status primitiv_Parameter_new_with_initializer(
-    primitiv_Parameter **parameter, const primitiv_Shape *shape,
-    const primitiv_Initializer *initializer, primitiv_Device *device);
+    const primitiv_Shape *shape, const primitiv_Initializer *initializer,
+    primitiv_Device *device, primitiv_Parameter **parameter);
 
 /**
  * Deletes the Parameter object.

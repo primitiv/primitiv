@@ -19,8 +19,8 @@ primitiv_Parameter *primitiv_Parameter_new() {
 }
 
 primitiv_Status primitiv_Parameter_new_with_values(
-    primitiv_Parameter **parameter, const primitiv_Shape *shape,
-    const float *value, size_t n, primitiv_Device *device) {
+    const primitiv_Shape *shape, const float *value, size_t n,
+    primitiv_Device *device, primitiv_Parameter **parameter) {
   try {
     *parameter = to_c_ptr(new Parameter(*to_cpp_ptr(shape),
                                         std::vector<float>(value, value + n),
@@ -30,8 +30,8 @@ primitiv_Status primitiv_Parameter_new_with_values(
 }
 
 primitiv_Status primitiv_Parameter_new_with_initializer(
-    primitiv_Parameter **parameter, const primitiv_Shape *shape,
-    const primitiv_Initializer *initializer, primitiv_Device *device) {
+    const primitiv_Shape *shape, const primitiv_Initializer *initializer,
+    primitiv_Device *device, primitiv_Parameter **parameter) {
   try {
     *parameter = to_c_ptr(new Parameter(
         *to_cpp_ptr(shape), *to_cpp_ptr(initializer), *to_cpp_ptr(device)));

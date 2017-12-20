@@ -22,8 +22,8 @@ primitiv_Node *primitiv_Node_new() {
   return to_c_ptr(new Node);
 }
 
-primitiv_Status primitiv_Node_new_from_node(primitiv_Node **node,
-                                            primitiv_Node *src) {
+primitiv_Status primitiv_Node_new_from_node(primitiv_Node *src,
+                                            primitiv_Node **node) {
   try {
     *node = to_c_ptr(new Node(std::move(*to_cpp_ptr(src))));
     return ::primitiv_Status::PRIMITIV_OK;

@@ -23,14 +23,14 @@ CAPI extern primitiv_Shape *primitiv_Shape_new();
 
 /**
  * Creates a new Shape object.
- * @param shape Pointer to receive a handler.
  * @param dims List of the dimension sizes.
  * @param n Length of the dims.
  * @param batch Batch size.
+ * @param shape Pointer to receive a handler.
  * @return Status code.
  */
 CAPI extern primitiv_Status primitiv_Shape_new_with_dims(
-    primitiv_Shape **shape, const uint32_t *dims, size_t n, uint32_t batch);
+    const uint32_t *dims, size_t n, uint32_t batch, primitiv_Shape **shape);
 
 /**
  * Deletes the Shape object.
