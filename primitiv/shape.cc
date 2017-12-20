@@ -1,4 +1,4 @@
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <primitiv/error.h>
 #include <primitiv/shape.h>

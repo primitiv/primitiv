@@ -1,4 +1,4 @@
-#include <config.h>
+#include <primitiv/config.h>
 
 // NOTE(odashi):
 // Currently, primitiv::devices::Eigen partially supports limited number of

@@ -5,7 +5,7 @@
  * operator.
  */
 
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <cstdlib>
 #include <functional>

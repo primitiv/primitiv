@@ -27,12 +27,6 @@ else()
   message(WARNING "primitiv may not support the detected compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
-# Global configuration header
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/config.h
-)
-
 # External packages.
 if(PRIMITIV_USE_EIGEN)
   find_package(Eigen3 3.3.0 REQUIRED)
