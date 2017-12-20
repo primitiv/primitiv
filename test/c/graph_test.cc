@@ -21,8 +21,8 @@ class CGraphTest : public testing::Test {
     dev2 = ::primitiv_devices_Naive_new();
   }
   void TearDown() override {
-    ::primitiv_devices_Naive_delete(dev);
-    ::primitiv_devices_Naive_delete(dev2);
+    ::primitiv_Device_delete(dev);
+    ::primitiv_Device_delete(dev2);
   }
  protected:
   ::primitiv_Device *dev;
@@ -215,7 +215,7 @@ TEST_F(CGraphTest, CheckForward) {
     EXPECT_TRUE(::primitiv_Shape_op_eq(expected_shapes[i], shape));
     EXPECT_EQ(dev, device);
     ::primitiv_Shape_delete(shape);
-    // ::primitiv_devices_Naive_delete(device);  // do not delete the reference
+    // ::primitiv_Device_delete(device);  // do not delete the reference
   }
 
   const ::primitiv_Tensor *tensor;

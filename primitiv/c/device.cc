@@ -22,4 +22,12 @@ void primitiv_Device_set_default(primitiv_Device *device) {
   Device::set_default(*to_cpp_ptr(device));
 }
 
+void primitiv_Device_delete(primitiv_Device *device) {
+  delete to_cpp_ptr(device);
+}
+
+void primitiv_Device_dump_description(const primitiv_Device *device) {
+  to_cpp_ptr(device)->dump_description();
+}
+
 }  // end extern "C"

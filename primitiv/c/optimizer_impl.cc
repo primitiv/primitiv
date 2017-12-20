@@ -32,10 +32,6 @@ primitiv_Optimizer *primitiv_optimizers_SGD_new(float eta) {
   return to_c_ptr(new SGD(eta));
 }
 
-void primitiv_optimizers_SGD_delete(primitiv_Optimizer *optimizer) {
-  delete CAST_TO_CC_SGD(optimizer);
-}
-
 float primitiv_optimizers_SGD_eta(const primitiv_Optimizer *optimizer) {
   return CAST_TO_CONST_CC_SGD(optimizer)->eta();
 }
@@ -43,10 +39,6 @@ float primitiv_optimizers_SGD_eta(const primitiv_Optimizer *optimizer) {
 primitiv_Optimizer *primitiv_optimizers_MomentumSGD_new(float eta,
                                                         float momentum) {
   return to_c_ptr(new MomentumSGD(eta, momentum));
-}
-
-void primitiv_optimizers_MomentumSGD_delete(primitiv_Optimizer *optimizer) {
-  delete CAST_TO_CC_MOMENTUM_SGD(optimizer);
 }
 
 float primitiv_optimizers_MomentumSGD_eta(const primitiv_Optimizer *optimizer) {
@@ -62,10 +54,6 @@ primitiv_Optimizer *primitiv_optimizers_AdaGrad_new(float eta, float eps) {
   return to_c_ptr(new AdaGrad(eta, eps));
 }
 
-void primitiv_optimizers_AdaGrad_delete(primitiv_Optimizer *optimizer) {
-  delete CAST_TO_CC_ADA_GRAD(optimizer);
-}
-
 float primitiv_optimizers_AdaGrad_eta(const primitiv_Optimizer *optimizer) {
   return CAST_TO_CONST_CC_ADA_GRAD(optimizer)->eta();
 }
@@ -77,10 +65,6 @@ float primitiv_optimizers_AdaGrad_eps(const primitiv_Optimizer *optimizer) {
 primitiv_Optimizer *primitiv_optimizers_RMSProp_new(
     float eta, float alpha, float eps) {
   return to_c_ptr(new RMSProp(eta, alpha, eps));
-}
-
-void primitiv_optimizers_RMSProp_delete(primitiv_Optimizer *optimizer) {
-  delete CAST_TO_CC_RMS_PROP(optimizer);
 }
 
 float primitiv_optimizers_RMSProp_eta(const primitiv_Optimizer *optimizer) {
@@ -99,10 +83,6 @@ primitiv_Optimizer *primitiv_optimizers_AdaDelta_new(float rho, float eps) {
   return to_c_ptr(new AdaDelta(rho, eps));
 }
 
-void primitiv_optimizers_AdaDelta_delete(primitiv_Optimizer *optimizer) {
-  delete CAST_TO_CC_ADA_DELTA(optimizer);
-}
-
 float primitiv_optimizers_AdaDelta_rho(const primitiv_Optimizer *optimizer) {
   return CAST_TO_CONST_CC_ADA_DELTA(optimizer)->rho();
 }
@@ -114,10 +94,6 @@ float primitiv_optimizers_AdaDelta_eps(const primitiv_Optimizer *optimizer) {
 primitiv_Optimizer *primitiv_optimizers_Adam_new(
     float alpha, float beta1, float beta2, float eps) {
   return to_c_ptr(new Adam(alpha, beta1, beta2, eps));
-}
-
-void primitiv_optimizers_Adam_delete(primitiv_Optimizer *optimizer) {
-  delete CAST_TO_CC_ADAM(optimizer);
 }
 
 float primitiv_optimizers_Adam_alpha(const primitiv_Optimizer *optimizer) {

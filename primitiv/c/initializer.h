@@ -15,6 +15,21 @@ extern "C" {
  */
 typedef struct primitiv_Initializer primitiv_Initializer;
 
+/**
+ * Deletes the Initializer object.
+ * @param initializer Pointer of a handler.
+ */
+CAPI extern void primitiv_Initializer_delete(primitiv_Initializer *initializer);
+
+/**
+ * Provides an initialized tensor.
+ * @param initializer Pointer of a handler.
+ * @param x Tensor object to be initialized.
+ * @return Status code.
+ */
+CAPI extern primitiv_Status primitiv_Initializer_apply(
+    const primitiv_Initializer *initializer, primitiv_Tensor *x);
+
 #ifdef __cplusplus
 }  // end extern "C"
 #endif

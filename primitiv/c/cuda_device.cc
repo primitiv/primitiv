@@ -8,9 +8,6 @@
 using primitiv::devices::CUDA;
 using primitiv::c::internal::to_c_ptr;
 
-#define CAST_TO_CC_CUDA(x) reinterpret_cast<CUDA*>(x)
-#define CAST_TO_CONST_CC_CUDA(x) reinterpret_cast<const CUDA*>(x)
-
 extern "C" {
 
 primitiv_Status primitiv_devices_CUDA_new(
@@ -29,19 +26,8 @@ primitiv_Status primitiv_devices_CUDA_new_with_seed(
   } HANDLE_EXCEPTION
 }
 
-void primitiv_devices_CUDA_delete(primitiv_Device *device) {
-  delete CAST_TO_CC_CUDA(device);
-}
-
 uint32_t primitiv_devices_CUDA_num_devices() {
   return CUDA::num_devices();
 }
 
-void primitiv_devices_CUDA_dump_description(const primitiv_Device *device) {
-  CAST_TO_CONST_CC_CUDA(device)->dump_description();
-}
-
 }  // end extern "C"
-
-#undef CAST_TO_CC_CUDA
-#undef CAST_TO_CONST_CC_CUDA

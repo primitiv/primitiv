@@ -16,6 +16,12 @@ extern "C" {
 typedef struct primitiv_Optimizer primitiv_Optimizer;
 
 /**
+ * Deletes the Optimizer object.
+ * @param optimizer Pointer of a handler.
+ */
+CAPI extern void primitiv_Optimizer_delete(primitiv_Optimizer *optimizer);
+
+/**
  * Loads configurations from a file.
  * @param optimizer Pointer of a handler.
  * @param path Path of the optimizer parameter file.
@@ -156,6 +162,8 @@ CAPI extern primitiv_Status primitiv_Optimizer_reset_gradients(
  */
 CAPI extern primitiv_Status primitiv_Optimizer_update(
     primitiv_Optimizer *optimizer);
+
+// @TODO: Implement getter/setter of primitiv_Optimizer configs
 
 #ifdef __cplusplus
 }  // end extern "C"

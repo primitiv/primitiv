@@ -11,6 +11,10 @@ using primitiv::c::internal::to_cpp_ptr;
 
 extern "C" {
 
+void primitiv_Optimizer_delete(primitiv_Optimizer *optimizer) {
+  delete to_cpp_ptr(optimizer);
+}
+
 primitiv_Status primitiv_Optimizer_load(primitiv_Optimizer *optimizer,
                                         const char *path) {
   try {

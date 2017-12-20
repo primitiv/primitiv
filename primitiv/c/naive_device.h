@@ -25,19 +25,6 @@ CAPI extern primitiv_Device *primitiv_devices_Naive_new();
 CAPI extern primitiv_Device *primitiv_devices_Naive_new_with_seed(
     uint32_t seed);
 
-/**
- * Deletes the Device object.
- * @param device Pointer of a handler.
- */
-CAPI extern void primitiv_devices_Naive_delete(primitiv_Device *device);
-
-/**
- * Prints device description to stderr.
- * @param device Pointer of a handler.
- */
-CAPI extern void primitiv_devices_Naive_dump_description(
-    const primitiv_Device *device);
-
 #ifdef __cplusplus
 }  // end extern "C"
 #endif

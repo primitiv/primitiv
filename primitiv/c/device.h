@@ -29,6 +29,19 @@ CAPI extern primitiv_Status primitiv_Device_get_default(
  */
 CAPI extern void primitiv_Device_set_default(primitiv_Device *device);
 
+/**
+ * Deletes the Device object.
+ * @param device Pointer of a handler.
+ */
+CAPI extern void primitiv_Device_delete(primitiv_Device *device);
+
+/**
+ * Prints device description to stderr.
+ * @param device Pointer of a handler.
+ */
+CAPI extern void primitiv_Device_dump_description(
+    const primitiv_Device *device);
+
 #ifdef __cplusplus
 }  // end extern "C"
 #endif

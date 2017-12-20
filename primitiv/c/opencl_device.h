@@ -35,12 +35,6 @@ CAPI extern primitiv_Status primitiv_devices_OpenCL_new_with_seed(
     primitiv_Device **device);
 
 /**
- * Deletes the Device object.
- * @param device Pointer of a handler.
- */
-CAPI extern void primitiv_devices_OpenCL_delete(primitiv_Device *device);
-
-/**
  * Retrieves the number of active platforms.
  * @return Number of active platforms.
  */
@@ -53,13 +47,6 @@ CAPI extern uint32_t primitiv_devices_OpenCL_num_platforms();
  * @return Number of active devices.
  */
 CAPI extern uint32_t primitiv_devices_OpenCL_num_devices(uint32_t platform_id);
-
-/**
- * Prints device description to stderr.
- * @param device Pointer of a handler.
- */
-CAPI extern void primitiv_devices_OpenCL_dump_description(
-    const primitiv_Device *device);
 
 #ifdef __cplusplus
 }  // end extern "C"
