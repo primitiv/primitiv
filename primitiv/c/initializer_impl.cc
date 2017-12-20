@@ -11,8 +11,8 @@ using primitiv::initializers::Normal;
 using primitiv::initializers::Identity;
 using primitiv::initializers::XavierUniform;
 using primitiv::initializers::XavierNormal;
-using primitiv::c::internal::to_c;
-using primitiv::c::internal::to_cc;
+using primitiv::c::internal::to_c_ptr;
+using primitiv::c::internal::to_cpp_ptr;
 
 #define CAST_TO_CC_CONSTANT(x) reinterpret_cast<Constant*>(x)
 #define CAST_TO_CONST_CC_CONSTANT(x) reinterpret_cast<const Constant*>(x)
@@ -32,7 +32,7 @@ reinterpret_cast<const XavierNormal*>(x)
 extern "C" {
 
 primitiv_Initializer *primitiv_Constant_new(float k) {
-  return to_c(new Constant(k));
+  return to_c_ptr(new Constant(k));
 }
 
 void primitiv_Constant_delete(primitiv_Initializer *initializer) {
@@ -42,13 +42,13 @@ void primitiv_Constant_delete(primitiv_Initializer *initializer) {
 primitiv_Status primitiv_Constant_apply(const primitiv_Initializer *initializer,
                                         primitiv_Tensor *x) {
   try {
-    CAST_TO_CONST_CC_CONSTANT(initializer)->apply(*to_cc(x));
+    CAST_TO_CONST_CC_CONSTANT(initializer)->apply(*to_cpp_ptr(x));
     return ::primitiv_Status::PRIMITIV_OK;
   } HANDLE_EXCEPTION
 }
 
 primitiv_Initializer *primitiv_Uniform_new(float lower, float upper) {
-  return to_c(new Uniform(lower, upper));
+  return to_c_ptr(new Uniform(lower, upper));
 }
 
 void primitiv_Uniform_delete(primitiv_Initializer *initializer) {
@@ -58,13 +58,13 @@ void primitiv_Uniform_delete(primitiv_Initializer *initializer) {
 primitiv_Status primitiv_Uniform_apply(const primitiv_Initializer *initializer,
                                        primitiv_Tensor *x) {
   try {
-    CAST_TO_CONST_CC_UNIFORM(initializer)->apply(*to_cc(x));
+    CAST_TO_CONST_CC_UNIFORM(initializer)->apply(*to_cpp_ptr(x));
     return ::primitiv_Status::PRIMITIV_OK;
   } HANDLE_EXCEPTION
 }
 
 primitiv_Initializer *primitiv_Normal_new(float mean, float sd) {
-  return to_c(new Normal(mean, sd));
+  return to_c_ptr(new Normal(mean, sd));
 }
 
 void primitiv_Normal_delete(primitiv_Initializer *initializer) {
@@ -74,13 +74,13 @@ void primitiv_Normal_delete(primitiv_Initializer *initializer) {
 primitiv_Status primitiv_Normal_apply(const primitiv_Initializer *initializer,
                            primitiv_Tensor *x) {
   try {
-    CAST_TO_CONST_CC_NORMAL(initializer)->apply(*to_cc(x));
+    CAST_TO_CONST_CC_NORMAL(initializer)->apply(*to_cpp_ptr(x));
     return ::primitiv_Status::PRIMITIV_OK;
   } HANDLE_EXCEPTION
 }
 
 primitiv_Initializer *primitiv_Identity_new() {
-  return to_c(new Identity());
+  return to_c_ptr(new Identity());
 }
 
 void primitiv_Identity_delete(primitiv_Initializer *initializer) {
@@ -90,13 +90,13 @@ void primitiv_Identity_delete(primitiv_Initializer *initializer) {
 primitiv_Status primitiv_Identity_apply(const primitiv_Initializer *initializer,
                              primitiv_Tensor *x) {
   try {
-    CAST_TO_CONST_CC_IDENTITY(initializer)->apply(*to_cc(x));
+    CAST_TO_CONST_CC_IDENTITY(initializer)->apply(*to_cpp_ptr(x));
     return ::primitiv_Status::PRIMITIV_OK;
   } HANDLE_EXCEPTION
 }
 
 primitiv_Initializer *primitiv_XavierUniform_new(float scale) {
-  return to_c(new XavierUniform(scale));
+  return to_c_ptr(new XavierUniform(scale));
 }
 
 void primitiv_XavierUniform_delete(primitiv_Initializer *initializer) {
@@ -106,13 +106,13 @@ void primitiv_XavierUniform_delete(primitiv_Initializer *initializer) {
 primitiv_Status primitiv_XavierUniform_apply(
     const primitiv_Initializer *initializer, primitiv_Tensor *x) {
   try {
-    CAST_TO_CONST_CC_XAVIER_UNIFORM(initializer)->apply(*to_cc(x));
+    CAST_TO_CONST_CC_XAVIER_UNIFORM(initializer)->apply(*to_cpp_ptr(x));
     return ::primitiv_Status::PRIMITIV_OK;
   } HANDLE_EXCEPTION
 }
 
 primitiv_Initializer *primitiv_XavierNormal_new(float scale) {
-  return to_c(new XavierNormal(scale));
+  return to_c_ptr(new XavierNormal(scale));
 }
 
 void primitiv_XavierNormal_delete(primitiv_Initializer *initializer) {
@@ -122,7 +122,7 @@ void primitiv_XavierNormal_delete(primitiv_Initializer *initializer) {
 primitiv_Status primitiv_XavierNormal_apply(
     const primitiv_Initializer *initializer, primitiv_Tensor *x) {
   try {
-    CAST_TO_CONST_CC_XAVIER_NORMAL(initializer)->apply(*to_cc(x));
+    CAST_TO_CONST_CC_XAVIER_NORMAL(initializer)->apply(*to_cpp_ptr(x));
     return ::primitiv_Status::PRIMITIV_OK;
   } HANDLE_EXCEPTION
 }

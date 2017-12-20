@@ -20,21 +20,21 @@
 #include <primitiv/c/status.h>
 
 #define DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(cc_name, c_name) \
-inline c_name *to_c(primitiv::cc_name *instance) { \
+inline c_name *to_c_ptr(primitiv::cc_name *instance) { \
   return reinterpret_cast<c_name*>(instance); \
 } \
-inline const c_name *to_c(const primitiv::cc_name *instance) { \
+inline const c_name *to_c_ptr(const primitiv::cc_name *instance) { \
   return reinterpret_cast<const c_name*>(instance); \
 } \
-inline primitiv::cc_name *to_cc(c_name *instance) { \
+inline primitiv::cc_name *to_cpp_ptr(c_name *instance) { \
   return reinterpret_cast<primitiv::cc_name*>(instance); \
 } \
-inline const primitiv::cc_name *to_cc(const c_name *instance) { \
+inline const primitiv::cc_name *to_cpp_ptr(const c_name *instance) { \
   return reinterpret_cast<const primitiv::cc_name*>(instance); \
 }
 
 #define DEFINE_VALUE_TO_POINTER_CONVERSION_AS_CAST(cc_name, c_name) \
-inline c_name *to_c_from_value(const primitiv::cc_name &instance) { \
+inline c_name *to_c_ptr_from_value(const primitiv::cc_name &instance) { \
   return reinterpret_cast<c_name*>(new primitiv::cc_name(instance)); \
 }
 

@@ -6,7 +6,7 @@
 #include <primitiv/c/naive_device.h>
 
 using primitiv::devices::Naive;
-using primitiv::c::internal::to_c;
+using primitiv::c::internal::to_c_ptr;
 
 #define CAST_TO_CC_NAIVE(x) reinterpret_cast<Naive*>(x)
 #define CAST_TO_CONST_CC_NAIVE(x) reinterpret_cast<const Naive*>(x)
@@ -14,11 +14,11 @@ using primitiv::c::internal::to_c;
 extern "C" {
 
 primitiv_Device *primitiv_Naive_new() {
-  return to_c(new Naive());
+  return to_c_ptr(new Naive());
 }
 
 primitiv_Device *primitiv_Naive_new_with_seed(uint32_t seed) {
-  return to_c(new Naive(seed));
+  return to_c_ptr(new Naive(seed));
 }
 
 void primitiv_Naive_delete(primitiv_Device *device) {

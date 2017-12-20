@@ -6,7 +6,7 @@
 #include <primitiv/c/opencl_device.h>
 
 using primitiv::devices::OpenCL;
-using primitiv::c::internal::to_c;
+using primitiv::c::internal::to_c_ptr;
 
 #define CAST_TO_CC_OPENCL(x) reinterpret_cast<OpenCL*>(x)
 #define CAST_TO_CONST_CC_OPENCL(x) reinterpret_cast<const OpenCL*>(x)
@@ -16,7 +16,7 @@ extern "C" {
 primitiv_Status primitiv_OpenCL_new(primitiv_Device **device,
                                     uint32_t platform_id, uint32_t device_id) {
   try {
-    *device = to_c(new OpenCL(platform_id, device_id));
+    *device = to_c_ptr(new OpenCL(platform_id, device_id));
     return ::primitiv_Status::PRIMITIV_OK;
   } HANDLE_EXCEPTION
 }
@@ -25,7 +25,7 @@ primitiv_Status primitiv_OpenCL_new_with_seed(
     primitiv_Device **device, uint32_t platform_id, uint32_t device_id,
     uint32_t rng_seed) {
   try {
-    *device = to_c(new OpenCL(platform_id, device_id, rng_seed));
+    *device = to_c_ptr(new OpenCL(platform_id, device_id, rng_seed));
     return ::primitiv_Status::PRIMITIV_OK;
   } HANDLE_EXCEPTION
 }

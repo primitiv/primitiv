@@ -11,7 +11,7 @@ using primitiv::optimizers::AdaGrad;
 using primitiv::optimizers::RMSProp;
 using primitiv::optimizers::AdaDelta;
 using primitiv::optimizers::Adam;
-using primitiv::c::internal::to_c;
+using primitiv::c::internal::to_c_ptr;
 
 #define CAST_TO_CC_SGD(x) reinterpret_cast<SGD*>(x)
 #define CAST_TO_CONST_CC_SGD(x) reinterpret_cast<const SGD*>(x)
@@ -29,7 +29,7 @@ using primitiv::c::internal::to_c;
 extern "C" {
 
 primitiv_Optimizer *primitiv_SGD_new(float eta) {
-  return to_c(new SGD(eta));
+  return to_c_ptr(new SGD(eta));
 }
 
 void primitiv_SGD_delete(primitiv_Optimizer *optimizer) {
@@ -41,7 +41,7 @@ float primitiv_SGD_eta(const primitiv_Optimizer *optimizer) {
 }
 
 primitiv_Optimizer *primitiv_MomentumSGD_new(float eta, float momentum) {
-  return to_c(new MomentumSGD(eta, momentum));
+  return to_c_ptr(new MomentumSGD(eta, momentum));
 }
 
 void primitiv_MomentumSGD_delete(primitiv_Optimizer *optimizer) {
@@ -57,7 +57,7 @@ float primitiv_MomentumSGD_momentum(const primitiv_Optimizer *optimizer) {
 }
 
 primitiv_Optimizer *primitiv_AdaGrad_new(float eta, float eps) {
-  return to_c(new AdaGrad(eta, eps));
+  return to_c_ptr(new AdaGrad(eta, eps));
 }
 
 void primitiv_AdaGrad_delete(primitiv_Optimizer *optimizer) {
@@ -73,7 +73,7 @@ float primitiv_AdaGrad_eps(const primitiv_Optimizer *optimizer) {
 }
 
 primitiv_Optimizer *primitiv_RMSProp_new(float eta, float alpha, float eps) {
-  return to_c(new RMSProp(eta, alpha, eps));
+  return to_c_ptr(new RMSProp(eta, alpha, eps));
 }
 
 void primitiv_RMSProp_delete(primitiv_Optimizer *optimizer) {
@@ -93,7 +93,7 @@ float primitiv_RMSProp_eps(const primitiv_Optimizer *optimizer) {
 }
 
 primitiv_Optimizer *primitiv_AdaDelta_new(float rho, float eps) {
-  return to_c(new AdaDelta(rho, eps));
+  return to_c_ptr(new AdaDelta(rho, eps));
 }
 
 void primitiv_AdaDelta_delete(primitiv_Optimizer *optimizer) {
@@ -110,7 +110,7 @@ float primitiv_AdaDelta_eps(const primitiv_Optimizer *optimizer) {
 
 primitiv_Optimizer *primitiv_Adam_new(float alpha, float beta1, float beta2,
                                       float eps) {
-  return to_c(new Adam(alpha, beta1, beta2, eps));
+  return to_c_ptr(new Adam(alpha, beta1, beta2, eps));
 }
 
 void primitiv_Adam_delete(primitiv_Optimizer *optimizer) {

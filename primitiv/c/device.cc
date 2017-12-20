@@ -6,20 +6,20 @@
 #include <primitiv/c/device.h>
 
 using primitiv::Device;
-using primitiv::c::internal::to_c;
-using primitiv::c::internal::to_cc;
+using primitiv::c::internal::to_c_ptr;
+using primitiv::c::internal::to_cpp_ptr;
 
 extern "C" {
 
 primitiv_Status primitiv_Device_get_default(primitiv_Device **device) {
   try {
-    *device = to_c(&Device::get_default());
+    *device = to_c_ptr(&Device::get_default());
     return ::primitiv_Status::PRIMITIV_OK;
   } HANDLE_EXCEPTION
 }
 
 void primitiv_Device_set_default(primitiv_Device *device) {
-  Device::set_default(*to_cc(device));
+  Device::set_default(*to_cpp_ptr(device));
 }
 
 }  // end extern "C"
