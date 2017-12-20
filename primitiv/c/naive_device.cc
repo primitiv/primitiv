@@ -13,19 +13,19 @@ using primitiv::c::internal::to_c_ptr;
 
 extern "C" {
 
-primitiv_Device *primitiv_Naive_new() {
+primitiv_Device *primitiv_devices_Naive_new() {
   return to_c_ptr(new Naive());
 }
 
-primitiv_Device *primitiv_Naive_new_with_seed(uint32_t seed) {
+primitiv_Device *primitiv_devices_Naive_new_with_seed(uint32_t seed) {
   return to_c_ptr(new Naive(seed));
 }
 
-void primitiv_Naive_delete(primitiv_Device *device) {
+void primitiv_devices_Naive_delete(primitiv_Device *device) {
   delete CAST_TO_CC_NAIVE(device);
 }
 
-void primitiv_Naive_dump_description(const primitiv_Device *device) {
+void primitiv_devices_Naive_dump_description(const primitiv_Device *device) {
   CAST_TO_CONST_CC_NAIVE(device)->dump_description();
 }
 

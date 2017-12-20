@@ -13,15 +13,15 @@ using primitiv::c::internal::to_c_ptr;
 
 extern "C" {
 
-primitiv_Status primitiv_CUDA_new(primitiv_Device **device,
-                                  uint32_t device_id) {
+primitiv_Status primitiv_devices_CUDA_new(
+    primitiv_Device **device, uint32_t device_id) {
   try {
     *device = to_c_ptr(new CUDA(device_id));
     return ::primitiv_Status::PRIMITIV_OK;
   } HANDLE_EXCEPTION
 }
 
-primitiv_Status primitiv_CUDA_new_with_seed(
+primitiv_Status primitiv_devices_CUDA_new_with_seed(
     primitiv_Device **device, uint32_t device_id, uint32_t rng_seed) {
   try {
     *device = to_c_ptr(new CUDA(device_id, rng_seed));
@@ -29,15 +29,15 @@ primitiv_Status primitiv_CUDA_new_with_seed(
   } HANDLE_EXCEPTION
 }
 
-void primitiv_CUDA_delete(primitiv_Device *device) {
+void primitiv_devices_CUDA_delete(primitiv_Device *device) {
   delete CAST_TO_CC_CUDA(device);
 }
 
-uint32_t primitiv_CUDA_num_devices() {
+uint32_t primitiv_devices_CUDA_num_devices() {
   return CUDA::num_devices();
 }
 
-void primitiv_CUDA_dump_description(const primitiv_Device *device) {
+void primitiv_devices_CUDA_dump_description(const primitiv_Device *device) {
   CAST_TO_CONST_CC_CUDA(device)->dump_description();
 }
 

@@ -17,13 +17,14 @@ extern "C" {
  * @param k Constant value to fill a tensor.
  * @return Pointer of a handler.
  */
-CAPI extern primitiv_Initializer *primitiv_Constant_new(float k);
+CAPI extern primitiv_Initializer *primitiv_initializers_Constant_new(float k);
 
 /**
  * Deletes the Constant Initializer object.
  * @param initializer Pointer of a handler.
  */
-CAPI extern void primitiv_Constant_delete(primitiv_Initializer *initializer);
+CAPI extern void primitiv_initializers_Constant_delete(
+    primitiv_Initializer *initializer);
 
 /**
  * Provides an initialized tensor.
@@ -31,7 +32,7 @@ CAPI extern void primitiv_Constant_delete(primitiv_Initializer *initializer);
  * @param x Tensor object to be initialized.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Constant_apply(
+CAPI extern primitiv_Status primitiv_initializers_Constant_apply(
     const primitiv_Initializer *initializer, primitiv_Tensor *x);
 
 /**
@@ -41,14 +42,15 @@ CAPI extern primitiv_Status primitiv_Constant_apply(
  * @param upper Upper boundary of the uniform distribution.
  * @return Pointer of a handler.
  */
-CAPI extern primitiv_Initializer *primitiv_Uniform_new(float lower,
-                                                       float upper);
+CAPI extern primitiv_Initializer *primitiv_initializers_Uniform_new(
+    float lower, float upper);
 
 /**
  * Deletes the Uniform Initializer object.
  * @param initializer Pointer of a handler.
  */
-CAPI extern void primitiv_Uniform_delete(primitiv_Initializer *initializer);
+CAPI extern void primitiv_initializers_Uniform_delete(
+    primitiv_Initializer *initializer);
 
 /**
  * Provides an initialized tensor.
@@ -56,7 +58,7 @@ CAPI extern void primitiv_Uniform_delete(primitiv_Initializer *initializer);
  * @param x Tensor object to be initialized.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Uniform_apply(
+CAPI extern primitiv_Status primitiv_initializers_Uniform_apply(
     const primitiv_Initializer *initializer, primitiv_Tensor *x);
 
 /**
@@ -66,13 +68,15 @@ CAPI extern primitiv_Status primitiv_Uniform_apply(
  * @param sd Standard deviation of the normal distribution.
  * @return Pointer of a handler.
  */
-CAPI extern primitiv_Initializer *primitiv_Normal_new(float mean, float sd);
+CAPI extern primitiv_Initializer *primitiv_initializers_Normal_new(float mean,
+                                                                   float sd);
 
 /**
  * Deletes the Normal Initializer object.
  * @param initializer Pointer of a handler.
  */
-CAPI extern void primitiv_Normal_delete(primitiv_Initializer *initializer);
+CAPI extern void primitiv_initializers_Normal_delete(
+    primitiv_Initializer *initializer);
 
 /**
  * Provides an initialized tensor.
@@ -80,20 +84,21 @@ CAPI extern void primitiv_Normal_delete(primitiv_Initializer *initializer);
  * @param x Tensor object to be initialized.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Normal_apply(
+CAPI extern primitiv_Status primitiv_initializers_Normal_apply(
     const primitiv_Initializer *initializer, primitiv_Tensor *x);
 
 /**
  * Creates a new Initializer object that generates a identity tensor.
  * @return Pointer of a handler.
  */
-CAPI extern primitiv_Initializer *primitiv_Identity_new();
+CAPI extern primitiv_Initializer *primitiv_initializers_Identity_new();
 
 /**
  * Deletes the Identity Initializer object.
  * @param initializer Pointer of a handler.
  */
-CAPI extern void primitiv_Identity_delete(primitiv_Initializer *initializer);
+CAPI extern void primitiv_initializers_Identity_delete(
+    primitiv_Initializer *initializer);
 
 /**
  * Provides an initialized tensor.
@@ -101,7 +106,7 @@ CAPI extern void primitiv_Identity_delete(primitiv_Initializer *initializer);
  * @param x Tensor object to be initialized.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Identity_apply(
+CAPI extern primitiv_Status primitiv_initializers_Identity_apply(
     const primitiv_Initializer *initializer, primitiv_Tensor *x);
 
 /**
@@ -111,13 +116,14 @@ CAPI extern primitiv_Status primitiv_Identity_apply(
  *              distribution.
  * @return Pointer of a handler.
  */
-CAPI extern primitiv_Initializer *primitiv_XavierUniform_new(float scale);
+CAPI extern primitiv_Initializer *primitiv_initializers_XavierUniform_new(
+    float scale);
 
 /**
  * Deletes the XavierUniform Initializer object.
  * @param initializer Pointer of a handler.
  */
-CAPI extern void primitiv_XavierUniform_delete(
+CAPI extern void primitiv_initializers_XavierUniform_delete(
     primitiv_Initializer *initializer);
 
 /**
@@ -126,7 +132,7 @@ CAPI extern void primitiv_XavierUniform_delete(
  * @param x Tensor object to be initialized.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_XavierUniform_apply(
+CAPI extern primitiv_Status primitiv_initializers_XavierUniform_apply(
     const primitiv_Initializer *initializer, primitiv_Tensor *x);
 
 /**
@@ -136,13 +142,14 @@ CAPI extern primitiv_Status primitiv_XavierUniform_apply(
  *              distribution.
  * @return Pointer of a handler.
  */
-CAPI extern primitiv_Initializer *primitiv_XavierNormal_new(float scale);
+CAPI extern primitiv_Initializer *primitiv_initializers_XavierNormal_new(
+    float scale);
 
 /**
  * Deletes the XavierNormal Initializer object.
  * @param initializer Pointer of a handler.
  */
-CAPI extern void primitiv_XavierNormal_delete(
+CAPI extern void primitiv_initializers_XavierNormal_delete(
     primitiv_Initializer *initializer);
 
 /**
@@ -151,7 +158,7 @@ CAPI extern void primitiv_XavierNormal_delete(
  * @param x Tensor object to be initialized.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_XavierNormal_apply(
+CAPI extern primitiv_Status primitiv_initializers_XavierNormal_apply(
     const primitiv_Initializer *initializer, primitiv_Tensor *x);
 
 #ifdef __cplusplus

@@ -32,22 +32,23 @@ extern "C" {
  * @param eta Learning rate.
  * @return Pointer of a handler.
  */
-CAPI extern primitiv_Optimizer *primitiv_SGD_new(float eta);
+CAPI extern primitiv_Optimizer *primitiv_optimizers_SGD_new(float eta);
 
 /**
  * Deletes the (SGD) Optimizer object.
  * @param optimizer Pointer of a handler.
  */
-CAPI extern void primitiv_SGD_delete(primitiv_Optimizer *optimizer);
+CAPI extern void primitiv_optimizers_SGD_delete(primitiv_Optimizer *optimizer);
 
 /**
  * Returns the learning rate.
  * @param optimizer Pointer of a handler.
  * @return Learning rate.
  */
-CAPI extern float primitiv_SGD_eta(const primitiv_Optimizer *optimizer);
+CAPI extern float primitiv_optimizers_SGD_eta(
+    const primitiv_Optimizer *optimizer);
 
-// @TODO: Implement getter/setter of primitiv_SGD configs
+// @TODO: Implement getter/setter of primitiv_optimizers_SGD configs
 
 /**
  * Creates a new (MomentumSGD) Optimizer object.
@@ -55,28 +56,30 @@ CAPI extern float primitiv_SGD_eta(const primitiv_Optimizer *optimizer);
  * @param momentum Decay factor of the momentum.
  * @return Pointer of a handler.
  */
-CAPI extern primitiv_Optimizer *primitiv_MomentumSGD_new(float eta,
-                                                         float momentum);
+CAPI extern primitiv_Optimizer *primitiv_optimizers_MomentumSGD_new(
+    float eta, float momentum);
 
 /**
  * Deletes the (MomentumSGD) Optimizer object.
  * @param optimizer Pointer of a handler.
  */
-CAPI extern void primitiv_MomentumSGD_delete(primitiv_Optimizer *optimizer);
+CAPI extern void primitiv_optimizers_MomentumSGD_delete(
+    primitiv_Optimizer *optimizer);
 
 /**
  * Returns the hyperparameter eta.
  * @param optimizer Pointer of a handler.
  * @return The value of eta.
  */
-CAPI extern float primitiv_MomentumSGD_eta(const primitiv_Optimizer *optimizer);
+CAPI extern float primitiv_optimizers_MomentumSGD_eta(
+    const primitiv_Optimizer *optimizer);
 
 /**
  * Returns the hyperparameter momentum.
  * @param optimizer Pointer of a handler.
  * @return The value of momentum.
  */
-CAPI extern float primitiv_MomentumSGD_momentum(
+CAPI extern float primitiv_optimizers_MomentumSGD_momentum(
     const primitiv_Optimizer *optimizer);
 
 // @TODO: Implement getter/setter of primitiv_MementumSGD configs
@@ -87,29 +90,33 @@ CAPI extern float primitiv_MomentumSGD_momentum(
  * @param eps Bias of power.
  * @return Pointer of a handler.
  */
-CAPI extern primitiv_Optimizer *primitiv_AdaGrad_new(float eta, float eps);
+CAPI extern primitiv_Optimizer *primitiv_optimizers_AdaGrad_new(float eta,
+                                                                float eps);
 
 /**
  * Deletes the (Adagrad) Optimizer object.
  * @param optimizer Pointer of a handler.
  */
-CAPI extern void primitiv_AdaGrad_delete(primitiv_Optimizer *optimizer);
+CAPI extern void primitiv_optimizers_AdaGrad_delete(
+    primitiv_Optimizer *optimizer);
 
 /**
  * Returns the hyperparameter eta.
  * @param optimizer Pointer of a handler.
  * @return The value of eta.
  */
-CAPI extern float primitiv_AdaGrad_eta(const primitiv_Optimizer *optimizer);
+CAPI extern float primitiv_optimizers_AdaGrad_eta(
+    const primitiv_Optimizer *optimizer);
 
 /**
  * Returns the hyperparameter eps.
  * @param optimizer Pointer of a handler.
  * @return The value of eps.
  */
-CAPI extern float primitiv_AdaGrad_eps(const primitiv_Optimizer *optimizer);
+CAPI extern float primitiv_optimizers_AdaGrad_eps(
+    const primitiv_Optimizer *optimizer);
 
-// @TODO: Implement getter/setter of primitiv_AdaGrad configs
+// @TODO: Implement getter/setter of primitiv_optimizers_AdaGrad configs
 
 /**
  * Creates a new (RMSProp) Optimizer object.
@@ -118,37 +125,41 @@ CAPI extern float primitiv_AdaGrad_eps(const primitiv_Optimizer *optimizer);
  * @param eps Bias of power.
  * @return Pointer of a handler.
  */
-CAPI extern primitiv_Optimizer *primitiv_RMSProp_new(
+CAPI extern primitiv_Optimizer *primitiv_optimizers_RMSProp_new(
     float eta, float alpha, float eps);
 
 /**
  * Deletes the (RMSProp) Optimizer object.
  * @param optimizer Pointer of a handler.
  */
-CAPI extern void primitiv_RMSProp_delete(primitiv_Optimizer *optimizer);
+CAPI extern void primitiv_optimizers_RMSProp_delete(
+    primitiv_Optimizer *optimizer);
 
 /**
  * Returns the hyperparameter eta.
  * @param optimizer Pointer of a handler.
  * @return The value of eta.
  */
-CAPI extern float primitiv_RMSProp_eta(const primitiv_Optimizer *optimizer);
+CAPI extern float primitiv_optimizers_RMSProp_eta(
+    const primitiv_Optimizer *optimizer);
 
 /**
  * Returns the hyperparameter alpha.
  * @param optimizer Pointer of a handler.
  * @return The value of alpha.
  */
-CAPI extern float primitiv_RMSProp_alpha(const primitiv_Optimizer *optimizer);
+CAPI extern float primitiv_optimizers_RMSProp_alpha(
+    const primitiv_Optimizer *optimizer);
 
 /**
  * Returns the hyperparameter eps.
  * @param optimizer Pointer of a handler.
  * @return The value of eps.
  */
-CAPI extern float primitiv_RMSProp_eps(const primitiv_Optimizer *optimizer);
+CAPI extern float primitiv_optimizers_RMSProp_eps(
+    const primitiv_Optimizer *optimizer);
 
-// @TODO: Implement getter/setter of primitiv_RMSProp configs
+// @TODO: Implement getter/setter of primitiv_optimizers_RMSProp configs
 
 /**
  * Creates a new (AdaDelta) Optimizer object.
@@ -156,29 +167,33 @@ CAPI extern float primitiv_RMSProp_eps(const primitiv_Optimizer *optimizer);
  * @param eps Bias of RMS values.
  * @return Pointer of a handler.
  */
-CAPI extern primitiv_Optimizer *primitiv_AdaDelta_new(float rho, float eps);
+CAPI extern primitiv_Optimizer *primitiv_optimizers_AdaDelta_new(float rho,
+                                                                 float eps);
 
 /**
  * Deletes the (AdaDelta) Optimizer object.
  * @param optimizer Pointer of a handler.
  */
-CAPI extern void primitiv_AdaDelta_delete(primitiv_Optimizer *optimizer);
+CAPI extern void primitiv_optimizers_AdaDelta_delete(
+    primitiv_Optimizer *optimizer);
 
 /**
  * Returns the hyperparameter rho.
  * @param optimizer Pointer of a handler.
  * @return The value of rho.
  */
-CAPI extern float primitiv_AdaDelta_rho(const primitiv_Optimizer *optimizer);
+CAPI extern float primitiv_optimizers_AdaDelta_rho(
+    const primitiv_Optimizer *optimizer);
 
 /**
  * Returns the hyperparameter eps.
  * @param optimizer Pointer of a handler.
  * @return The value of eps.
  */
-CAPI extern float primitiv_AdaDelta_eps(const primitiv_Optimizer *optimizer);
+CAPI extern float primitiv_optimizers_AdaDelta_eps(
+    const primitiv_Optimizer *optimizer);
 
-// @TODO: Implement getter/setter of primitiv_AdaDelta configs
+// @TODO: Implement getter/setter of primitiv_optimizers_AdaDelta configs
 
 /**
  * Creates a new Adam object.
@@ -188,44 +203,49 @@ CAPI extern float primitiv_AdaDelta_eps(const primitiv_Optimizer *optimizer);
  * @param eps Bias of power.
  * @return Pointer of a handler.
  */
-CAPI extern primitiv_Optimizer *primitiv_Adam_new(
+CAPI extern primitiv_Optimizer *primitiv_optimizers_Adam_new(
     float alpha, float beta1, float beta2, float eps);
 
 /**
  * Deletes the (Adagrad) Optimizer object.
  * @param optimizer Pointer of a handler.
  */
-CAPI extern void primitiv_Adam_delete(primitiv_Optimizer *optimizer);
+CAPI extern void primitiv_optimizers_Adam_delete(
+    primitiv_Optimizer *optimizer);
 
 /**
  * Returns the hyperparameter alpha.
  * @param optimizer Pointer of a handler.
  * @return The value of alpha.
  */
-CAPI extern float primitiv_Adam_alpha(const primitiv_Optimizer *optimizer);
+CAPI extern float primitiv_optimizers_Adam_alpha(
+    const primitiv_Optimizer *optimizer);
 
 /**
  * Returns the hyperparameter beta1.
  * @param optimizer Pointer of a handler.
  * @return The value of beta1.
  */
-CAPI extern float primitiv_Adam_beta1(const primitiv_Optimizer *optimizer);
+CAPI extern float primitiv_optimizers_Adam_beta1(
+    const primitiv_Optimizer *optimizer);
 
 /**
  * Returns the hyperparameter beta2.
  * @param optimizer Pointer of a handler.
  * @return The value of beta2.
  */
-CAPI extern float primitiv_Adam_beta2(const primitiv_Optimizer *optimizer);
+CAPI extern float primitiv_optimizers_Adam_beta2(
+    const primitiv_Optimizer *optimizer);
 
 /**
  * Returns the hyperparameter eps.
  * @param optimizer Pointer of a handler.
  * @return The value of eps.
  */
-CAPI extern float primitiv_Adam_eps(const primitiv_Optimizer *optimizer);
+CAPI extern float primitiv_optimizers_Adam_eps(
+    const primitiv_Optimizer *optimizer);
 
-// @TODO: Implement getter/setter of primitiv_Adam configs
+// @TODO: Implement getter/setter of primitiv_optimizers_Adam configs
 
 #ifdef __cplusplus
 }  // end extern "C"

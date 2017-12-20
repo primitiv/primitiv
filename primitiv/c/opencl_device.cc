@@ -13,7 +13,7 @@ using primitiv::c::internal::to_c_ptr;
 
 extern "C" {
 
-primitiv_Status primitiv_OpenCL_new(primitiv_Device **device,
+primitiv_Status primitiv_devices_OpenCL_new(primitiv_Device **device,
                                     uint32_t platform_id, uint32_t device_id) {
   try {
     *device = to_c_ptr(new OpenCL(platform_id, device_id));
@@ -21,7 +21,7 @@ primitiv_Status primitiv_OpenCL_new(primitiv_Device **device,
   } HANDLE_EXCEPTION
 }
 
-primitiv_Status primitiv_OpenCL_new_with_seed(
+primitiv_Status primitiv_devices_OpenCL_new_with_seed(
     primitiv_Device **device, uint32_t platform_id, uint32_t device_id,
     uint32_t rng_seed) {
   try {
@@ -30,19 +30,19 @@ primitiv_Status primitiv_OpenCL_new_with_seed(
   } HANDLE_EXCEPTION
 }
 
-void primitiv_OpenCL_delete(primitiv_Device *device) {
+void primitiv_devices_OpenCL_delete(primitiv_Device *device) {
   delete CAST_TO_CC_OPENCL(device);
 }
 
-uint32_t primitiv_OpenCL_num_platforms() {
+uint32_t primitiv_devices_OpenCL_num_platforms() {
   return OpenCL::num_platforms();
 }
 
-uint32_t primitiv_OpenCL_num_devices(uint32_t platform_id) {
+uint32_t primitiv_devices_OpenCL_num_devices(uint32_t platform_id) {
   return OpenCL::num_devices(platform_id);
 }
 
-void primitiv_OpenCL_dump_description(const primitiv_Device *device) {
+void primitiv_devices_OpenCL_dump_description(const primitiv_Device *device) {
   CAST_TO_CONST_CC_OPENCL(device)->dump_description();
 }
 

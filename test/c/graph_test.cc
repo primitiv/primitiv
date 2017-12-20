@@ -17,12 +17,12 @@ namespace c {
 
 class CGraphTest : public testing::Test {
   void SetUp() override {
-    dev = ::primitiv_Naive_new();
-    dev2 = ::primitiv_Naive_new();
+    dev = ::primitiv_devices_Naive_new();
+    dev2 = ::primitiv_devices_Naive_new();
   }
   void TearDown() override {
-    ::primitiv_Naive_delete(dev);
-    ::primitiv_Naive_delete(dev2);
+    ::primitiv_devices_Naive_delete(dev);
+    ::primitiv_devices_Naive_delete(dev2);
   }
  protected:
   ::primitiv_Device *dev;
@@ -213,7 +213,7 @@ TEST_F(CGraphTest, CheckForward) {
     EXPECT_TRUE(::primitiv_Shape_op_eq(expected_shapes[i], shape));
     EXPECT_EQ(dev, device);
     ::primitiv_Shape_delete(shape);
-    // ::primitiv_Naive_delete(device);  // do not delete the reference
+    // ::primitiv_devices_Naive_delete(device);  // do not delete the reference
   }
 
   const ::primitiv_Tensor *tensor;
