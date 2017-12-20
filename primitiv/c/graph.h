@@ -236,10 +236,12 @@ CAPI extern primitiv_Status primitiv_Graph_get_device(
  *                 "dot" ... Graphviz's dot format.
  * @param string Pointer to receive a string that represents the internal graph
  *               using given format.
+ * @param length Pointer to receive a length of the string.
  * @return Status code.
  */
 CAPI extern primitiv_Status primitiv_Graph_dump(
-    const primitiv_Graph *graph, const char *format, char **string);
+    const primitiv_Graph *graph, const char *format, char *string,
+    size_t *length);
 
 /**
  * Returns the number of operators in the computation graph.

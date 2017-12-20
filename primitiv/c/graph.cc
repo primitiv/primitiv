@@ -180,11 +180,14 @@ primitiv_Status primitiv_Graph_get_device(const primitiv_Graph *graph,
 }
 
 primitiv_Status primitiv_Graph_dump(
-    const primitiv_Graph *graph, const char *format, char **string) {
+    const primitiv_Graph *graph, const char *format, char *string,
+    size_t *length) {
   try {
     std::string str = to_cpp_ptr(graph)->dump(format);
-    *string = new char[str.size() + 1];
-    std::strcpy(*string, str.c_str());
+    *length = str.length();
+    if (string) {
+      std::strcpy(string, str.c_str());
+    }
     return ::primitiv_Status::PRIMITIV_OK;
   } HANDLE_EXCEPTION
 }

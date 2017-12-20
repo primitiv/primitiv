@@ -63,12 +63,13 @@ uint32_t primitiv_Shape_size(const primitiv_Shape *shape) {
   return to_cpp_ptr(shape)->size();
 }
 
-char *primitiv_Shape_to_string(const primitiv_Shape *shape) {
+void primitiv_Shape_to_string(const primitiv_Shape *shape,
+                              char *string, size_t *length) {
   std::string str = to_cpp_ptr(shape)->to_string();
-  uint64_t len = str.length();
-  auto *c = new char[len + 1];
-  std::strncpy(c, str.c_str(), len);
-  return c;
+  *length = str.length();
+  if (string) {
+    std::strcpy(string, str.c_str());
+  }
 }
 
 bool primitiv_Shape_op_eq(const primitiv_Shape *shape,

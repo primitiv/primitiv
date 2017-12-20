@@ -98,9 +98,12 @@ CAPI extern uint32_t primitiv_Shape_size(const primitiv_Shape *shape);
  * Returns a string representation of the shape.
  * The format is: "[n,m,...]xk"
  * @param shape Pointer of a handler.
+ * @param string Pointer to receive a char sequence.
+ * @param length Pointer to receive a length of the char sequence.
  * @return Encoded string.
  */
-CAPI extern char *primitiv_Shape_to_string(const primitiv_Shape *shape);
+CAPI extern void primitiv_Shape_to_string(const primitiv_Shape *shape,
+                                          char *string, size_t *length);
 
 /**
  * Compares this and other shape.
