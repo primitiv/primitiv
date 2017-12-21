@@ -10,6 +10,15 @@ docker exec travis-ci bash -c "apt update"
 docker exec travis-ci bash -c "apt install -y build-essential cmake googletest"
 
 # install Eigen
+#
+# NOTE(vbkaisetsu):
+# Ubuntu 17.04  contains Eigen 3.3.4 and gcc 7.2.0.
+# gcc/g++ 7 detects int-in-bool-context error in the latest released version of Eigen
+# by default, and it will be fixed in 3.3.5. For now, this script downloads the latest
+# development version to solve this problem.
+#
+# For more details, see: http://eigen.tuxfamily.org/bz/show_bug.cgi?id=1402
+#
 docker exec travis-ci bash -c "apt install -y mercurial"
 docker exec travis-ci bash -c "hg clone https://bitbucket.org/eigen/eigen"
 docker exec travis-ci bash -c "mkdir ./eigen/build"
