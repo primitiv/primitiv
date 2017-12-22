@@ -19,9 +19,10 @@ typedef struct primitiv_Model primitiv_Model;
 
 /**
  * Creates a new Model object.
- * @return Pointer of a handler.
+ * @param model Pointer to receive a handler.
+ * @return Status code.
  */
-CAPI extern primitiv_Model *primitiv_Model_new();
+CAPI extern primitiv_Status primitiv_Model_new(primitiv_Model **model);
 
 /**
  * Deletes the Model object.

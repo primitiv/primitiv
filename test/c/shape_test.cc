@@ -16,7 +16,9 @@ class CShapeTest : public testing::Test {};
 
 TEST_F(CShapeTest, CheckNewDefault) {
   {
-    ::primitiv_Shape *shape = ::primitiv_Shape_new();
+    ::primitiv_Shape *shape;
+    ASSERT_EQ(::primitiv_Status::PRIMITIV_OK,
+              ::primitiv_Shape_new(&shape));
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 0));
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 1));
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 100));
@@ -32,8 +34,8 @@ TEST_F(CShapeTest, CheckNewByArray) {
   {
     ::primitiv_Shape *shape;
     std::uint32_t dims[] = {};
-    EXPECT_EQ(::primitiv_Status::PRIMITIV_OK,
-        ::primitiv_Shape_new_with_dims(dims, 0, 1, &shape));
+    ASSERT_EQ(::primitiv_Status::PRIMITIV_OK,
+              ::primitiv_Shape_new_with_dims(dims, 0, 1, &shape));
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 0));
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 1));
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 100));
@@ -46,8 +48,8 @@ TEST_F(CShapeTest, CheckNewByArray) {
   {
     ::primitiv_Shape *shape;
     std::uint32_t dims[] = {1, 2, 3};
-    EXPECT_EQ(::primitiv_Status::PRIMITIV_OK,
-        ::primitiv_Shape_new_with_dims(dims, 3, 4, &shape));
+    ASSERT_EQ(::primitiv_Status::PRIMITIV_OK,
+              ::primitiv_Shape_new_with_dims(dims, 3, 4, &shape));
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 0));
     EXPECT_EQ(2u, ::primitiv_Shape_op_getitem(shape, 1));
     EXPECT_EQ(3u, ::primitiv_Shape_op_getitem(shape, 2));

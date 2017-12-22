@@ -20,9 +20,11 @@ typedef struct primitiv_Parameter primitiv_Parameter;
 
 /**
  * Creates an invalid Parameter object.
- * @return Pointer of a handler.
+ * @param parameter Pointer to receive a handler.
+ * @return Status code.
  */
-CAPI extern primitiv_Parameter *primitiv_Parameter_new();
+CAPI extern primitiv_Status primitiv_Parameter_new(
+    primitiv_Parameter **parameter);
 
 /**
  * Creates a new Parameter object.

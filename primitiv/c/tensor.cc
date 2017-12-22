@@ -15,13 +15,16 @@ using primitiv::c::internal::to_c_ptr_from_value;
 
 extern "C" {
 
-primitiv_Tensor *primitiv_Tensor_new() {
-  return to_c_ptr(new Tensor());
-}
+primitiv_Status primitiv_Tensor_new(primitiv_Tensor **tensor) try {
+  *tensor = to_c_ptr(new Tensor());
+  return ::primitiv_Status::PRIMITIV_OK;
+} HANDLE_EXCEPTION
 
-primitiv_Tensor *primitiv_Tensor_new_from_tensor(primitiv_Tensor *tensor) {
-  return to_c_ptr(new Tensor(*to_cpp_ptr(tensor)));
-}
+primitiv_Status primitiv_Tensor_clone(
+    primitiv_Tensor *src, primitiv_Tensor **tensor) try {
+  *tensor = to_c_ptr(new Tensor(*to_cpp_ptr(src)));
+  return ::primitiv_Status::PRIMITIV_OK;
+} HANDLE_EXCEPTION
 
 void primitiv_Tensor_delete(primitiv_Tensor *tensor) {
   delete to_cpp_ptr(tensor);

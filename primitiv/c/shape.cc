@@ -15,9 +15,10 @@ using primitiv::c::internal::to_c_ptr_from_value;
 
 extern "C" {
 
-primitiv_Shape *primitiv_Shape_new() {
-  return to_c_ptr(new Shape());
-}
+primitiv_Status primitiv_Shape_new(primitiv_Shape **shape) try {
+  *shape = to_c_ptr(new Shape());
+  return ::primitiv_Status::PRIMITIV_OK;
+} HANDLE_EXCEPTION
 
 primitiv_Status primitiv_Shape_new_with_dims(const uint32_t *dims,
                                              size_t n,

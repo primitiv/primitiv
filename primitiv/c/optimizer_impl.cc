@@ -28,18 +28,21 @@ using primitiv::c::internal::to_c_ptr;
 
 extern "C" {
 
-primitiv_Optimizer *primitiv_optimizers_SGD_new(float eta) {
-  return to_c_ptr(new SGD(eta));
-}
+primitiv_Status primitiv_optimizers_SGD_new(
+    float eta, primitiv_Optimizer **optimizer) try {
+  *optimizer = to_c_ptr(new SGD(eta));
+  return ::primitiv_Status::PRIMITIV_OK;
+} HANDLE_EXCEPTION
 
 float primitiv_optimizers_SGD_eta(const primitiv_Optimizer *optimizer) {
   return CAST_TO_CONST_CC_SGD(optimizer)->eta();
 }
 
-primitiv_Optimizer *primitiv_optimizers_MomentumSGD_new(float eta,
-                                                        float momentum) {
-  return to_c_ptr(new MomentumSGD(eta, momentum));
-}
+primitiv_Status primitiv_optimizers_MomentumSGD_new(
+    float eta, float momentum, primitiv_Optimizer **optimizer) try {
+  *optimizer = to_c_ptr(new MomentumSGD(eta, momentum));
+  return ::primitiv_Status::PRIMITIV_OK;
+} HANDLE_EXCEPTION
 
 float primitiv_optimizers_MomentumSGD_eta(const primitiv_Optimizer *optimizer) {
   return CAST_TO_CONST_CC_MOMENTUM_SGD(optimizer)->eta();
@@ -50,9 +53,11 @@ float primitiv_optimizers_MomentumSGD_momentum(
   return CAST_TO_CONST_CC_MOMENTUM_SGD(optimizer)->momentum();
 }
 
-primitiv_Optimizer *primitiv_optimizers_AdaGrad_new(float eta, float eps) {
-  return to_c_ptr(new AdaGrad(eta, eps));
-}
+primitiv_Status primitiv_optimizers_AdaGrad_new(
+    float eta, float eps, primitiv_Optimizer **optimizer) try {
+  *optimizer = to_c_ptr(new AdaGrad(eta, eps));
+  return ::primitiv_Status::PRIMITIV_OK;
+} HANDLE_EXCEPTION
 
 float primitiv_optimizers_AdaGrad_eta(const primitiv_Optimizer *optimizer) {
   return CAST_TO_CONST_CC_ADA_GRAD(optimizer)->eta();
@@ -62,10 +67,11 @@ float primitiv_optimizers_AdaGrad_eps(const primitiv_Optimizer *optimizer) {
   return CAST_TO_CONST_CC_ADA_GRAD(optimizer)->eps();
 }
 
-primitiv_Optimizer *primitiv_optimizers_RMSProp_new(
-    float eta, float alpha, float eps) {
-  return to_c_ptr(new RMSProp(eta, alpha, eps));
-}
+primitiv_Status primitiv_optimizers_RMSProp_new(
+    float eta, float alpha, float eps, primitiv_Optimizer **optimizer) try {
+  *optimizer = to_c_ptr(new RMSProp(eta, alpha, eps));
+  return ::primitiv_Status::PRIMITIV_OK;
+} HANDLE_EXCEPTION
 
 float primitiv_optimizers_RMSProp_eta(const primitiv_Optimizer *optimizer) {
   return CAST_TO_CONST_CC_ADA_GRAD(optimizer)->eta();
@@ -79,9 +85,11 @@ float primitiv_optimizers_RMSProp_eps(const primitiv_Optimizer *optimizer) {
   return CAST_TO_CONST_CC_RMS_PROP(optimizer)->eps();
 }
 
-primitiv_Optimizer *primitiv_optimizers_AdaDelta_new(float rho, float eps) {
-  return to_c_ptr(new AdaDelta(rho, eps));
-}
+primitiv_Status primitiv_optimizers_AdaDelta_new(
+    float rho, float eps, primitiv_Optimizer **optimizer) try {
+  *optimizer = to_c_ptr(new AdaDelta(rho, eps));
+  return ::primitiv_Status::PRIMITIV_OK;
+} HANDLE_EXCEPTION
 
 float primitiv_optimizers_AdaDelta_rho(const primitiv_Optimizer *optimizer) {
   return CAST_TO_CONST_CC_ADA_DELTA(optimizer)->rho();
@@ -91,10 +99,12 @@ float primitiv_optimizers_AdaDelta_eps(const primitiv_Optimizer *optimizer) {
   return CAST_TO_CONST_CC_ADA_DELTA(optimizer)->eps();
 }
 
-primitiv_Optimizer *primitiv_optimizers_Adam_new(
-    float alpha, float beta1, float beta2, float eps) {
-  return to_c_ptr(new Adam(alpha, beta1, beta2, eps));
-}
+primitiv_Status primitiv_optimizers_Adam_new(
+    float alpha, float beta1, float beta2, float eps,
+    primitiv_Optimizer **optimizer) try {
+  *optimizer = to_c_ptr(new Adam(alpha, beta1, beta2, eps));
+  return ::primitiv_Status::PRIMITIV_OK;
+} HANDLE_EXCEPTION
 
 float primitiv_optimizers_Adam_alpha(const primitiv_Optimizer *optimizer) {
   return CAST_TO_CONST_CC_ADAM(optimizer)->alpha();

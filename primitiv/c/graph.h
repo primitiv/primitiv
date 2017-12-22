@@ -25,18 +25,19 @@ typedef struct primitiv_Graph primitiv_Graph;
 
 /**
  * Creates a new Node object.
- * @return Pointer of a handler.
+ * @param node Pointer to receive a handler.
+ * @return Status code.
  */
-CAPI extern primitiv_Node *primitiv_Node_new();
+CAPI extern primitiv_Status primitiv_Node_new(primitiv_Node **node);
 
 /**
- * Creates a new Node object.
+ * Creates a clone of existing Node object.
  * @param src Pointer to a source Node.
  * @param node Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Node_new_from_node(primitiv_Node *src,
-                                                        primitiv_Node **node);
+CAPI extern primitiv_Status primitiv_Node_clone(
+    primitiv_Node *src, primitiv_Node **node);
 
 /**
  * Deletes the Node object.
@@ -149,9 +150,10 @@ CAPI extern primitiv_Status primitiv_Node_backward(const primitiv_Node *node);
 
 /**
  * Creates a new Graph object.
- * @return Pointer of a handler.
+ * @param graph Pointer to receive a handler.
+ * @return Status code.
  */
-CAPI extern primitiv_Graph *primitiv_Graph_new();
+CAPI extern primitiv_Status primitiv_Graph_new(primitiv_Graph **graph);
 
 /**
  * Deletes the Graph object.

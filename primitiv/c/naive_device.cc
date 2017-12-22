@@ -10,12 +10,15 @@ using primitiv::c::internal::to_c_ptr;
 
 extern "C" {
 
-primitiv_Device *primitiv_devices_Naive_new() {
-  return to_c_ptr(new Naive());
-}
+primitiv_Status primitiv_devices_Naive_new(primitiv_Device **device) try {
+  *device = to_c_ptr(new Naive());
+  return ::primitiv_Status::PRIMITIV_OK;
+} HANDLE_EXCEPTION
 
-primitiv_Device *primitiv_devices_Naive_new_with_seed(uint32_t seed) {
-  return to_c_ptr(new Naive(seed));
-}
+primitiv_Status primitiv_devices_Naive_new_with_seed(
+    uint32_t seed, primitiv_Device **device) try {
+  *device = to_c_ptr(new Naive(seed));
+  return ::primitiv_Status::PRIMITIV_OK;
+} HANDLE_EXCEPTION
 
 }  // end extern "C"

@@ -14,9 +14,10 @@ using primitiv::c::internal::to_cpp_ptr;
 
 extern "C" {
 
-primitiv_Model *primitiv_Model_new() {
-  return to_c_ptr(new Model());
-}
+primitiv_Status primitiv_Model_new(primitiv_Model **model) try {
+  *model = to_c_ptr(new Model());
+  return ::primitiv_Status::PRIMITIV_OK;
+} HANDLE_EXCEPTION
 
 void primitiv_Model_delete(primitiv_Model *model) {
   delete to_cpp_ptr(model);

@@ -14,9 +14,10 @@ using primitiv::c::internal::to_c_ptr_from_value;
 
 extern "C" {
 
-primitiv_Parameter *primitiv_Parameter_new() {
-  return to_c_ptr(new Parameter());
-}
+primitiv_Status primitiv_Parameter_new(primitiv_Parameter **parameter) try {
+  *parameter = to_c_ptr(new Parameter());
+  return ::primitiv_Status::PRIMITIV_OK;
+} HANDLE_EXCEPTION
 
 primitiv_Status primitiv_Parameter_new_with_values(
     const primitiv_Shape *shape, const float *value, size_t n,

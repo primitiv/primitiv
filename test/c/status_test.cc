@@ -14,7 +14,8 @@ namespace internal {
 
 TEST_F(CStatusTest, CheckMessage) {
   EXPECT_STREQ("OK", ::primitiv_Status_get_message());
-  ::primitiv_Tensor *tensor = ::primitiv_Tensor_new();
+  ::primitiv_Tensor *tensor;
+  ASSERT_EQ(::primitiv_Status::PRIMITIV_OK, ::primitiv_Tensor_new(&tensor));
   EXPECT_STREQ("OK", ::primitiv_Status_get_message());
   ::primitiv_Device *device;
   EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,

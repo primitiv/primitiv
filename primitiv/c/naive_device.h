@@ -13,17 +13,20 @@ extern "C" {
 
 /**
  * Creates a new Device object.
- * @return Pointer of a handler.
+ * @param device Pointer to receive a handler.
+ * @return Status code.
  */
-CAPI extern primitiv_Device *primitiv_devices_Naive_new();
+CAPI extern primitiv_Status primitiv_devices_Naive_new(
+    primitiv_Device **device);
 
 /**
  * Creates a new Device object.
  * @param seed The seed value of internal random number generator.
- * @return Pointer of a handler.
+ * @param device Pointer to receive a handler.
+ * @return Status code.
  */
-CAPI extern primitiv_Device *primitiv_devices_Naive_new_with_seed(
-    uint32_t seed);
+CAPI extern primitiv_Status primitiv_devices_Naive_new_with_seed(
+    uint32_t seed, primitiv_Device **device);
 
 #ifdef __cplusplus
 }  // end extern "C"

@@ -18,17 +18,16 @@ using primitiv::c::internal::to_c_ptr_from_value;
 
 extern "C" {
 
-primitiv_Node *primitiv_Node_new() {
-  return to_c_ptr(new Node);
-}
+primitiv_Status primitiv_Node_new(primitiv_Node **node) try {
+  *node = to_c_ptr(new Node);
+  return ::primitiv_Status::PRIMITIV_OK;
+} HANDLE_EXCEPTION
 
-primitiv_Status primitiv_Node_new_from_node(primitiv_Node *src,
-                                            primitiv_Node **node) {
-  try {
-    *node = to_c_ptr(new Node(std::move(*to_cpp_ptr(src))));
-    return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
-}
+primitiv_Status primitiv_Node_clone(
+    primitiv_Node *src, primitiv_Node **node) try {
+  *node = to_c_ptr(new Node(*to_cpp_ptr(src)));
+  return ::primitiv_Status::PRIMITIV_OK;
+} HANDLE_EXCEPTION
 
 void primitiv_Node_delete(primitiv_Node *node) {
   delete to_cpp_ptr(node);
@@ -120,9 +119,10 @@ primitiv_Status primitiv_Node_backward(const primitiv_Node *node) {
   } HANDLE_EXCEPTION
 }
 
-primitiv_Graph *primitiv_Graph_new() {
-  return to_c_ptr(new Graph());
-}
+primitiv_Status primitiv_Graph_new(primitiv_Graph **graph) try {
+  *graph = to_c_ptr(new Graph());
+  return ::primitiv_Status::PRIMITIV_OK;
+} HANDLE_EXCEPTION
 
 void primitiv_Graph_delete(primitiv_Graph *graph) {
   delete to_cpp_ptr(graph);

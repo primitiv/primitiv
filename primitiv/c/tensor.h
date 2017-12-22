@@ -18,17 +18,19 @@ typedef struct primitiv_Tensor primitiv_Tensor;
 
 /**
  * Creates an invalid Tensor object.
- * @return Pointer of a handler.
+ * @param tensor Pointer to receive a handler.
+ * @return Status code.
  */
-CAPI extern primitiv_Tensor *primitiv_Tensor_new();
+CAPI extern primitiv_Status primitiv_Tensor_new(primitiv_Tensor **tensor);
 
 /**
- * Creates a new Tensor object.
+ * Creates a clone of an existing Tensor object.
  * @param src Pointer to a source Tensor.
- * @return Pointer of a handler.
+ * @param tensor Pointer to receive a handler.
+ * @return Status code.
  */
-CAPI extern primitiv_Tensor *primitiv_Tensor_new_from_tensor(
-    primitiv_Tensor *src);
+CAPI extern primitiv_Status primitiv_Tensor_clone(
+    primitiv_Tensor *src, primitiv_Tensor **tensor);
 
 /**
  * Deletes the Tensor object.

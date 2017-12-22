@@ -13,12 +13,16 @@ TEST_F(CDeviceTest, CheckDefault) {
   EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,
             ::primitiv_Device_get_default(&device));
   {
-    ::primitiv_Device *dev1 = ::primitiv_devices_Naive_new();
+    ::primitiv_Device *dev1;
+    ASSERT_EQ(::primitiv_Status::PRIMITIV_OK,
+              ::primitiv_devices_Naive_new(&dev1));
     ::primitiv_Device_set_default(dev1);
     ::primitiv_Device_get_default(&device);
     EXPECT_EQ(dev1, device);
     {
-      ::primitiv_Device *dev2 = ::primitiv_devices_Naive_new();
+      ::primitiv_Device *dev2;
+    ASSERT_EQ(::primitiv_Status::PRIMITIV_OK,
+      ::primitiv_devices_Naive_new(&dev2));
       ::primitiv_Device_set_default(dev2);
       ::primitiv_Device_get_default(&device);
       EXPECT_EQ(dev2, device);
@@ -26,7 +30,9 @@ TEST_F(CDeviceTest, CheckDefault) {
     }
     EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,
               ::primitiv_Device_get_default(&device));
-    ::primitiv_Device *dev3 = ::primitiv_devices_Naive_new();
+    ::primitiv_Device *dev3;
+    ASSERT_EQ(::primitiv_Status::PRIMITIV_OK,
+    ::primitiv_devices_Naive_new(&dev3));
     ::primitiv_Device_set_default(dev3);
     ::primitiv_Device_get_default(&device);
     EXPECT_EQ(dev3, device);

@@ -17,9 +17,10 @@ typedef struct primitiv_Shape primitiv_Shape;
 
 /**
  * Creates a new Shape object.
- * @return Pointer of a handler.
+ * @param shape Pointer to receive a handler.
+ * @return Status code.
  */
-CAPI extern primitiv_Shape *primitiv_Shape_new();
+CAPI extern primitiv_Status primitiv_Shape_new(primitiv_Shape **shape);
 
 /**
  * Creates a new Shape object.

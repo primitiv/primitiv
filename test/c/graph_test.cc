@@ -17,8 +17,8 @@ namespace c {
 
 class CGraphTest : public testing::Test {
   void SetUp() override {
-    dev = ::primitiv_devices_Naive_new();
-    dev2 = ::primitiv_devices_Naive_new();
+    ::primitiv_devices_Naive_new(&dev);
+    ::primitiv_devices_Naive_new(&dev2);
   }
   void TearDown() override {
     ::primitiv_Device_delete(dev);
@@ -35,12 +35,14 @@ TEST_F(CGraphTest, CheckDefault) {
   EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,
             ::primitiv_Graph_get_default(&graph));
   {
-    ::primitiv_Graph *g1 = ::primitiv_Graph_new();
+    ::primitiv_Graph *g1;
+    ASSERT_EQ(::primitiv_Status::PRIMITIV_OK, ::primitiv_Graph_new(&g1));
     ::primitiv_Graph_set_default(g1);
     ::primitiv_Graph_get_default(&graph);
     EXPECT_EQ(g1, graph);
     {
-      ::primitiv_Graph *g2 = ::primitiv_Graph_new();
+      ::primitiv_Graph *g2;
+      ASSERT_EQ(::primitiv_Status::PRIMITIV_OK, ::primitiv_Graph_new(&g2));
       ::primitiv_Graph_set_default(g2);
       ::primitiv_Graph_get_default(&graph);
       EXPECT_EQ(g2, graph);
@@ -48,7 +50,8 @@ TEST_F(CGraphTest, CheckDefault) {
     }
     EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,
               ::primitiv_Graph_get_default(&graph));
-    ::primitiv_Graph *g3 = ::primitiv_Graph_new();
+    ::primitiv_Graph *g3;
+    ASSERT_EQ(::primitiv_Status::PRIMITIV_OK, ::primitiv_Graph_new(&g3));
     ::primitiv_Graph_set_default(g3);
     ::primitiv_Graph_get_default(&graph);
     EXPECT_EQ(g3, graph);
@@ -61,7 +64,8 @@ TEST_F(CGraphTest, CheckDefault) {
 
 TEST_F(CGraphTest, CheckInvalidNode) {
   ::primitiv_Status_reset();
-  ::primitiv_Node *node = ::primitiv_Node_new();
+  ::primitiv_Node *node;
+  ASSERT_EQ(::primitiv_Status::PRIMITIV_OK, ::primitiv_Node_new(&node));
   EXPECT_FALSE(::primitiv_Node_valid(node));
   ::primitiv_Graph *graph;
   EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,
@@ -92,13 +96,15 @@ TEST_F(CGraphTest, CheckClear) {
   ::primitiv_Status_reset();
   ::primitiv_Device_set_default(dev);
 
-  ::primitiv_Graph *g = ::primitiv_Graph_new();
+  ::primitiv_Graph *g;
+  ASSERT_EQ(::primitiv_Status::PRIMITIV_OK, ::primitiv_Graph_new(&g));
   ::primitiv_Graph_set_default(g);
 
   EXPECT_EQ(0u, ::primitiv_Graph_num_operators(g));
 
   {
-    ::primitiv_Shape *shape = ::primitiv_Shape_new();
+    ::primitiv_Shape *shape;
+    ASSERT_EQ(::primitiv_Status::PRIMITIV_OK, ::primitiv_Shape_new(&shape));
     float values[] = {1};
     ::primitiv_Node *node1;
     ::primitiv_node_func_input(shape, values, 1, nullptr, nullptr, &node1);
@@ -113,7 +119,8 @@ TEST_F(CGraphTest, CheckClear) {
   EXPECT_EQ(0u, ::primitiv_Graph_num_operators(g));
 
   {
-    ::primitiv_Shape *shape = ::primitiv_Shape_new();
+    ::primitiv_Shape *shape;
+    ASSERT_EQ(::primitiv_Status::PRIMITIV_OK, ::primitiv_Shape_new(&shape));
     float values[] = {1};
     ::primitiv_Node *node;
     ::primitiv_node_func_input(shape, values, 1, nullptr, nullptr, &node);
@@ -139,7 +146,8 @@ TEST_F(CGraphTest, CheckForward) {
   ::primitiv_Status_reset();
   ::primitiv_Device_set_default(dev);
 
-  ::primitiv_Graph *g = ::primitiv_Graph_new();
+  ::primitiv_Graph *g;
+  ASSERT_EQ(::primitiv_Status::PRIMITIV_OK, ::primitiv_Graph_new(&g));
   ::primitiv_Graph_set_default(g);
 
   const float data1[] = {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4};
@@ -147,12 +155,14 @@ TEST_F(CGraphTest, CheckForward) {
   vector<::primitiv_Node*> nodes;
   const uint32_t dims1[] = {2, 2};
   ::primitiv_Shape *shape1;
-  ::primitiv_Shape_new_with_dims(dims1, 2, 3, &shape1);
+  ASSERT_EQ(::primitiv_Status::PRIMITIV_OK,
+            ::primitiv_Shape_new_with_dims(dims1, 2, 3, &shape1));
   ::primitiv_Node *node1;
   ::primitiv_node_func_input(shape1, data1, 12, nullptr, nullptr, &node1);
   nodes.emplace_back(node1);
   ::primitiv_Shape *shape2;
-  ::primitiv_Shape_new_with_dims(dims1, 2, 1, &shape2);
+  ASSERT_EQ(::primitiv_Status::PRIMITIV_OK,
+            ::primitiv_Shape_new_with_dims(dims1, 2, 1, &shape2));
   ::primitiv_Node *node2;
   ::primitiv_node_func_ones(shape2, nullptr, nullptr, &node2);
   nodes.emplace_back(node2);
@@ -195,12 +205,15 @@ TEST_F(CGraphTest, CheckForward) {
   // Check all shapes and devices.
   const uint32_t dims2[] = {1, 2};
   ::primitiv_Shape *shape3;
-  ::primitiv_Shape_new_with_dims(dims2, 2, 3, &shape3);
+  ASSERT_EQ(::primitiv_Status::PRIMITIV_OK,
+            ::primitiv_Shape_new_with_dims(dims2, 2, 3, &shape3));
   const uint32_t dims3[] = {};
   ::primitiv_Shape *shape4;
-  ::primitiv_Shape_new_with_dims(dims3, 0, 3, &shape4);
+  ASSERT_EQ(::primitiv_Status::PRIMITIV_OK,
+            ::primitiv_Shape_new_with_dims(dims3, 0, 3, &shape4));
   ::primitiv_Shape *shape5;
-  ::primitiv_Shape_new_with_dims(dims3, 0, 1, &shape5);
+  ASSERT_EQ(::primitiv_Status::PRIMITIV_OK,
+            ::primitiv_Shape_new_with_dims(dims3, 0, 1, &shape5));
   const vector<::primitiv_Shape*> expected_shapes {
     shape1, shape2, shape1,
     shape1, shape1, shape1,
