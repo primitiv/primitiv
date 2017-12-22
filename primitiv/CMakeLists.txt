@@ -233,7 +233,7 @@ if(PRIMITIV_BUILD_C_API)
     add_library(primitiv_c_cuda_OBJS OBJECT
       ${primitiv_c_cuda_HDRS}
       ${primitiv_c_cuda_SRCS})
-    list(APPEND primitiv_c_all_OBJS ${primitiv_c_cuda_OBJS})
+    list(APPEND primitiv_c_all_OBJS $<TARGET_OBJECTS:primitiv_c_cuda_OBJS>)
   endif()
 
   if(PRIMITIV_USE_OPENCL)
@@ -244,7 +244,7 @@ if(PRIMITIV_BUILD_C_API)
     add_library(primitiv_c_opencl_OBJS OBJECT
       ${primitiv_c_opencl_HDRS}
       ${primitiv_c_opencl_SRCS})
-    list(APPEND primitiv_c_all_OBJS ${primitiv_c_opencl_OBJS})
+    list(APPEND primitiv_c_all_OBJS $<TARGET_OBJECTS:primitiv_c_opencl_OBJS>)
   endif()
 
   if(PRIMITIV_BUILD_STATIC_LIBRARY)
