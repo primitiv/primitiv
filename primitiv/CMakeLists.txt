@@ -222,7 +222,7 @@ if(PRIMITIV_BUILD_C_API)
     add_library(primitiv_c_eigen_OBJS OBJECT
         ${primitiv_c_eigen_HDRS}
         ${primitiv_c_eigen_SRCS})
-    list(APPEND primitiv_c_all_OBJS ${primitiv_c_eigen_OBJS})
+    list(APPEND primitiv_c_all_OBJS $<TARGET_OBJECTS:primitiv_c_eigen_OBJS>)
   endif()
 
   if(PRIMITIV_USE_CUDA)
