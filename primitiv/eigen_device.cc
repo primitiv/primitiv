@@ -13,11 +13,11 @@
 #include <cmath>
 #include <iostream>
 
-// NOTE(vbkaisetsu)
-// Eigen contains a few LGPL-licensed features. It will conflict with some
-// non-free licensed software that can link statically with Apache licensed
-// code.
-// EIGEN_MPL2_ONLY guarantees that primitiv does not use LGPL-licensed feature.
+// NOTE(vbkaisetsu):
+// Eigen contains a few LGPL-licensed features. They conflict with
+// Apache License version 2.
+// EIGEN_MPL2_ONLY guarantees that primitiv does not use LGPL-licensed
+// features.
 //
 // For more ditails, see:
 // http://eigen.tuxfamily.org/index.php?title=Main_Page#License
