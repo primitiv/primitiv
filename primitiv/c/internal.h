@@ -42,9 +42,7 @@ inline c_name *to_c_ptr_from_value(primitiv::cpp_name &&instance) { \
 }
 
 #define PRIMITIV_C_HANDLE_EXCEPTIONS \
-catch (const primitiv::Error &e) { \
-  return primitiv::c::internal::ErrorHandler::get_instance().handle(e); \
-} catch (const std::exception &e) { \
+catch (const std::exception &e) { \
   return primitiv::c::internal::ErrorHandler::get_instance().handle(e); \
 }
 
