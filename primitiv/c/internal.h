@@ -90,7 +90,7 @@ class ErrorHandler {
     message_ = "OK";
   }
 
-  bool has_exception() const noexcept {
+  _Bool has_exception() const noexcept {
     return !exception_;
   }
 

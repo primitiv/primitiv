@@ -64,7 +64,7 @@ primitiv_Status primitiv_Parameter_init_with_initializer(
 primitiv_Status primitiv_Parameter_load(
     primitiv_Parameter *parameter,
     const char *path,
-    bool with_stats,
+    _Bool with_stats,
     primitiv_Device *device) try {
   to_cpp_ptr(parameter)->load(path, with_stats, *to_cpp_ptr(device));
   return ::primitiv_Status::PRIMITIV_OK;
@@ -73,12 +73,12 @@ primitiv_Status primitiv_Parameter_load(
 primitiv_Status primitiv_Parameter_save(
     const primitiv_Parameter *parameter,
     const char *path,
-    bool with_stats) try {
+    _Bool with_stats) try {
   to_cpp_ptr(parameter)->save(path, with_stats);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-bool primitiv_Parameter_valid(const primitiv_Parameter *parameter) {
+_Bool primitiv_Parameter_valid(const primitiv_Parameter *parameter) {
   return to_cpp_ptr(parameter)->valid();
 }
 
@@ -97,7 +97,7 @@ primitiv_Status primitiv_Parameter_add_stats(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Parameter_has_stats(
-    primitiv_Parameter *parameter, const char *name, bool *has_stats) try {
+    primitiv_Parameter *parameter, const char *name, _Bool *has_stats) try {
   *has_stats = to_cpp_ptr(parameter)->has_stats(name);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS

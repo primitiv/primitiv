@@ -30,7 +30,7 @@ void primitiv_Tensor_delete(primitiv_Tensor *tensor) {
   delete to_cpp_ptr(tensor);
 }
 
-bool primitiv_Tensor_valid(const primitiv_Tensor *tensor) {
+_Bool primitiv_Tensor_valid(const primitiv_Tensor *tensor) {
   return to_cpp_ptr(tensor)->valid();
 }
 

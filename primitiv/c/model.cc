@@ -24,14 +24,14 @@ void primitiv_Model_delete(primitiv_Model *model) {
 }
 
 primitiv_Status primitiv_Model_load(
-    primitiv_Model *model, const char *path, bool with_stats,
+    primitiv_Model *model, const char *path, _Bool with_stats,
     primitiv_Device *device)  try {
   to_cpp_ptr(model)->load(path, with_stats, to_cpp_ptr(device));
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Model_save(
-    const primitiv_Model *model, const char *path, bool with_stats) try {
+    const primitiv_Model *model, const char *path, _Bool with_stats) try {
   to_cpp_ptr(model)->save(path, with_stats);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS

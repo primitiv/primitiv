@@ -45,7 +45,7 @@ extern PRIMITIV_C_API void primitiv_Tensor_delete(primitiv_Tensor *tensor);
  * @remarks This returns false when the object is created through the default
  *          constructor or the object had been moved.
  */
-extern PRIMITIV_C_API bool primitiv_Tensor_valid(const primitiv_Tensor *tensor);
+extern PRIMITIV_C_API _Bool primitiv_Tensor_valid(const primitiv_Tensor *tensor);
 
 /**
  * Returns the shape of the Tensor.

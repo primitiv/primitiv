@@ -50,7 +50,7 @@ extern PRIMITIV_C_API void primitiv_Node_delete(primitiv_Node *node);
  * @param node Pointer of a handler.
  * @return true or false w.r.t. the node is valid or not.
  */
-extern PRIMITIV_C_API bool primitiv_Node_valid(const primitiv_Node *node);
+extern PRIMITIV_C_API _Bool primitiv_Node_valid(const primitiv_Node *node);
 
 /**
  * Returns corresponding Graph object.

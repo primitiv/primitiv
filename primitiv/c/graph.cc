@@ -33,7 +33,7 @@ void primitiv_Node_delete(primitiv_Node *node) {
   delete to_cpp_ptr(node);
 }
 
-bool primitiv_Node_valid(const primitiv_Node *node) {
+_Bool primitiv_Node_valid(const primitiv_Node *node) {
   return to_cpp_ptr(node)->valid();
 }
 

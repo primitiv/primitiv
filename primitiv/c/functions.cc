@@ -594,14 +594,14 @@ primitiv_Status primitiv_tensor_func_ones(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_node_func_dropout(
-    const primitiv_Node *x, float rate, bool enabled, primitiv_Node **y) try {
+    const primitiv_Node *x, float rate, _Bool enabled, primitiv_Node **y) try {
   *y = to_c_ptr_from_value(
       primitiv::functions::dropout(*to_cpp_ptr(x), rate, enabled));
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_tensor_func_dropout(
-    const primitiv_Tensor *x, float rate, bool enabled,
+    const primitiv_Tensor *x, float rate, _Bool enabled,
     primitiv_Tensor **y) try {
   *y = to_c_ptr_from_value(
       primitiv::functions::dropout(*to_cpp_ptr(x), rate, enabled));

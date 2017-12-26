@@ -117,7 +117,7 @@ extern PRIMITIV_C_API void primitiv_Shape_to_string(
  * @param rhs Shape object to compare.
  * @return true if this and rhs are same, false otherwise.
  */
-extern PRIMITIV_C_API bool primitiv_Shape_op_eq(
+extern PRIMITIV_C_API _Bool primitiv_Shape_op_eq(
     const primitiv_Shape *shape, const primitiv_Shape *rhs);
 
 /**
@@ -126,7 +126,7 @@ extern PRIMITIV_C_API bool primitiv_Shape_op_eq(
  * @param rhs Shape object to compare.
  * @return true if this and rhs are not same, false otherwise.
  */
-extern PRIMITIV_C_API bool primitiv_Shape_op_ne(
+extern PRIMITIV_C_API _Bool primitiv_Shape_op_ne(
     const primitiv_Shape *shape, const primitiv_Shape *rhs);
 
 /**
@@ -134,7 +134,7 @@ extern PRIMITIV_C_API bool primitiv_Shape_op_ne(
  * @param shape Pointer of a handler.
  * @return true if the shape has minibatch, false otherwise.
  */
-extern PRIMITIV_C_API bool primitiv_Shape_has_batch(
+extern PRIMITIV_C_API _Bool primitiv_Shape_has_batch(
     const primitiv_Shape *shape);
 
 /**
@@ -143,7 +143,7 @@ extern PRIMITIV_C_API bool primitiv_Shape_has_batch(
  * @param rhs Shape object to compare.
  * @return true if both batch size is compatible, false otherwise.
  */
-extern PRIMITIV_C_API bool primitiv_Shape_has_compatible_batch(
+extern PRIMITIV_C_API _Bool primitiv_Shape_has_compatible_batch(
     const primitiv_Shape *shape, const primitiv_Shape *rhs);
 
 /**
@@ -151,7 +151,7 @@ extern PRIMITIV_C_API bool primitiv_Shape_has_compatible_batch(
  * @param shape Pointer of a handler.
  * @return true if the shape is a scalar, false otherwise.
  */
-extern PRIMITIV_C_API bool primitiv_Shape_is_scalar(
+extern PRIMITIV_C_API _Bool primitiv_Shape_is_scalar(
     const primitiv_Shape *shape);
 
 /**
@@ -159,7 +159,7 @@ extern PRIMITIV_C_API bool primitiv_Shape_is_scalar(
  * @param shape Pointer of a handler.
  * @return true if the shape is a row vector, false otherwise.
  */
-extern PRIMITIV_C_API bool primitiv_Shape_is_row_vector(
+extern PRIMITIV_C_API _Bool primitiv_Shape_is_row_vector(
     const primitiv_Shape *shape);
 
 /**
@@ -167,7 +167,7 @@ extern PRIMITIV_C_API bool primitiv_Shape_is_row_vector(
  * @param shape Pointer of a handler.
  * @return true if the shape is a vector or a matrix, false otherwise.
  */
-extern PRIMITIV_C_API bool primitiv_Shape_is_matrix(
+extern PRIMITIV_C_API _Bool primitiv_Shape_is_matrix(
     const primitiv_Shape *shape);
 
 /**
@@ -176,7 +176,7 @@ extern PRIMITIV_C_API bool primitiv_Shape_is_matrix(
  * @param rhs Shape object to compare.
  * @return true if both shape have same dimensions, false otherwise.
  */
-extern PRIMITIV_C_API bool primitiv_Shape_has_same_dims(
+extern PRIMITIV_C_API _Bool primitiv_Shape_has_same_dims(
     const primitiv_Shape *shape, const primitiv_Shape *rhs);
 
 /**
@@ -188,7 +188,7 @@ extern PRIMITIV_C_API bool primitiv_Shape_has_same_dims(
  * @return true if both shape have same dimensions regardless the dimension
  *         `dim`, false otherwise.
  */
-extern PRIMITIV_C_API bool primitiv_Shape_has_same_loo_dims(
+extern PRIMITIV_C_API _Bool primitiv_Shape_has_same_loo_dims(
     const primitiv_Shape *shape, const primitiv_Shape *rhs, uint32_t dim);
 
 /**

@@ -70,43 +70,43 @@ void primitiv_Shape_to_string(
   }
 }
 
-bool primitiv_Shape_op_eq(
+_Bool primitiv_Shape_op_eq(
     const primitiv_Shape *shape, const primitiv_Shape *rhs) {
   return to_cpp_ptr(shape)->operator==(*to_cpp_ptr(rhs));
 }
 
-bool primitiv_Shape_op_ne(
+_Bool primitiv_Shape_op_ne(
     const primitiv_Shape *shape, const primitiv_Shape *rhs) {
   return to_cpp_ptr(shape)->operator!=(*to_cpp_ptr(rhs));
 }
 
-bool primitiv_Shape_has_batch(const primitiv_Shape *shape) {
+_Bool primitiv_Shape_has_batch(const primitiv_Shape *shape) {
   return to_cpp_ptr(shape)->has_batch();
 }
 
-bool primitiv_Shape_has_compatible_batch(
+_Bool primitiv_Shape_has_compatible_batch(
     const primitiv_Shape *shape, const primitiv_Shape *rhs) {
   return to_cpp_ptr(shape)->has_compatible_batch(*to_cpp_ptr(rhs));
 }
 
-bool primitiv_Shape_is_scalar(const primitiv_Shape *shape) {
+_Bool primitiv_Shape_is_scalar(const primitiv_Shape *shape) {
   return to_cpp_ptr(shape)->is_scalar();
 }
 
-bool primitiv_Shape_is_row_vector(const primitiv_Shape *shape) {
+_Bool primitiv_Shape_is_row_vector(const primitiv_Shape *shape) {
   return to_cpp_ptr(shape)->is_row_vector();
 }
 
-bool primitiv_Shape_is_matrix(const primitiv_Shape *shape) {
+_Bool primitiv_Shape_is_matrix(const primitiv_Shape *shape) {
   return to_cpp_ptr(shape)->is_matrix();
 }
 
-bool primitiv_Shape_has_same_dims(
+_Bool primitiv_Shape_has_same_dims(
     const primitiv_Shape *shape, const primitiv_Shape *rhs) {
   return to_cpp_ptr(shape)->has_same_dims(*to_cpp_ptr(rhs));
 }
 
-bool primitiv_Shape_has_same_loo_dims(
+_Bool primitiv_Shape_has_same_loo_dims(
     const primitiv_Shape *shape, const primitiv_Shape *rhs, uint32_t dim) {
   return to_cpp_ptr(shape)->has_same_loo_dims(*to_cpp_ptr(rhs), dim);
 }
