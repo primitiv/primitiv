@@ -21,12 +21,11 @@ primitiv_Status primitiv_Shape_new(primitiv_Shape **shape) try {
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Shape_new_with_dims(
-    const uint32_t *dims, size_t n, uint32_t batch, primitiv_Shape **shape) {
-  try {
-    *shape = to_c_ptr(new Shape(std::vector<uint32_t>(dims, dims + n), batch));
-    return ::primitiv_Status::PRIMITIV_OK;
-  } PRIMITIV_C_HANDLE_EXCEPTIONS
-}
+    const uint32_t *dims, size_t n, uint32_t batch,
+    primitiv_Shape **shape) try {
+  *shape = to_c_ptr(new Shape(std::vector<uint32_t>(dims, dims + n), batch));
+  return ::primitiv_Status::PRIMITIV_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
 void primitiv_Shape_delete(primitiv_Shape *shape) {
   delete to_cpp_ptr(shape);
@@ -114,35 +113,28 @@ bool primitiv_Shape_has_same_loo_dims(
 
 primitiv_Status primitiv_Shape_resize_dim(
     const primitiv_Shape *shape, uint32_t dim, uint32_t m,
-    primitiv_Shape **new_shape) {
-  try {
-    *new_shape = to_c_ptr_from_value(to_cpp_ptr(shape)->resize_dim(dim, m));
-    return ::primitiv_Status::PRIMITIV_OK;
-  } PRIMITIV_C_HANDLE_EXCEPTIONS
-}
+    primitiv_Shape **new_shape) try {
+  *new_shape = to_c_ptr_from_value(to_cpp_ptr(shape)->resize_dim(dim, m));
+  return ::primitiv_Status::PRIMITIV_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Shape_resize_batch(
-    const primitiv_Shape *shape, uint32_t batch, primitiv_Shape **new_shape) {
-  try {
-    *new_shape = to_c_ptr_from_value(to_cpp_ptr(shape)->resize_batch(batch));
-    return ::primitiv_Status::PRIMITIV_OK;
-  } PRIMITIV_C_HANDLE_EXCEPTIONS
-}
+    const primitiv_Shape *shape, uint32_t batch,
+    primitiv_Shape **new_shape) try {
+  *new_shape = to_c_ptr_from_value(to_cpp_ptr(shape)->resize_batch(batch));
+  return ::primitiv_Status::PRIMITIV_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Shape_update_dim(
-    primitiv_Shape *shape, uint32_t dim, uint32_t m) {
-  try {
-    to_cpp_ptr(shape)->update_dim(dim, m);
-    return ::primitiv_Status::PRIMITIV_OK;
-  } PRIMITIV_C_HANDLE_EXCEPTIONS
-}
+    primitiv_Shape *shape, uint32_t dim, uint32_t m) try {
+  to_cpp_ptr(shape)->update_dim(dim, m);
+  return ::primitiv_Status::PRIMITIV_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Shape_update_batch(
-    primitiv_Shape *shape, uint32_t batch) {
-  try {
-    to_cpp_ptr(shape)->update_batch(batch);
-    return ::primitiv_Status::PRIMITIV_OK;
-  } PRIMITIV_C_HANDLE_EXCEPTIONS
-}
+    primitiv_Shape *shape, uint32_t batch) try {
+  to_cpp_ptr(shape)->update_batch(batch);
+  return ::primitiv_Status::PRIMITIV_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
 }  // end extern "C"

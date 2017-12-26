@@ -11,12 +11,10 @@ using primitiv::c::internal::to_cpp_ptr;
 
 extern "C" {
 
-primitiv_Status primitiv_Device_get_default(primitiv_Device **device) {
-  try {
-    *device = to_c_ptr(&Device::get_default());
-    return ::primitiv_Status::PRIMITIV_OK;
-  } PRIMITIV_C_HANDLE_EXCEPTIONS
-}
+primitiv_Status primitiv_Device_get_default(primitiv_Device **device) try {
+  *device = to_c_ptr(&Device::get_default());
+  return ::primitiv_Status::PRIMITIV_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
 void primitiv_Device_set_default(primitiv_Device *device) {
   Device::set_default(*to_cpp_ptr(device));

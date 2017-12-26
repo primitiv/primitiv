@@ -25,55 +25,43 @@ void primitiv_Model_delete(primitiv_Model *model) {
 
 primitiv_Status primitiv_Model_load(
     primitiv_Model *model, const char *path, bool with_stats,
-    primitiv_Device *device) {
-  try {
-    to_cpp_ptr(model)->load(path, with_stats, to_cpp_ptr(device));
-    return ::primitiv_Status::PRIMITIV_OK;
-  } PRIMITIV_C_HANDLE_EXCEPTIONS
-}
+    primitiv_Device *device)  try {
+  to_cpp_ptr(model)->load(path, with_stats, to_cpp_ptr(device));
+  return ::primitiv_Status::PRIMITIV_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Model_save(
-    const primitiv_Model *model, const char *path, bool with_stats) {
-  try {
-    to_cpp_ptr(model)->save(path, with_stats);
-    return ::primitiv_Status::PRIMITIV_OK;
-  } PRIMITIV_C_HANDLE_EXCEPTIONS
-}
+    const primitiv_Model *model, const char *path, bool with_stats) try {
+  to_cpp_ptr(model)->save(path, with_stats);
+  return ::primitiv_Status::PRIMITIV_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Model_add_parameter(
-    primitiv_Model *model, const char *name, primitiv_Parameter *param) {
-  try {
-    to_cpp_ptr(model)->add(name, *to_cpp_ptr(param));
-    return ::primitiv_Status::PRIMITIV_OK;
-  } PRIMITIV_C_HANDLE_EXCEPTIONS
-}
+    primitiv_Model *model, const char *name, primitiv_Parameter *param) try {
+  to_cpp_ptr(model)->add(name, *to_cpp_ptr(param));
+  return ::primitiv_Status::PRIMITIV_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Model_add_model(
-    primitiv_Model *model, const char *name, primitiv_Model *submodel) {
-  try {
-    to_cpp_ptr(model)->add(name, *to_cpp_ptr(submodel));
-    return ::primitiv_Status::PRIMITIV_OK;
-  } PRIMITIV_C_HANDLE_EXCEPTIONS
-}
+    primitiv_Model *model, const char *name, primitiv_Model *submodel) try {
+  to_cpp_ptr(model)->add(name, *to_cpp_ptr(submodel));
+  return ::primitiv_Status::PRIMITIV_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Model_get_parameter(
     const primitiv_Model *model, const char **names, size_t n,
-    const primitiv_Parameter **param) {
-  try {
-    *param = to_c_ptr(&(to_cpp_ptr(model)->get_parameter(
-        std::vector<std::string>(names, names + n))));
-    return ::primitiv_Status::PRIMITIV_OK;
-  } PRIMITIV_C_HANDLE_EXCEPTIONS
-}
+    const primitiv_Parameter **param) try {
+  *param = to_c_ptr(&(to_cpp_ptr(model)->get_parameter(
+      std::vector<std::string>(names, names + n))));
+  return ::primitiv_Status::PRIMITIV_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Model_get_submodel(
     const primitiv_Model *model, const char **names, size_t n,
-    const primitiv_Model **submodel) {
-  try {
-    *submodel = to_c_ptr(&(to_cpp_ptr(model)->get_submodel(
-        std::vector<std::string>(names, names + n))));
-    return ::primitiv_Status::PRIMITIV_OK;
-  } PRIMITIV_C_HANDLE_EXCEPTIONS
-}
+    const primitiv_Model **submodel) try {
+  *submodel = to_c_ptr(&(to_cpp_ptr(model)->get_submodel(
+      std::vector<std::string>(names, names + n))));
+  return ::primitiv_Status::PRIMITIV_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
 }  // end extern "C"
