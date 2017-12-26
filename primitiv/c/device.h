@@ -19,6 +19,8 @@ typedef struct primitiv_Device primitiv_Device;
  * Retrieves the current default device.
  * @param device Pointer to receive the current default device.
  * @return Status code.
+ * @remarks The pointer returned by this function is owned by the library, and
+ *          should not be passed to `primitiv_Device_delete()`.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Device_get_default(
     primitiv_Device **device);
