@@ -25,5 +25,6 @@
 #endif  // PRIMITIV_USE_CUDA
 #ifdef PRIMITIV_USE_OPENCL
 #include <primitiv/c/opencl_device.h>
+#endif  // PRIMITIV_USE_OPENCL
 
 #endif  // PRIMITIV_C_API_H_
