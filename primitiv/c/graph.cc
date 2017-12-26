@@ -74,23 +74,40 @@ primitiv_Status primitiv_Node_to_float(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Node_to_array(
-    const primitiv_Node *node, float *array) try {
-  std::vector<float> v = to_cpp_ptr(node)->to_vector();
-  std::copy(v.begin(), v.end(), array);
+    const primitiv_Node *node, float *array, size_t *array_length) try {
+  const std::vector<float> v = to_cpp_ptr(node)->to_vector();
+  if (array_length) {
+    *array_length = v.size();
+  }
+  if (array) {
+    std::copy(v.begin(), v.end(), array);
+  }
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Node_argmax(
-    const primitiv_Node *node, uint32_t dim, uint32_t *indices) try {
-  std::vector<uint32_t> v = to_cpp_ptr(node)->argmax(dim);
-  std::copy(v.begin(), v.end(), indices);
+    const primitiv_Node *node, uint32_t dim, uint32_t *indices,
+    size_t *n_indices) try {
+  const std::vector<uint32_t> v = to_cpp_ptr(node)->argmax(dim);
+  if (n_indices) {
+    *n_indices = v.size();
+  }
+  if (indices) {
+    std::copy(v.begin(), v.end(), indices);
+  }
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Node_argmin(
-    const primitiv_Node *node, uint32_t dim, uint32_t *indices) try {
-  std::vector<uint32_t> v = to_cpp_ptr(node)->argmin(dim);
-  std::copy(v.begin(), v.end(), indices);
+    const primitiv_Node *node, uint32_t dim, uint32_t *indices,
+    size_t *n_indices) try {
+  const std::vector<uint32_t> v = to_cpp_ptr(node)->argmin(dim);
+  if (n_indices) {
+    *n_indices = v.size();
+  }
+  if (indices) {
+    std::copy(v.begin(), v.end(), indices);
+  }
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
@@ -150,12 +167,14 @@ primitiv_Status primitiv_Graph_get_device(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Graph_dump(
-    const primitiv_Graph *graph, const char *format, char *string,
-    size_t *length) try {
-  std::string str = to_cpp_ptr(graph)->dump(format);
-  *length = str.length();
-  if (string) {
-    std::strcpy(string, str.c_str());
+    const primitiv_Graph *graph, const char *format, char *buffer,
+    size_t *buffer_size) try {
+  const std::string str = to_cpp_ptr(graph)->dump(format);
+  if (buffer_size) {
+    *buffer_size = str.length();
+  }
+  if (buffer) {
+    std::strcpy(buffer, str.c_str());
   }
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS

@@ -113,11 +113,12 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_to_float(
  * Calculates the value of this node and returns a list of float.
  * @param node Pointer of a handler.
  * @param array Pointer to receive a list of calculated values.
+ * @param array_length Pointer to receive the length of the array.
  * @return Status code.
  * @remarks This function calls Graph::forward() internally.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Node_to_array(
-    const primitiv_Node *node, float *array);
+    const primitiv_Node *node, float *array, size_t *array_length);
 
 /**
  * Returns argmax indices along an axis of this node.
@@ -125,10 +126,12 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_to_array(
  * @param dim A specified axis.
  * @param indices Pointer to receive a list of integers that indicates positions
  *                of the maximum values.
+ * @param n_indices Pointer to receive the number of the received indices.
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Node_argmax(
-    const primitiv_Node *node, uint32_t dim, uint32_t *indices);
+    const primitiv_Node *node, uint32_t dim, uint32_t *indices,
+    size_t *n_indices);
 
 /**
  * Returns argmin indices along an axis of this node.
@@ -136,10 +139,12 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_argmax(
  * @param dim A specified axis.
  * @param indices Pointer to receive a list of integers that indicates positions
  *                of the minimum values.
+ * @param n_indices Pointer to receive the number of the received indices.
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Node_argmin(
-    const primitiv_Node *node, uint32_t dim, uint32_t *indices);
+    const primitiv_Node *node, uint32_t dim, uint32_t *indices,
+    size_t *n_indices);
 
 /**
  * Executes the backward operation from this node.
@@ -239,14 +244,14 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Graph_get_device(
  * @param graph Pointer of a handler.
  * @param format Name of the format. Available options:
  *                 "dot" ... Graphviz's dot format.
- * @param string Pointer to receive a string that represents the internal graph
+ * @param buffer Pointer to receive a string that represents the internal graph
  *               using given format.
- * @param length Pointer to receive a length of the string.
+ * @param buffer_size Pointer to receive a length of the string.
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Graph_dump(
-    const primitiv_Graph *graph, const char *format, char *string,
-    size_t *length);
+    const primitiv_Graph *graph, const char *format, char *buffer,
+    size_t *buffer_size);
 
 /**
  * Returns the number of operators in the computation graph.

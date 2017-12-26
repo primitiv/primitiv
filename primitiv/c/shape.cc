@@ -35,9 +35,15 @@ uint32_t primitiv_Shape_op_getitem(const primitiv_Shape *shape, uint32_t i) {
   return to_cpp_ptr(shape)->operator[](i);
 }
 
-void primitiv_Shape_dims(const primitiv_Shape *shape, uint32_t *array) {
-  std::vector<uint32_t> v = to_cpp_ptr(shape)->dims();
-  std::copy(v.begin(), v.end(), array);
+void primitiv_Shape_dims(
+    const primitiv_Shape *shape, uint32_t *dims, size_t *n_dims) {
+  const std::vector<uint32_t> v = to_cpp_ptr(shape)->dims();
+  if (n_dims) {
+    *n_dims = v.size();
+  }
+  if (dims) {
+    std::copy(v.begin(), v.end(), dims);
+  }
 }
 
 uint32_t primitiv_Shape_depth(const primitiv_Shape *shape) {
@@ -62,11 +68,13 @@ uint32_t primitiv_Shape_size(const primitiv_Shape *shape) {
 }
 
 void primitiv_Shape_to_string(
-    const primitiv_Shape *shape, char *string, size_t *length) {
-  std::string str = to_cpp_ptr(shape)->to_string();
-  *length = str.length();
-  if (string) {
-    std::strcpy(string, str.c_str());
+    const primitiv_Shape *shape, char *buffer, size_t *buffer_size) {
+  const std::string str = to_cpp_ptr(shape)->to_string();
+  if (buffer_size) {
+    *buffer_size = str.length();
+  }
+  if (buffer) {
+    std::strcpy(buffer, str.c_str());
   }
 }
 

@@ -53,10 +53,11 @@ extern PRIMITIV_C_API uint32_t primitiv_Shape_op_getitem(
 /**
  * Returns the dimension array.
  * @param shape Pointer of a handler.
- * @param Pointer of an array to receive the dimensions.
+ * @param dims Pointer of an array to receive the dimensions.
+ * @param n_dims Pointer to receive the number of the dimensions.
  */
 extern PRIMITIV_C_API void primitiv_Shape_dims(
-    const primitiv_Shape *shape, uint32_t *array);
+    const primitiv_Shape *shape, uint32_t *dims, size_t *n_dims);
 
 /**
  * Returns the depth (length of non-1 dimensions) of the shape.
@@ -104,12 +105,12 @@ extern PRIMITIV_C_API uint32_t primitiv_Shape_size(const primitiv_Shape *shape);
  * Returns a string representation of the shape.
  * The format is: "[n,m,...]xk"
  * @param shape Pointer of a handler.
- * @param string Pointer to receive a char sequence.
- * @param length Pointer to receive a length of the char sequence.
+ * @param buffer Pointer to receive a char sequence.
+ * @param buffer_size Pointer to receive a length of the char sequence.
  * @return Encoded string.
  */
 extern PRIMITIV_C_API void primitiv_Shape_to_string(
-    const primitiv_Shape *shape, char *string, size_t *length);
+    const primitiv_Shape *shape, char *buffer, size_t *buffer_size);
 
 /**
  * Compares this and other shape.

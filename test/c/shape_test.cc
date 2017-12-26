@@ -56,8 +56,10 @@ TEST_F(CShapeTest, CheckNewByArray) {
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 3));
     EXPECT_EQ(1u, ::primitiv_Shape_op_getitem(shape, 100));
     std::uint32_t lhs[] = {1, 2, 3};
-    std::uint32_t rhs[::primitiv_Shape_depth(shape)];
-    ::primitiv_Shape_dims(shape, rhs);
+    std::size_t rhs_size;
+    ::primitiv_Shape_dims(shape, nullptr, &rhs_size);
+    std::uint32_t rhs[rhs_size];
+    ::primitiv_Shape_dims(shape, rhs, &rhs_size);
     EXPECT_TRUE(array_match(lhs, rhs, 3));
     EXPECT_EQ(3u, ::primitiv_Shape_depth(shape));
     EXPECT_EQ(4u, ::primitiv_Shape_batch(shape));

@@ -84,9 +84,10 @@ TEST_F(CGraphTest, CheckInvalidNode) {
   float value;
   EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,
             ::primitiv_Node_to_float(node, &value));
-  float values[20];
+  std::size_t num_values = 20;
+  float values[num_values];
   EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,
-            ::primitiv_Node_to_array(node, values));
+            ::primitiv_Node_to_array(node, values, &num_values));
   EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,
             ::primitiv_Node_backward(node));
   ::primitiv_Node_delete(node);
@@ -256,23 +257,18 @@ TEST_F(CGraphTest, CheckForward) {
     ::primitiv_Graph_forward(g, nodes[i], &val);
     ASSERT_TRUE(::primitiv_Tensor_valid(val));
 
-    ::primitiv_Shape *shape1;
-    ::primitiv_Tensor_shape(val, &shape1);
-    std::size_t size1 = ::primitiv_Shape_size(shape1);
+    std::size_t size1;
+    ::primitiv_Tensor_to_array(val, nullptr, &size1);
     float array1[size1];
-    ::primitiv_Tensor_to_array(val, array1);
+    ::primitiv_Tensor_to_array(val, array1, &size1);
     float *expected_array = const_cast<float*>(&(expected_values[i])[0]);
     EXPECT_TRUE(array_match(expected_array, array1, size1));
 
-    ::primitiv_Shape *shape2;
-    ::primitiv_Node_shape(nodes[i], &shape2);
-    std::size_t size2 = ::primitiv_Shape_size(shape2);
+    std::size_t size2;
+    ::primitiv_Node_to_array(nodes[i], nullptr, &size2);
     float array2[size2];
-    ::primitiv_Node_to_array(nodes[i], array2);
+    ::primitiv_Node_to_array(nodes[i], array2, &size2);
     EXPECT_TRUE(array_match(expected_array, array2, size2));
-
-    ::primitiv_Shape_delete(shape1);
-    ::primitiv_Shape_delete(shape2);
   }
 
   ::primitiv_Shape_delete(shape1);
