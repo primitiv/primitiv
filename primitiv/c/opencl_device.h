@@ -46,7 +46,8 @@ extern PRIMITIV_C_API uint32_t primitiv_devices_OpenCL_num_platforms();
  *                    This value should be between 0 to num_platforms() - 1.
  * @return Number of active devices.
  */
-extern PRIMITIV_C_API uint32_t primitiv_devices_OpenCL_num_devices(uint32_t platform_id);
+extern PRIMITIV_C_API uint32_t primitiv_devices_OpenCL_num_devices(
+    uint32_t platform_id);
 
 #ifdef __cplusplus
 }  // end extern "C"

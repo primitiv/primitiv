@@ -56,7 +56,8 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Parameter_new_with_initializer(
  * Deletes the Parameter object.
  * @param parameter Pointer of a handler.
  */
-extern PRIMITIV_C_API void primitiv_Parameter_delete(primitiv_Parameter *parameter);
+extern PRIMITIV_C_API void primitiv_Parameter_delete(
+    primitiv_Parameter *parameter);
 
 /**
  * Initializes the Parameter object.
@@ -112,7 +113,8 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Parameter_save(
  * @param parameter Pointer of a handler.
  * @return true or false w.r.t. the parameter is valid or not.
  */
-extern PRIMITIV_C_API _Bool primitiv_Parameter_valid(const primitiv_Parameter *parameter);
+extern PRIMITIV_C_API _Bool primitiv_Parameter_valid(
+    const primitiv_Parameter *parameter);
 
 /**
  * Set all gradients to 0.

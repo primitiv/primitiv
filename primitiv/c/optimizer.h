@@ -71,7 +71,8 @@ extern PRIMITIV_C_API float primitiv_Optimizer_get_learning_rate_scaling(
  * @return Status code.
  * @remarks Could not set negative values.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_set_learning_rate_scaling(
+extern PRIMITIV_C_API
+primitiv_Status primitiv_Optimizer_set_learning_rate_scaling(
     primitiv_Optimizer *optimizer, float scale);
 
 /**

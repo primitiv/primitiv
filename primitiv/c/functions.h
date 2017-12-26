@@ -149,7 +149,8 @@ extern PRIMITIV_C_API primitiv_Status primitiv_tensor_func_softmax(
 extern PRIMITIV_C_API primitiv_Status primitiv_node_func_softmax_cross_entropy(
     const primitiv_Node *x, const primitiv_Node *t, uint32_t dim,
     primitiv_Node **y);
-extern PRIMITIV_C_API primitiv_Status primitiv_tensor_func_softmax_cross_entropy(
+extern PRIMITIV_C_API primitiv_Status
+primitiv_tensor_func_softmax_cross_entropy(
     const primitiv_Tensor *x, const primitiv_Tensor *t, uint32_t dim,
     primitiv_Tensor **y);
 

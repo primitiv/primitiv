@@ -19,7 +19,8 @@ typedef struct primitiv_Initializer primitiv_Initializer;
  * Deletes the Initializer object.
  * @param initializer Pointer of a handler.
  */
-extern PRIMITIV_C_API void primitiv_Initializer_delete(primitiv_Initializer *initializer);
+extern PRIMITIV_C_API void primitiv_Initializer_delete(
+    primitiv_Initializer *initializer);
 
 /**
  * Provides an initialized tensor.
