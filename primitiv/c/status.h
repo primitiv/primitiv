@@ -11,7 +11,7 @@ extern "C" {
 
 typedef enum primitiv_Status {
   PRIMITIV_OK = 0,
-  PRIMITIV_ERROR = 1,
+  PRIMITIV_ERROR = -1,
 } primitiv_Status;
 
 extern PRIMITIV_C_API const char *primitiv_Status_get_message();
