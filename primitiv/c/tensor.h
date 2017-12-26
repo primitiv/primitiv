@@ -21,7 +21,7 @@ typedef struct primitiv_Tensor primitiv_Tensor;
  * @param tensor Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Tensor_new(primitiv_Tensor **tensor);
+extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_new(primitiv_Tensor **tensor);
 
 /**
  * Creates a clone of an existing Tensor object.
@@ -29,14 +29,14 @@ CAPI extern primitiv_Status primitiv_Tensor_new(primitiv_Tensor **tensor);
  * @param tensor Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Tensor_clone(
+extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_clone(
     primitiv_Tensor *src, primitiv_Tensor **tensor);
 
 /**
  * Deletes the Tensor object.
  * @param tensor Pointer of a handler.
  */
-CAPI extern void primitiv_Tensor_delete(primitiv_Tensor *tensor);
+extern PRIMITIV_C_API void primitiv_Tensor_delete(primitiv_Tensor *tensor);
 
 /**
  * Check whether the object is valid or not.
@@ -45,7 +45,7 @@ CAPI extern void primitiv_Tensor_delete(primitiv_Tensor *tensor);
  * @remarks This returns false when the object is created through the default
  *          constructor or the object had been moved.
  */
-CAPI extern bool primitiv_Tensor_valid(const primitiv_Tensor *tensor);
+extern PRIMITIV_C_API bool primitiv_Tensor_valid(const primitiv_Tensor *tensor);
 
 /**
  * Returns the shape of the Tensor.
@@ -53,8 +53,8 @@ CAPI extern bool primitiv_Tensor_valid(const primitiv_Tensor *tensor);
  * @param shape Pointer to receive a Shape of the Tensor.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Tensor_shape(const primitiv_Tensor *tensor,
-                                                  primitiv_Shape **shape);
+extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_shape(
+    const primitiv_Tensor *tensor, primitiv_Shape **shape);
 
 /**
  * Returns the Device object related to the internal memory.
@@ -62,7 +62,7 @@ CAPI extern primitiv_Status primitiv_Tensor_shape(const primitiv_Tensor *tensor,
  * @param device Pointer to receive the Device object.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Tensor_device(
+extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_device(
     const primitiv_Tensor *tensor, primitiv_Device **device);
 
 /**
@@ -73,7 +73,7 @@ CAPI extern primitiv_Status primitiv_Tensor_device(
  * @remarks This function can be used only when the tensor is a scalar and
  *          non-minibatched (i.e., shape() == Shape()).
  */
-CAPI extern primitiv_Status primitiv_Tensor_to_float(
+extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_to_float(
     const primitiv_Tensor *tensor, float *value);
 
 /**
@@ -84,7 +84,7 @@ CAPI extern primitiv_Status primitiv_Tensor_to_float(
  * @remarks Each resulting values a re ordered by the column-major order, and
  *          the batch size is assumed as the last dimension of the tensor.
  */
-CAPI extern primitiv_Status primitiv_Tensor_to_array(
+extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_to_array(
     const primitiv_Tensor *tensor, float *array);
 
 /**
@@ -95,7 +95,7 @@ CAPI extern primitiv_Status primitiv_Tensor_to_array(
  *                of the maximum values.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Tensor_argmax(
+extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_argmax(
     const primitiv_Tensor *tensor, uint32_t dim, uint32_t *indices);
 
 /**
@@ -106,7 +106,7 @@ CAPI extern primitiv_Status primitiv_Tensor_argmax(
  *                of the minimum values.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Tensor_argmin(
+extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_argmin(
     const primitiv_Tensor *tensor, uint32_t dim, uint32_t *indices);
 
 /**
@@ -115,8 +115,8 @@ CAPI extern primitiv_Status primitiv_Tensor_argmin(
  * @return Status code.
  * @param k A value to be used to initialize each element.
  */
-CAPI extern primitiv_Status primitiv_Tensor_reset(primitiv_Tensor *tensor,
-                                                  float k);
+extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_reset(
+    primitiv_Tensor *tensor, float k);
 
 /**
  * Reset internal values using a vector.
@@ -127,7 +127,7 @@ CAPI extern primitiv_Status primitiv_Tensor_reset(primitiv_Tensor *tensor,
  *          element should be ordered by the column-major order, and the batch
  *          size is assumed as the last dimension.
  */
-CAPI extern primitiv_Status primitiv_Tensor_reset_by_array(
+extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_reset_by_array(
     primitiv_Tensor *tensor, const float *values);
 
 /**
@@ -137,7 +137,7 @@ CAPI extern primitiv_Status primitiv_Tensor_reset_by_array(
  * @param new_tensor Pointer to receive a new tensor.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Tensor_reshape(
+extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_reshape(
     const primitiv_Tensor *tensor, const primitiv_Shape *new_shape,
     primitiv_Tensor **new_tensor);
 
@@ -147,7 +147,7 @@ CAPI extern primitiv_Status primitiv_Tensor_reshape(
  * @param new_tensor Pointer to receive a new tensor.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Tensor_flatten(
+extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_flatten(
     const primitiv_Tensor *tensor, primitiv_Tensor **new_tensor);
 
 /**
@@ -156,7 +156,7 @@ CAPI extern primitiv_Status primitiv_Tensor_flatten(
  * @param k A constant to multiply.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Tensor_inplace_multiply_const(
+extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_inplace_multiply_const(
     primitiv_Tensor *tensor, float k);
 
 /**
@@ -165,7 +165,7 @@ CAPI extern primitiv_Status primitiv_Tensor_inplace_multiply_const(
  * @param x A tensor to add.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Tensor_inplace_add(
+extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_inplace_add(
     primitiv_Tensor *tensor, const primitiv_Tensor *x);
 
 /**
@@ -174,7 +174,7 @@ CAPI extern primitiv_Status primitiv_Tensor_inplace_add(
  * @param x A tensor to subtract.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Tensor_inplace_subtract(
+extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_inplace_subtract(
     primitiv_Tensor *tensor, const primitiv_Tensor *x);
 
 #ifdef __cplusplus

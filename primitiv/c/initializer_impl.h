@@ -18,7 +18,7 @@ extern "C" {
  * @param initializer Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_initializers_Constant_new(
+extern PRIMITIV_C_API primitiv_Status primitiv_initializers_Constant_new(
     float k, primitiv_Initializer **initializer);
 
 /**
@@ -29,7 +29,7 @@ CAPI extern primitiv_Status primitiv_initializers_Constant_new(
  * @param initializer Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_initializers_Uniform_new(
+extern PRIMITIV_C_API primitiv_Status primitiv_initializers_Uniform_new(
     float lower, float upper, primitiv_Initializer **initializer);
 
 /**
@@ -40,7 +40,7 @@ CAPI extern primitiv_Status primitiv_initializers_Uniform_new(
  * @param initializer Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_initializers_Normal_new(
+extern PRIMITIV_C_API primitiv_Status primitiv_initializers_Normal_new(
     float mean, float sd, primitiv_Initializer **initializer);
 
 /**
@@ -48,7 +48,7 @@ CAPI extern primitiv_Status primitiv_initializers_Normal_new(
  * @param initializer Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_initializers_Identity_new(
+extern PRIMITIV_C_API primitiv_Status primitiv_initializers_Identity_new(
     primitiv_Initializer **initializer);
 
 /**
@@ -59,7 +59,7 @@ CAPI extern primitiv_Status primitiv_initializers_Identity_new(
  * @param initializer Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_initializers_XavierUniform_new(
+extern PRIMITIV_C_API primitiv_Status primitiv_initializers_XavierUniform_new(
     float scale, primitiv_Initializer **initializer);
 
 /**
@@ -70,7 +70,7 @@ CAPI extern primitiv_Status primitiv_initializers_XavierUniform_new(
  * @param initializer Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_initializers_XavierNormal_new(
+extern PRIMITIV_C_API primitiv_Status primitiv_initializers_XavierNormal_new(
     float scale, primitiv_Initializer **initializer);
 
 #ifdef __cplusplus

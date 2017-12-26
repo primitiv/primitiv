@@ -20,26 +20,26 @@ typedef struct primitiv_Device primitiv_Device;
  * @param device Pointer to receive the current default device.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Device_get_default(
+extern PRIMITIV_C_API primitiv_Status primitiv_Device_get_default(
     primitiv_Device **device);
 
 /**
  * Specifies a new default device.
  * @param device Pointer of the new default device.
  */
-CAPI extern void primitiv_Device_set_default(primitiv_Device *device);
+extern PRIMITIV_C_API void primitiv_Device_set_default(primitiv_Device *device);
 
 /**
  * Deletes the Device object.
  * @param device Pointer of a handler.
  */
-CAPI extern void primitiv_Device_delete(primitiv_Device *device);
+extern PRIMITIV_C_API void primitiv_Device_delete(primitiv_Device *device);
 
 /**
  * Prints device description to stderr.
  * @param device Pointer of a handler.
  */
-CAPI extern void primitiv_Device_dump_description(
+extern PRIMITIV_C_API void primitiv_Device_dump_description(
     const primitiv_Device *device);
 
 #ifdef __cplusplus

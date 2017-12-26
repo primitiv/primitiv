@@ -17,7 +17,7 @@ extern "C" {
  * @param optimizer Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_optimizers_SGD_new(
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_SGD_new(
     float eta, primitiv_Optimizer **optimizer);
 
 /**
@@ -25,7 +25,7 @@ CAPI extern primitiv_Status primitiv_optimizers_SGD_new(
  * @param optimizer Pointer of a handler.
  * @return Learning rate.
  */
-CAPI extern float primitiv_optimizers_SGD_eta(
+extern PRIMITIV_C_API float primitiv_optimizers_SGD_eta(
     const primitiv_Optimizer *optimizer);
 
 // @TODO: Implement getter/setter of primitiv_optimizers_SGD configs
@@ -37,7 +37,7 @@ CAPI extern float primitiv_optimizers_SGD_eta(
  * @param optimizer Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_optimizers_MomentumSGD_new(
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_MomentumSGD_new(
     float eta, float momentum, primitiv_Optimizer **optimizer);
 
 /**
@@ -45,7 +45,7 @@ CAPI extern primitiv_Status primitiv_optimizers_MomentumSGD_new(
  * @param optimizer Pointer of a handler.
  * @return The value of eta.
  */
-CAPI extern float primitiv_optimizers_MomentumSGD_eta(
+extern PRIMITIV_C_API float primitiv_optimizers_MomentumSGD_eta(
     const primitiv_Optimizer *optimizer);
 
 /**
@@ -53,7 +53,7 @@ CAPI extern float primitiv_optimizers_MomentumSGD_eta(
  * @param optimizer Pointer of a handler.
  * @return The value of momentum.
  */
-CAPI extern float primitiv_optimizers_MomentumSGD_momentum(
+extern PRIMITIV_C_API float primitiv_optimizers_MomentumSGD_momentum(
     const primitiv_Optimizer *optimizer);
 
 // @TODO: Implement getter/setter of primitiv_MementumSGD configs
@@ -65,7 +65,7 @@ CAPI extern float primitiv_optimizers_MomentumSGD_momentum(
  * @param optimizer Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_optimizers_AdaGrad_new(
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaGrad_new(
     float eta, float eps, primitiv_Optimizer **optimizer);
 
 /**
@@ -73,7 +73,7 @@ CAPI extern primitiv_Status primitiv_optimizers_AdaGrad_new(
  * @param optimizer Pointer of a handler.
  * @return The value of eta.
  */
-CAPI extern float primitiv_optimizers_AdaGrad_eta(
+extern PRIMITIV_C_API float primitiv_optimizers_AdaGrad_eta(
     const primitiv_Optimizer *optimizer);
 
 /**
@@ -81,7 +81,7 @@ CAPI extern float primitiv_optimizers_AdaGrad_eta(
  * @param optimizer Pointer of a handler.
  * @return The value of eps.
  */
-CAPI extern float primitiv_optimizers_AdaGrad_eps(
+extern PRIMITIV_C_API float primitiv_optimizers_AdaGrad_eps(
     const primitiv_Optimizer *optimizer);
 
 // @TODO: Implement getter/setter of primitiv_optimizers_AdaGrad configs
@@ -94,7 +94,7 @@ CAPI extern float primitiv_optimizers_AdaGrad_eps(
  * @param optimizer Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_optimizers_RMSProp_new(
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_RMSProp_new(
     float eta, float alpha, float eps, primitiv_Optimizer **optimizer);
 
 /**
@@ -102,7 +102,7 @@ CAPI extern primitiv_Status primitiv_optimizers_RMSProp_new(
  * @param optimizer Pointer of a handler.
  * @return The value of eta.
  */
-CAPI extern float primitiv_optimizers_RMSProp_eta(
+extern PRIMITIV_C_API float primitiv_optimizers_RMSProp_eta(
     const primitiv_Optimizer *optimizer);
 
 /**
@@ -110,7 +110,7 @@ CAPI extern float primitiv_optimizers_RMSProp_eta(
  * @param optimizer Pointer of a handler.
  * @return The value of alpha.
  */
-CAPI extern float primitiv_optimizers_RMSProp_alpha(
+extern PRIMITIV_C_API float primitiv_optimizers_RMSProp_alpha(
     const primitiv_Optimizer *optimizer);
 
 /**
@@ -118,7 +118,7 @@ CAPI extern float primitiv_optimizers_RMSProp_alpha(
  * @param optimizer Pointer of a handler.
  * @return The value of eps.
  */
-CAPI extern float primitiv_optimizers_RMSProp_eps(
+extern PRIMITIV_C_API float primitiv_optimizers_RMSProp_eps(
     const primitiv_Optimizer *optimizer);
 
 // @TODO: Implement getter/setter of primitiv_optimizers_RMSProp configs
@@ -130,7 +130,7 @@ CAPI extern float primitiv_optimizers_RMSProp_eps(
  * @param optimizer Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_optimizers_AdaDelta_new(
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaDelta_new(
     float rho, float eps, primitiv_Optimizer **optimizer);
 
 /**
@@ -138,7 +138,7 @@ CAPI extern primitiv_Status primitiv_optimizers_AdaDelta_new(
  * @param optimizer Pointer of a handler.
  * @return The value of rho.
  */
-CAPI extern float primitiv_optimizers_AdaDelta_rho(
+extern PRIMITIV_C_API float primitiv_optimizers_AdaDelta_rho(
     const primitiv_Optimizer *optimizer);
 
 /**
@@ -146,7 +146,7 @@ CAPI extern float primitiv_optimizers_AdaDelta_rho(
  * @param optimizer Pointer of a handler.
  * @return The value of eps.
  */
-CAPI extern float primitiv_optimizers_AdaDelta_eps(
+extern PRIMITIV_C_API float primitiv_optimizers_AdaDelta_eps(
     const primitiv_Optimizer *optimizer);
 
 // @TODO: Implement getter/setter of primitiv_optimizers_AdaDelta configs
@@ -160,7 +160,7 @@ CAPI extern float primitiv_optimizers_AdaDelta_eps(
  * @param optimizer Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_optimizers_Adam_new(
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_Adam_new(
     float alpha, float beta1, float beta2, float eps,
     primitiv_Optimizer **optimizer);
 
@@ -169,7 +169,7 @@ CAPI extern primitiv_Status primitiv_optimizers_Adam_new(
  * @param optimizer Pointer of a handler.
  * @return The value of alpha.
  */
-CAPI extern float primitiv_optimizers_Adam_alpha(
+extern PRIMITIV_C_API float primitiv_optimizers_Adam_alpha(
     const primitiv_Optimizer *optimizer);
 
 /**
@@ -177,7 +177,7 @@ CAPI extern float primitiv_optimizers_Adam_alpha(
  * @param optimizer Pointer of a handler.
  * @return The value of beta1.
  */
-CAPI extern float primitiv_optimizers_Adam_beta1(
+extern PRIMITIV_C_API float primitiv_optimizers_Adam_beta1(
     const primitiv_Optimizer *optimizer);
 
 /**
@@ -185,7 +185,7 @@ CAPI extern float primitiv_optimizers_Adam_beta1(
  * @param optimizer Pointer of a handler.
  * @return The value of beta2.
  */
-CAPI extern float primitiv_optimizers_Adam_beta2(
+extern PRIMITIV_C_API float primitiv_optimizers_Adam_beta2(
     const primitiv_Optimizer *optimizer);
 
 /**
@@ -193,7 +193,7 @@ CAPI extern float primitiv_optimizers_Adam_beta2(
  * @param optimizer Pointer of a handler.
  * @return The value of eps.
  */
-CAPI extern float primitiv_optimizers_Adam_eps(
+extern PRIMITIV_C_API float primitiv_optimizers_Adam_eps(
     const primitiv_Optimizer *optimizer);
 
 #ifdef __cplusplus

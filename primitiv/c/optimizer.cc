@@ -15,28 +15,28 @@ void primitiv_Optimizer_delete(primitiv_Optimizer *optimizer) {
   delete to_cpp_ptr(optimizer);
 }
 
-primitiv_Status primitiv_Optimizer_load(primitiv_Optimizer *optimizer,
-                                        const char *path) {
+primitiv_Status primitiv_Optimizer_load(
+    primitiv_Optimizer *optimizer, const char *path) {
   try {
     to_cpp_ptr(optimizer)->load(path);
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
-primitiv_Status primitiv_Optimizer_save(const primitiv_Optimizer *optimizer,
-                                        const char *path) {
+primitiv_Status primitiv_Optimizer_save(
+    const primitiv_Optimizer *optimizer, const char *path) {
   try {
     to_cpp_ptr(optimizer)->save(path);
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
 uint32_t primitiv_Optimizer_get_epoch(const primitiv_Optimizer *optimizer) {
   return to_cpp_ptr(optimizer)->get_epoch();
 }
 
-void primitiv_Optimizer_set_epoch(primitiv_Optimizer *optimizer,
-                                  uint32_t epoch) {
+void primitiv_Optimizer_set_epoch(
+    primitiv_Optimizer *optimizer, uint32_t epoch) {
   to_cpp_ptr(optimizer)->set_epoch(epoch);
 }
 
@@ -50,7 +50,7 @@ primitiv_Status primitiv_Optimizer_set_learning_rate_scaling(
   try {
     to_cpp_ptr(optimizer)->set_epoch(scale);
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
 float primitiv_Optimizer_get_weight_decay(const primitiv_Optimizer *optimizer) {
@@ -62,7 +62,7 @@ primitiv_Status primitiv_Optimizer_set_weight_decay(
   try {
     to_cpp_ptr(optimizer)->set_weight_decay(strength);
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
 float primitiv_Optimizer_get_gradient_clipping(
@@ -75,15 +75,15 @@ primitiv_Status primitiv_Optimizer_set_gradient_clipping(
   try {
     to_cpp_ptr(optimizer)->set_gradient_clipping(threshold);
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
-primitiv_Status primitiv_Optimizer_add_parameter(primitiv_Optimizer *optimizer,
-                                                 primitiv_Parameter *param) {
+primitiv_Status primitiv_Optimizer_add_parameter(
+    primitiv_Optimizer *optimizer, primitiv_Parameter *param) {
   try {
     to_cpp_ptr(optimizer)->add(*to_cpp_ptr(param));
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
 primitiv_Status primitiv_Optimizer_add_parameters(
@@ -94,15 +94,15 @@ primitiv_Status primitiv_Optimizer_add_parameters(
       cc_optimizer->add(*to_cpp_ptr(params[i]));
     }
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
-primitiv_Status primitiv_Optimizer_add_model(primitiv_Optimizer *optimizer,
-                                             primitiv_Model *model) {
+primitiv_Status primitiv_Optimizer_add_model(
+    primitiv_Optimizer *optimizer, primitiv_Model *model) {
   try {
     to_cpp_ptr(optimizer)->add(*to_cpp_ptr(model));
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
 primitiv_Status primitiv_Optimizer_add_models(
@@ -113,7 +113,7 @@ primitiv_Status primitiv_Optimizer_add_models(
       cc_optimizer->add(*to_cpp_ptr(models[i]));
     }
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
 primitiv_Status primitiv_Optimizer_reset_gradients(
@@ -121,14 +121,14 @@ primitiv_Status primitiv_Optimizer_reset_gradients(
   try {
     to_cpp_ptr(optimizer)->reset_gradients();
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
 primitiv_Status primitiv_Optimizer_update(primitiv_Optimizer *optimizer) {
   try {
     to_cpp_ptr(optimizer)->update();
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
 }  // end extern "C"

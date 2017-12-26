@@ -15,7 +15,7 @@ primitiv_Status primitiv_devices_CUDA_new(
   try {
     *device = to_c_ptr(new CUDA(device_id));
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
 primitiv_Status primitiv_devices_CUDA_new_with_seed(
@@ -23,7 +23,7 @@ primitiv_Status primitiv_devices_CUDA_new_with_seed(
   try {
     *device = to_c_ptr(new CUDA(device_id, rng_seed));
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
 uint32_t primitiv_devices_CUDA_num_devices() {

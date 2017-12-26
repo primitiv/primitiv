@@ -13,12 +13,12 @@ extern "C" {
 primitiv_Status primitiv_devices_Naive_new(primitiv_Device **device) try {
   *device = to_c_ptr(new Naive());
   return ::primitiv_Status::PRIMITIV_OK;
-} HANDLE_EXCEPTION
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_devices_Naive_new_with_seed(
     uint32_t seed, primitiv_Device **device) try {
   *device = to_c_ptr(new Naive(seed));
   return ::primitiv_Status::PRIMITIV_OK;
-} HANDLE_EXCEPTION
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
 }  // end extern "C"

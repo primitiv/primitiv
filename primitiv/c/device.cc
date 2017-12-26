@@ -15,7 +15,7 @@ primitiv_Status primitiv_Device_get_default(primitiv_Device **device) {
   try {
     *device = to_c_ptr(&Device::get_default());
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
 void primitiv_Device_set_default(primitiv_Device *device) {

@@ -15,7 +15,7 @@ primitiv_Status primitiv_devices_OpenCL_new(
   try {
     *device = to_c_ptr(new OpenCL(platform_id, device_id));
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
 primitiv_Status primitiv_devices_OpenCL_new_with_seed(
@@ -24,7 +24,7 @@ primitiv_Status primitiv_devices_OpenCL_new_with_seed(
   try {
     *device = to_c_ptr(new OpenCL(platform_id, device_id, rng_seed));
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
 uint32_t primitiv_devices_OpenCL_num_platforms() {

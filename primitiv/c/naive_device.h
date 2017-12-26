@@ -16,7 +16,7 @@ extern "C" {
  * @param device Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_devices_Naive_new(
+extern PRIMITIV_C_API primitiv_Status primitiv_devices_Naive_new(
     primitiv_Device **device);
 
 /**
@@ -25,7 +25,7 @@ CAPI extern primitiv_Status primitiv_devices_Naive_new(
  * @param device Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_devices_Naive_new_with_seed(
+extern PRIMITIV_C_API primitiv_Status primitiv_devices_Naive_new_with_seed(
     uint32_t seed, primitiv_Device **device);
 
 #ifdef __cplusplus

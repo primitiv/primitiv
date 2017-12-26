@@ -19,7 +19,7 @@ extern "C" {
  * @param device Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_devices_OpenCL_new(
+extern PRIMITIV_C_API primitiv_Status primitiv_devices_OpenCL_new(
     uint32_t platform_id, uint32_t device_id, primitiv_Device **device);
 
 /**
@@ -30,7 +30,7 @@ CAPI extern primitiv_Status primitiv_devices_OpenCL_new(
  * @param device Pointer to receive a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_devices_OpenCL_new_with_seed(
+extern PRIMITIV_C_API primitiv_Status primitiv_devices_OpenCL_new_with_seed(
     uint32_t platform_id, uint32_t device_id, uint32_t rng_seed,
     primitiv_Device **device);
 
@@ -38,7 +38,7 @@ CAPI extern primitiv_Status primitiv_devices_OpenCL_new_with_seed(
  * Retrieves the number of active platforms.
  * @return Number of active platforms.
  */
-CAPI extern uint32_t primitiv_devices_OpenCL_num_platforms();
+extern PRIMITIV_C_API uint32_t primitiv_devices_OpenCL_num_platforms();
 
 /**
  * Retrieves the number of active devices on the specified platform.
@@ -46,7 +46,7 @@ CAPI extern uint32_t primitiv_devices_OpenCL_num_platforms();
  *                    This value should be between 0 to num_platforms() - 1.
  * @return Number of active devices.
  */
-CAPI extern uint32_t primitiv_devices_OpenCL_num_devices(uint32_t platform_id);
+extern PRIMITIV_C_API uint32_t primitiv_devices_OpenCL_num_devices(uint32_t platform_id);
 
 #ifdef __cplusplus
 }  // end extern "C"

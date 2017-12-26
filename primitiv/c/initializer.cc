@@ -19,7 +19,7 @@ primitiv_Status primitiv_Initializer_apply(
   try {
     to_cpp_ptr(initializer)->apply(*to_cpp_ptr(x));
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
 }  // end extern "C"

@@ -14,7 +14,7 @@ primitiv_Status primitiv_devices_Eigen_new(primitiv_Device **device) {
   try {
     *device = to_c_ptr(new Eigen());
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
 primitiv_Status primitiv_devices_Eigen_new_with_seed(
@@ -22,7 +22,7 @@ primitiv_Status primitiv_devices_Eigen_new_with_seed(
   try {
     *device = to_c_ptr(new Eigen(rng_seed));
     return ::primitiv_Status::PRIMITIV_OK;
-  } HANDLE_EXCEPTION
+  } PRIMITIV_C_HANDLE_EXCEPTIONS
 }
 
 }  // end extern "C"

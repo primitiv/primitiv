@@ -19,7 +19,8 @@ typedef struct primitiv_Optimizer primitiv_Optimizer;
  * Deletes the Optimizer object.
  * @param optimizer Pointer of a handler.
  */
-CAPI extern void primitiv_Optimizer_delete(primitiv_Optimizer *optimizer);
+extern PRIMITIV_C_API void primitiv_Optimizer_delete(
+    primitiv_Optimizer *optimizer);
 
 /**
  * Loads configurations from a file.
@@ -27,7 +28,7 @@ CAPI extern void primitiv_Optimizer_delete(primitiv_Optimizer *optimizer);
  * @param path Path of the optimizer parameter file.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Optimizer_load(
+extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_load(
     primitiv_Optimizer *optimizer, const char *path);
 
 /**
@@ -36,7 +37,7 @@ CAPI extern primitiv_Status primitiv_Optimizer_load(
  * @param path Path of the file that will store optimizer parameters.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Optimizer_save(
+extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_save(
     const primitiv_Optimizer *optimizer, const char *path);
 
 /**
@@ -44,7 +45,7 @@ CAPI extern primitiv_Status primitiv_Optimizer_save(
  * @param optimizer Pointer of a handler.
  * @return Current epoch.
  */
-CAPI extern uint32_t primitiv_Optimizer_get_epoch(
+extern PRIMITIV_C_API uint32_t primitiv_Optimizer_get_epoch(
     const primitiv_Optimizer *optimizer);
 
 /**
@@ -52,15 +53,15 @@ CAPI extern uint32_t primitiv_Optimizer_get_epoch(
  * @param optimizer Pointer of a handler.
  * @param epoch New epoch.
  */
-CAPI extern void primitiv_Optimizer_set_epoch(primitiv_Optimizer *optimizer,
-                                              uint32_t epoch);
+extern PRIMITIV_C_API void primitiv_Optimizer_set_epoch(
+    primitiv_Optimizer *optimizer, uint32_t epoch);
 
 /**
  * Retrieves current learning rate scaling factor.
  * @param optimizer Pointer of a handler.
  * @return The scaling factor.
  */
-CAPI extern float primitiv_Optimizer_get_learning_rate_scaling(
+extern PRIMITIV_C_API float primitiv_Optimizer_get_learning_rate_scaling(
     const primitiv_Optimizer *optimizer);
 
 /**
@@ -70,7 +71,7 @@ CAPI extern float primitiv_Optimizer_get_learning_rate_scaling(
  * @return Status code.
  * @remarks Could not set negative values.
  */
-CAPI extern primitiv_Status primitiv_Optimizer_set_learning_rate_scaling(
+extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_set_learning_rate_scaling(
     primitiv_Optimizer *optimizer, float scale);
 
 /**
@@ -78,7 +79,7 @@ CAPI extern primitiv_Status primitiv_Optimizer_set_learning_rate_scaling(
  * @param optimizer Pointer of a handler.
  * @return Current L2 decay strength.
  */
-CAPI extern float primitiv_Optimizer_get_weight_decay(
+extern PRIMITIV_C_API float primitiv_Optimizer_get_weight_decay(
     const primitiv_Optimizer *optimizer);
 
 /**
@@ -88,7 +89,7 @@ CAPI extern float primitiv_Optimizer_get_weight_decay(
  * @return Status code.
  * @remarks Could not set negative values.
  */
-CAPI extern primitiv_Status primitiv_Optimizer_set_weight_decay(
+extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_set_weight_decay(
     primitiv_Optimizer *optimizer, float strength);
 
 /**
@@ -96,7 +97,7 @@ CAPI extern primitiv_Status primitiv_Optimizer_set_weight_decay(
  * @param optimizer Pointer of a handler.
  * @return Current gradient clipping threshold.
  */
-CAPI extern float primitiv_Optimizer_get_gradient_clipping(
+extern PRIMITIV_C_API float primitiv_Optimizer_get_gradient_clipping(
     const primitiv_Optimizer *optimizer);
 
 /**
@@ -106,7 +107,7 @@ CAPI extern float primitiv_Optimizer_get_gradient_clipping(
  * @return Status code.
  * @remarks Could not set negative values.
  */
-CAPI extern primitiv_Status primitiv_Optimizer_set_gradient_clipping(
+extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_set_gradient_clipping(
     primitiv_Optimizer *optimizer, float threshold);
 
 /**
@@ -115,7 +116,7 @@ CAPI extern primitiv_Status primitiv_Optimizer_set_gradient_clipping(
  * @param param Parameter to be optimized.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Optimizer_add_parameter(
+extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_add_parameter(
     primitiv_Optimizer *optimizer, primitiv_Parameter *param);
 
 /**
@@ -125,7 +126,7 @@ CAPI extern primitiv_Status primitiv_Optimizer_add_parameter(
  * @param n Number of parameters.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Optimizer_add_parameters(
+extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_add_parameters(
   primitiv_Optimizer *optimizer, primitiv_Parameter **params, size_t n);
 
 /**
@@ -134,7 +135,7 @@ CAPI extern primitiv_Status primitiv_Optimizer_add_parameters(
  * @param param Model to be optimized.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Optimizer_add_model(
+extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_add_model(
     primitiv_Optimizer *optimizer, primitiv_Model *model);
 
 /**
@@ -144,7 +145,7 @@ CAPI extern primitiv_Status primitiv_Optimizer_add_model(
  * @param n Number of models.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Optimizer_add_models(
+extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_add_models(
     primitiv_Optimizer *optimizer, primitiv_Model **models, size_t n);
 
 /**
@@ -152,7 +153,7 @@ CAPI extern primitiv_Status primitiv_Optimizer_add_models(
  * @param optimizer Pointer of a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Optimizer_reset_gradients(
+extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_reset_gradients(
   primitiv_Optimizer *optimizer);
 
 /**
@@ -160,7 +161,7 @@ CAPI extern primitiv_Status primitiv_Optimizer_reset_gradients(
  * @param optimizer Pointer of a handler.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Optimizer_update(
+extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_update(
     primitiv_Optimizer *optimizer);
 
 // @TODO: Implement getter/setter of primitiv_Optimizer configs

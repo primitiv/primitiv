@@ -19,7 +19,7 @@ typedef struct primitiv_Initializer primitiv_Initializer;
  * Deletes the Initializer object.
  * @param initializer Pointer of a handler.
  */
-CAPI extern void primitiv_Initializer_delete(primitiv_Initializer *initializer);
+extern PRIMITIV_C_API void primitiv_Initializer_delete(primitiv_Initializer *initializer);
 
 /**
  * Provides an initialized tensor.
@@ -27,7 +27,7 @@ CAPI extern void primitiv_Initializer_delete(primitiv_Initializer *initializer);
  * @param x Tensor object to be initialized.
  * @return Status code.
  */
-CAPI extern primitiv_Status primitiv_Initializer_apply(
+extern PRIMITIV_C_API primitiv_Status primitiv_Initializer_apply(
     const primitiv_Initializer *initializer, primitiv_Tensor *x);
 
 #ifdef __cplusplus

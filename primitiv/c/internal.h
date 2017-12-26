@@ -19,26 +19,26 @@
 #include <primitiv/optimizer.h>
 #include <primitiv/c/status.h>
 
-#define DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(cc_name, c_name) \
-inline c_name *to_c_ptr(primitiv::cc_name *instance) { \
+#define PRIMITIV_C_PTR_TO_PTR(cpp_name, c_name) \
+inline c_name *to_c_ptr(primitiv::cpp_name *instance) { \
   return reinterpret_cast<c_name*>(instance); \
 } \
-inline const c_name *to_c_ptr(const primitiv::cc_name *instance) { \
+inline const c_name *to_c_ptr(const primitiv::cpp_name *instance) { \
   return reinterpret_cast<const c_name*>(instance); \
 } \
-inline primitiv::cc_name *to_cpp_ptr(c_name *instance) { \
-  return reinterpret_cast<primitiv::cc_name*>(instance); \
+inline primitiv::cpp_name *to_cpp_ptr(c_name *instance) { \
+  return reinterpret_cast<primitiv::cpp_name*>(instance); \
 } \
-inline const primitiv::cc_name *to_cpp_ptr(const c_name *instance) { \
-  return reinterpret_cast<const primitiv::cc_name*>(instance); \
+inline const primitiv::cpp_name *to_cpp_ptr(const c_name *instance) { \
+  return reinterpret_cast<const primitiv::cpp_name*>(instance); \
 }
 
-#define DEFINE_VALUE_TO_POINTER_CONVERSION_AS_CAST(cc_name, c_name) \
-inline c_name *to_c_ptr_from_value(const primitiv::cc_name &instance) { \
-  return reinterpret_cast<c_name*>(new primitiv::cc_name(instance)); \
+#define PRIMITIV_C_VAL_TO_PTR(cpp_name, c_name) \
+inline c_name *to_c_ptr_from_value(const primitiv::cpp_name &instance) { \
+  return reinterpret_cast<c_name*>(new primitiv::cpp_name(instance)); \
 }
 
-#define HANDLE_EXCEPTION \
+#define PRIMITIV_C_HANDLE_EXCEPTIONS \
 catch (const primitiv::Error &e) { \
   return primitiv::c::internal::ErrorHandler::get_instance().handle(e); \
 } catch (const std::exception &e) { \
@@ -105,18 +105,18 @@ class ErrorHandler {
   std::string message_;
 };
 
-DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Device, primitiv_Device);
-DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Node, primitiv_Node);
-DEFINE_VALUE_TO_POINTER_CONVERSION_AS_CAST(Node, primitiv_Node);
-DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Graph, primitiv_Graph);
-DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Initializer, primitiv_Initializer);
-DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Model, primitiv_Model);
-DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Parameter, primitiv_Parameter);
-DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Shape, primitiv_Shape);
-DEFINE_VALUE_TO_POINTER_CONVERSION_AS_CAST(Shape, primitiv_Shape);
-DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Tensor, primitiv_Tensor);
-DEFINE_VALUE_TO_POINTER_CONVERSION_AS_CAST(Tensor, primitiv_Tensor);
-DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Optimizer, primitiv_Optimizer);
+PRIMITIV_C_PTR_TO_PTR(Device, primitiv_Device);
+PRIMITIV_C_PTR_TO_PTR(Node, primitiv_Node);
+PRIMITIV_C_VAL_TO_PTR(Node, primitiv_Node);
+PRIMITIV_C_PTR_TO_PTR(Graph, primitiv_Graph);
+PRIMITIV_C_PTR_TO_PTR(Initializer, primitiv_Initializer);
+PRIMITIV_C_PTR_TO_PTR(Model, primitiv_Model);
+PRIMITIV_C_PTR_TO_PTR(Parameter, primitiv_Parameter);
+PRIMITIV_C_PTR_TO_PTR(Shape, primitiv_Shape);
+PRIMITIV_C_VAL_TO_PTR(Shape, primitiv_Shape);
+PRIMITIV_C_PTR_TO_PTR(Tensor, primitiv_Tensor);
+PRIMITIV_C_VAL_TO_PTR(Tensor, primitiv_Tensor);
+PRIMITIV_C_PTR_TO_PTR(Optimizer, primitiv_Optimizer);
 
 }  // namespace internal
 
