@@ -1,6 +1,9 @@
 matrix:
   include:
     - os: linux
+      env: SCRIPT=ubuntu-vanilla
+      sudo: required
+    - os: linux
       env: SCRIPT=ubuntu
       services: docker
     - os: linux

@@ -13,6 +13,15 @@
 #include <cmath>
 #include <iostream>
 
+// NOTE(vbkaisetsu):
+// Eigen contains a few LGPL-licensed features. They conflict with
+// Apache License version 2.
+// EIGEN_MPL2_ONLY guarantees that primitiv does not use LGPL-licensed
+// features.
+//
+// For more ditails, see:
+// http://eigen.tuxfamily.org/index.php?title=Main_Page#License
+#define EIGEN_MPL2_ONLY
 #include <Eigen/Eigen>
 
 #include <primitiv/eigen_device.h>
