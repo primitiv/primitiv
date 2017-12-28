@@ -15,7 +15,7 @@ namespace primitiv {
  * Examples:
  *   Shape()         == Shape({1, 1, 1, ...}, 1): scalar
  *   Shape({})       == Shape({1, 1, 1, ...}, 1): scalar
- *   Shape({n})      == Shape({n, 1, 1, ...}, 1): row vector
+ *   Shape({n})      == Shape({n, 1, 1, ...}, 1): column vector
  *   Shape({n, m})   == Shape({n, m, 1, ...}, 1): matrix
  *   Shape({...}, k): k-parallelized data (mini-batch)
  */
@@ -144,10 +144,10 @@ public:
   bool is_scalar() const { return depth() == 0; }
 
   /**
-   * Checks whether the shape is a row vector or not.
-   * @return true if the shape is a row vector, false otherwise.
+   * Checks whether the shape is a column vector or not.
+   * @return true if the shape is a column vector, false otherwise.
    */
-  bool is_row_vector() const { return depth() <= 1; }
+  bool is_column_vector() const { return depth() <= 1; }
 
   /**
    * Checks whether the shape is a vector or a matrix, or not.
