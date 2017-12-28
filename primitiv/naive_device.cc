@@ -5,6 +5,7 @@
 #include <cstring>
 #include <cmath>
 #include <iostream>
+#include <limits>
 #include <primitiv/naive_device.h>
 #include <primitiv/error.h>
 
@@ -352,6 +353,33 @@ CPUDEV_FW_X_CONST(prelu, src[i] * ((src[i] > 0) + k * (src[i] <= 0)));
 CPUDEV_FW_X_CONST(
     elu, src[i] * (src[i] > 0) + k * (std::exp(src[i] * (src[i] <= 0)) - 1));
 
+void Naive::pown_fw_impl(const Tensor &x, int32_t k, Tensor &y) {
+  float *dest = MDATA(y);
+  const float *src = CDATA(x);
+  const std::uint32_t size = x.shape().size();
+
+  // NOTE(odashi):
+  // std::abs(-0x80000000) is UB under 2's complement systems.
+  // However, this value should be also evaluated as 0x80000000 by directly
+  // casting to std::uint32_t.
+  const std::int32_t min_k = std::numeric_limits<std::int32_t>::min();
+  const std::uint32_t abs_k = (k == min_k) ? min_k : std::abs(k);
+  const bool positive = k >= 0;
+
+  for (std::uint32_t i = 0; i < size; ++i) {
+    // Performs the exponentation-by-squaring method.
+    float ret = 1;
+    float factor = src[i];
+    std::uint32_t remain = abs_k;
+    while (remain) {
+      if (remain & 1) ret *= factor;
+      factor *= factor;
+      remain >>= 1;
+    }
+    dest[i] = positive ? ret : 1. / ret;
+  }
+}
+
 CPUDEV_BW_X_CONST(add_const, pgy[i]);
 CPUDEV_BW_X_CONST(subtract_const_r, pgy[i]);
 CPUDEV_BW_X_CONST(subtract_const_l, -pgy[i]);
@@ -362,6 +390,16 @@ CPUDEV_BW_X_CONST(pow_const_r, k * pgy[i] * py[i] / px[i]);
 CPUDEV_BW_X_CONST(pow_const_l, std::log(k) * pgy[i] * py[i]);
 CPUDEV_BW_X_CONST(prelu, pgy[i] * ((px[i] > 0) + k * (px[i] <= 0)));
 CPUDEV_BW_X_CONST(elu, pgy[i] * ((px[i] > 0) + (py[i] + k) * (px[i] <= 0)));
+
+void Naive::pown_bw_impl(
+    const Tensor &x, const Tensor &y, const Tensor &gy, int32_t k, Tensor &gx) {
+  const float *px = CDATA(x);
+  const float *py = CDATA(y);
+  const float *pgy = CDATA(gy);
+  float *pgx = MDATA(gx);
+  const std::uint32_t size = x.shape().size();
+  REPEAT_OP(i, size, pgx[i] += k * pgy[i] * py[i] / px[i]);
+}
 
 CPUDEV_FW_X_SCALAR(add_scalar, src_x[i] + *src_k);
 CPUDEV_FW_X_SCALAR(subtract_scalar_r, src_x[i] - *src_k);

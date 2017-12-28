@@ -88,6 +88,8 @@ private:
   void prelu_fw_impl(const Tensor &x, float k, Tensor &y) override;
   void elu_fw_impl(const Tensor &x, float k, Tensor &y) override;
 
+  void pown_fw_impl(const Tensor &x, int32_t k, Tensor &y) override;
+
   void add_const_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
   void subtract_const_r_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
   void subtract_const_l_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
@@ -98,6 +100,8 @@ private:
   void pow_const_l_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
   void prelu_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
   void elu_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
+
+  void pown_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, int32_t k, Tensor &gx) override;
 
   void add_scalar_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override;
   void subtract_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override;

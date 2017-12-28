@@ -4,7 +4,6 @@
 #include <cmath>
 #include <cstdint>
 #include <initializer_list>
-#include <limits>
 #include <vector>
 
 #include <primitiv/error.h>

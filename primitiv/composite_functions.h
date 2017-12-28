@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_COMPOSITE_FUNCTIONS_H_
 #define PRIMITIV_COMPOSITE_FUNCTIONS_H_
 
+#include <limits>
 #include <primitiv/arithmetic.h>
 #include <primitiv/basic_functions.h>
 
