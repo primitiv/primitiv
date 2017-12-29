@@ -35,12 +35,9 @@ inline const primitiv::cpp_name *to_cpp_ptr(const c_name *instance) { \
 }
 
 #define PRIMITIV_C_VAL_TO_PTR(cpp_name, c_name) \
-inline c_name *to_c_ptr_from_value(const primitiv::cpp_name &instance) { \
-  return reinterpret_cast<c_name*>(new primitiv::cpp_name(instance)); \
-} \
 inline c_name *to_c_ptr_from_value(primitiv::cpp_name &&instance) { \
   return reinterpret_cast<c_name*>( \
-      new primitiv::cpp_name(std::move(instance))); \
+      new primitiv::cpp_name(std::forward<primitiv::cpp_name>(instance))); \
 }
 
 #define PRIMITIV_C_HANDLE_EXCEPTIONS \
