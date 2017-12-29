@@ -1,6 +1,8 @@
 /* Copyright 2017 The primitiv Authors. All Rights Reserved. */
 #include <primitiv/config.h>
 
+#include <string>
+
 #include <primitiv/c/internal.h>
 #include <primitiv/c/status.h>
 
