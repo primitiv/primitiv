@@ -14,9 +14,10 @@ typedef enum primitiv_Status {
   PRIMITIV_ERROR = -1,
 } primitiv_Status;
 
-extern PRIMITIV_C_API const char *primitiv_Status_get_message();
+extern PRIMITIV_C_API primitiv_Status primitiv_Status_get_message(
+    char *buffer, size_t *buffer_size);
 
-extern PRIMITIV_C_API void primitiv_Status_reset();
+extern PRIMITIV_C_API primitiv_Status primitiv_Status_reset();
 
 #ifdef __cplusplus
 }  // end extern "C"

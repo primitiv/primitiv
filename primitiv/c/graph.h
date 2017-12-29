@@ -42,15 +42,19 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_clone(
 /**
  * Deletes the Node object.
  * @param node Pointer of a handler.
+ * @return Status code.
  */
-extern PRIMITIV_C_API void primitiv_Node_delete(primitiv_Node *node);
+extern PRIMITIV_C_API primitiv_Status primitiv_Node_delete(primitiv_Node *node);
 
 /**
  * Returns whether the node is valid or not.
  * @param node Pointer of a handler.
- * @return true or false w.r.t. the node is valid or not.
+ * @param valid Pointer to receive a result: true or false w.r.t. the node is
+ *              valid or not.
+ * @return Status code.
  */
-extern PRIMITIV_C_API _Bool primitiv_Node_valid(const primitiv_Node *node);
+extern PRIMITIV_C_API primitiv_Status primitiv_Node_valid(
+    const primitiv_Node *node, _Bool *valid);
 
 /**
  * Returns corresponding Graph object.
@@ -165,8 +169,10 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Graph_new(
 /**
  * Deletes the Graph object.
  * @param graph Pointer of a handler.
+ * @return Status code.
  */
-extern PRIMITIV_C_API void primitiv_Graph_delete(primitiv_Graph *graph);
+extern PRIMITIV_C_API primitiv_Status primitiv_Graph_delete(
+    primitiv_Graph *graph);
 
 /**
  * Retrieves the current default graph.
@@ -179,16 +185,20 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Graph_get_default(
 /**
  * Specifies a new default graph.
  * @param graph Pointer of the new default graph.
+ * @return Status code.
  */
-extern PRIMITIV_C_API void primitiv_Graph_set_default(primitiv_Graph *graph);
+extern PRIMITIV_C_API primitiv_Status primitiv_Graph_set_default(
+    primitiv_Graph *graph);
 
 /**
  * Clear all operators in the graph.
  * @param graph Pointer of a handler.
  * @remarks After calling this method, all Node objects supplied by the graph
  *          itself is invalidated.
+ * @return Status code.
  */
-extern PRIMITIV_C_API void primitiv_Graph_clear(primitiv_Graph *graph);
+extern PRIMITIV_C_API primitiv_Status primitiv_Graph_clear(
+    primitiv_Graph *graph);
 
 /**
  * Calculates the value of given node.
@@ -256,10 +266,11 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Graph_dump(
 /**
  * Returns the number of operators in the computation graph.
  * @param graph Pointer of a handler.
- * @return Number of nodes.
+ * @param num Pointer to receive the number of nodes.
+ * @return Status code.
  */
-extern PRIMITIV_C_API uint32_t primitiv_Graph_num_operators(
-    const primitiv_Graph *graph);
+extern PRIMITIV_C_API primitiv_Status primitiv_Graph_num_operators(
+    const primitiv_Graph *graph, uint32_t *num);
 
 #ifdef __cplusplus
 }  // end extern "C"

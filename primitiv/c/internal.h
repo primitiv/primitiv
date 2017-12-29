@@ -48,6 +48,11 @@ catch (const std::exception &e) { \
   return primitiv::c::internal::ErrorHandler::get_instance().handle(e); \
 }
 
+#define PRIMITIV_C_CHECK_PTR_ARG(var) \
+if (!var) { \
+  THROW_ERROR("Argument `"#var"` must not be null."); \
+}
+
 struct primitiv_Device;
 struct primitiv_Node;
 struct primitiv_Graph;

@@ -22,8 +22,9 @@ primitiv_Status primitiv_devices_CUDA_new_with_seed(
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-uint32_t primitiv_devices_CUDA_num_devices() {
-  return CUDA::num_devices();
-}
+primitiv_Status primitiv_devices_CUDA_num_devices(uint32_t *num_devices) try {
+  *num_devices = CUDA::num_devices();
+  return ::primitiv_Status::PRIMITIV_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
 }  // end extern "C"

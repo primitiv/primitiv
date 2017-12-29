@@ -20,7 +20,7 @@ typedef struct primitiv_Shape primitiv_Shape;
  * @param shape Pointer to receive a handler.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Shape_new( \
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_new(
     primitiv_Shape **shape);
 
 /**
@@ -37,148 +37,178 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Shape_new_with_dims(
 /**
  * Deletes the Shape object.
  * @param shape Pointer of a handler.
+ * @return Status code.
  */
-extern PRIMITIV_C_API void primitiv_Shape_delete(primitiv_Shape *shape);
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_delete(
+    primitiv_Shape *shape);
 
 /**
  * Returns the size of the i-th dimension.
  * @param shape Pointer of a handler.
  * @param i Dimension number to check.
- * @return Size of the i-th dimension.
+ * @param dim_size Pointer to receive the size of the i-th dimension.
+ * @return Status code.
  */
-extern PRIMITIV_C_API uint32_t primitiv_Shape_op_getitem(
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_op_getitem(
     const primitiv_Shape *shape,
-    uint32_t i);
+    uint32_t i,
+    uint32_t *dim_size);
 
 /**
  * Returns the dimension array.
  * @param shape Pointer of a handler.
  * @param dims Pointer of an array to receive the dimensions.
  * @param n_dims Pointer to receive the number of the dimensions.
+ * @return Status code.
  */
-extern PRIMITIV_C_API void primitiv_Shape_dims(
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_dims(
     const primitiv_Shape *shape, uint32_t *dims, size_t *n_dims);
 
 /**
  * Returns the depth (length of non-1 dimensions) of the shape.
  * @param shape Pointer of a handler.
- * @return The depth of the shape.
+ * @param depth Pointer to receive the depth of the shape.
+ * @return Status code.
  */
-extern PRIMITIV_C_API uint32_t primitiv_Shape_depth(
-    const primitiv_Shape *shape);
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_depth(
+    const primitiv_Shape *shape, uint32_t *depth);
 
 /**
  * Returns the batch size.
  * @param shape Pointer of a handler.
- * @return Batch size.
+ * @param batch Pointer to receive the batch size.
+ * @return Status code.
  */
-extern PRIMITIV_C_API uint32_t primitiv_Shape_batch(
-    const primitiv_Shape *shape);
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_batch(
+    const primitiv_Shape *shape, uint32_t *batch);
 
 /**
  * Returns the number of elements in each sample.
  * This value is equal to the product of all dimensions.
  * @param shape Pointer of a handler.
- * @return Number of elements.
+ * @param volume Pointer to receive the number of elements.
+ * @return Status code.
  */
-extern PRIMITIV_C_API uint32_t primitiv_Shape_volume(
-    const primitiv_Shape *shape);
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_volume(
+    const primitiv_Shape *shape, uint32_t *volume);
 
 /**
  * Returns the number of elements in 1 to specified dim.
  * @param shape Pointer of a handler.
  * @param dim Upper bound of the dimension.
- * @return `dims[0] * dims[1] * ... * dims[dim-1]`
+ * @param lower_volume Pointer to receive the number of elements that is equal
+ *                     to `dims[0] * dims[1] * ... * dims[dim-1]`
+ * @return Status code.
  */
-extern PRIMITIV_C_API uint32_t primitiv_Shape_lower_volume(
-    const primitiv_Shape *shape, uint32_t dim);
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_lower_volume(
+    const primitiv_Shape *shape, uint32_t dim, uint32_t *lower_volume);
 
 /**
  * Returns the number of elements in all samples of the mini-batch.
  * This value is equal to `batch() * volume()`.
  * @param shape Pointer of a handler.
- * @return Number of elements.
+ * @param size Pointer to receive the number of elements.
+ * @return Status code.
  */
-extern PRIMITIV_C_API uint32_t primitiv_Shape_size(const primitiv_Shape *shape);
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_size(
+    const primitiv_Shape *shape, uint32_t *size);
 
 /**
  * Returns a string representation of the shape.
  * The format is: "[n,m,...]xk"
  * @param shape Pointer of a handler.
- * @param buffer Pointer to receive a char sequence.
+ * @param buffer Pointer to receive the encoded string.
  * @param buffer_size Pointer to receive a length of the char sequence.
- * @return Encoded string.
+ * @return Status code.
  */
-extern PRIMITIV_C_API void primitiv_Shape_to_string(
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_to_string(
     const primitiv_Shape *shape, char *buffer, size_t *buffer_size);
 
 /**
  * Compares this and other shape.
  * @param shape Pointer of a handler.
  * @param rhs Shape object to compare.
- * @return true if this and rhs are same, false otherwise.
+ * @param eq Pointer to receive a result: true if this and rhs are same, false
+ *           otherwise.
+ * @return Status code.
  */
-extern PRIMITIV_C_API _Bool primitiv_Shape_op_eq(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs);
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_op_eq(
+    const primitiv_Shape *shape, const primitiv_Shape *rhs, _Bool *eq);
 
 /**
  * Compares this and other shape.
  * @param shape Pointer of a handler.
  * @param rhs Shape object to compare.
- * @return true if this and rhs are not same, false otherwise.
+ * @param ne Pointer to receive a result: true if this and rhs are not same,
+ *           false otherwise.
+ * @return Status code.
  */
-extern PRIMITIV_C_API _Bool primitiv_Shape_op_ne(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs);
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_op_ne(
+    const primitiv_Shape *shape, const primitiv_Shape *rhs, _Bool *ne);
 
 /**
  * Checks whether the shape has minibatch or not.
  * @param shape Pointer of a handler.
- * @return true if the shape has minibatch, false otherwise.
+ * @param has_batch Poniter to receive a result: true if the shape has
+ *                  minibatch, false otherwise.
+ * @return Status code.
  */
-extern PRIMITIV_C_API _Bool primitiv_Shape_has_batch(
-    const primitiv_Shape *shape);
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_has_batch(
+    const primitiv_Shape *shape, _Bool *has_batch);
 
 /**
  * Checks whether two batch size is compatible (broadcastable) or not.
  * @param shape Pointer of a handler.
  * @param rhs Shape object to compare.
- * @return true if both batch size is compatible, false otherwise.
+ * @param has_compatible_batch Pointer to receive a result: true if both batch
+ *                             size is compatible, false otherwise.
+ * @return Status code.
  */
-extern PRIMITIV_C_API _Bool primitiv_Shape_has_compatible_batch(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs);
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_has_compatible_batch(
+    const primitiv_Shape *shape, const primitiv_Shape *rhs,
+    _Bool *has_compatible_batch);
 
 /**
  * Checks whether the shape is a scalar or not.
  * @param shape Pointer of a handler.
- * @return true if the shape is a scalar, false otherwise.
+ * @param is_scalar Pointer to receive a result: true if the shape is a scalar,
+ *                  false otherwise.
+ * @return Status code.
  */
-extern PRIMITIV_C_API _Bool primitiv_Shape_is_scalar(
-    const primitiv_Shape *shape);
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_is_scalar(
+    const primitiv_Shape *shape, _Bool *is_scalar);
 
 /**
  * Checks whether the shape is a row vector or not.
  * @param shape Pointer of a handler.
- * @return true if the shape is a row vector, false otherwise.
+ * @param is_row_vector Pointer to receive a result: true if the shape is a row
+ *                      vector, false otherwise.
+ * @return Status code.
  */
-extern PRIMITIV_C_API _Bool primitiv_Shape_is_row_vector(
-    const primitiv_Shape *shape);
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_is_row_vector(
+    const primitiv_Shape *shape, _Bool *is_row_vector);
 
 /**
  * Checks whether the shape is a vector or a matrix, or not.
  * @param shape Pointer of a handler.
- * @return true if the shape is a vector or a matrix, false otherwise.
+ * @param is_matrix Pointer to receive a result: true if the shape is a vector
+ *                  or a matrix, false otherwise.
+ * @return Status code.
  */
-extern PRIMITIV_C_API _Bool primitiv_Shape_is_matrix(
-    const primitiv_Shape *shape);
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_is_matrix(
+    const primitiv_Shape *shape, _Bool *is_matrix);
 
 /**
  * Checks whether two shapes have completely same dimensions.
  * @param shape Pointer of a handler.
  * @param rhs Shape object to compare.
- * @return true if both shape have same dimensions, false otherwise.
+ * @param has_same_dims Pointer to receive a result: true if both shape have
+ *                      same dimensions, false otherwise.
+ * @return Status code.
  */
-extern PRIMITIV_C_API _Bool primitiv_Shape_has_same_dims(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs);
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_has_same_dims(
+    const primitiv_Shape *shape, const primitiv_Shape *rhs,
+    _Bool *has_same_dims);
 
 /**
  * Checks whether two shapes have same dimensions without an axis.
@@ -186,11 +216,14 @@ extern PRIMITIV_C_API _Bool primitiv_Shape_has_same_dims(
  * @param shape Pointer of a handler.
  * @param rhs Shape object to compare.
  * @param dim Dimension to be ignored.
- * @return true if both shape have same dimensions regardless the dimension
- *         `dim`, false otherwise.
+ * @param has_same_loo_dims Pointer to receive a result: true if both shape have
+ *                          same dimensions regardless the dimension `dim`,
+ *                          false otherwise.
+ * @return Status code.
  */
-extern PRIMITIV_C_API _Bool primitiv_Shape_has_same_loo_dims(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs, uint32_t dim);
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_has_same_loo_dims(
+    const primitiv_Shape *shape, const primitiv_Shape *rhs, uint32_t dim,
+    _Bool *has_same_loo_dims);
 
 /**
  * Creates a new shape which have one different dimension.
@@ -198,6 +231,7 @@ extern PRIMITIV_C_API _Bool primitiv_Shape_has_same_loo_dims(
  * @param dim Dimension to be changed.
  * @param m New size of the dimension `dim`.
  * @param new_shape Pointer for a new shape.
+ * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Shape_resize_dim(
     const primitiv_Shape *shape, uint32_t dim, uint32_t m,
@@ -208,6 +242,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Shape_resize_dim(
  * @param shape Pointer of a handler.
  * @param batch New batch size.
  * @param new_shape Pointer for a new shape.
+ * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Shape_resize_batch(
     const primitiv_Shape *shape, uint32_t batch, primitiv_Shape **new_shape);
@@ -217,6 +252,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Shape_resize_batch(
  * @param shape Pointer of a handler.
  * @param dim Dimension to be updated.
  * @param m New size of the dimension `dim`.
+ * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Shape_update_dim(
     primitiv_Shape *shape, uint32_t dim, uint32_t m);
@@ -225,6 +261,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Shape_update_dim(
  * Directly updates the batch size.
  * @param shape Pointer of a handler.
  * @param batch New batch size.
+ * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Shape_update_batch(
     primitiv_Shape *shape, uint32_t batch);

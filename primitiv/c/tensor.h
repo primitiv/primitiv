@@ -36,18 +36,22 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_clone(
 /**
  * Deletes the Tensor object.
  * @param tensor Pointer of a handler.
+ * @return Status code.
  */
-extern PRIMITIV_C_API void primitiv_Tensor_delete(primitiv_Tensor *tensor);
+extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_delete(
+    primitiv_Tensor *tensor);
 
 /**
  * Check whether the object is valid or not.
  * @param tensor Pointer of a handler.
- * @return true if the object is valid, false otherwise.
+ * @param valid Pointer to receive a result: the true if the object is valid,
+ *              false otherwise.
+ * @return Status code.
  * @remarks This returns false when the object is created through the default
  *          constructor or the object had been moved.
  */
-extern PRIMITIV_C_API _Bool primitiv_Tensor_valid(
-    const primitiv_Tensor *tensor);
+extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_valid(
+    const primitiv_Tensor *tensor, _Bool *valid);
 
 /**
  * Returns the shape of the Tensor.

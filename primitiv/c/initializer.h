@@ -18,8 +18,9 @@ typedef struct primitiv_Initializer primitiv_Initializer;
 /**
  * Deletes the Initializer object.
  * @param initializer Pointer of a handler.
+ * @return Status code.
  */
-extern PRIMITIV_C_API void primitiv_Initializer_delete(
+extern PRIMITIV_C_API primitiv_Status primitiv_Initializer_delete(
     primitiv_Initializer *initializer);
 
 /**

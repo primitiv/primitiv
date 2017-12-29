@@ -18,8 +18,9 @@ typedef struct primitiv_Optimizer primitiv_Optimizer;
 /**
  * Deletes the Optimizer object.
  * @param optimizer Pointer of a handler.
+ * @return Status code.
  */
-extern PRIMITIV_C_API void primitiv_Optimizer_delete(
+extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_delete(
     primitiv_Optimizer *optimizer);
 
 /**
@@ -43,26 +44,30 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_save(
 /**
  * Retrieves current epoch.
  * @param optimizer Pointer of a handler.
- * @return Current epoch.
+ * @param epoch Pointer to receive the current epoch.
+ * @return Status code.
  */
-extern PRIMITIV_C_API uint32_t primitiv_Optimizer_get_epoch(
-    const primitiv_Optimizer *optimizer);
+extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_get_epoch(
+    const primitiv_Optimizer *optimizer, uint32_t *epoch);
 
 /**
  * Sets current epoch.
  * @param optimizer Pointer of a handler.
  * @param epoch New epoch.
+ * @return Status code.
  */
-extern PRIMITIV_C_API void primitiv_Optimizer_set_epoch(
+extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_set_epoch(
     primitiv_Optimizer *optimizer, uint32_t epoch);
 
 /**
  * Retrieves current learning rate scaling factor.
  * @param optimizer Pointer of a handler.
- * @return The scaling factor.
+ * @param scale Pointer to receive the scaling factor.
+ * @return Status code.
  */
-extern PRIMITIV_C_API float primitiv_Optimizer_get_learning_rate_scaling(
-    const primitiv_Optimizer *optimizer);
+extern PRIMITIV_C_API
+primitiv_Status primitiv_Optimizer_get_learning_rate_scaling(
+    const primitiv_Optimizer *optimizer, float *scale);
 
 /**
  * Sets learning rate scaling factor.
@@ -78,10 +83,11 @@ primitiv_Status primitiv_Optimizer_set_learning_rate_scaling(
 /**
  * Retrieves current L2 decay strength.
  * @param optimizer Pointer of a handler.
- * @return Current L2 decay strength.
+ * @param strength Pointer to receive the current L2 decay strength.
+ * @return Status code.
  */
-extern PRIMITIV_C_API float primitiv_Optimizer_get_weight_decay(
-    const primitiv_Optimizer *optimizer);
+extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_get_weight_decay(
+    const primitiv_Optimizer *optimizer, float *strength);
 
 /**
  * Sets L2 decay strength.
@@ -96,10 +102,11 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_set_weight_decay(
 /**
  * Retrieves current gradient clipping threshold.
  * @param optimizer Pointer of a handler.
- * @return Current gradient clipping threshold.
+ * @param threshold Current gradient clipping threshold.
+ * @return Status code.
  */
-extern PRIMITIV_C_API float primitiv_Optimizer_get_gradient_clipping(
-    const primitiv_Optimizer *optimizer);
+extern PRIMITIV_C_API primitiv_Status primitiv_Optimizer_get_gradient_clipping(
+    const primitiv_Optimizer *optimizer, float *threshold);
 
 /**
  * Sets gradient clipping threshold.

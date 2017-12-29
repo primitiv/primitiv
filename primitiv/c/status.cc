@@ -8,12 +8,21 @@ using primitiv::c::internal::ErrorHandler;
 
 extern "C" {
 
-const char *primitiv_Status_get_message() {
-  return ErrorHandler::get_instance().get_message();
-}
+primitiv_Status primitiv_Status_get_message(
+    char *buffer, size_t *buffer_size) try {
+  const std::string str = ErrorHandler::get_instance().get_message();
+  if (buffer_size) {
+    *buffer_size = str.length();
+  }
+  if (buffer) {
+    std::strcpy(buffer, str.c_str());
+  }
+  return ::primitiv_Status::PRIMITIV_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Status_reset() {
-  return ErrorHandler::get_instance().reset();
-}
+primitiv_Status primitiv_Status_reset() try {
+  ErrorHandler::get_instance().reset();
+  return ::primitiv_Status::PRIMITIV_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
 }  // end extern "C"

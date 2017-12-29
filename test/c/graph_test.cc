@@ -66,7 +66,9 @@ TEST_F(CGraphTest, CheckInvalidNode) {
   ::primitiv_Status_reset();
   ::primitiv_Node *node;
   ASSERT_EQ(::primitiv_Status::PRIMITIV_OK, ::primitiv_Node_new(&node));
-  EXPECT_FALSE(::primitiv_Node_valid(node));
+  _Bool valid;
+  ::primitiv_Node_valid(node, &valid);
+  EXPECT_FALSE(valid);
   ::primitiv_Graph *graph;
   EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,
             ::primitiv_Node_graph(node, &graph));
@@ -101,7 +103,9 @@ TEST_F(CGraphTest, CheckClear) {
   ASSERT_EQ(::primitiv_Status::PRIMITIV_OK, ::primitiv_Graph_new(&g));
   ::primitiv_Graph_set_default(g);
 
-  EXPECT_EQ(0u, ::primitiv_Graph_num_operators(g));
+  uint32_t num;
+  ::primitiv_Graph_num_operators(g, &num);
+  EXPECT_EQ(0u, num);
 
   {
     ::primitiv_Shape *shape;
@@ -113,11 +117,13 @@ TEST_F(CGraphTest, CheckClear) {
     ::primitiv_Node *node2;
     ::primitiv_node_func_input(shape, values, 1, nullptr, nullptr, &node2);
     ::primitiv_Node_delete(node2);
-    EXPECT_EQ(2u, ::primitiv_Graph_num_operators(g));
+    ::primitiv_Graph_num_operators(g, &num);
+    EXPECT_EQ(2u, num);
   }
 
   ::primitiv_Graph_clear(g);
-  EXPECT_EQ(0u, ::primitiv_Graph_num_operators(g));
+  ::primitiv_Graph_num_operators(g, &num);
+  EXPECT_EQ(0u, num);
 
   {
     ::primitiv_Shape *shape;
@@ -130,15 +136,18 @@ TEST_F(CGraphTest, CheckClear) {
     ::primitiv_Node_delete(node);
     ::primitiv_node_func_input(shape, values, 1, nullptr, nullptr, &node);
     ::primitiv_Node_delete(node);
-    EXPECT_EQ(3u, ::primitiv_Graph_num_operators(g));
+    ::primitiv_Graph_num_operators(g, &num);
+    EXPECT_EQ(3u, num);
   }
 
   ::primitiv_Graph_clear(g);
-  EXPECT_EQ(0u, ::primitiv_Graph_num_operators(g));
+  ::primitiv_Graph_num_operators(g, &num);
+  EXPECT_EQ(0u, num);
 
   // Clear empty graph.
   ::primitiv_Graph_clear(g);
-  EXPECT_EQ(0u, ::primitiv_Graph_num_operators(g));
+  ::primitiv_Graph_num_operators(g, &num);
+  EXPECT_EQ(0u, num);
 
   ::primitiv_Graph_delete(g);
 }
@@ -193,7 +202,9 @@ TEST_F(CGraphTest, CheckForward) {
   nodes.emplace_back(node10);
 
   EXPECT_EQ(10u, nodes.size());
-  EXPECT_EQ(10u, ::primitiv_Graph_num_operators(g));
+  uint32_t num;
+  ::primitiv_Graph_num_operators(g, &num);
+  EXPECT_EQ(10u, num);
 
   // Dump the graph to the output log.
   std::size_t length;
@@ -226,7 +237,9 @@ TEST_F(CGraphTest, CheckForward) {
     ::primitiv_Device *device;
     ::primitiv_Node_shape(nodes[i], &shape);
     ::primitiv_Node_device(nodes[i], &device);
-    EXPECT_TRUE(::primitiv_Shape_op_eq(expected_shapes[i], shape));
+    _Bool eq;
+    ::primitiv_Shape_op_eq(expected_shapes[i], shape, &eq);
+    EXPECT_TRUE(eq);
     EXPECT_EQ(dev, device);
     ::primitiv_Shape_delete(shape);
     // ::primitiv_Device_delete(device);  // do not delete the reference
@@ -255,7 +268,9 @@ TEST_F(CGraphTest, CheckForward) {
     // inner value.
     const ::primitiv_Tensor *val;
     ::primitiv_Graph_forward(g, nodes[i], &val);
-    ASSERT_TRUE(::primitiv_Tensor_valid(val));
+    _Bool valid;
+    ::primitiv_Tensor_valid(val, &valid);
+    ASSERT_TRUE(valid);
 
     std::size_t size1;
     ::primitiv_Tensor_to_array(val, nullptr, &size1);

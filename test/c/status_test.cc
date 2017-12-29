@@ -13,14 +13,24 @@ namespace c {
 namespace internal {
 
 TEST_F(CStatusTest, CheckMessage) {
-  EXPECT_STREQ("OK", ::primitiv_Status_get_message());
+  std::size_t length;
+  ::primitiv_Status_get_message(nullptr, &length);
+  char buffer1[length];
+  ::primitiv_Status_get_message(buffer1, nullptr);
+  EXPECT_STREQ("OK", buffer1);
   ::primitiv_Tensor *tensor;
   ASSERT_EQ(::primitiv_Status::PRIMITIV_OK, ::primitiv_Tensor_new(&tensor));
-  EXPECT_STREQ("OK", ::primitiv_Status_get_message());
+  ::primitiv_Status_get_message(nullptr, &length);
+  char buffer2[length];
+  ::primitiv_Status_get_message(buffer2, nullptr);
+  EXPECT_STREQ("OK", buffer2);
   ::primitiv_Device *device;
   EXPECT_EQ(::primitiv_Status::PRIMITIV_ERROR,
             ::primitiv_Tensor_device(tensor, &device));
-  EXPECT_STRNE("OK", ::primitiv_Status_get_message());
+  ::primitiv_Status_get_message(nullptr, &length);
+  char buffer3[length];
+  ::primitiv_Status_get_message(buffer3, nullptr);
+  EXPECT_STRNE("OK", buffer3);
 }
 
 }  // namespace internal

@@ -28,20 +28,25 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Device_get_default(
 /**
  * Specifies a new default device.
  * @param device Pointer of the new default device.
+ * @return Status code.
  */
-extern PRIMITIV_C_API void primitiv_Device_set_default(primitiv_Device *device);
+extern PRIMITIV_C_API primitiv_Status primitiv_Device_set_default(
+    primitiv_Device *device);
 
 /**
  * Deletes the Device object.
  * @param device Pointer of a handler.
+ * @return Status code.
  */
-extern PRIMITIV_C_API void primitiv_Device_delete(primitiv_Device *device);
+extern PRIMITIV_C_API primitiv_Status primitiv_Device_delete(
+    primitiv_Device *device);
 
 /**
  * Prints device description to stderr.
  * @param device Pointer of a handler.
+ * @return Status code.
  */
-extern PRIMITIV_C_API void primitiv_Device_dump_description(
+extern PRIMITIV_C_API primitiv_Status primitiv_Device_dump_description(
     const primitiv_Device *device);
 
 #ifdef __cplusplus

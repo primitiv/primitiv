@@ -23,12 +23,16 @@ primitiv_Status primitiv_devices_OpenCL_new_with_seed(
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-uint32_t primitiv_devices_OpenCL_num_platforms() {
-  return OpenCL::num_platforms();
-}
+primitiv_Status primitiv_devices_OpenCL_num_platforms(
+    uint32_t *num_platforms) try {
+  *num_platforms = OpenCL::num_platforms();
+  return ::primitiv_Status::PRIMITIV_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-uint32_t primitiv_devices_OpenCL_num_devices(uint32_t platform_id) {
-  return OpenCL::num_devices(platform_id);
-}
+primitiv_Status primitiv_devices_OpenCL_num_devices(
+    uint32_t platform_id, uint32_t *num_devices) try {
+  *num_devices = OpenCL::num_devices(platform_id);
+  return ::primitiv_Status::PRIMITIV_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
 }  // end extern "C"

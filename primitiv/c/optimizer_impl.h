@@ -23,12 +23,11 @@ extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_SGD_new(
 /**
  * Returns the learning rate.
  * @param optimizer Pointer of a handler.
- * @return Learning rate.
+ * @param eta Pointer to receive the learning rate.
+ * @return Status code.
  */
-extern PRIMITIV_C_API float primitiv_optimizers_SGD_eta(
-    const primitiv_Optimizer *optimizer);
-
-// @TODO: Implement getter/setter of primitiv_optimizers_SGD configs
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_SGD_eta(
+    const primitiv_Optimizer *optimizer, float *eta);
 
 /**
  * Creates a new (MomentumSGD) Optimizer object.
@@ -43,20 +42,20 @@ extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_MomentumSGD_new(
 /**
  * Returns the hyperparameter eta.
  * @param optimizer Pointer of a handler.
- * @return The value of eta.
+ * @param eta Pointer to receive the value of eta.
+ * @return Status code.
  */
-extern PRIMITIV_C_API float primitiv_optimizers_MomentumSGD_eta(
-    const primitiv_Optimizer *optimizer);
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_MomentumSGD_eta(
+    const primitiv_Optimizer *optimizer, float *eta);
 
 /**
  * Returns the hyperparameter momentum.
  * @param optimizer Pointer of a handler.
- * @return The value of momentum.
+ * @param momentum Pointer to receive the value of momentum.
+ * @return Status code.
  */
-extern PRIMITIV_C_API float primitiv_optimizers_MomentumSGD_momentum(
-    const primitiv_Optimizer *optimizer);
-
-// @TODO: Implement getter/setter of primitiv_MementumSGD configs
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_MomentumSGD_momentum(
+    const primitiv_Optimizer *optimizer, float *momentum);
 
 /**
  * Creates a new (AdaGrad) Optimizer object.
@@ -71,20 +70,20 @@ extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaGrad_new(
 /**
  * Returns the hyperparameter eta.
  * @param optimizer Pointer of a handler.
- * @return The value of eta.
+ * @param eta Pointer to receive the value of eta.
+ * @return Status code.
  */
-extern PRIMITIV_C_API float primitiv_optimizers_AdaGrad_eta(
-    const primitiv_Optimizer *optimizer);
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaGrad_eta(
+    const primitiv_Optimizer *optimizer, float *eta);
 
 /**
  * Returns the hyperparameter eps.
  * @param optimizer Pointer of a handler.
- * @return The value of eps.
+ * @param eps Pointer to receive the value of eps.
+ * @return Status code.
  */
-extern PRIMITIV_C_API float primitiv_optimizers_AdaGrad_eps(
-    const primitiv_Optimizer *optimizer);
-
-// @TODO: Implement getter/setter of primitiv_optimizers_AdaGrad configs
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaGrad_eps(
+    const primitiv_Optimizer *optimizer, float *eps);
 
 /**
  * Creates a new (RMSProp) Optimizer object.
@@ -100,28 +99,29 @@ extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_RMSProp_new(
 /**
  * Returns the hyperparameter eta.
  * @param optimizer Pointer of a handler.
- * @return The value of eta.
+ * @param eta Pointer to receive the value of eta.
+ * @return Status code.
  */
-extern PRIMITIV_C_API float primitiv_optimizers_RMSProp_eta(
-    const primitiv_Optimizer *optimizer);
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_RMSProp_eta(
+    const primitiv_Optimizer *optimizer, float *eta);
 
 /**
  * Returns the hyperparameter alpha.
  * @param optimizer Pointer of a handler.
- * @return The value of alpha.
+ * @param alpha Pointer to receive the value of alpha.
+ * @return Status code.
  */
-extern PRIMITIV_C_API float primitiv_optimizers_RMSProp_alpha(
-    const primitiv_Optimizer *optimizer);
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_RMSProp_alpha(
+    const primitiv_Optimizer *optimizer, float *alpha);
 
 /**
  * Returns the hyperparameter eps.
  * @param optimizer Pointer of a handler.
- * @return The value of eps.
+ * @param eps Pointer to receive the value of eps.
+ * @return Status code.
  */
-extern PRIMITIV_C_API float primitiv_optimizers_RMSProp_eps(
-    const primitiv_Optimizer *optimizer);
-
-// @TODO: Implement getter/setter of primitiv_optimizers_RMSProp configs
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_RMSProp_eps(
+    const primitiv_Optimizer *optimizer, float *eps);
 
 /**
  * Creates a new (AdaDelta) Optimizer object.
@@ -136,20 +136,20 @@ extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaDelta_new(
 /**
  * Returns the hyperparameter rho.
  * @param optimizer Pointer of a handler.
- * @return The value of rho.
+ * @param rho Pointer to receive the value of rho.
+ * @return Status code.
  */
-extern PRIMITIV_C_API float primitiv_optimizers_AdaDelta_rho(
-    const primitiv_Optimizer *optimizer);
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaDelta_rho(
+    const primitiv_Optimizer *optimizer, float *rho);
 
 /**
  * Returns the hyperparameter eps.
  * @param optimizer Pointer of a handler.
- * @return The value of eps.
+ * @param eps Pointer to receive the value of eps.
+ * @return Status code.
  */
-extern PRIMITIV_C_API float primitiv_optimizers_AdaDelta_eps(
-    const primitiv_Optimizer *optimizer);
-
-// @TODO: Implement getter/setter of primitiv_optimizers_AdaDelta configs
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaDelta_eps(
+    const primitiv_Optimizer *optimizer, float *eps);
 
 /**
  * Creates a new Adam object.
@@ -167,34 +167,38 @@ extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_Adam_new(
 /**
  * Returns the hyperparameter alpha.
  * @param optimizer Pointer of a handler.
- * @return The value of alpha.
+ * @param alpha Pointer to receive the value of alpha.
+ * @return Status code.
  */
-extern PRIMITIV_C_API float primitiv_optimizers_Adam_alpha(
-    const primitiv_Optimizer *optimizer);
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_Adam_alpha(
+    const primitiv_Optimizer *optimizer, float *alpha);
 
 /**
  * Returns the hyperparameter beta1.
  * @param optimizer Pointer of a handler.
- * @return The value of beta1.
+ * @param beta1 Pointer to receive the value of beta1.
+ * @return Status code.
  */
-extern PRIMITIV_C_API float primitiv_optimizers_Adam_beta1(
-    const primitiv_Optimizer *optimizer);
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_Adam_beta1(
+    const primitiv_Optimizer *optimizer, float *beta1);
 
 /**
  * Returns the hyperparameter beta2.
  * @param optimizer Pointer of a handler.
- * @return The value of beta2.
+ * @param beta2 Pointer to receive the value of beta2.
+ * @return Status code.
  */
-extern PRIMITIV_C_API float primitiv_optimizers_Adam_beta2(
-    const primitiv_Optimizer *optimizer);
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_Adam_beta2(
+    const primitiv_Optimizer *optimizer, float *beta2);
 
 /**
  * Returns the hyperparameter eps.
  * @param optimizer Pointer of a handler.
- * @return The value of eps.
+ * @param eps Pointer to receive the value of eps.
+ * @return Status code.
  */
-extern PRIMITIV_C_API float primitiv_optimizers_Adam_eps(
-    const primitiv_Optimizer *optimizer);
+extern PRIMITIV_C_API primitiv_Status primitiv_optimizers_Adam_eps(
+    const primitiv_Optimizer *optimizer, float *eps);
 
 #ifdef __cplusplus
 }  // end extern "C"

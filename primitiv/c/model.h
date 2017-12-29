@@ -28,8 +28,10 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Model_new(
 /**
  * Deletes the Model object.
  * @param model Pointer of a handler.
+ * @return Status code.
  */
-extern PRIMITIV_C_API void primitiv_Model_delete(primitiv_Model *model);
+extern PRIMITIV_C_API primitiv_Status primitiv_Model_delete(
+    primitiv_Model *model);
 
 /**
  * Loads all parameters from a file.

@@ -34,9 +34,11 @@ extern PRIMITIV_C_API primitiv_Status primitiv_devices_CUDA_new_with_seed(
 
 /**
  * Retrieves the number of active hardwares.
- * @return Number of active hardwares.
+ * @param num_devices Pointer to receive the number of active hardwares.
+ * @return Status code.
  */
-extern PRIMITIV_C_API uint32_t primitiv_devices_CUDA_num_devices();
+extern PRIMITIV_C_API primitiv_Status primitiv_devices_CUDA_num_devices(
+    uint32_t *num_devices);
 
 
 #ifdef __cplusplus
