@@ -272,15 +272,15 @@ TEST_F(ShapeTest, CheckIsScalar) {
   EXPECT_FALSE(Shape({2, 3, 4}, 5).is_scalar());
 }
 
-TEST_F(ShapeTest, CheckIsRowVector) {
-  EXPECT_TRUE(Shape().is_row_vector());
-  EXPECT_TRUE(Shape({2}).is_row_vector());
-  EXPECT_FALSE(Shape({2, 3}).is_row_vector());
-  EXPECT_FALSE(Shape({2, 3, 4}).is_row_vector());
-  EXPECT_TRUE(Shape({}, 5).is_row_vector());
-  EXPECT_TRUE(Shape({2}, 5).is_row_vector());
-  EXPECT_FALSE(Shape({2, 3}, 5).is_row_vector());
-  EXPECT_FALSE(Shape({2, 3, 4}, 5).is_row_vector());
+TEST_F(ShapeTest, CheckIsColumnVector) {
+  EXPECT_TRUE(Shape().is_column_vector());
+  EXPECT_TRUE(Shape({2}).is_column_vector());
+  EXPECT_FALSE(Shape({2, 3}).is_column_vector());
+  EXPECT_FALSE(Shape({2, 3, 4}).is_column_vector());
+  EXPECT_TRUE(Shape({}, 5).is_column_vector());
+  EXPECT_TRUE(Shape({2}, 5).is_column_vector());
+  EXPECT_FALSE(Shape({2, 3}, 5).is_column_vector());
+  EXPECT_FALSE(Shape({2, 3, 4}, 5).is_column_vector());
 }
 
 TEST_F(ShapeTest, CheckIsMatrix) {
