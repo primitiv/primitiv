@@ -86,11 +86,11 @@ primitiv_Status primitiv_Node_to_float(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Node_to_array(
-    const primitiv_Node *node, float *array, size_t *array_length) try {
+    const primitiv_Node *node, float *array, size_t *array_size) try {
   PRIMITIV_C_CHECK_PTR_ARG(node);
   const std::vector<float> v = to_cpp_ptr(node)->to_vector();
-  if (array_length) {
-    *array_length = v.size();
+  if (array_size) {
+    *array_size = v.size();
   }
   if (array) {
     std::copy(v.begin(), v.end(), array);
@@ -100,11 +100,11 @@ primitiv_Status primitiv_Node_to_array(
 
 primitiv_Status primitiv_Node_argmax(
     const primitiv_Node *node, uint32_t dim, uint32_t *indices,
-    size_t *n_indices) try {
+    size_t *array_size) try {
   PRIMITIV_C_CHECK_PTR_ARG(node);
   const std::vector<uint32_t> v = to_cpp_ptr(node)->argmax(dim);
-  if (n_indices) {
-    *n_indices = v.size();
+  if (array_size) {
+    *array_size = v.size();
   }
   if (indices) {
     std::copy(v.begin(), v.end(), indices);
@@ -114,11 +114,11 @@ primitiv_Status primitiv_Node_argmax(
 
 primitiv_Status primitiv_Node_argmin(
     const primitiv_Node *node, uint32_t dim, uint32_t *indices,
-    size_t *n_indices) try {
+    size_t *array_size) try {
   PRIMITIV_C_CHECK_PTR_ARG(node);
   const std::vector<uint32_t> v = to_cpp_ptr(node)->argmin(dim);
-  if (n_indices) {
-    *n_indices = v.size();
+  if (array_size) {
+    *array_size = v.size();
   }
   if (indices) {
     std::copy(v.begin(), v.end(), indices);

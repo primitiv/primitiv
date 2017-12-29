@@ -42,11 +42,11 @@ primitiv_Status primitiv_Shape_op_getitem(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Shape_dims(
-    const primitiv_Shape *shape, uint32_t *dims, size_t *n_dims) try {
+    const primitiv_Shape *shape, uint32_t *dims, size_t *array_size) try {
   PRIMITIV_C_CHECK_PTR_ARG(shape);
   const std::vector<uint32_t> v = to_cpp_ptr(shape)->dims();
-  if (n_dims) {
-    *n_dims = v.size();
+  if (array_size) {
+    *array_size = v.size();
   }
   if (dims) {
     std::copy(v.begin(), v.end(), dims);

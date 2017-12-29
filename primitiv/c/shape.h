@@ -58,11 +58,11 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Shape_op_getitem(
  * Returns the dimension array.
  * @param shape Pointer of a handler.
  * @param dims Pointer of an array to receive the dimensions.
- * @param n_dims Pointer to receive the number of the dimensions.
+ * @param array_size Pointer to receive the number of the dimensions.
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Shape_dims(
-    const primitiv_Shape *shape, uint32_t *dims, size_t *n_dims);
+    const primitiv_Shape *shape, uint32_t *dims, size_t *array_size);
 
 /**
  * Returns the depth (length of non-1 dimensions) of the shape.

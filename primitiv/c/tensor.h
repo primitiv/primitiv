@@ -86,13 +86,13 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_to_float(
  * Retrieves internal values in the tensor as a vector.
  * @param tensor Pointer of a handler.
  * @param array Pointer to receive a list of the internal values.
- * @param array_length Pointer to receive the length of the array.
+ * @param array_size Pointer to receive the length of the array.
  * @return Status code.
  * @remarks Each resulting values a re ordered by the column-major order, and
  *          the batch size is assumed as the last dimension of the tensor.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_to_array(
-    const primitiv_Tensor *tensor, float *array, size_t *array_length);
+    const primitiv_Tensor *tensor, float *array, size_t *array_size);
 
 /**
  * Retrieves argmax indices along an axis.
@@ -100,12 +100,12 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_to_array(
  * @param dim A specified axis.
  * @param indices Pointer to receive a list of integers that indicates positions
  *                of the maximum values.
- * @param n_indices Pointer to receive the number of the received indices.
+ * @param array_size Pointer to receive the number of the received indices.
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_argmax(
     const primitiv_Tensor *tensor, uint32_t dim, uint32_t *indices,
-    size_t *n_indices);
+    size_t *array_size);
 
 /**
  * Retrieves argmin indices along an axis.
@@ -113,12 +113,12 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_argmax(
  * @param dim A specified axis.
  * @param indices Pointer to receive a list of integers that indicates positions
  *                of the minimum values.
- * @param n_indices Pointer to receive the number of the received indices.
+ * @param array_size Pointer to receive the number of the received indices.
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_argmin(
     const primitiv_Tensor *tensor, uint32_t dim, uint32_t *indices,
-    size_t *n_indices);
+    size_t *array_size);
 
 /**
  * Reset internal values using a constant.

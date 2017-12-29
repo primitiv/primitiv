@@ -62,11 +62,11 @@ primitiv_Status primitiv_Tensor_to_float(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Tensor_to_array(
-    const primitiv_Tensor *tensor, float *array, size_t *array_length) try {
+    const primitiv_Tensor *tensor, float *array, size_t *array_size) try {
   PRIMITIV_C_CHECK_PTR_ARG(tensor);
   const std::vector<float> v = to_cpp_ptr(tensor)->to_vector();
-  if (array_length) {
-    *array_length = v.size();
+  if (array_size) {
+    *array_size = v.size();
   }
   if (array) {
     std::copy(v.begin(), v.end(), array);
@@ -76,11 +76,11 @@ primitiv_Status primitiv_Tensor_to_array(
 
 primitiv_Status primitiv_Tensor_argmax(
     const primitiv_Tensor *tensor, uint32_t dim, uint32_t *indices,
-    size_t *n_indices) try {
+    size_t *array_size) try {
   PRIMITIV_C_CHECK_PTR_ARG(tensor);
   const std::vector<uint32_t> v = to_cpp_ptr(tensor)->argmax(dim);
-  if (n_indices) {
-    *n_indices = v.size();
+  if (array_size) {
+    *array_size = v.size();
   }
   if (indices) {
     std::copy(v.begin(), v.end(), indices);
@@ -90,11 +90,11 @@ primitiv_Status primitiv_Tensor_argmax(
 
 primitiv_Status primitiv_Tensor_argmin(
     const primitiv_Tensor *tensor, uint32_t dim, uint32_t *indices,
-    size_t *n_indices) try {
+    size_t *array_size) try {
   PRIMITIV_C_CHECK_PTR_ARG(tensor);
   const std::vector<uint32_t> v = to_cpp_ptr(tensor)->argmin(dim);
-  if (n_indices) {
-    *n_indices = v.size();
+  if (array_size) {
+    *array_size = v.size();
   }
   if (indices) {
     std::copy(v.begin(), v.end(), indices);
