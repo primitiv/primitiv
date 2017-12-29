@@ -145,10 +145,10 @@ primitiv_Status primitiv_Shape_is_scalar(
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Status primitiv_Shape_is_row_vector(
-    const primitiv_Shape *shape, unsigned char *is_row_vector) try {
+primitiv_Status primitiv_Shape_is_column_vector(
+    const primitiv_Shape *shape, unsigned char *is_column_vector) try {
   PRIMITIV_C_CHECK_PTR_ARG(shape);
-  *is_row_vector = to_cpp_ptr(shape)->is_row_vector();
+  *is_column_vector = to_cpp_ptr(shape)->is_column_vector();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 

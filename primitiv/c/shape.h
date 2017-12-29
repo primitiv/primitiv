@@ -179,14 +179,14 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Shape_is_scalar(
     const primitiv_Shape *shape, unsigned char *is_scalar);
 
 /**
- * Checks whether the shape is a row vector or not.
+ * Checks whether the shape is a column vector or not.
  * @param shape Pointer of a handler.
- * @param is_row_vector Pointer to receive a result: true if the shape is a row
- *                      vector, false otherwise.
+ * @param is_column_vector Pointer to receive a result: true if the shape is a
+ *                         column vector, false otherwise.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Shape_is_row_vector(
-    const primitiv_Shape *shape, unsigned char *is_row_vector);
+extern PRIMITIV_C_API primitiv_Status primitiv_Shape_is_column_vector(
+    const primitiv_Shape *shape, unsigned char *is_column_vector);
 
 /**
  * Checks whether the shape is a vector or a matrix, or not.
