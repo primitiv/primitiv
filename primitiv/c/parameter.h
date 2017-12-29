@@ -95,7 +95,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Parameter_init_with_initializer(
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Parameter_load(
-    primitiv_Parameter *parameter, const char *path, _Bool with_stats,
+    primitiv_Parameter *parameter, const char *path, unsigned char with_stats,
     primitiv_Device *device);
 
 /**
@@ -107,7 +107,8 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Parameter_load(
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Parameter_save(
-    const primitiv_Parameter *parameter, const char *path, _Bool with_stats);
+    const primitiv_Parameter *parameter, const char *path,
+    unsigned char with_stats);
 
 /**
  * Returns whether the parameter is valid or not.
@@ -117,7 +118,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Parameter_save(
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Parameter_valid(
-    const primitiv_Parameter *parameter, _Bool *valid);
+    const primitiv_Parameter *parameter, unsigned char *valid);
 
 /**
  * Set all gradients to 0.
@@ -149,7 +150,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Parameter_add_stats(
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Parameter_has_stats(
-    primitiv_Parameter *parameter, const char *name, _Bool *has_stats);
+    primitiv_Parameter *parameter, const char *name, unsigned char *has_stats);
 
 /**
  * Returns the shape of the parameter.

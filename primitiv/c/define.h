@@ -3,13 +3,12 @@
 #ifndef PRIMITIV_C_DEFINE_H_
 #define PRIMITIV_C_DEFINE_H_
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#ifndef __bool_true_false_are_defined
-#error "primitiv C API requires boolean support (C99/C++)."
-#endif  // __bool_true_false_are_defined
+// --------------------------------------------------------------------------
+// Conventions:
+// * We use unsigned char for booleans.
 
 #if defined(__GNUC__) || defined(__clang__)
 #define PRIMITIV_C_API __attribute__((visibility("default")))

@@ -37,7 +37,7 @@ primitiv_Status primitiv_Node_delete(primitiv_Node *node) try {
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Node_valid(
-    const primitiv_Node *node, _Bool *valid) try {
+    const primitiv_Node *node, unsigned char *valid) try {
   PRIMITIV_C_CHECK_PTR_ARG(node);
   *valid = to_cpp_ptr(node)->valid();
   return ::primitiv_Status::PRIMITIV_OK;

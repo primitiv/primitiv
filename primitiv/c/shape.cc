@@ -103,7 +103,8 @@ primitiv_Status primitiv_Shape_to_string(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Shape_op_eq(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs, _Bool *eq) try {
+    const primitiv_Shape *shape, const primitiv_Shape *rhs,
+    unsigned char *eq) try {
   PRIMITIV_C_CHECK_PTR_ARG(shape);
   PRIMITIV_C_CHECK_PTR_ARG(rhs);
   *eq = to_cpp_ptr(shape)->operator==(*to_cpp_ptr(rhs));
@@ -111,7 +112,8 @@ primitiv_Status primitiv_Shape_op_eq(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Shape_op_ne(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs, _Bool *ne) try {
+    const primitiv_Shape *shape, const primitiv_Shape *rhs,
+    unsigned char *ne) try {
   PRIMITIV_C_CHECK_PTR_ARG(shape);
   PRIMITIV_C_CHECK_PTR_ARG(rhs);
   *ne = to_cpp_ptr(shape)->operator!=(*to_cpp_ptr(rhs));
@@ -119,7 +121,7 @@ primitiv_Status primitiv_Shape_op_ne(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Shape_has_batch(
-    const primitiv_Shape *shape, _Bool *has_batch) try {
+    const primitiv_Shape *shape, unsigned char *has_batch) try {
   PRIMITIV_C_CHECK_PTR_ARG(shape);
   *has_batch = to_cpp_ptr(shape)->has_batch();
   return ::primitiv_Status::PRIMITIV_OK;
@@ -127,29 +129,30 @@ primitiv_Status primitiv_Shape_has_batch(
 
 primitiv_Status primitiv_Shape_has_compatible_batch(
     const primitiv_Shape *shape, const primitiv_Shape *rhs,
-    _Bool *has_compatible_batch) try {
+    unsigned char *has_compatible_batch) try {
   PRIMITIV_C_CHECK_PTR_ARG(shape);
   PRIMITIV_C_CHECK_PTR_ARG(rhs);
-  *has_compatible_batch = to_cpp_ptr(shape)->has_compatible_batch(*to_cpp_ptr(rhs));
+  *has_compatible_batch =
+      to_cpp_ptr(shape)->has_compatible_batch(*to_cpp_ptr(rhs));
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Shape_is_scalar(
-    const primitiv_Shape *shape, _Bool *is_scalar) try {
+    const primitiv_Shape *shape, unsigned char *is_scalar) try {
   PRIMITIV_C_CHECK_PTR_ARG(shape);
   *is_scalar = to_cpp_ptr(shape)->is_scalar();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Shape_is_row_vector(
-    const primitiv_Shape *shape, _Bool *is_row_vector) try {
+    const primitiv_Shape *shape, unsigned char *is_row_vector) try {
   PRIMITIV_C_CHECK_PTR_ARG(shape);
   *is_row_vector = to_cpp_ptr(shape)->is_row_vector();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Shape_is_matrix(
-    const primitiv_Shape *shape, _Bool *is_matrix) try {
+    const primitiv_Shape *shape, unsigned char *is_matrix) try {
   PRIMITIV_C_CHECK_PTR_ARG(shape);
   *is_matrix = to_cpp_ptr(shape)->is_matrix();
   return ::primitiv_Status::PRIMITIV_OK;
@@ -157,7 +160,7 @@ primitiv_Status primitiv_Shape_is_matrix(
 
 primitiv_Status primitiv_Shape_has_same_dims(
     const primitiv_Shape *shape, const primitiv_Shape *rhs,
-    _Bool *has_same_dims) try {
+    unsigned char *has_same_dims) try {
   PRIMITIV_C_CHECK_PTR_ARG(shape);
   PRIMITIV_C_CHECK_PTR_ARG(rhs);
   *has_same_dims = to_cpp_ptr(shape)->has_same_dims(*to_cpp_ptr(rhs));
@@ -166,10 +169,11 @@ primitiv_Status primitiv_Shape_has_same_dims(
 
 primitiv_Status primitiv_Shape_has_same_loo_dims(
     const primitiv_Shape *shape, const primitiv_Shape *rhs, uint32_t dim,
-    _Bool *has_same_loo_dims) try {
+    unsigned char *has_same_loo_dims) try {
   PRIMITIV_C_CHECK_PTR_ARG(shape);
   PRIMITIV_C_CHECK_PTR_ARG(rhs);
-  *has_same_loo_dims = to_cpp_ptr(shape)->has_same_loo_dims(*to_cpp_ptr(rhs), dim);
+  *has_same_loo_dims =
+      to_cpp_ptr(shape)->has_same_loo_dims(*to_cpp_ptr(rhs), dim);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 

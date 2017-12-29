@@ -54,7 +54,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_delete(primitiv_Node *node);
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Node_valid(
-    const primitiv_Node *node, _Bool *valid);
+    const primitiv_Node *node, unsigned char *valid);
 
 /**
  * Returns corresponding Graph object.

@@ -133,7 +133,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Shape_to_string(
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Shape_op_eq(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs, _Bool *eq);
+    const primitiv_Shape *shape, const primitiv_Shape *rhs, unsigned char *eq);
 
 /**
  * Compares this and other shape.
@@ -144,7 +144,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Shape_op_eq(
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Shape_op_ne(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs, _Bool *ne);
+    const primitiv_Shape *shape, const primitiv_Shape *rhs, unsigned char *ne);
 
 /**
  * Checks whether the shape has minibatch or not.
@@ -154,7 +154,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Shape_op_ne(
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Shape_has_batch(
-    const primitiv_Shape *shape, _Bool *has_batch);
+    const primitiv_Shape *shape, unsigned char *has_batch);
 
 /**
  * Checks whether two batch size is compatible (broadcastable) or not.
@@ -166,7 +166,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Shape_has_batch(
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Shape_has_compatible_batch(
     const primitiv_Shape *shape, const primitiv_Shape *rhs,
-    _Bool *has_compatible_batch);
+    unsigned char *has_compatible_batch);
 
 /**
  * Checks whether the shape is a scalar or not.
@@ -176,7 +176,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Shape_has_compatible_batch(
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Shape_is_scalar(
-    const primitiv_Shape *shape, _Bool *is_scalar);
+    const primitiv_Shape *shape, unsigned char *is_scalar);
 
 /**
  * Checks whether the shape is a row vector or not.
@@ -186,7 +186,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Shape_is_scalar(
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Shape_is_row_vector(
-    const primitiv_Shape *shape, _Bool *is_row_vector);
+    const primitiv_Shape *shape, unsigned char *is_row_vector);
 
 /**
  * Checks whether the shape is a vector or a matrix, or not.
@@ -196,7 +196,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Shape_is_row_vector(
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Shape_is_matrix(
-    const primitiv_Shape *shape, _Bool *is_matrix);
+    const primitiv_Shape *shape, unsigned char *is_matrix);
 
 /**
  * Checks whether two shapes have completely same dimensions.
@@ -208,7 +208,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Shape_is_matrix(
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Shape_has_same_dims(
     const primitiv_Shape *shape, const primitiv_Shape *rhs,
-    _Bool *has_same_dims);
+    unsigned char *has_same_dims);
 
 /**
  * Checks whether two shapes have same dimensions without an axis.
@@ -223,7 +223,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Shape_has_same_dims(
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Shape_has_same_loo_dims(
     const primitiv_Shape *shape, const primitiv_Shape *rhs, uint32_t dim,
-    _Bool *has_same_loo_dims);
+    unsigned char *has_same_loo_dims);
 
 /**
  * Creates a new shape which have one different dimension.
