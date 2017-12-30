@@ -20,7 +20,7 @@ primitiv_Status primitiv_Model_new(primitiv_Model **model) try {
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Model_delete(primitiv_Model *model) try {
-  PRIMITIV_C_CHECK_PTR_ARG(model);
+  PRIMITIV_C_CHECK_NOT_NULL(model);
   delete to_cpp_ptr(model);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
@@ -28,8 +28,8 @@ primitiv_Status primitiv_Model_delete(primitiv_Model *model) try {
 primitiv_Status primitiv_Model_load(
     primitiv_Model *model, const char *path, unsigned char with_stats,
     primitiv_Device *device) try {
-  PRIMITIV_C_CHECK_PTR_ARG(model);
-  PRIMITIV_C_CHECK_PTR_ARG(path);
+  PRIMITIV_C_CHECK_NOT_NULL(model);
+  PRIMITIV_C_CHECK_NOT_NULL(path);
   to_cpp_ptr(model)->load(path, with_stats, to_cpp_ptr(device));
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
@@ -37,24 +37,24 @@ primitiv_Status primitiv_Model_load(
 primitiv_Status primitiv_Model_save(
     const primitiv_Model *model, const char *path,
     unsigned char with_stats) try {
-  PRIMITIV_C_CHECK_PTR_ARG(model);
-  PRIMITIV_C_CHECK_PTR_ARG(path);
+  PRIMITIV_C_CHECK_NOT_NULL(model);
+  PRIMITIV_C_CHECK_NOT_NULL(path);
   to_cpp_ptr(model)->save(path, with_stats);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Model_add_parameter(
     primitiv_Model *model, const char *name, primitiv_Parameter *param) try {
-  PRIMITIV_C_CHECK_PTR_ARG(model);
-  PRIMITIV_C_CHECK_PTR_ARG(name);
+  PRIMITIV_C_CHECK_NOT_NULL(model);
+  PRIMITIV_C_CHECK_NOT_NULL(name);
   to_cpp_ptr(model)->add(name, *to_cpp_ptr(param));
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Model_add_model(
     primitiv_Model *model, const char *name, primitiv_Model *submodel) try {
-  PRIMITIV_C_CHECK_PTR_ARG(model);
-  PRIMITIV_C_CHECK_PTR_ARG(name);
+  PRIMITIV_C_CHECK_NOT_NULL(model);
+  PRIMITIV_C_CHECK_NOT_NULL(name);
   to_cpp_ptr(model)->add(name, *to_cpp_ptr(submodel));
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
@@ -62,8 +62,8 @@ primitiv_Status primitiv_Model_add_model(
 primitiv_Status primitiv_Model_get_parameter(
     const primitiv_Model *model, const char **names, size_t n,
     const primitiv_Parameter **param) try {
-  PRIMITIV_C_CHECK_PTR_ARG(model);
-  PRIMITIV_C_CHECK_PTR_ARG(names);
+  PRIMITIV_C_CHECK_NOT_NULL(model);
+  PRIMITIV_C_CHECK_NOT_NULL(names);
   *param = to_c_ptr(&(to_cpp_ptr(model)->get_parameter(
       std::vector<std::string>(names, names + n))));
   return ::primitiv_Status::PRIMITIV_OK;
@@ -72,8 +72,8 @@ primitiv_Status primitiv_Model_get_parameter(
 primitiv_Status primitiv_Model_get_submodel(
     const primitiv_Model *model, const char **names, size_t n,
     const primitiv_Model **submodel) try {
-  PRIMITIV_C_CHECK_PTR_ARG(model);
-  PRIMITIV_C_CHECK_PTR_ARG(names);
+  PRIMITIV_C_CHECK_NOT_NULL(model);
+  PRIMITIV_C_CHECK_NOT_NULL(names);
   *submodel = to_c_ptr(&(to_cpp_ptr(model)->get_submodel(
       std::vector<std::string>(names, names + n))));
   return ::primitiv_Status::PRIMITIV_OK;

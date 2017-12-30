@@ -36,7 +36,7 @@ primitiv_Status primitiv_optimizers_SGD_new(
 
 primitiv_Status primitiv_optimizers_SGD_eta(
     const primitiv_Optimizer *optimizer, float *eta) try {
-  PRIMITIV_C_CHECK_PTR_ARG(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   *eta = CAST_TO_CONST_CC_SGD(optimizer)->eta();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
@@ -49,14 +49,14 @@ primitiv_Status primitiv_optimizers_MomentumSGD_new(
 
 primitiv_Status primitiv_optimizers_MomentumSGD_eta(
     const primitiv_Optimizer *optimizer, float *eta) try {
-  PRIMITIV_C_CHECK_PTR_ARG(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   *eta = CAST_TO_CONST_CC_MOMENTUM_SGD(optimizer)->eta();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_optimizers_MomentumSGD_momentum(
     const primitiv_Optimizer *optimizer, float *momentum) try {
-  PRIMITIV_C_CHECK_PTR_ARG(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   *momentum = CAST_TO_CONST_CC_MOMENTUM_SGD(optimizer)->momentum();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
@@ -69,14 +69,14 @@ primitiv_Status primitiv_optimizers_AdaGrad_new(
 
 primitiv_Status primitiv_optimizers_AdaGrad_eta(
     const primitiv_Optimizer *optimizer, float *eta) try {
-  PRIMITIV_C_CHECK_PTR_ARG(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   *eta = CAST_TO_CONST_CC_ADA_GRAD(optimizer)->eta();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_optimizers_AdaGrad_eps(
     const primitiv_Optimizer *optimizer, float *eps) try {
-  PRIMITIV_C_CHECK_PTR_ARG(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   *eps = CAST_TO_CONST_CC_ADA_GRAD(optimizer)->eps();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
@@ -89,21 +89,21 @@ primitiv_Status primitiv_optimizers_RMSProp_new(
 
 primitiv_Status primitiv_optimizers_RMSProp_eta(
     const primitiv_Optimizer *optimizer, float *eta) try {
-  PRIMITIV_C_CHECK_PTR_ARG(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   *eta = CAST_TO_CONST_CC_ADA_GRAD(optimizer)->eta();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_optimizers_RMSProp_alpha(
     const primitiv_Optimizer *optimizer, float *alpha) try {
-  PRIMITIV_C_CHECK_PTR_ARG(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   *alpha = CAST_TO_CONST_CC_RMS_PROP(optimizer)->alpha();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_optimizers_RMSProp_eps(
     const primitiv_Optimizer *optimizer, float *eps) try {
-  PRIMITIV_C_CHECK_PTR_ARG(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   *eps = CAST_TO_CONST_CC_RMS_PROP(optimizer)->eps();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
@@ -116,14 +116,14 @@ primitiv_Status primitiv_optimizers_AdaDelta_new(
 
 primitiv_Status primitiv_optimizers_AdaDelta_rho(
     const primitiv_Optimizer *optimizer, float *rho) try {
-  PRIMITIV_C_CHECK_PTR_ARG(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   *rho = CAST_TO_CONST_CC_ADA_DELTA(optimizer)->rho();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_optimizers_AdaDelta_eps(
     const primitiv_Optimizer *optimizer, float *eps) try {
-  PRIMITIV_C_CHECK_PTR_ARG(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   *eps = CAST_TO_CONST_CC_ADA_DELTA(optimizer)->eps();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
@@ -137,28 +137,28 @@ primitiv_Status primitiv_optimizers_Adam_new(
 
 primitiv_Status primitiv_optimizers_Adam_alpha(
     const primitiv_Optimizer *optimizer, float *alpha) try {
-  PRIMITIV_C_CHECK_PTR_ARG(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   *alpha = CAST_TO_CONST_CC_ADAM(optimizer)->alpha();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_optimizers_Adam_beta1(
     const primitiv_Optimizer *optimizer, float *beta1) try {
-  PRIMITIV_C_CHECK_PTR_ARG(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   *beta1 = CAST_TO_CONST_CC_ADAM(optimizer)->beta1();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_optimizers_Adam_beta2(
     const primitiv_Optimizer *optimizer, float *beta2) try {
-  PRIMITIV_C_CHECK_PTR_ARG(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   *beta2 = CAST_TO_CONST_CC_ADAM(optimizer)->beta2();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_optimizers_Adam_eps(
     const primitiv_Optimizer *optimizer, float *eps) try {
-  PRIMITIV_C_CHECK_PTR_ARG(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   *eps = CAST_TO_CONST_CC_ADAM(optimizer)->eps();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS

@@ -17,20 +17,20 @@ primitiv_Status primitiv_Device_get_default(primitiv_Device **device) try {
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Device_set_default(primitiv_Device *device) try {
-  PRIMITIV_C_CHECK_PTR_ARG(device);
+  PRIMITIV_C_CHECK_NOT_NULL(device);
   Device::set_default(*to_cpp_ptr(device));
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Device_delete(primitiv_Device *device) try {
-  PRIMITIV_C_CHECK_PTR_ARG(device);
+  PRIMITIV_C_CHECK_NOT_NULL(device);
   delete to_cpp_ptr(device);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Device_dump_description(
     const primitiv_Device *device) try {
-  PRIMITIV_C_CHECK_PTR_ARG(device);
+  PRIMITIV_C_CHECK_NOT_NULL(device);
   to_cpp_ptr(device)->dump_description();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS

@@ -46,7 +46,7 @@ catch (const std::exception &e) { \
   return primitiv::c::internal::ErrorHandler::get_instance().handle(e); \
 }
 
-#define PRIMITIV_C_CHECK_PTR_ARG(var) \
+#define PRIMITIV_C_CHECK_NOT_NULL(var) \
 if (!var) { \
   THROW_ERROR("Argument `"#var"` must not be null."); \
 }
