@@ -3,6 +3,7 @@
 #ifndef PRIMITIV_C_INTERNAL_H_
 #define PRIMITIV_C_INTERNAL_H_
 
+#include <algorithm>
 #include <cstdint>
 #include <string>
 #include <unordered_map>
@@ -109,6 +110,31 @@ class ErrorHandler {
   std::exception_ptr exception_;
   std::string message_;
 };
+
+template<typename T>
+inline void copy_vector_to_array(
+    const std::vector<T> &vector, T *array, std::size_t *array_size) {
+  if (array) {
+    std::copy(vector.begin(), vector.end(), array);
+    if (*array_size < vector.size()) {
+      THROW_ERROR("array_size is not enough to copy a vector.");
+    }
+  } else {
+    *array_size = vector.size();
+  }
+}
+
+inline void copy_string_to_array(
+    const std::string &str, char *buffer, std::size_t *buffer_size) {
+  if (buffer) {
+    if (*buffer_size < str.length()) {
+      THROW_ERROR("buffer_size is not enough to copy a string.");
+    }
+    std::strcpy(buffer, str.c_str());
+  } else {
+    *buffer_size = str.length();
+  }
+}
 
 PRIMITIV_C_PTR_TO_PTR(Device, primitiv_Device);
 PRIMITIV_C_PTR_TO_PTR(Node, primitiv_Node);

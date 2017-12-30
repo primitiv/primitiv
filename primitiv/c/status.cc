@@ -12,13 +12,9 @@ extern "C" {
 
 primitiv_Status primitiv_Status_get_message(
     char *buffer, size_t *buffer_size) try {
-  const std::string str = ErrorHandler::get_instance().get_message();
-  if (buffer_size) {
-    *buffer_size = str.length();
-  }
-  if (buffer) {
-    std::strcpy(buffer, str.c_str());
-  }
+  PRIMITIV_C_CHECK_PTR_ARG(buffer_size);
+  primitiv::c::internal::copy_string_to_array(
+      ErrorHandler::get_instance().get_message(), buffer, buffer_size);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 

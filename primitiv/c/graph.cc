@@ -1,9 +1,7 @@
 /* Copyright 2017 The primitiv Authors. All Rights Reserved. */
 #include <primitiv/config.h>
 
-#include <algorithm>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include <primitiv/graph.h>
@@ -88,13 +86,9 @@ primitiv_Status primitiv_Node_to_float(
 primitiv_Status primitiv_Node_to_array(
     const primitiv_Node *node, float *array, size_t *array_size) try {
   PRIMITIV_C_CHECK_PTR_ARG(node);
-  const std::vector<float> v = to_cpp_ptr(node)->to_vector();
-  if (array_size) {
-    *array_size = v.size();
-  }
-  if (array) {
-    std::copy(v.begin(), v.end(), array);
-  }
+  PRIMITIV_C_CHECK_PTR_ARG(array_size);
+  primitiv::c::internal::copy_vector_to_array(
+      to_cpp_ptr(node)->to_vector(), array, array_size);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
@@ -102,13 +96,9 @@ primitiv_Status primitiv_Node_argmax(
     const primitiv_Node *node, uint32_t dim, uint32_t *indices,
     size_t *array_size) try {
   PRIMITIV_C_CHECK_PTR_ARG(node);
-  const std::vector<uint32_t> v = to_cpp_ptr(node)->argmax(dim);
-  if (array_size) {
-    *array_size = v.size();
-  }
-  if (indices) {
-    std::copy(v.begin(), v.end(), indices);
-  }
+  PRIMITIV_C_CHECK_PTR_ARG(array_size);
+  primitiv::c::internal::copy_vector_to_array(
+      to_cpp_ptr(node)->argmax(dim), indices, array_size);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
@@ -116,13 +106,9 @@ primitiv_Status primitiv_Node_argmin(
     const primitiv_Node *node, uint32_t dim, uint32_t *indices,
     size_t *array_size) try {
   PRIMITIV_C_CHECK_PTR_ARG(node);
-  const std::vector<uint32_t> v = to_cpp_ptr(node)->argmin(dim);
-  if (array_size) {
-    *array_size = v.size();
-  }
-  if (indices) {
-    std::copy(v.begin(), v.end(), indices);
-  }
+  PRIMITIV_C_CHECK_PTR_ARG(array_size);
+  primitiv::c::internal::copy_vector_to_array(
+      to_cpp_ptr(node)->argmin(dim), indices, array_size);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
@@ -201,13 +187,9 @@ primitiv_Status primitiv_Graph_dump(
     size_t *buffer_size) try {
   PRIMITIV_C_CHECK_PTR_ARG(graph);
   PRIMITIV_C_CHECK_PTR_ARG(format);
-  const std::string str = to_cpp_ptr(graph)->dump(format);
-  if (buffer_size) {
-    *buffer_size = str.length();
-  }
-  if (buffer) {
-    std::strcpy(buffer, str.c_str());
-  }
+  PRIMITIV_C_CHECK_PTR_ARG(buffer_size);
+  primitiv::c::internal::copy_string_to_array(
+      to_cpp_ptr(graph)->dump(format), buffer, buffer_size);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 

@@ -1,7 +1,6 @@
 /* Copyright 2017 The primitiv Authors. All Rights Reserved. */
 #include <primitiv/config.h>
 
-#include <algorithm>
 #include <vector>
 
 #include <primitiv/tensor.h>
@@ -64,13 +63,9 @@ primitiv_Status primitiv_Tensor_to_float(
 primitiv_Status primitiv_Tensor_to_array(
     const primitiv_Tensor *tensor, float *array, size_t *array_size) try {
   PRIMITIV_C_CHECK_PTR_ARG(tensor);
-  const std::vector<float> v = to_cpp_ptr(tensor)->to_vector();
-  if (array_size) {
-    *array_size = v.size();
-  }
-  if (array) {
-    std::copy(v.begin(), v.end(), array);
-  }
+  PRIMITIV_C_CHECK_PTR_ARG(array_size);
+  primitiv::c::internal::copy_vector_to_array(
+      to_cpp_ptr(tensor)->to_vector(), array, array_size);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
@@ -78,13 +73,9 @@ primitiv_Status primitiv_Tensor_argmax(
     const primitiv_Tensor *tensor, uint32_t dim, uint32_t *indices,
     size_t *array_size) try {
   PRIMITIV_C_CHECK_PTR_ARG(tensor);
-  const std::vector<uint32_t> v = to_cpp_ptr(tensor)->argmax(dim);
-  if (array_size) {
-    *array_size = v.size();
-  }
-  if (indices) {
-    std::copy(v.begin(), v.end(), indices);
-  }
+  PRIMITIV_C_CHECK_PTR_ARG(array_size);
+  primitiv::c::internal::copy_vector_to_array(
+      to_cpp_ptr(tensor)->argmax(dim), indices, array_size);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
@@ -92,13 +83,9 @@ primitiv_Status primitiv_Tensor_argmin(
     const primitiv_Tensor *tensor, uint32_t dim, uint32_t *indices,
     size_t *array_size) try {
   PRIMITIV_C_CHECK_PTR_ARG(tensor);
-  const std::vector<uint32_t> v = to_cpp_ptr(tensor)->argmin(dim);
-  if (array_size) {
-    *array_size = v.size();
-  }
-  if (indices) {
-    std::copy(v.begin(), v.end(), indices);
-  }
+  PRIMITIV_C_CHECK_PTR_ARG(array_size);
+  primitiv::c::internal::copy_vector_to_array(
+      to_cpp_ptr(tensor)->argmin(dim), indices, array_size);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 

@@ -1,7 +1,6 @@
 /* Copyright 2017 The primitiv Authors. All Rights Reserved. */
 #include <primitiv/config.h>
 
-#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -45,13 +44,9 @@ primitiv_Status primitiv_Shape_op_getitem(
 primitiv_Status primitiv_Shape_dims(
     const primitiv_Shape *shape, uint32_t *dims, size_t *array_size) try {
   PRIMITIV_C_CHECK_PTR_ARG(shape);
-  const std::vector<uint32_t> v = to_cpp_ptr(shape)->dims();
-  if (array_size) {
-    *array_size = v.size();
-  }
-  if (dims) {
-    std::copy(v.begin(), v.end(), dims);
-  }
+  PRIMITIV_C_CHECK_PTR_ARG(array_size);
+  primitiv::c::internal::copy_vector_to_array(
+      to_cpp_ptr(shape)->dims(), dims, array_size);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
@@ -93,13 +88,9 @@ primitiv_Status primitiv_Shape_size(
 primitiv_Status primitiv_Shape_to_string(
     const primitiv_Shape *shape, char *buffer, size_t *buffer_size) try {
   PRIMITIV_C_CHECK_PTR_ARG(shape);
-  const std::string str = to_cpp_ptr(shape)->to_string();
-  if (buffer_size) {
-    *buffer_size = str.length();
-  }
-  if (buffer) {
-    std::strcpy(buffer, str.c_str());
-  }
+  PRIMITIV_C_CHECK_PTR_ARG(buffer_size);
+  primitiv::c::internal::copy_string_to_array(
+      to_cpp_ptr(shape)->to_string(), buffer, buffer_size);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
