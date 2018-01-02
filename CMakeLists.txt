@@ -37,7 +37,7 @@ endif()
 if(PRIMITIV_USE_OPENCL)
   find_package(OpenCL REQUIRED)
   find_package(CLHPP REQUIRED)
-  find_package(clBLAS REQUIRED)
+  find_package(CLBlast REQUIRED)
 endif()
 
 # Include directories.
