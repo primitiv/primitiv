@@ -26,8 +26,6 @@ using primitiv::c::internal::to_c_ptr;
 #define CAST_TO_CC_ADAM(x) reinterpret_cast<Adam*>(x)
 #define CAST_TO_CONST_CC_ADAM(x) reinterpret_cast<const Adam*>(x)
 
-extern "C" {
-
 primitiv_Status primitiv_optimizers_SGD_new(
     float eta, primitiv_Optimizer **optimizer) try {
   *optimizer = to_c_ptr(new SGD(eta));
@@ -162,8 +160,6 @@ primitiv_Status primitiv_optimizers_Adam_eps(
   *eps = CAST_TO_CONST_CC_ADAM(optimizer)->eps();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
-
-}  // end extern "C"
 
 #undef CAST_TO_CC_SGD
 #undef CAST_TO_CONST_CC_SGD

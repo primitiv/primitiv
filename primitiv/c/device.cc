@@ -9,8 +9,6 @@ using primitiv::Device;
 using primitiv::c::internal::to_c_ptr;
 using primitiv::c::internal::to_cpp_ptr;
 
-extern "C" {
-
 primitiv_Status primitiv_Device_get_default(primitiv_Device **device) try {
   *device = to_c_ptr(&Device::get_default());
   return ::primitiv_Status::PRIMITIV_OK;
@@ -34,5 +32,3 @@ primitiv_Status primitiv_Device_dump_description(
   to_cpp_ptr(device)->dump_description();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
-
-}  // end extern "C"

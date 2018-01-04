@@ -8,8 +8,6 @@
 using primitiv::devices::OpenCL;
 using primitiv::c::internal::to_c_ptr;
 
-extern "C" {
-
 primitiv_Status primitiv_devices_OpenCL_new(
     uint32_t platform_id, uint32_t device_id, primitiv_Device **device) try {
   *device = to_c_ptr(new OpenCL(platform_id, device_id));
@@ -34,5 +32,3 @@ primitiv_Status primitiv_devices_OpenCL_num_devices(
   *num_devices = OpenCL::num_devices(platform_id);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
-
-}  // end extern "C"

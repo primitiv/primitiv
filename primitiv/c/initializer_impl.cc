@@ -13,8 +13,6 @@ using primitiv::initializers::XavierUniform;
 using primitiv::initializers::XavierNormal;
 using primitiv::c::internal::to_c_ptr;
 
-extern "C" {
-
 primitiv_Status primitiv_initializers_Constant_new(
     float k, primitiv_Initializer **initializer) try {
   *initializer = to_c_ptr(new Constant(k));
@@ -50,5 +48,3 @@ primitiv_Status primitiv_initializers_XavierNormal_new(
   *initializer = to_c_ptr(new XavierNormal(scale));
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
-
-}  // end extern "C"

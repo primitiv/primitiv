@@ -9,8 +9,6 @@ using primitiv::Optimizer;
 using primitiv::c::internal::to_c_ptr;
 using primitiv::c::internal::to_cpp_ptr;
 
-extern "C" {
-
 primitiv_Status primitiv_Optimizer_delete(primitiv_Optimizer *optimizer) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   delete to_cpp_ptr(optimizer);
@@ -136,5 +134,3 @@ primitiv_Status primitiv_Optimizer_update(primitiv_Optimizer *optimizer) try {
   to_cpp_ptr(optimizer)->update();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
-
-}  // end extern "C"

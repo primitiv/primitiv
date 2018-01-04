@@ -13,8 +13,6 @@ using primitiv::c::internal::to_c_ptr;
 using primitiv::c::internal::to_cpp_ptr;
 using primitiv::c::internal::to_c_ptr_from_value;
 
-extern "C" {
-
 primitiv_Status primitiv_Shape_new(primitiv_Shape **shape) try {
   *shape = to_c_ptr(new Shape());
   return ::primitiv_Status::PRIMITIV_OK;
@@ -198,5 +196,3 @@ primitiv_Status primitiv_Shape_update_batch(
   to_cpp_ptr(shape)->update_batch(batch);
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
-
-}  // end extern "C"

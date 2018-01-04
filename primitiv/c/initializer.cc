@@ -8,8 +8,6 @@
 using primitiv::Initializer;
 using primitiv::c::internal::to_cpp_ptr;
 
-extern "C" {
-
 primitiv_Status primitiv_Initializer_delete(
     primitiv_Initializer *initializer) try {
   PRIMITIV_C_CHECK_NOT_NULL(initializer);
@@ -23,5 +21,3 @@ primitiv_Status primitiv_Initializer_apply(
   to_cpp_ptr(initializer)->apply(*to_cpp_ptr(x));
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
-
-}  // end extern "C"

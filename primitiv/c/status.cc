@@ -8,8 +8,6 @@
 
 using primitiv::c::internal::ErrorHandler;
 
-extern "C" {
-
 primitiv_Status primitiv_Status_get_message(
     char *buffer, size_t *buffer_size) try {
   PRIMITIV_C_CHECK_NOT_NULL(buffer_size);
@@ -22,5 +20,3 @@ primitiv_Status primitiv_Status_reset() try {
   ErrorHandler::get_instance().reset();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
-
-}  // end extern "C"

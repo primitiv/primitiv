@@ -12,8 +12,6 @@ using primitiv::Model;
 using primitiv::c::internal::to_c_ptr;
 using primitiv::c::internal::to_cpp_ptr;
 
-extern "C" {
-
 primitiv_Status primitiv_Model_new(primitiv_Model **model) try {
   *model = to_c_ptr(new Model());
   return ::primitiv_Status::PRIMITIV_OK;
@@ -78,5 +76,3 @@ primitiv_Status primitiv_Model_get_submodel(
       std::vector<std::string>(names, names + n))));
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
-
-}  // end extern "C"

@@ -14,8 +14,6 @@ using primitiv::c::internal::to_c_ptr;
 using primitiv::c::internal::to_cpp_ptr;
 using primitiv::c::internal::to_c_ptr_from_value;
 
-extern "C" {
-
 primitiv_Status primitiv_Node_new(primitiv_Node **node) try {
   *node = to_c_ptr(new Node);
   return ::primitiv_Status::PRIMITIV_OK;
@@ -199,5 +197,3 @@ primitiv_Status primitiv_Graph_num_operators(
   *num = to_cpp_ptr(graph)->num_operators();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
-
-}  // end extern "C"

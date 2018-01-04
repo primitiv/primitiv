@@ -8,8 +8,6 @@
 using primitiv::devices::CUDA;
 using primitiv::c::internal::to_c_ptr;
 
-extern "C" {
-
 primitiv_Status primitiv_devices_CUDA_new(
     uint32_t device_id, primitiv_Device **device) try {
   *device = to_c_ptr(new CUDA(device_id));
@@ -26,5 +24,3 @@ primitiv_Status primitiv_devices_CUDA_num_devices(uint32_t *num_devices) try {
   *num_devices = CUDA::num_devices();
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
-
-}  // end extern "C"

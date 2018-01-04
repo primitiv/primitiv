@@ -70,8 +70,6 @@ primitiv_Status primitiv_tensor_func_##name##_tensor_tensor( \
   return ::primitiv_Status::PRIMITIV_OK; \
 } PRIMITIV_C_HANDLE_EXCEPTIONS \
 
-extern "C" {
-
 PRIMITIV_C_IMPL_UNARY_FUNC(positive);
 PRIMITIV_C_IMPL_UNARY_FUNC(negative);
 PRIMITIV_C_IMPL_BINARY_OP(add);
@@ -696,8 +694,6 @@ primitiv_Status primitiv_tensor_func_dropout(
       primitiv::functions::dropout(*to_cpp_ptr(x), rate, enabled));
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
-
-}  // end extern "C"
 
 #undef PRIMITIV_C_IMPL_UNARY_FUNC
 #undef PRIMITIV_C_IMPL_BINARY_OP

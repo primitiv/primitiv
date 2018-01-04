@@ -12,8 +12,6 @@ using primitiv::c::internal::to_c_ptr;
 using primitiv::c::internal::to_cpp_ptr;
 using primitiv::c::internal::to_c_ptr_from_value;
 
-extern "C" {
-
 primitiv_Status primitiv_Tensor_new(primitiv_Tensor **tensor) try {
   *tensor = to_c_ptr(new Tensor());
   return ::primitiv_Status::PRIMITIV_OK;
@@ -141,5 +139,3 @@ primitiv_Status primitiv_Tensor_inplace_subtract(
   to_c_ptr(&(to_cpp_ptr(tensor)->inplace_subtract(*to_cpp_ptr(x))));
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
-
-}  // end extern "C"

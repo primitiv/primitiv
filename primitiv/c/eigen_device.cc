@@ -8,8 +8,6 @@
 using primitiv::devices::Eigen;
 using primitiv::c::internal::to_c_ptr;
 
-extern "C" {
-
 primitiv_Status primitiv_devices_Eigen_new(primitiv_Device **device) try {
   *device = to_c_ptr(new Eigen());
   return ::primitiv_Status::PRIMITIV_OK;
@@ -20,5 +18,3 @@ primitiv_Status primitiv_devices_Eigen_new_with_seed(
   *device = to_c_ptr(new Eigen(rng_seed));
   return ::primitiv_Status::PRIMITIV_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
-
-}  // end extern "C"
