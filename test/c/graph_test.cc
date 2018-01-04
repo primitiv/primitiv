@@ -66,7 +66,7 @@ TEST_F(CGraphTest, CheckInvalidNode) {
   ::primitiv_Status_reset();
   ::primitiv_Node *node;
   ASSERT_EQ(::primitiv_Status::PRIMITIV_OK, ::primitiv_Node_new(&node));
-  unsigned char valid;
+  PRIMITIV_C_BOOL valid;
   ::primitiv_Node_valid(node, &valid);
   EXPECT_FALSE(valid);
   ::primitiv_Graph *graph;
@@ -237,7 +237,7 @@ TEST_F(CGraphTest, CheckForward) {
     ::primitiv_Device *device;
     ::primitiv_Node_shape(nodes[i], &shape);
     ::primitiv_Node_device(nodes[i], &device);
-    unsigned char eq;
+    PRIMITIV_C_BOOL eq;
     ::primitiv_Shape_op_eq(expected_shapes[i], shape, &eq);
     EXPECT_TRUE(eq);
     EXPECT_EQ(dev, device);
@@ -268,7 +268,7 @@ TEST_F(CGraphTest, CheckForward) {
     // inner value.
     const ::primitiv_Tensor *val;
     ::primitiv_Graph_forward(g, nodes[i], &val);
-    unsigned char valid;
+    PRIMITIV_C_BOOL valid;
     ::primitiv_Tensor_valid(val, &valid);
     ASSERT_TRUE(valid);
 
