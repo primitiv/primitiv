@@ -3,7 +3,6 @@
 
 #include <primitiv/c/define.h>
 #include <primitiv/c/initializer.h>
-#include <primitiv/c/status.h>
 #include <primitiv/c/tensor.h>
 
 /**
@@ -12,7 +11,7 @@
  * @param initializer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_initializers_Constant_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Constant_new(
     float k, primitiv_Initializer **initializer);
 
 /**
@@ -23,7 +22,7 @@ PRIMITIV_C_API primitiv_Status primitiv_initializers_Constant_new(
  * @param initializer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_initializers_Uniform_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Uniform_new(
     float lower, float upper, primitiv_Initializer **initializer);
 
 /**
@@ -34,7 +33,7 @@ PRIMITIV_C_API primitiv_Status primitiv_initializers_Uniform_new(
  * @param initializer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_initializers_Normal_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Normal_new(
     float mean, float sd, primitiv_Initializer **initializer);
 
 /**
@@ -42,7 +41,7 @@ PRIMITIV_C_API primitiv_Status primitiv_initializers_Normal_new(
  * @param initializer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_initializers_Identity_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Identity_new(
     primitiv_Initializer **initializer);
 
 /**
@@ -53,7 +52,7 @@ PRIMITIV_C_API primitiv_Status primitiv_initializers_Identity_new(
  * @param initializer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_initializers_XavierUniform_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_XavierUniform_new(
     float scale, primitiv_Initializer **initializer);
 
 /**
@@ -64,7 +63,7 @@ PRIMITIV_C_API primitiv_Status primitiv_initializers_XavierUniform_new(
  * @param initializer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_initializers_XavierNormal_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_XavierNormal_new(
     float scale, primitiv_Initializer **initializer);
 
 #endif  // PRIMITIV_C_INITIALIZER_IMPL_H_

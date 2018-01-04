@@ -17,7 +17,8 @@
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
 #include <primitiv/optimizer.h>
-#include <primitiv/c/status.h>
+
+#include <primitiv/c/define.h>
 
 #define PRIMITIV_C_PTR_TO_PTR(cpp_name, c_name) \
 inline c_name *to_c_ptr(primitiv::cpp_name *instance) { \
@@ -75,10 +76,10 @@ class ErrorHandler {
   ~ErrorHandler() = default;
 
   template<typename T, typename = Throwable<T>>
-  ::primitiv_Status handle(const T &e) {
+  ::PRIMITIV_C_STATUS handle(const T &e) {
     exception_ = std::make_exception_ptr(e);
     message_ = e.what();
-    return ::primitiv_Status::PRIMITIV_ERROR;
+    return PRIMITIV_C_ERROR;
   }
 
   std::exception rethrow() {

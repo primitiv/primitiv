@@ -37,4 +37,11 @@ typedef uint32_t PRIMITIV_C_BOOL;
 #define PRIMITIV_C_FALSE 0
 #define PRIMITIV_C_TRUE 1
 
+/*
+ * Return codes.
+ */
+typedef uint32_t PRIMITIV_C_STATUS;
+#define PRIMITIV_C_OK 0
+#define PRIMITIV_C_ERROR -1
+
 #endif  // PRIMITIV_C_DEFINE_H_

@@ -3,14 +3,9 @@
 
 #include <primitiv/c/define.h>
 
-typedef enum primitiv_Status {
-  PRIMITIV_OK = 0,
-  PRIMITIV_ERROR = -1,
-} primitiv_Status;
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_reset();
 
-PRIMITIV_C_API primitiv_Status primitiv_Status_get_message(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_get_message(
     char *buffer, size_t *buffer_size);
-
-PRIMITIV_C_API primitiv_Status primitiv_Status_reset();
 
 #endif  // PRIMITIV_C_STATUS_H_

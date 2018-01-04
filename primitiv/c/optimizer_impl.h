@@ -3,7 +3,6 @@
 
 #include <primitiv/c/define.h>
 #include <primitiv/c/optimizer.h>
-#include <primitiv/c/status.h>
 
 /**
  * Creates a new (SGD) Optimizer object.
@@ -11,7 +10,7 @@
  * @param optimizer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_SGD_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_SGD_new(
     float eta, primitiv_Optimizer **optimizer);
 
 /**
@@ -20,7 +19,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_SGD_new(
  * @param eta Pointer to receive the learning rate.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_SGD_eta(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_SGD_eta(
     const primitiv_Optimizer *optimizer, float *eta);
 
 /**
@@ -30,7 +29,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_SGD_eta(
  * @param optimizer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_MomentumSGD_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_MomentumSGD_new(
     float eta, float momentum, primitiv_Optimizer **optimizer);
 
 /**
@@ -39,7 +38,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_MomentumSGD_new(
  * @param eta Pointer to receive the value of eta.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_MomentumSGD_eta(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_MomentumSGD_eta(
     const primitiv_Optimizer *optimizer, float *eta);
 
 /**
@@ -48,7 +47,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_MomentumSGD_eta(
  * @param momentum Pointer to receive the value of momentum.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_MomentumSGD_momentum(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_MomentumSGD_momentum(
     const primitiv_Optimizer *optimizer, float *momentum);
 
 /**
@@ -58,7 +57,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_MomentumSGD_momentum(
  * @param optimizer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaGrad_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_AdaGrad_new(
     float eta, float eps, primitiv_Optimizer **optimizer);
 
 /**
@@ -67,7 +66,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaGrad_new(
  * @param eta Pointer to receive the value of eta.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaGrad_eta(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_AdaGrad_eta(
     const primitiv_Optimizer *optimizer, float *eta);
 
 /**
@@ -76,7 +75,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaGrad_eta(
  * @param eps Pointer to receive the value of eps.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaGrad_eps(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_AdaGrad_eps(
     const primitiv_Optimizer *optimizer, float *eps);
 
 /**
@@ -87,7 +86,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaGrad_eps(
  * @param optimizer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_RMSProp_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_RMSProp_new(
     float eta, float alpha, float eps, primitiv_Optimizer **optimizer);
 
 /**
@@ -96,7 +95,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_RMSProp_new(
  * @param eta Pointer to receive the value of eta.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_RMSProp_eta(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_RMSProp_eta(
     const primitiv_Optimizer *optimizer, float *eta);
 
 /**
@@ -105,7 +104,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_RMSProp_eta(
  * @param alpha Pointer to receive the value of alpha.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_RMSProp_alpha(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_RMSProp_alpha(
     const primitiv_Optimizer *optimizer, float *alpha);
 
 /**
@@ -114,7 +113,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_RMSProp_alpha(
  * @param eps Pointer to receive the value of eps.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_RMSProp_eps(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_RMSProp_eps(
     const primitiv_Optimizer *optimizer, float *eps);
 
 /**
@@ -124,7 +123,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_RMSProp_eps(
  * @param optimizer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaDelta_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_AdaDelta_new(
     float rho, float eps, primitiv_Optimizer **optimizer);
 
 /**
@@ -133,7 +132,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaDelta_new(
  * @param rho Pointer to receive the value of rho.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaDelta_rho(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_AdaDelta_rho(
     const primitiv_Optimizer *optimizer, float *rho);
 
 /**
@@ -142,7 +141,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaDelta_rho(
  * @param eps Pointer to receive the value of eps.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaDelta_eps(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_AdaDelta_eps(
     const primitiv_Optimizer *optimizer, float *eps);
 
 /**
@@ -154,7 +153,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_AdaDelta_eps(
  * @param optimizer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_Adam_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_Adam_new(
     float alpha, float beta1, float beta2, float eps,
     primitiv_Optimizer **optimizer);
 
@@ -164,7 +163,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_Adam_new(
  * @param alpha Pointer to receive the value of alpha.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_Adam_alpha(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_Adam_alpha(
     const primitiv_Optimizer *optimizer, float *alpha);
 
 /**
@@ -173,7 +172,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_Adam_alpha(
  * @param beta1 Pointer to receive the value of beta1.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_Adam_beta1(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_Adam_beta1(
     const primitiv_Optimizer *optimizer, float *beta1);
 
 /**
@@ -182,7 +181,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_Adam_beta1(
  * @param beta2 Pointer to receive the value of beta2.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_Adam_beta2(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_Adam_beta2(
     const primitiv_Optimizer *optimizer, float *beta2);
 
 /**
@@ -191,7 +190,7 @@ PRIMITIV_C_API primitiv_Status primitiv_optimizers_Adam_beta2(
  * @param eps Pointer to receive the value of eps.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_optimizers_Adam_eps(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_Adam_eps(
     const primitiv_Optimizer *optimizer, float *eps);
 
 #endif  // PRIMITIV_C_OPTIMIZER_IMPL_H_

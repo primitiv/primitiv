@@ -7,13 +7,13 @@
 using primitiv::devices::Naive;
 using primitiv::c::internal::to_c_ptr;
 
-primitiv_Status primitiv_devices_Naive_new(primitiv_Device **device) try {
+PRIMITIV_C_STATUS primitiv_devices_Naive_new(primitiv_Device **device) try {
   *device = to_c_ptr(new Naive());
-  return ::primitiv_Status::PRIMITIV_OK;
+  return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Status primitiv_devices_Naive_new_with_seed(
+PRIMITIV_C_STATUS primitiv_devices_Naive_new_with_seed(
     uint32_t seed, primitiv_Device **device) try {
   *device = to_c_ptr(new Naive(seed));
-  return ::primitiv_Status::PRIMITIV_OK;
+  return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS

@@ -3,7 +3,6 @@
 
 #include <primitiv/c/define.h>
 #include <primitiv/c/shape.h>
-#include <primitiv/c/status.h>
 
 /**
  * Opaque type of Tensor.
@@ -15,7 +14,7 @@ typedef struct primitiv_Tensor primitiv_Tensor;
  * @param tensor Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_Tensor_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_new(
     primitiv_Tensor **tensor);
 
 /**
@@ -24,7 +23,7 @@ PRIMITIV_C_API primitiv_Status primitiv_Tensor_new(
  * @param tensor Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_Tensor_clone(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_clone(
     primitiv_Tensor *src, primitiv_Tensor **tensor);
 
 /**
@@ -32,7 +31,7 @@ PRIMITIV_C_API primitiv_Status primitiv_Tensor_clone(
  * @param tensor Pointer of a handler.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_Tensor_delete(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_delete(
     primitiv_Tensor *tensor);
 
 /**
@@ -44,7 +43,7 @@ PRIMITIV_C_API primitiv_Status primitiv_Tensor_delete(
  * @remarks This returns false when the object is created through the default
  *          constructor or the object had been moved.
  */
-PRIMITIV_C_API primitiv_Status primitiv_Tensor_valid(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_valid(
     const primitiv_Tensor *tensor, PRIMITIV_C_BOOL *valid);
 
 /**
@@ -53,7 +52,7 @@ PRIMITIV_C_API primitiv_Status primitiv_Tensor_valid(
  * @param shape Pointer to receive a Shape of the Tensor.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_Tensor_shape(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_shape(
     const primitiv_Tensor *tensor, primitiv_Shape **shape);
 
 /**
@@ -62,7 +61,7 @@ PRIMITIV_C_API primitiv_Status primitiv_Tensor_shape(
  * @param device Pointer to receive the Device object.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_Tensor_device(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_device(
     const primitiv_Tensor *tensor, primitiv_Device **device);
 
 /**
@@ -73,7 +72,7 @@ PRIMITIV_C_API primitiv_Status primitiv_Tensor_device(
  * @remarks This function can be used only when the tensor is a scalar and
  *          non-minibatched (i.e., shape() == Shape()).
  */
-PRIMITIV_C_API primitiv_Status primitiv_Tensor_to_float(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_to_float(
     const primitiv_Tensor *tensor, float *value);
 
 /**
@@ -85,7 +84,7 @@ PRIMITIV_C_API primitiv_Status primitiv_Tensor_to_float(
  * @remarks Each resulting values a re ordered by the column-major order, and
  *          the batch size is assumed as the last dimension of the tensor.
  */
-PRIMITIV_C_API primitiv_Status primitiv_Tensor_to_array(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_to_array(
     const primitiv_Tensor *tensor, float *array, size_t *array_size);
 
 /**
@@ -97,7 +96,7 @@ PRIMITIV_C_API primitiv_Status primitiv_Tensor_to_array(
  * @param array_size Pointer to receive the number of the received indices.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_Tensor_argmax(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_argmax(
     const primitiv_Tensor *tensor, uint32_t dim, uint32_t *indices,
     size_t *array_size);
 
@@ -110,7 +109,7 @@ PRIMITIV_C_API primitiv_Status primitiv_Tensor_argmax(
  * @param array_size Pointer to receive the number of the received indices.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_Tensor_argmin(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_argmin(
     const primitiv_Tensor *tensor, uint32_t dim, uint32_t *indices,
     size_t *array_size);
 
@@ -120,7 +119,7 @@ PRIMITIV_C_API primitiv_Status primitiv_Tensor_argmin(
  * @return Status code.
  * @param k A value to be used to initialize each element.
  */
-PRIMITIV_C_API primitiv_Status primitiv_Tensor_reset(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_reset(
     primitiv_Tensor *tensor, float k);
 
 /**
@@ -132,7 +131,7 @@ PRIMITIV_C_API primitiv_Status primitiv_Tensor_reset(
  *          element should be ordered by the column-major order, and the batch
  *          size is assumed as the last dimension.
  */
-PRIMITIV_C_API primitiv_Status primitiv_Tensor_reset_by_array(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_reset_by_array(
     primitiv_Tensor *tensor, const float *values);
 
 /**
@@ -142,7 +141,7 @@ PRIMITIV_C_API primitiv_Status primitiv_Tensor_reset_by_array(
  * @param new_tensor Pointer to receive a new tensor.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_Tensor_reshape(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_reshape(
     const primitiv_Tensor *tensor, const primitiv_Shape *new_shape,
     primitiv_Tensor **new_tensor);
 
@@ -152,7 +151,7 @@ PRIMITIV_C_API primitiv_Status primitiv_Tensor_reshape(
  * @param new_tensor Pointer to receive a new tensor.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_Tensor_flatten(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_flatten(
     const primitiv_Tensor *tensor, primitiv_Tensor **new_tensor);
 
 /**
@@ -161,7 +160,7 @@ PRIMITIV_C_API primitiv_Status primitiv_Tensor_flatten(
  * @param k A constant to multiply.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_Tensor_inplace_multiply_const(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_inplace_multiply_const(
     primitiv_Tensor *tensor, float k);
 
 /**
@@ -170,7 +169,7 @@ PRIMITIV_C_API primitiv_Status primitiv_Tensor_inplace_multiply_const(
  * @param x A tensor to add.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_Tensor_inplace_add(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_inplace_add(
     primitiv_Tensor *tensor, const primitiv_Tensor *x);
 
 /**
@@ -179,7 +178,7 @@ PRIMITIV_C_API primitiv_Status primitiv_Tensor_inplace_add(
  * @param x A tensor to subtract.
  * @return Status code.
  */
-PRIMITIV_C_API primitiv_Status primitiv_Tensor_inplace_subtract(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_inplace_subtract(
     primitiv_Tensor *tensor, const primitiv_Tensor *x);
 
 #endif  // PRIMITIV_C_TENSOR_H_
