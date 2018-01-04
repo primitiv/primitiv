@@ -1,4 +1,3 @@
-/* Copyright 2017 The primitiv Authors. All Rights Reserved. */
 #include <primitiv/config.h>
 
 #include <primitiv/opencl_device.h>
