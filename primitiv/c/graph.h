@@ -7,10 +7,6 @@
 #include <primitiv/c/status.h>
 #include <primitiv/c/tensor.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * Opaque type of Node.
  */
@@ -26,7 +22,7 @@ typedef struct primitiv_Graph primitiv_Graph;
  * @param node Pointer to receive a handler.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Node_new(primitiv_Node **node);
+PRIMITIV_C_API primitiv_Status primitiv_Node_new(primitiv_Node **node);
 
 /**
  * Creates a clone of existing Node object.
@@ -34,7 +30,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_new(primitiv_Node **node);
  * @param node Pointer to receive a handler.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Node_clone(
+PRIMITIV_C_API primitiv_Status primitiv_Node_clone(
     primitiv_Node *src, primitiv_Node **node);
 
 /**
@@ -42,7 +38,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_clone(
  * @param node Pointer of a handler.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Node_delete(primitiv_Node *node);
+PRIMITIV_C_API primitiv_Status primitiv_Node_delete(primitiv_Node *node);
 
 /**
  * Returns whether the node is valid or not.
@@ -51,7 +47,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_delete(primitiv_Node *node);
  *              valid or not.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Node_valid(
+PRIMITIV_C_API primitiv_Status primitiv_Node_valid(
     const primitiv_Node *node, PRIMITIV_C_BOOL *valid);
 
 /**
@@ -60,7 +56,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_valid(
  * @param graph Pointer to receive the Graph object.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Node_graph(
+PRIMITIV_C_API primitiv_Status primitiv_Node_graph(
     const primitiv_Node *node, primitiv_Graph **graph);
 
 /**
@@ -69,7 +65,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_graph(
  * @param id Pointer to receive the operator ID.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Node_operator_id(
+PRIMITIV_C_API primitiv_Status primitiv_Node_operator_id(
     const primitiv_Node *node, uint32_t *id);
 
 /**
@@ -78,7 +74,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_operator_id(
  * @param id Pointer to receive the value ID.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Node_value_id(
+PRIMITIV_C_API primitiv_Status primitiv_Node_value_id(
     const primitiv_Node *node, uint32_t *id);
 
 /**
@@ -87,7 +83,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_value_id(
  * @param shape Pointer to receive a Shape object.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Node_shape(
+PRIMITIV_C_API primitiv_Status primitiv_Node_shape(
     const primitiv_Node *node, primitiv_Shape **shape);
 
 /**
@@ -96,7 +92,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_shape(
  * @param device Pointer to receive the Device object.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Node_device(
+PRIMITIV_C_API primitiv_Status primitiv_Node_device(
     const primitiv_Node *node, primitiv_Device **device);
 
 /**
@@ -108,7 +104,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_device(
  *          This function can be used only when the Node has a scalar and
  *          non-minibatched shape (i.e., shape() == Shape())
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Node_to_float(
+PRIMITIV_C_API primitiv_Status primitiv_Node_to_float(
     const primitiv_Node *node, float *value);
 
 /**
@@ -119,7 +115,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_to_float(
  * @return Status code.
  * @remarks This function calls Graph::forward() internally.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Node_to_array(
+PRIMITIV_C_API primitiv_Status primitiv_Node_to_array(
     const primitiv_Node *node, float *array, size_t *array_size);
 
 /**
@@ -131,7 +127,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_to_array(
  * @param array_size Pointer to receive the number of the received indices.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Node_argmax(
+PRIMITIV_C_API primitiv_Status primitiv_Node_argmax(
     const primitiv_Node *node, uint32_t dim, uint32_t *indices,
     size_t *array_size);
 
@@ -144,7 +140,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_argmax(
  * @param array_size Pointer to receive the number of the received indices.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Node_argmin(
+PRIMITIV_C_API primitiv_Status primitiv_Node_argmin(
     const primitiv_Node *node, uint32_t dim, uint32_t *indices,
     size_t *array_size);
 
@@ -153,7 +149,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_argmin(
  * @param node Pointer of a handler.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Node_backward(
+PRIMITIV_C_API primitiv_Status primitiv_Node_backward(
     const primitiv_Node *node);
 
 /**
@@ -161,7 +157,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Node_backward(
  * @param graph Pointer to receive a handler.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Graph_new(
+PRIMITIV_C_API primitiv_Status primitiv_Graph_new(
     primitiv_Graph **graph);
 
 /**
@@ -169,7 +165,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Graph_new(
  * @param graph Pointer of a handler.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Graph_delete(
+PRIMITIV_C_API primitiv_Status primitiv_Graph_delete(
     primitiv_Graph *graph);
 
 /**
@@ -177,7 +173,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Graph_delete(
  * @param graph Pointer to receive the current default graph.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Graph_get_default(
+PRIMITIV_C_API primitiv_Status primitiv_Graph_get_default(
     primitiv_Graph **graph);
 
 /**
@@ -185,7 +181,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Graph_get_default(
  * @param graph Pointer of the new default graph.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Graph_set_default(
+PRIMITIV_C_API primitiv_Status primitiv_Graph_set_default(
     primitiv_Graph *graph);
 
 /**
@@ -195,7 +191,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Graph_set_default(
  *          itself is invalidated.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Graph_clear(
+PRIMITIV_C_API primitiv_Status primitiv_Graph_clear(
     primitiv_Graph *graph);
 
 /**
@@ -210,7 +206,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Graph_clear(
  *          future calculation. I.e., each node is calculated only once while
  *          the lifetime of the Graph object.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Graph_forward(
+PRIMITIV_C_API primitiv_Status primitiv_Graph_forward(
     primitiv_Graph *graph, const primitiv_Node *node,
     const primitiv_Tensor **tensor);
 
@@ -222,7 +218,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Graph_forward(
  * @remarks If `node` is not yet forwarded, this function implicitly calls
  *          `forward(node)`.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Graph_backward(
+PRIMITIV_C_API primitiv_Status primitiv_Graph_backward(
     primitiv_Graph *graph, const primitiv_Node *node);
 
 /**
@@ -232,7 +228,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Graph_backward(
  * @param shape Pointer to receive the shape of the node.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Graph_get_shape(
+PRIMITIV_C_API primitiv_Status primitiv_Graph_get_shape(
     const primitiv_Graph *graph, const primitiv_Node *node,
     primitiv_Shape **shape);
 
@@ -243,7 +239,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Graph_get_shape(
  * @param device Pointer to receive the device of the node.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Graph_get_device(
+PRIMITIV_C_API primitiv_Status primitiv_Graph_get_device(
     const primitiv_Graph *graph, const primitiv_Node *node,
     primitiv_Device **device);
 
@@ -257,7 +253,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Graph_get_device(
  * @param buffer_size Pointer to receive a length of the string.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Graph_dump(
+PRIMITIV_C_API primitiv_Status primitiv_Graph_dump(
     const primitiv_Graph *graph, const char *format, char *buffer,
     size_t *buffer_size);
 
@@ -267,11 +263,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Graph_dump(
  * @param num Pointer to receive the number of nodes.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Graph_num_operators(
+PRIMITIV_C_API primitiv_Status primitiv_Graph_num_operators(
     const primitiv_Graph *graph, uint32_t *num);
-
-#ifdef __cplusplus
-}  // end extern "C"
-#endif
 
 #endif  // PRIMITIV_C_GRAPH_H_

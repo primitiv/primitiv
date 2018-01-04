@@ -5,10 +5,6 @@
 #include <primitiv/c/device.h>
 #include <primitiv/c/status.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * Creates a new Device object.
  * @param device_id ID of the physical GPU.
@@ -37,10 +33,5 @@ extern PRIMITIV_C_API primitiv_Status primitiv_devices_CUDA_new_with_seed(
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_devices_CUDA_num_devices(
     uint32_t *num_devices);
-
-
-#ifdef __cplusplus
-}  // end extern "C"
-#endif
 
 #endif  // PRIMITIV_C_CUDA_DEVICE_H_

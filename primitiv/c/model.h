@@ -6,10 +6,6 @@
 #include <primitiv/c/parameter.h>
 #include <primitiv/c/status.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * Opaque type of Model.
  */
@@ -20,7 +16,7 @@ typedef struct primitiv_Model primitiv_Model;
  * @param model Pointer to receive a handler.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Model_new(
+PRIMITIV_C_API primitiv_Status primitiv_Model_new(
     primitiv_Model **model);
 
 /**
@@ -28,7 +24,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Model_new(
  * @param model Pointer of a handler.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Model_delete(
+PRIMITIV_C_API primitiv_Status primitiv_Model_delete(
     primitiv_Model *model);
 
 /**
@@ -39,7 +35,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Model_delete(
  * @param device Device object to manage parameters.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Model_load(
+PRIMITIV_C_API primitiv_Status primitiv_Model_load(
     primitiv_Model *model, const char *path, PRIMITIV_C_BOOL with_stats,
     primitiv_Device *device);
 
@@ -50,7 +46,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Model_load(
  * @param with_stats Whether or not to save all additional statistics.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Model_save(
+PRIMITIV_C_API primitiv_Status primitiv_Model_save(
     const primitiv_Model *model, const char *path, PRIMITIV_C_BOOL with_stats);
 
 /**
@@ -62,7 +58,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Model_save(
  * @remarks `name` should not be overlapped with all registered parameters and
  *          submodels.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Model_add_parameter(
+PRIMITIV_C_API primitiv_Status primitiv_Model_add_parameter(
     primitiv_Model *model, const char *name, primitiv_Parameter *param);
 
 /**
@@ -74,7 +70,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Model_add_parameter(
  * @remarks `name` should not be overlapped with all registered parameters and
  *          submodels.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Model_add_model(
+PRIMITIV_C_API primitiv_Status primitiv_Model_add_model(
     primitiv_Model *model, const char *name, primitiv_Model *submodel);
 
 /**
@@ -86,7 +82,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Model_add_model(
  *              `Parameter` object.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Model_get_parameter(
+PRIMITIV_C_API primitiv_Status primitiv_Model_get_parameter(
     const primitiv_Model *model, const char **names, size_t n,
     const primitiv_Parameter **param);
 
@@ -99,15 +95,11 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Model_get_parameter(
  *                 `Model` object.
  * @return Status code.
  */
-extern PRIMITIV_C_API primitiv_Status primitiv_Model_get_submodel(
+PRIMITIV_C_API primitiv_Status primitiv_Model_get_submodel(
     const primitiv_Model *model, const char **names, size_t n,
     const primitiv_Model **submodel);
 
 // @TODO: Implement primitiv_Model_get_all_parameters()
 // @TODO: Implement primitiv_Model_get_trainable_parameters()
-
-#ifdef __cplusplus
-}  // end extern "C"
-#endif
 
 #endif  // PRIMITIV_C_MODEL_H_

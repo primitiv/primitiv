@@ -3,17 +3,25 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+#define PRIMITIV_C_EXTERN extern "C"
+#else
+#define PRIMITIV_C_EXTERN extern
+#endif  // __cplusplus
+
 #if defined(__GNUC__) || defined(__clang__)
-#define PRIMITIV_C_API __attribute__((visibility("default")))
+#define PRIMITIV_C_EXPORT __attribute__((visibility("default")))
 #elif defined(_MSC_VER)
 #ifdef PRIMITIV_C_DLLEXPORT
-#define PRIMITIV_C_API __declspec(dllexport)
+#define PRIMITIV_C_EXPORT __declspec(dllexport)
 #else
-#define PRIMITIV_C_API __declspec(dllimport)
+#define PRIMITIV_C_EXPORT __declspec(dllimport)
 #endif  // PRIMITIV_C_DLLEXPORT
 #else
-#define PRIMITIV_C_API
+#define PRIMITIV_C_EXPORT
 #endif  // __GNUC__, __clang__, _MSC_VER
+
+#define PRIMITIV_C_API PRIMITIV_C_EXTERN PRIMITIV_C_EXPORT
 
 /*
  * Boolean type.
