@@ -12,7 +12,7 @@
  * @remarks The random number generator is initialized using
  *          `std::random_device`.
  */
-extern PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_CUDA_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_CUDA_new(
     uint32_t device_id, primitiv_Device **device);
 
 /**
@@ -22,7 +22,7 @@ extern PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_CUDA_new(
  * @param device Pointer to receive a handler.
  * @return Status code.
  */
-extern PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_CUDA_new_with_seed(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_CUDA_new_with_seed(
     uint32_t device_id, uint32_t rng_seed, primitiv_Device **device);
 
 /**
@@ -30,7 +30,7 @@ extern PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_CUDA_new_with_seed(
  * @param num_devices Pointer to receive the number of active hardwares.
  * @return Status code.
  */
-extern PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_CUDA_num_devices(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_CUDA_num_devices(
     uint32_t *num_devices);
 
 #endif  // PRIMITIV_C_CUDA_DEVICE_H_
