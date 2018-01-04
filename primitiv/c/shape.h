@@ -39,23 +39,21 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_delete(
  * Returns the size of the i-th dimension.
  * @param shape Pointer of a handler.
  * @param i Dimension number to check.
- * @param dim_size Pointer to receive the size of the i-th dimension.
+ * @param ret Pointer to receive the size of the i-th dimension.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_op_getitem(
-    const primitiv_Shape *shape,
-    uint32_t i,
-    uint32_t *dim_size);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_at(
+    const primitiv_Shape *shape, uint32_t i, uint32_t *ret);
 
 /**
  * Returns the dimension array.
  * @param shape Pointer of a handler.
  * @param dims Pointer of an array to receive the dimensions.
- * @param array_size Pointer to receive the number of the dimensions.
+ * @param size Pointer to receive the number of the dimensions.
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_dims(
-    const primitiv_Shape *shape, uint32_t *dims, size_t *array_size);
+    const primitiv_Shape *shape, uint32_t *dims, size_t *size);
 
 /**
  * Returns the depth (length of non-1 dimensions) of the shape.
@@ -111,11 +109,11 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_size(
  * The format is: "[n,m,...]xk"
  * @param shape Pointer of a handler.
  * @param buffer Pointer to receive the encoded string.
- * @param buffer_size Pointer to receive a length of the char sequence.
+ * @param size Pointer to receive a length of the char sequence.
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_to_string(
-    const primitiv_Shape *shape, char *buffer, size_t *buffer_size);
+    const primitiv_Shape *shape, char *buffer, size_t *size);
 
 /**
  * Compares this and other shape.

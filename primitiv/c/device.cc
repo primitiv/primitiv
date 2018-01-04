@@ -9,6 +9,7 @@ using primitiv::c::internal::to_c_ptr;
 using primitiv::c::internal::to_cpp_ptr;
 
 PRIMITIV_C_STATUS primitiv_Device_get_default(primitiv_Device **device) try {
+  PRIMITIV_C_CHECK_NOT_NULL(device);
   *device = to_c_ptr(&Device::get_default());
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS

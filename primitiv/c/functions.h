@@ -23,7 +23,7 @@ primitiv_node_func_##name##_const_node( \
     float k, const primitiv_Node *x, primitiv_Node **y); \
 PRIMITIV_C_API PRIMITIV_C_STATUS \
 primitiv_node_func_##name##_node_node( \
-    const primitiv_Node *a, const primitiv_Node *b, primitiv_Node **c); \
+    const primitiv_Node *a, const primitiv_Node *b, primitiv_Node **y); \
 PRIMITIV_C_API PRIMITIV_C_STATUS \
 primitiv_tensor_func_##name##_tensor_const( \
     const primitiv_Tensor *x, float k, primitiv_Tensor **y); \
@@ -32,7 +32,7 @@ primitiv_tensor_func_##name##_const_tensor( \
     float k, const primitiv_Tensor *x, primitiv_Tensor **y); \
 PRIMITIV_C_API PRIMITIV_C_STATUS \
 primitiv_tensor_func_##name##_tensor_tensor( \
-    const primitiv_Tensor *a, const primitiv_Tensor *b, primitiv_Tensor **c);
+    const primitiv_Tensor *a, const primitiv_Tensor *b, primitiv_Tensor **y);
 
 PRIMITIV_C_DECL_UNARY_FUNC(positive);
 PRIMITIV_C_DECL_UNARY_FUNC(negative);
@@ -88,9 +88,9 @@ PRIMITIV_C_DECL_UNARY_FUNC(flatten);
 PRIMITIV_C_DECL_UNARY_FUNC(transpose);
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_matmul(
-    const primitiv_Node *a, const primitiv_Node *b, primitiv_Node **c);
+    const primitiv_Node *a, const primitiv_Node *b, primitiv_Node **y);
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_matmul(
-    const primitiv_Tensor *a, const primitiv_Tensor *b, primitiv_Tensor **c);
+    const primitiv_Tensor *a, const primitiv_Tensor *b, primitiv_Tensor **y);
 
 PRIMITIV_C_DECL_UNARY_FUNC(sqrt);
 PRIMITIV_C_DECL_UNARY_FUNC(exp);

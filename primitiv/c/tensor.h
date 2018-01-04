@@ -79,13 +79,13 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_to_float(
  * Retrieves internal values in the tensor as a vector.
  * @param tensor Pointer of a handler.
  * @param array Pointer to receive a list of the internal values.
- * @param array_size Pointer to receive the length of the array.
+ * @param size Pointer to receive the length of the array.
  * @return Status code.
  * @remarks Each resulting values a re ordered by the column-major order, and
  *          the batch size is assumed as the last dimension of the tensor.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_to_array(
-    const primitiv_Tensor *tensor, float *array, size_t *array_size);
+    const primitiv_Tensor *tensor, float *array, size_t *size);
 
 /**
  * Retrieves argmax indices along an axis.
@@ -93,12 +93,12 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_to_array(
  * @param dim A specified axis.
  * @param indices Pointer to receive a list of integers that indicates positions
  *                of the maximum values.
- * @param array_size Pointer to receive the number of the received indices.
+ * @param size Pointer to receive the number of the received indices.
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_argmax(
     const primitiv_Tensor *tensor, uint32_t dim, uint32_t *indices,
-    size_t *array_size);
+    size_t *size);
 
 /**
  * Retrieves argmin indices along an axis.
@@ -106,12 +106,12 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_argmax(
  * @param dim A specified axis.
  * @param indices Pointer to receive a list of integers that indicates positions
  *                of the minimum values.
- * @param array_size Pointer to receive the number of the received indices.
+ * @param size Pointer to receive the number of the received indices.
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_argmin(
     const primitiv_Tensor *tensor, uint32_t dim, uint32_t *indices,
-    size_t *array_size);
+    size_t *size);
 
 /**
  * Reset internal values using a constant.

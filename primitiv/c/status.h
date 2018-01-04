@@ -6,6 +6,6 @@
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_reset();
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_get_message(
-    char *buffer, size_t *buffer_size);
+    char *buffer, size_t *size);
 
 #endif  // PRIMITIV_C_STATUS_H_

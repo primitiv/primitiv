@@ -17,6 +17,7 @@ PRIMITIV_C_STATUS primitiv_Initializer_delete(
 PRIMITIV_C_STATUS primitiv_Initializer_apply(
     const primitiv_Initializer *initializer, primitiv_Tensor *x) try {
   PRIMITIV_C_CHECK_NOT_NULL(initializer);
+  PRIMITIV_C_CHECK_NOT_NULL(x);
   to_cpp_ptr(initializer)->apply(*to_cpp_ptr(x));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS

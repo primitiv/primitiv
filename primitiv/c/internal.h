@@ -47,7 +47,7 @@ catch (const std::exception &e) { \
 
 #define PRIMITIV_C_CHECK_NOT_NULL(var) \
 if (!var) { \
-  THROW_ERROR("Argument `"#var"` must not be null."); \
+  THROW_ERROR("Argument `" #var "` must not be null."); \
 }
 
 struct primitiv_Device;
@@ -112,26 +112,26 @@ class ErrorHandler {
 
 template<typename T>
 inline void copy_vector_to_array(
-    const std::vector<T> &vector, T *array, std::size_t *array_size) {
+    const std::vector<T> &vector, T *array, std::size_t *size) {
   if (array) {
-    if (*array_size < vector.size()) {
-      THROW_ERROR("array_size is not enough to copy a vector.");
+    if (*size < vector.size()) {
+      THROW_ERROR("Size is not enough to copy a vector.");
     }
     std::copy(vector.begin(), vector.end(), array);
   } else {
-    *array_size = vector.size();
+    *size = vector.size();
   }
 }
 
 inline void copy_string_to_array(
-    const std::string &str, char *buffer, std::size_t *buffer_size) {
+    const std::string &str, char *buffer, std::size_t *size) {
   if (buffer) {
-    if (*buffer_size <= str.length()) {
-      THROW_ERROR("buffer_size is not enough to copy a string.");
+    if (*size <= str.length()) {
+      THROW_ERROR("Size is not enough to copy a string.");
     }
     std::strcpy(buffer, str.c_str());
   } else {
-    *buffer_size = str.length() + 1u;
+    *size = str.length() + 1u;
   }
 }
 
