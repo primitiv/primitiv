@@ -113,10 +113,10 @@ template<typename T>
 inline void copy_vector_to_array(
     const std::vector<T> &vector, T *array, std::size_t *array_size) {
   if (array) {
-    std::copy(vector.begin(), vector.end(), array);
     if (*array_size < vector.size()) {
       THROW_ERROR("array_size is not enough to copy a vector.");
     }
+    std::copy(vector.begin(), vector.end(), array);
   } else {
     *array_size = vector.size();
   }
@@ -125,12 +125,12 @@ inline void copy_vector_to_array(
 inline void copy_string_to_array(
     const std::string &str, char *buffer, std::size_t *buffer_size) {
   if (buffer) {
-    if (*buffer_size < str.length()) {
+    if (*buffer_size <= str.length()) {
       THROW_ERROR("buffer_size is not enough to copy a string.");
     }
     std::strcpy(buffer, str.c_str());
   } else {
-    *buffer_size = str.length();
+    *buffer_size = str.length() + 1u;
   }
 }
 

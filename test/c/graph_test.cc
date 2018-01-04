@@ -207,12 +207,12 @@ TEST_F(CGraphTest, CheckForward) {
   EXPECT_EQ(10u, num);
 
   // Dump the graph to the output log.
-  std::size_t length;
+  std::size_t length = 0u;
   ::primitiv_Graph_dump(g, "dot", nullptr, &length);
   EXPECT_GT(length, 0u);
   char str[length];
   ::primitiv_Graph_dump(g, "dot", str, &length);
-  std::cout << str;
+  std::cout << str << std::endl;
 
   // Check all shapes and devices.
   const uint32_t dims2[] = {1, 2};
