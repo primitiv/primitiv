@@ -267,10 +267,10 @@ extern PRIMITIV_C_API primitiv_Status primitiv_tensor_func_ones(
     primitiv_Tensor **tensor);
 
 extern PRIMITIV_C_API primitiv_Status primitiv_node_func_dropout(
-    const primitiv_Node *x, float rate, unsigned char enabled,
+    const primitiv_Node *x, float rate, PRIMITIV_C_BOOL enabled,
     primitiv_Node **y);
 extern PRIMITIV_C_API primitiv_Status primitiv_tensor_func_dropout(
-    const primitiv_Tensor *x, float rate, unsigned char enabled,
+    const primitiv_Tensor *x, float rate, PRIMITIV_C_BOOL enabled,
     primitiv_Tensor **y);
 
 #ifdef __cplusplus

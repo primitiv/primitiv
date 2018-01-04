@@ -51,7 +51,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_delete(
  *          constructor or the object had been moved.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Tensor_valid(
-    const primitiv_Tensor *tensor, unsigned char *valid);
+    const primitiv_Tensor *tensor, PRIMITIV_C_BOOL *valid);
 
 /**
  * Returns the shape of the Tensor.

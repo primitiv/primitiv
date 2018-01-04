@@ -96,7 +96,7 @@ class ErrorHandler {
     message_ = "OK";
   }
 
-  unsigned char has_exception() const noexcept {
+  bool has_exception() const noexcept {
     return !exception_;
   }
 

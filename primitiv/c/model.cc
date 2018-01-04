@@ -24,7 +24,7 @@ primitiv_Status primitiv_Model_delete(primitiv_Model *model) try {
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Model_load(
-    primitiv_Model *model, const char *path, unsigned char with_stats,
+    primitiv_Model *model, const char *path, PRIMITIV_C_BOOL with_stats,
     primitiv_Device *device) try {
   PRIMITIV_C_CHECK_NOT_NULL(model);
   PRIMITIV_C_CHECK_NOT_NULL(path);
@@ -34,7 +34,7 @@ primitiv_Status primitiv_Model_load(
 
 primitiv_Status primitiv_Model_save(
     const primitiv_Model *model, const char *path,
-    unsigned char with_stats) try {
+    PRIMITIV_C_BOOL with_stats) try {
   PRIMITIV_C_CHECK_NOT_NULL(model);
   PRIMITIV_C_CHECK_NOT_NULL(path);
   to_cpp_ptr(model)->save(path, with_stats);

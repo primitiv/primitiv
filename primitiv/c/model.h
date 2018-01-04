@@ -42,7 +42,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Model_delete(
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Model_load(
-    primitiv_Model *model, const char *path, unsigned char with_stats,
+    primitiv_Model *model, const char *path, PRIMITIV_C_BOOL with_stats,
     primitiv_Device *device);
 
 /**
@@ -53,7 +53,7 @@ extern PRIMITIV_C_API primitiv_Status primitiv_Model_load(
  * @return Status code.
  */
 extern PRIMITIV_C_API primitiv_Status primitiv_Model_save(
-    const primitiv_Model *model, const char *path, unsigned char with_stats);
+    const primitiv_Model *model, const char *path, PRIMITIV_C_BOOL with_stats);
 
 /**
  * Registers a new parameter.

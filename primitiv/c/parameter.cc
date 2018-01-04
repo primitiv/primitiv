@@ -74,7 +74,7 @@ primitiv_Status primitiv_Parameter_init_with_initializer(
 primitiv_Status primitiv_Parameter_load(
     primitiv_Parameter *parameter,
     const char *path,
-    unsigned char with_stats,
+    PRIMITIV_C_BOOL with_stats,
     primitiv_Device *device) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   PRIMITIV_C_CHECK_NOT_NULL(path);
@@ -85,7 +85,7 @@ primitiv_Status primitiv_Parameter_load(
 primitiv_Status primitiv_Parameter_save(
     const primitiv_Parameter *parameter,
     const char *path,
-    unsigned char with_stats) try {
+    PRIMITIV_C_BOOL with_stats) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   PRIMITIV_C_CHECK_NOT_NULL(path);
   to_cpp_ptr(parameter)->save(path, with_stats);
@@ -93,7 +93,7 @@ primitiv_Status primitiv_Parameter_save(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Parameter_valid(
-    const primitiv_Parameter *parameter, unsigned char *valid) try {
+    const primitiv_Parameter *parameter, PRIMITIV_C_BOOL *valid) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   *valid = to_cpp_ptr(parameter)->valid();
   return ::primitiv_Status::PRIMITIV_OK;
@@ -119,7 +119,7 @@ primitiv_Status primitiv_Parameter_add_stats(
 
 primitiv_Status primitiv_Parameter_has_stats(
     primitiv_Parameter *parameter, const char *name,
-    unsigned char *has_stats) try {
+    PRIMITIV_C_BOOL *has_stats) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   PRIMITIV_C_CHECK_NOT_NULL(name);
   *has_stats = to_cpp_ptr(parameter)->has_stats(name);

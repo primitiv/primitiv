@@ -3,12 +3,7 @@
 #ifndef PRIMITIV_C_DEFINE_H_
 #define PRIMITIV_C_DEFINE_H_
 
-#include <stddef.h>
 #include <stdint.h>
-
-// --------------------------------------------------------------------------
-// Conventions:
-// * We use unsigned char for booleans.
 
 #if defined(__GNUC__) || defined(__clang__)
 #define PRIMITIV_C_API __attribute__((visibility("default")))
@@ -21,5 +16,19 @@
 #else
 #define PRIMITIV_C_API
 #endif  // __GNUC__, __clang__, _MSC_VER
+
+/*
+ * Boolean type.
+ */
+typedef uint32_t PRIMITIV_C_BOOL;
+
+/*
+ * Boolean values.
+ * `PRIMITIV_C_TRUE` can not be compared with any `PRIMITIV_C_BOOL` values.
+ * Only substituting `PRIMITIV_C_TRUE` to `PRIMITIV_C_BOOL` variables is
+ * allowed.
+ */
+#define PRIMITIV_C_FALSE 0
+#define PRIMITIV_C_TRUE 1
 
 #endif  // PRIMITIV_C_DEFINE_H_

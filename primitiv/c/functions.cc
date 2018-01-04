@@ -678,7 +678,7 @@ primitiv_Status primitiv_tensor_func_ones(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_node_func_dropout(
-    const primitiv_Node *x, float rate, unsigned char enabled,
+    const primitiv_Node *x, float rate, PRIMITIV_C_BOOL enabled,
     primitiv_Node **y) try {
   PRIMITIV_C_CHECK_NOT_NULL(x);
   *y = to_c_ptr_from_value(
@@ -687,7 +687,7 @@ primitiv_Status primitiv_node_func_dropout(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_tensor_func_dropout(
-    const primitiv_Tensor *x, float rate, unsigned char enabled,
+    const primitiv_Tensor *x, float rate, PRIMITIV_C_BOOL enabled,
     primitiv_Tensor **y) try {
   PRIMITIV_C_CHECK_NOT_NULL(x);
   *y = to_c_ptr_from_value(

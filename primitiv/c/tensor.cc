@@ -31,7 +31,7 @@ primitiv_Status primitiv_Tensor_delete(primitiv_Tensor *tensor) try {
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 primitiv_Status primitiv_Tensor_valid(
-    const primitiv_Tensor *tensor, unsigned char *valid) try {
+    const primitiv_Tensor *tensor, PRIMITIV_C_BOOL *valid) try {
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   *valid = to_cpp_ptr(tensor)->valid();
   return ::primitiv_Status::PRIMITIV_OK;
