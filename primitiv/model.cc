@@ -70,6 +70,13 @@ void Model::save(const std::string &path, bool with_stats) const {
 }
 
 void Model::add(const std::string &name, Parameter &param) {
+  const auto kv = param_kv_.find(name);
+  if (kv != param_kv_.end() && kv->second == &param) {
+    // Explicitly allows to call this function multiple times using the same
+    // Parameter object.
+    return;
+  }
+
   if (name_set_.find(name) != name_set_.end()) {
     THROW_ERROR(
         "Name '" << name << "' already exists in the model.");
@@ -78,12 +85,20 @@ void Model::add(const std::string &name, Parameter &param) {
     THROW_ERROR(
         "Parameter '" << &param << "' already exists in the model.");
   }
+
   name_set_.emplace(name);
   param_set_.emplace(&param);
   param_kv_.emplace(name, &param);
 }
 
 void Model::add(const std::string &name, Model &model) {
+  const auto kv = submodel_kv_.find(name);
+  if (kv != submodel_kv_.end() && kv->second == &model) {
+    // Explicitly allows to call this function multiple times using the same
+    // Model object.
+    return;
+  }
+
   if (&model == this) {
     THROW_ERROR("Can't add self as a submodel.");
   }
@@ -98,6 +113,7 @@ void Model::add(const std::string &name, Model &model) {
     THROW_ERROR(
         "Model '" << &model << "' already exists in the model.");
   }
+
   name_set_.emplace(name);
   submodel_set_.emplace(&model);
   submodel_kv_.emplace(name, &model);
