@@ -53,7 +53,9 @@ void Optimizer::save(const std::string &path) const {
 
 void Optimizer::add_inner(Parameter &param) {
   if (params_.find(&param) != params_.end()) {
-    THROW_ERROR("Parameter '" << &param << "' is already registered.");
+    // Explicitly allows to call this function multiple time using the same
+    // Parameter object.
+    return;
   }
   params_.insert(&param);
   configure_parameter(param);

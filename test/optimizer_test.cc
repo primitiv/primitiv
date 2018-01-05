@@ -31,16 +31,16 @@ TEST_F(OptimizerTest, CheckAddParameter) {
   Parameter param3;
 
   EXPECT_NO_THROW(optimizer.add(param1));
-  EXPECT_THROW(optimizer.add(param1), Error);
+  EXPECT_NO_THROW(optimizer.add(param1));
 
   EXPECT_NO_THROW(optimizer.add(param2));
-  EXPECT_THROW(optimizer.add(param1), Error);
-  EXPECT_THROW(optimizer.add(param2), Error);
+  EXPECT_NO_THROW(optimizer.add(param1));
+  EXPECT_NO_THROW(optimizer.add(param2));
 
   EXPECT_NO_THROW(optimizer.add(param3));
-  EXPECT_THROW(optimizer.add(param1), Error);
-  EXPECT_THROW(optimizer.add(param2), Error);
-  EXPECT_THROW(optimizer.add(param3), Error);
+  EXPECT_NO_THROW(optimizer.add(param1));
+  EXPECT_NO_THROW(optimizer.add(param2));
+  EXPECT_NO_THROW(optimizer.add(param3));
 }
 
 TEST_F(OptimizerTest, CheckAddModel) {
@@ -55,10 +55,10 @@ TEST_F(OptimizerTest, CheckAddModel) {
   m.add("param3", param3);
 
   EXPECT_NO_THROW(optimizer.add(m));
-  EXPECT_THROW(optimizer.add(m), Error);
-  EXPECT_THROW(optimizer.add(param1), Error);
-  EXPECT_THROW(optimizer.add(param2), Error);
-  EXPECT_THROW(optimizer.add(param3), Error);
+  EXPECT_NO_THROW(optimizer.add(m));
+  EXPECT_NO_THROW(optimizer.add(param1));
+  EXPECT_NO_THROW(optimizer.add(param2));
+  EXPECT_NO_THROW(optimizer.add(param3));
 }
 
 TEST_F(OptimizerTest, CheckAddModelWithMultipleModels) {
@@ -75,12 +75,12 @@ TEST_F(OptimizerTest, CheckAddModelWithMultipleModels) {
   EXPECT_NO_THROW(optimizer.add(m1));
   EXPECT_NO_THROW(optimizer.add(m2));
   EXPECT_NO_THROW(optimizer.add(m3));
-  EXPECT_THROW(optimizer.add(m1), Error);
-  EXPECT_THROW(optimizer.add(m2), Error);
-  EXPECT_THROW(optimizer.add(m3), Error);
-  EXPECT_THROW(optimizer.add(param1), Error);
-  EXPECT_THROW(optimizer.add(param2), Error);
-  EXPECT_THROW(optimizer.add(param3), Error);
+  EXPECT_NO_THROW(optimizer.add(m1));
+  EXPECT_NO_THROW(optimizer.add(m2));
+  EXPECT_NO_THROW(optimizer.add(m3));
+  EXPECT_NO_THROW(optimizer.add(param1));
+  EXPECT_NO_THROW(optimizer.add(param2));
+  EXPECT_NO_THROW(optimizer.add(param3));
 }
 
 TEST_F(OptimizerTest, CheckAddModelWithSubmodels) {
@@ -97,12 +97,12 @@ TEST_F(OptimizerTest, CheckAddModelWithSubmodels) {
   sm.add("ssm", ssm);
 
   EXPECT_NO_THROW(optimizer.add(m));
-  EXPECT_THROW(optimizer.add(m), Error);
-  EXPECT_THROW(optimizer.add(sm), Error);
-  EXPECT_THROW(optimizer.add(ssm), Error);
-  EXPECT_THROW(optimizer.add(param1), Error);
-  EXPECT_THROW(optimizer.add(param2), Error);
-  EXPECT_THROW(optimizer.add(param3), Error);
+  EXPECT_NO_THROW(optimizer.add(m));
+  EXPECT_NO_THROW(optimizer.add(sm));
+  EXPECT_NO_THROW(optimizer.add(ssm));
+  EXPECT_NO_THROW(optimizer.add(param1));
+  EXPECT_NO_THROW(optimizer.add(param2));
+  EXPECT_NO_THROW(optimizer.add(param3));
 }
 
 TEST_F(OptimizerTest, CheckAddMultipleParameters) {
@@ -111,13 +111,13 @@ TEST_F(OptimizerTest, CheckAddMultipleParameters) {
   Parameter param1, param2, param3, param4;
 
   EXPECT_NO_THROW(optimizer.add(param1, param2, param3));
-  EXPECT_THROW(optimizer.add(param1), Error);
-  EXPECT_THROW(optimizer.add(param2), Error);
-  EXPECT_THROW(optimizer.add(param3), Error);
-  EXPECT_THROW(optimizer.add(param1, param2), Error);
-  EXPECT_THROW(optimizer.add(param2, param3), Error);
-  EXPECT_THROW(optimizer.add(param1, param3), Error);
-  EXPECT_THROW(optimizer.add(param1, param2, param3), Error);
+  EXPECT_NO_THROW(optimizer.add(param1));
+  EXPECT_NO_THROW(optimizer.add(param2));
+  EXPECT_NO_THROW(optimizer.add(param3));
+  EXPECT_NO_THROW(optimizer.add(param1, param2));
+  EXPECT_NO_THROW(optimizer.add(param2, param3));
+  EXPECT_NO_THROW(optimizer.add(param1, param3));
+  EXPECT_NO_THROW(optimizer.add(param1, param2, param3));
   EXPECT_NO_THROW(optimizer.add(param4));
 }
 
@@ -132,13 +132,13 @@ TEST_F(OptimizerTest, CheckAddMultipleModels) {
   m4.add("p", p4);
 
   EXPECT_NO_THROW(optimizer.add(m1, m2, m3));
-  EXPECT_THROW(optimizer.add(m1), Error);
-  EXPECT_THROW(optimizer.add(m2), Error);
-  EXPECT_THROW(optimizer.add(m3), Error);
-  EXPECT_THROW(optimizer.add(m1, m2), Error);
-  EXPECT_THROW(optimizer.add(m2, m3), Error);
-  EXPECT_THROW(optimizer.add(m1, m3), Error);
-  EXPECT_THROW(optimizer.add(m1, m2, m3), Error);
+  EXPECT_NO_THROW(optimizer.add(m1));
+  EXPECT_NO_THROW(optimizer.add(m2));
+  EXPECT_NO_THROW(optimizer.add(m3));
+  EXPECT_NO_THROW(optimizer.add(m1, m2));
+  EXPECT_NO_THROW(optimizer.add(m2, m3));
+  EXPECT_NO_THROW(optimizer.add(m1, m3));
+  EXPECT_NO_THROW(optimizer.add(m1, m2, m3));
   EXPECT_NO_THROW(optimizer.add(m4));
 }
 
@@ -151,9 +151,9 @@ TEST_F(OptimizerTest, CheckAddParameterAndModelSimultaneously) {
   m2.add("p", p2);
 
   EXPECT_NO_THROW(optimizer.add(m1, p3));
-  EXPECT_THROW(optimizer.add(m1), Error);
-  EXPECT_THROW(optimizer.add(p3), Error);
-  EXPECT_THROW(optimizer.add(m1, p3), Error);
+  EXPECT_NO_THROW(optimizer.add(m1));
+  EXPECT_NO_THROW(optimizer.add(p3));
+  EXPECT_NO_THROW(optimizer.add(m1, p3));
   EXPECT_NO_THROW(optimizer.add(m2));
   EXPECT_NO_THROW(optimizer.add(p4));
 }
