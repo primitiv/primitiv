@@ -20,9 +20,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # compiler settings
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -Werror -fPIC -march=native")
+  set(CMAKE_CXX_FLAGS "-O3 -Wall -Werror -fPIC ${CMAKE_CXX_FLAGS}")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -Werror -fPIC -march=native")
+  set(CMAKE_CXX_FLAGS "-O3 -Wall -Werror -fPIC ${CMAKE_CXX_FLAGS}")
 else()
   message(WARNING "primitiv may not support the detected compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
