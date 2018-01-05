@@ -159,12 +159,12 @@ bool safe_primitiv_Shape_is_scalar(const primitiv_Shape *shape,
   SAFE_RETURN(primitiv_Shape_is_scalar(shape), status, false);
 }
 
-bool primitiv_Shape_is_row_vector(const primitiv_Shape *shape) {
-  return to_cc(shape)->is_row_vector();
+bool primitiv_Shape_is_column_vector(const primitiv_Shape *shape) {
+  return to_cc(shape)->is_column_vector();
 }
-bool safe_primitiv_Shape_is_row_vector(const primitiv_Shape *shape,
+bool safe_primitiv_Shape_is_column_vector(const primitiv_Shape *shape,
                                        primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Shape_is_row_vector(shape), status, false);
+  SAFE_RETURN(primitiv_Shape_is_column_vector(shape), status, false);
 }
 
 bool primitiv_Shape_is_matrix(const primitiv_Shape *shape) {
