@@ -1,5 +1,3 @@
-/* Copyright 2017 The primitiv Authors. All Rights Reserved. */
-
 #ifndef PRIMITIV_C_INTERNAL_H_
 #define PRIMITIV_C_INTERNAL_H_
 
@@ -19,7 +17,8 @@
 #include <primitiv/shape.h>
 #include <primitiv/tensor.h>
 #include <primitiv/optimizer.h>
-#include <primitiv/c/status.h>
+
+#include <primitiv/c/define.h>
 
 #define PRIMITIV_C_PTR_TO_PTR(cpp_name, c_name) \
 inline c_name *to_c_ptr(primitiv::cpp_name *instance) { \
@@ -48,7 +47,7 @@ catch (const std::exception &e) { \
 
 #define PRIMITIV_C_CHECK_NOT_NULL(var) \
 if (!var) { \
-  THROW_ERROR("Argument `"#var"` must not be null."); \
+  THROW_ERROR("Argument `" #var "` must not be null."); \
 }
 
 struct primitiv_Device;
@@ -77,10 +76,10 @@ class ErrorHandler {
   ~ErrorHandler() = default;
 
   template<typename T, typename = Throwable<T>>
-  ::primitiv_Status handle(const T &e) {
+  ::PRIMITIV_C_STATUS handle(const T &e) {
     exception_ = std::make_exception_ptr(e);
     message_ = e.what();
-    return ::primitiv_Status::PRIMITIV_ERROR;
+    return PRIMITIV_C_ERROR;
   }
 
   std::exception rethrow() {
@@ -96,7 +95,7 @@ class ErrorHandler {
     message_ = "OK";
   }
 
-  unsigned char has_exception() const noexcept {
+  bool has_exception() const noexcept {
     return !exception_;
   }
 
@@ -113,26 +112,26 @@ class ErrorHandler {
 
 template<typename T>
 inline void copy_vector_to_array(
-    const std::vector<T> &vector, T *array, std::size_t *array_size) {
+    const std::vector<T> &vector, T *array, std::size_t *size) {
   if (array) {
-    std::copy(vector.begin(), vector.end(), array);
-    if (*array_size < vector.size()) {
-      THROW_ERROR("array_size is not enough to copy a vector.");
+    if (*size < vector.size()) {
+      THROW_ERROR("Size is not enough to copy a vector.");
     }
+    std::copy(vector.begin(), vector.end(), array);
   } else {
-    *array_size = vector.size();
+    *size = vector.size();
   }
 }
 
 inline void copy_string_to_array(
-    const std::string &str, char *buffer, std::size_t *buffer_size) {
+    const std::string &str, char *buffer, std::size_t *size) {
   if (buffer) {
-    if (*buffer_size < str.length()) {
-      THROW_ERROR("buffer_size is not enough to copy a string.");
+    if (*size <= str.length()) {
+      THROW_ERROR("Size is not enough to copy a string.");
     }
     std::strcpy(buffer, str.c_str());
   } else {
-    *buffer_size = str.length();
+    *size = str.length() + 1u;
   }
 }
 

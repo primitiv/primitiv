@@ -1,4 +1,3 @@
-/* Copyright 2017 The primitiv Authors. All Rights Reserved. */
 #include <primitiv/config.h>
 
 #include <primitiv/initializer.h>
@@ -8,20 +7,17 @@
 using primitiv::Initializer;
 using primitiv::c::internal::to_cpp_ptr;
 
-extern "C" {
-
-primitiv_Status primitiv_Initializer_delete(
+PRIMITIV_C_STATUS primitiv_Initializer_delete(
     primitiv_Initializer *initializer) try {
   PRIMITIV_C_CHECK_NOT_NULL(initializer);
   delete to_cpp_ptr(initializer);
-  return ::primitiv_Status::PRIMITIV_OK;
+  return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Status primitiv_Initializer_apply(
+PRIMITIV_C_STATUS primitiv_Initializer_apply(
     const primitiv_Initializer *initializer, primitiv_Tensor *x) try {
   PRIMITIV_C_CHECK_NOT_NULL(initializer);
+  PRIMITIV_C_CHECK_NOT_NULL(x);
   to_cpp_ptr(initializer)->apply(*to_cpp_ptr(x));
-  return ::primitiv_Status::PRIMITIV_OK;
+  return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
-
-}  // end extern "C"

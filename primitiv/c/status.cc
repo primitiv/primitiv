@@ -1,4 +1,3 @@
-/* Copyright 2017 The primitiv Authors. All Rights Reserved. */
 #include <primitiv/config.h>
 
 #include <string>
@@ -8,19 +7,14 @@
 
 using primitiv::c::internal::ErrorHandler;
 
-extern "C" {
-
-primitiv_Status primitiv_Status_get_message(
-    char *buffer, size_t *buffer_size) try {
-  PRIMITIV_C_CHECK_NOT_NULL(buffer_size);
-  primitiv::c::internal::copy_string_to_array(
-      ErrorHandler::get_instance().get_message(), buffer, buffer_size);
-  return ::primitiv_Status::PRIMITIV_OK;
-} PRIMITIV_C_HANDLE_EXCEPTIONS
-
-primitiv_Status primitiv_Status_reset() try {
+PRIMITIV_C_STATUS primitiv_reset() try {
   ErrorHandler::get_instance().reset();
-  return ::primitiv_Status::PRIMITIV_OK;
+  return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-}  // end extern "C"
+PRIMITIV_C_STATUS primitiv_get_message(char *buffer, size_t *size) try {
+  PRIMITIV_C_CHECK_NOT_NULL(size);
+  primitiv::c::internal::copy_string_to_array(
+      ErrorHandler::get_instance().get_message(), buffer, size);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
