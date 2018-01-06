@@ -94,6 +94,14 @@ if(PRIMITIV_USE_EIGEN)
   set(primitiv_eigen_SRCS eigen_device.cc)
   install(FILES ${primitiv_eigen_HDRS} DESTINATION include/primitiv)
 
+  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    set_source_files_properties(
+      eigen_device.cc PROPERTIES COMPILE_FLAGS -march=native)
+  elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set_source_files_properties(
+      eigen_device.cc PROPERTIES COMPILE_FLAGS -march=native)
+  endif()
+
   add_library(primitiv_eigen_OBJS OBJECT
     ${primitiv_base_HDRS}
     ${primitiv_eigen_HDRS}

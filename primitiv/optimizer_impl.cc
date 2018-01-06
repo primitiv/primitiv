@@ -11,10 +11,9 @@ namespace optimizers {
 
 #define SET_CONFIG(dest, cfg, key) { \
   const auto it = cfg.find(key); \
-  if (it == cfg.end()) { \
-    THROW_ERROR("Key not found in the optimizer config: " << key); \
+  if (it != cfg.end()) { \
+    dest = it->second; \
   } \
-  dest = it->second; \
 }
 
 void SGD::configure_parameter(Parameter &param) {}

@@ -82,20 +82,24 @@ TEST_F(OptimizerImplTest, CheckInvalidLoad) {
   const std::string path = "/tmp/primitiv_OptimizerImplTest_CheckInvalidLoad.data";
   sgd.save(path);
 
+  // NOTE(odashi):
+  // Below function calls work successfully, but do not update optimizer
+  // specific configurations that is not stored in the file.
+
   MomentumSGD momentumsgd;
-  EXPECT_THROW(momentumsgd.load(path), Error);
+  EXPECT_NO_THROW(momentumsgd.load(path));
 
   AdaGrad adagrad;
-  EXPECT_THROW(adagrad.load(path), Error);
+  EXPECT_NO_THROW(adagrad.load(path));
 
   RMSProp rmsprop;
-	EXPECT_THROW(rmsprop.load(path), Error);
+  EXPECT_NO_THROW(rmsprop.load(path));
 
   AdaDelta adadelta;
-  EXPECT_THROW(adadelta.load(path), Error);
+  EXPECT_NO_THROW(adadelta.load(path));
 
   Adam adam;
-  EXPECT_THROW(adam.load(path), Error);
+  EXPECT_NO_THROW(adam.load(path));
 
   std::remove(path.c_str());
 }
