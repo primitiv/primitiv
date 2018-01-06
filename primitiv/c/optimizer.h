@@ -167,6 +167,44 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_reset_gradients(
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_update(
     primitiv_Optimizer *optimizer);
 
-// @TODO: Implement getter/setter of primitiv_Optimizer configs
+/**
+ * Gets a configuration value.
+ * @param optimizer Pointer of a handler.
+ * @param key Configuration name.
+ * @param value Pointer to receive the value.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_get_int_config(
+    primitiv_Optimizer *optimizer, const char *key, uint32_t *value);
+
+/**
+ * Sets a configuration value.
+ * @param optimizer Pointer of a handler.
+ * @param key Configuration name.
+ * @param value Configuration value.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_set_int_config(
+    primitiv_Optimizer *optimizer, const char *key, uint32_t value);
+
+/**
+ * Gets a configuration value.
+ * @param optimizer Pointer of a handler.
+ * @param key Configuration name.
+ * @param value Pointer to receive the value.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_get_float_config(
+    primitiv_Optimizer *optimizer, const char *key, float *value);
+
+/**
+ * Sets a configuration value.
+ * @param optimizer Pointer of a handler.
+ * @param key Configuration name.
+ * @param value Configuration value.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_set_float_config(
+    primitiv_Optimizer *optimizer, const char *key, float value);
 
 #endif  // PRIMITIV_C_OPTIMIZER_H_

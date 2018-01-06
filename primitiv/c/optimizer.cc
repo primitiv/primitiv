@@ -1,5 +1,8 @@
 #include <primitiv/config.h>
 
+#include <string>
+#include <unordered_map>
+
 #include <primitiv/optimizer.h>
 #include <primitiv/c/internal.h>
 #include <primitiv/c/optimizer.h>
@@ -137,5 +140,57 @@ PRIMITIV_C_STATUS primitiv_Optimizer_reset_gradients(
 PRIMITIV_C_STATUS primitiv_Optimizer_update(primitiv_Optimizer *optimizer) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   to_cpp_ptr(optimizer)->update();
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitiv_Optimizer_get_int_config(
+    primitiv_Optimizer *optimizer, const char *key, uint32_t *value) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(key);
+  PRIMITIV_C_CHECK_NOT_NULL(value);
+  std::unordered_map<std::string, uint32_t> uint_configs;
+  std::unordered_map<std::string, float> float_configs;
+  to_cpp_ptr(optimizer)->get_configs(uint_configs, float_configs);
+  const auto it = uint_configs.find(key);
+  if (it != uint_configs.end()) {
+    *value = uint_configs[key];
+  }
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitiv_Optimizer_set_int_config(
+    primitiv_Optimizer *optimizer, const char *key, uint32_t value) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(key);
+  PRIMITIV_C_CHECK_NOT_NULL(value);
+  std::unordered_map<std::string, uint32_t> uint_configs{{key, value}};
+  std::unordered_map<std::string, float> float_configs;
+  to_cpp_ptr(optimizer)->set_configs(uint_configs, float_configs);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitiv_Optimizer_get_float_config(
+    primitiv_Optimizer *optimizer, const char *key, float *value) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(key);
+  PRIMITIV_C_CHECK_NOT_NULL(value);
+  std::unordered_map<std::string, uint32_t> uint_configs;
+  std::unordered_map<std::string, float> float_configs;
+  to_cpp_ptr(optimizer)->get_configs(uint_configs, float_configs);
+  const auto it = float_configs.find(key);
+  if (it != float_configs.end()) {
+    *value = float_configs[key];
+  }
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitiv_Optimizer_set_float_config(
+    primitiv_Optimizer *optimizer, const char *key, float value) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(key);
+  PRIMITIV_C_CHECK_NOT_NULL(value);
+  std::unordered_map<std::string, uint32_t> uint_configs;
+  std::unordered_map<std::string, float> float_configs{{key, value}};
+  to_cpp_ptr(optimizer)->set_configs(uint_configs, float_configs);
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
