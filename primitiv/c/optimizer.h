@@ -2,6 +2,8 @@
 #define PRIMITIV_C_OPTIMIZER_H_
 
 #include <primitiv/c/define.h>
+#include <primitiv/c/model.h>
+#include <primitiv/c/parameter.h>
 
 /**
  * Opaque type of Optimizer.

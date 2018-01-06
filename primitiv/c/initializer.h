@@ -2,6 +2,7 @@
 #define PRIMITIV_C_INITIALIZER_H_
 
 #include <primitiv/c/define.h>
+#include <primitiv/c/tensor.h>
 
 /**
  * Opaque type of Initializer.
