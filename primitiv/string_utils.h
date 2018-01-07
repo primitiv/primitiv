@@ -38,12 +38,8 @@ inline std::string join(
  */
 inline std::string to_string(std::uint32_t value) {
   /*
-   * max uint32_t = 4294967295
-   *                 ~~~~~~~~~
-   *                 digits10 = 9
-   *
    * buffer's size = (digits10 + 1) + '\0'
-   *
+   *               =    9      + 1  +  1
    */
   char buffer[std::numeric_limits<std::uint32_t>::digits10 + 2];
   std::sprintf(buffer, "%u", value);
@@ -52,13 +48,9 @@ inline std::string to_string(std::uint32_t value) {
 
 inline std::string to_string(float value) {
   /*
-   * max float = 340282346638528859811704183484516925440.000000
-   *              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ~~~~~~
-   *                   max_exponent10 = 38               fixed precision = 6
-   *
    * buffer's size
    *   = (max_exponent10 + 1) + period + fixed precision + sign + '\0'
-   *
+   *   =      38         + 1  +   1    +        6        +  1   +  1
    */
   char buffer[std::numeric_limits<float>::max_exponent10 + 10];
   std::sprintf(buffer, "%f", value);
