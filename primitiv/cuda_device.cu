@@ -186,20 +186,18 @@ __device__ float pown_fw_element_dev(float x, std::int32_t k) {
   // However, this value should be also evaluated as  0x80000000 by directly
   // casting to std::uint32_t.
   const std::int32_t min_k = -0x80000000;
-  const std::uint32_t abs_k = (k == min_k) ? min_k : ::abs(k);
-  const bool positive = k >= 0;
-
-  // Performs the exponentation-by-squaring method.
+  std::uint32_t remain = (k == min_k) ? min_k : ::abs(k);
   float ret = 1.f;
   float factor = x;
-  std::uint32_t remain = abs_k;
+
+  // Performs the exponentation-by-squaring method.
   while (remain) {
     if (remain & 1) ret *= factor;
     factor *= factor;
     remain >>= 1;
   }
 
-  return positive ? ret : 1.f / ret;
+  return k >= 0 ? ret : 1.f / ret;
 }
 
 __global__ void pown_fw_dev(

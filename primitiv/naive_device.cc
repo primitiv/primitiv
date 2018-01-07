@@ -364,11 +364,10 @@ void Naive::pown_fw_impl(const Tensor &x, std::int32_t k, Tensor &y) {
   // casting to std::uint32_t.
   const std::int32_t min_k = std::numeric_limits<std::int32_t>::min();
   const std::uint32_t abs_k = (k == min_k) ? min_k : std::abs(k);
-  const bool positive = k >= 0;
 
   for (std::uint32_t i = 0; i < size; ++i) {
     // Performs the exponentation-by-squaring method.
-    float ret = 1;
+    float ret = 1.;
     float factor = src[i];
     std::uint32_t remain = abs_k;
     while (remain) {
@@ -376,7 +375,7 @@ void Naive::pown_fw_impl(const Tensor &x, std::int32_t k, Tensor &y) {
       factor *= factor;
       remain >>= 1;
     }
-    dest[i] = positive ? ret : 1. / ret;
+    dest[i] = k >= 0 ? ret : 1. / ret;
   }
 }
 
