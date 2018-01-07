@@ -353,7 +353,7 @@ CPUDEV_FW_X_CONST(prelu, src[i] * ((src[i] > 0) + k * (src[i] <= 0)));
 CPUDEV_FW_X_CONST(
     elu, src[i] * (src[i] > 0) + k * (std::exp(src[i] * (src[i] <= 0)) - 1));
 
-void Naive::pown_fw_impl(const Tensor &x, int32_t k, Tensor &y) {
+void Naive::pown_fw_impl(const Tensor &x, std::int32_t k, Tensor &y) {
   float *dest = MDATA(y);
   const float *src = CDATA(x);
   const std::uint32_t size = x.shape().size();
@@ -392,7 +392,8 @@ CPUDEV_BW_X_CONST(prelu, pgy[i] * ((px[i] > 0) + k * (px[i] <= 0)));
 CPUDEV_BW_X_CONST(elu, pgy[i] * ((px[i] > 0) + (py[i] + k) * (px[i] <= 0)));
 
 void Naive::pown_bw_impl(
-    const Tensor &x, const Tensor &y, const Tensor &gy, int32_t k, Tensor &gx) {
+    const Tensor &x, const Tensor &y, const Tensor &gy, std::int32_t k,
+    Tensor &gx) {
   const float *px = CDATA(x);
   const float *py = CDATA(y);
   const float *pgy = CDATA(gy);

@@ -151,7 +151,7 @@ public:
   Tensor prelu_fw(const Tensor &x, float k);
   Tensor elu_fw(const Tensor &x, float k);
 
-  Tensor pown_fw(const Tensor &x, int32_t k);
+  Tensor pown_fw(const Tensor &x, std::int32_t k);
 
   void add_const_bw(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx);
   void subtract_const_r_bw(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx);
@@ -164,7 +164,7 @@ public:
   void prelu_bw(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx);
   void elu_bw(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx);
 
-  void pown_bw(const Tensor &x, const Tensor &y, const Tensor &gy, int32_t k, Tensor &gx);
+  void pown_bw(const Tensor &x, const Tensor &y, const Tensor &gy, std::int32_t k, Tensor &gx);
 
   // Tensor-scalar operations.
   Tensor add_scalar_fw(const Tensor &x, const Tensor &k);
@@ -372,7 +372,7 @@ private:
   virtual void prelu_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
   virtual void elu_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
 
-  virtual void pown_fw_impl(const Tensor &x, int32_t k, Tensor &y) = 0;
+  virtual void pown_fw_impl(const Tensor &x, std::int32_t k, Tensor &y) = 0;
 
   virtual void add_const_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) = 0;
   virtual void subtract_const_r_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) = 0;
@@ -385,7 +385,7 @@ private:
   virtual void prelu_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) = 0;
   virtual void elu_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) = 0;
 
-  virtual void pown_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, int32_t k, Tensor &gx) = 0;
+  virtual void pown_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, std::int32_t k, Tensor &gx) = 0;
 
   virtual void add_scalar_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) = 0;
   virtual void subtract_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) = 0;

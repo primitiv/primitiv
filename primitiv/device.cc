@@ -325,7 +325,7 @@ DEV_FW_X_CONST(pow_const_l);
 DEV_FW_X_CONST(prelu);
 DEV_FW_X_CONST(elu);
 
-Tensor Device::pown_fw(const Tensor &x, int32_t k) {
+Tensor Device::pown_fw(const Tensor &x, std::int32_t k) {
   CHECK_DEVICE(x);
   Tensor y = new_raw_tensor(x.shape());
   pown_fw_impl(x, k, y);
@@ -344,7 +344,7 @@ DEV_BW_X_CONST(prelu);
 DEV_BW_X_CONST(elu);
 
 void Device::pown_bw(
-    const Tensor &x, const Tensor &y, const Tensor &gy, int32_t k, Tensor &gx) {
+    const Tensor &x, const Tensor &y, const Tensor &gy, std::int32_t k, Tensor &gx) {
   CHECK_DEVICE(x);
   CHECK_DEVICE(y);
   CHECK_DEVICE(gy);
