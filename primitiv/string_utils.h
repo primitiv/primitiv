@@ -31,34 +31,39 @@ inline std::string join(
 }
 
 /**
- * Wrapper functions of std::to_string()
+ * Imprementation of std::to_string()
+ *
+ * Some libstdc++ (e.g. Android) do not support std::to_string().
+ * These functions support them.
  */
-#ifdef __ANDROID__
 inline std::string to_string(std::uint32_t value) {
-  char *c_str = nullptr;
-  if (asprintf(&c_str, "%d", value) < 0) {
-    THROW_ERROR("Failed to format value");
-  }
-  std::unique_ptr<char, decltype(&std::free)> u(c_str, std::free);
-  std::string s(u.get());
-  return s;
+  /*
+   * max uint32_t = 4294967295
+   *                 ~~~~~~~~~
+   *                 digits10 = 9
+   *
+   * buffer's size = (digits10 + 1) + NULL
+   *
+   */
+  char buffer[std::numeric_limits<std::uint32_t>::digits10 + 2];
+  std::sprintf(buffer, "%u", value);
+  return buffer;
 }
 
 inline std::string to_string(float value) {
-  char *c_str = nullptr;
-  if (asprintf(&c_str, "%f", value) < 0) {
-    THROW_ERROR("Failed to format value");
-  }
-  std::unique_ptr<char, decltype(&std::free)> u(c_str, std::free);
-  std::string s(u.get());
-  return s;
+  /*
+   * max float = 340282346638528859811704183484516925440.000000
+   *              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ~~~~~~
+   *                   max_exponent10 = 38               fixed precision = 6
+   *
+   * buffer's size
+   *   = (max_exponent10 + 1) + period + fixed precision + sign + NULL
+   *
+   */
+  char buffer[std::numeric_limits<float>::max_exponent10 + 10];
+  std::sprintf(buffer, "%f", value);
+  return buffer;
 }
-#else
-template<typename T>
-inline std::string to_string(T value) {
-  return std::to_string(value);
-}
-#endif
 
 }  // namespace string_utils
 }  // namespace primitiv
