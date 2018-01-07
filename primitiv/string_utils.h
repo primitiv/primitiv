@@ -34,7 +34,7 @@ inline std::string join(
  * Imprementation of std::to_string()
  *
  * Some libstdc++ (e.g. Android) do not support std::to_string().
- * These functions support them.
+ * We support libraries that do not have std::to_string().
  */
 inline std::string to_string(std::uint32_t value) {
   /*
