@@ -115,10 +115,9 @@ void Optimizer::set_configs(
     const std::unordered_map<std::string, float> &float_configs) {
 #define SET_CONFIG(dest, cfg, key) { \
   const auto it = cfg.find(key); \
-  if (it == cfg.end()) { \
-    THROW_ERROR("Key not found in the optimizer config: " << key); \
+  if (it != cfg.end()) { \
+    dest = it->second; \
   } \
-  dest = it->second; \
 }
   SET_CONFIG(epoch_, uint_configs, "Optimizer.epoch");
   SET_CONFIG(lr_scale_, float_configs, "Optimizer.lr_scale");

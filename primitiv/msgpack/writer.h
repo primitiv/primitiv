@@ -192,48 +192,48 @@ public:
       switch (size) {
         case 1:
           {
-            const char buf[2] { UC(0xd4), type };
+            const char buf[2] { UC(0xd4), UC(type) };
             os_.write(buf, 2);
             break;
           }
         case 2:
           {
-            const char buf[2] { UC(0xd5), type };
+            const char buf[2] { UC(0xd5), UC(type) };
             os_.write(buf, 2);
             break;
           }
         case 4:
           {
-            const char buf[2] { UC(0xd6), type };
+            const char buf[2] { UC(0xd6), UC(type) };
             os_.write(buf, 2);
             break;
           }
         case 8:
           {
-            const char buf[2] { UC(0xd7), type };
+            const char buf[2] { UC(0xd7), UC(type) };
             os_.write(buf, 2);
             break;
           }
         case 16:
           {
-            const char buf[2] { UC(0xd8), type };
+            const char buf[2] { UC(0xd8), UC(type) };
             os_.write(buf, 2);
             break;
           }
         default:
           {
-            const char buf[3] { UC(0xc7), UC(size), type };
+            const char buf[3] { UC(0xc7), UC(size), UC(type) };
             os_.write(buf, 3);
           }
       }
     } else if (size < (1ull << 16)) {
-      const char buf[4] { UC(0xc8), UC(size >> 8), UC(size), type };
+      const char buf[4] { UC(0xc8), UC(size >> 8), UC(size), UC(type) };
       os_.write(buf, 4);
     } else if (size < (1ull << 32)) {
       const char buf[6] {
         UC(0xc9),
         UC(size >> 24), UC(size >> 16), UC(size >> 8), UC(size),
-        type,
+        UC(type),
       };
       os_.write(buf, 6);
     } else {
