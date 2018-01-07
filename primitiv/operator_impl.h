@@ -289,7 +289,7 @@ public:
   class name_ : public Operator { \
     NO_CTOR_CLASS_DECL(name_); \
   public: \
-    explicit name_(float  k) : k_(k) {} \
+    explicit name_(float k) : k_(k) {} \
     std::string name() const override { \
       return #name_"(" + std::to_string(k_) + ')'; \
     } \
@@ -312,6 +312,17 @@ DECL_OPERATOR_K(PowConstR);
 DECL_OPERATOR_K(PowConstL);
 DECL_OPERATOR_K(PReLU);
 DECL_OPERATOR_K(ELU);
+
+class PowN : public Operator {
+  NO_CTOR_CLASS_DECL(PowN);
+public:
+  explicit PowN(std::int32_t k) : k_(k) {}
+  std::string name() const override {
+    return "PowN(" + std::to_string(k_) + ')';
+  }
+private:
+  std::int32_t k_;
+};
 
 DECL_OPERATOR(AddScalar);
 DECL_OPERATOR(SubtractScalarR);

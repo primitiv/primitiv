@@ -398,6 +398,7 @@ void Eigen::pown_fw_impl(const Tensor &x_, std::int32_t k, Tensor &y_) {
   const std::size_t size = x_.shape().size();
   EMap<const EArrayXf> x(CDATA(x_), size);
   EMap<EArrayXf> y(MDATA(y_), size);
+  y.setConstant(1.);
 
   // NOTE(odashi):
   // std::abs(-0x80000000) is UB under 2's complement systems.
@@ -405,8 +406,8 @@ void Eigen::pown_fw_impl(const Tensor &x_, std::int32_t k, Tensor &y_) {
   // casting to std::uint32_t.
   const std::int32_t min_k = std::numeric_limits<std::int32_t>::min();
   std::uint32_t remain = (k == min_k) ? min_k : std::abs(k);
-
   EArrayXf factor = x;
+
   // Performs the exponentation-by-squaring method.
   while (remain) {
     if (remain & 1) y *= factor;

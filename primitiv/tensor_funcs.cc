@@ -122,6 +122,11 @@ Tensor pow(const Tensor &a, const Tensor &b) {
   else return a.device().pow_fw(a, b);
 }
 
+template<>
+Tensor pown(const Tensor &x, std::int32_t k) {
+  return x.device().pown_fw(x, k);
+}
+
 Tensor input_tensor(
     const Shape &shape, const std::vector<float> &data, Device *dev) {
   return ::get_device(dev).new_tensor_by_vector(shape, data);

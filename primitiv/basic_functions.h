@@ -69,6 +69,9 @@ type_traits::Identity<Var> pow(float k, const Var &x);
 template<typename Var>
 type_traits::Identity<Var> pow(const Var &a, const Var &b);
 
+template<typename Var>
+type_traits::Identity<Var> pown(const Var &x, std::int32_t k);
+
 /**
  * input_tensor(shape, data, &dev)
  * input_node(shape, data, &dev, &g)
