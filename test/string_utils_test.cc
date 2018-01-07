@@ -1,5 +1,6 @@
 #include <primitiv/config.h>
 
+#include <limits>
 #include <string>
 #include <vector>
 #include <gtest/gtest.h>
@@ -35,12 +36,12 @@ TEST_F(StringUtilsTest, CheckToString) {
   EXPECT_EQ("1.100000", to_string(1.1f));
   EXPECT_EQ("1.234568", to_string(1.23456789f));
   EXPECT_EQ("340282346638528859811704183484516925440.000000",
-            to_string(340282346638528859811704183484516925440.0f)); // max float
+            to_string(std::numeric_limits<float>::max())); // max float
   EXPECT_EQ("-1.000000", to_string(-1.0f));
   EXPECT_EQ("-1.100000", to_string(-1.1f));
   EXPECT_EQ("-12.345679", to_string(-12.3456789f));
   EXPECT_EQ("-340282346638528859811704183484516925440.000000",
-            to_string(-340282346638528859811704183484516925440.0f)); // min float
+            to_string(-std::numeric_limits<float>::max())); // min float
   EXPECT_EQ("0", to_string(0u));
   EXPECT_EQ("5", to_string(5u));
   EXPECT_EQ("123", to_string(123u));
