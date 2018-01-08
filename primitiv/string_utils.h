@@ -2,6 +2,7 @@
 #define PRIMITIV_STRING_UTILS_H_
 
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <sstream>
 #include <string>
@@ -36,26 +37,44 @@ inline std::string join(
  * Some libstdc++ (e.g. Android) do not support std::to_string().
  * We support libraries that do not have std::to_string().
  */
-inline std::string to_string(std::uint32_t value) {
-  /*
-   * buffer's size = (digits10 + 1) + '\0'
-   *               =    9      + 1  +  1
-   */
-  char buffer[std::numeric_limits<std::uint32_t>::digits10 + 2];
-  std::sprintf(buffer, "%u", value);
-  return buffer;
-}
 
-inline std::string to_string(float value) {
-  /*
-   * buffer's size
-   *   = (max_exponent10 + 1) + period + fixed precision + sign + '\0'
-   *   =      38         + 1  +   1    +        6        +  1   +  1
-   */
-  char buffer[std::numeric_limits<float>::max_exponent10 + 10];
-  std::sprintf(buffer, "%f", value);
-  return buffer;
-}
+#define DEF_TO_STRING(type, format, size) \
+  inline std::string to_string(type value) { \
+    char buffer[std::numeric_limits<type>::size]; \
+    std::sprintf(buffer, format, value); \
+    return buffer; \
+  }
+
+// int buffer's size = (digits10 + 1) + sign + '\0'
+DEF_TO_STRING(int, "%d", digits10 + 3)
+
+// unsigned buffer's size = (digits10 + 1) + '\0'
+DEF_TO_STRING(unsigned, "%u", digits10 + 2)
+
+// long buffer's size = (digits10 + 1) + sign + '\0'
+DEF_TO_STRING(long, "%ld", digits10 + 3)
+
+// unsigned long buffer's size = (digits10 + 1) + '\0'
+DEF_TO_STRING(unsigned long, "%lu", digits10 + 2)
+
+// long long buffer's size = (digits10 + 1) + sign + '\0'
+DEF_TO_STRING(long long, "%lld", digits10 + 3)
+
+// unsigned long long buffer's size
+//    = (digits10 + 1) + '\0'
+DEF_TO_STRING(unsigned long long, "%llu", digits10 + 2)
+
+// float buffer's size
+//    = (max_exponent10 + 1) + period + fixed precision + sign + '\0'
+DEF_TO_STRING(float, "%f", max_exponent10 + 10)
+
+// double buffer's size
+//    = (max_exponent10  + 1) + period + fixed precision + sign + '\0'
+DEF_TO_STRING(double, "%f", max_exponent10 + 10)
+
+// long double buffer's size
+//    = (max_exponent10  + 1) + period + fixed precision + sign + '\0'
+DEF_TO_STRING(long double, "%Lf", max_exponent10 + 10)
 
 }  // namespace string_utils
 }  // namespace primitiv
