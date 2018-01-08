@@ -7,7 +7,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <primitiv/error.h>
 
 namespace primitiv {
 namespace string_utils {
