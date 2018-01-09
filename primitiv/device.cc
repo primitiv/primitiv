@@ -148,7 +148,8 @@ Tensor Device::pick_fw(
 }
 
 Tensor Device::slice_fw(
-    const Tensor &x, std::uint32_t dim, std::uint32_t lower, std::uint32_t upper) {
+    const Tensor &x, std::uint32_t dim,
+    std::uint32_t lower, std::uint32_t upper) {
   CHECK_DEVICE(x);
   Tensor y = new_raw_tensor(shape_ops::slice(x.shape(), dim, lower, upper));
   slice_fw_impl(x, dim, lower, y);
@@ -344,7 +345,8 @@ DEV_BW_X_CONST(prelu);
 DEV_BW_X_CONST(elu);
 
 void Device::pown_bw(
-    const Tensor &x, const Tensor &y, const Tensor &gy, std::int32_t k, Tensor &gx) {
+    const Tensor &x, const Tensor &y, const Tensor &gy, std::int32_t k,
+    Tensor &gx) {
   CHECK_DEVICE(x);
   CHECK_DEVICE(y);
   CHECK_DEVICE(gy);
@@ -376,6 +378,7 @@ DEV_FW_AB(multiply, shape_ops::elementwise);
 DEV_FW_AB(divide, shape_ops::elementwise);
 DEV_FW_AB(pow, shape_ops::elementwise);
 DEV_FW_AB(matmul, shape_ops::matmul);
+DEV_FW_AB(conv2d, shape_ops::conv2d);
 
 DEV_BW_AB(add, shape_ops::elementwise);
 DEV_BW_AB(subtract, shape_ops::elementwise);
@@ -383,6 +386,7 @@ DEV_BW_AB(multiply, shape_ops::elementwise);
 DEV_BW_AB(divide, shape_ops::elementwise);
 DEV_BW_AB(pow, shape_ops::elementwise);
 DEV_BW_AB(matmul, shape_ops::matmul);
+DEV_BW_AB(conv2d, shape_ops::conv2d);
 
 #undef DEV_FW_X
 #undef DEV_BW_X
@@ -405,7 +409,8 @@ Tensor Device::logsumexp_fw(const Tensor &x, std::uint32_t dim) {
   return y;
 }
 
-Tensor Device::broadcast_fw(const Tensor &x, std::uint32_t dim, std::uint32_t size) {
+Tensor Device::broadcast_fw(
+    const Tensor &x, std::uint32_t dim, std::uint32_t size) {
   CHECK_DEVICE(x);
   Tensor y = new_raw_tensor(shape_ops::broadcast(x.shape(), dim, size));
   broadcast_fw_impl(x, dim, size, y);
