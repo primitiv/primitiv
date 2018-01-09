@@ -106,6 +106,9 @@ Node pow(const Node &a, const Node &b) {
   else return REGX(a, Pow(), a, b);
 }
 
+template<>
+Node pown(const Node &x, std::int32_t k) { return REGX(x, PowN(k), x); }
+
 Node input_node(
     const Shape &shape, const std::vector<float> &data, Device *dev, Graph *g) {
   return REG(

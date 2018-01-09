@@ -1,37 +1,12 @@
 #ifndef PRIMITIV_COMPOSITE_FUNCTIONS_H_
 #define PRIMITIV_COMPOSITE_FUNCTIONS_H_
 
+#include <limits>
 #include <primitiv/arithmetic.h>
 #include <primitiv/basic_functions.h>
 
 namespace primitiv {
 namespace functions {
-
-template<typename Var>
-inline type_traits::Identity<Var> pown(const Var &x, std::int32_t k) {
-  /*
-   * NOTE(odashi):
-   * std::abs(-0x800..000) generates undefined behavior under 2's complement
-   * systems. However, this value should be also evaluated as 0x800..000 by
-   * directly casting to std::uint32_t.
-   */
-  const std::int32_t min_k = std::numeric_limits<std::int32_t>::min();
-  std::uint32_t idx = (k == min_k) ? min_k : std::abs(k);
-  /*
-   * NOTE(odashi):
-   * This function is implemented based on an exponentation-by-squaring method
-   * and some minor modifications are also included to prevent generating
-   * redundant variables.
-   */
-  if (idx == 0) return constant<Var>(x.shape(), 1.);
-  Var ret;  // temporarily invalid
-  for (Var factor = x; ; factor = factor * factor) {
-    if (idx & 1) ret = ret.valid() ? ret * factor : factor;
-    if (!(idx >>= 1)) break;
-  }
-  if (k >= 0) return ret;
-  else return 1.0 / ret;
-}
 
 template<typename Var>
 inline type_traits::Identity<Var> selu(

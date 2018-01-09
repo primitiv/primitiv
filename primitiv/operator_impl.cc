@@ -281,6 +281,7 @@ FWD_SHAPE_UNARY(ReLU);
 FWD_SHAPE_UNARY(LReLU);
 FWD_SHAPE_UNARY(PReLU);
 FWD_SHAPE_UNARY(ELU);
+FWD_SHAPE_UNARY(PowN);
 FWD_SHAPE_SCALAR(AddScalar);
 FWD_SHAPE_SCALAR(SubtractScalarR);
 FWD_SHAPE_SCALAR(SubtractScalarL);
@@ -379,6 +380,8 @@ FORWARD(PowConstL) { return functions::pow(k_, *x[0]); }
 FORWARD(PReLU) { return functions::prelu(*x[0], k_); }
 FORWARD(ELU) { return functions::elu(*x[0], k_); }
 
+FORWARD(PowN) { return functions::pown(*x[0], k_); }
+
 FORWARD(AddScalar) { return *x[0] + *x[1]; }
 FORWARD(SubtractScalarR) { return *x[0] - *x[1]; }
 FORWARD(SubtractScalarL) { return *x[1] - *x[0]; }
@@ -426,7 +429,6 @@ FORWARD(StopGradient) { return *x[0]; }
       const vector<const Tensor *> &x, \
       const vector<Tensor *> &gx) const
 
-
 BACKWARD(Reshape) { *gx[0] += gy.reshape(x[0]->shape()); }
 BACKWARD(Flatten) { *gx[0] += gy.reshape(x[0]->shape()); }
 
@@ -455,6 +457,8 @@ BACKWARD(PowConstR) { gy.device().pow_const_r_bw(*x[0], y, gy, k_, *gx[0]); }
 BACKWARD(PowConstL) { gy.device().pow_const_l_bw(*x[0], y, gy, k_, *gx[0]); }
 BACKWARD(PReLU) { gy.device().prelu_bw(*x[0], y, gy, k_, *gx[0]); }
 BACKWARD(ELU) { gy.device().elu_bw(*x[0], y, gy, k_, *gx[0]); }
+
+BACKWARD(PowN) { gy.device().pown_bw(*x[0], y, gy, k_, *gx[0]); }
 
 BACKWARD(AddScalar) {
   *gx[0] += gy;
