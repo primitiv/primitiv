@@ -43,7 +43,7 @@ TEST_F(StringUtilsTest, CheckToString) {
   EXPECT_EQ("123", to_string(123u));
   EXPECT_EQ("4294967295",
             to_string(std::numeric_limits<std::uint32_t>::max()));
-#if __x86_64__ || __ppc64__
+#if defined(__x86_64__) || defined(__ppc64__)
   EXPECT_EQ("0", to_string(0ll));
   EXPECT_EQ("5", to_string(5ll));
   EXPECT_EQ("123", to_string(123ll));
@@ -56,7 +56,7 @@ TEST_F(StringUtilsTest, CheckToString) {
   EXPECT_EQ("123", to_string(123ull));
   EXPECT_EQ("18446744073709551615",
             to_string(std::numeric_limits<std::uint64_t>::max()));
-#endif  // __x86_64__ || __ppc64__
+#endif  // defined(__x86_64__) || defined(__ppc64__)
   EXPECT_EQ("0.000000", to_string(0.0f));
   EXPECT_EQ("1.000000", to_string(1.0f));
   EXPECT_EQ("1.100000", to_string(1.1f));
@@ -89,11 +89,7 @@ TEST_F(StringUtilsTest, CheckToString) {
              "8274797826204144723168738177180919299881250404026184124858368."
              "000000",
             to_string(-std::numeric_limits<double>::max()));
-#if __x86_64__ || __ppc64__
-  /*
-   * We guarantee behavior of to_string(long double) only for x86_64 and ppc64
-   * operating systems.
-   */
+#if defined(__x86_64__) || defined(__ppc64__)
   EXPECT_EQ("0.000000", to_string(0.0L));
   EXPECT_EQ("1.000000", to_string(1.0L));
   EXPECT_EQ("1.100000", to_string(1.1L));
@@ -261,7 +257,7 @@ TEST_F(StringUtilsTest, CheckToString) {
             "593426212108664758848926003176234596076950884914966244415660441"
             "9552086811989770240.000000",
             to_string(-std::numeric_limits<long double>::max()));
-#endif  // __x86_64__ || __ppc64__
+#endif  // defined(__x86_64__) || defined(__ppc64__)
 }
 
 }  // namespace string_utils
