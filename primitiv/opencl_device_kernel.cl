@@ -216,7 +216,7 @@ kernel void name##_bw_kernel( \
     const global float *px, const global float *py, const global float *pgy, \
     const float k, const unsigned size, global float *pgx) { \
   const unsigned i = get_global_id(0); \
-  if (i < size) pgx[i] += (op) ; \
+  if (i < size) pgx[i] += (op); \
 }
 
 #define OPENCLDEV_KERNEL_FW_X_SCALAR_R(name, op) \
@@ -289,6 +289,13 @@ OPENCLDEV_KERNEL_FW_X_CONST(prelu, max(px[i], .0f) + k * min(px[i], .0f))
 OPENCLDEV_KERNEL_FW_X_CONST(
     elu, max(px[i], .0f) + k * (exp(min(px[i], .0f)) - 1.0f))
 
+kernel void pown_fw_kernel(
+    const global float *px, const int k,
+    const unsigned size, global float *py) {
+  const unsigned i = get_global_id(0);
+  if (i < size) py[i] = pown(px[i], k);
+ }
+
 OPENCLDEV_KERNEL_BW_X_CONST(add_const, pgy[i])
 OPENCLDEV_KERNEL_BW_X_CONST(subtract_const_r, pgy[i])
 OPENCLDEV_KERNEL_BW_X_CONST(subtract_const_l, -pgy[i])
@@ -301,6 +308,13 @@ OPENCLDEV_KERNEL_BW_X_CONST(
     prelu, pgy[i] * ((px[i] > .0f) + k * (px[i] <= .0f)))
 OPENCLDEV_KERNEL_BW_X_CONST(
     elu, pgy[i] * ((px[i] > .0f) + (py[i] + k) * (px[i] <= .0f)))
+
+kernel void pown_bw_kernel(
+    const global float *px, const global float *py, const global float *pgy,
+    const int k, const unsigned size, global float *pgx) {
+  const unsigned i = get_global_id(0);
+  if (i < size) pgx[i] += k * pgy[i] * py[i] / px[i];
+}
 
 OPENCLDEV_KERNEL_FW_X_SCALAR_R(add_scalar, inline_add)
 OPENCLDEV_KERNEL_FW_X_SCALAR_R(subtract_scalar_r, inline_sub)
