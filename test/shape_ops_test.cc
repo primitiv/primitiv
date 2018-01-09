@@ -342,5 +342,39 @@ TEST_F(ShapeOpsTest, CheckInvalidMatMul) {
   EXPECT_THROW(matmul(Shape({}, 2), Shape({}, 3)), Error);
 }
 
+TEST_F(ShapeOpsTest, CheckConv2D) {
+  EXPECT_EQ(Shape(), conv2d({}, {}));
+  EXPECT_EQ(Shape({}, 3), conv2d(Shape({}, 3), {}));
+  EXPECT_EQ(Shape({}, 3), conv2d({}, Shape({}, 3)));
+  EXPECT_EQ(Shape({}, 3), conv2d(Shape({}, 3), Shape({}, 3)));
+  EXPECT_EQ(Shape({7, 8}), conv2d({7, 8}, {}));
+  EXPECT_EQ(Shape({7, 8}, 3), conv2d(Shape({7, 8}, 3), {}));
+  EXPECT_EQ(Shape({7, 8}, 3), conv2d({7, 8}, Shape({}, 3)));
+  EXPECT_EQ(Shape({7, 8}, 3), conv2d(Shape({7, 8}, 3), Shape({}, 3)));
+  EXPECT_EQ(Shape({5, 7}), conv2d({7, 8}, {3, 2}));
+  EXPECT_EQ(Shape({5, 7}, 3), conv2d(Shape({7, 8}, 3), {3, 2}));
+  EXPECT_EQ(Shape({5, 7}, 3), conv2d({7, 8}, Shape({3, 2}, 3)));
+  EXPECT_EQ(Shape({5, 7}, 3), conv2d(Shape({7, 8}, 3), Shape({3, 2}, 3)));
+  EXPECT_EQ(Shape({7, 8, 10}), conv2d({7, 8, 20}, {1, 1, 20, 10}));
+  EXPECT_EQ(Shape({7, 8, 10}, 3), conv2d(Shape({7, 8, 20}, 3), {1, 1, 20, 10}));
+  EXPECT_EQ(Shape({7, 8, 10}, 3), conv2d({7, 8, 20}, Shape({1, 1, 20, 10}, 3)));
+  EXPECT_EQ(Shape({7, 8, 10}, 3),
+            conv2d(Shape({7, 8, 20}, 3), Shape({1, 1, 20, 10}, 3)));
+  EXPECT_EQ(Shape({5, 7, 10}), conv2d({7, 8, 20}, {3, 2, 20, 10}));
+  EXPECT_EQ(Shape({5, 7, 10}, 3), conv2d(Shape({7, 8, 20}, 3), {3, 2, 20, 10}));
+  EXPECT_EQ(Shape({5, 7, 10}, 3), conv2d({7, 8, 20}, Shape({3, 2, 20, 10}, 3)));
+  EXPECT_EQ(Shape({5, 7, 10}, 3),
+            conv2d(Shape({7, 8, 20}, 3), Shape({3, 2, 20, 10}, 3)));
+}
+
+TEST_F(ShapeOpsTest, CheckInvalidConv2D) {
+  EXPECT_THROW(conv2d({1, 1, 1, 2}, {}), Error);
+  EXPECT_THROW(conv2d({}, {1, 1, 1, 1, 2}), Error);
+  EXPECT_THROW(conv2d({2, 3, 42}, {3, 3, 42}), Error);
+  EXPECT_THROW(conv2d({3, 2, 42}, {3, 3, 42}), Error);
+  EXPECT_THROW(conv2d({3, 3, 41}, {3, 3, 42}), Error);
+  EXPECT_THROW(conv2d(Shape({}, 2), Shape({}, 3)), Error);
+}
+
 }  // namespace shape_ops
 }  // namespace primitiv

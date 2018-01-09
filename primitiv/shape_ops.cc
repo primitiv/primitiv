@@ -39,7 +39,9 @@ Shape elementwise(const Shape &a, const Shape &b) {
   return a.resize_batch(std::max(a.batch(), b.batch()));
 }
 
-Shape slice(const Shape &x, std::uint32_t dim, std::uint32_t lower, std::uint32_t upper) {
+Shape slice(
+    const Shape &x, std::uint32_t dim,
+    std::uint32_t lower, std::uint32_t upper) {
   if (lower >= upper || upper > x[dim]) {
     THROW_ERROR(
         "Invalid slice operation. shape: " << x.to_string()
@@ -90,7 +92,8 @@ Shape broadcast(const Shape &x, std::uint32_t dim, std::uint32_t size) {
   return x.resize_dim(dim, size);
 }
 
-Shape pick(const Shape &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim) {
+Shape pick(
+    const Shape &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim) {
   const std::uint32_t n = x[dim];
   const std::uint32_t bi = ids.size();
   if (bi == 0 || (x.batch() != bi && x.has_batch() && bi > 1)) {
@@ -126,6 +129,18 @@ Shape matmul(const Shape &l, const Shape &r) {
         << l.to_string() << ", " << r.to_string());
   }
   return Shape({l[0], r[1]}, std::max(l.batch(), r.batch()));
+}
+
+Shape conv2d(const Shape &x, const Shape &w) {
+  if (x.depth() > 3 || w.depth() > 4 ||
+      x[0] < w[0] || x[1] < w[1] || x[2] != w[2] ||
+      !x.has_compatible_batch(w)) {
+    THROW_ERROR(
+        "Invalid shapes to calculate the convolution: "
+        << x.to_string() << ", " << w.to_string());
+  }
+  return Shape(
+      {x[0] - w[0] + 1, x[1] - w[1] + 1, w[3]}, std::max(x.batch(), w.batch()));
 }
 
 }  // namespace shape_ops

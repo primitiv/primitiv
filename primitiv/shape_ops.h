@@ -98,6 +98,14 @@ Shape transpose(const Shape &x);
  */
 Shape matmul(const Shape &l, const Shape &r);
 
+/**
+ * Calculates the resulting shape of convolution.
+ * @param x Shape of the input tensor.
+ * @param w Shape of the filter tensor.
+ * @return A shape.
+ */
+Shape conv2d(const Shape &x, const Shape &w);
+
 }  // namespace shape_ops
 }  // namespace primitiv
 
