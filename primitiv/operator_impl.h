@@ -5,6 +5,7 @@
 #include <primitiv/operator.h>
 #include <primitiv/parameter.h>
 #include <primitiv/shape.h>
+#include <primitiv/string_utils.h>
 
 namespace primitiv {
 
@@ -67,7 +68,7 @@ public:
     : shape_(shape), k_(k), device_(device) {}
   Device *get_device() const override { return &device_; }
   std::string name() const override {
-    return "Constant(" + std::to_string(k_) + ')';
+    return "Constant(" + string_utils::to_string(k_) + ')';
   }
 private:
   Shape shape_;
@@ -82,7 +83,7 @@ public:
     : size_(size), device_(device) {}
   Device *get_device() const override { return &device_; }
   std::string name() const override {
-    return "IdentityMatrix(" + std::to_string(size_) + ')';
+    return "IdentityMatrix(" + string_utils::to_string(size_) + ')';
   }
 private:
   std::uint32_t size_;
@@ -96,7 +97,7 @@ public:
     : shape_(shape), p_(p), device_(device) {}
   Device *get_device() const override { return &device_; }
   std::string name() const override {
-    return "RandomBernoulli(" + std::to_string(p_) + ')';
+    return "RandomBernoulli(" + string_utils::to_string(p_) + ')';
   }
 private:
   Shape shape_;
@@ -112,8 +113,8 @@ public:
   Device *get_device() const override { return &device_; }
   std::string name() const override {
     return
-      "RandomUniform(" + std::to_string(lower_) + ',' +
-      std::to_string(upper_) + ')';
+      "RandomUniform(" + string_utils::to_string(lower_) + ',' +
+      string_utils::to_string(upper_) + ')';
   }
 private:
   Shape shape_;
@@ -130,8 +131,8 @@ public:
   Device *get_device() const override { return &device_; }
   std::string name() const override {
     return
-      "RandomNormal(" + std::to_string(mean_) + ',' +
-      std::to_string(sd_) + ')';
+      "RandomNormal(" + string_utils::to_string(mean_) + ',' +
+      string_utils::to_string(sd_) + ')';
   }
 private:
   Shape shape_;
@@ -148,8 +149,8 @@ public:
   Device *get_device() const override { return &device_; }
   std::string name() const override {
     return
-      "RandomLogNormal(" + std::to_string(mean_) + ',' +
-      std::to_string(sd_) + ')';
+      "RandomLogNormal(" + string_utils::to_string(mean_) + ',' +
+      string_utils::to_string(sd_) + ')';
   }
 private:
   Shape shape_;
@@ -164,7 +165,7 @@ public:
   Pick(const std::vector<std::uint32_t> &ids, std::uint32_t dim)
     : ids_(ids), dim_(dim) {}
   std::string name() const override {
-    return "Pick(" + std::to_string(dim_) + ')';
+    return "Pick(" + string_utils::to_string(dim_) + ')';
   };
 private:
   std::vector<std::uint32_t> ids_;
@@ -177,8 +178,8 @@ public:
   Slice(std::uint32_t dim, std::uint32_t lower, std::uint32_t upper)
     : dim_(dim), lower_(lower), upper_(upper) {}
   std::string name() const override {
-    return "Slice(" + std::to_string(dim_) +
-      ',' + std::to_string(lower_) + ':' + std::to_string(upper_) + ')';
+    return "Slice(" + string_utils::to_string(dim_) +
+      ',' + string_utils::to_string(lower_) + ':' + string_utils::to_string(upper_) + ')';
   }
 private:
   std::uint32_t dim_;
@@ -191,7 +192,7 @@ class Concat : public Operator {
 public:
   Concat(std::uint32_t dim) : dim_(dim) {}
   std::string name() const override {
-    return "Concat(" + std::to_string(dim_) + ')';
+    return "Concat(" + string_utils::to_string(dim_) + ')';
   }
 private:
   std::uint32_t dim_;
@@ -213,7 +214,7 @@ class Sum : public Operator {
 public:
   explicit Sum(std::uint32_t dim) : dim_(dim) {}
   std::string name() const override {
-    return "Sum(" + std::to_string(dim_) + ')';
+    return "Sum(" + string_utils::to_string(dim_) + ')';
   }
 private:
   std::uint32_t dim_;
@@ -224,7 +225,7 @@ class LogSumExp : public Operator {
 public:
   explicit LogSumExp(std::uint32_t dim) : dim_(dim) {}
   std::string name() const override {
-    return "LogSumExp(" + std::to_string(dim_) + ')';
+    return "LogSumExp(" + string_utils::to_string(dim_) + ')';
   }
 private:
   std::uint32_t dim_;
@@ -235,8 +236,8 @@ class Broadcast : public Operator {
 public:
   Broadcast(std::uint32_t dim, std::uint32_t size) : dim_(dim), size_(size) {}
   std::string name() const override {
-    return "Broadcast(" + std::to_string(dim_)
-      + ',' + std::to_string(size_) + ')';
+    return "Broadcast(" + string_utils::to_string(dim_)
+      + ',' + string_utils::to_string(size_) + ')';
   }
 private:
   std::uint32_t dim_;
@@ -248,7 +249,7 @@ class SoftmaxCrossEntropy : public Operator {
 public:
   explicit SoftmaxCrossEntropy(std::uint32_t dim) : dim_(dim) {}
   std::string name() const override {
-    return "SoftmaxCrossEntropy(" + std::to_string(dim_) + ')';
+    return "SoftmaxCrossEntropy(" + string_utils::to_string(dim_) + ')';
   }
 private:
   std::uint32_t dim_;
@@ -260,7 +261,7 @@ public:
   explicit SparseSoftmaxCrossEntropy(
       const std::vector<std::uint32_t> ids, std::uint32_t dim) : ids_(ids), dim_(dim) {}
   std::string name() const override {
-    return "SparseSoftmaxCrossEntropy(" + std::to_string(dim_) + ')';
+    return "SparseSoftmaxCrossEntropy(" + string_utils::to_string(dim_) + ')';
   }
 private:
   std::vector<std::uint32_t> ids_;
@@ -291,7 +292,7 @@ public:
   public: \
     explicit name_(float  k) : k_(k) {} \
     std::string name() const override { \
-      return #name_"(" + std::to_string(k_) + ')'; \
+      return #name_"(" + string_utils::to_string(k_) + ')'; \
     } \
   private: \
     float k_; \
