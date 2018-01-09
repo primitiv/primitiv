@@ -213,9 +213,9 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_random_gumbel(
 
 PRIMITIV_C_DECL_BINARY_OP(pow);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_ipow(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_pown(
     const primitiv_Node *x, uint32_t k, primitiv_Node **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_ipow(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_pown(
     const primitiv_Tensor *x, uint32_t k, primitiv_Tensor **y);
 
 PRIMITIV_C_DECL_UNARY_FUNC(selu);
