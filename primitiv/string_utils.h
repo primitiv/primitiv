@@ -33,6 +33,7 @@ inline std::string join(
 /**
  * Imprementation of std::to_string()
  *
+ * NOTE(vbkaisetsu):
  * Some libstdc++ (e.g. Android) do not support std::to_string().
  * We support libraries that do not have std::to_string().
  */
