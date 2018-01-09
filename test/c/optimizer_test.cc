@@ -34,23 +34,23 @@ TEST_F(COptimizerTest, CheckAddParameter) {
 
   EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_parameter(optimizer, param1));
-  EXPECT_EQ(PRIMITIV_C_ERROR,
+  EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_parameter(optimizer, param1));
 
   EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_parameter(optimizer, param2));
-  EXPECT_EQ(PRIMITIV_C_ERROR,
+  EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_parameter(optimizer, param1));
-  EXPECT_EQ(PRIMITIV_C_ERROR,
+  EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_parameter(optimizer, param2));
 
   EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_parameter(optimizer, param3));
-  EXPECT_EQ(PRIMITIV_C_ERROR,
+  EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_parameter(optimizer, param1));
-  EXPECT_EQ(PRIMITIV_C_ERROR,
+  EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_parameter(optimizer, param2));
-  EXPECT_EQ(PRIMITIV_C_ERROR,
+  EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_parameter(optimizer, param3));
 
   ::primitiv_Optimizer_delete(optimizer);
@@ -78,13 +78,13 @@ TEST_F(COptimizerTest, CheckAddModel) {
 
   EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_model(optimizer, m));
-  EXPECT_EQ(PRIMITIV_C_ERROR,
+  EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_model(optimizer, m));
-  EXPECT_EQ(PRIMITIV_C_ERROR,
+  EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_parameter(optimizer, param1));
-  EXPECT_EQ(PRIMITIV_C_ERROR,
+  EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_parameter(optimizer, param2));
-  EXPECT_EQ(PRIMITIV_C_ERROR,
+  EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_parameter(optimizer, param3));
 
   ::primitiv_Optimizer_delete(optimizer);
@@ -121,17 +121,17 @@ TEST_F(COptimizerTest, CheckAddModelWithMultipleModels) {
       ::primitiv_Optimizer_add_model(optimizer, m2));
   EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_model(optimizer, m3));
-  EXPECT_EQ(PRIMITIV_C_ERROR,
+  EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_model(optimizer, m1));
-  EXPECT_EQ(PRIMITIV_C_ERROR,
+  EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_model(optimizer, m2));
-  EXPECT_EQ(PRIMITIV_C_ERROR,
+  EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_model(optimizer, m3));
-  EXPECT_EQ(PRIMITIV_C_ERROR,
+  EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_parameter(optimizer, param1));
-  EXPECT_EQ(PRIMITIV_C_ERROR,
+  EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_parameter(optimizer, param2));
-  EXPECT_EQ(PRIMITIV_C_ERROR,
+  EXPECT_EQ(PRIMITIV_C_OK,
       ::primitiv_Optimizer_add_parameter(optimizer, param3));
 
   ::primitiv_Optimizer_delete(optimizer);
