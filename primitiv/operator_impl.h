@@ -319,7 +319,7 @@ class PowN : public Operator {
 public:
   explicit PowN(std::int32_t k) : k_(k) {}
   std::string name() const override {
-    return "PowN(" + std::to_string(k_) + ')';
+    return "PowN(" + string_utils::to_string(k_) + ')';
   }
 private:
   std::int32_t k_;
