@@ -4,8 +4,9 @@
 #include <primitiv/error.h>
 #include <primitiv/model.h>
 #include <primitiv/naive_device.h>
-#include <primitiv/parameter.h>
+#include <primitiv/optimizer.h>
 #include <primitiv/optimizer_impl.h>
+#include <primitiv/parameter.h>
 #include <test_utils.h>
 
 using std::vector;
@@ -13,39 +14,85 @@ using test_utils::vector_match;
 
 namespace primitiv {
 
+/*
+ * Optimizer class for test cases which checks numbers of function calls.
+ */
+class TestOptimizer : public Optimizer {
+public:
+  TestOptimizer(std::size_t expected) : ok_(true), expected_(expected) {}
+
+  bool ok() const {
+    return
+      ok_
+      && configured_.size() == expected_
+      && updated_.size() == expected_;
+  }
+
+  void get_configs(
+      std::unordered_map<std::string, std::uint32_t> &,
+      std::unordered_map<std::string, float> &) const override {}
+  void set_configs(
+      const std::unordered_map<std::string, std::uint32_t> &,
+      const std::unordered_map<std::string, float> &) override {}
+
+private:
+  void configure_parameter(Parameter &param) override {
+    // This function should be called only once for each parameter.
+    if (configured_.find(&param) != configured_.end()) ok_ = false;
+    configured_.emplace(&param);
+  }
+
+  void update_parameter(float scale, Parameter &param) override {
+    // This function should be called only once for each parameter.
+    if (updated_.find(&param) != updated_.end()) ok_ = false;
+    updated_.emplace(&param);
+  }
+
+  bool ok_;
+  std::size_t expected_;
+  std::unordered_set<Parameter *> configured_;
+  std::unordered_set<Parameter *> updated_;
+};
+
 class OptimizerTest : public testing::Test {
 protected:
   devices::Naive dev;
 };
 
 TEST_F(OptimizerTest, CheckAddNothing) {
-  optimizers::SGD optimizer;
+  TestOptimizer optimizer(0u);
   EXPECT_NO_THROW(optimizer.add());
+  EXPECT_NO_THROW(optimizer.update());
+  EXPECT_TRUE(optimizer.ok());
 }
 
 TEST_F(OptimizerTest, CheckAddParameter) {
   Device::set_default(dev);
-  optimizers::SGD optimizer;
+  TestOptimizer optimizer(3u);
   Parameter param1;
   Parameter param2;
   Parameter param3;
 
   EXPECT_NO_THROW(optimizer.add(param1));
-  EXPECT_THROW(optimizer.add(param1), Error);
+  EXPECT_NO_THROW(optimizer.add(param1));
 
   EXPECT_NO_THROW(optimizer.add(param2));
-  EXPECT_THROW(optimizer.add(param1), Error);
-  EXPECT_THROW(optimizer.add(param2), Error);
+  EXPECT_NO_THROW(optimizer.add(param1));
+  EXPECT_NO_THROW(optimizer.add(param2));
 
   EXPECT_NO_THROW(optimizer.add(param3));
-  EXPECT_THROW(optimizer.add(param1), Error);
-  EXPECT_THROW(optimizer.add(param2), Error);
-  EXPECT_THROW(optimizer.add(param3), Error);
+  EXPECT_NO_THROW(optimizer.add(param1));
+  EXPECT_NO_THROW(optimizer.add(param2));
+  EXPECT_NO_THROW(optimizer.add(param3));
+
+  EXPECT_NO_THROW(optimizer.update());
+
+  EXPECT_TRUE(optimizer.ok());
 }
 
 TEST_F(OptimizerTest, CheckAddModel) {
   Device::set_default(dev);
-  optimizers::SGD optimizer;
+  TestOptimizer optimizer(3u);
   Model m;
   Parameter param1;
   Parameter param2;
@@ -55,15 +102,19 @@ TEST_F(OptimizerTest, CheckAddModel) {
   m.add("param3", param3);
 
   EXPECT_NO_THROW(optimizer.add(m));
-  EXPECT_THROW(optimizer.add(m), Error);
-  EXPECT_THROW(optimizer.add(param1), Error);
-  EXPECT_THROW(optimizer.add(param2), Error);
-  EXPECT_THROW(optimizer.add(param3), Error);
+  EXPECT_NO_THROW(optimizer.add(m));
+  EXPECT_NO_THROW(optimizer.add(param1));
+  EXPECT_NO_THROW(optimizer.add(param2));
+  EXPECT_NO_THROW(optimizer.add(param3));
+
+  EXPECT_NO_THROW(optimizer.update());
+
+  EXPECT_TRUE(optimizer.ok());
 }
 
 TEST_F(OptimizerTest, CheckAddModelWithMultipleModels) {
   Device::set_default(dev);
-  optimizers::SGD optimizer;
+  TestOptimizer optimizer(3u);
   Model m1, m2, m3;
   Parameter param1;
   Parameter param2;
@@ -75,17 +126,21 @@ TEST_F(OptimizerTest, CheckAddModelWithMultipleModels) {
   EXPECT_NO_THROW(optimizer.add(m1));
   EXPECT_NO_THROW(optimizer.add(m2));
   EXPECT_NO_THROW(optimizer.add(m3));
-  EXPECT_THROW(optimizer.add(m1), Error);
-  EXPECT_THROW(optimizer.add(m2), Error);
-  EXPECT_THROW(optimizer.add(m3), Error);
-  EXPECT_THROW(optimizer.add(param1), Error);
-  EXPECT_THROW(optimizer.add(param2), Error);
-  EXPECT_THROW(optimizer.add(param3), Error);
+  EXPECT_NO_THROW(optimizer.add(m1));
+  EXPECT_NO_THROW(optimizer.add(m2));
+  EXPECT_NO_THROW(optimizer.add(m3));
+  EXPECT_NO_THROW(optimizer.add(param1));
+  EXPECT_NO_THROW(optimizer.add(param2));
+  EXPECT_NO_THROW(optimizer.add(param3));
+
+  EXPECT_NO_THROW(optimizer.update());
+
+  EXPECT_TRUE(optimizer.ok());
 }
 
 TEST_F(OptimizerTest, CheckAddModelWithSubmodels) {
   Device::set_default(dev);
-  optimizers::SGD optimizer;
+  TestOptimizer optimizer(3u);
   Model m, sm, ssm;
   Parameter param1;
   Parameter param2;
@@ -97,33 +152,41 @@ TEST_F(OptimizerTest, CheckAddModelWithSubmodels) {
   sm.add("ssm", ssm);
 
   EXPECT_NO_THROW(optimizer.add(m));
-  EXPECT_THROW(optimizer.add(m), Error);
-  EXPECT_THROW(optimizer.add(sm), Error);
-  EXPECT_THROW(optimizer.add(ssm), Error);
-  EXPECT_THROW(optimizer.add(param1), Error);
-  EXPECT_THROW(optimizer.add(param2), Error);
-  EXPECT_THROW(optimizer.add(param3), Error);
+  EXPECT_NO_THROW(optimizer.add(m));
+  EXPECT_NO_THROW(optimizer.add(sm));
+  EXPECT_NO_THROW(optimizer.add(ssm));
+  EXPECT_NO_THROW(optimizer.add(param1));
+  EXPECT_NO_THROW(optimizer.add(param2));
+  EXPECT_NO_THROW(optimizer.add(param3));
+
+  EXPECT_NO_THROW(optimizer.update());
+
+  EXPECT_TRUE(optimizer.ok());
 }
 
 TEST_F(OptimizerTest, CheckAddMultipleParameters) {
   Device::set_default(dev);
-  optimizers::SGD optimizer;
+  TestOptimizer optimizer(4u);
   Parameter param1, param2, param3, param4;
 
   EXPECT_NO_THROW(optimizer.add(param1, param2, param3));
-  EXPECT_THROW(optimizer.add(param1), Error);
-  EXPECT_THROW(optimizer.add(param2), Error);
-  EXPECT_THROW(optimizer.add(param3), Error);
-  EXPECT_THROW(optimizer.add(param1, param2), Error);
-  EXPECT_THROW(optimizer.add(param2, param3), Error);
-  EXPECT_THROW(optimizer.add(param1, param3), Error);
-  EXPECT_THROW(optimizer.add(param1, param2, param3), Error);
+  EXPECT_NO_THROW(optimizer.add(param1));
+  EXPECT_NO_THROW(optimizer.add(param2));
+  EXPECT_NO_THROW(optimizer.add(param3));
+  EXPECT_NO_THROW(optimizer.add(param1, param2));
+  EXPECT_NO_THROW(optimizer.add(param2, param3));
+  EXPECT_NO_THROW(optimizer.add(param1, param3));
+  EXPECT_NO_THROW(optimizer.add(param1, param2, param3));
   EXPECT_NO_THROW(optimizer.add(param4));
+
+  EXPECT_NO_THROW(optimizer.update());
+
+  EXPECT_TRUE(optimizer.ok());
 }
 
 TEST_F(OptimizerTest, CheckAddMultipleModels) {
   Device::set_default(dev);
-  optimizers::SGD optimizer;
+  TestOptimizer optimizer(4u);
   Parameter p1, p2, p3, p4;
   Model m1, m2, m3, m4;
   m1.add("p", p1);
@@ -132,34 +195,42 @@ TEST_F(OptimizerTest, CheckAddMultipleModels) {
   m4.add("p", p4);
 
   EXPECT_NO_THROW(optimizer.add(m1, m2, m3));
-  EXPECT_THROW(optimizer.add(m1), Error);
-  EXPECT_THROW(optimizer.add(m2), Error);
-  EXPECT_THROW(optimizer.add(m3), Error);
-  EXPECT_THROW(optimizer.add(m1, m2), Error);
-  EXPECT_THROW(optimizer.add(m2, m3), Error);
-  EXPECT_THROW(optimizer.add(m1, m3), Error);
-  EXPECT_THROW(optimizer.add(m1, m2, m3), Error);
+  EXPECT_NO_THROW(optimizer.add(m1));
+  EXPECT_NO_THROW(optimizer.add(m2));
+  EXPECT_NO_THROW(optimizer.add(m3));
+  EXPECT_NO_THROW(optimizer.add(m1, m2));
+  EXPECT_NO_THROW(optimizer.add(m2, m3));
+  EXPECT_NO_THROW(optimizer.add(m1, m3));
+  EXPECT_NO_THROW(optimizer.add(m1, m2, m3));
   EXPECT_NO_THROW(optimizer.add(m4));
+
+  EXPECT_NO_THROW(optimizer.update());
+
+  EXPECT_TRUE(optimizer.ok());
 }
 
 TEST_F(OptimizerTest, CheckAddParameterAndModelSimultaneously) {
   Device::set_default(dev);
-  optimizers::SGD optimizer;
+  TestOptimizer optimizer(4u);
   Parameter p1, p2, p3, p4;
   Model m1, m2;
   m1.add("p", p1);
   m2.add("p", p2);
 
   EXPECT_NO_THROW(optimizer.add(m1, p3));
-  EXPECT_THROW(optimizer.add(m1), Error);
-  EXPECT_THROW(optimizer.add(p3), Error);
-  EXPECT_THROW(optimizer.add(m1, p3), Error);
+  EXPECT_NO_THROW(optimizer.add(m1));
+  EXPECT_NO_THROW(optimizer.add(p3));
+  EXPECT_NO_THROW(optimizer.add(m1, p3));
   EXPECT_NO_THROW(optimizer.add(m2));
   EXPECT_NO_THROW(optimizer.add(p4));
+
+  EXPECT_NO_THROW(optimizer.update());
+
+  EXPECT_TRUE(optimizer.ok());
 }
 
 TEST_F(OptimizerTest, CheckEpoch) {
-  optimizers::SGD optimizer;
+  TestOptimizer optimizer(0u);
   ASSERT_EQ(0u, optimizer.get_epoch());
   for (std::uint32_t i = 1; i < 10; ++i) {
     optimizer.update();
@@ -172,7 +243,7 @@ TEST_F(OptimizerTest, CheckEpoch) {
 }
 
 TEST_F(OptimizerTest, CheckLearningRateScaling) {
-  optimizers::SGD optimizer;
+  TestOptimizer optimizer(0u);
   ASSERT_EQ(1.0f, optimizer.get_learning_rate_scaling());
 
   optimizer.set_learning_rate_scaling(.1);

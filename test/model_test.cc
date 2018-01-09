@@ -31,18 +31,18 @@ TEST_F(ModelTest, CheckAddParameter) {
   Parameter p1, p2, p3;
 
   EXPECT_NO_THROW(m.add("p1", p1));
-  EXPECT_THROW(m.add("p1", p1), Error);
+  EXPECT_NO_THROW(m.add("p1", p1));
   EXPECT_THROW(m.add("x", p1), Error);
 
   EXPECT_THROW(m.add("p1", p2), Error);
   EXPECT_NO_THROW(m.add("p2", p2));
-  EXPECT_THROW(m.add("p2", p2), Error);
+  EXPECT_NO_THROW(m.add("p2", p2));
   EXPECT_THROW(m.add("x", p2), Error);
 
   EXPECT_THROW(m.add("p1", p3), Error);
   EXPECT_THROW(m.add("p2", p3), Error);
   EXPECT_NO_THROW(m.add("p3", p3));
-  EXPECT_THROW(m.add("p3", p3), Error);
+  EXPECT_NO_THROW(m.add("p3", p3));
   EXPECT_THROW(m.add("x", p3), Error);
 }
 
@@ -52,7 +52,7 @@ TEST_F(ModelTest, CheckAddSubmodel) {
 
   EXPECT_NO_THROW(m.add("p1", p1));
   EXPECT_NO_THROW(m.add("sm1", sm1));
-  EXPECT_THROW(m.add("sm1", sm1), Error);
+  EXPECT_NO_THROW(m.add("sm1", sm1));
   EXPECT_THROW(m.add("x", sm1), Error);
 
   EXPECT_THROW(m.add("p1", p2), Error);
@@ -62,7 +62,7 @@ TEST_F(ModelTest, CheckAddSubmodel) {
 
   EXPECT_NO_THROW(m.add("p2", p2));
   EXPECT_NO_THROW(m.add("sm2", sm2));
-  EXPECT_THROW(m.add("sm2", sm2), Error);
+  EXPECT_NO_THROW(m.add("sm2", sm2));
   EXPECT_THROW(m.add("x", sm2), Error);
 }
 
@@ -82,10 +82,7 @@ TEST_F(ModelTest, CheckAddSubmodelCycle) {
   EXPECT_THROW(m4.add("m1", m1), Error);
   EXPECT_THROW(m4.add("m2", m2), Error);
 
-  // NOTE(odashi):
-  // This generates a diamond hierarchy.
-  // We allow to do this for now, but Trainer.add_model() may fail because of
-  // registering same parameters multiple times.
+  // Also allows a diamond hierarchy.
   EXPECT_NO_THROW(m4.add("m3", m3));
 }
 

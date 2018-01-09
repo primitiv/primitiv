@@ -97,9 +97,8 @@ public:
   }
 
   /**
-   * Registers multiple parameters and models.
-   * This function is defined as the sentinel of other specialized functions.
-   * @param args List of arguments (could be empty).
+   * Do nothing.
+   * This function is used as the sentinel of other specialized functions.
    */
   void add() { /* do nothing */ }
 
