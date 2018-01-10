@@ -10,6 +10,10 @@
 
 #include <primitiv/primitiv.h>
 
+#define IGNORE_NOT_IMPLEMENTED catch (primitiv::NotImplementedError &ex) { \
+  std::cerr << ex.what() << std::endl; \
+}
+
 namespace test_utils {
 
 // check whether or not two float values are near than the ULP-based threshold.

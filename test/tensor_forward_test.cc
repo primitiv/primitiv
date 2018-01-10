@@ -2269,13 +2269,13 @@ TEST_F(TensorForwardTest, CheckConv2D_1x1x1_1x1x1x1) {
   const vector<float> x_data {123};
   const vector<float> w_data {42};
   const vector<float> y_data {123 * 42};
-  for (Device *dev : devices) {
+  for (Device *dev : devices) try {
     const Tensor x = dev->new_tensor_by_vector({}, x_data);
     const Tensor w = dev->new_tensor_by_vector({}, w_data);
     const Tensor y = conv2d(x, w);
     EXPECT_EQ(Shape(), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
-  }
+  } IGNORE_NOT_IMPLEMENTED
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1) {
@@ -2296,13 +2296,13 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1) {
     67,  73,  79,  85,
     97, 103, 109, 115,
   };
-  for (Device *dev : devices) {
+  for (Device *dev : devices) try {
     const Tensor x = dev->new_tensor_by_vector({5, 5}, x_data);
     const Tensor w = dev->new_tensor_by_vector({2, 2}, w_data);
     const Tensor y = conv2d(x, w);
     EXPECT_EQ(Shape({4, 4}), y.shape());
     EXPECT_TRUE(vector_match(y_data, y.to_vector()));
-  }
+  } IGNORE_NOT_IMPLEMENTED
 }
 
 // TODO(odashi): Add more tests about conv2d.
