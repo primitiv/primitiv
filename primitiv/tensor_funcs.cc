@@ -286,6 +286,11 @@ Tensor softmax_cross_entropy(
 template<>
 Tensor stop_gradient(const Tensor &x) { return x; }
 
+template<>
+Tensor conv2d(const Tensor &x, const Tensor &w) {
+  return x.device().conv2d_fw(x, w);
+}
+
 namespace batch {
 
 template<>

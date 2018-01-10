@@ -697,6 +697,71 @@ void Naive::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   }
 }
 
+void Naive::conv2d_fw_impl(const Tensor &x, const Tensor &w, Tensor &y) {
+  const Shape x_shape = x.shape();
+  const Shape w_shape = w.shape();
+  const Shape y_shape = y.shape();
+
+  const std::uint32_t x_height = x_shape[0];
+  const std::uint32_t x_width = x_shape[1];
+  const std::uint32_t x_planes = x_shape[2];
+  const std::uint32_t w_height = w_shape[0];
+  const std::uint32_t w_width = w_shape[1];
+  const std::uint32_t y_height = y_shape[0];
+  const std::uint32_t y_width = y_shape[1];
+  const std::uint32_t y_planes = y_shape[2];
+
+  const std::uint32_t batch_size = y_shape.batch();
+
+  const std::size_t x_shift
+    = x_shape.has_batch() * x_height * x_width * x_planes;
+  const std::size_t w_shift
+    = w_shape.has_batch() * w_height * w_width * x_planes * y_planes;
+  const std::size_t y_shift = y_height * y_width * y_planes;
+
+  const float *px = CDATA(x);
+  const float *pw = CDATA(w);
+  float *py = MDATA(y);
+
+  for (std::uint32_t bn = 0; bn < batch_size; ++bn) {
+    for (std::uint32_t y_c = 0; y_c < y_planes; ++y_c) {
+      for (std::uint32_t y_x = 0; y_x < y_width; ++y_x) {
+        for (std::uint32_t y_y = 0; y_y < y_height; ++y_y) {
+          const std::uint32_t y_addr = (y_c * y_width + y_x) * y_height + y_y;
+          py[y_addr] = 0;
+
+          for (std::uint32_t x_c = 0; x_c < x_planes; ++x_c) {
+            for (
+                std::uint32_t w_x = 0, w_x_inv = w_width - 1;
+                w_x < w_width; ++w_x, --w_x_inv) {
+              for (
+                  std::uint32_t w_y = 0, w_y_inv = w_height - 1;
+                  w_y < w_height; ++w_y, --w_y_inv) {
+                const std::uint32_t x_addr
+                  = (x_c * x_width + y_x + w_x) * x_height + y_y + w_y;
+                const std::uint32_t w_addr
+                  = ((y_c * x_planes + x_c) * w_width + w_x_inv)
+                  * w_height + w_y_inv;
+                py[y_addr] += px[x_addr] * pw[w_addr];
+              }
+            }
+          }
+        }
+      }
+    }
+
+    px += x_shift;
+    pw += w_shift;
+    py += y_shift;
+  }
+}
+
+void Naive::conv2d_bw_impl(
+    const Tensor &x, const Tensor &w, const Tensor &y, const Tensor &gy,
+    Tensor &gx, Tensor &gw) {
+  THROW_ERROR("Not implemented.");
+}
+
 void Naive::inplace_multiply_const_impl(float k, Tensor &x) {
   const std::uint32_t size = x.shape().size();
   float *dest = MDATA(x);

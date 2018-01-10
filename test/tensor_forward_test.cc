@@ -2265,5 +2265,47 @@ TEST_F(TensorForwardTest, CheckStopGradient) {
   }
 }
 
+TEST_F(TensorForwardTest, CheckConv2D_1x1x1_1x1x1x1) {
+  const vector<float> x_data {123};
+  const vector<float> w_data {42};
+  const vector<float> y_data {123 * 42};
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector({}, x_data);
+    const Tensor w = dev->new_tensor_by_vector({}, w_data);
+    const Tensor y = conv2d(x, w);
+    EXPECT_EQ(Shape(), y.shape());
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+  }
+}
+
+TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1) {
+  const vector<float> x_data {
+     0,  1,  2,  3,  4,
+     5,  6,  7,  8,  9,
+    10, 11, 12, 13, 14,
+    15, 16, 17, 18, 19,
+    20, 21, 22, 23, 24,
+  };
+  const vector<float> w_data {
+    0, 1,
+    2, 3,
+  };
+  const vector<float> y_data {
+     7,  13,  19,  25,
+    37,  43,  49,  55,
+    67,  73,  79,  85,
+    97, 103, 109, 115,
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector({5, 5}, x_data);
+    const Tensor w = dev->new_tensor_by_vector({2, 2}, w_data);
+    const Tensor y = conv2d(x, w);
+    EXPECT_EQ(Shape({4, 4}), y.shape());
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+  }
+}
+
+// TODO(odashi): Add more tests about conv2d.
+
 }  // namespace functions
 }  // namespace primitiv

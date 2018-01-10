@@ -276,6 +276,9 @@ type_traits::Identity<Var> softmax_cross_entropy(
 template<typename Var>
 type_traits::Identity<Var> stop_gradient(const Var &x);
 
+template<typename Var>
+type_traits::Identity<Var> conv2d(const Var &x, const Var &w);
+
 namespace batch {
 
 template<typename Var>
