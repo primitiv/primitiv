@@ -175,13 +175,11 @@ private:
   void broadcast_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) override;
   void batch_sum_fw_impl(const Tensor &x, Tensor &y) override;
 
-  void conv2d_fw_impl(const Tensor &x, const Tensor &w, Tensor &y) override
-  { THROW_NOT_IMPLEMENTED; }
+  void conv2d_fw_impl(const Tensor &x, const Tensor &w, Tensor &y) override;
 
   void conv2d_bw_impl(
       const Tensor &x, const Tensor &w, const Tensor &y, const Tensor &gy,
-      Tensor &gx, Tensor &gw) override
-  { THROW_NOT_IMPLEMENTED; }
+      Tensor &gx, Tensor &gw) override;
 
   void inplace_multiply_const_impl(float k, Tensor &x) override;
 

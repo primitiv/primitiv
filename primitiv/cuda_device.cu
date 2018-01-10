@@ -2,6 +2,7 @@
 
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>
+#include <cudnn.h>
 #include <curand.h>
 #include <iostream>
 #include <random>
@@ -525,23 +526,15 @@ __global__ void inplace_subtract_dev(
 /*
  * CUBLAS initializer/finalizer.
  */
-class CUBLASHandle {
-private:
-  CUBLASHandle(const CUBLASHandle &) = delete;
-  CUBLASHandle(CUBLASHandle &&) = delete;
-  CUBLASHandle &operator=(const CUBLASHandle &) = delete;
-  CUBLASHandle &operator=(CUBLASHandle &&) = delete;
-
+class CUBLASHandle : primitiv::mixins::Nonmovable<CUBLASHandle> {
 public:
   explicit CUBLASHandle(std::uint32_t dev_id) {
     CUDA_CALL(::cudaSetDevice(dev_id));
     CUBLAS_CALL(::cublasCreate(&handle_));
-    //cerr << "CUBLAS initialized at device " << dev_id << '.' << endl;
   }
 
   ~CUBLASHandle() {
     CUBLAS_CALL(::cublasDestroy(handle_));
-    //cerr << "CUBLAS finalized." << endl;
   }
 
   ::cublasHandle_t get() const { return handle_; }
@@ -553,30 +546,42 @@ private:
 /*
  * CURAND initializer/finalizer.
  */
-class CURANDHandle {
-private:
-  CURANDHandle(const CURANDHandle &) = delete;
-  CURANDHandle(CURANDHandle &&) = delete;
-  CURANDHandle &operator=(const CURANDHandle &) = delete;
-  CURANDHandle &operator=(CURANDHandle &&) = delete;
-
+class CURANDHandle : primitiv::mixins::Nonmovable<CURANDHandle> {
 public:
   CURANDHandle(std::uint32_t dev_id, std::uint32_t rng_seed) {
     CUDA_CALL(::cudaSetDevice(dev_id));
     CURAND_CALL(::curandCreateGenerator(&handle_, CURAND_RNG_PSEUDO_DEFAULT));
     CURAND_CALL(::curandSetPseudoRandomGeneratorSeed(handle_, rng_seed));
-    //cerr << "CURAND initialized at device " << dev_id << '.' << endl;
   }
 
   ~CURANDHandle() {
     CURAND_CALL(::curandDestroyGenerator(handle_));
-    //cerr << "CURAND finalized." << endl;
   }
 
   ::curandGenerator_t get() const { return handle_; }
 
 private:
   ::curandGenerator_t handle_;
+};
+
+/*
+ * cuDNN initializer/finalizer.
+ */
+class CUDNNHandle : primitiv::mixins::Nonmovable<CUDNNHandle> {
+public:
+  explicit CUDNNHandle(std::uint32_t dev_id) {
+    CUDA_CALL(::cudaSetDevice(dev_id));
+    CUDNN_CALL(::cudnnCreate(&handle_));
+  }
+
+  ~CUDNNHandle() {
+    CUDNN_CALL(::cudnnDestroy(handle_));
+  }
+
+  ::cudnnHandle_t get() const { return handle_; }
+
+private:
+  ::cudnnHandle_t handle_;
 };
 
 }  // namespace
@@ -591,6 +596,7 @@ struct CUDAInternalState {
   CUDAInternalState(std::uint32_t dev_id, std::uint32_t rng_seed)
     : cublas(dev_id)
     , curand(dev_id, rng_seed)
+    , cudnn(dev_id)
     , pool(
         [dev_id](std::size_t size) -> void * {  // allocator
           void *ptr;
@@ -603,6 +609,7 @@ struct CUDAInternalState {
         }) {}
   ::CUBLASHandle cublas;
   ::CURANDHandle curand;
+  ::CUDNNHandle cudnn;
   MemoryPool pool;
   ::cudaDeviceProp prop;
 };
@@ -1299,6 +1306,16 @@ void CUDA::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::batch_sum_fw_dev<<<g1, dim1_x_>>>(
       CDATA(x), size, x.shape().batch(), MDATA(y));
+}
+
+void CUDA::conv2d_fw_impl(const Tensor &x, const Tensor &w, Tensor &y) {
+  THROW_NOT_IMPLEMENTED;
+}
+
+void CUDA::conv2d_bw_impl(
+    const Tensor &x, const Tensor &w, const Tensor &y, const Tensor &gy,
+    Tensor &gx, Tensor &gw) {
+  THROW_NOT_IMPLEMENTED;
 }
 
 void CUDA::inplace_multiply_const_impl(float k, Tensor &x) {

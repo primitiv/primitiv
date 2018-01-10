@@ -2,8 +2,10 @@
 #define PRIMITIV_CUDA_UTILS_H_
 
 #include <string>
-#include <cuda_runtime_api.h>
+
 #include <cublas_v2.h>
+#include <cuda_runtime_api.h>
+#include <cudnn.h>
 #include <curand.h>
 
 namespace primitiv {
@@ -22,6 +24,13 @@ std::string cublasGetErrorString(::cublasStatus_t err);
  * @return Error string.
  */
 std::string curandGetErrorString(::curandStatus_t err);
+
+/**
+ * Retrieves cuDNN error string.
+ * @param err cuDNN error cude.
+ * @return Error string.
+ */
+std::string cudnnGetErrorString(::cudnnStatus_t err);
 
 }  // namespace cuda
 }  // namespace primitiv
@@ -56,5 +65,14 @@ std::string curandGetErrorString(::curandStatus_t err);
   } \
 }
 
+#define CUDNN_CALL(f) { \
+  ::cudnnStatus_t err = (f); \
+  if (err != CUDNN_STATUS_SUCCESS) { \
+    THROW_ERROR( \
+        "CUDNN function failed. statement: " << #f \
+        << ", error: " << err \
+        << ": " << primitiv::cuda::cudnnGetErrorString(err)); \
+  } \
+}
 
 #endif  // PRIMITIV_CUDA_UTILS_H_
