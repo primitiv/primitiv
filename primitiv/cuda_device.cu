@@ -1248,7 +1248,66 @@ void CUDA::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
 }
 
 void CUDA::conv2d_fw_impl(const Tensor &x, const Tensor &w, Tensor &y) {
-  THROW_NOT_IMPLEMENTED;
+  const Shape x_shape = x.shape();
+  const Shape w_shape = w.shape();
+  const Shape y_shape = y.shape();
+
+  // Sets device.
+  CUDA_CALL(::cudaSetDevice(dev_id_));
+
+  // Makes descriptors.
+  const cuda::CuDNNTensorDescriptor x_desc(
+      w_shape.has_batch() ? 1 : x_shape.batch(),
+      x_shape[2], x_shape[1], x_shape[0]);
+  const cuda::CuDNNTensorDescriptor y_desc(
+      w_shape.has_batch() ? 1 : y_shape.batch(),
+      y_shape[2], y_shape[1], y_shape[0]);
+  const cuda::CuDNNFilterDescriptor w_desc(
+      w_shape[3], w_shape[2], w_shape[1], w_shape[0]);
+  const cuda::CuDNNConvolutionDescriptor conv_desc(0, 0, 1, 1, 1, 1);
+
+  // Obtains the most efficient algorithm.
+  ::cudnnConvolutionFwdAlgo_t algo;
+  CUDNN_CALL(::cudnnGetConvolutionForwardAlgorithm(
+        state_->cudnn.get(),
+        x_desc.get(), w_desc.get(), conv_desc.get(), y_desc.get(),
+        CUDNN_CONVOLUTION_FWD_PREFER_FASTEST, 0, &algo));
+
+  // Obtains workspace.
+  std::size_t ws_size;
+  CUDNN_CALL(::cudnnGetConvolutionForwardWorkspaceSize(
+        state_->cudnn.get(),
+        x_desc.get(), w_desc.get(), conv_desc.get(), y_desc.get(),
+        algo, &ws_size));
+  std::shared_ptr<void> ws_ptr = state_->pool.allocate(ws_size);
+
+  // Performs convolution.
+  float alpha = 1.f;
+  float beta = 0.f;
+  const float *x_ptr = CDATA(x);
+  const float *w_ptr = CDATA(w);
+  float *y_ptr = MDATA(y);
+  if (w_shape.has_batch()) {
+    const std::size_t x_shift = x_shape.has_batch() * x_shape.volume();
+    const std::size_t w_shift = w_shape.volume();
+    const std::size_t y_shift = y_shape.volume();
+    for (std::uint32_t bn = 0; bn < w_shape.batch(); ++bn) {
+      CUDNN_CALL(cudnnConvolutionForward(
+            state_->cudnn.get(),
+            &alpha, x_desc.get(), x_ptr, w_desc.get(), w_ptr,
+            conv_desc.get(), algo, ws_ptr.get(), ws_size,
+            &beta, y_desc.get(), y_ptr));
+      x_ptr += x_shift;
+      w_ptr += w_shift;
+      y_ptr += y_shift;
+    }
+  } else {
+    CUDNN_CALL(cudnnConvolutionForward(
+          state_->cudnn.get(),
+          &alpha, x_desc.get(), x_ptr, w_desc.get(), w_ptr,
+          conv_desc.get(), algo, ws_ptr.get(), ws_size,
+          &beta, y_desc.get(), y_ptr));
+  }
 }
 
 void CUDA::conv2d_bw_impl(
