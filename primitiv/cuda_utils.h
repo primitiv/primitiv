@@ -67,7 +67,7 @@ std::string cublasGetErrorString(::cublasStatus_t err);
  */
 std::string curandGetErrorString(::curandStatus_t err);
 
-/*
+/**
  * CuBLAS initializer/finalizer.
  */
 class CuBLASHandle : primitiv::mixins::Nonmovable<CuBLASHandle> {
@@ -84,10 +84,10 @@ public:
   ::cublasHandle_t get() const { return handle_; }
 
 private:
-  ::cublasHandle_t handle_;
+  ::cublasHandle_t handle_ = NULL;
 };
 
-/*
+/**
  * CuRAND initializer/finalizer.
  */
 class CuRANDHandle : primitiv::mixins::Nonmovable<CuRANDHandle> {
@@ -105,10 +105,10 @@ public:
   ::curandGenerator_t get() const { return handle_; }
 
 private:
-  ::curandGenerator_t handle_;
+  ::curandGenerator_t handle_ = NULL;
 };
 
-/*
+/**
  * cuDNN initializer/finalizer.
  */
 class CuDNNHandle : primitiv::mixins::Nonmovable<CuDNNHandle> {
@@ -125,7 +125,80 @@ public:
   ::cudnnHandle_t get() const { return handle_; }
 
 private:
-  ::cudnnHandle_t handle_;
+  ::cudnnHandle_t handle_ = NULL;
+};
+
+/**
+ * Wrapper of cudnnTensorDescriptor_t.
+ */
+class CuDNNTensorDescriptor
+: public primitiv::mixins::Nonmovable<CuDNNTensorDescriptor> {
+public:
+  CuDNNTensorDescriptor(
+      std::uint32_t n, std::uint32_t c, std::uint32_t h, std::uint32_t w) {
+    CUDNN_CALL(::cudnnCreateTensorDescriptor(&handle_));
+    CUDNN_CALL(::cudnnSetTensor4dDescriptor(
+          handle_, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, n, c, h, w));
+  }
+
+  ~CuDNNTensorDescriptor() {
+    CUDNN_CALL(::cudnnDestroyTensorDescriptor(handle_));
+  }
+
+  ::cudnnTensorDescriptor_t get() const { return handle_; }
+
+private:
+  ::cudnnTensorDescriptor_t handle_ = NULL;
+};
+
+/**
+ * Wrapper of cudnnFilterDescriptor_t.
+ */
+class CuDNNFilterDescriptor
+: public primitiv::mixins::Nonmovable<CuDNNFilterDescriptor> {
+public:
+  CuDNNFilterDescriptor(
+      std::uint32_t k, std::uint32_t c, std::uint32_t h, std::uint32_t w) {
+    CUDNN_CALL(::cudnnCreateFilterDescriptor(&handle_));
+    CUDNN_CALL(::cudnnSetFilter4dDescriptor(
+          handle_, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW, k, c, h, w));
+  }
+
+  ~CuDNNFilterDescriptor() {
+    CUDNN_CALL(::cudnnDestroyFilterDescriptor(handle_));
+  }
+
+  ::cudnnFilterDescriptor_t get() const { return handle_; }
+
+private:
+  ::cudnnFilterDescriptor_t handle_ = NULL;
+};
+
+/**
+ * Wrapper of cudnnConvolutionDescriptor_t.
+ */
+class CuDNNConvolutionDescriptor
+: public primitiv::mixins::Nonmovable<CuDNNConvolutionDescriptor> {
+public:
+  CuDNNConvolutionDescriptor(
+      std::uint32_t padding_h, std::uint32_t padding_w,
+      std::uint32_t stride_h, std::uint32_t stride_w,
+      std::uint32_t dilation_h, std::uint32_t dilation_w) {
+    CUDNN_CALL(::cudnnCreateConvolutionDescriptor(&handle_));
+    CUDNN_CALL(::cudnnSetConvolution2dDescriptor(
+          handle_,
+          padding_h, padding_w, stride_h, stride_w, dilation_h, dilation_w,
+          CUDNN_CONVOLUTION, CUDNN_DATA_FLOAT));
+  }
+
+  ~CuDNNConvolutionDescriptor() {
+    CUDNN_CALL(::cudnnDestroyConvolutionDescriptor(handle_));
+  }
+
+  ::cudnnConvolutionDescriptor_t get() const { return handle_; }
+
+private:
+  ::cudnnConvolutionDescriptor_t handle_ = NULL;
 };
 
 }  // namespace cuda
