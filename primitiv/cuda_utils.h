@@ -25,13 +25,6 @@ std::string cublasGetErrorString(::cublasStatus_t err);
  */
 std::string curandGetErrorString(::curandStatus_t err);
 
-/**
- * Retrieves cuDNN error string.
- * @param err cuDNN error cude.
- * @return Error string.
- */
-std::string cudnnGetErrorString(::cudnnStatus_t err);
-
 }  // namespace cuda
 }  // namespace primitiv
 
@@ -71,7 +64,7 @@ std::string cudnnGetErrorString(::cudnnStatus_t err);
     THROW_ERROR( \
         "CUDNN function failed. statement: " << #f \
         << ", error: " << err \
-        << ": " << primitiv::cuda::cudnnGetErrorString(err)); \
+        << ": " << ::cudnnGetErrorString(err)); \
   } \
 }
 
