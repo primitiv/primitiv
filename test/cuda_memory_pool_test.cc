@@ -54,6 +54,16 @@ TEST_F(MemoryPoolTest_CUDA, CheckPoolIDs) {
   EXPECT_EQ(base_id + 9, pool5.id());
 }
 
+TEST_F(MemoryPoolTest_CUDA, CheckEmptyAllocation) {
+  MemoryPool pool(allocator, deleter);
+  const auto sp1 = pool.allocate(0u);
+  const auto sp2 = pool.allocate(0u);
+  const auto sp3 = pool.allocate(0u);
+  EXPECT_EQ(nullptr, sp1.get());
+  EXPECT_EQ(nullptr, sp2.get());
+  EXPECT_EQ(nullptr, sp3.get());
+}
+
 TEST_F(MemoryPoolTest_CUDA, CheckAllocate) {
   MemoryPool pool(allocator, deleter);
   void *p1, *p2, *p3, *p4;

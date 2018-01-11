@@ -32,6 +32,8 @@ MemoryPool::~MemoryPool() {
 std::shared_ptr<void> MemoryPool::allocate(std::size_t size) {
   static_assert(sizeof(std::size_t) <= sizeof(std::uint64_t), "");
 
+  if (size == 0) return std::shared_ptr<void>();
+
   static const std::uint64_t MAX_SHIFTS = 63;
   const std::uint64_t shift = numeric_utils::calculate_shifts(size);
   if (shift > MAX_SHIFTS) THROW_ERROR("Invalid memory size: " << size);
