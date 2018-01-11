@@ -523,67 +523,6 @@ __global__ void inplace_subtract_dev(
 #undef IDX
 #undef IDY
 
-/*
- * CUBLAS initializer/finalizer.
- */
-class CUBLASHandle : primitiv::mixins::Nonmovable<CUBLASHandle> {
-public:
-  explicit CUBLASHandle(std::uint32_t dev_id) {
-    CUDA_CALL(::cudaSetDevice(dev_id));
-    CUBLAS_CALL(::cublasCreate(&handle_));
-  }
-
-  ~CUBLASHandle() {
-    CUBLAS_CALL(::cublasDestroy(handle_));
-  }
-
-  ::cublasHandle_t get() const { return handle_; }
-
-private:
-  ::cublasHandle_t handle_;
-};
-
-/*
- * CURAND initializer/finalizer.
- */
-class CURANDHandle : primitiv::mixins::Nonmovable<CURANDHandle> {
-public:
-  CURANDHandle(std::uint32_t dev_id, std::uint32_t rng_seed) {
-    CUDA_CALL(::cudaSetDevice(dev_id));
-    CURAND_CALL(::curandCreateGenerator(&handle_, CURAND_RNG_PSEUDO_DEFAULT));
-    CURAND_CALL(::curandSetPseudoRandomGeneratorSeed(handle_, rng_seed));
-  }
-
-  ~CURANDHandle() {
-    CURAND_CALL(::curandDestroyGenerator(handle_));
-  }
-
-  ::curandGenerator_t get() const { return handle_; }
-
-private:
-  ::curandGenerator_t handle_;
-};
-
-/*
- * cuDNN initializer/finalizer.
- */
-class CUDNNHandle : primitiv::mixins::Nonmovable<CUDNNHandle> {
-public:
-  explicit CUDNNHandle(std::uint32_t dev_id) {
-    CUDA_CALL(::cudaSetDevice(dev_id));
-    CUDNN_CALL(::cudnnCreate(&handle_));
-  }
-
-  ~CUDNNHandle() {
-    CUDNN_CALL(::cudnnDestroy(handle_));
-  }
-
-  ::cudnnHandle_t get() const { return handle_; }
-
-private:
-  ::cudnnHandle_t handle_;
-};
-
 }  // namespace
 
 namespace primitiv {
@@ -607,9 +546,9 @@ struct CUDAInternalState {
         [](void *ptr) -> void {  // deleter
           CUDA_CALL(::cudaFree(ptr));
         }) {}
-  ::CUBLASHandle cublas;
-  ::CURANDHandle curand;
-  ::CUDNNHandle cudnn;
+  cuda::CuBLASHandle cublas;
+  cuda::CuRANDHandle curand;
+  cuda::CuDNNHandle cudnn;
   MemoryPool pool;
   ::cudaDeviceProp prop;
 };

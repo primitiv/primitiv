@@ -8,25 +8,7 @@
 #include <cudnn.h>
 #include <curand.h>
 
-namespace primitiv {
-namespace cuda {
-
-/**
- * Retrieves cuBLAS error string.
- * @param err cuBLAS error cude.
- * @return Error string.
- */
-std::string cublasGetErrorString(::cublasStatus_t err);
-
-/**
- * Retrieves cuRAND error string.
- * @param err cuRAND error cude.
- * @return Error string.
- */
-std::string curandGetErrorString(::curandStatus_t err);
-
-}  // namespace cuda
-}  // namespace primitiv
+#include <primitiv/mixins.h>
 
 #define CUDA_CALL(f) { \
   ::cudaError_t err = (f); \
@@ -67,5 +49,86 @@ std::string curandGetErrorString(::curandStatus_t err);
         << ": " << ::cudnnGetErrorString(err)); \
   } \
 }
+
+namespace primitiv {
+namespace cuda {
+
+/**
+ * Retrieves cuBLAS error string.
+ * @param err cuBLAS error cude.
+ * @return Error string.
+ */
+std::string cublasGetErrorString(::cublasStatus_t err);
+
+/**
+ * Retrieves cuRAND error string.
+ * @param err cuRAND error cude.
+ * @return Error string.
+ */
+std::string curandGetErrorString(::curandStatus_t err);
+
+/*
+ * CuBLAS initializer/finalizer.
+ */
+class CuBLASHandle : primitiv::mixins::Nonmovable<CuBLASHandle> {
+public:
+  explicit CuBLASHandle(std::uint32_t dev_id) {
+    CUDA_CALL(::cudaSetDevice(dev_id));
+    CUBLAS_CALL(::cublasCreate(&handle_));
+  }
+
+  ~CuBLASHandle() {
+    CUBLAS_CALL(::cublasDestroy(handle_));
+  }
+
+  ::cublasHandle_t get() const { return handle_; }
+
+private:
+  ::cublasHandle_t handle_;
+};
+
+/*
+ * CuRAND initializer/finalizer.
+ */
+class CuRANDHandle : primitiv::mixins::Nonmovable<CuRANDHandle> {
+public:
+  CuRANDHandle(std::uint32_t dev_id, std::uint32_t rng_seed) {
+    CUDA_CALL(::cudaSetDevice(dev_id));
+    CURAND_CALL(::curandCreateGenerator(&handle_, CURAND_RNG_PSEUDO_DEFAULT));
+    CURAND_CALL(::curandSetPseudoRandomGeneratorSeed(handle_, rng_seed));
+  }
+
+  ~CuRANDHandle() {
+    CURAND_CALL(::curandDestroyGenerator(handle_));
+  }
+
+  ::curandGenerator_t get() const { return handle_; }
+
+private:
+  ::curandGenerator_t handle_;
+};
+
+/*
+ * cuDNN initializer/finalizer.
+ */
+class CuDNNHandle : primitiv::mixins::Nonmovable<CuDNNHandle> {
+public:
+  explicit CuDNNHandle(std::uint32_t dev_id) {
+    CUDA_CALL(::cudaSetDevice(dev_id));
+    CUDNN_CALL(::cudnnCreate(&handle_));
+  }
+
+  ~CuDNNHandle() {
+    CUDNN_CALL(::cudnnDestroy(handle_));
+  }
+
+  ::cudnnHandle_t get() const { return handle_; }
+
+private:
+  ::cudnnHandle_t handle_;
+};
+
+}  // namespace cuda
+}  // namespace primitiv
 
 #endif  // PRIMITIV_CUDA_UTILS_H_
