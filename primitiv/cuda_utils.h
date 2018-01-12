@@ -185,10 +185,17 @@ public:
       std::uint32_t stride_h, std::uint32_t stride_w,
       std::uint32_t dilation_h, std::uint32_t dilation_w) {
     CUDNN_CALL(::cudnnCreateConvolutionDescriptor(&handle_));
+#if CUDNN_MAJOR >= 6
     CUDNN_CALL(::cudnnSetConvolution2dDescriptor(
           handle_,
           padding_h, padding_w, stride_h, stride_w, dilation_h, dilation_w,
           CUDNN_CONVOLUTION, CUDNN_DATA_FLOAT));
+#else
+    CUDNN_CALL(::cudnnSetConvolution2dDescriptor(
+          handle_,
+          padding_h, padding_w, stride_h, stride_w, dilation_h, dilation_w,
+          CUDNN_CONVOLUTION));
+#endif  // CUDNN_MAJOR
   }
 
   ~CuDNNConvolutionDescriptor() {
