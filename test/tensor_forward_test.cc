@@ -1487,32 +1487,22 @@ TEST_F(TensorForwardTest, CheckMatMulLarge) {
 }
 
 TEST_F(TensorForwardTest, CheckInvalidMatMul) {
+  struct TestCase {
+    Shape a_shape, b_shape;
+  };
+  const vector<TestCase> test_cases {
+    {{2, 3}, {}},  // Not a scalar multiplication.
+    {{}, {2, 3}},  // Not a scalar multiplication.
+    {{2, 3, 4}, {4}},
+    {{1, 2}, {2, 3, 4}},
+    {{2, 3}, {2, 3}},
+    {Shape({}, 2), Shape({}, 3)},
+  };
+
   for (Device *dev : devices) {
-    {
-      // Not a scalar multiplication.
-      const Tensor a = dev->new_tensor_by_constant({2, 3}, 0);
-      const Tensor b = dev->new_tensor_by_constant({}, 0);
-      EXPECT_THROW(matmul(a, b), Error);
-    }
-    {
-      // Not a scalar multiplication.
-      const Tensor a = dev->new_tensor_by_constant({}, 0);
-      const Tensor b = dev->new_tensor_by_constant({2, 3}, 0);
-      EXPECT_THROW(matmul(a, b), Error);
-    }
-    {
-      const Tensor a = dev->new_tensor_by_constant({2, 3, 4}, 0);
-      const Tensor b = dev->new_tensor_by_constant({4}, 0);
-      EXPECT_THROW(matmul(a, b), Error);
-    }
-    {
-      const Tensor a = dev->new_tensor_by_constant({1, 2}, 0);
-      const Tensor b = dev->new_tensor_by_constant({2, 3, 4}, 0);
-      EXPECT_THROW(matmul(a, b), Error);
-    }
-    {
-      const Tensor a = dev->new_tensor_by_constant({2, 3}, 0);
-      const Tensor b = dev->new_tensor_by_constant({2, 3}, 0);
+    for (const auto tc : test_cases) {
+      const Tensor a = dev->new_tensor_by_constant(tc.a_shape, 0);
+      const Tensor b = dev->new_tensor_by_constant(tc.b_shape, 0);
       EXPECT_THROW(matmul(a, b), Error);
     }
   }
@@ -2632,6 +2622,28 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_NN) {
 }
 
 #undef TEST_CONV2D
+
+TEST_F(TensorForwardTest, CheckInvalidConv2D) {
+  struct TestCase {
+    Shape a_shape, b_shape;
+  };
+  const vector<TestCase> test_cases {
+    {{1, 1, 1, 2}, {}},
+    {{}, {1, 1, 1, 1, 2}},
+    {{2, 3, 42}, {3, 3, 42}},
+    {{3, 2, 42}, {3, 3, 42}},
+    {{3, 3, 41}, {3, 3, 42}},
+    {Shape({}, 2), Shape({}, 3)},
+  };
+
+  for (Device *dev : devices) {
+    for (const auto tc : test_cases) {
+      const Tensor a = dev->new_tensor_by_constant(tc.a_shape, 0);
+      const Tensor b = dev->new_tensor_by_constant(tc.b_shape, 0);
+      EXPECT_THROW(conv2d(a, b), Error);
+    }
+  }
+}
 
 }  // namespace functions
 }  // namespace primitiv
