@@ -9,6 +9,7 @@
 #include <test_utils.h>
 
 using std::vector;
+using test_utils::make_iota_vector;
 using test_utils::vector_match_ulps;
 using test_utils::vector_match;
 using test_utils::vector_near;
@@ -1147,5 +1148,42 @@ TEST_F(TensorBackwardTest, CheckMatMulN1) {
     EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
   }
 }
+
+#define TEST_CONV2D { \
+  const vector<float> x_data = make_iota_vector(x_shape.size(), 1); \
+  const vector<float> w_data = make_iota_vector(w_shape.size(), 1); \
+  const vector<float> gy_data(y_shape.size(), 1); \
+  for (Device *dev : devices) try { \
+    const Tensor x = dev->new_tensor_by_vector(x_shape, x_data); \
+    const Tensor w = dev->new_tensor_by_vector(w_shape, w_data); \
+    const Tensor y = dev->conv2d_fw(x, w); \
+    const Tensor gy = dev->new_tensor_by_vector(y_shape, gy_data); \
+    Tensor gx = dev->new_tensor_by_constant(x_shape, 1); \
+    Tensor gw = dev->new_tensor_by_constant(w_shape, 1); \
+    dev->conv2d_bw(x, w, y, gy, gx, gw); \
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector())); \
+    EXPECT_TRUE(vector_match(gw_data, gw.to_vector())); \
+  } IGNORE_NOT_IMPLEMENTED \
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {4, 4};
+  const vector<float> gx_data {
+    5,  8,  8,  8, 4,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    3,  4,  4,  4, 2,
+  };
+  const vector<float> gw_data {
+    257, 241,
+    177, 161,
+  };
+  TEST_CONV2D;
+}
+
+#undef TEST_CONV2D
 
 }  // namespace primitiv

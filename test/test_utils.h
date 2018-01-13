@@ -166,6 +166,16 @@ inline std::string bin_to_str(const std::initializer_list<int> data) {
   return std::string(data.begin(), data.end());
 }
 
+// helper to generate vector with values {bias, bias + 1, bias + 2, ...}.
+inline std::vector<float> make_iota_vector(std::size_t size, float bias) {
+  std::vector<float> ret;
+  ret.reserve(size);
+  for (std::size_t i = 0; i < size; ++i) {
+    ret.emplace_back(bias + i);
+  }
+  return ret;
+}
+
 // helper to add all available devices.
 void add_available_devices(std::vector<primitiv::Device *> &devices);
 void add_available_naive_devices(std::vector<primitiv::Device *> &devices);

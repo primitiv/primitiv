@@ -14,22 +14,10 @@
 #include <test_utils.h>
 
 using std::vector;
+using test_utils::make_iota_vector;
 using test_utils::vector_match_ulps;
 using test_utils::vector_match;
 using test_utils::vector_near;
-
-namespace {
-
-vector<float> get_iota_vector(std::size_t size, float bias) {
-  vector<float> ret;
-  ret.reserve(size);
-  for (std::size_t i = 0; i < size; ++i) {
-    ret.emplace_back(bias + i);
-  }
-  return ret;
-}
-
-}  // namespace
 
 namespace primitiv {
 namespace functions {
@@ -2290,7 +2278,7 @@ TEST_F(TensorForwardTest, CheckConv2D_1x1x1_1x1x1x1) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x1x1_1x1x1x1) {
-  const vector<float> x_data = ::get_iota_vector(5, 1);
+  const vector<float> x_data = make_iota_vector(5, 1);
   const vector<float> w_data {42};
   const vector<float> y_data {42, 84, 126, 168, 210};
   const Shape x_shape {5};
@@ -2300,8 +2288,8 @@ TEST_F(TensorForwardTest, CheckConv2D_5x1x1_1x1x1x1) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x1x1_2x1x1x1) {
-  const vector<float> x_data = ::get_iota_vector(5, 1);
-  const vector<float> w_data = ::get_iota_vector(2, 1);
+  const vector<float> x_data = make_iota_vector(5, 1);
+  const vector<float> w_data = make_iota_vector(2, 1);
   const vector<float> y_data {4, 7, 10, 13};
   const Shape x_shape {5};
   const Shape w_shape {2};
@@ -2310,8 +2298,8 @@ TEST_F(TensorForwardTest, CheckConv2D_5x1x1_2x1x1x1) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x1x1_5x1x1x1) {
-  const vector<float> x_data = ::get_iota_vector(5, 1);
-  const vector<float> w_data = ::get_iota_vector(5, 1);
+  const vector<float> x_data = make_iota_vector(5, 1);
+  const vector<float> w_data = make_iota_vector(5, 1);
   const vector<float> y_data {35};
   const Shape x_shape {5};
   const Shape w_shape {5};
@@ -2320,7 +2308,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x1x1_5x1x1x1) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_1x5x1_1x1x1x1) {
-  const vector<float> x_data = ::get_iota_vector(5, 1);
+  const vector<float> x_data = make_iota_vector(5, 1);
   const vector<float> w_data {42};
   const vector<float> y_data {42, 84, 126, 168, 210};
   const Shape x_shape {1, 5};
@@ -2330,8 +2318,8 @@ TEST_F(TensorForwardTest, CheckConv2D_1x5x1_1x1x1x1) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_1x5x1_1x2x1x1) {
-  const vector<float> x_data = ::get_iota_vector(5, 1);
-  const vector<float> w_data = ::get_iota_vector(2, 1);
+  const vector<float> x_data = make_iota_vector(5, 1);
+  const vector<float> w_data = make_iota_vector(2, 1);
   const vector<float> y_data {4, 7, 10, 13};
   const Shape x_shape {1, 5};
   const Shape w_shape {1, 2};
@@ -2340,8 +2328,8 @@ TEST_F(TensorForwardTest, CheckConv2D_1x5x1_1x2x1x1) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_1x5x1_1x5x1x1) {
-  const vector<float> x_data = ::get_iota_vector(5, 1);
-  const vector<float> w_data = ::get_iota_vector(5, 1);
+  const vector<float> x_data = make_iota_vector(5, 1);
+  const vector<float> w_data = make_iota_vector(5, 1);
   const vector<float> y_data {35};
   const Shape x_shape {1, 5};
   const Shape w_shape {1, 5};
@@ -2350,7 +2338,7 @@ TEST_F(TensorForwardTest, CheckConv2D_1x5x1_1x5x1x1) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_1x1x1x1) {
-  const vector<float> x_data = ::get_iota_vector(5 * 5, 1);
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
   const vector<float> w_data {42};
   const vector<float> y_data {
      42,  84, 126,  168,  210,
@@ -2366,8 +2354,8 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_1x1x1x1) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x1x1x1) {
-  const vector<float> x_data = ::get_iota_vector(5 * 5, 1);
-  const vector<float> w_data = ::get_iota_vector(2, 1);
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(2, 1);
   const vector<float> y_data {
      4,  7, 10, 13,
     19, 22, 25, 28,
@@ -2382,8 +2370,8 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x1x1x1) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_5x1x1x1) {
-  const vector<float> x_data = ::get_iota_vector(5 * 5, 1);
-  const vector<float> w_data = ::get_iota_vector(5, 1);
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(5, 1);
   const vector<float> y_data {
      35,
     110,
@@ -2398,8 +2386,8 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_5x1x1x1) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_1x2x1x1) {
-  const vector<float> x_data = ::get_iota_vector(5 * 5, 1);
-  const vector<float> w_data = ::get_iota_vector(2, 1);
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(2, 1);
   const vector<float> y_data {
      8, 11, 14, 17, 20,
     23, 26, 29, 32, 35,
@@ -2413,8 +2401,8 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_1x2x1x1) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1) {
-  const vector<float> x_data = ::get_iota_vector(5 * 5, 1);
-  const vector<float> w_data = ::get_iota_vector(2 * 2, 1);
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(2 * 2, 1);
   const vector<float> y_data {
      29,  39,  49,  59,
      79,  89,  99, 109,
@@ -2428,8 +2416,8 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_5x2x1x1) {
-  const vector<float> x_data = ::get_iota_vector(5 * 5, 1);
-  const vector<float> w_data = ::get_iota_vector(5 * 2, 1);
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(5 * 2, 1);
   const vector<float> y_data {
      220,
      495,
@@ -2443,8 +2431,8 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_5x2x1x1) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_1x5x1x1) {
-  const vector<float> x_data = ::get_iota_vector(5 * 5, 1);
-  const vector<float> w_data = ::get_iota_vector(1 * 5, 1);
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(1 * 5, 1);
   const vector<float> y_data {
     115, 130, 145, 160, 175,
   };
@@ -2455,8 +2443,8 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_1x5x1x1) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x5x1x1) {
-  const vector<float> x_data = ::get_iota_vector(5 * 5, 1);
-  const vector<float> w_data = ::get_iota_vector(2 * 5, 1);
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(2 * 5, 1);
   const vector<float> y_data {
     430, 485, 540, 595,
   };
@@ -2467,8 +2455,8 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x5x1x1) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_5x5x1x1) {
-  const vector<float> x_data = ::get_iota_vector(5 * 5, 1);
-  const vector<float> w_data = ::get_iota_vector(5 * 5, 1);
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(5 * 5, 1);
   const vector<float> y_data {2925};
   const Shape x_shape {5, 5};
   const Shape w_shape {5, 5};
@@ -2477,8 +2465,8 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_5x5x1x1) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x3_2x2x3x1) {
-  const vector<float> x_data = ::get_iota_vector(5 * 5 * 3, 1);
-  const vector<float> w_data = ::get_iota_vector(2 * 2 * 3, 1);
+  const vector<float> x_data = make_iota_vector(5 * 5 * 3, 1);
+  const vector<float> w_data = make_iota_vector(2 * 2 * 3, 1);
   const vector<float> y_data {
     3029, 3107, 3185, 3263,
     3419, 3497, 3575, 3653,
@@ -2492,8 +2480,8 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x3_2x2x3x1) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x3) {
-  const vector<float> x_data = ::get_iota_vector(5 * 5, 1);
-  const vector<float> w_data = ::get_iota_vector(2 * 2 * 3, 1);
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(2 * 2 * 3, 1);
   const vector<float> y_data {
     // plane 1
      29,  39,  49,  59,
@@ -2518,8 +2506,8 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x3) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x3_2x2x3x3) {
-  const vector<float> x_data = ::get_iota_vector(5 * 5 * 3, 1);
-  const vector<float> w_data = ::get_iota_vector(2 * 2 * 3 * 3, 1);
+  const vector<float> x_data = make_iota_vector(5 * 5 * 3, 1);
+  const vector<float> w_data = make_iota_vector(2 * 2 * 3 * 3, 1);
   const vector<float> y_data {
     // plane 1
     3029, 3107, 3185, 3263,
@@ -2544,8 +2532,8 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x3_2x2x3x3) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_N1) {
-  const vector<float> x_data = ::get_iota_vector(5 * 5 * 3, 1);
-  const vector<float> w_data = ::get_iota_vector(2 * 2, 1);
+  const vector<float> x_data = make_iota_vector(5 * 5 * 3, 1);
+  const vector<float> w_data = make_iota_vector(2 * 2, 1);
   const vector<float> y_data {
     // minibatch 1
      29,  39,  49,  59,
@@ -2570,8 +2558,8 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_N1) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_1N) {
-  const vector<float> x_data = ::get_iota_vector(5 * 5, 1);
-  const vector<float> w_data = ::get_iota_vector(2 * 2 * 3, 1);
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(2 * 2 * 3, 1);
   const vector<float> y_data {
     // minibatch 1
      29,  39,  49,  59,
@@ -2596,8 +2584,8 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_1N) {
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_NN) {
-  const vector<float> x_data = ::get_iota_vector(5 * 5 * 3, 1);
-  const vector<float> w_data = ::get_iota_vector(2 * 2 * 3, 1);
+  const vector<float> x_data = make_iota_vector(5 * 5 * 3, 1);
+  const vector<float> w_data = make_iota_vector(2 * 2 * 3, 1);
   const vector<float> y_data {
     // minibatch 1
      29,  39,  49,  59,
