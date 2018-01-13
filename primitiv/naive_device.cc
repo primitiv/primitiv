@@ -704,12 +704,12 @@ void Naive::conv2d_fw_impl(const Tensor &x, const Tensor &w, Tensor &y) {
 
   const std::uint32_t x_height = x_shape[0];
   const std::uint32_t x_width = x_shape[1];
-  const std::uint32_t x_planes = x_shape[2];
+  const std::uint32_t x_channels = x_shape[2];
   const std::uint32_t w_height = w_shape[0];
   const std::uint32_t w_width = w_shape[1];
   const std::uint32_t y_height = y_shape[0];
   const std::uint32_t y_width = y_shape[1];
-  const std::uint32_t y_planes = y_shape[2];
+  const std::uint32_t y_channels = y_shape[2];
 
   const std::uint32_t batch_size = y_shape.batch();
 
@@ -722,13 +722,13 @@ void Naive::conv2d_fw_impl(const Tensor &x, const Tensor &w, Tensor &y) {
   float *py = MDATA(y);
 
   for (std::uint32_t bn = 0; bn < batch_size; ++bn) {
-    for (std::uint32_t y_c = 0; y_c < y_planes; ++y_c) {
+    for (std::uint32_t y_c = 0; y_c < y_channels; ++y_c) {
       for (std::uint32_t y_x = 0; y_x < y_width; ++y_x) {
         for (std::uint32_t y_y = 0; y_y < y_height; ++y_y) {
           const std::uint32_t y_addr = (y_c * y_width + y_x) * y_height + y_y;
           py[y_addr] = 0;
 
-          for (std::uint32_t x_c = 0; x_c < x_planes; ++x_c) {
+          for (std::uint32_t x_c = 0; x_c < x_channels; ++x_c) {
             for (
                 std::uint32_t w_x = 0, w_x_inv = w_width - 1;
                 w_x < w_width; ++w_x, --w_x_inv) {
@@ -738,7 +738,7 @@ void Naive::conv2d_fw_impl(const Tensor &x, const Tensor &w, Tensor &y) {
                 const std::uint32_t x_addr
                   = (x_c * x_width + y_x + w_x) * x_height + y_y + w_y;
                 const std::uint32_t w_addr
-                  = ((y_c * x_planes + x_c) * w_width + w_x_inv)
+                  = ((y_c * x_channels + x_c) * w_width + w_x_inv)
                   * w_height + w_y_inv;
                 py[y_addr] += px[x_addr] * pw[w_addr];
               }
@@ -763,12 +763,12 @@ void Naive::conv2d_bw_impl(
 
   const std::uint32_t x_height = x_shape[0];
   const std::uint32_t x_width = x_shape[1];
-  const std::uint32_t x_planes = x_shape[2];
+  const std::uint32_t x_channels = x_shape[2];
   const std::uint32_t w_height = w_shape[0];
   const std::uint32_t w_width = w_shape[1];
   const std::uint32_t y_height = y_shape[0];
   const std::uint32_t y_width = y_shape[1];
-  const std::uint32_t y_planes = y_shape[2];
+  const std::uint32_t y_channels = y_shape[2];
 
   const std::uint32_t batch_size = y_shape.batch();
 
@@ -783,12 +783,12 @@ void Naive::conv2d_bw_impl(
   float *pgw = MDATA(gw);
 
   for (std::uint32_t bn = 0; bn < batch_size; ++bn) {
-    for (std::uint32_t y_c = 0; y_c < y_planes; ++y_c) {
+    for (std::uint32_t y_c = 0; y_c < y_channels; ++y_c) {
       for (std::uint32_t y_x = 0; y_x < y_width; ++y_x) {
         for (std::uint32_t y_y = 0; y_y < y_height; ++y_y) {
           const std::uint32_t y_addr = (y_c * y_width + y_x) * y_height + y_y;
 
-          for (std::uint32_t x_c = 0; x_c < x_planes; ++x_c) {
+          for (std::uint32_t x_c = 0; x_c < x_channels; ++x_c) {
             for (
                 std::uint32_t w_x = 0, w_x_inv = w_width - 1;
                 w_x < w_width; ++w_x, --w_x_inv) {
@@ -798,7 +798,7 @@ void Naive::conv2d_bw_impl(
                 const std::uint32_t x_addr
                   = (x_c * x_width + y_x + w_x) * x_height + y_y + w_y;
                 const std::uint32_t w_addr
-                  = ((y_c * x_planes + x_c) * w_width + w_x_inv)
+                  = ((y_c * x_channels + x_c) * w_width + w_x_inv)
                   * w_height + w_y_inv;
                 pgx[x_addr] += pgy[y_addr] * pw[w_addr];
                 pgw[w_addr] += pgy[y_addr] * px[x_addr];

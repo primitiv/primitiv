@@ -2483,17 +2483,17 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x3) {
   const vector<float> x_data = make_iota_vector(5 * 5, 1);
   const vector<float> w_data = make_iota_vector(2 * 2 * 3, 1);
   const vector<float> y_data {
-    // plane 1
+    // channel 1
      29,  39,  49,  59,
      79,  89,  99, 109,
     129, 139, 149, 159,
     179, 189, 199, 209,
-    // plane 2
+    // channel 2
      93, 119, 145, 171,
     223, 249, 275, 301,
     353, 379, 405, 431,
     483, 509, 535, 561,
-    // plane 3
+    // channel 3
     157, 199, 241, 283,
     367, 409, 451, 493,
     577, 619, 661, 703,
@@ -2509,17 +2509,17 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x3_2x2x3x3) {
   const vector<float> x_data = make_iota_vector(5 * 5 * 3, 1);
   const vector<float> w_data = make_iota_vector(2 * 2 * 3 * 3, 1);
   const vector<float> y_data {
-    // plane 1
+    // channel 1
     3029, 3107, 3185, 3263,
     3419, 3497, 3575, 3653,
     3809, 3887, 3965, 4043,
     4199, 4277, 4355, 4433,
-    // plane 2
+    // channel 2
      7205,  7427,  7649,  7871,
      8315,  8537,  8759,  8981,
      9425,  9647,  9869, 10091,
     10535, 10757, 10979, 11201,
-    // plane 3
+    // channel 3
     11381, 11747, 12113, 12479,
     13211, 13577, 13943, 14309,
     15041, 15407, 15773, 16139,

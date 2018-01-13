@@ -1400,19 +1400,19 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x3_2x2x3x1) {
   const Shape w_shape {2, 2, 3};
   const Shape y_shape {4, 4};
   const vector<float> gx_data {
-    // plane 1
+    // channel 1
     5,  8,  8,  8, 4,
     7, 11, 11, 11, 5,
     7, 11, 11, 11, 5,
     7, 11, 11, 11, 5,
     3,  4,  4,  4, 2,
-    // plane 2
+    // channel 2
      9, 16, 16, 16,  8,
     15, 27, 27, 27, 13,
     15, 27, 27, 27, 13,
     15, 27, 27, 27, 13,
      7, 12, 12, 12,  6,
-    // plane 3
+    // channel 3
     13, 24, 24, 24, 12,
     23, 43, 43, 43, 21,
     23, 43, 43, 43, 21,
@@ -1420,13 +1420,13 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x3_2x2x3x1) {
     11, 20, 20, 20, 10,
   };
   const vector<float> gw_data {
-    // plane 1-1
+    // channel 1-1
     257, 241,
     177, 161,
-    // plane 2-1
+    // channel 2-1
     657, 641,
     577, 561,
-    // plane 3-1
+    // channel 3-1
     1057, 1041,
      977,  961,
   };
@@ -1445,13 +1445,13 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x3) {
     19, 34, 34, 34, 16,
   };
   const vector<float> gw_data {
-    // plane 1-1
+    // channel 1-1
     257, 241,
     177, 161,
-    // plane 2-1
+    // channel 2-1
     257, 241,
     177, 161,
-    // plane 3-1
+    // channel 3-1
     257, 241,
     177, 161,
   };
@@ -1463,19 +1463,19 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x3_2x2x3x3) {
   const Shape w_shape {2, 2, 3, 3};
   const Shape y_shape {4, 4, 3};
   const vector<float> gx_data {
-    // plane 1
+    // channel 1
     49,  94,  94,  94, 46,
     91, 175, 175, 175, 85,
     91, 175, 175, 175, 85,
     91, 175, 175, 175, 85,
     43,  82,  82,  82, 40,
-    // plane 2
+    // channel 2
      61, 118, 118, 118,  58,
     115, 223, 223, 223, 109,
     115, 223, 223, 223, 109,
     115, 223, 223, 223, 109,
      55, 106, 106, 106,  52,
-    // plane 3
+    // channel 3
      73, 142, 142, 142,  70,
     139, 271, 271, 271, 133,
     139, 271, 271, 271, 133,
@@ -1483,31 +1483,31 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x3_2x2x3x3) {
      67, 130, 130, 130,  64,
   };
   const vector<float> gw_data {
-    // plane 1-1
+    // channel 1-1
     257, 241,
     177, 161,
-    // plane 2-1
+    // channel 2-1
     657, 641,
     577, 561,
-    // plane 3-1
+    // channel 3-1
     1057, 1041,
      977,  961,
-    // plane 1-2
+    // channel 1-2
     257, 241,
     177, 161,
-    // plane 2-2
+    // channel 2-2
     657, 641,
     577, 561,
-    // plane 3-2
+    // channel 3-2
     1057, 1041,
      977,  961,
-    // plane 1-3
+    // channel 1-3
     257, 241,
     177, 161,
-    // plane 2-3
+    // channel 2-3
     657, 641,
     577, 561,
-    // plane 3-3
+    // channel 3-3
     1057, 1041,
      977,  961,
   };
