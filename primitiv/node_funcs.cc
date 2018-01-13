@@ -278,7 +278,7 @@ Node stop_gradient(const Node &x) {
 
 template<>
 Node conv2d(const Node &x, const Node &w) {
-  THROW_ERROR("Not implemented.");
+  return REGX(x, Convolution2D(), x, w);
 }
 
 namespace batch {
