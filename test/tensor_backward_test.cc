@@ -1166,6 +1166,136 @@ TEST_F(TensorBackwardTest, CheckMatMulN1) {
   } IGNORE_NOT_IMPLEMENTED \
 }
 
+TEST_F(TensorBackwardTest, CheckConv2D_1x1x1_1x1x1x1) {
+  const Shape x_shape {};
+  const Shape w_shape {};
+  const Shape y_shape {};
+  const vector<float> gx_data {2};
+  const vector<float> gw_data {2};
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x1x1_1x1x1x1) {
+  const Shape x_shape {5};
+  const Shape w_shape {};
+  const Shape y_shape {5};
+  const vector<float> gx_data {2, 2, 2, 2, 2};
+  const vector<float> gw_data {16};
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x1x1_2x1x1x1) {
+  const Shape x_shape {5};
+  const Shape w_shape {2};
+  const Shape y_shape {4};
+  const vector<float> gx_data {3, 4, 4, 4, 2};
+  const vector<float> gw_data {15, 11};
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x1x1_5x1x1x1) {
+  const Shape x_shape {5};
+  const Shape w_shape {5};
+  const Shape y_shape {};
+  const vector<float> gx_data {6, 5, 4, 3, 2};
+  const vector<float> gw_data {6, 5, 4, 3, 2};
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_1x5x1_1x1x1x1) {
+  const Shape x_shape {1, 5};
+  const Shape w_shape {};
+  const Shape y_shape {1, 5};
+  const vector<float> gx_data {2, 2, 2, 2, 2};
+  const vector<float> gw_data {16};
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_1x5x1_1x2x1x1) {
+  const Shape x_shape {1, 5};
+  const Shape w_shape {1, 2};
+  const Shape y_shape {1, 4};
+  const vector<float> gx_data {3, 4, 4, 4, 2};
+  const vector<float> gw_data {15, 11};
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_1x5x1_1x5x1x1) {
+  const Shape x_shape {1, 5};
+  const Shape w_shape {1, 5};
+  const Shape y_shape {};
+  const vector<float> gx_data {6, 5, 4, 3, 2};
+  const vector<float> gw_data {6, 5, 4, 3, 2};
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_1x1x1x1) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {};
+  const Shape y_shape {5, 5};
+  const vector<float> gx_data {
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+  };
+  const vector<float> gw_data {326};
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x1x1x1) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2};
+  const Shape y_shape {4, 5};
+  const vector<float> gx_data {
+    3, 4, 4, 4, 2,
+    3, 4, 4, 4, 2,
+    3, 4, 4, 4, 2,
+    3, 4, 4, 4, 2,
+    3, 4, 4, 4, 2,
+  };
+  const vector<float> gw_data {
+    271, 251,
+  };
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_5x1x1x1) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {5, 1};
+  const Shape y_shape {1, 5};
+  const vector<float> gx_data {
+    6, 5, 4, 3, 2,
+    6, 5, 4, 3, 2,
+    6, 5, 4, 3, 2,
+    6, 5, 4, 3, 2,
+    6, 5, 4, 3, 2,
+  };
+  const vector<float> gw_data {
+    76, 71, 66, 61, 56,
+  };
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_1x2x1x1) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {1, 2};
+  const Shape y_shape {5, 4};
+  const vector<float> gx_data {
+    3, 3, 3, 3, 3,
+    4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4,
+    2, 2, 2, 2, 2,
+  };
+  const vector<float> gw_data {
+    311,
+    211,
+  };
+  TEST_CONV2D;
+}
+
 TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1) {
   const Shape x_shape {5, 5};
   const Shape w_shape {2, 2};
@@ -1180,6 +1310,300 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1) {
   const vector<float> gw_data {
     257, 241,
     177, 161,
+  };
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_5x2x1x1) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {5, 2};
+  const Shape y_shape {1, 4};
+  const vector<float> gx_data {
+    11, 10,  9,  8, 7,
+    16, 14, 12, 10, 8,
+    16, 14, 12, 10, 8,
+    16, 14, 12, 10, 8,
+     6,  5,  4,  3, 2,
+  };
+  const vector<float> gw_data {
+    71, 67, 63, 59, 55,
+    51, 47, 43, 39, 35,
+  };
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_1x5x1x1) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {1, 5};
+  const Shape y_shape {5};
+  const vector<float> gx_data {
+    6, 6, 6, 6, 6,
+    5, 5, 5, 5, 5,
+    4, 4, 4, 4, 4,
+    3, 3, 3, 3, 3,
+    2, 2, 2, 2, 2,
+  };
+  const vector<float> gw_data {
+    116,
+     91,
+     66,
+     41,
+     16,
+  };
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x5x1x1) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 5};
+  const Shape y_shape {4};
+  const vector<float> gx_data {
+    11, 20, 20, 20, 10,
+     9, 16, 16, 16,  8,
+     7, 12, 12, 12,  6,
+     5,  8,  8,  8,  4,
+     3,  4,  4,  4,  2,
+  };
+  const vector<float> gw_data {
+    95, 91,
+    75, 71,
+    55, 51,
+    35, 31,
+    15, 11,
+  };
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_5x5x1x1) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {5, 5};
+  const Shape y_shape {};
+  const vector<float> gx_data {
+    26, 25, 24, 23, 22,
+    21, 20, 19, 18, 17,
+    16, 15, 14, 13, 12,
+    11, 10,  9,  8,  7,
+     6,  5,  4,  3,  2,
+  };
+  const vector<float> gw_data {
+    26, 25, 24, 23, 22,
+    21, 20, 19, 18, 17,
+    16, 15, 14, 13, 12,
+    11, 10,  9,  8,  7,
+     6,  5,  4,  3,  2,
+  };
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x3_2x2x3x1) {
+  const Shape x_shape {5, 5, 3};
+  const Shape w_shape {2, 2, 3};
+  const Shape y_shape {4, 4};
+  const vector<float> gx_data {
+    // plane 1
+    5,  8,  8,  8, 4,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    3,  4,  4,  4, 2,
+    // plane 2
+     9, 16, 16, 16,  8,
+    15, 27, 27, 27, 13,
+    15, 27, 27, 27, 13,
+    15, 27, 27, 27, 13,
+     7, 12, 12, 12,  6,
+    // plane 3
+    13, 24, 24, 24, 12,
+    23, 43, 43, 43, 21,
+    23, 43, 43, 43, 21,
+    23, 43, 43, 43, 21,
+    11, 20, 20, 20, 10,
+  };
+  const vector<float> gw_data {
+    // plane 1-1
+    257, 241,
+    177, 161,
+    // plane 2-1
+    657, 641,
+    577, 561,
+    // plane 3-1
+    1057, 1041,
+     977,  961,
+  };
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x3) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2, 1, 3};
+  const Shape y_shape {4, 4, 3};
+  const vector<float> gx_data {
+    25, 46, 46, 46, 22,
+    43, 79, 79, 79, 37,
+    43, 79, 79, 79, 37,
+    43, 79, 79, 79, 37,
+    19, 34, 34, 34, 16,
+  };
+  const vector<float> gw_data {
+    // plane 1-1
+    257, 241,
+    177, 161,
+    // plane 2-1
+    257, 241,
+    177, 161,
+    // plane 3-1
+    257, 241,
+    177, 161,
+  };
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x3_2x2x3x3) {
+  const Shape x_shape {5, 5, 3};
+  const Shape w_shape {2, 2, 3, 3};
+  const Shape y_shape {4, 4, 3};
+  const vector<float> gx_data {
+    // plane 1
+    49,  94,  94,  94, 46,
+    91, 175, 175, 175, 85,
+    91, 175, 175, 175, 85,
+    91, 175, 175, 175, 85,
+    43,  82,  82,  82, 40,
+    // plane 2
+     61, 118, 118, 118,  58,
+    115, 223, 223, 223, 109,
+    115, 223, 223, 223, 109,
+    115, 223, 223, 223, 109,
+     55, 106, 106, 106,  52,
+    // plane 3
+     73, 142, 142, 142,  70,
+    139, 271, 271, 271, 133,
+    139, 271, 271, 271, 133,
+    139, 271, 271, 271, 133,
+     67, 130, 130, 130,  64,
+  };
+  const vector<float> gw_data {
+    // plane 1-1
+    257, 241,
+    177, 161,
+    // plane 2-1
+    657, 641,
+    577, 561,
+    // plane 3-1
+    1057, 1041,
+     977,  961,
+    // plane 1-2
+    257, 241,
+    177, 161,
+    // plane 2-2
+    657, 641,
+    577, 561,
+    // plane 3-2
+    1057, 1041,
+     977,  961,
+    // plane 1-3
+    257, 241,
+    177, 161,
+    // plane 2-3
+    657, 641,
+    577, 561,
+    // plane 3-3
+    1057, 1041,
+     977,  961,
+  };
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_N1) {
+  const Shape x_shape({5, 5}, 3);
+  const Shape w_shape {2, 2};
+  const Shape y_shape({4, 4}, 3);
+  const vector<float> gx_data {
+    // minibatch 1
+    5,  8,  8,  8, 4,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    3,  4,  4,  4, 2,
+    // minibatch 2
+    5,  8,  8,  8, 4,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    3,  4,  4,  4, 2,
+    // minibatch 3
+    5,  8,  8,  8, 4,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    3,  4,  4,  4, 2,
+  };
+  const vector<float> gw_data {
+    1969, 1921,
+    1729, 1681,
+  };
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_1N) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape({2, 2}, 3);
+  const Shape y_shape({4, 4}, 3);
+  const vector<float> gx_data {
+    25, 46, 46, 46, 22,
+    43, 79, 79, 79, 37,
+    43, 79, 79, 79, 37,
+    43, 79, 79, 79, 37,
+    19, 34, 34, 34, 16,
+  };
+  const vector<float> gw_data {
+    // minibatch 1
+    257, 241,
+    177, 161,
+    // minibatch 2
+    257, 241,
+    177, 161,
+    // minibatch 3
+    257, 241,
+    177, 161,
+  };
+  TEST_CONV2D;
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_NN) {
+  const Shape x_shape({5, 5}, 3);
+  const Shape w_shape({2, 2}, 3);
+  const Shape y_shape({4, 4}, 3);
+  const vector<float> gx_data {
+    // minibatch 1
+    5,  8,  8,  8, 4,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    3,  4,  4,  4, 2,
+    // minibatch 2
+     9, 16, 16, 16,  8,
+    15, 27, 27, 27, 13,
+    15, 27, 27, 27, 13,
+    15, 27, 27, 27, 13,
+     7, 12, 12, 12,  6,
+    // minibatch 3
+    13, 24, 24, 24, 12,
+    23, 43, 43, 43, 21,
+    23, 43, 43, 43, 21,
+    23, 43, 43, 43, 21,
+    11, 20, 20, 20, 10,
+  };
+  const vector<float> gw_data {
+    // minibatch 1
+    257, 241,
+    177, 161,
+    // minibatch 2
+    657, 641,
+    577, 561,
+    // minibatch 3
+    1057, 1041,
+     977,  961,
   };
   TEST_CONV2D;
 }
