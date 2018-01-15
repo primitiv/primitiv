@@ -136,23 +136,25 @@ Shape conv2d(
     std::uint32_t padding0, std::uint32_t padding1,
     std::uint32_t stride0, std::uint32_t stride1,
     std::uint32_t dilation0, std::uint32_t dilation1) {
-  const std::uint32_t width0 = x[0] + 2 * padding0;
-  const std::uint32_t width1 = x[1] + 2 * padding1;
-
-  if (stride0 != 1) THROW_ERROR("stride0 is not supported except 1.");
-  if (stride1 != 1) THROW_ERROR("stride1 is not supported except 1.");
-  if (dilation0 != 1) THROW_ERROR("dilation0 is not supported except 1.");
-  if (dilation1 != 1) THROW_ERROR("dilation1 is not supported except 1.");
+  const std::uint32_t x0 = x[0] + 2 * padding0;
+  const std::uint32_t x1 = x[1] + 2 * padding1;
+  const std::uint32_t w0 = (w[0] - 1) * dilation0 + 1;
+  const std::uint32_t w1 = (w[1] - 1) * dilation1 + 1;
 
   if (x.depth() > 3 || w.depth() > 4 ||
-      width0 < w[0] || width1 < w[1] || x[2] != w[2] ||
-      !x.has_compatible_batch(w)) {
+      x0 < w0 || x1 < w1 || x[2] != w[2] ||
+      !x.has_compatible_batch(w) ||
+      stride0 == 0 || stride1 == 0 ||
+      dilation0 == 0 || dilation1 == 0) {
     THROW_ERROR(
-        "Invalid shapes to calculate the convolution: "
-        << x.to_string() << ", " << w.to_string());
+        "Invalid arguments to calculate the convolution: "
+        << x.to_string() << ", " << w.to_string() << ", "
+        << padding0 << ", " << padding1 << ", "
+        << stride0 << ", " << stride1 << ", "
+        << dilation0 << ", " << dilation1 << ", ");
   }
   return Shape(
-      {width0 - w[0] + 1, width1 - w[1] + 1, w[3]},
+      {(x0 - w0) / stride0 + 1, (x1 - w1) / stride1 + 1, w[3]},
       std::max(x.batch(), w.batch()));
 }
 
