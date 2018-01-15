@@ -102,9 +102,13 @@ Shape matmul(const Shape &l, const Shape &r);
  * Calculates the resulting shape of convolution.
  * @param x Shape of the input tensor.
  * @param w Shape of the filter tensor.
+ * @param padding0 Zero-padding width of the first dimension.
+ * @param padding1 Zero-padding width of the second dimension.
  * @return A shape.
  */
-Shape conv2d(const Shape &x, const Shape &w);
+Shape conv2d(
+    const Shape &x, const Shape &w,
+    std::uint32_t padding0, std::uint32_t padding1);
 
 }  // namespace shape_ops
 }  // namespace primitiv

@@ -331,7 +331,7 @@ Shape BatchSum::forward_shape(const vector<const Shape *> &args) const {
 
 Shape Convolution2D::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 2);
-  return shape_ops::conv2d(*args[0], *args[1]);
+  return shape_ops::conv2d(*args[0], *args[1], 0, 0);
 }
 
 Shape SoftmaxCrossEntropy::forward_shape(

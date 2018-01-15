@@ -378,7 +378,15 @@ DEV_FW_AB(multiply, shape_ops::elementwise);
 DEV_FW_AB(divide, shape_ops::elementwise);
 DEV_FW_AB(pow, shape_ops::elementwise);
 DEV_FW_AB(matmul, shape_ops::matmul);
-DEV_FW_AB(conv2d, shape_ops::conv2d);
+
+Tensor Device::conv2d_fw(const Tensor &a, const Tensor &b) {
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
+  Tensor y = new_raw_tensor(
+      shape_ops::conv2d(a.shape(), b.shape(), 0, 0));
+  conv2d_fw_impl(a, b, y);
+  return y;
+}
 
 DEV_BW_AB(add, shape_ops::elementwise);
 DEV_BW_AB(subtract, shape_ops::elementwise);
@@ -386,7 +394,31 @@ DEV_BW_AB(multiply, shape_ops::elementwise);
 DEV_BW_AB(divide, shape_ops::elementwise);
 DEV_BW_AB(pow, shape_ops::elementwise);
 DEV_BW_AB(matmul, shape_ops::matmul);
-DEV_BW_AB(conv2d, shape_ops::conv2d);
+
+void Device::conv2d_bw(
+    const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+    Tensor &ga, Tensor &gb) {
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
+  CHECK_DEVICE(y);
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(ga);
+  CHECK_DEVICE(gb);
+  if (a.shape() != ga.shape() ||
+      b.shape() != gb.shape() ||
+      y.shape() != gy.shape() ||
+      y.shape() != shape_ops::conv2d(a.shape(), b.shape(), 0, 0)) {
+    THROW_ERROR(
+        "Shape mismatched at conv2d_bw"
+        << ". a.shape: " << a.shape().to_string()
+        << ", b.shape: " << b.shape().to_string()
+        << ", y.shape: " << y.shape().to_string()
+        << ", gy.shape: " << gy.shape().to_string()
+        << ", ga.shape: " << ga.shape().to_string()
+        << ", gb.shape: " << gb.shape().to_string());
+  }
+  conv2d_bw_impl(a, b, y, gy, ga, gb);
+}
 
 #undef DEV_FW_X
 #undef DEV_BW_X
