@@ -357,7 +357,33 @@ DECL_OPERATOR(LReLU);
 
 DECL_OPERATOR(BatchSum);
 
-DECL_OPERATOR(Convolution2D);
+class Convolution2D : public Operator {
+  NO_CTOR_CLASS_DECL(Convolution2D);
+
+public:
+  Convolution2D(
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      std::uint32_t dilation0, std::uint32_t dilation1)
+  : padding0_(padding0), padding1_(padding1)
+  , stride0_(stride0), stride1_(stride1)
+  , dilation0_(dilation0), dilation1_(dilation1) {}
+
+  std::string name() const override {
+    return "Convolution2D("
+      + string_utils::to_string(padding0_) + ","
+      + string_utils::to_string(padding1_) + ","
+      + string_utils::to_string(stride0_) + ","
+      + string_utils::to_string(stride1_) + ","
+      + string_utils::to_string(dilation0_) + ","
+      + string_utils::to_string(dilation1_) + ")";
+  }
+
+private:
+  std::uint32_t padding0_, padding1_;
+  std::uint32_t stride0_, stride1_;
+  std::uint32_t dilation0_, dilation1_;
+};
 
 #undef DECL_OPERATOR
 #undef DECL_OPERATOR_K

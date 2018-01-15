@@ -1438,7 +1438,18 @@ TEST_F(OperatorImplTest, CheckConvolution2D) {
        977,  961,
     },
   };
-  TEST_2ARGS(Convolution2D);
+
+  Convolution2D node(0, 0, 1, 1, 1, 1);
+  const Shape cur_shape = node.forward_shape(arg_shapes);
+  const Tensor cur_value = node.forward(arg_values);
+  const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev);
+  node.backward(cur_value, cur_grad, arg_values, arg_grads);
+  EXPECT_EQ("Convolution2D(0,0,1,1,1,1)", node.name());
+  EXPECT_EQ(ret_shape, cur_shape);
+  EXPECT_EQ(nullptr, node.get_device());
+  EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector()));
+  EXPECT_TRUE(vector_match(bw_grads[0], arg_grads[0]->to_vector()));
+  EXPECT_TRUE(vector_match(bw_grads[1], arg_grads[1]->to_vector()));
 }
 
 TEST_F(OperatorImplTest, CheckSoftmaxCrossEntropy) {

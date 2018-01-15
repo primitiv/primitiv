@@ -333,63 +333,81 @@ TEST_F(ShapeOpsTest, CheckInvalidMatMul) {
 TEST_F(ShapeOpsTest, CheckConv2D) {
   struct TestCase {
     vector<std::uint32_t> x, w;
-    std::uint32_t pad0, pad1;
+    std::uint32_t pad0, pad1, str0, str1, dil0, dil1;
     vector<std::uint32_t> y;
   };
   const vector<TestCase> test_cases {
-    {{}, {}, 0, 0, {}},
-    {{7, 8}, {}, 0, 0, {7, 8}},
-    {{7, 8}, {3, 2}, 0, 0, {5, 7}},
-    {{7, 8}, {7, 8}, 0, 0, {}},
-    {{7, 8}, {1, 1, 1, 20}, 0, 0, {7, 8, 20}},
-    {{7, 8}, {3, 2, 1, 20}, 0, 0, {5, 7, 20}},
-    {{7, 8}, {7, 8, 1, 20}, 0, 0, {1, 1, 20}},
-    {{7, 8, 10}, {1, 1, 10}, 0, 0, {7, 8}},
-    {{7, 8, 10}, {3, 2, 10}, 0, 0, {5, 7}},
-    {{7, 8, 10}, {7, 8, 10}, 0, 0, {}},
-    {{7, 8, 10}, {1, 1, 10, 20}, 0, 0, {7, 8, 20}},
-    {{7, 8, 10}, {3, 2, 10, 20}, 0, 0, {5, 7, 20}},
-    {{7, 8, 10}, {7, 8, 10, 20}, 0, 0, {1, 1, 20}},
+    {{}, {}, 0, 0, 1, 1, 1, 1, {}},
+    {{7, 8}, {}, 0, 0, 1, 1, 1, 1, {7, 8}},
+    {{7, 8}, {3, 2}, 0, 0, 1, 1, 1, 1, {5, 7}},
+    {{7, 8}, {7, 8}, 0, 0, 1, 1, 1, 1, {}},
+    {{7, 8}, {1, 1, 1, 20}, 0, 0, 1, 1, 1, 1, {7, 8, 20}},
+    {{7, 8}, {3, 2, 1, 20}, 0, 0, 1, 1, 1, 1, {5, 7, 20}},
+    {{7, 8}, {7, 8, 1, 20}, 0, 0, 1, 1, 1, 1, {1, 1, 20}},
+    {{7, 8, 10}, {1, 1, 10}, 0, 0, 1, 1, 1, 1, {7, 8}},
+    {{7, 8, 10}, {3, 2, 10}, 0, 0, 1, 1, 1, 1, {5, 7}},
+    {{7, 8, 10}, {7, 8, 10}, 0, 0, 1, 1, 1, 1, {}},
+    {{7, 8, 10}, {1, 1, 10, 20}, 0, 0, 1, 1, 1, 1, {7, 8, 20}},
+    {{7, 8, 10}, {3, 2, 10, 20}, 0, 0, 1, 1, 1, 1, {5, 7, 20}},
+    {{7, 8, 10}, {7, 8, 10, 20}, 0, 0, 1, 1, 1, 1, {1, 1, 20}},
     // with padding
-    {{7, 8}, {1, 1}, 1, 0, {9, 8}},
-    {{7, 8}, {1, 1}, 0, 1, {7, 10}},
-    {{7, 8}, {1, 1}, 1, 1, {9, 10}},
-    {{7, 8}, {3, 2}, 1, 0, {7, 7}},
-    {{7, 8}, {3, 2}, 0, 1, {5, 9}},
-    {{7, 8}, {3, 2}, 1, 1, {7, 9}},
-    {{7, 8}, {9, 8}, 1, 0, {}},
-    {{7, 8}, {7, 10}, 0, 1, {}},
-    {{7, 8}, {9, 10}, 1, 1, {}},
+    {{7, 8}, {1, 1}, 1, 0, 1, 1, 1, 1, {9, 8}},
+    {{7, 8}, {1, 1}, 0, 1, 1, 1, 1, 1, {7, 10}},
+    {{7, 8}, {1, 1}, 1, 1, 1, 1, 1, 1, {9, 10}},
+    {{7, 8}, {3, 2}, 1, 0, 1, 1, 1, 1, {7, 7}},
+    {{7, 8}, {3, 2}, 0, 1, 1, 1, 1, 1, {5, 9}},
+    {{7, 8}, {3, 2}, 1, 1, 1, 1, 1, 1, {7, 9}},
+    {{7, 8}, {9, 8}, 1, 0, 1, 1, 1, 1, {}},
+    {{7, 8}, {7, 10}, 0, 1, 1, 1, 1, 1, {}},
+    {{7, 8}, {9, 10}, 1, 1, 1, 1, 1, 1, {}},
   };
 
   for (const auto &tc : test_cases) {
-    EXPECT_EQ(Shape(tc.y),
-              conv2d(tc.x, tc.w, tc.pad0, tc.pad1));
-    EXPECT_EQ(Shape(tc.y, 3),
-              conv2d(Shape(tc.x, 3), tc.w, tc.pad0, tc.pad1));
-    EXPECT_EQ(Shape(tc.y, 3),
-              conv2d(tc.x, Shape(tc.w, 3), tc.pad0, tc.pad1));
-    EXPECT_EQ(Shape(tc.y, 3),
-              conv2d(Shape(tc.x, 3), Shape(tc.w, 3), tc.pad0, tc.pad1));
+    EXPECT_EQ(
+        Shape(tc.y),
+        conv2d(
+          tc.x, tc.w,
+          tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1));
+    EXPECT_EQ(
+        Shape(tc.y, 3),
+        conv2d(
+          Shape(tc.x, 3), tc.w,
+          tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1));
+    EXPECT_EQ(
+        Shape(tc.y, 3),
+        conv2d(
+          tc.x, Shape(tc.w, 3),
+          tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1));
+    EXPECT_EQ(
+        Shape(tc.y, 3),
+        conv2d(
+          Shape(tc.x, 3), Shape(tc.w, 3),
+          tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1));
   }
 }
 
 TEST_F(ShapeOpsTest, CheckInvalidConv2D) {
-  EXPECT_THROW(conv2d({1, 1, 1, 2}, {}, 0, 0), Error);
-  EXPECT_THROW(conv2d({}, {1, 1, 1, 1, 2}, 0, 0), Error);
-  EXPECT_THROW(conv2d(Shape({}, 2), Shape({}, 3), 0, 0), Error);
+  EXPECT_THROW(conv2d({1, 1, 1, 2}, {}, 0, 0, 1, 1, 1, 1), Error);
+  EXPECT_THROW(conv2d({}, {1, 1, 1, 1, 2}, 0, 0, 1, 1, 1, 1), Error);
+  EXPECT_THROW(conv2d(Shape({}, 2), Shape({}, 3), 0, 0, 1, 1, 1, 1), Error);
 
   // size mismatching
-  EXPECT_NO_THROW(conv2d({3, 3, 42}, {3, 3, 42}, 0, 0));
-  EXPECT_THROW(conv2d({2, 3, 42}, {3, 3, 42}, 0, 0), Error);
-  EXPECT_THROW(conv2d({3, 2, 42}, {3, 3, 42}, 0, 0), Error);
-  EXPECT_THROW(conv2d({3, 3, 41}, {3, 3, 42}, 0, 0), Error);
+  EXPECT_NO_THROW(conv2d({3, 3, 42}, {3, 3, 42}, 0, 0, 1, 1, 1, 1));
+  EXPECT_THROW(conv2d({2, 3, 42}, {3, 3, 42}, 0, 0, 1, 1, 1, 1), Error);
+  EXPECT_THROW(conv2d({3, 2, 42}, {3, 3, 42}, 0, 0, 1, 1, 1, 1), Error);
+  EXPECT_THROW(conv2d({3, 3, 41}, {3, 3, 42}, 0, 0, 1, 1, 1, 1), Error);
 
   // size mismatching with padding
-  EXPECT_NO_THROW(conv2d({3, 3}, {5, 5}, 1, 1));
-  EXPECT_THROW(conv2d({3, 3}, {6, 5}, 1, 1), Error);
-  EXPECT_THROW(conv2d({3, 3}, {5, 6}, 1, 1), Error);
-  EXPECT_THROW(conv2d({3, 3}, {6, 6}, 1, 1), Error);
+  EXPECT_NO_THROW(conv2d({3, 3}, {5, 5}, 1, 1, 1, 1, 1, 1));
+  EXPECT_THROW(conv2d({3, 3}, {6, 5}, 1, 1, 1, 1, 1, 1), Error);
+  EXPECT_THROW(conv2d({3, 3}, {5, 6}, 1, 1, 1, 1, 1, 1), Error);
+  EXPECT_THROW(conv2d({3, 3}, {6, 6}, 1, 1, 1, 1, 1, 1), Error);
+
+  // zero-stride/dilation
+  EXPECT_THROW(conv2d({}, {}, 0, 0, 0, 1, 1, 1), Error);
+  EXPECT_THROW(conv2d({}, {}, 0, 0, 1, 0, 1, 1), Error);
+  EXPECT_THROW(conv2d({}, {}, 0, 0, 1, 1, 0, 1), Error);
+  EXPECT_THROW(conv2d({}, {}, 0, 0, 1, 1, 1, 0), Error);
 }
 
 }  // namespace shape_ops

@@ -133,9 +133,16 @@ Shape matmul(const Shape &l, const Shape &r) {
 
 Shape conv2d(
     const Shape &x, const Shape &w,
-    std::uint32_t padding0, std::uint32_t padding1) {
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    std::uint32_t dilation0, std::uint32_t dilation1) {
   const std::uint32_t width0 = x[0] + 2 * padding0;
   const std::uint32_t width1 = x[1] + 2 * padding1;
+
+  if (stride0 != 1) THROW_ERROR("stride0 is not supported except 1.");
+  if (stride1 != 1) THROW_ERROR("stride1 is not supported except 1.");
+  if (dilation0 != 1) THROW_ERROR("dilation0 is not supported except 1.");
+  if (dilation1 != 1) THROW_ERROR("dilation1 is not supported except 1.");
 
   if (x.depth() > 3 || w.depth() > 4 ||
       width0 < w[0] || width1 < w[1] || x[2] != w[2] ||

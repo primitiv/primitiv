@@ -277,8 +277,15 @@ Node stop_gradient(const Node &x) {
 }
 
 template<>
-Node conv2d(const Node &x, const Node &w) {
-  return REGX(x, Convolution2D(), x, w);
+Node conv2d(
+    const Node &x, const Node &w,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    std::uint32_t dilation0, std::uint32_t dilation1) {
+  return REGX(
+      x,
+      Convolution2D(padding0, padding1, stride0, stride1, dilation0, dilation1),
+      x, w);
 }
 
 namespace batch {

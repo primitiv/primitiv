@@ -331,7 +331,9 @@ Shape BatchSum::forward_shape(const vector<const Shape *> &args) const {
 
 Shape Convolution2D::forward_shape(const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 2);
-  return shape_ops::conv2d(*args[0], *args[1], 0, 0);
+  return shape_ops::conv2d(
+      *args[0], *args[1],
+      padding0_, padding1_, stride0_, stride1_, dilation0_, dilation1_);
 }
 
 Shape SoftmaxCrossEntropy::forward_shape(
@@ -411,7 +413,11 @@ FORWARD(Broadcast) { return functions::broadcast(*x[0], dim_, size_); }
 
 FORWARD(BatchSum) { return functions::batch::sum(*x[0]); }
 
-FORWARD(Convolution2D) { return functions::conv2d(*x[0], *x[1]); }
+FORWARD(Convolution2D) {
+  return functions::conv2d(
+      *x[0], *x[1],
+      padding0_, padding1_, stride0_, stride1_, dilation0_, dilation1_);
+}
 
 FORWARD(SoftmaxCrossEntropy) {
   return functions::softmax_cross_entropy(*x[0], *x[1], dim_);
@@ -524,7 +530,10 @@ BACKWARD(Broadcast) { *gx[0] += functions::sum(gy, dim_); }
 BACKWARD(BatchSum) { *gx[0] += gy; }
 
 BACKWARD(Convolution2D) {
-  gy.device().conv2d_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]);
+  gy.device().conv2d_bw(
+      *x[0], *x[1], y, gy,
+      padding0_, padding1_, stride0_, stride1_, dilation0_, dilation1_,
+      *gx[0], *gx[1]);
 }
 
 BACKWARD(SoftmaxCrossEntropy) {

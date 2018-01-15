@@ -104,11 +104,17 @@ Shape matmul(const Shape &l, const Shape &r);
  * @param w Shape of the filter tensor.
  * @param padding0 Zero-padding width of the first dimension.
  * @param padding1 Zero-padding width of the second dimension.
+ * @param stride0 Stride of the first dimension.
+ * @param stride1 Stride of the second dimension.
+ * @param dilation0 Upscaling factor of the first dimension.
+ * @param dilation1 Upscaling factor of the second dimension.
  * @return A shape.
  */
 Shape conv2d(
     const Shape &x, const Shape &w,
-    std::uint32_t padding0, std::uint32_t padding1);
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    std::uint32_t dilation0, std::uint32_t dilation1);
 
 }  // namespace shape_ops
 }  // namespace primitiv

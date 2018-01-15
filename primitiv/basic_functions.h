@@ -277,7 +277,11 @@ template<typename Var>
 type_traits::Identity<Var> stop_gradient(const Var &x);
 
 template<typename Var>
-type_traits::Identity<Var> conv2d(const Var &x, const Var &w);
+type_traits::Identity<Var> conv2d(
+    const Var &x, const Var &w,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    std::uint32_t dilation0, std::uint32_t dilation1);
 
 namespace batch {
 

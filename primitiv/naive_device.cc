@@ -697,7 +697,12 @@ void Naive::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   }
 }
 
-void Naive::conv2d_fw_impl(const Tensor &x, const Tensor &w, Tensor &y) {
+void Naive::conv2d_fw_impl(
+    const Tensor &x, const Tensor &w,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    std::uint32_t dilation0, std::uint32_t dilation1,
+    Tensor &y) {
   const Shape x_shape = x.shape();
   const Shape w_shape = w.shape();
   const Shape y_shape = y.shape();
@@ -756,6 +761,9 @@ void Naive::conv2d_fw_impl(const Tensor &x, const Tensor &w, Tensor &y) {
 
 void Naive::conv2d_bw_impl(
     const Tensor &x, const Tensor &w, const Tensor &, const Tensor &gy,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    std::uint32_t dilation0, std::uint32_t dilation1,
     Tensor &gx, Tensor &gw) {
   const Shape x_shape = x.shape();
   const Shape w_shape = w.shape();

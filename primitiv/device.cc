@@ -379,12 +379,22 @@ DEV_FW_AB(divide, shape_ops::elementwise);
 DEV_FW_AB(pow, shape_ops::elementwise);
 DEV_FW_AB(matmul, shape_ops::matmul);
 
-Tensor Device::conv2d_fw(const Tensor &a, const Tensor &b) {
+Tensor Device::conv2d_fw(
+    const Tensor &a, const Tensor &b,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    std::uint32_t dilation0, std::uint32_t dilation1) {
+  if (stride0 != 1) THROW_ERROR("stride0 should be 1 for now.");
+  if (stride1 != 1) THROW_ERROR("stride1 should be 1 for now.");
+  if (dilation0 != 1) THROW_ERROR("dilation0 should be 1 for now.");
+  if (dilation1 != 1) THROW_ERROR("dilation1 should be 1 for now.");
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);
-  Tensor y = new_raw_tensor(
-      shape_ops::conv2d(a.shape(), b.shape(), 0, 0));
-  conv2d_fw_impl(a, b, y);
+  Tensor y = new_raw_tensor(shape_ops::conv2d(
+        a.shape(), b.shape(),
+        padding0, padding1, stride0, stride1, dilation0, dilation1));
+  conv2d_fw_impl(
+      a, b, padding0, padding1, stride0, stride1, dilation0, dilation1, y);
   return y;
 }
 
@@ -397,7 +407,14 @@ DEV_BW_AB(matmul, shape_ops::matmul);
 
 void Device::conv2d_bw(
     const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    std::uint32_t dilation0, std::uint32_t dilation1,
     Tensor &ga, Tensor &gb) {
+  if (stride0 != 1) THROW_ERROR("stride0 should be 1 for now.");
+  if (stride1 != 1) THROW_ERROR("stride1 should be 1 for now.");
+  if (dilation0 != 1) THROW_ERROR("dilation0 should be 1 for now.");
+  if (dilation1 != 1) THROW_ERROR("dilation1 should be 1 for now.");
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);
   CHECK_DEVICE(y);
@@ -407,7 +424,9 @@ void Device::conv2d_bw(
   if (a.shape() != ga.shape() ||
       b.shape() != gb.shape() ||
       y.shape() != gy.shape() ||
-      y.shape() != shape_ops::conv2d(a.shape(), b.shape(), 0, 0)) {
+      y.shape() != shape_ops::conv2d(
+        a.shape(), b.shape(),
+        padding0, padding1, stride0, stride1, dilation0, dilation1)) {
     THROW_ERROR(
         "Shape mismatched at conv2d_bw"
         << ". a.shape: " << a.shape().to_string()
@@ -415,9 +434,13 @@ void Device::conv2d_bw(
         << ", y.shape: " << y.shape().to_string()
         << ", gy.shape: " << gy.shape().to_string()
         << ", ga.shape: " << ga.shape().to_string()
-        << ", gb.shape: " << gb.shape().to_string());
+        << ", gb.shape: " << gb.shape().to_string()
+        << ", padding0: " << padding0
+        << ", padding1: " << padding1);
   }
-  conv2d_bw_impl(a, b, y, gy, ga, gb);
+  conv2d_bw_impl(
+      a, b, y, gy, padding0, padding1, stride0, stride1, dilation0, dilation1,
+      ga, gb);
 }
 
 #undef DEV_FW_X

@@ -1149,18 +1149,20 @@ TEST_F(TensorBackwardTest, CheckMatMulN1) {
   }
 }
 
-#define TEST_CONV2D { \
+#define TEST_CONV2D(pad0, pad1, str0, str1, dil0, dil1) { \
   const vector<float> x_data = make_iota_vector(x_shape.size(), 1); \
   const vector<float> w_data = make_iota_vector(w_shape.size(), 1); \
   const vector<float> gy_data(y_shape.size(), 1); \
   for (Device *dev : devices) try { \
     const Tensor x = dev->new_tensor_by_vector(x_shape, x_data); \
     const Tensor w = dev->new_tensor_by_vector(w_shape, w_data); \
-    const Tensor y = dev->conv2d_fw(x, w); \
+    const Tensor y = dev->conv2d_fw( \
+        x, w, pad0, pad1, str0, str1, dil0, dil1); \
     const Tensor gy = dev->new_tensor_by_vector(y_shape, gy_data); \
     Tensor gx = dev->new_tensor_by_constant(x_shape, 1); \
     Tensor gw = dev->new_tensor_by_constant(w_shape, 1); \
-    dev->conv2d_bw(x, w, y, gy, gx, gw); \
+    dev->conv2d_bw( \
+        x, w, y, gy, pad0, pad1, str0, str1, dil0, dil1, gx, gw); \
     EXPECT_TRUE(vector_match(gx_data, gx.to_vector())); \
     EXPECT_TRUE(vector_match(gw_data, gw.to_vector())); \
   } IGNORE_NOT_IMPLEMENTED \
@@ -1172,7 +1174,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_1x1x1_1x1x1x1) {
   const Shape y_shape {};
   const vector<float> gx_data {2};
   const vector<float> gw_data {2};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_5x1x1_1x1x1x1) {
@@ -1181,7 +1183,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x1x1_1x1x1x1) {
   const Shape y_shape {5};
   const vector<float> gx_data {2, 2, 2, 2, 2};
   const vector<float> gw_data {16};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_5x1x1_2x1x1x1) {
@@ -1190,7 +1192,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x1x1_2x1x1x1) {
   const Shape y_shape {4};
   const vector<float> gx_data {3, 4, 4, 4, 2};
   const vector<float> gw_data {15, 11};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_5x1x1_5x1x1x1) {
@@ -1199,7 +1201,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x1x1_5x1x1x1) {
   const Shape y_shape {};
   const vector<float> gx_data {6, 5, 4, 3, 2};
   const vector<float> gw_data {6, 5, 4, 3, 2};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_1x5x1_1x1x1x1) {
@@ -1208,7 +1210,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_1x5x1_1x1x1x1) {
   const Shape y_shape {1, 5};
   const vector<float> gx_data {2, 2, 2, 2, 2};
   const vector<float> gw_data {16};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_1x5x1_1x2x1x1) {
@@ -1217,7 +1219,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_1x5x1_1x2x1x1) {
   const Shape y_shape {1, 4};
   const vector<float> gx_data {3, 4, 4, 4, 2};
   const vector<float> gw_data {15, 11};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_1x5x1_1x5x1x1) {
@@ -1226,7 +1228,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_1x5x1_1x5x1x1) {
   const Shape y_shape {};
   const vector<float> gx_data {6, 5, 4, 3, 2};
   const vector<float> gw_data {6, 5, 4, 3, 2};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_1x1x1x1) {
@@ -1241,7 +1243,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_1x1x1x1) {
     2, 2, 2, 2, 2,
   };
   const vector<float> gw_data {326};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x1x1x1) {
@@ -1258,7 +1260,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x1x1x1) {
   const vector<float> gw_data {
     271, 251,
   };
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_5x1x1x1) {
@@ -1275,7 +1277,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_5x1x1x1) {
   const vector<float> gw_data {
     76, 71, 66, 61, 56,
   };
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_1x2x1x1) {
@@ -1293,7 +1295,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_1x2x1x1) {
     311,
     211,
   };
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1) {
@@ -1311,7 +1313,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1) {
     257, 241,
     177, 161,
   };
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_5x2x1x1) {
@@ -1329,7 +1331,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_5x2x1x1) {
     71, 67, 63, 59, 55,
     51, 47, 43, 39, 35,
   };
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_1x5x1x1) {
@@ -1350,7 +1352,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_1x5x1x1) {
      41,
      16,
   };
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x5x1x1) {
@@ -1371,7 +1373,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x5x1x1) {
     35, 31,
     15, 11,
   };
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_5x5x1x1) {
@@ -1392,7 +1394,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_5x5x1x1) {
     11, 10,  9,  8,  7,
      6,  5,  4,  3,  2,
   };
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_5x5x3_2x2x3x1) {
@@ -1430,7 +1432,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x3_2x2x3x1) {
     1057, 1041,
      977,  961,
   };
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x3) {
@@ -1455,7 +1457,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x3) {
     257, 241,
     177, 161,
   };
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_5x5x3_2x2x3x3) {
@@ -1511,7 +1513,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x3_2x2x3x3) {
     1057, 1041,
      977,  961,
   };
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_N1) {
@@ -1542,7 +1544,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_N1) {
     1969, 1921,
     1729, 1681,
   };
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_1N) {
@@ -1567,7 +1569,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_1N) {
     257, 241,
     177, 161,
   };
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_NN) {
@@ -1605,7 +1607,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_NN) {
     1057, 1041,
      977,  961,
   };
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 #undef TEST_CONV2D

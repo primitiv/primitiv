@@ -2257,11 +2257,11 @@ TEST_F(TensorForwardTest, CheckStopGradient) {
   }
 }
 
-#define TEST_CONV2D { \
+#define TEST_CONV2D(pad0, pad1, str0, str1, dil0, dil1) { \
   for (Device *dev : devices) try { \
     const Tensor x = dev->new_tensor_by_vector(x_shape, x_data); \
     const Tensor w = dev->new_tensor_by_vector(w_shape, w_data); \
-    const Tensor y = conv2d(x, w); \
+    const Tensor y = conv2d(x, w, pad0, pad1, str0, str1, dil0, dil1); \
     EXPECT_EQ(y_shape, y.shape()); \
     EXPECT_TRUE(vector_match(y_data, y.to_vector())); \
   } IGNORE_NOT_IMPLEMENTED \
@@ -2274,7 +2274,7 @@ TEST_F(TensorForwardTest, CheckConv2D_1x1x1_1x1x1x1) {
   const Shape x_shape {};
   const Shape w_shape {};
   const Shape y_shape {};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x1x1_1x1x1x1) {
@@ -2284,7 +2284,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x1x1_1x1x1x1) {
   const Shape x_shape {5};
   const Shape w_shape {};
   const Shape y_shape {5};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x1x1_2x1x1x1) {
@@ -2294,7 +2294,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x1x1_2x1x1x1) {
   const Shape x_shape {5};
   const Shape w_shape {2};
   const Shape y_shape {4};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x1x1_5x1x1x1) {
@@ -2304,7 +2304,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x1x1_5x1x1x1) {
   const Shape x_shape {5};
   const Shape w_shape {5};
   const Shape y_shape {};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_1x5x1_1x1x1x1) {
@@ -2314,7 +2314,7 @@ TEST_F(TensorForwardTest, CheckConv2D_1x5x1_1x1x1x1) {
   const Shape x_shape {1, 5};
   const Shape w_shape {};
   const Shape y_shape {1, 5};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_1x5x1_1x2x1x1) {
@@ -2324,7 +2324,7 @@ TEST_F(TensorForwardTest, CheckConv2D_1x5x1_1x2x1x1) {
   const Shape x_shape {1, 5};
   const Shape w_shape {1, 2};
   const Shape y_shape {1, 4};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_1x5x1_1x5x1x1) {
@@ -2334,7 +2334,7 @@ TEST_F(TensorForwardTest, CheckConv2D_1x5x1_1x5x1x1) {
   const Shape x_shape {1, 5};
   const Shape w_shape {1, 5};
   const Shape y_shape {};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_1x1x1x1) {
@@ -2350,7 +2350,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_1x1x1x1) {
   const Shape x_shape {5, 5};
   const Shape w_shape {};
   const Shape y_shape {5, 5};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x1x1x1) {
@@ -2366,7 +2366,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x1x1x1) {
   const Shape x_shape {5, 5};
   const Shape w_shape {2};
   const Shape y_shape {4, 5};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_5x1x1x1) {
@@ -2382,7 +2382,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_5x1x1x1) {
   const Shape x_shape {5, 5};
   const Shape w_shape {5};
   const Shape y_shape {1, 5};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_1x2x1x1) {
@@ -2397,7 +2397,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_1x2x1x1) {
   const Shape x_shape {5, 5};
   const Shape w_shape {1, 2};
   const Shape y_shape {5, 4};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1) {
@@ -2412,7 +2412,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1) {
   const Shape x_shape {5, 5};
   const Shape w_shape {2, 2};
   const Shape y_shape {4, 4};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_5x2x1x1) {
@@ -2427,7 +2427,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_5x2x1x1) {
   const Shape x_shape {5, 5};
   const Shape w_shape {5, 2};
   const Shape y_shape {1, 4};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_1x5x1x1) {
@@ -2439,7 +2439,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_1x5x1x1) {
   const Shape x_shape {5, 5};
   const Shape w_shape {1, 5};
   const Shape y_shape {5};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x5x1x1) {
@@ -2451,7 +2451,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x5x1x1) {
   const Shape x_shape {5, 5};
   const Shape w_shape {2, 5};
   const Shape y_shape {4};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_5x5x1x1) {
@@ -2461,7 +2461,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_5x5x1x1) {
   const Shape x_shape {5, 5};
   const Shape w_shape {5, 5};
   const Shape y_shape {};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x3_2x2x3x1) {
@@ -2476,7 +2476,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x3_2x2x3x1) {
   const Shape x_shape {5, 5, 3};
   const Shape w_shape {2, 2, 3};
   const Shape y_shape {4, 4};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x3) {
@@ -2502,7 +2502,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x3) {
   const Shape x_shape {5, 5};
   const Shape w_shape {2, 2, 1, 3};
   const Shape y_shape {4, 4, 3};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x3_2x2x3x3) {
@@ -2528,7 +2528,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x3_2x2x3x3) {
   const Shape x_shape {5, 5, 3};
   const Shape w_shape {2, 2, 3, 3};
   const Shape y_shape {4, 4, 3};
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_N1) {
@@ -2554,7 +2554,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_N1) {
   const Shape x_shape({5, 5}, 3);
   const Shape w_shape {2, 2};
   const Shape y_shape({4, 4}, 3);
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_1N) {
@@ -2580,7 +2580,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_1N) {
   const Shape x_shape {5, 5};
   const Shape w_shape({2, 2}, 3);
   const Shape y_shape({4, 4}, 3);
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_NN) {
@@ -2606,7 +2606,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_NN) {
   const Shape x_shape({5, 5}, 3);
   const Shape w_shape({2, 2}, 3);
   const Shape y_shape({4, 4}, 3);
-  TEST_CONV2D;
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
 #undef TEST_CONV2D
@@ -2614,21 +2614,24 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_NN) {
 TEST_F(TensorForwardTest, CheckInvalidConv2D) {
   struct TestCase {
     Shape a_shape, b_shape;
+    std::uint32_t pad0, pad1, str0, str1, dil0, dil1;
   };
   const vector<TestCase> test_cases {
-    {{1, 1, 1, 2}, {}},
-    {{}, {1, 1, 1, 1, 2}},
-    {{2, 3, 42}, {3, 3, 42}},
-    {{3, 2, 42}, {3, 3, 42}},
-    {{3, 3, 41}, {3, 3, 42}},
-    {Shape({}, 2), Shape({}, 3)},
+    {{1, 1, 1, 2}, {}, 0, 0, 1, 1, 1, 1},
+    {{}, {1, 1, 1, 1, 2}, 0, 0, 1, 1, 1, 1},
+    {{2, 3, 42}, {3, 3, 42}, 0, 0, 1, 1, 1, 1},
+    {{3, 2, 42}, {3, 3, 42}, 0, 0, 1, 1, 1, 1},
+    {{3, 3, 41}, {3, 3, 42}, 0, 0, 1, 1, 1, 1},
+    {Shape({}, 2), Shape({}, 3), 0, 0, 1, 1, 1, 1},
   };
 
   for (Device *dev : devices) {
     for (const auto tc : test_cases) {
       const Tensor a = dev->new_tensor_by_constant(tc.a_shape, 0);
       const Tensor b = dev->new_tensor_by_constant(tc.b_shape, 0);
-      EXPECT_THROW(conv2d(a, b), Error);
+      EXPECT_THROW(
+          conv2d(a, b, tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1),
+          Error);
     }
   }
 }
