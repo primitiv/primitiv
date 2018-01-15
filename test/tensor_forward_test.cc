@@ -2742,6 +2742,29 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_NN) {
   TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
+TEST_F(TensorForwardTest, CheckConv2D_VGG16FirstLayer) {
+  const vector<float> x_data(224 * 224 * 3, 1);
+  const vector<float> w_data(3 * 3 * 3 * 64, 1);
+  vector<float> y_data(224 * 224 * 64, 27);
+  for (unsigned b = 0; b < 64; ++b) {
+    float *py = y_data.data() + b * 224 * 224;
+    py[0] += 3;
+    py[223] += 3;
+    py[223 * 224] += 3;
+    py[223 * 224 + 223] += 3;
+    for (unsigned i = 0; i < 224; ++i) {
+      py[i] -= 3 * 3;
+      py[223 * 224 + i] -= 3 * 3;
+      py[i * 224] -= 3 * 3;
+      py[i * 224 + 223] -= 3 * 3;
+    }
+  }
+  const Shape x_shape {224, 224, 3};
+  const Shape w_shape {3, 3, 3, 64};
+  const Shape y_shape {224, 224, 64};
+  TEST_CONV2D(1, 1, 1, 1, 1, 1);
+}
+
 #undef TEST_CONV2D
 
 TEST_F(TensorForwardTest, CheckInvalidConv2D) {

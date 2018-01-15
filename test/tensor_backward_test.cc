@@ -1774,4 +1774,57 @@ TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_NN) {
 
 #undef TEST_CONV2D
 
+TEST_F(TensorBackwardTest, CheckConv2D_VGG16FirstLayer) {
+  const Shape x_shape {224, 224, 3};
+  const Shape w_shape {3, 3, 3, 64};
+  const Shape y_shape {224, 224, 64};
+  vector<float> gx_data(224 * 224 * 3, 1 + 3 * 3 * 64);
+  for (unsigned b = 0; b < 3; ++b) {
+    float *pgx = gx_data.data() + b * 224 * 224;
+    pgx[0] += 64;
+    pgx[223] += 64;
+    pgx[223 * 224] += 64;
+    pgx[223 * 224 + 223] += 64;
+    for (unsigned i = 0; i < 224; ++i) {
+      pgx[i] -= 3 * 64;
+      pgx[223 * 224 + i] -= 3 * 64;
+      pgx[i * 224] -= 3 * 64;
+      pgx[i * 224 + 223] -= 3 * 64;
+    }
+  }
+  vector<float> gw_data(3 * 3 * 3 * 64, 1 + 224 * 224);
+  for (unsigned b = 0; b < 3 * 64; ++b) {
+    float *pgw = gw_data.data() + b * 3 * 3;
+    pgw[0] += -2 * 224 + 1;
+    pgw[1] += -224;
+    pgw[2] += -2 * 224 + 1;
+    pgw[3] += -224;
+    //pgw[4] += 0;
+    pgw[5] += -224;
+    pgw[6] += -2 * 224 + 1;
+    pgw[7] += -224;
+    pgw[8] += -2 * 224 + 1;
+  }
+  unsigned xxx = 0, www = 0;
+  for (float x : gx_data) xxx += static_cast<unsigned>(x);
+  for (float w : gw_data) www += static_cast<unsigned>(w);
+  std::cout << xxx << std::endl;
+  std::cout << www << std::endl;
+
+  const vector<float> x_data(x_shape.size(), 1);
+  const vector<float> w_data(w_shape.size(), 1);
+  const vector<float> gy_data(y_shape.size(), 1);
+  for (Device *dev : devices) try {
+    const Tensor x = dev->new_tensor_by_vector(x_shape, x_data);
+    const Tensor w = dev->new_tensor_by_vector(w_shape, w_data);
+    const Tensor y = dev->conv2d_fw(x, w, 1, 1, 1, 1, 1, 1);
+    const Tensor gy = dev->new_tensor_by_vector(y_shape, gy_data);
+    Tensor gx = dev->new_tensor_by_constant(x_shape, 1);
+    Tensor gw = dev->new_tensor_by_constant(w_shape, 1);
+    dev->conv2d_bw(x, w, y, gy, 1, 1, 1, 1, 1, 1, gx, gw);
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
+    EXPECT_TRUE(vector_match(gw_data, gw.to_vector()));
+  } IGNORE_NOT_IMPLEMENTED
+}
+
 }  // namespace primitiv
