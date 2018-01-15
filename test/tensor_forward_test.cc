@@ -2531,6 +2531,139 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x3_2x2x3x3) {
   TEST_CONV2D(0, 0, 1, 1, 1, 1);
 }
 
+TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_Padding10) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(2 * 2, 1);
+  const vector<float> y_data {
+     9,  29,  39,  49,  59,  40,
+    29,  79,  89,  99, 109,  70,
+    49, 129, 139, 149, 159, 100,
+    69, 179, 189, 199, 209, 130,
+  };
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {6, 4};
+  TEST_CONV2D(1, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_Padding01) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(2 * 2, 1);
+  const vector<float> y_data {
+      4,   7,  10,  13,
+     29,  39,  49,  59,
+     79,  89,  99, 109,
+    129, 139, 149, 159,
+    179, 189, 199, 209,
+    150, 157, 164, 171,
+  };
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {4, 6};
+  TEST_CONV2D(0, 1, 1, 1, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_Padding11) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(2 * 2, 1);
+  const vector<float> y_data {
+     1,   4,   7,  10,  13,  10,
+     9,  29,  39,  49,  59,  40,
+    29,  79,  89,  99, 109,  70,
+    49, 129, 139, 149, 159, 100,
+    69, 179, 189, 199, 209, 130,
+    63, 150, 157, 164, 171, 100,
+  };
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {6, 6};
+  TEST_CONV2D(1, 1, 1, 1, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_Stride21) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(2 * 2, 1);
+  const vector<float> y_data {
+     29,  49,
+     79,  99,
+    129, 149,
+    179, 199,
+  };
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {2, 4};
+  TEST_CONV2D(0, 0, 2, 1, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_Stride12) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(2 * 2, 1);
+  const vector<float> y_data {
+     29,  39,  49,  59,
+    129, 139, 149, 159,
+  };
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {4, 2};
+  TEST_CONV2D(0, 0, 1, 2, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_Stride22) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(2 * 2, 1);
+  const vector<float> y_data {
+     29,  49,
+    129, 149,
+  };
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {2, 2};
+  TEST_CONV2D(0, 0, 2, 2, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_Dilation21) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(2 * 2, 1);
+  const vector<float> y_data {
+     33,  43,  53,
+     83,  93, 103,
+    133, 143, 153,
+    183, 193, 203,
+  };
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {3, 4};
+  TEST_CONV2D(0, 0, 1, 1, 2, 1);
+}
+
+TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_Dilation12) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(2 * 2, 1);
+  const vector<float> y_data {
+     44,  54,  64,  74,
+     94, 104, 114, 124,
+    144, 154, 164, 174,
+  };
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {4, 3};
+  TEST_CONV2D(0, 0, 1, 1, 1, 2);
+}
+
+TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_Dilation22) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> w_data = make_iota_vector(2 * 2, 1);
+  const vector<float> y_data {
+     48,  58,  68,
+     98, 108, 118,
+    148, 158, 168,
+  };
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {3, 3};
+  TEST_CONV2D(0, 0, 1, 1, 2, 2);
+}
+
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_N1) {
   const vector<float> x_data = make_iota_vector(5 * 5 * 3, 1);
   const vector<float> w_data = make_iota_vector(2 * 2, 1);
@@ -2615,23 +2748,65 @@ TEST_F(TensorForwardTest, CheckInvalidConv2D) {
   struct TestCase {
     Shape a_shape, b_shape;
     std::uint32_t pad0, pad1, str0, str1, dil0, dil1;
+    bool ok;
   };
   const vector<TestCase> test_cases {
-    {{1, 1, 1, 2}, {}, 0, 0, 1, 1, 1, 1},
-    {{}, {1, 1, 1, 1, 2}, 0, 0, 1, 1, 1, 1},
-    {{2, 3, 42}, {3, 3, 42}, 0, 0, 1, 1, 1, 1},
-    {{3, 2, 42}, {3, 3, 42}, 0, 0, 1, 1, 1, 1},
-    {{3, 3, 41}, {3, 3, 42}, 0, 0, 1, 1, 1, 1},
-    {Shape({}, 2), Shape({}, 3), 0, 0, 1, 1, 1, 1},
+    // invalid #dimensions
+    {{1, 1, 1, 2}, {}, 0, 0, 1, 1, 1, 1, false},
+    {{}, {1, 1, 1, 1, 2}, 0, 0, 1, 1, 1, 1, false},
+
+    // zero-stride/dilation
+    {{}, {}, 0, 0, 0, 1, 1, 1, false},
+    {{}, {}, 0, 0, 1, 0, 1, 1, false},
+    {{}, {}, 0, 0, 1, 1, 0, 1, false},
+    {{}, {}, 0, 0, 1, 1, 1, 0, false},
+
+    // minibatches mismatching
+    {Shape({}, 2), Shape({}, 3), 0, 0, 1, 1, 1, 1, false},
+
+    // channels mismatching
+    {{3, 3, 42}, {3, 3, 42}, 0, 0, 1, 1, 1, 1, true},
+    {{3, 3, 42}, {3, 3, 43}, 0, 0, 1, 1, 1, 1, false},
+
+    // sizes mismatching
+    {{3, 3}, {3, 3}, 0, 0, 1, 1, 1, 1, true},
+    {{3, 3}, {4, 3}, 0, 0, 1, 1, 1, 1, false},
+    {{3, 3}, {3, 4}, 0, 0, 1, 1, 1, 1, false},
+    {{3, 3}, {4, 4}, 0, 0, 1, 1, 1, 1, false},
+
+    // sizes mismatching with padding
+    {{3, 3}, {5, 5}, 1, 1, 1, 1, 1, 1, true},
+    {{3, 3}, {6, 5}, 1, 1, 1, 1, 1, 1, false},
+    {{3, 3}, {5, 6}, 1, 1, 1, 1, 1, 1, false},
+    {{3, 3}, {6, 6}, 1, 1, 1, 1, 1, 1, false},
+
+    // sizes mismatching with stride
+    {{3, 3}, {3, 3}, 0, 0, 2, 2, 1, 1, true},
+    {{3, 3}, {4, 3}, 0, 0, 2, 2, 1, 1, false},
+    {{3, 3}, {3, 4}, 0, 0, 2, 2, 1, 1, false},
+    {{3, 3}, {4, 4}, 0, 0, 2, 2, 1, 1, false},
+
+    // sizes mismatching with dilation
+    {{3, 3}, {2, 2}, 0, 0, 1, 1, 2, 2, true},
+    {{2, 3}, {2, 2}, 0, 0, 1, 1, 2, 2, false},
+    {{3, 2}, {2, 2}, 0, 0, 1, 1, 2, 2, false},
+    {{2, 2}, {2, 2}, 0, 0, 1, 1, 2, 2, false},
+    {{3, 3}, {2, 2}, 0, 0, 1, 1, 3, 2, false},
+    {{3, 3}, {2, 2}, 0, 0, 1, 1, 2, 3, false},
+    {{3, 3}, {2, 2}, 0, 0, 1, 1, 3, 3, false},
   };
 
   for (Device *dev : devices) {
     for (const auto tc : test_cases) {
       const Tensor a = dev->new_tensor_by_constant(tc.a_shape, 0);
       const Tensor b = dev->new_tensor_by_constant(tc.b_shape, 0);
-      EXPECT_THROW(
-          conv2d(a, b, tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1),
-          Error);
+      if (tc.ok) try {
+        conv2d(a, b, tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1);
+      } IGNORE_NOT_IMPLEMENTED else {
+        EXPECT_THROW(
+            conv2d(a, b, tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1),
+            Error);
+      }
     }
   }
 }

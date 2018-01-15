@@ -740,12 +740,20 @@ void Naive::conv2d_fw_impl(
               for (
                   std::uint32_t w_y = 0, w_y_inv = w_height - 1;
                   w_y < w_height; ++w_y, --w_y_inv) {
-                const std::uint32_t x_addr
-                  = (x_c * x_width + y_x + w_x) * x_height + y_y + w_y;
-                const std::uint32_t w_addr
-                  = ((y_c * x_channels + x_c) * w_width + w_x_inv)
-                  * w_height + w_y_inv;
-                py[y_addr] += px[x_addr] * pw[w_addr];
+                const std::int32_t x_y
+                  = -padding0 + y_y * stride0 + w_y * dilation0;
+                const std::int32_t x_x
+                  = -padding1 + y_x * stride1 + w_x * dilation1;
+
+                if (x_y >= 0 && x_y < static_cast<std::int32_t>(x_height)
+                    && x_x >= 0 && x_x < static_cast<std::int32_t>(x_width)) {
+                  const std::uint32_t x_addr
+                    = (x_c * x_width + x_x) * x_height + x_y;
+                  const std::uint32_t w_addr
+                    = ((y_c * x_channels + x_c) * w_width + w_x_inv)
+                    * w_height + w_y_inv;
+                  py[y_addr] += px[x_addr] * pw[w_addr];
+                }
               }
             }
           }
@@ -803,13 +811,21 @@ void Naive::conv2d_bw_impl(
               for (
                   std::uint32_t w_y = 0, w_y_inv = w_height - 1;
                   w_y < w_height; ++w_y, --w_y_inv) {
-                const std::uint32_t x_addr
-                  = (x_c * x_width + y_x + w_x) * x_height + y_y + w_y;
-                const std::uint32_t w_addr
-                  = ((y_c * x_channels + x_c) * w_width + w_x_inv)
-                  * w_height + w_y_inv;
-                pgx[x_addr] += pgy[y_addr] * pw[w_addr];
-                pgw[w_addr] += pgy[y_addr] * px[x_addr];
+                const std::int32_t x_y
+                  = -padding0 + y_y * stride0 + w_y * dilation0;
+                const std::int32_t x_x
+                  = -padding1 + y_x * stride1 + w_x * dilation1;
+
+                if (x_y >= 0 && x_y < static_cast<std::int32_t>(x_height)
+                    && x_x >= 0 && x_x < static_cast<std::int32_t>(x_width)) {
+                  const std::uint32_t x_addr
+                    = (x_c * x_width + x_x) * x_height + x_y;
+                  const std::uint32_t w_addr
+                    = ((y_c * x_channels + x_c) * w_width + w_x_inv)
+                    * w_height + w_y_inv;
+                  pgx[x_addr] += pgy[y_addr] * pw[w_addr];
+                  pgw[w_addr] += pgy[y_addr] * px[x_addr];
+                }
               }
             }
           }

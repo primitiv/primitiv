@@ -384,10 +384,6 @@ Tensor Device::conv2d_fw(
     std::uint32_t padding0, std::uint32_t padding1,
     std::uint32_t stride0, std::uint32_t stride1,
     std::uint32_t dilation0, std::uint32_t dilation1) {
-  if (stride0 != 1) THROW_ERROR("stride0 should be 1 for now.");
-  if (stride1 != 1) THROW_ERROR("stride1 should be 1 for now.");
-  if (dilation0 != 1) THROW_ERROR("dilation0 should be 1 for now.");
-  if (dilation1 != 1) THROW_ERROR("dilation1 should be 1 for now.");
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);
   Tensor y = new_raw_tensor(shape_ops::conv2d(
@@ -411,10 +407,6 @@ void Device::conv2d_bw(
     std::uint32_t stride0, std::uint32_t stride1,
     std::uint32_t dilation0, std::uint32_t dilation1,
     Tensor &ga, Tensor &gb) {
-  if (stride0 != 1) THROW_ERROR("stride0 should be 1 for now.");
-  if (stride1 != 1) THROW_ERROR("stride1 should be 1 for now.");
-  if (dilation0 != 1) THROW_ERROR("dilation0 should be 1 for now.");
-  if (dilation1 != 1) THROW_ERROR("dilation1 should be 1 for now.");
   CHECK_DEVICE(a);
   CHECK_DEVICE(b);
   CHECK_DEVICE(y);

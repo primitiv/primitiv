@@ -1272,7 +1272,8 @@ void CUDA::conv2d_fw_impl(
       y_shape[2], y_shape[1], y_shape[0]);
   const cuda::CuDNNFilterDescriptor w_desc(
       w_shape[3], w_shape[2], w_shape[1], w_shape[0]);
-  const cuda::CuDNNConvolutionDescriptor conv_desc(0, 0, 1, 1, 1, 1);
+  const cuda::CuDNNConvolutionDescriptor conv_desc(
+      padding1, padding0, stride1, stride0, dilation1, dilation0);
 
   // Obtains the most efficient algorithm.
   ::cudnnConvolutionFwdAlgo_t algo;
@@ -1332,7 +1333,8 @@ void CUDA::conv2d_bw_impl(
       y_shape[2], y_shape[1], y_shape[0]);
   const cuda::CuDNNFilterDescriptor w_desc(
       w_shape[3], w_shape[2], w_shape[1], w_shape[0]);
-  const cuda::CuDNNConvolutionDescriptor conv_desc(0, 0, 1, 1, 1, 1);
+  const cuda::CuDNNConvolutionDescriptor conv_desc(
+      padding1, padding0, stride1, stride0, dilation1, dilation0);
 
   // Obtains the most efficient algorithms.
   ::cudnnConvolutionBwdDataAlgo_t x_algo;
