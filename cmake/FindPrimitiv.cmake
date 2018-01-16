@@ -24,8 +24,8 @@
 # Created: 2017/08/13
 # Updated: 2017/12/16
 #
-# This script is provided as a part of the primitiv core library.
-# Redistributing and using this script is allowed according to
+# This script is provided as a part of the "primitiv" core library.
+# Redistributing and using this script is allowed under
 # the Apache License Version 2.
 
 
@@ -55,7 +55,7 @@ if (PRIMITIV_INCLUDE_DIR AND PRIMITIV_LIBRARIES)
   #message("-- primitiv libraries: " ${PRIMITIV_LIBRARIES})
   set(PRIMITIV_FOUND ON)
 else()
-  message(STATUS "primitiv is not installed.")
+  message(SEND_ERROR "primitiv is not installed.")
   set(PRIMITIV_FOUND OFF)
 endif()
 
@@ -128,7 +128,7 @@ set(PRIMITIV_VERSION "${PRIMITIV_VERSION_MAJOR}.${PRIMITIV_VERSION_MINOR}.${PRIM
 #message("primitiv version found: ${PRIMITIV_VERSION}")
 
 if(${PRIMITIV_VERSION} VERSION_LESS ${Primitiv_FIND_VERSION})
-  message(STATUS
+  message(SEND_ERROR
     "primitiv version ${PRIMITIV_VERSION} found in ${PRIMITIV_INCLUDE_DIR}, "
     "but at least version ${Primitiv_FIND_VERSION} is required."
   )

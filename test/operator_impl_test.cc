@@ -1373,6 +1373,161 @@ TEST_F(OperatorImplTest, CheckBatchSum) {
   TEST_1ARG(BatchSum);
 }
 
+TEST_F(OperatorImplTest, CheckConvolution2D_001111) {
+  // y = conv2d(x, w)
+  // dy/dx = conv2d_bw(w)
+  // dy/dw = conv2d_bw(x)
+  arg_shapes.emplace_back(new Shape({5, 5}, 3));
+  arg_shapes.emplace_back(new Shape({2, 2}, 3));
+  arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
+      *arg_shapes[0], test_utils::make_iota_vector(5 * 5 * 3, 1))));
+  arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
+      *arg_shapes[1], test_utils::make_iota_vector(2 * 2 * 3, 1))));
+  arg_grads.emplace_back(
+      new Tensor(functions::ones<Tensor>(*arg_shapes[0], *dev)));
+  arg_grads.emplace_back(
+      new Tensor(functions::ones<Tensor>(*arg_shapes[1], *dev)));
+  const Shape ret_shape({4, 4}, 3);
+  const vector<float> ret_data {
+    // minibatch 1
+     29,  39,  49,  59,
+     79,  89,  99, 109,
+    129, 139, 149, 159,
+    179, 189, 199, 209,
+    // minibatch 2
+     743,  769,  795,  821,
+     873,  899,  925,  951,
+    1003, 1029, 1055, 1081,
+    1133, 1159, 1185, 1211,
+    // minibatch 3
+    2257, 2299, 2341, 2383,
+    2467, 2509, 2551, 2593,
+    2677, 2719, 2761, 2803,
+    2887, 2929, 2971, 3013,
+  };
+  const vector<vector<float>> bw_grads {
+    {
+      // minibatch 1
+      5,  8,  8,  8, 4,
+      7, 11, 11, 11, 5,
+      7, 11, 11, 11, 5,
+      7, 11, 11, 11, 5,
+      3,  4,  4,  4, 2,
+      // minibatch 2
+       9, 16, 16, 16,  8,
+      15, 27, 27, 27, 13,
+      15, 27, 27, 27, 13,
+      15, 27, 27, 27, 13,
+       7, 12, 12, 12,  6,
+      // minibatch 3
+      13, 24, 24, 24, 12,
+      23, 43, 43, 43, 21,
+      23, 43, 43, 43, 21,
+      23, 43, 43, 43, 21,
+      11, 20, 20, 20, 10,
+    },
+    {
+      // minibatch 1
+      257, 241,
+      177, 161,
+      // minibatch 2
+      657, 641,
+      577, 561,
+      // minibatch 3
+      1057, 1041,
+       977,  961,
+    },
+  };
+
+  Convolution2D node(0, 0, 1, 1, 1, 1);
+  const Shape cur_shape = node.forward_shape(arg_shapes);
+  const Tensor cur_value = node.forward(arg_values);
+  const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev);
+  node.backward(cur_value, cur_grad, arg_values, arg_grads);
+  EXPECT_EQ("Convolution2D(0,0,1,1,1,1)", node.name());
+  EXPECT_EQ(ret_shape, cur_shape);
+  EXPECT_EQ(nullptr, node.get_device());
+  EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector()));
+  EXPECT_TRUE(vector_match(bw_grads[0], arg_grads[0]->to_vector()));
+  EXPECT_TRUE(vector_match(bw_grads[1], arg_grads[1]->to_vector()));
+}
+
+TEST_F(OperatorImplTest, CheckConvolution2D_112222) {
+  // y = conv2d(x, w)
+  // dy/dx = conv2d_bw(w)
+  // dy/dw = conv2d_bw(x)
+  arg_shapes.emplace_back(new Shape({5, 5}, 3));
+  arg_shapes.emplace_back(new Shape({2, 2}, 3));
+  arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
+      *arg_shapes[0], test_utils::make_iota_vector(5 * 5 * 3, 1))));
+  arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
+      *arg_shapes[1], test_utils::make_iota_vector(2 * 2 * 3, 1))));
+  arg_grads.emplace_back(
+      new Tensor(functions::ones<Tensor>(*arg_shapes[0], *dev)));
+  arg_grads.emplace_back(
+      new Tensor(functions::ones<Tensor>(*arg_shapes[1], *dev)));
+  const Shape ret_shape({3, 3}, 3);
+  const vector<float> ret_data {
+    // minibatch 1
+     7,  23, 18,
+    38, 108, 74,
+    51, 125, 76,
+    // minibatch 2
+    160, 362, 204,
+    434, 966, 536,
+    294, 644, 352,
+    // minibatch 3
+     513, 1101,  590,
+    1230, 2624, 1398,
+     737, 1563,  828,
+  };
+  const vector<vector<float>> bw_grads {
+    {
+      // minibatch 1
+      1,  1, 1,  1, 1,
+      1, 11, 1, 11, 1,
+      1,  1, 1,  1, 1,
+      1, 11, 1, 11, 1,
+      1,  1, 1,  1, 1,
+      // minibatch 2
+      1,  1, 1,  1, 1,
+      1, 27, 1, 27, 1,
+      1,  1, 1,  1, 1,
+      1, 27, 1, 27, 1,
+      1,  1, 1,  1, 1,
+      // minibatch 3
+      1,  1, 1,  1, 1,
+      1, 43, 1, 43, 1,
+      1,  1, 1,  1, 1,
+      1, 43, 1, 43, 1,
+      1,  1, 1,  1, 1,
+    },
+    {
+      // minibatch 1
+      53, 53,
+      53, 53,
+      // minibatch 2
+      153, 153,
+      153, 153,
+      // minibatch 3
+      253, 253,
+      253, 253,
+    },
+  };
+
+  Convolution2D node(1, 1, 2, 2, 2, 2);
+  const Shape cur_shape = node.forward_shape(arg_shapes);
+  const Tensor cur_value = node.forward(arg_values);
+  const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev);
+  node.backward(cur_value, cur_grad, arg_values, arg_grads);
+  EXPECT_EQ("Convolution2D(1,1,2,2,2,2)", node.name());
+  EXPECT_EQ(ret_shape, cur_shape);
+  EXPECT_EQ(nullptr, node.get_device());
+  EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector()));
+  EXPECT_TRUE(vector_match(bw_grads[0], arg_grads[0]->to_vector()));
+  EXPECT_TRUE(vector_match(bw_grads[1], arg_grads[1]->to_vector()));
+}
+
 TEST_F(OperatorImplTest, CheckSoftmaxCrossEntropy) {
   // y = softmax_cross_entropy(x, t, dim)
   // dy/dx = softmax(x) - t

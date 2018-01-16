@@ -36,7 +36,7 @@ Prerequisites
 - C++11 compiler (GCC, Clang)
 - (optional) [Google Test](https://github.com/google/googletest)
   - Required only when `-DPRIMITIV_BUILD_TESTS=ON`.
-- (optional) CUDA 7.5 or later
+- (optional) CUDA 8.0 or later/cuDNN 7.0 or later
   - Required only when `-DPRIMITIV_USE_CUDA=ON`
 - (optional) OpenCL 1.2/OpenCL C++ binding v2
   - Required only when `-DPRIMITIV_USE_OPENCL=ON`

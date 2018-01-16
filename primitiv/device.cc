@@ -148,7 +148,8 @@ Tensor Device::pick_fw(
 }
 
 Tensor Device::slice_fw(
-    const Tensor &x, std::uint32_t dim, std::uint32_t lower, std::uint32_t upper) {
+    const Tensor &x, std::uint32_t dim,
+    std::uint32_t lower, std::uint32_t upper) {
   CHECK_DEVICE(x);
   Tensor y = new_raw_tensor(shape_ops::slice(x.shape(), dim, lower, upper));
   slice_fw_impl(x, dim, lower, y);
@@ -344,7 +345,8 @@ DEV_BW_X_CONST(prelu);
 DEV_BW_X_CONST(elu);
 
 void Device::pown_bw(
-    const Tensor &x, const Tensor &y, const Tensor &gy, std::int32_t k, Tensor &gx) {
+    const Tensor &x, const Tensor &y, const Tensor &gy, std::int32_t k,
+    Tensor &gx) {
   CHECK_DEVICE(x);
   CHECK_DEVICE(y);
   CHECK_DEVICE(gy);
@@ -377,12 +379,61 @@ DEV_FW_AB(divide, shape_ops::elementwise);
 DEV_FW_AB(pow, shape_ops::elementwise);
 DEV_FW_AB(matmul, shape_ops::matmul);
 
+Tensor Device::conv2d_fw(
+    const Tensor &a, const Tensor &b,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    std::uint32_t dilation0, std::uint32_t dilation1) {
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
+  Tensor y = new_raw_tensor(shape_ops::conv2d(
+        a.shape(), b.shape(),
+        padding0, padding1, stride0, stride1, dilation0, dilation1));
+  conv2d_fw_impl(
+      a, b, padding0, padding1, stride0, stride1, dilation0, dilation1, y);
+  return y;
+}
+
 DEV_BW_AB(add, shape_ops::elementwise);
 DEV_BW_AB(subtract, shape_ops::elementwise);
 DEV_BW_AB(multiply, shape_ops::elementwise);
 DEV_BW_AB(divide, shape_ops::elementwise);
 DEV_BW_AB(pow, shape_ops::elementwise);
 DEV_BW_AB(matmul, shape_ops::matmul);
+
+void Device::conv2d_bw(
+    const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    std::uint32_t dilation0, std::uint32_t dilation1,
+    Tensor &ga, Tensor &gb) {
+  CHECK_DEVICE(a);
+  CHECK_DEVICE(b);
+  CHECK_DEVICE(y);
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(ga);
+  CHECK_DEVICE(gb);
+  if (a.shape() != ga.shape() ||
+      b.shape() != gb.shape() ||
+      y.shape() != gy.shape() ||
+      y.shape() != shape_ops::conv2d(
+        a.shape(), b.shape(),
+        padding0, padding1, stride0, stride1, dilation0, dilation1)) {
+    THROW_ERROR(
+        "Shape mismatched at conv2d_bw"
+        << ". a.shape: " << a.shape().to_string()
+        << ", b.shape: " << b.shape().to_string()
+        << ", y.shape: " << y.shape().to_string()
+        << ", gy.shape: " << gy.shape().to_string()
+        << ", ga.shape: " << ga.shape().to_string()
+        << ", gb.shape: " << gb.shape().to_string()
+        << ", padding0: " << padding0
+        << ", padding1: " << padding1);
+  }
+  conv2d_bw_impl(
+      a, b, y, gy, padding0, padding1, stride0, stride1, dilation0, dilation1,
+      ga, gb);
+}
 
 #undef DEV_FW_X
 #undef DEV_BW_X
@@ -405,7 +456,8 @@ Tensor Device::logsumexp_fw(const Tensor &x, std::uint32_t dim) {
   return y;
 }
 
-Tensor Device::broadcast_fw(const Tensor &x, std::uint32_t dim, std::uint32_t size) {
+Tensor Device::broadcast_fw(
+    const Tensor &x, std::uint32_t dim, std::uint32_t size) {
   CHECK_DEVICE(x);
   Tensor y = new_raw_tensor(shape_ops::broadcast(x.shape(), dim, size));
   broadcast_fw_impl(x, dim, size, y);

@@ -301,38 +301,26 @@ TEST_F(ShapeOpsTest, CheckInvalidTranspose) {
 }
 
 TEST_F(ShapeOpsTest, CheckMatMul) {
-  EXPECT_EQ(Shape(), matmul({}, {}));
-  EXPECT_EQ(Shape({}, 3), matmul(Shape({}, 3), {}));
-  EXPECT_EQ(Shape({}, 3), matmul({}, Shape({}, 3)));
-  EXPECT_EQ(Shape({}, 3), matmul(Shape({}, 3), Shape({}, 3)));
-  EXPECT_EQ(Shape({10}), matmul({10}, {}));
-  EXPECT_EQ(Shape({10}, 3), matmul(Shape({10}, 3), {}));
-  EXPECT_EQ(Shape({10}, 3), matmul({10}, Shape({}, 3)));
-  EXPECT_EQ(Shape({10}, 3), matmul(Shape({10}, 3), Shape({}, 3)));
-  EXPECT_EQ(Shape({1, 10}), matmul({}, {1, 10}));
-  EXPECT_EQ(Shape({1, 10}, 3), matmul(Shape({}, 3), {1, 10}));
-  EXPECT_EQ(Shape({1, 10}, 3), matmul({}, Shape({1, 10}, 3)));
-  EXPECT_EQ(Shape({1, 10}, 3), matmul(Shape({}, 3), Shape({1, 10}, 3)));
-  EXPECT_EQ(Shape({}), matmul({1, 10}, {10}));
-  EXPECT_EQ(Shape({}, 3), matmul(Shape({1, 10}, 3), {10}));
-  EXPECT_EQ(Shape({}, 3), matmul({1, 10}, Shape({10}, 3)));
-  EXPECT_EQ(Shape({}, 3), matmul(Shape({1, 10}, 3), Shape({10}, 3)));
-  EXPECT_EQ(Shape({10, 10}), matmul({10}, {1, 10}));
-  EXPECT_EQ(Shape({10, 10}, 3), matmul(Shape({10}, 3), {1, 10}));
-  EXPECT_EQ(Shape({10, 10}, 3), matmul({10}, Shape({1, 10}, 3)));
-  EXPECT_EQ(Shape({10, 10}, 3), matmul(Shape({10}, 3), Shape({1, 10}, 3)));
-  EXPECT_EQ(Shape({20}), matmul({20, 10}, {10}));
-  EXPECT_EQ(Shape({20}, 3), matmul(Shape({20, 10}, 3), {10}));
-  EXPECT_EQ(Shape({20}, 3), matmul({20, 10}, Shape({10}, 3)));
-  EXPECT_EQ(Shape({20}, 3), matmul(Shape({20, 10}, 3), Shape({10}, 3)));
-  EXPECT_EQ(Shape({1, 20}), matmul({1, 10}, {10, 20}));
-  EXPECT_EQ(Shape({1, 20}, 3), matmul(Shape({1, 10}, 3), {10, 20}));
-  EXPECT_EQ(Shape({1, 20}, 3), matmul({1, 10}, Shape({10, 20}, 3)));
-  EXPECT_EQ(Shape({1, 20}, 3), matmul(Shape({1, 10}, 3), Shape({10, 20}, 3)));
-  EXPECT_EQ(Shape({20, 30}), matmul({20, 10}, {10, 30}));
-  EXPECT_EQ(Shape({20, 30}, 3), matmul(Shape({20, 10}, 3), {10, 30}));
-  EXPECT_EQ(Shape({20, 30}, 3), matmul({20, 10}, Shape({10, 30}, 3)));
-  EXPECT_EQ(Shape({20, 30}, 3), matmul(Shape({20, 10}, 3), Shape({10, 30}, 3)));
+  struct TestCase {
+    vector<std::uint32_t> a, b, y;
+  };
+  const vector<TestCase> test_cases {
+    {{}, {}, {}},
+    {{10}, {}, {10}},
+    {{}, {1, 10}, {1, 10}},
+    {{1, 10}, {10}, {}},
+    {{10}, {1, 10}, {10, 10}},
+    {{20, 10}, {10}, {20}},
+    {{1, 10}, {10, 20}, {1, 20}},
+    {{20, 10}, {10, 30}, {20, 30}},
+  };
+
+  for (const auto &tc : test_cases) {
+    EXPECT_EQ(Shape(tc.y), matmul(tc.a, tc.b));
+    EXPECT_EQ(Shape(tc.y, 3), matmul(Shape(tc.a, 3), tc.b));
+    EXPECT_EQ(Shape(tc.y, 3), matmul(tc.a, Shape(tc.b, 3)));
+    EXPECT_EQ(Shape(tc.y, 3), matmul(Shape(tc.a, 3), Shape(tc.b, 3)));
+  }
 }
 
 TEST_F(ShapeOpsTest, CheckInvalidMatMul) {
@@ -340,6 +328,128 @@ TEST_F(ShapeOpsTest, CheckInvalidMatMul) {
   EXPECT_THROW(matmul({}, {1, 1, 2}), Error);
   EXPECT_THROW(matmul({2, 3}, {4, 5}), Error);
   EXPECT_THROW(matmul(Shape({}, 2), Shape({}, 3)), Error);
+}
+
+TEST_F(ShapeOpsTest, CheckConv2D) {
+  struct TestCase {
+    vector<std::uint32_t> x, w;
+    std::uint32_t pad0, pad1, str0, str1, dil0, dil1;
+    vector<std::uint32_t> y;
+  };
+  const vector<TestCase> test_cases {
+    {{}, {}, 0, 0, 1, 1, 1, 1, {}},
+    {{7, 8}, {}, 0, 0, 1, 1, 1, 1, {7, 8}},
+    {{7, 8}, {3, 2}, 0, 0, 1, 1, 1, 1, {5, 7}},
+    {{7, 8}, {7, 8}, 0, 0, 1, 1, 1, 1, {}},
+    {{7, 8}, {1, 1, 1, 20}, 0, 0, 1, 1, 1, 1, {7, 8, 20}},
+    {{7, 8}, {3, 2, 1, 20}, 0, 0, 1, 1, 1, 1, {5, 7, 20}},
+    {{7, 8}, {7, 8, 1, 20}, 0, 0, 1, 1, 1, 1, {1, 1, 20}},
+    {{7, 8, 10}, {1, 1, 10}, 0, 0, 1, 1, 1, 1, {7, 8}},
+    {{7, 8, 10}, {3, 2, 10}, 0, 0, 1, 1, 1, 1, {5, 7}},
+    {{7, 8, 10}, {7, 8, 10}, 0, 0, 1, 1, 1, 1, {}},
+    {{7, 8, 10}, {1, 1, 10, 20}, 0, 0, 1, 1, 1, 1, {7, 8, 20}},
+    {{7, 8, 10}, {3, 2, 10, 20}, 0, 0, 1, 1, 1, 1, {5, 7, 20}},
+    {{7, 8, 10}, {7, 8, 10, 20}, 0, 0, 1, 1, 1, 1, {1, 1, 20}},
+    // with padding
+    {{7, 8}, {1, 1}, 1, 0, 1, 1, 1, 1, {9, 8}},
+    {{7, 8}, {1, 1}, 0, 1, 1, 1, 1, 1, {7, 10}},
+    {{7, 8}, {1, 1}, 1, 1, 1, 1, 1, 1, {9, 10}},
+    {{7, 8}, {3, 2}, 1, 0, 1, 1, 1, 1, {7, 7}},
+    {{7, 8}, {3, 2}, 0, 1, 1, 1, 1, 1, {5, 9}},
+    {{7, 8}, {3, 2}, 1, 1, 1, 1, 1, 1, {7, 9}},
+    {{7, 8}, {9, 8}, 1, 0, 1, 1, 1, 1, {}},
+    {{7, 8}, {7, 10}, 0, 1, 1, 1, 1, 1, {}},
+    {{7, 8}, {9, 10}, 1, 1, 1, 1, 1, 1, {}},
+    // with stride
+    {{7, 8}, {1, 1}, 0, 0, 2, 1, 1, 1, {4, 8}},
+    {{7, 8}, {1, 1}, 0, 0, 1, 2, 1, 1, {7, 4}},
+    {{7, 8}, {1, 1}, 0, 0, 2, 2, 1, 1, {4, 4}},
+    {{7, 8}, {3, 2}, 0, 0, 2, 1, 1, 1, {3, 7}},
+    {{7, 8}, {3, 2}, 0, 0, 1, 2, 1, 1, {5, 4}},
+    {{7, 8}, {3, 2}, 0, 0, 2, 2, 1, 1, {3, 4}},
+    {{7, 8}, {7, 8}, 0, 0, 2, 1, 1, 1, {}},
+    {{7, 8}, {7, 8}, 0, 0, 1, 2, 1, 1, {}},
+    {{7, 8}, {7, 8}, 0, 0, 2, 2, 1, 1, {}},
+    // with dilation
+    {{7, 8}, {1, 1}, 0, 0, 1, 1, 2, 1, {7, 8}},
+    {{7, 8}, {1, 1}, 0, 0, 1, 1, 1, 2, {7, 8}},
+    {{7, 8}, {1, 1}, 0, 0, 1, 1, 2, 2, {7, 8}},
+    {{7, 8}, {3, 2}, 0, 0, 1, 1, 2, 1, {3, 7}},
+    {{7, 8}, {3, 2}, 0, 0, 1, 1, 1, 2, {5, 6}},
+    {{7, 8}, {3, 2}, 0, 0, 1, 1, 2, 2, {3, 6}},
+    {{7, 8}, {2, 8}, 0, 0, 1, 1, 6, 1, {}},
+    {{7, 8}, {7, 2}, 0, 0, 1, 1, 1, 7, {}},
+    {{7, 8}, {2, 2}, 0, 0, 1, 1, 6, 7, {}},
+  };
+
+  for (const auto &tc : test_cases) {
+    EXPECT_EQ(
+        Shape(tc.y),
+        conv2d(
+          tc.x, tc.w,
+          tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1));
+    EXPECT_EQ(
+        Shape(tc.y, 3),
+        conv2d(
+          Shape(tc.x, 3), tc.w,
+          tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1));
+    EXPECT_EQ(
+        Shape(tc.y, 3),
+        conv2d(
+          tc.x, Shape(tc.w, 3),
+          tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1));
+    EXPECT_EQ(
+        Shape(tc.y, 3),
+        conv2d(
+          Shape(tc.x, 3), Shape(tc.w, 3),
+          tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1));
+  }
+}
+
+TEST_F(ShapeOpsTest, CheckInvalidConv2D) {
+  // invalid #dimensions
+  EXPECT_THROW(conv2d({1, 1, 1, 2}, {}, 0, 0, 1, 1, 1, 1), Error);
+  EXPECT_THROW(conv2d({}, {1, 1, 1, 1, 2}, 0, 0, 1, 1, 1, 1), Error);
+
+  // zero-stride/dilation
+  EXPECT_THROW(conv2d({}, {}, 0, 0, 0, 1, 1, 1), Error);
+  EXPECT_THROW(conv2d({}, {}, 0, 0, 1, 0, 1, 1), Error);
+  EXPECT_THROW(conv2d({}, {}, 0, 0, 1, 1, 0, 1), Error);
+  EXPECT_THROW(conv2d({}, {}, 0, 0, 1, 1, 1, 0), Error);
+
+  // minibatches mismatching
+  EXPECT_THROW(conv2d(Shape({}, 2), Shape({}, 3), 0, 0, 1, 1, 1, 1), Error);
+
+  // channels mismatching
+  EXPECT_NO_THROW(conv2d({3, 3, 42}, {3, 3, 42}, 0, 0, 1, 1, 1, 1));
+  EXPECT_THROW(conv2d({3, 3, 42}, {3, 3, 43}, 0, 0, 1, 1, 1, 1), Error);
+
+  // sizes mismatching
+  EXPECT_NO_THROW(conv2d({3, 3}, {3, 3}, 0, 0, 1, 1, 1, 1));
+  EXPECT_THROW(conv2d({3, 3}, {4, 3}, 0, 0, 1, 1, 1, 1), Error);
+  EXPECT_THROW(conv2d({3, 3}, {3, 4}, 0, 0, 1, 1, 1, 1), Error);
+  EXPECT_THROW(conv2d({3, 3}, {4, 4}, 0, 0, 1, 1, 1, 1), Error);
+
+  // sizes mismatching with padding
+  EXPECT_NO_THROW(conv2d({3, 3}, {5, 5}, 1, 1, 1, 1, 1, 1));
+  EXPECT_THROW(conv2d({3, 3}, {6, 5}, 1, 1, 1, 1, 1, 1), Error);
+  EXPECT_THROW(conv2d({3, 3}, {5, 6}, 1, 1, 1, 1, 1, 1), Error);
+  EXPECT_THROW(conv2d({3, 3}, {6, 6}, 1, 1, 1, 1, 1, 1), Error);
+
+  // sizes mismatching with stride
+  EXPECT_NO_THROW(conv2d({3, 3}, {3, 3}, 0, 0, 2, 2, 1, 1));
+  EXPECT_THROW(conv2d({3, 3}, {4, 3}, 0, 0, 2, 2, 1, 1), Error);
+  EXPECT_THROW(conv2d({3, 3}, {3, 4}, 0, 0, 2, 2, 1, 1), Error);
+  EXPECT_THROW(conv2d({3, 3}, {4, 4}, 0, 0, 2, 2, 1, 1), Error);
+
+  // sizes mismatching with dilation
+  EXPECT_NO_THROW(conv2d({3, 3}, {2, 2}, 0, 0, 1, 1, 2, 2));
+  EXPECT_THROW(conv2d({2, 3}, {2, 2}, 0, 0, 1, 1, 2, 2), Error);
+  EXPECT_THROW(conv2d({3, 2}, {2, 2}, 0, 0, 1, 1, 2, 2), Error);
+  EXPECT_THROW(conv2d({2, 2}, {2, 2}, 0, 0, 1, 1, 2, 2), Error);
+  EXPECT_THROW(conv2d({3, 3}, {2, 2}, 0, 0, 1, 1, 3, 2), Error);
+  EXPECT_THROW(conv2d({3, 3}, {2, 2}, 0, 0, 1, 1, 2, 3), Error);
+  EXPECT_THROW(conv2d({3, 3}, {2, 2}, 0, 0, 1, 1, 3, 3), Error);
 }
 
 }  // namespace shape_ops

@@ -31,6 +31,16 @@ private:
   std::string full_msg_;
 };
 
+/**
+ * Not-implemented signal.
+ */
+class NotImplementedError : public Error {
+public:
+  NotImplementedError(
+      const std::string &file, std::uint32_t line, const std::string &func_name)
+  : Error(file, line, "Not implemented: " + func_name) {}
+};
+
 }  // namespace primitiv
 
 #define THROW_ERROR(cmds) { \
@@ -38,5 +48,10 @@ private:
   ss << cmds; \
   throw primitiv::Error(__FILE__, __LINE__, ss.str()); \
 }
+
+#define THROW_NOT_IMPLEMENTED { \
+  throw primitiv::NotImplementedError(__FILE__, __LINE__, __func__); \
+}
+
 
 #endif  // PRIMITIV_ERROR_H_

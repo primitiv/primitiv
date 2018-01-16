@@ -209,6 +209,20 @@ public:
   Tensor broadcast_fw(const Tensor &x, std::uint32_t dim, std::uint32_t size);
   Tensor batch_sum_fw(const Tensor &x);
 
+  // Convolution.
+  Tensor conv2d_fw(
+      const Tensor &x, const Tensor &w,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      std::uint32_t dilation0, std::uint32_t dilation1);
+
+  void conv2d_bw(
+      const Tensor &x, const Tensor &w, const Tensor &y, const Tensor &gy,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      std::uint32_t dilation0, std::uint32_t dilation1,
+      Tensor &gx, Tensor &gw);
+
   /**
    * Directly multiplies all elements by a constant.
    * @param k A constant to multiply.
@@ -426,6 +440,20 @@ private:
   virtual void logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
   virtual void broadcast_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) = 0;
   virtual void batch_sum_fw_impl(const Tensor &x, Tensor &y) = 0;
+
+  virtual void conv2d_fw_impl(
+      const Tensor &x, const Tensor &w,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      std::uint32_t dilation0, std::uint32_t dilation1,
+      Tensor &y) = 0;
+
+  virtual void conv2d_bw_impl(
+      const Tensor &x, const Tensor &w, const Tensor &y, const Tensor &gy,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      std::uint32_t dilation0, std::uint32_t dilation1,
+      Tensor &gx, Tensor &gw) = 0;
 
   virtual void inplace_multiply_const_impl(float k, Tensor &x) = 0;
 

@@ -85,9 +85,12 @@ Unique Options
       <td>
         Enables CUDA backend (<code>primitiv::devices::CUDA</code> class).
         This option introduces a dependency to the
-        <a href="https://developer.nvidia.com/cuda-toolkit">NVIDIA CUDA Toolkit v7.5 or later</a>,
+        <a href="https://developer.nvidia.com/cuda-toolkit">NVIDIA CUDA Toolkit v8.0 or later</a>
         and
+        <a href="https://developer.nvidia.com/cudnn">cuDNN library v7.0 or later</a>.
         <a href="https://cmake.org/cmake/help/v3.1/module/FindCUDA.html">FindCUDA</a>
+        and
+        <a href="/cmake/FindCuDNN.cmake">FindCuDNN</a>
         options can also be used.
       </td>
     </tr>
