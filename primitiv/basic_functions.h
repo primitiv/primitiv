@@ -283,6 +283,13 @@ type_traits::Identity<Var> conv2d(
     std::uint32_t stride0, std::uint32_t stride1,
     std::uint32_t dilation0, std::uint32_t dilation1);
 
+template<typename Var>
+type_traits::Identity<Var> max_pool2d(
+    const Var &x,
+    std::uint32_t window0, std::uint32_t window1,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1);
+
 namespace batch {
 
 template<typename Var>

@@ -385,6 +385,34 @@ private:
   std::uint32_t dilation0_, dilation1_;
 };
 
+class MaxPooling2D : public Operator {
+  NO_CTOR_CLASS_DECL(MaxPooling2D);
+
+public:
+  MaxPooling2D(
+      std::uint32_t window0, std::uint32_t window1,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1)
+  : window0_(window0), window1_(window1)
+  , padding0_(padding0), padding1_(padding1)
+  , stride0_(stride0), stride1_(stride1) {}
+
+  std::string name() const override {
+    return "MaxPooling2D("
+      + string_utils::to_string(window0_) + ","
+      + string_utils::to_string(window1_) + ","
+      + string_utils::to_string(padding0_) + ","
+      + string_utils::to_string(padding1_) + ","
+      + string_utils::to_string(stride0_) + ","
+      + string_utils::to_string(stride1_) + ")";
+  }
+
+private:
+  std::uint32_t window0_, window1_;
+  std::uint32_t padding0_, padding1_;
+  std::uint32_t stride0_, stride1_;
+};
+
 #undef DECL_OPERATOR
 #undef DECL_OPERATOR_K
 #undef NO_CTOR_CLASS_DECL
