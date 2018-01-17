@@ -147,15 +147,40 @@ Shape conv2d(
       stride0 == 0 || stride1 == 0 ||
       dilation0 == 0 || dilation1 == 0) {
     THROW_ERROR(
-        "Invalid arguments to calculate the convolution: "
+        "Invalid arguments to calculate a convolution: "
         << x.to_string() << ", " << w.to_string() << ", "
         << padding0 << ", " << padding1 << ", "
         << stride0 << ", " << stride1 << ", "
-        << dilation0 << ", " << dilation1 << ", ");
+        << dilation0 << ", " << dilation1);
   }
   return Shape(
       {(x0 - w0) / stride0 + 1, (x1 - w1) / stride1 + 1, w[3]},
       std::max(x.batch(), w.batch()));
+}
+
+Shape pool2d(
+    const Shape &x,
+    std::uint32_t window0, std::uint32_t window1,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1) {
+  const std::uint32_t x0 = x[0] + 2 * padding0;
+  const std::uint32_t x1 = x[1] + 2 * padding1;
+
+  if (x.depth() > 3 ||
+      x0 < window0 || x1 < window1 ||
+      window0 == 0 || window1 == 0 ||
+      stride0 == 0 || stride1 == 0) {
+    THROW_ERROR(
+        "Invalid arguments to calculate a pooling: "
+        << x.to_string() << ", "
+        << window0 << ", " << window1 << ", "
+        << padding0 << ", " << padding1 << ", "
+        << stride0 << ", " << stride1);
+  }
+
+  return Shape(
+      {(x0 - window0) / stride0 + 1, (x1 - window1) / stride1 + 1, x[2]},
+      x.batch());
 }
 
 }  // namespace shape_ops

@@ -2777,38 +2777,34 @@ TEST_F(TensorForwardTest, CheckInvalidConv2D) {
     // invalid #dimensions
     {{1, 1, 1, 2}, {}, 0, 0, 1, 1, 1, 1, false},
     {{}, {1, 1, 1, 1, 2}, 0, 0, 1, 1, 1, 1, false},
-
     // zero-stride/dilation
+    {{}, {}, 0, 0, 1, 1, 1, 1, true},
     {{}, {}, 0, 0, 0, 1, 1, 1, false},
     {{}, {}, 0, 0, 1, 0, 1, 1, false},
     {{}, {}, 0, 0, 1, 1, 0, 1, false},
     {{}, {}, 0, 0, 1, 1, 1, 0, false},
-
     // minibatches mismatching
+    {Shape({}, 2), Shape({}, 2), 0, 0, 1, 1, 1, 1, true},
+    {Shape({}, 3), Shape({}, 3), 0, 0, 1, 1, 1, 1, true},
     {Shape({}, 2), Shape({}, 3), 0, 0, 1, 1, 1, 1, false},
-
     // channels mismatching
     {{3, 3, 42}, {3, 3, 42}, 0, 0, 1, 1, 1, 1, true},
     {{3, 3, 42}, {3, 3, 43}, 0, 0, 1, 1, 1, 1, false},
-
     // sizes mismatching
     {{3, 3}, {3, 3}, 0, 0, 1, 1, 1, 1, true},
     {{3, 3}, {4, 3}, 0, 0, 1, 1, 1, 1, false},
     {{3, 3}, {3, 4}, 0, 0, 1, 1, 1, 1, false},
     {{3, 3}, {4, 4}, 0, 0, 1, 1, 1, 1, false},
-
     // sizes mismatching with padding
     {{3, 3}, {5, 5}, 1, 1, 1, 1, 1, 1, true},
     {{3, 3}, {6, 5}, 1, 1, 1, 1, 1, 1, false},
     {{3, 3}, {5, 6}, 1, 1, 1, 1, 1, 1, false},
     {{3, 3}, {6, 6}, 1, 1, 1, 1, 1, 1, false},
-
     // sizes mismatching with stride
     {{3, 3}, {3, 3}, 0, 0, 2, 2, 1, 1, true},
     {{3, 3}, {4, 3}, 0, 0, 2, 2, 1, 1, false},
     {{3, 3}, {3, 4}, 0, 0, 2, 2, 1, 1, false},
     {{3, 3}, {4, 4}, 0, 0, 2, 2, 1, 1, false},
-
     // sizes mismatching with dilation
     {{3, 3}, {2, 2}, 0, 0, 1, 1, 2, 2, true},
     {{2, 3}, {2, 2}, 0, 0, 1, 1, 2, 2, false},
