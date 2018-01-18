@@ -114,12 +114,15 @@ TEST_F(InitializerImplTest, CheckInvalidIdentity) {
 }
 
 TEST_F(InitializerImplTest, CheckXavierUniform) {
-  const std::uint32_t N = 768;
-  const std::uint32_t fan_in = N;
-  const std::uint32_t fan_out = N;
-  const std::uint32_t num_params = N * N;
+  const std::uint32_t H = 768;
+  const std::uint32_t W = 768;
+  const std::uint32_t fan_in = H;
+  const std::uint32_t fan_out = W;
+#ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
+  const std::uint32_t num_params = H * W;
+#endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
-  Tensor x = dev.new_tensor_by_constant({fan_in, fan_out}, 0);
+  Tensor x = dev.new_tensor_by_constant({H, W}, 0);
 
   for (float scale : {.5f, 1.f, 2.f}) {
     const float bound = scale * std::sqrt(6. / (fan_in + fan_out));
@@ -155,12 +158,15 @@ TEST_F(InitializerImplTest, CheckInvalidXavierUniform) {
 
 TEST_F(InitializerImplTest, CheckXavierNormal) {
   // NOTE(odashi): This test checks only mean and SD.
-  const std::uint32_t N = 768;
-  const std::uint32_t fan_in = N;
-  const std::uint32_t fan_out = N;
-  const std::uint32_t num_params = N * N;
+  const std::uint32_t H = 768;
+  const std::uint32_t W = 768;
+#ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
+  const std::uint32_t fan_in = H;
+  const std::uint32_t fan_out = W;
+  const std::uint32_t num_params = H * W;
+#endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
-  Tensor x = dev.new_tensor_by_constant({fan_in, fan_out}, 0);
+  Tensor x = dev.new_tensor_by_constant({H, W}, 0);
 
   for (float scale : {.5f, 1.f, 2.f}) {
     const XavierNormal init(scale);
@@ -197,7 +203,9 @@ TEST_F(InitializerImplTest, CheckXavierUniformConv2D) {
   const std::uint32_t K = 32;
   const std::uint32_t fan_in = H * W * C;
   const std::uint32_t fan_out = H * W * K;
+#ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
   const std::uint32_t num_params = H * W * C * K;
+#endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
   Tensor x = dev.new_tensor_by_constant({H, W, C, K}, 0);
 
@@ -239,9 +247,11 @@ TEST_F(InitializerImplTest, CheckXavierNormalConv2D) {
   const std::uint32_t W = 32;
   const std::uint32_t C = 32;
   const std::uint32_t K = 32;
+#ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
   const std::uint32_t fan_in = H * W * C;
   const std::uint32_t fan_out = H * W * K;
   const std::uint32_t num_params = H * W * C * K;
+#endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
 
   Tensor x = dev.new_tensor_by_constant({H, W, C, K}, 0);
 
