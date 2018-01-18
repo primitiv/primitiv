@@ -2769,7 +2769,7 @@ TEST_F(TensorForwardTest, CheckConv2D_VGG16FirstLayer) {
 
 TEST_F(TensorForwardTest, CheckInvalidConv2D) {
   struct TestCase {
-    Shape a_shape, b_shape;
+    Shape x_shape, w_shape;
     std::uint32_t pad0, pad1, str0, str1, dil0, dil1;
     bool ok;
   };
@@ -2817,13 +2817,83 @@ TEST_F(TensorForwardTest, CheckInvalidConv2D) {
 
   for (Device *dev : devices) {
     for (const auto tc : test_cases) {
-      const Tensor a = dev->new_tensor_by_constant(tc.a_shape, 0);
-      const Tensor b = dev->new_tensor_by_constant(tc.b_shape, 0);
-      if (tc.ok) try {
-        conv2d(a, b, tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1);
-      } IGNORE_NOT_IMPLEMENTED else {
+      const Tensor x = dev->new_tensor_by_constant(tc.x_shape, 0);
+      const Tensor w = dev->new_tensor_by_constant(tc.w_shape, 0);
+      if (tc.ok) {
+        EXPECT_NO_THROW(try {
+            conv2d(x, w, tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1);
+        } IGNORE_NOT_IMPLEMENTED);
+      } else {
         EXPECT_THROW(
-            conv2d(a, b, tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1),
+            conv2d(x, w, tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1),
+            Error);
+      }
+    }
+  }
+}
+
+#define TEST_MAX_POOL2D(win0, win1, pad0, pad1, str0, str1) { \
+  for (Device *dev : devices) try { \
+    const Tensor x = dev->new_tensor_by_vector(x_shape, x_data); \
+    const Tensor y = max_pool2d(x, win0, win1, pad0, pad1, str0, str1); \
+    EXPECT_EQ(y_shape, y.shape()); \
+    EXPECT_TRUE(vector_match(y_data, y.to_vector())); \
+  } IGNORE_NOT_IMPLEMENTED \
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_1x1x1_1x1) {
+  const vector<float> x_data {123};
+  const vector<float> y_data {123};
+  const Shape x_shape {};
+  const Shape w_shape {};
+  const Shape y_shape {};
+  TEST_MAX_POOL2D(1, 1, 0, 0, 1, 1);
+}
+
+#undef TEST_MAX_POOL2D
+
+TEST_F(TensorForwardTest, CheckInvalidPool2D) {
+  struct TestCase {
+    Shape x_shape;
+    std::uint32_t win0, win1, pad0, pad1, str0, str1;
+    bool ok;
+  };
+  const vector<TestCase> test_cases {
+    // invalid #dimensions
+    {{1, 1, 1, 2}, 1, 1, 0, 0, 1, 1, false},
+    // zero-window/stride
+    {{}, 1, 1, 0, 0, 1, 1, true},
+    {{}, 0, 1, 0, 0, 1, 1, false},
+    {{}, 1, 0, 0, 0, 1, 1, false},
+    {{}, 1, 1, 0, 0, 0, 1, false},
+    {{}, 1, 1, 0, 0, 1, 0, false},
+    // sizes mismatching
+    {{3, 3}, 3, 3, 0, 0, 1, 1, true},
+    {{3, 3}, 4, 3, 0, 0, 1, 1, false},
+    {{3, 3}, 3, 4, 0, 0, 1, 1, false},
+    {{3, 3}, 4, 4, 0, 0, 1, 1, false},
+    // sizes mismatching with padding
+    {{3, 3}, 5, 5, 1, 1, 1, 1, true},
+    {{3, 3}, 6, 5, 1, 1, 1, 1, false},
+    {{3, 3}, 5, 6, 1, 1, 1, 1, false},
+    {{3, 3}, 6, 6, 1, 1, 1, 1, false},
+    // sizes mismatching with stride
+    {{3, 3}, 3, 3, 0, 0, 2, 2, true},
+    {{3, 3}, 4, 3, 0, 0, 2, 2, false},
+    {{3, 3}, 3, 4, 0, 0, 2, 2, false},
+    {{3, 3}, 4, 4, 0, 0, 2, 2, false},
+  };
+
+  for (Device *dev : devices) {
+    for (const auto tc : test_cases) {
+      const Tensor x = dev->new_tensor_by_constant(tc.x_shape, 0);
+      if (tc.ok) {
+        EXPECT_NO_THROW(try {
+            max_pool2d(x, tc.win0, tc.win1, tc.pad0, tc.pad1, tc.str0, tc.str1);
+        } IGNORE_NOT_IMPLEMENTED);
+      } else {
+        EXPECT_THROW(
+            max_pool2d(x, tc.win0, tc.win1, tc.pad0, tc.pad1, tc.str0, tc.str1),
             Error);
       }
     }
