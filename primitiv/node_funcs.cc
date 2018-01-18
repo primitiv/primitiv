@@ -288,6 +288,18 @@ Node conv2d(
       x, w);
 }
 
+template<>
+Node max_pool2d(
+    const Node &x,
+    std::uint32_t window0, std::uint32_t window1,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1) {
+  return REGX(
+      x,
+      MaxPooling2D(window0, window1, padding0, padding1, stride0, stride1),
+      x);
+}
+
 namespace batch {
 
 template<>

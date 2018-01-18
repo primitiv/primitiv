@@ -53,5 +53,11 @@ public:
   throw primitiv::NotImplementedError(__FILE__, __LINE__, __func__); \
 }
 
+#define THROW_NOT_IMPLEMENTED_WITH_MESSAGE(cmds) { \
+  std::stringstream ss; \
+  ss << cmds; \
+  throw primitiv::NotImplementedError(__FILE__, __LINE__, ss.str()); \
+}
+
 
 #endif  // PRIMITIV_ERROR_H_

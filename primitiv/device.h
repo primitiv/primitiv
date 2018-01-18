@@ -223,6 +223,20 @@ public:
       std::uint32_t dilation0, std::uint32_t dilation1,
       Tensor &gx, Tensor &gw);
 
+  // Pooling.
+  Tensor max_pool2d_fw(
+      const Tensor &x,
+      std::uint32_t window0, std::uint32_t window1,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1);
+
+  void max_pool2d_bw(
+      const Tensor &x, const Tensor &y, const Tensor &gy,
+      std::uint32_t window0, std::uint32_t window1,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      Tensor &gx);
+
   /**
    * Directly multiplies all elements by a constant.
    * @param k A constant to multiply.
@@ -454,6 +468,20 @@ private:
       std::uint32_t stride0, std::uint32_t stride1,
       std::uint32_t dilation0, std::uint32_t dilation1,
       Tensor &gx, Tensor &gw) = 0;
+
+  virtual void max_pool2d_fw_impl(
+      const Tensor &x,
+      std::uint32_t window0, std::uint32_t window1,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      Tensor &y) = 0;
+
+  virtual void max_pool2d_bw_impl(
+      const Tensor &x, const Tensor &y, const Tensor &gy,
+      std::uint32_t window0, std::uint32_t window1,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      Tensor &gx) = 0;
 
   virtual void inplace_multiply_const_impl(float k, Tensor &x) = 0;
 

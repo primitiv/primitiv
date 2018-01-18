@@ -296,6 +296,16 @@ Tensor conv2d(
       x, w, padding0, padding1, stride0, stride1, dilation0, dilation1);
 }
 
+template<>
+Tensor max_pool2d(
+    const Tensor &x,
+    std::uint32_t window0, std::uint32_t window1,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1) {
+  return x.device().max_pool2d_fw(
+      x, window0, window1, padding0, padding1, stride0, stride1);
+}
+
 namespace batch {
 
 template<>

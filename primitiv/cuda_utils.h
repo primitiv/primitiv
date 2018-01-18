@@ -191,6 +191,10 @@ public:
           padding_h, padding_w, stride_h, stride_w, dilation_h, dilation_w,
           CUDNN_CONVOLUTION, CUDNN_DATA_FLOAT));
 #else
+    if (dilation_h > 1 || dilation_w > 1) {
+      THROW_NOT_IMPLEMENTED_WITH_MESSAGE(
+          "Dilated convolution is supported by cuDNN 6.0 or later.");
+    }
     CUDNN_CALL(::cudnnSetConvolution2dDescriptor(
           handle_,
           padding_h, padding_w, stride_h, stride_w, dilation_h, dilation_w,
@@ -206,6 +210,33 @@ public:
 
 private:
   ::cudnnConvolutionDescriptor_t handle_ = NULL;
+};
+
+/**
+ * Wrapper of cudnnPoolingDescriptor_t.
+ */
+class CuDNNPoolingDescriptor
+: public primitiv::mixins::Nonmovable<CuDNNPoolingDescriptor> {
+public:
+  CuDNNPoolingDescriptor(
+      ::cudnnPoolingMode_t mode,
+      std::uint32_t window_h, std::uint32_t window_w,
+      std::uint32_t padding_h, std::uint32_t padding_w,
+      std::uint32_t stride_h, std::uint32_t stride_w) {
+    CUDNN_CALL(::cudnnCreatePoolingDescriptor(&handle_));
+    CUDNN_CALL(::cudnnSetPooling2dDescriptor(
+          handle_, mode, CUDNN_PROPAGATE_NAN,
+          window_h, window_w, padding_h, padding_w, stride_h, stride_w));
+  }
+
+  ~CuDNNPoolingDescriptor() {
+    CUDNN_CALL(::cudnnDestroyPoolingDescriptor(handle_));
+  }
+
+  ::cudnnPoolingDescriptor_t get() const { return handle_; }
+
+private:
+  ::cudnnPoolingDescriptor_t handle_ = NULL;
 };
 
 }  // namespace cuda

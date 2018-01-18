@@ -1260,10 +1260,10 @@ void CUDA::conv2d_fw_impl(
   const Shape w_shape = w.shape();
   const Shape y_shape = y.shape();
 
-  // Sets target device.
+  // Specifies a target device.
   CUDA_CALL(::cudaSetDevice(dev_id_));
 
-  // Makes descriptors.
+  // Prepares descriptors.
   const cuda::CuDNNTensorDescriptor x_desc(
       w_shape.has_batch() ? 1 : x_shape.batch(),
       x_shape[2], x_shape[1], x_shape[0]);
@@ -1282,7 +1282,7 @@ void CUDA::conv2d_fw_impl(
         x_desc.get(), w_desc.get(), conv_desc.get(), y_desc.get(),
         CUDNN_CONVOLUTION_FWD_PREFER_FASTEST, 0, &algo));
 
-  // Obtains workspace memory.
+  // Obtains workspace size/memory.
   std::size_t ws_size;
   CUDNN_CALL(::cudnnGetConvolutionForwardWorkspaceSize(
         state_->cudnn.get(),
@@ -1290,7 +1290,7 @@ void CUDA::conv2d_fw_impl(
         algo, &ws_size));
   std::shared_ptr<void> ws_ptr = state_->pool.allocate(ws_size);
 
-  // Performs forward operation.
+  // Performs forward operations.
   const std::size_t x_shift = x_shape.has_batch() * x_shape.volume();
   const std::size_t w_shift = w_shape.volume();
   const std::size_t y_shift = y_shape.volume();
@@ -1321,10 +1321,10 @@ void CUDA::conv2d_bw_impl(
   const Shape w_shape = w.shape();
   const Shape y_shape = gy.shape();
 
-  // Sets target device.
+  // Specifies a target device.
   CUDA_CALL(::cudaSetDevice(dev_id_));
 
-  // Makes descriptors.
+  // Prepares descriptors.
   const cuda::CuDNNTensorDescriptor x_desc(
       w_shape.has_batch() ? 1 : x_shape.batch(),
       x_shape[2], x_shape[1], x_shape[0]);
@@ -1348,7 +1348,7 @@ void CUDA::conv2d_bw_impl(
         x_desc.get(), y_desc.get(), conv_desc.get(), w_desc.get(),
         CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST, 0, &w_algo));
 
-  // Obtains workspace memory.
+  // Obtains workspace sizes/memory.
   std::size_t x_ws_size, w_ws_size;
   CUDNN_CALL(::cudnnGetConvolutionBackwardDataWorkspaceSize(
         state_->cudnn.get(),
@@ -1389,6 +1389,72 @@ void CUDA::conv2d_bw_impl(
     gx_ptr += x_shift;
     gw_ptr += w_shift;
   }
+}
+
+void CUDA::max_pool2d_fw_impl(
+    const Tensor &x,
+    std::uint32_t window0, std::uint32_t window1,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    Tensor &y) {
+  const Shape x_shape = x.shape();
+  const Shape y_shape = y.shape();
+
+  // Specifies a target device.
+  CUDA_CALL(::cudaSetDevice(dev_id_));
+
+  // Prepares descriptors.
+  const cuda::CuDNNTensorDescriptor x_desc(
+      x_shape.batch(), x_shape[2], x_shape[1], x_shape[0]);
+  const cuda::CuDNNTensorDescriptor y_desc(
+      y_shape.batch(), y_shape[2], y_shape[1], y_shape[0]);
+  const cuda::CuDNNPoolingDescriptor pool_desc(
+      CUDNN_POOLING_MAX,
+      window1, window0, padding1, padding0, stride1, stride0);
+
+  // Performs a forward operation.
+  const float alpha = 1.f;
+  const float beta = 0.f;
+  const float *x_ptr = CDATA(x);
+  float *y_ptr = MDATA(y);
+  CUDNN_CALL(::cudnnPoolingForward(
+        state_->cudnn.get(), pool_desc.get(),
+        &alpha, x_desc.get(), x_ptr,
+        &beta, y_desc.get(), y_ptr));
+}
+
+void CUDA::max_pool2d_bw_impl(
+    const Tensor &x, const Tensor &y, const Tensor &gy,
+    std::uint32_t window0, std::uint32_t window1,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    Tensor &gx) {
+  const Shape x_shape = x.shape();
+  const Shape y_shape = y.shape();
+
+  // Specifies a target device.
+  CUDA_CALL(::cudaSetDevice(dev_id_));
+
+  // Prepares descriptors.
+  const cuda::CuDNNTensorDescriptor x_desc(
+      x_shape.batch(), x_shape[2], x_shape[1], x_shape[0]);
+  const cuda::CuDNNTensorDescriptor y_desc(
+      y_shape.batch(), y_shape[2], y_shape[1], y_shape[0]);
+  const cuda::CuDNNPoolingDescriptor pool_desc(
+      CUDNN_POOLING_MAX,
+      window1, window0, padding1, padding0, stride1, stride0);
+
+  // Performs a backward operation.
+  const float alpha = 1.f;
+  const float beta = 1.f;
+  const float *x_ptr = CDATA(x);
+  const float *y_ptr = CDATA(y);
+  const float *gy_ptr = CDATA(gy);
+  float *gx_ptr = MDATA(gx);
+  CUDNN_CALL(::cudnnPoolingBackward(
+        state_->cudnn.get(), pool_desc.get(),
+        &alpha, y_desc.get(), y_ptr, y_desc.get(), gy_ptr, x_desc.get(), x_ptr,
+        &beta, x_desc.get(), gx_ptr));
 }
 
 void CUDA::inplace_multiply_const_impl(float k, Tensor &x) {

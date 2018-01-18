@@ -2769,7 +2769,7 @@ TEST_F(TensorForwardTest, CheckConv2D_VGG16FirstLayer) {
 
 TEST_F(TensorForwardTest, CheckInvalidConv2D) {
   struct TestCase {
-    Shape a_shape, b_shape;
+    Shape x_shape, w_shape;
     std::uint32_t pad0, pad1, str0, str1, dil0, dil1;
     bool ok;
   };
@@ -2777,38 +2777,34 @@ TEST_F(TensorForwardTest, CheckInvalidConv2D) {
     // invalid #dimensions
     {{1, 1, 1, 2}, {}, 0, 0, 1, 1, 1, 1, false},
     {{}, {1, 1, 1, 1, 2}, 0, 0, 1, 1, 1, 1, false},
-
     // zero-stride/dilation
+    {{}, {}, 0, 0, 1, 1, 1, 1, true},
     {{}, {}, 0, 0, 0, 1, 1, 1, false},
     {{}, {}, 0, 0, 1, 0, 1, 1, false},
     {{}, {}, 0, 0, 1, 1, 0, 1, false},
     {{}, {}, 0, 0, 1, 1, 1, 0, false},
-
     // minibatches mismatching
+    {Shape({}, 2), Shape({}, 2), 0, 0, 1, 1, 1, 1, true},
+    {Shape({}, 3), Shape({}, 3), 0, 0, 1, 1, 1, 1, true},
     {Shape({}, 2), Shape({}, 3), 0, 0, 1, 1, 1, 1, false},
-
     // channels mismatching
     {{3, 3, 42}, {3, 3, 42}, 0, 0, 1, 1, 1, 1, true},
     {{3, 3, 42}, {3, 3, 43}, 0, 0, 1, 1, 1, 1, false},
-
     // sizes mismatching
     {{3, 3}, {3, 3}, 0, 0, 1, 1, 1, 1, true},
     {{3, 3}, {4, 3}, 0, 0, 1, 1, 1, 1, false},
     {{3, 3}, {3, 4}, 0, 0, 1, 1, 1, 1, false},
     {{3, 3}, {4, 4}, 0, 0, 1, 1, 1, 1, false},
-
     // sizes mismatching with padding
     {{3, 3}, {5, 5}, 1, 1, 1, 1, 1, 1, true},
     {{3, 3}, {6, 5}, 1, 1, 1, 1, 1, 1, false},
     {{3, 3}, {5, 6}, 1, 1, 1, 1, 1, 1, false},
     {{3, 3}, {6, 6}, 1, 1, 1, 1, 1, 1, false},
-
     // sizes mismatching with stride
     {{3, 3}, {3, 3}, 0, 0, 2, 2, 1, 1, true},
     {{3, 3}, {4, 3}, 0, 0, 2, 2, 1, 1, false},
     {{3, 3}, {3, 4}, 0, 0, 2, 2, 1, 1, false},
     {{3, 3}, {4, 4}, 0, 0, 2, 2, 1, 1, false},
-
     // sizes mismatching with dilation
     {{3, 3}, {2, 2}, 0, 0, 1, 1, 2, 2, true},
     {{2, 3}, {2, 2}, 0, 0, 1, 1, 2, 2, false},
@@ -2821,13 +2817,386 @@ TEST_F(TensorForwardTest, CheckInvalidConv2D) {
 
   for (Device *dev : devices) {
     for (const auto tc : test_cases) {
-      const Tensor a = dev->new_tensor_by_constant(tc.a_shape, 0);
-      const Tensor b = dev->new_tensor_by_constant(tc.b_shape, 0);
-      if (tc.ok) try {
-        conv2d(a, b, tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1);
-      } IGNORE_NOT_IMPLEMENTED else {
+      const Tensor x = dev->new_tensor_by_constant(tc.x_shape, 0);
+      const Tensor w = dev->new_tensor_by_constant(tc.w_shape, 0);
+      if (tc.ok) {
+        EXPECT_NO_THROW(try {
+            conv2d(x, w, tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1);
+        } IGNORE_NOT_IMPLEMENTED);
+      } else {
         EXPECT_THROW(
-            conv2d(a, b, tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1),
+            conv2d(x, w, tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1),
+            Error);
+      }
+    }
+  }
+}
+
+#define TEST_MAX_POOL2D(win0, win1, pad0, pad1, str0, str1) { \
+  for (Device *dev : devices) try { \
+    std::cout << dev << std::endl; \
+    const Tensor x = dev->new_tensor_by_vector(x_shape, x_data); \
+    const Tensor y = max_pool2d(x, win0, win1, pad0, pad1, str0, str1); \
+    EXPECT_EQ(y_shape, y.shape()); \
+    EXPECT_TRUE(vector_match(y_data, y.to_vector())); \
+  } IGNORE_NOT_IMPLEMENTED \
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_1x1x1_1x1) {
+  const vector<float> x_data {123};
+  const vector<float> y_data {123};
+  const Shape x_shape {};
+  const Shape y_shape {};
+  TEST_MAX_POOL2D(1, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x1x1_1x1) {
+  const vector<float> x_data = make_iota_vector(5, 1);
+  const vector<float> y_data {1, 2, 3, 4, 5};
+  const Shape x_shape {5};
+  const Shape y_shape {5};
+  TEST_MAX_POOL2D(1, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x1x1_2x1) {
+  const vector<float> x_data = make_iota_vector(5, 1);
+  const vector<float> y_data {2, 3, 4, 5};
+  const Shape x_shape {5};
+  const Shape y_shape {4};
+  TEST_MAX_POOL2D(2, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x1x1_5x1) {
+  const vector<float> x_data = make_iota_vector(5, 1);
+  const vector<float> y_data {5};
+  const Shape x_shape {5};
+  const Shape y_shape {};
+  TEST_MAX_POOL2D(5, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_1x5x1_1x1) {
+  const vector<float> x_data = make_iota_vector(5, 1);
+  const vector<float> y_data {1, 2, 3, 4, 5};
+  const Shape x_shape {1, 5};
+  const Shape y_shape {1, 5};
+  TEST_MAX_POOL2D(1, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_1x5x1_1x2) {
+  const vector<float> x_data = make_iota_vector(5, 1);
+  const vector<float> y_data {2, 3, 4, 5};
+  const Shape x_shape {1, 5};
+  const Shape y_shape {1, 4};
+  TEST_MAX_POOL2D(1, 2, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_1x5x1_1x5) {
+  const vector<float> x_data = make_iota_vector(5, 1);
+  const vector<float> y_data {5};
+  const Shape x_shape {1, 5};
+  const Shape y_shape {};
+  TEST_MAX_POOL2D(1, 5, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_1x1) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> y_data {
+     1,  2,  3,  4,  5,
+     6,  7,  8,  9, 10,
+    11, 12, 13, 14, 15,
+    16, 17, 18, 19, 20,
+    21, 22, 23, 24, 25,
+  };
+  const Shape x_shape {5, 5};
+  const Shape y_shape {5, 5};
+  TEST_MAX_POOL2D(1, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_2x1) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> y_data {
+     2,  3,  4,  5,
+     7,  8,  9, 10,
+    12, 13, 14, 15,
+    17, 18, 19, 20,
+    22, 23, 24, 25,
+  };
+  const Shape x_shape {5, 5};
+  const Shape y_shape {4, 5};
+  TEST_MAX_POOL2D(2, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_5x1) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> y_data {
+     5,
+    10,
+    15,
+    20,
+    25,
+  };
+  const Shape x_shape {5, 5};
+  const Shape y_shape {1, 5};
+  TEST_MAX_POOL2D(5, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_1x2) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> y_data {
+     6,  7,  8,  9, 10,
+    11, 12, 13, 14, 15,
+    16, 17, 18, 19, 20,
+    21, 22, 23, 24, 25,
+  };
+  const Shape x_shape {5, 5};
+  const Shape y_shape {5, 4};
+  TEST_MAX_POOL2D(1, 2, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_2x2) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> y_data {
+     7,  8,  9, 10,
+    12, 13, 14, 15,
+    17, 18, 19, 20,
+    22, 23, 24, 25,
+  };
+  const Shape x_shape {5, 5};
+  const Shape y_shape {4, 4};
+  TEST_MAX_POOL2D(2, 2, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_5x2) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> y_data {
+    10,
+    15,
+    20,
+    25,
+  };
+  const Shape x_shape {5, 5};
+  const Shape y_shape {1, 4};
+  TEST_MAX_POOL2D(5, 2, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_1x5) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> y_data {
+    21, 22, 23, 24, 25,
+  };
+  const Shape x_shape {5, 5};
+  const Shape y_shape {5};
+  TEST_MAX_POOL2D(1, 5, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_2x5) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> y_data {
+    22, 23, 24, 25,
+  };
+  const Shape x_shape {5, 5};
+  const Shape y_shape {4};
+  TEST_MAX_POOL2D(2, 5, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_5x5) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> y_data {25};
+  const Shape x_shape {5, 5};
+  const Shape y_shape {};
+  TEST_MAX_POOL2D(5, 5, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x3_2x2) {
+  const vector<float> x_data = make_iota_vector(5 * 5 * 3, 1);
+  const vector<float> y_data {
+    // channel 1
+     7,  8,  9, 10,
+    12, 13, 14, 15,
+    17, 18, 19, 20,
+    22, 23, 24, 25,
+    // channel 2
+    32, 33, 34, 35,
+    37, 38, 39, 40,
+    42, 43, 44, 45,
+    47, 48, 49, 50,
+    // channel 3
+    57, 58, 59, 60,
+    62, 63, 64, 65,
+    67, 68, 69, 70,
+    72, 73, 74, 75,
+  };
+  const Shape x_shape {5, 5, 3};
+  const Shape y_shape {4, 4, 3};
+  TEST_MAX_POOL2D(2, 2, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_2x2_Padding10) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> y_data {
+     6,  7,  8,  9, 10, 10,
+    11, 12, 13, 14, 15, 15,
+    16, 17, 18, 19, 20, 20,
+    21, 22, 23, 24, 25, 25,
+  };
+  const Shape x_shape {5, 5};
+  const Shape y_shape {6, 4};
+  TEST_MAX_POOL2D(2, 2, 1, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_2x2_Padding01) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> y_data {
+     2,  3,  4,  5,
+     7,  8,  9, 10,
+    12, 13, 14, 15,
+    17, 18, 19, 20,
+    22, 23, 24, 25,
+    22, 23, 24, 25,
+  };
+  const Shape x_shape {5, 5};
+  const Shape y_shape {4, 6};
+  TEST_MAX_POOL2D(2, 2, 0, 1, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_2x2_Padding11) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> y_data {
+     1,  2,  3,  4,  5,  5,
+     6,  7,  8,  9, 10, 10,
+    11, 12, 13, 14, 15, 15,
+    16, 17, 18, 19, 20, 20,
+    21, 22, 23, 24, 25, 25,
+    21, 22, 23, 24, 25, 25,
+  };
+  const Shape x_shape {5, 5};
+  const Shape y_shape {6, 6};
+  TEST_MAX_POOL2D(2, 2, 1, 1, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_2x2_Stride21) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> y_data {
+     7,  9,
+    12, 14,
+    17, 19,
+    22, 24,
+  };
+  const Shape x_shape {5, 5};
+  const Shape y_shape {2, 4};
+  TEST_MAX_POOL2D(2, 2, 0, 0, 2, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_2x2_Stride12) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> y_data {
+     7,  8,  9, 10,
+    17, 18, 19, 20,
+  };
+  const Shape x_shape {5, 5};
+  const Shape y_shape {4, 2};
+  TEST_MAX_POOL2D(2, 2, 0, 0, 1, 2);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_2x2_Stride22) {
+  const vector<float> x_data = make_iota_vector(5 * 5, 1);
+  const vector<float> y_data {
+     7,  9,
+    17, 19,
+  };
+  const Shape x_shape {5, 5};
+  const Shape y_shape {2, 2};
+  TEST_MAX_POOL2D(2, 2, 0, 0, 2, 2);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_2x2_N) {
+  const vector<float> x_data = make_iota_vector(5 * 5 * 3, 1);
+  const vector<float> y_data {
+    // minibatch 1
+     7,  8,  9, 10,
+    12, 13, 14, 15,
+    17, 18, 19, 20,
+    22, 23, 24, 25,
+    // minibatch 2
+    32, 33, 34, 35,
+    37, 38, 39, 40,
+    42, 43, 44, 45,
+    47, 48, 49, 50,
+    // minibatch 3
+    57, 58, 59, 60,
+    62, 63, 64, 65,
+    67, 68, 69, 70,
+    72, 73, 74, 75,
+  };
+  const Shape x_shape({5, 5}, 3);
+  const Shape y_shape({4, 4}, 3);
+  TEST_MAX_POOL2D(2, 2, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_VGG16ThirdLayer) {
+  // NOTE(odashi): 224*224*64 < 2^23 (float precision)
+  const vector<float> x_data = make_iota_vector(224 * 224 * 64, 1);
+  vector<float> y_data(112 * 112 * 64);
+  for (unsigned b = 0; b < 64; ++b) {
+    float *py = y_data.data() + b * 112 * 112;
+    const unsigned b_ofs = b * 224 * 224;
+    for (unsigned x = 0; x < 112; ++x) {
+      float *py2 = py + x * 112;
+      const unsigned x_ofs = b_ofs + (2 * x + 1) * 224;
+      for (unsigned y = 0; y < 112; ++y) {
+        py2[y] = x_ofs + 2 * y + 2;
+      }
+    }
+  }
+  const Shape x_shape {224, 224, 64};
+  const Shape y_shape {112, 112, 64};
+  TEST_MAX_POOL2D(2, 2, 0, 0, 2, 2);
+}
+
+#undef TEST_MAX_POOL2D
+
+TEST_F(TensorForwardTest, CheckInvalidPool2D) {
+  struct TestCase {
+    Shape x_shape;
+    std::uint32_t win0, win1, pad0, pad1, str0, str1;
+    bool ok;
+  };
+  const vector<TestCase> test_cases {
+    // invalid #dimensions
+    {{1, 1, 1, 2}, 1, 1, 0, 0, 1, 1, false},
+    // zero-window/stride
+    {{}, 1, 1, 0, 0, 1, 1, true},
+    {{}, 0, 1, 0, 0, 1, 1, false},
+    {{}, 1, 0, 0, 0, 1, 1, false},
+    {{}, 1, 1, 0, 0, 0, 1, false},
+    {{}, 1, 1, 0, 0, 1, 0, false},
+    // sizes mismatching
+    {{3, 3}, 3, 3, 0, 0, 1, 1, true},
+    {{3, 3}, 4, 3, 0, 0, 1, 1, false},
+    {{3, 3}, 3, 4, 0, 0, 1, 1, false},
+    {{3, 3}, 4, 4, 0, 0, 1, 1, false},
+    // sizes mismatching with padding
+    {{3, 3}, 5, 5, 1, 1, 1, 1, true},
+    {{3, 3}, 6, 5, 1, 1, 1, 1, false},
+    {{3, 3}, 5, 6, 1, 1, 1, 1, false},
+    {{3, 3}, 6, 6, 1, 1, 1, 1, false},
+    // sizes mismatching with stride
+    {{3, 3}, 3, 3, 0, 0, 2, 2, true},
+    {{3, 3}, 4, 3, 0, 0, 2, 2, false},
+    {{3, 3}, 3, 4, 0, 0, 2, 2, false},
+    {{3, 3}, 4, 4, 0, 0, 2, 2, false},
+  };
+
+  for (Device *dev : devices) {
+    for (const auto tc : test_cases) {
+      const Tensor x = dev->new_tensor_by_constant(tc.x_shape, 0);
+      if (tc.ok) {
+        EXPECT_NO_THROW(try {
+            max_pool2d(x, tc.win0, tc.win1, tc.pad0, tc.pad1, tc.str0, tc.str1);
+        } IGNORE_NOT_IMPLEMENTED);
+      } else {
+        EXPECT_THROW(
+            max_pool2d(x, tc.win0, tc.win1, tc.pad0, tc.pad1, tc.str0, tc.str1),
             Error);
       }
     }
