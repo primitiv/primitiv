@@ -855,10 +855,10 @@ void Naive::max_pool2d_fw_impl(
   const std::uint32_t y_height = y_shape[0];
   const std::uint32_t y_width = y_shape[1];
 
-  const std::uint32_t repeat = x_shape.size() / (x_height * x_width);
+  const std::size_t x_shift = x_height * x_width;
+  const std::size_t y_shift = y_height * y_width;
 
-  const std::size_t x_shift = x_shape.volume();
-  const std::size_t y_shift = y_shape.volume();
+  const std::uint32_t repeat = x_shape.size() / x_shift;
 
   const float *px = CDATA(x);
   float *py = MDATA(y);
@@ -873,7 +873,7 @@ void Naive::max_pool2d_fw_impl(
           if (x_x < 0 || x_x >= static_cast<std::int32_t>(x_width)) continue;
 
           for (std::uint32_t w_y = 0; w_y < window0; ++w_y) {
-            const std::int32_t x_y = -padding1 + y_y * stride1 + w_y;
+            const std::int32_t x_y = -padding0 + y_y * stride0 + w_y;
             if (x_y < 0 || x_y >= static_cast<std::int32_t>(x_height)) continue;
 
             const float val = px[x_x * x_height + x_y];
@@ -904,10 +904,10 @@ void Naive::max_pool2d_bw_impl(
   const std::uint32_t y_height = y_shape[0];
   const std::uint32_t y_width = y_shape[1];
 
-  const std::uint32_t repeat = x_shape.size() / (x_height * x_width);
+  const std::size_t x_shift = x_height * x_width;
+  const std::size_t y_shift = y_height * y_width;
 
-  const std::size_t x_shift = x_shape.volume();
-  const std::size_t y_shift = y_shape.volume();
+  const std::uint32_t repeat = x_shape.size() / x_shift;
 
   const float *px = CDATA(x);
   const float *py = CDATA(y);
@@ -927,7 +927,7 @@ void Naive::max_pool2d_bw_impl(
           if (x_x < 0 || x_x >= static_cast<std::int32_t>(x_width)) continue;
 
           for (std::uint32_t w_y = 0; next && w_y < window0; ++w_y) {
-            const std::int32_t x_y = -padding1 + y_y * stride1 + w_y;
+            const std::int32_t x_y = -padding0 + y_y * stride0 + w_y;
             if (x_y < 0 || x_y >= static_cast<std::int32_t>(x_height)) continue;
 
             const std::uint32_t x_addr = x_x * x_height + x_y;
