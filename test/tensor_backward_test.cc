@@ -1805,15 +1805,11 @@ TEST_F(TensorBackwardTest, CheckConv2D_VGG16FirstLayer) {
     pgw[7] += -224;
     pgw[8] += -2 * 224 + 1;
   }
-  unsigned xxx = 0, www = 0;
-  for (float x : gx_data) xxx += static_cast<unsigned>(x);
-  for (float w : gw_data) www += static_cast<unsigned>(w);
-  std::cout << xxx << std::endl;
-  std::cout << www << std::endl;
 
   const vector<float> x_data(x_shape.size(), 1);
   const vector<float> w_data(w_shape.size(), 1);
   const vector<float> gy_data(y_shape.size(), 1);
+
   for (Device *dev : devices) try {
     const Tensor x = dev->new_tensor_by_vector(x_shape, x_data);
     const Tensor w = dev->new_tensor_by_vector(w_shape, w_data);
@@ -1824,6 +1820,346 @@ TEST_F(TensorBackwardTest, CheckConv2D_VGG16FirstLayer) {
     dev->conv2d_bw(x, w, y, gy, 1, 1, 1, 1, 1, 1, gx, gw);
     EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
     EXPECT_TRUE(vector_match(gw_data, gw.to_vector()));
+  } IGNORE_NOT_IMPLEMENTED
+}
+
+#define TEST_MAX_POOL2D(win0, win1, pad0, pad1, str0, str1) { \
+  const vector<float> x_data = make_iota_vector(x_shape.size(), 1); \
+  const vector<float> gy_data(y_shape.size(), 1); \
+  for (Device *dev : devices) try { \
+    const Tensor x = dev->new_tensor_by_vector(x_shape, x_data); \
+    const Tensor y = dev->max_pool2d_fw( \
+        x, win0, win1, pad0, pad1, str0, str1); \
+    const Tensor gy = dev->new_tensor_by_vector(y_shape, gy_data); \
+    Tensor gx = dev->new_tensor_by_constant(x_shape, 1); \
+    dev->max_pool2d_bw(x, y, gy, win0, win1, pad0, pad1, str0, str1, gx); \
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector())); \
+  } IGNORE_NOT_IMPLEMENTED \
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_1x1x1_1x1) {
+  const Shape x_shape {};
+  const Shape y_shape {};
+  const vector<float> gx_data {2};
+  TEST_MAX_POOL2D(1, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x1x1_1x1) {
+  const Shape x_shape {5};
+  const Shape y_shape {5};
+  const vector<float> gx_data {2, 2, 2, 2, 2};
+  TEST_MAX_POOL2D(1, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x1x1_2x1) {
+  const Shape x_shape {5};
+  const Shape y_shape {4};
+  const vector<float> gx_data {1, 2, 2, 2, 2};
+  TEST_MAX_POOL2D(2, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x1x1_5x1) {
+  const Shape x_shape {5};
+  const Shape y_shape {};
+  const vector<float> gx_data {1, 1, 1, 1, 2};
+  TEST_MAX_POOL2D(5, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_1x5x1_1x1) {
+  const Shape x_shape {1, 5};
+  const Shape y_shape {1, 5};
+  const vector<float> gx_data {2, 2, 2, 2, 2};
+  TEST_MAX_POOL2D(1, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_1x5x1_1x2) {
+  const Shape x_shape {1, 5};
+  const Shape y_shape {1, 4};
+  const vector<float> gx_data {1, 2, 2, 2, 2};
+  TEST_MAX_POOL2D(1, 2, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_1x5x1_1x5) {
+  const Shape x_shape {1, 5};
+  const Shape y_shape {};
+  const vector<float> gx_data {1, 1, 1, 1, 2};
+  TEST_MAX_POOL2D(1, 5, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_1x1) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {5, 5};
+  const vector<float> gx_data {
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+  };
+  TEST_MAX_POOL2D(1, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x1) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {4, 5};
+  const vector<float> gx_data {
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+  };
+  TEST_MAX_POOL2D(2, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_5x1) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {1, 5};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 2,
+    1, 1, 1, 1, 2,
+    1, 1, 1, 1, 2,
+    1, 1, 1, 1, 2,
+    1, 1, 1, 1, 2,
+  };
+  TEST_MAX_POOL2D(5, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_1x2) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {5, 4};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+  };
+  TEST_MAX_POOL2D(1, 2, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x2) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {4, 4};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+  };
+  TEST_MAX_POOL2D(2, 2, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_5x2) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {1, 4};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 2,
+    1, 1, 1, 1, 2,
+    1, 1, 1, 1, 2,
+    1, 1, 1, 1, 2,
+  };
+  TEST_MAX_POOL2D(5, 2, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_1x5) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {5};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    2, 2, 2, 2, 2,
+  };
+  TEST_MAX_POOL2D(1, 5, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x5) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {4};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+  };
+  TEST_MAX_POOL2D(2, 5, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_5x5) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 2,
+  };
+  TEST_MAX_POOL2D(5, 5, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x3_2x2) {
+  const Shape x_shape {5, 5, 3};
+  const Shape y_shape {4, 4, 3};
+  const vector<float> gx_data {
+    // channel 1
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    // channel 2
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    // channel 3
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+  };
+  TEST_MAX_POOL2D(2, 2, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x2_Padding10) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {6, 4};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    2, 2, 2, 2, 3,
+    2, 2, 2, 2, 3,
+    2, 2, 2, 2, 3,
+    2, 2, 2, 2, 3,
+  };
+  TEST_MAX_POOL2D(2, 2, 1, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x2_Padding01) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {4, 6};
+  const vector<float> gx_data {
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 3, 3, 3, 3,
+  };
+  TEST_MAX_POOL2D(2, 2, 0, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x2_Padding11) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {6, 6};
+  const vector<float> gx_data {
+    2, 2, 2, 2, 3,
+    2, 2, 2, 2, 3,
+    2, 2, 2, 2, 3,
+    2, 2, 2, 2, 3,
+    3, 3, 3, 3, 5,
+  };
+  TEST_MAX_POOL2D(2, 2, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x2_Stride21) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {2, 4};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    1, 2, 1, 2, 1,
+    1, 2, 1, 2, 1,
+    1, 2, 1, 2, 1,
+    1, 2, 1, 2, 1,
+  };
+  TEST_MAX_POOL2D(2, 2, 0, 0, 2, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x2_Stride12) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {4, 2};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+    1, 1, 1, 1, 1,
+  };
+  TEST_MAX_POOL2D(2, 2, 0, 0, 1, 2);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x2_Stride22) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {2, 2};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    1, 2, 1, 2, 1,
+    1, 1, 1, 1, 1,
+    1, 2, 1, 2, 1,
+    1, 1, 1, 1, 1,
+  };
+  TEST_MAX_POOL2D(2, 2, 0, 0, 2, 2);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x2_N) {
+  const Shape x_shape({5, 5}, 3);
+  const Shape y_shape({4, 4}, 3);
+  const vector<float> gx_data {
+    // minibatch 1
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    // minibatch 2
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    // minibatch 3
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+  };
+  TEST_MAX_POOL2D(2, 2, 0, 0, 1, 1);
+}
+
+#undef TEST_MAX_POOL2D
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_VGG16ThirdLayer) {
+  // NOTE(odashi): 224*224*64 < 2^23 (float precision)
+  const Shape x_shape {224, 224, 64};
+  const Shape y_shape {112, 112, 64};
+  vector<float> gx_data(224 * 224 * 64, 1);
+  for (unsigned b = 0; b < 64; ++b) {
+    float *pgx = gx_data.data() + b * 224 * 224;
+    for (unsigned x = 1; x < 224; x += 2) {
+      float *pgx2 = pgx + x * 224;
+      for (unsigned y = 1; y < 224; y += 2) {
+        pgx2[y] += 1;
+      }
+    }
+  }
+
+  const vector<float> x_data = make_iota_vector(x_shape.size(), 1);
+  const vector<float> gy_data(y_shape.size(), 1);
+
+  for (Device *dev : devices) try {
+    const Tensor x = dev->new_tensor_by_vector(x_shape, x_data);
+    const Tensor y = dev->max_pool2d_fw(x, 2, 2, 0, 0, 2, 2);
+    const Tensor gy = dev->new_tensor_by_vector(y_shape, gy_data);
+    Tensor gx = dev->new_tensor_by_constant(x_shape, 1);
+    dev->max_pool2d_bw(x, y, gy, 2, 2, 0, 0, 2, 2, gx);
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
   } IGNORE_NOT_IMPLEMENTED
 }
 

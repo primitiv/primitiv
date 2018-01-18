@@ -3112,17 +3112,17 @@ TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_2x2_Stride22) {
 TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_2x2_N) {
   const vector<float> x_data = make_iota_vector(5 * 5 * 3, 1);
   const vector<float> y_data {
-    // channel 1
+    // minibatch 1
      7,  8,  9, 10,
     12, 13, 14, 15,
     17, 18, 19, 20,
     22, 23, 24, 25,
-    // channel 2
+    // minibatch 2
     32, 33, 34, 35,
     37, 38, 39, 40,
     42, 43, 44, 45,
     47, 48, 49, 50,
-    // channel 3
+    // minibatch 3
     57, 58, 59, 60,
     62, 63, 64, 65,
     67, 68, 69, 70,
@@ -3131,6 +3131,26 @@ TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_2x2_N) {
   const Shape x_shape({5, 5}, 3);
   const Shape y_shape({4, 4}, 3);
   TEST_MAX_POOL2D(2, 2, 0, 0, 1, 1);
+}
+
+TEST_F(TensorForwardTest, CheckMaxPool2D_VGG16ThirdLayer) {
+  // NOTE(odashi): 224*224*64 < 2^23 (float precision)
+  const vector<float> x_data = make_iota_vector(224 * 224 * 64, 1);
+  vector<float> y_data(112 * 112 * 64);
+  for (unsigned b = 0; b < 64; ++b) {
+    float *py = y_data.data() + b * 112 * 112;
+    const unsigned b_ofs = b * 224 * 224;
+    for (unsigned x = 0; x < 112; ++x) {
+      float *py2 = py + x * 112;
+      const unsigned x_ofs = b_ofs + (2 * x + 1) * 224;
+      for (unsigned y = 0; y < 112; ++y) {
+        py2[y] = x_ofs + 2 * y + 2;
+      }
+    }
+  }
+  const Shape x_shape {224, 224, 64};
+  const Shape y_shape {112, 112, 64};
+  TEST_MAX_POOL2D(2, 2, 0, 0, 2, 2);
 }
 
 #undef TEST_MAX_POOL2D
