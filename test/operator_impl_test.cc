@@ -1374,9 +1374,9 @@ TEST_F(OperatorImplTest, CheckBatchSum) {
 }
 
 TEST_F(OperatorImplTest, CheckConvolution2D_001111) {
-  // y = conv2d(x, w)
-  // dy/dx = conv2d_bw(w)
-  // dy/dw = conv2d_bw(x)
+  // y = conv2d(x, w, options)
+  // dy/dx = conv2d_bw_w(w, options)
+  // dy/dw = conv2d_bw_x(x, options)
   arg_shapes.emplace_back(new Shape({5, 5}, 3));
   arg_shapes.emplace_back(new Shape({2, 2}, 3));
   arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
@@ -1453,9 +1453,9 @@ TEST_F(OperatorImplTest, CheckConvolution2D_001111) {
 }
 
 TEST_F(OperatorImplTest, CheckConvolution2D_112222) {
-  // y = conv2d(x, w)
-  // dy/dx = conv2d_bw(w)
-  // dy/dw = conv2d_bw(x)
+  // y = conv2d(x, w, options)
+  // dy/dx = conv2d_bw_w(w, options)
+  // dy/dw = conv2d_bw_x(x, options)
   arg_shapes.emplace_back(new Shape({5, 5}, 3));
   arg_shapes.emplace_back(new Shape({2, 2}, 3));
   arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
@@ -1526,6 +1526,96 @@ TEST_F(OperatorImplTest, CheckConvolution2D_112222) {
   EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector()));
   EXPECT_TRUE(vector_match(bw_grads[0], arg_grads[0]->to_vector()));
   EXPECT_TRUE(vector_match(bw_grads[1], arg_grads[1]->to_vector()));
+}
+
+TEST_F(OperatorImplTest, CheckMaxPooling2D_110011) {
+  // y = max_pool2d(x, options)
+  // dy/dx = max_pool2d_bw(x, options)
+  arg_shapes.emplace_back(new Shape({6, 6}, 3));
+  arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
+      *arg_shapes[0], test_utils::make_iota_vector(6 * 6 * 3, 1))));
+  arg_grads.emplace_back(
+      new Tensor(functions::ones<Tensor>(*arg_shapes[0], *dev)));
+  const Shape ret_shape({6, 6}, 3);
+  const vector<float> ret_data = test_utils::make_iota_vector(6 * 6 * 3, 1);
+  const vector<vector<float>> bw_grads {
+    vector<float>(6 * 6 * 3, 2),
+  };
+
+  MaxPooling2D node(1, 1, 0, 0, 1, 1);
+  const Shape cur_shape = node.forward_shape(arg_shapes);
+  const Tensor cur_value = node.forward(arg_values);
+  const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev);
+  node.backward(cur_value, cur_grad, arg_values, arg_grads);
+  EXPECT_EQ("MaxPooling2D(1,1,0,0,1,1)", node.name());
+  EXPECT_EQ(ret_shape, cur_shape);
+  EXPECT_EQ(nullptr, node.get_device());
+  EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector()));
+  EXPECT_TRUE(vector_match(bw_grads[0], arg_grads[0]->to_vector()));
+}
+
+TEST_F(OperatorImplTest, CheckMaxPooling2D_221122) {
+  // y = max_pool2d(x, options)
+  // dy/dx = max_pool2d_bw(x, options)
+  arg_shapes.emplace_back(new Shape({6, 6}, 3));
+  arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
+      *arg_shapes[0], test_utils::make_iota_vector(6 * 6 * 3, 1))));
+  arg_grads.emplace_back(
+      new Tensor(functions::ones<Tensor>(*arg_shapes[0], *dev)));
+  const Shape ret_shape({4, 4}, 3);
+  const vector<float> ret_data = {
+    // minibatch 1
+     1,  3,  5,  6,
+    13, 15, 17, 18,
+    25, 27, 29, 30,
+    31, 33, 35, 36,
+    // minibatch 2
+    37, 39, 41, 42,
+    49, 51, 53, 54,
+    61, 63, 65, 66,
+    67, 69, 71, 72,
+    // minibatch 3
+     73,  75,  77,  78,
+     85,  87,  89,  90,
+     97,  99, 101, 102,
+    103, 105, 107, 108,
+  };
+  const vector<vector<float>> bw_grads {
+    {
+      // minibatch 1
+      2, 1, 2, 1, 2, 2,
+      1, 1, 1, 1, 1, 1,
+      2, 1, 2, 1, 2, 2,
+      1, 1, 1, 1, 1, 1,
+      2, 1, 2, 1, 2, 2,
+      2, 1, 2, 1, 2, 2,
+      // minibatch 2
+      2, 1, 2, 1, 2, 2,
+      1, 1, 1, 1, 1, 1,
+      2, 1, 2, 1, 2, 2,
+      1, 1, 1, 1, 1, 1,
+      2, 1, 2, 1, 2, 2,
+      2, 1, 2, 1, 2, 2,
+      // minibatch 3
+      2, 1, 2, 1, 2, 2,
+      1, 1, 1, 1, 1, 1,
+      2, 1, 2, 1, 2, 2,
+      1, 1, 1, 1, 1, 1,
+      2, 1, 2, 1, 2, 2,
+      2, 1, 2, 1, 2, 2,
+    },
+  };
+
+  MaxPooling2D node(2, 2, 1, 1, 2, 2);
+  const Shape cur_shape = node.forward_shape(arg_shapes);
+  const Tensor cur_value = node.forward(arg_values);
+  const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev);
+  node.backward(cur_value, cur_grad, arg_values, arg_grads);
+  EXPECT_EQ("MaxPooling2D(2,2,1,1,2,2)", node.name());
+  EXPECT_EQ(ret_shape, cur_shape);
+  EXPECT_EQ(nullptr, node.get_device());
+  EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector()));
+  EXPECT_TRUE(vector_match(bw_grads[0], arg_grads[0]->to_vector()));
 }
 
 TEST_F(OperatorImplTest, CheckSoftmaxCrossEntropy) {
