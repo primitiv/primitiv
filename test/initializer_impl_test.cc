@@ -115,10 +115,14 @@ TEST_F(InitializerImplTest, CheckInvalidIdentity) {
 
 TEST_F(InitializerImplTest, CheckXavierUniform) {
   const std::uint32_t N = 768;
-  Tensor x = dev.new_tensor_by_constant({N, N}, 0);
+  const std::uint32_t fan_in = N;
+  const std::uint32_t fan_out = N;
+  const std::uint32_t num_params = N * N;
+
+  Tensor x = dev.new_tensor_by_constant({fan_in, fan_out}, 0);
 
   for (float scale : {.5f, 1.f, 2.f}) {
-    const float bound = scale * std::sqrt(6. / (N + N));
+    const float bound = scale * std::sqrt(6. / (fan_in + fan_out));
 
     const XavierUniform init(scale);
     init.apply(x);
@@ -131,9 +135,9 @@ TEST_F(InitializerImplTest, CheckXavierUniform) {
       m2 += v * v;
     }
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
-    const float expected_sd = scale * std::sqrt(2. / (N + N));
-    const float mean = m1 / (N * N);
-    const float sd = std::sqrt(m2 / (N * N) - mean * mean);
+    const float expected_sd = scale * std::sqrt(2. / (fan_in + fan_out));
+    const float mean = m1 / num_params;
+    const float sd = std::sqrt(m2 / num_params - mean * mean);
     EXPECT_NEAR(0., mean, 1e-3);
     EXPECT_NEAR(expected_sd, sd, 1e-3);
 #endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
@@ -152,7 +156,11 @@ TEST_F(InitializerImplTest, CheckInvalidXavierUniform) {
 TEST_F(InitializerImplTest, CheckXavierNormal) {
   // NOTE(odashi): This test checks only mean and SD.
   const std::uint32_t N = 768;
-  Tensor x = dev.new_tensor_by_constant({N, N}, 0);
+  const std::uint32_t fan_in = N;
+  const std::uint32_t fan_out = N;
+  const std::uint32_t num_params = N * N;
+
+  Tensor x = dev.new_tensor_by_constant({fan_in, fan_out}, 0);
 
   for (float scale : {.5f, 1.f, 2.f}) {
     const XavierNormal init(scale);
@@ -164,9 +172,9 @@ TEST_F(InitializerImplTest, CheckXavierNormal) {
       m2 += v * v;
     }
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
-    const float expected_sd = scale * std::sqrt(2. / (N + N));
-    const float mean = m1 / (N * N);
-    const float sd = std::sqrt(m2 / (N * N) - mean * mean);
+    const float expected_sd = scale * std::sqrt(2. / (fan_in + fan_out));
+    const float mean = m1 / num_params;
+    const float sd = std::sqrt(m2 / num_params - mean * mean);
     EXPECT_NEAR(0., mean, 1e-3);
     EXPECT_NEAR(expected_sd, sd, 1e-3);
 #endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
@@ -176,6 +184,89 @@ TEST_F(InitializerImplTest, CheckXavierNormal) {
 TEST_F(InitializerImplTest, CheckInvalidXavierNormal) {
   const XavierNormal init;
   const std::vector<Shape> shapes {{2, 3, 4}, {2, 3, 4, 5}};
+  for (const Shape &s : shapes) {
+    Tensor x = dev.new_tensor_by_constant(s, 0);
+    EXPECT_THROW(init.apply(x), Error);
+  }
+}
+
+TEST_F(InitializerImplTest, CheckXavierUniformConv2D) {
+  const std::uint32_t H = 32;
+  const std::uint32_t W = 32;
+  const std::uint32_t C = 32;
+  const std::uint32_t K = 32;
+  const std::uint32_t fan_in = H * W * C;
+  const std::uint32_t fan_out = H * W * K;
+  const std::uint32_t num_params = H * W * C * K;
+
+  Tensor x = dev.new_tensor_by_constant({H, W, C, K}, 0);
+
+  for (float scale : {.5f, 1.f, 2.f}) {
+    const float bound = scale * std::sqrt(6. / (fan_in + fan_out));
+
+    const XavierUniformConv2D init(scale);
+    init.apply(x);
+
+    double m1 = 0, m2 = 0;
+    for (float v : x.to_vector()) {
+      EXPECT_LT(-bound, v);
+      EXPECT_GE(bound, v);
+      m1 += v;
+      m2 += v * v;
+    }
+#ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
+    const float expected_sd = scale * std::sqrt(2. / (fan_in + fan_out));
+    const float mean = m1 / num_params;
+    const float sd = std::sqrt(m2 / num_params - mean * mean);
+    EXPECT_NEAR(0., mean, 1e-3);
+    EXPECT_NEAR(expected_sd, sd, 1e-3);
+#endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
+  }
+}
+
+TEST_F(InitializerImplTest, CheckInvalidXavierUniformConv2D) {
+  const XavierUniformConv2D init;
+  const std::vector<Shape> shapes {{2, 3, 4, 5, 6}, {2, 3, 4, 5, 6, 7}};
+  for (const Shape &s : shapes) {
+    Tensor x = dev.new_tensor_by_constant(s, 0);
+    EXPECT_THROW(init.apply(x), Error);
+  }
+}
+
+TEST_F(InitializerImplTest, CheckXavierNormalConv2D) {
+  // NOTE(odashi): This test checks only mean and SD.
+  const std::uint32_t H = 32;
+  const std::uint32_t W = 32;
+  const std::uint32_t C = 32;
+  const std::uint32_t K = 32;
+  const std::uint32_t fan_in = H * W * C;
+  const std::uint32_t fan_out = H * W * K;
+  const std::uint32_t num_params = H * W * C * K;
+
+  Tensor x = dev.new_tensor_by_constant({H, W, C, K}, 0);
+
+  for (float scale : {.5f, 1.f, 2.f}) {
+    const XavierNormalConv2D init(scale);
+    init.apply(x);
+
+    double m1 = 0, m2 = 0;
+    for (float v : x.to_vector()) {
+      m1 += v;
+      m2 += v * v;
+    }
+#ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
+    const float expected_sd = scale * std::sqrt(2. / (fan_in + fan_out));
+    const float mean = m1 / num_params;
+    const float sd = std::sqrt(m2 / num_params - mean * mean);
+    EXPECT_NEAR(0., mean, 1e-3);
+    EXPECT_NEAR(expected_sd, sd, 1e-3);
+#endif  // PRIMITIV_BUILD_TESTS_PROBABILISTIC
+  }
+}
+
+TEST_F(InitializerImplTest, CheckInvalidXavierNormalConv2D) {
+  const XavierNormalConv2D init;
+  const std::vector<Shape> shapes {{2, 3, 4, 5, 6}, {2, 3, 4, 5, 6, 7}};
   for (const Shape &s : shapes) {
     Tensor x = dev.new_tensor_by_constant(s, 0);
     EXPECT_THROW(init.apply(x), Error);
