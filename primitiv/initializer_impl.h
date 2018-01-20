@@ -89,6 +89,32 @@ private:
   float scale_;
 };
 
+/**
+ * The Xavier initialization with the uniform distribution for conv2d filters.
+ */
+class XavierUniformConv2D : public Initializer {
+public:
+  XavierUniformConv2D(float scale = 1.0f) : scale_(scale) {}
+
+  void apply(Tensor &x) const override;
+
+private:
+  float scale_;
+};
+
+/**
+ * The Xavier initialization with the normal distribution for conv2d filters.
+ */
+class XavierNormalConv2D : public Initializer {
+public:
+  XavierNormalConv2D(float scale = 1.0f) : scale_(scale) {}
+
+  void apply(Tensor &x) const override;
+
+private:
+  float scale_;
+};
+
 }  // namespace initializers
 }  // namespace primitiv
 

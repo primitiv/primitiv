@@ -50,5 +50,31 @@ void XavierNormal::apply(Tensor &x) const {
   x = x.device().random_normal(s, 0, sd);
 }
 
+void XavierUniformConv2D::apply(Tensor &x) const {
+  const Shape s = x.shape();
+  if (s.depth() > 4) {
+    THROW_ERROR(
+        "XavierUniformConv2D initializer can be used to only tensors with "
+        "up to 4 dimensions.");
+  }
+  const std::uint32_t fan_in = s[0] * s[1] * s[2];
+  const std::uint32_t fan_out = s[0] * s[1] * s[3];
+  const float bound = scale_ * std::sqrt(6. / (fan_in + fan_out));
+  x = x.device().random_uniform(s, -bound, bound);
+}
+
+void XavierNormalConv2D::apply(Tensor &x) const {
+  const Shape s = x.shape();
+  if (s.depth() > 4) {
+    THROW_ERROR(
+        "XavierNormalConv2D initializer can be used to only tensors with "
+        "up to 4 dimensions.");
+  }
+  const std::uint32_t fan_in = s[0] * s[1] * s[2];
+  const std::uint32_t fan_out = s[0] * s[1] * s[3];
+  const float sd = scale_ * std::sqrt(2. / (fan_in + fan_out));
+  x = x.device().random_normal(s, 0, sd);
+}
+
 }  // namespace initializers
 }  // namespace primitiv
