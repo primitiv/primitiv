@@ -336,6 +336,12 @@ Shape Convolution2D::forward_shape(const vector<const Shape *> &args) const {
       padding0_, padding1_, stride0_, stride1_, dilation0_, dilation1_);
 }
 
+Shape MaxPooling2D::forward_shape(const vector<const Shape *> &args) const {
+  CHECK_ARGNUM(args, 1);
+  return shape_ops::pool2d(
+      *args[0], window0_, window1_, padding0_, padding1_, stride0_, stride1_);
+}
+
 Shape SoftmaxCrossEntropy::forward_shape(
     const vector<const Shape *> &args) const {
   CHECK_ARGNUM(args, 2);
@@ -417,6 +423,11 @@ FORWARD(Convolution2D) {
   return functions::conv2d(
       *x[0], *x[1],
       padding0_, padding1_, stride0_, stride1_, dilation0_, dilation1_);
+}
+
+FORWARD(MaxPooling2D) {
+  return functions::max_pool2d(
+      *x[0], window0_, window1_, padding0_, padding1_, stride0_, stride1_);
 }
 
 FORWARD(SoftmaxCrossEntropy) {
@@ -534,6 +545,13 @@ BACKWARD(Convolution2D) {
       *x[0], *x[1], y, gy,
       padding0_, padding1_, stride0_, stride1_, dilation0_, dilation1_,
       *gx[0], *gx[1]);
+}
+
+BACKWARD(MaxPooling2D) {
+  gy.device().max_pool2d_bw(
+      *x[0], y, gy,
+      window0_, window1_, padding0_, padding1_, stride0_, stride1_,
+      *gx[0]);
 }
 
 BACKWARD(SoftmaxCrossEntropy) {

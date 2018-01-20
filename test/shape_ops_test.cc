@@ -407,49 +407,157 @@ TEST_F(ShapeOpsTest, CheckConv2D) {
 }
 
 TEST_F(ShapeOpsTest, CheckInvalidConv2D) {
-  // invalid #dimensions
-  EXPECT_THROW(conv2d({1, 1, 1, 2}, {}, 0, 0, 1, 1, 1, 1), Error);
-  EXPECT_THROW(conv2d({}, {1, 1, 1, 1, 2}, 0, 0, 1, 1, 1, 1), Error);
+  struct TestCase {
+    Shape x, w;
+    std::uint32_t pad0, pad1, str0, str1, dil0, dil1;
+    bool ok;
+  };
+  const vector<TestCase> test_cases {
+    // invalid #dimensions
+    {{1, 1, 1, 2}, {}, 0, 0, 1, 1, 1, 1, false},
+    {{}, {1, 1, 1, 1, 2}, 0, 0, 1, 1, 1, 1, false},
+    // zero-stride/dilation
+    {{}, {}, 0, 0, 1, 1, 1, 1, true},
+    {{}, {}, 0, 0, 0, 1, 1, 1, false},
+    {{}, {}, 0, 0, 1, 0, 1, 1, false},
+    {{}, {}, 0, 0, 1, 1, 0, 1, false},
+    {{}, {}, 0, 0, 1, 1, 1, 0, false},
+    // minibatches mismatching
+    {Shape({}, 2), Shape({}, 2), 0, 0, 1, 1, 1, 1, true},
+    {Shape({}, 3), Shape({}, 3), 0, 0, 1, 1, 1, 1, true},
+    {Shape({}, 2), Shape({}, 3), 0, 0, 1, 1, 1, 1, false},
+    // channels mismatching
+    {{3, 3, 42}, {3, 3, 42}, 0, 0, 1, 1, 1, 1, true},
+    {{3, 3, 42}, {3, 3, 43}, 0, 0, 1, 1, 1, 1, false},
+    // sizes mismatching
+    {{3, 3}, {3, 3}, 0, 0, 1, 1, 1, 1, true},
+    {{3, 3}, {4, 3}, 0, 0, 1, 1, 1, 1, false},
+    {{3, 3}, {3, 4}, 0, 0, 1, 1, 1, 1, false},
+    {{3, 3}, {4, 4}, 0, 0, 1, 1, 1, 1, false},
+    // sizes mismatching with padding
+    {{3, 3}, {5, 5}, 1, 1, 1, 1, 1, 1, true},
+    {{3, 3}, {6, 5}, 1, 1, 1, 1, 1, 1, false},
+    {{3, 3}, {5, 6}, 1, 1, 1, 1, 1, 1, false},
+    {{3, 3}, {6, 6}, 1, 1, 1, 1, 1, 1, false},
+    // sizes mismatching with stride
+    {{3, 3}, {3, 3}, 0, 0, 2, 2, 1, 1, true},
+    {{3, 3}, {4, 3}, 0, 0, 2, 2, 1, 1, false},
+    {{3, 3}, {3, 4}, 0, 0, 2, 2, 1, 1, false},
+    {{3, 3}, {4, 4}, 0, 0, 2, 2, 1, 1, false},
+    // sizes mismatching with dilation
+    {{3, 3}, {2, 2}, 0, 0, 1, 1, 2, 2, true},
+    {{2, 3}, {2, 2}, 0, 0, 1, 1, 2, 2, false},
+    {{3, 2}, {2, 2}, 0, 0, 1, 1, 2, 2, false},
+    {{2, 2}, {2, 2}, 0, 0, 1, 1, 2, 2, false},
+    {{3, 3}, {2, 2}, 0, 0, 1, 1, 3, 2, false},
+    {{3, 3}, {2, 2}, 0, 0, 1, 1, 2, 3, false},
+    {{3, 3}, {2, 2}, 0, 0, 1, 1, 3, 3, false},
+  };
 
-  // zero-stride/dilation
-  EXPECT_THROW(conv2d({}, {}, 0, 0, 0, 1, 1, 1), Error);
-  EXPECT_THROW(conv2d({}, {}, 0, 0, 1, 0, 1, 1), Error);
-  EXPECT_THROW(conv2d({}, {}, 0, 0, 1, 1, 0, 1), Error);
-  EXPECT_THROW(conv2d({}, {}, 0, 0, 1, 1, 1, 0), Error);
+  for (const auto &tc : test_cases) {
+    if (tc.ok) {
+      EXPECT_NO_THROW(
+          conv2d(
+            tc.x, tc.w, tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1));
+    } else {
+      EXPECT_THROW(
+          conv2d(
+            tc.x, tc.w, tc.pad0, tc.pad1, tc.str0, tc.str1, tc.dil0, tc.dil1),
+          Error);
+    }
+  }
+}
 
-  // minibatches mismatching
-  EXPECT_THROW(conv2d(Shape({}, 2), Shape({}, 3), 0, 0, 1, 1, 1, 1), Error);
+TEST_F(ShapeOpsTest, CheckPool2D) {
+  struct TestCase {
+    vector<std::uint32_t> x;
+    std::uint32_t win0, win1, pad0, pad1, str0, str1;
+    vector<std::uint32_t> y;
+  };
+  const vector<TestCase> test_cases {
+    {{}, 1, 1, 0, 0, 1, 1, {}},
+    {{7, 8}, 1, 1, 0, 0, 1, 1, {7, 8}},
+    {{7, 8}, 3, 2, 0, 0, 1, 1, {5, 7}},
+    {{7, 8}, 7, 8, 0, 0, 1, 1, {}},
+    {{7, 8, 10}, 1, 1, 0, 0, 1, 1, {7, 8, 10}},
+    {{7, 8, 10}, 3, 2, 0, 0, 1, 1, {5, 7, 10}},
+    {{7, 8, 10}, 7, 8, 0, 0, 1, 1, {1, 1, 10}},
+    // with padding
+    {{7, 8}, 1, 1, 1, 0, 1, 1, {9, 8}},
+    {{7, 8}, 1, 1, 0, 1, 1, 1, {7, 10}},
+    {{7, 8}, 1, 1, 1, 1, 1, 1, {9, 10}},
+    {{7, 8}, 3, 2, 1, 0, 1, 1, {7, 7}},
+    {{7, 8}, 3, 2, 0, 1, 1, 1, {5, 9}},
+    {{7, 8}, 3, 2, 1, 1, 1, 1, {7, 9}},
+    {{7, 8}, 9, 8, 1, 0, 1, 1, {}},
+    {{7, 8}, 7, 10, 0, 1, 1, 1, {}},
+    {{7, 8}, 9, 10, 1, 1, 1, 1, {}},
+    // with stride
+    {{7, 8}, 1, 1, 0, 0, 2, 1, {4, 8}},
+    {{7, 8}, 1, 1, 0, 0, 1, 2, {7, 4}},
+    {{7, 8}, 1, 1, 0, 0, 2, 2, {4, 4}},
+    {{7, 8}, 3, 2, 0, 0, 2, 1, {3, 7}},
+    {{7, 8}, 3, 2, 0, 0, 1, 2, {5, 4}},
+    {{7, 8}, 3, 2, 0, 0, 2, 2, {3, 4}},
+    {{7, 8}, 7, 8, 0, 0, 2, 1, {}},
+    {{7, 8}, 7, 8, 0, 0, 1, 2, {}},
+    {{7, 8}, 7, 8, 0, 0, 2, 2, {}},
+  };
 
-  // channels mismatching
-  EXPECT_NO_THROW(conv2d({3, 3, 42}, {3, 3, 42}, 0, 0, 1, 1, 1, 1));
-  EXPECT_THROW(conv2d({3, 3, 42}, {3, 3, 43}, 0, 0, 1, 1, 1, 1), Error);
+  for (const auto &tc : test_cases) {
+    EXPECT_EQ(
+        Shape(tc.y),
+        pool2d(tc.x, tc.win0, tc.win1, tc.pad0, tc.pad1, tc.str0, tc.str1));
+    EXPECT_EQ(
+        Shape(tc.y, 3),
+        pool2d(
+          Shape(tc.x, 3),
+          tc.win0, tc.win1, tc.pad0, tc.pad1, tc.str0, tc.str1));
+  }
+}
 
-  // sizes mismatching
-  EXPECT_NO_THROW(conv2d({3, 3}, {3, 3}, 0, 0, 1, 1, 1, 1));
-  EXPECT_THROW(conv2d({3, 3}, {4, 3}, 0, 0, 1, 1, 1, 1), Error);
-  EXPECT_THROW(conv2d({3, 3}, {3, 4}, 0, 0, 1, 1, 1, 1), Error);
-  EXPECT_THROW(conv2d({3, 3}, {4, 4}, 0, 0, 1, 1, 1, 1), Error);
+TEST_F(ShapeOpsTest, CheckInvalidPool2D) {
+  struct TestCase {
+    Shape x;
+    std::uint32_t win0, win1, pad0, pad1, str0, str1;
+    bool ok;
+  };
+  const vector<TestCase> test_cases {
+    // invalid #dimensions
+    {{1, 1, 1, 2}, 1, 1, 0, 0, 1, 1, false},
+    // zero-window/stride
+    {{}, 1, 1, 0, 0, 1, 1, true},
+    {{}, 0, 1, 0, 0, 1, 1, false},
+    {{}, 1, 0, 0, 0, 1, 1, false},
+    {{}, 1, 1, 0, 0, 0, 1, false},
+    {{}, 1, 1, 0, 0, 1, 0, false},
+    // sizes mismatching
+    {{3, 3}, 3, 3, 0, 0, 1, 1, true},
+    {{3, 3}, 4, 3, 0, 0, 1, 1, false},
+    {{3, 3}, 3, 4, 0, 0, 1, 1, false},
+    {{3, 3}, 4, 4, 0, 0, 1, 1, false},
+    // sizes mismatching with padding
+    {{3, 3}, 5, 5, 1, 1, 1, 1, true},
+    {{3, 3}, 6, 5, 1, 1, 1, 1, false},
+    {{3, 3}, 5, 6, 1, 1, 1, 1, false},
+    {{3, 3}, 6, 6, 1, 1, 1, 1, false},
+    // sizes mismatching with stride
+    {{3, 3}, 3, 3, 0, 0, 2, 2, true},
+    {{3, 3}, 4, 3, 0, 0, 2, 2, false},
+    {{3, 3}, 3, 4, 0, 0, 2, 2, false},
+    {{3, 3}, 4, 4, 0, 0, 2, 2, false},
+  };
 
-  // sizes mismatching with padding
-  EXPECT_NO_THROW(conv2d({3, 3}, {5, 5}, 1, 1, 1, 1, 1, 1));
-  EXPECT_THROW(conv2d({3, 3}, {6, 5}, 1, 1, 1, 1, 1, 1), Error);
-  EXPECT_THROW(conv2d({3, 3}, {5, 6}, 1, 1, 1, 1, 1, 1), Error);
-  EXPECT_THROW(conv2d({3, 3}, {6, 6}, 1, 1, 1, 1, 1, 1), Error);
-
-  // sizes mismatching with stride
-  EXPECT_NO_THROW(conv2d({3, 3}, {3, 3}, 0, 0, 2, 2, 1, 1));
-  EXPECT_THROW(conv2d({3, 3}, {4, 3}, 0, 0, 2, 2, 1, 1), Error);
-  EXPECT_THROW(conv2d({3, 3}, {3, 4}, 0, 0, 2, 2, 1, 1), Error);
-  EXPECT_THROW(conv2d({3, 3}, {4, 4}, 0, 0, 2, 2, 1, 1), Error);
-
-  // sizes mismatching with dilation
-  EXPECT_NO_THROW(conv2d({3, 3}, {2, 2}, 0, 0, 1, 1, 2, 2));
-  EXPECT_THROW(conv2d({2, 3}, {2, 2}, 0, 0, 1, 1, 2, 2), Error);
-  EXPECT_THROW(conv2d({3, 2}, {2, 2}, 0, 0, 1, 1, 2, 2), Error);
-  EXPECT_THROW(conv2d({2, 2}, {2, 2}, 0, 0, 1, 1, 2, 2), Error);
-  EXPECT_THROW(conv2d({3, 3}, {2, 2}, 0, 0, 1, 1, 3, 2), Error);
-  EXPECT_THROW(conv2d({3, 3}, {2, 2}, 0, 0, 1, 1, 2, 3), Error);
-  EXPECT_THROW(conv2d({3, 3}, {2, 2}, 0, 0, 1, 1, 3, 3), Error);
+  for (const auto &tc : test_cases) {
+    if (tc.ok) {
+      EXPECT_NO_THROW(
+          pool2d(tc.x, tc.win0, tc.win1, tc.pad0, tc.pad1, tc.str0, tc.str1));
+    } else {
+      EXPECT_THROW(
+          pool2d(tc.x, tc.win0, tc.win1, tc.pad0, tc.pad1, tc.str0, tc.str1),
+          Error);
+    }
+  }
 }
 
 }  // namespace shape_ops
