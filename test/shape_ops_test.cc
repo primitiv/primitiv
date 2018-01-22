@@ -561,5 +561,92 @@ TEST_F(ShapeOpsTest, CheckInvalidPool2D) {
   }
 }
 
+TEST_F(ShapeOpsTest, CheckBatchConcat) {
+  struct TestCase {
+    vector<Shape> inputs;
+    Shape expected;
+  };
+  const vector<TestCase> test_cases {
+    {{{}}, {}},
+    {{{}, {}}, Shape({}, 2)},
+    {{{}, {}, {}}, Shape({}, 3)},
+    {{Shape({}, 2), {}, {}}, Shape({}, 4)},
+    {{{}, Shape({}, 2), {}}, Shape({}, 4)},
+    {{{}, {}, Shape({}, 2)}, Shape({}, 4)},
+    {{Shape({}, 2), Shape({}, 3), Shape({}, 4)}, Shape({}, 9)},
+    {{{5, 6, 7}}, {5, 6, 7}},
+    {{{5, 6, 7}, {5, 6, 7}}, Shape({5, 6, 7}, 2)},
+    {{{5, 6, 7}, {5, 6, 7}, {5, 6, 7}}, Shape({5, 6, 7}, 3)},
+    {{Shape({5, 6, 7}, 2), {5, 6, 7}, {5, 6, 7}}, Shape({5, 6, 7}, 4)},
+    {{{5, 6, 7}, Shape({5, 6, 7}, 2), {5, 6, 7}}, Shape({5, 6, 7}, 4)},
+    {{{5, 6, 7}, {5, 6, 7}, Shape({5, 6, 7}, 2)}, Shape({5, 6, 7}, 4)},
+    {{Shape({5, 6, 7}, 2), Shape({5, 6, 7}, 3), Shape({5, 6, 7}, 4)},
+      Shape({5, 6, 7}, 9)},
+  };
+  for (const TestCase &tc : test_cases) {
+    {
+      // Using objects
+      const Shape observed = batch_concat(tc.inputs);
+      EXPECT_EQ(tc.expected, observed);
+    }
+    {
+      // Using pointers
+      vector<const Shape *> xs;
+      for (const Shape &x : tc.inputs) xs.emplace_back(&x);
+      const Shape observed = batch_concat(xs);
+      EXPECT_EQ(tc.expected, observed);
+    }
+  }
+}
+
+TEST_F(ShapeOpsTest, CheckInvalidBatchConcat) {
+  struct TestCase {
+    vector<Shape> inputs;
+    bool ok;
+  };
+  const vector<TestCase> test_cases {
+    // empty
+    {{}, false},
+    // the last dim is invalid
+    {{{}, {}}, true},
+    {{{}, {2}}, false},
+    {{{}, {1, 2}}, false},
+    {{{}, {1, 1, 2}}, false},
+    {{{}, {1, 1, 1, 2}}, false},
+    // volume is correct but dims is invalid
+    {{{2}, {2}}, true},
+    {{{2}, {1, 2}}, false},
+    {{{2}, {1, 1, 2}}, false},
+    {{{2}, {1, 1, 1, 2}}, false},
+    // only a shape is invalid
+    {{{2, 3, 4}, {2, 3, 4}, {2, 3, 4}}, true},
+    {{{3, 3, 4}, {2, 3, 4}, {2, 3, 4}}, false},
+    {{{2, 4, 4}, {2, 3, 4}, {2, 3, 4}}, false},
+    {{{2, 3, 5}, {2, 3, 4}, {2, 3, 4}}, false},
+    {{{2, 3, 4}, {3, 3, 4}, {2, 3, 4}}, false},
+    {{{2, 3, 4}, {2, 4, 4}, {2, 3, 4}}, false},
+    {{{2, 3, 4}, {2, 3, 5}, {2, 3, 4}}, false},
+    {{{2, 3, 4}, {2, 3, 4}, {3, 3, 4}}, false},
+    {{{2, 3, 4}, {2, 3, 4}, {2, 4, 4}}, false},
+    {{{2, 3, 4}, {2, 3, 4}, {2, 3, 5}}, false},
+  };
+  for (const TestCase &tc : test_cases) {
+    // Using objects
+    if (tc.ok) {
+      EXPECT_NO_THROW(batch_concat(tc.inputs));
+    } else {
+      EXPECT_THROW(batch_concat(tc.inputs), Error);
+    }
+    // Using pointers
+    vector<const Shape *>xs;
+    for (const Shape &x : tc.inputs) xs.emplace_back(&x);
+    if (tc.ok) {
+      EXPECT_NO_THROW(batch_concat(xs));
+    } else {
+      EXPECT_THROW(batch_concat(xs), Error);
+    }
+  }
+}
+
 }  // namespace shape_ops
 }  // namespace primitiv

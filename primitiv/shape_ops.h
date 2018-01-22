@@ -133,6 +133,20 @@ Shape pool2d(
     std::uint32_t padding0, std::uint32_t padding1,
     std::uint32_t stride0, std::uint32_t stride1);
 
+/**
+ * Calculates a shape by concatenating minibatches.
+ * @param xs A list of shapes.
+ * @return Calculated shape.
+ */
+Shape batch_concat(const std::vector<Shape> &xs);
+
+/**
+ * Calculates a shape by concatenating minibatches.
+ * @param xs A list of shapes.
+ * @return Calculated shape.
+ */
+Shape batch_concat(const std::vector<const Shape *> &xs);
+
 }  // namespace shape_ops
 }  // namespace primitiv
 

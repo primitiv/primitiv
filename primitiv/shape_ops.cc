@@ -69,11 +69,11 @@ Shape concat(const std::vector<const Shape *> &xs, std::uint32_t dim) {
   for (std::uint32_t i = 1; i < xs.size(); ++i) {
     const Shape &s = *xs[i];
     if (!s0.has_same_loo_dims(s, dim) || !s0.has_compatible_batch(s)) {
-      std::string dims_str = xs[0]->to_string();
+      std::string shapes_str = xs[0]->to_string();
       for (std::uint32_t i = 1; i < xs.size(); ++i) {
-        dims_str += ", " + xs[i]->to_string();
+        shapes_str += ", " + xs[i]->to_string();
       }
-      THROW_ERROR("Invalid shapes to concatenate: " << dims_str);
+      THROW_ERROR("Invalid shapes to concatenate: " << shapes_str);
     }
     if (!s0.has_batch()) s0.update_batch(s.batch());
     sum += s[dim];
@@ -181,6 +181,37 @@ Shape pool2d(
   return Shape(
       {(x0 - window0) / stride0 + 1, (x1 - window1) / stride1 + 1, x[2]},
       x.batch());
+}
+
+Shape batch_concat(const std::vector<Shape> &xs) {
+  std::vector<const Shape *> ptrs;
+  ptrs.reserve(xs.size());
+  for (const Shape &x : xs) ptrs.emplace_back(&x);
+  return batch_concat(ptrs);
+}
+
+Shape batch_concat(const std::vector<const Shape *> &xs) {
+  if (xs.empty()) {
+    THROW_ERROR("No tensors to be concatenated.");
+  }
+
+  Shape s0 = *xs[0];
+  std::uint32_t sum = s0.batch();
+
+  for (std::uint32_t i = 1; i < xs.size(); ++i) {
+    const Shape &s = *xs[i];
+    if (!s0.has_same_dims(s)) {
+      std::string shapes_str = xs[0]->to_string();
+      for (std::uint32_t i = 1; i < xs.size(); ++i) {
+        shapes_str += ", " + xs[i]->to_string();
+      }
+      THROW_ERROR("Invalid shapes to concatenate minibatches: " << shapes_str);
+    }
+    sum += s.batch();
+  }
+
+  s0.update_batch(sum);
+  return s0;
 }
 
 }  // namespace shape_ops
