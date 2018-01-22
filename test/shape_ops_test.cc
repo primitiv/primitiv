@@ -204,9 +204,7 @@ TEST_F(ShapeOpsTest, CheckConcat) {
   for (const TestCase &tc : test_cases) {
     {
       // Using objects
-      vector<Shape> xs;
-      for (const Shape &x : tc.inputs) xs.emplace_back(x);
-      const Shape observed = concat(xs, tc.dim);
+      const Shape observed = concat(tc.inputs, tc.dim);
       EXPECT_EQ(tc.expected, observed);
     }
     {
@@ -226,13 +224,16 @@ TEST_F(ShapeOpsTest, CheckInvalidConcat) {
   };
   const vector<TestCase> test_cases {
     {{}, 0},
-    {{{1}, {2}}, 1},
+    {{{}, {2}}, 1},
     {{{1, 2}, {1, 3}}, 0},
     {{{1, 2}, {1, 3}}, 2},
     {{Shape({}, 2), Shape({}, 3)}, 0},
     {{Shape({1, 2}, 2), Shape({1, 3}, 3)}, 0},
   };
   for (const TestCase &tc : test_cases) {
+    // Using objects
+    EXPECT_THROW(concat(tc.inputs, tc.dim), Error);
+    // Using pointers
     vector<const Shape *>xs;
     for (const Shape &x : tc.inputs) xs.emplace_back(&x);
     EXPECT_THROW(concat(xs, tc.dim), Error);
@@ -273,7 +274,7 @@ TEST_F(ShapeOpsTest, CheckInvalidPick) {
      {Shape({2, 2, 2}, 3), 0, {0, 1, 2}},
      {Shape({2, 2, 2}, 3), 1, {2}},
      {Shape({2, 2, 2}, 3), 2, {2}},
-     {Shape({2, 2, 2}, 3), 3, {1}},
+     {Shape({2, 2, 2}, 3), 3, {}},
   };
   for (const TestCase &tc : test_cases) {
     EXPECT_THROW(pick(tc.input, tc.ids, tc.dim), Error);
