@@ -512,6 +512,16 @@ Tensor Device::broadcast_fw(
   return y;
 }
 
+Tensor Device::batch_concat_fw(const std::vector<const Tensor *> &xs) {
+  THROW_NOT_IMPLEMENTED;
+}
+
+void Device::batch_concat_bw(
+    const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
+    const std::vector<Tensor *> &gxs) {
+  THROW_NOT_IMPLEMENTED;
+}
+
 Tensor Device::batch_sum_fw(const Tensor &x) {
   CHECK_DEVICE(x);
   Tensor y = new_raw_tensor(x.shape().resize_batch(1));

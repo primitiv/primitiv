@@ -749,6 +749,17 @@ void Eigen::broadcast_fw_impl(
   }
 }
 
+void Eigen::batch_concat_fw_impl(
+    const std::vector<const Tensor *> &xs, Tensor &y) {
+  THROW_NOT_IMPLEMENTED;
+}
+
+void Eigen::batch_concat_bw_impl(
+    const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
+    const std::vector<Tensor *> &gxs) {
+  THROW_NOT_IMPLEMENTED;
+}
+
 void Eigen::batch_sum_fw_impl(const Tensor &x_, Tensor &y_) {
   const std::size_t size = x_.shape().volume();
   const std::size_t bs = x_.shape().batch();

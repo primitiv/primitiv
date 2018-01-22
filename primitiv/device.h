@@ -207,6 +207,13 @@ public:
   Tensor sum_fw(const Tensor &x, std::uint32_t dim);
   Tensor logsumexp_fw(const Tensor &x, std::uint32_t dim);
   Tensor broadcast_fw(const Tensor &x, std::uint32_t dim, std::uint32_t size);
+
+  // Minibatch operations.
+  Tensor batch_concat_fw(const std::vector<const Tensor *> &xs);
+  void batch_concat_bw(
+      const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
+      const std::vector<Tensor *> &gxs);
+
   Tensor batch_sum_fw(const Tensor &x);
 
   // Convolution.
@@ -453,7 +460,14 @@ private:
   virtual void sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
   virtual void logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
   virtual void broadcast_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) = 0;
+
   virtual void batch_sum_fw_impl(const Tensor &x, Tensor &y) = 0;
+
+  virtual void batch_concat_fw_impl(
+      const std::vector<const Tensor *> &xs, Tensor &y) = 0;
+  virtual void batch_concat_bw_impl(
+      const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
+      const std::vector<Tensor *> &gxs) = 0;
 
   virtual void conv2d_fw_impl(
       const Tensor &x, const Tensor &w,

@@ -1314,6 +1314,17 @@ void OpenCL::broadcast_fw_impl(
       cl::NDRange(state_->broadcast_fw_group_size));
 }
 
+void OpenCL::batch_concat_fw_impl(
+    const std::vector<const Tensor *> &xs, Tensor &y) {
+  THROW_NOT_IMPLEMENTED;
+}
+
+void OpenCL::batch_concat_bw_impl(
+    const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
+    const std::vector<Tensor *> &gxs) {
+  THROW_NOT_IMPLEMENTED;
+}
+
 void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t size = y.shape().size();
   const std::uint32_t batch = x.shape().batch();

@@ -1292,6 +1292,17 @@ void CUDA::broadcast_fw_impl(
   ::broadcast_fw_dev<<<g1, dim1_x_>>>(CDATA(x), skip1, skip2, total, MDATA(y));
 }
 
+void CUDA::batch_concat_fw_impl(
+    const std::vector<const Tensor *> &xs, Tensor &y) {
+  THROW_NOT_IMPLEMENTED;
+}
+
+void CUDA::batch_concat_bw_impl(
+    const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
+    const std::vector<Tensor *> &gxs) {
+  THROW_NOT_IMPLEMENTED;
+}
+
 void CUDA::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t size = y.shape().size();
   const std::uint32_t g1 = GRID_SIZE(size, dim1_x_);

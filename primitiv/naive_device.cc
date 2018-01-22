@@ -683,6 +683,17 @@ void Naive::broadcast_fw_impl(
   }
 }
 
+void Naive::batch_concat_fw_impl(
+    const std::vector<const Tensor *> &xs, Tensor &y) {
+  THROW_NOT_IMPLEMENTED;
+}
+
+void Naive::batch_concat_bw_impl(
+    const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
+    const std::vector<Tensor *> &gxs) {
+  THROW_NOT_IMPLEMENTED;
+}
+
 void Naive::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   float *dest = MDATA(y);
   const float *src = CDATA(x);

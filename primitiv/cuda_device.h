@@ -173,6 +173,13 @@ private:
   void sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) override;
   void logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) override;
   void broadcast_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) override;
+
+  void batch_concat_fw_impl(
+      const std::vector<const Tensor *> &xs, Tensor &y) override;
+  void batch_concat_bw_impl(
+      const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
+      const std::vector<Tensor *> &gxs) override;
+
   void batch_sum_fw_impl(const Tensor &x, Tensor &y) override;
 
   void conv2d_fw_impl(const Tensor &x, const Tensor &w,
