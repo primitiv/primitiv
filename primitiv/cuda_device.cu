@@ -31,7 +31,8 @@ __global__ void set_const_dev(float k, std::uint32_t size, float *py) {
   if (i < size) py[i] = k;
 }
 
-__global__ void set_identity_dev(std::uint32_t size, std::uint32_t skip, float *py) {
+__global__ void set_identity_dev(
+    std::uint32_t size, std::uint32_t skip, float *py) {
   const std::uint32_t i = IDX;
   if (i < size) py[i] = !(i % skip);
 }
@@ -49,7 +50,8 @@ __global__ void rand_affine_dev(
 
 __global__ void pick_fw_dev(
     const float *px, const std::uint32_t *pi,
-    std::uint32_t wx, std::uint32_t wy, std::uint32_t sx, std::uint32_t si, std::uint32_t sy,
+    std::uint32_t wx, std::uint32_t wy,
+    std::uint32_t sx, std::uint32_t si, std::uint32_t sy,
     float *py) {
   const std::uint32_t t = IDX;
   const std::uint32_t ox = blockIdx.y * sx + pi[blockIdx.y * si] * wy;
@@ -58,13 +60,16 @@ __global__ void pick_fw_dev(
 }
 
 __global__ void slice_fw_dev(
-    const float *px, std::uint32_t span, std::uint32_t skip, std::uint32_t size, float *py) {
+    const float *px,
+    std::uint32_t span, std::uint32_t skip, std::uint32_t size,
+    float *py) {
   const std::uint32_t i = IDX;
   if (i < size) py[i] = px[(i / span) * skip + (i % span)];
 }
 
 __global__ void concat_fw_dev(
-    const float *px, std::uint32_t span, std::uint32_t skip, std::uint32_t x_size,
+    const float *px,
+    std::uint32_t span, std::uint32_t skip, std::uint32_t x_size,
     std::uint32_t y_size, float *py) {
   const std::uint32_t i = IDX;
   if (i < y_size) py[(i / span) * skip + (i % span)] = px[i % x_size];
@@ -72,7 +77,8 @@ __global__ void concat_fw_dev(
 
 __global__ void pick_bw_dev(
     const float *pgy, const std::uint32_t *pi,
-    std::uint32_t wx, std::uint32_t wy, std::uint32_t sx, std::uint32_t si, std::uint32_t sy,
+    std::uint32_t wx, std::uint32_t wy,
+    std::uint32_t sx, std::uint32_t si, std::uint32_t sy,
     float *pgx) {
   const std::uint32_t t = IDX;
   const std::uint32_t ox = blockIdx.y * sx + pi[blockIdx.y * si] * wy;
@@ -81,7 +87,8 @@ __global__ void pick_bw_dev(
 }
 
 __global__ void slice_bw_dev(
-    const float *pgy, std::uint32_t wx, std::uint32_t wy, std::uint32_t nx, std::uint32_t ny,
+    const float *pgy,
+    std::uint32_t wx, std::uint32_t wy, std::uint32_t nx, std::uint32_t ny,
     float *pgx) {
   const std::uint32_t i = IDX;
   if (i < wy * ::max(nx, ny)) {
@@ -91,7 +98,8 @@ __global__ void slice_bw_dev(
 }
 
 #define CUDADEV_KERNEL_FW_X(name, op) \
-__global__ void name##_fw_dev(const float *px, std::uint32_t size, float *py) { \
+__global__ void name##_fw_dev( \
+    const float *px, std::uint32_t size, float *py) { \
   const std::uint32_t i = IDX; \
   if (i < size) py[i] = (op); \
 }
@@ -255,7 +263,8 @@ CUDADEV_KERNEL_FW_AB(pow, ::powf);
 
 __global__ void add_bw_dev(
     const float *, const float *, const float *, const float *pgy,
-    std::uint32_t size, std::uint32_t mba, std::uint32_t mbb, float *pga, float *pgb) {
+    std::uint32_t size, std::uint32_t mba, std::uint32_t mbb,
+    float *pga, float *pgb) {
   const std::uint32_t i = IDX;
   const std::uint32_t shift = blockIdx.y * size;
   if (i < size) {
@@ -267,7 +276,8 @@ __global__ void add_bw_dev(
 
 __global__ void subtract_bw_dev(
     const float *, const float *, const float *, const float *pgy,
-    std::uint32_t size, std::uint32_t mba, std::uint32_t mbb, float *pga, float *pgb) {
+    std::uint32_t size, std::uint32_t mba, std::uint32_t mbb,
+    float *pga, float *pgb) {
   const std::uint32_t i = IDX;
   const std::uint32_t shift = blockIdx.y * size;
   if (i < size) {
@@ -279,7 +289,8 @@ __global__ void subtract_bw_dev(
 
 __global__ void multiply_bw_dev(
     const float *pa, const float *pb, const float *, const float *pgy,
-    std::uint32_t size, std::uint32_t mba, std::uint32_t mbb, float *pga, float *pgb) {
+    std::uint32_t size, std::uint32_t mba, std::uint32_t mbb,
+    float *pga, float *pgb) {
   const std::uint32_t i = IDX;
   const std::uint32_t shift = blockIdx.y * size;
   if (i < size) {
@@ -293,7 +304,8 @@ __global__ void multiply_bw_dev(
 
 __global__ void divide_bw_dev(
     const float *, const float *pb, const float *py, const float *pgy,
-    std::uint32_t size, std::uint32_t mba, std::uint32_t mbb, float *pga, float *pgb) {
+    std::uint32_t size, std::uint32_t mba, std::uint32_t mbb,
+    float *pga, float *pgb) {
   const std::uint32_t i = IDX;
   const std::uint32_t shift = blockIdx.y * size;
   if (i < size) {
@@ -307,7 +319,8 @@ __global__ void divide_bw_dev(
 
 __global__ void pow_bw_dev(
     const float *pa, const float *pb, const float *py, const float *pgy,
-    std::uint32_t size, std::uint32_t mba, std::uint32_t mbb, float *pga, float *pgb) {
+    std::uint32_t size, std::uint32_t mba, std::uint32_t mbb,
+    float *pga, float *pgb) {
   const std::uint32_t i = IDX;
   const std::uint32_t shift = blockIdx.y * size;
   if (i < size) {
@@ -485,7 +498,9 @@ __global__ void argmin_dev(
 }
 
 __global__ void broadcast_fw_dev(
-    const float *px, std::uint32_t skip1, std::uint32_t skip2, std::uint32_t size, float *py) {
+    const float *px,
+    std::uint32_t skip1, std::uint32_t skip2, std::uint32_t size,
+    float *py) {
   const std::uint32_t i = IDX;
   if (i < size) py[i] = px[i % skip1 + (i / skip2) * skip1];
 }
@@ -510,14 +525,18 @@ __global__ void inplace_multiply_const_dev(
 }
 
 __global__ void inplace_add_dev(
-    const float *px, std::uint32_t size, std::uint32_t mbx, std::uint32_t mby, float *py) {
+    const float *px,
+    std::uint32_t size, std::uint32_t mbx, std::uint32_t mby,
+    float *py) {
   const std::uint32_t i = IDX;
   const std::uint32_t shift = blockIdx.y * size;
   if (i < size) ::atomicAdd(py + i + mby * shift, px[i + mbx * shift]);
 }
 
 __global__ void inplace_subtract_dev(
-    const float *px, std::uint32_t size, std::uint32_t mbx, std::uint32_t mby, float *py) {
+    const float *px,
+    std::uint32_t size, std::uint32_t mbx, std::uint32_t mby,
+    float *py) {
   const std::uint32_t i = IDX;
   const std::uint32_t shift = blockIdx.y * size;
   if (i < size) ::atomicAdd(py + i + mby * shift, -px[i + mbx * shift]);
@@ -554,12 +573,12 @@ struct CUDAInternalState {
     , pool(
         [dev_id](std::size_t size) -> void * {  // allocator
           void *ptr;
-          CUDA_CALL(::cudaSetDevice(dev_id));
-          CUDA_CALL(::cudaMalloc(&ptr, size));
+          PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id));
+          PRIMITIV_CUDA_CALL(::cudaMalloc(&ptr, size));
           return ptr;
         },
         [](void *ptr) -> void {  // deleter
-          CUDA_CALL(::cudaFree(ptr));
+          PRIMITIV_CUDA_CALL(::cudaFree(ptr));
         }) {}
   cuda::CuBLASHandle cublas;
   cuda::CuRANDHandle curand;
@@ -570,7 +589,7 @@ struct CUDAInternalState {
 
 std::uint32_t CUDA::num_devices() {
   int ret;
-  CUDA_CALL(::cudaGetDeviceCount(&ret));
+  PRIMITIV_CUDA_CALL(::cudaGetDeviceCount(&ret));
   return ret;
 }
 
@@ -580,7 +599,7 @@ void CUDA::assert_support(std::uint32_t device_id) {
   }
 
   ::cudaDeviceProp prop;
-  CUDA_CALL(::cudaGetDeviceProperties(&prop, device_id));
+  PRIMITIV_CUDA_CALL(::cudaGetDeviceProperties(&prop, device_id));
 
   // Checks compute capability
   static const int MIN_CC_MAJOR = 3;
@@ -637,7 +656,7 @@ void CUDA::initialize() {
 
   // Retrieves device properties.
   ::cudaDeviceProp prop;
-  CUDA_CALL(::cudaGetDeviceProperties(&prop, dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaGetDeviceProperties(&prop, dev_id_));
 
   // Calculates size of dims to be used in CUDA kernels.
   dim1_x_ = 1;
@@ -711,13 +730,14 @@ std::shared_ptr<void> CUDA::new_handle(const Shape &shape) {
 std::vector<float> CUDA::tensor_to_vector_impl(const Tensor &x) {
   const std::uint32_t size = x.shape().size();
   std::vector<float> ret(size);
-  CUDA_CALL(::cudaSetDevice(dev_id_));
-  CUDA_CALL(::cudaMemcpy(
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaMemcpy(
         &ret[0], CDATA(x), sizeof(float) * size, cudaMemcpyDeviceToHost));
   return ret;
 }
 
-std::vector<std::uint32_t> CUDA::argmax_impl(const Tensor &x, std::uint32_t dim) {
+std::vector<std::uint32_t> CUDA::argmax_impl(
+    const Tensor &x, std::uint32_t dim) {
   const Shape &shape = x.shape();
   const std::uint32_t n = shape[dim];
   const std::uint32_t r = shape.size() / n;
@@ -725,7 +745,7 @@ std::vector<std::uint32_t> CUDA::argmax_impl(const Tensor &x, std::uint32_t dim)
   std::uint32_t block_size = dim1_x_;
   while (block_size >> 1 >= n) block_size >>= 1;
   std::shared_ptr<void> py = state_->pool.allocate(sizeof(std::uint32_t) * r);
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   switch (block_size) {
 #define CASE(k) \
     case k: ::argmax_dev<k><<<r, k>>>( \
@@ -744,12 +764,13 @@ std::vector<std::uint32_t> CUDA::argmax_impl(const Tensor &x, std::uint32_t dim)
 #undef CASE
   }
   std::vector<std::uint32_t> ret(r);
-  CUDA_CALL(::cudaMemcpy(
+  PRIMITIV_CUDA_CALL(::cudaMemcpy(
         &ret[0], py.get(), sizeof(std::uint32_t) * r, cudaMemcpyDeviceToHost));
   return ret;
 }
 
-std::vector<std::uint32_t> CUDA::argmin_impl(const Tensor &x, std::uint32_t dim) {
+std::vector<std::uint32_t> CUDA::argmin_impl(
+    const Tensor &x, std::uint32_t dim) {
   const Shape &shape = x.shape();
   const std::uint32_t n = shape[dim];
   const std::uint32_t r = shape.size() / n;
@@ -757,7 +778,7 @@ std::vector<std::uint32_t> CUDA::argmin_impl(const Tensor &x, std::uint32_t dim)
   std::uint32_t block_size = dim1_x_;
   while (block_size >> 1 >= n) block_size >>= 1;
   std::shared_ptr<void> py = state_->pool.allocate(sizeof(std::uint32_t) * r);
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   switch (block_size) {
 #define CASE(k) \
     case k: ::argmin_dev<k><<<r, k>>>( \
@@ -776,7 +797,7 @@ std::vector<std::uint32_t> CUDA::argmin_impl(const Tensor &x, std::uint32_t dim)
 #undef CASE
   }
   std::vector<std::uint32_t> ret(r);
-  CUDA_CALL(::cudaMemcpy(
+  PRIMITIV_CUDA_CALL(::cudaMemcpy(
         &ret[0], py.get(), sizeof(std::uint32_t) * r, cudaMemcpyDeviceToHost));
   return ret;
 }
@@ -784,14 +805,14 @@ std::vector<std::uint32_t> CUDA::argmin_impl(const Tensor &x, std::uint32_t dim)
 void CUDA::reset_tensor_impl(float k, Tensor &x) {
   const std::uint32_t size = x.shape().size();
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   ::set_const_dev<<<num_blocks, dim1_x_>>>(k, size, MDATA(x));
 }
 
 void CUDA::reset_tensor_by_array_impl(const float values[], Tensor &x) {
   const std::uint32_t size = x.shape().size();
-  CUDA_CALL(::cudaSetDevice(dev_id_));
-  CUDA_CALL(::cudaMemcpy(
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaMemcpy(
         MDATA(x), values, sizeof(float) * size, cudaMemcpyHostToDevice));
 }
 
@@ -801,11 +822,11 @@ void CUDA::copy_tensor_impl(const Tensor &x, Tensor &y) {
       reset_tensor_by_array(CDATA(x), y);
       break;
     case Device::DeviceType::CUDA:
-      CUDA_CALL(::cudaSetDevice(dev_id_));
+      PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
       // NOTE(odashi):
       // If source/destination devices use the unified memory space on the 64
       // bits machine, we can perform ::cudaMemcpy to copy data beyond devices.
-      CUDA_CALL(::cudaMemcpyAsync(
+      PRIMITIV_CUDA_CALL(::cudaMemcpyAsync(
             MDATA(y), CDATA(x),
             sizeof(float) * x.shape().size(),
             cudaMemcpyDeviceToDevice, 0));
@@ -819,15 +840,16 @@ void CUDA::identity_impl(Tensor &y) {
   const std::uint32_t size = y.shape().size();
   const std::uint32_t skip = y.shape()[0] + 1;
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   ::set_identity_dev<<<num_blocks, dim1_x_>>>(size, skip, MDATA(y));
 }
 
 void CUDA::random_bernoulli_impl(float p, Tensor &y) {
   const std::uint32_t size = y.shape().size();
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
-  CUDA_CALL(::cudaSetDevice(dev_id_));
-  CURAND_CALL(::curandGenerateUniform(state_->curand.get(), MDATA(y), size));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CURAND_CALL(::curandGenerateUniform(
+        state_->curand.get(), MDATA(y), size));
   ::rand_bernoulli_dev<<<num_blocks, dim1_x_>>>(p, size, MDATA(y));
 }
 
@@ -835,20 +857,21 @@ void CUDA::random_uniform_impl(float lower, float upper, Tensor &y) {
   const std::uint32_t size = y.shape().size();
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
   const float scale = upper - lower;
-  CUDA_CALL(::cudaSetDevice(dev_id_));
-  CURAND_CALL(::curandGenerateUniform(state_->curand.get(), MDATA(y), size));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CURAND_CALL(::curandGenerateUniform(
+        state_->curand.get(), MDATA(y), size));
   ::rand_affine_dev<<<num_blocks, dim1_x_>>>(lower, scale, size, MDATA(y));
 }
 
 void CUDA::random_normal_impl(float mean, float sd, Tensor &y) {
-  CUDA_CALL(::cudaSetDevice(dev_id_));
-  CURAND_CALL(::curandGenerateNormal(
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CURAND_CALL(::curandGenerateNormal(
         state_->curand.get(), MDATA(y), y.shape().size(), mean, sd));
 }
 
 void CUDA::random_log_normal_impl(float mean, float sd, Tensor &y) {
-  CUDA_CALL(::cudaSetDevice(dev_id_));
-  CURAND_CALL(::curandGenerateLogNormal(
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CURAND_CALL(::curandGenerateLogNormal(
         state_->curand.get(), MDATA(y), y.shape().size(), mean, sd));
 }
 
@@ -860,8 +883,8 @@ void CUDA::pick_fw_impl(
   const std::uint32_t g1 = GRID_SIZE(sy, dim1_x_);
   const std::uint32_t bs = y.shape().batch();
 
-  CUDA_CALL(::cudaSetDevice(dev_id_));
-  CUDA_CALL(::cudaMemcpy(
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaMemcpy(
         ids_ptr_.get(), ids.data(), sizeof(std::uint32_t) * ids.size(),
         cudaMemcpyHostToDevice));
   ::pick_fw_dev<<<dim3(g1, bs), dim1_x_>>>(
@@ -878,7 +901,7 @@ void CUDA::slice_fw_impl(
   const std::uint32_t skip = base * x.shape()[dim];
   const std::uint32_t size = y.shape().size();
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   ::slice_fw_dev<<<num_blocks, dim1_x_>>>(
       CDATA(x) + base * offset, span, skip, size, MDATA(y));
 }
@@ -889,7 +912,7 @@ void CUDA::concat_fw_impl(
   const std::uint32_t base = y.shape().lower_volume(dim);
   const std::uint32_t skip = base * y.shape()[dim];
   std::uint32_t repeat = y.shape().volume() / skip;
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   std::uint32_t offset = 0;
   for (const Tensor *x : xs) {
     const std::uint32_t span = base * x->shape()[dim];
@@ -910,8 +933,8 @@ void CUDA::pick_bw_impl(
   const std::uint32_t g1 = GRID_SIZE(sy, dim1_x_);
   const std::uint32_t bs = gy.shape().batch();
 
-  CUDA_CALL(::cudaSetDevice(dev_id_));
-  CUDA_CALL(::cudaMemcpy(
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaMemcpy(
         ids_ptr_.get(), ids.data(), sizeof(std::uint32_t) * ids.size(),
         cudaMemcpyHostToDevice));
   ::pick_bw_dev<<<dim3(g1, bs), dim1_x_>>>(
@@ -933,7 +956,7 @@ void CUDA::slice_bw_impl(
   const std::uint32_t nx = repeat * sx.batch();
   const std::uint32_t ny = repeat * sy.batch();
   const std::uint32_t g1 = GRID_SIZE(wy * std::max(nx, ny), dim1_x_);
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   ::slice_bw_dev<<<g1, dim1_x_>>>(CDATA(gy), wx, wy, nx, ny, MDATA(gx) + ox);
 }
 
@@ -941,7 +964,7 @@ void CUDA::slice_bw_impl(
 void CUDA::name##_fw_impl(const Tensor &x, Tensor &y) { \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_); \
-  CUDA_CALL(::cudaSetDevice(dev_id_)); \
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_fw_dev<<<num_blocks, dim1_x_>>>(CDATA(x), size, MDATA(y)); \
 }
 
@@ -950,7 +973,7 @@ void CUDA::name##_bw_impl( \
     const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) { \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_); \
-  CUDA_CALL(::cudaSetDevice(dev_id_)); \
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_bw_dev<<<num_blocks, dim1_x_>>>( \
       CDATA(x), CDATA(y), CDATA(gy), size, MDATA(gx)); \
 }
@@ -959,7 +982,7 @@ void CUDA::name##_bw_impl( \
 void CUDA::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = GRID_SIZE(size,dim1_x_); \
-  CUDA_CALL(::cudaSetDevice(dev_id_)); \
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_fw_dev<<<num_blocks, dim1_x_>>>(CDATA(x), k, size, MDATA(y)); \
 }
 
@@ -968,7 +991,7 @@ void CUDA::name##_bw_impl( \
     const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) { \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_); \
-  CUDA_CALL(::cudaSetDevice(dev_id_)); \
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_bw_dev<<<num_blocks, dim1_x_>>>( \
       CDATA(x), CDATA(y), CDATA(gy), k, size, MDATA(gx)); \
 }
@@ -978,7 +1001,7 @@ void CUDA::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
   const std::uint32_t size = y.shape().volume(); \
   const std::uint32_t g1 = GRID_SIZE(size, dim1_x_); \
   const std::uint32_t g2 = y.shape().batch(); \
-  CUDA_CALL(::cudaSetDevice(dev_id_)); \
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_fw_dev<<<dim3(g1, g2, 1), dim1_x_>>>( \
       CDATA(x), CDATA(k), size, \
       x.shape().has_batch(), k.shape().has_batch(), MDATA(y)); \
@@ -989,7 +1012,7 @@ void CUDA::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
   const std::uint32_t size = y.shape().volume(); \
   const std::uint32_t g1 = GRID_SIZE(size, dim1_x_); \
   const std::uint32_t g2 = y.shape().batch(); \
-  CUDA_CALL(::cudaSetDevice(dev_id_)); \
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_fw_dev<<<dim3(g1, g2, 1), dim1_x_>>>( \
       CDATA(a), CDATA(b), size, \
       a.shape().has_batch(), b.shape().has_batch(), MDATA(y)); \
@@ -1002,7 +1025,7 @@ void CUDA::name##_bw_impl( \
   const std::uint32_t size = y.shape().volume(); \
   const std::uint32_t g1 = GRID_SIZE(size, dim1_x_); \
   const std::uint32_t g2 = y.shape().batch(); \
-  CUDA_CALL(::cudaSetDevice(dev_id_)); \
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_bw_dev<<<dim3(g1, g2, 1), dim1_x_>>>( \
       CDATA(a), CDATA(b), CDATA(y), CDATA(gy), size, \
       a.shape().has_batch(), b.shape().has_batch(), MDATA(ga), MDATA(gb)); \
@@ -1043,7 +1066,7 @@ CUDADEV_FW_X_CONST(elu);
 void CUDA::pown_fw_impl(const Tensor &x, std::int32_t k, Tensor &y) {
   const std::uint32_t size = x.shape().size();
   const std::uint32_t num_blocks = GRID_SIZE(size,dim1_x_);
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   ::pown_fw_dev<<<num_blocks, dim1_x_>>>(CDATA(x), k, size, MDATA(y));
 }
 
@@ -1063,7 +1086,7 @@ void CUDA::pown_bw_impl(
     Tensor &gx) {
   const std::uint32_t size = x.shape().size();
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   ::pown_bw_dev<<<num_blocks, dim1_x_>>>(
       CDATA(x), CDATA(y), CDATA(gy), k, size, MDATA(gx));
 }
@@ -1103,7 +1126,7 @@ void CUDA::transpose_fw_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t bs = x.shape().batch();
   const std::uint32_t g1 = GRID_SIZE(rows, dim2_x_);
   const std::uint32_t g2 = GRID_SIZE(cols, dim2_y_);
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   ::transpose_fw_dev<<<dim3(g1, g2, bs), dim3(dim2_x_, dim2_y_, 1)>>>(
       CDATA(x), rows, cols, MDATA(y));
 }
@@ -1115,7 +1138,7 @@ void CUDA::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   float alpha = 1.;
   float beta = 0.;
 
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
 
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
@@ -1133,7 +1156,7 @@ void CUDA::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
     const std::uint32_t gs = GRID_SIZE(bs, dim1_x_);
 
     ::set_gemm_ptrs<<<gs, dim1_x_>>>(pa, pb, py, na, nb, ny, bs, fptrs);
-    CUBLAS_CALL(::cublasSgemmBatched(
+    PRIMITIV_CUBLAS_CALL(::cublasSgemmBatched(
           state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_N,
           di, dk, dj,
           &alpha, fptrs, di, fptrs + bs, dj,
@@ -1141,7 +1164,7 @@ void CUDA::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
           bs));
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
-    CUBLAS_CALL(::cublasSgemm(
+    PRIMITIV_CUBLAS_CALL(::cublasSgemm(
           state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_N,
           di, dk * b.shape().batch(), dj,
           &alpha, CDATA(a), di, CDATA(b), dj,
@@ -1156,7 +1179,7 @@ void CUDA::transpose_bw_impl(
   const std::uint32_t bs = gx.shape().batch();
   const std::uint32_t g1 = GRID_SIZE(rows, dim2_x_);
   const std::uint32_t g2 = GRID_SIZE(cols, dim2_y_);
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   ::transpose_bw_dev<<<dim3(g1, g2, bs), dim3(dim2_x_, dim2_y_, 1)>>>(
       CDATA(gy), rows, cols, MDATA(gx));
 }
@@ -1171,7 +1194,7 @@ void CUDA::matmul_bw_impl(
   const std::uint32_t dk = b.shape()[1];
   float alpha = 1.;
   float beta = 1.;
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
     const float *pa = CDATA(a);
@@ -1190,7 +1213,7 @@ void CUDA::matmul_bw_impl(
     const std::uint32_t gs = GRID_SIZE(bs, dim1_x_);
 
     ::set_gemm_ptrs<<<gs, dim1_x_>>>(pgy, pb, pga, ny, nb, na, bs, fptrs);
-    CUBLAS_CALL(::cublasSgemmBatched(
+    PRIMITIV_CUBLAS_CALL(::cublasSgemmBatched(
           state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_T,
           di, dj, dk,
           &alpha, fptrs, di, fptrs + bs, dj,
@@ -1199,7 +1222,7 @@ void CUDA::matmul_bw_impl(
 
     if (nb > 0 /* `b` has minibatch */) {
       ::set_gemm_ptrs<<<gs, dim1_x_>>>(pa, pgy, pgb, na, ny, nb, bs, fptrs);
-      CUBLAS_CALL(::cublasSgemmBatched(
+      PRIMITIV_CUBLAS_CALL(::cublasSgemmBatched(
             state_->cublas.get(), ::CUBLAS_OP_T, ::CUBLAS_OP_N,
             dj, dk, di,
             &alpha, fptrs, di, fptrs + bs, di,
@@ -1210,7 +1233,7 @@ void CUDA::matmul_bw_impl(
       // `cublasSgemmBatched` can not be used due to a data race against
       // shared values in `b` by multiple GEMM operations.
       for (std::uint32_t batch = 0; batch < bs; ++batch) {
-        CUBLAS_CALL(::cublasSgemm(
+        PRIMITIV_CUBLAS_CALL(::cublasSgemm(
               state_->cublas.get(), ::CUBLAS_OP_T, ::CUBLAS_OP_N,
               dj, dk, di,
               &alpha, pa + batch * na, di, pgy + batch * ny, di,
@@ -1219,12 +1242,12 @@ void CUDA::matmul_bw_impl(
     }
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
-    CUBLAS_CALL(::cublasSgemm(
+    PRIMITIV_CUBLAS_CALL(::cublasSgemm(
           state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_T,
           di, dj, dk * b.shape().batch(),
           &alpha, CDATA(gy), di, CDATA(b), dj,
           &beta, MDATA(ga), di));
-    CUBLAS_CALL(::cublasSgemm(
+    PRIMITIV_CUBLAS_CALL(::cublasSgemm(
           state_->cublas.get(), ::CUBLAS_OP_T, ::CUBLAS_OP_N,
           dj, dk * b.shape().batch(), di,
           &alpha, CDATA(a), di, CDATA(gy), di,
@@ -1238,7 +1261,7 @@ void CUDA::sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   const std::uint32_t s = y.shape().lower_volume(dim);
   std::uint32_t block_size = dim1_x_;
   while (block_size >> 1 >= n) block_size >>= 1;
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   switch (block_size) {
 #define CASE(k) \
     case k: ::sum_fw_dev<k><<<r, k>>>(CDATA(x), s, n, MDATA(y)); break
@@ -1263,7 +1286,7 @@ void CUDA::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   const std::uint32_t s = y.shape().lower_volume(dim);
   std::uint32_t block_size = dim1_x_;
   while (block_size >> 1 >= n) block_size >>= 1;
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   switch (block_size) {
 #define CASE(k) \
     case k: ::logsumexp_fw_dev<k><<<r, k>>>(CDATA(x), s, n, MDATA(y)); break
@@ -1288,14 +1311,14 @@ void CUDA::broadcast_fw_impl(
   const std::uint32_t skip2 = skip1 * size;
   const std::uint32_t total = y.shape().size();
   const std::uint32_t g1 = GRID_SIZE(total, dim1_x_);
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   ::broadcast_fw_dev<<<g1, dim1_x_>>>(CDATA(x), skip1, skip2, total, MDATA(y));
 }
 
 void CUDA::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t size = y.shape().size();
   const std::uint32_t g1 = GRID_SIZE(size, dim1_x_);
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   ::batch_sum_fw_dev<<<g1, dim1_x_>>>(
       CDATA(x), size, x.shape().batch(), MDATA(y));
 }
@@ -1311,7 +1334,7 @@ void CUDA::conv2d_fw_impl(
   const Shape y_shape = y.shape();
 
   // Specifies a target device.
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
 
   // Prepares descriptors.
   const cuda::CuDNNTensorDescriptor x_desc(
@@ -1327,14 +1350,14 @@ void CUDA::conv2d_fw_impl(
 
   // Obtains the most efficient algorithm.
   ::cudnnConvolutionFwdAlgo_t algo;
-  CUDNN_CALL(::cudnnGetConvolutionForwardAlgorithm(
+  PRIMITIV_CUDNN_CALL(::cudnnGetConvolutionForwardAlgorithm(
         state_->cudnn.get(),
         x_desc.get(), w_desc.get(), conv_desc.get(), y_desc.get(),
         CUDNN_CONVOLUTION_FWD_PREFER_FASTEST, 0, &algo));
 
   // Obtains workspace size/memory.
   std::size_t ws_size;
-  CUDNN_CALL(::cudnnGetConvolutionForwardWorkspaceSize(
+  PRIMITIV_CUDNN_CALL(::cudnnGetConvolutionForwardWorkspaceSize(
         state_->cudnn.get(),
         x_desc.get(), w_desc.get(), conv_desc.get(), y_desc.get(),
         algo, &ws_size));
@@ -1350,7 +1373,7 @@ void CUDA::conv2d_fw_impl(
   const float *w_ptr = CDATA(w);
   float *y_ptr = MDATA(y);
   for (std::uint32_t bn = 0; bn < w_shape.batch(); ++bn) {
-    CUDNN_CALL(::cudnnConvolutionForward(
+    PRIMITIV_CUDNN_CALL(::cudnnConvolutionForward(
           state_->cudnn.get(),
           &alpha, x_desc.get(), x_ptr, w_desc.get(), w_ptr,
           conv_desc.get(), algo, ws_ptr.get(), ws_size,
@@ -1372,7 +1395,7 @@ void CUDA::conv2d_bw_impl(
   const Shape y_shape = gy.shape();
 
   // Specifies a target device.
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
 
   // Prepares descriptors.
   const cuda::CuDNNTensorDescriptor x_desc(
@@ -1389,22 +1412,22 @@ void CUDA::conv2d_bw_impl(
   // Obtains the most efficient algorithms.
   ::cudnnConvolutionBwdDataAlgo_t x_algo;
   ::cudnnConvolutionBwdFilterAlgo_t w_algo;
-  CUDNN_CALL(::cudnnGetConvolutionBackwardDataAlgorithm(
+  PRIMITIV_CUDNN_CALL(::cudnnGetConvolutionBackwardDataAlgorithm(
         state_->cudnn.get(),
         w_desc.get(), y_desc.get(), conv_desc.get(), x_desc.get(),
         CUDNN_CONVOLUTION_BWD_DATA_PREFER_FASTEST, 0, &x_algo));
-  CUDNN_CALL(::cudnnGetConvolutionBackwardFilterAlgorithm(
+  PRIMITIV_CUDNN_CALL(::cudnnGetConvolutionBackwardFilterAlgorithm(
         state_->cudnn.get(),
         x_desc.get(), y_desc.get(), conv_desc.get(), w_desc.get(),
         CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST, 0, &w_algo));
 
   // Obtains workspace sizes/memory.
   std::size_t x_ws_size, w_ws_size;
-  CUDNN_CALL(::cudnnGetConvolutionBackwardDataWorkspaceSize(
+  PRIMITIV_CUDNN_CALL(::cudnnGetConvolutionBackwardDataWorkspaceSize(
         state_->cudnn.get(),
         w_desc.get(), y_desc.get(), conv_desc.get(), x_desc.get(),
         x_algo, &x_ws_size));
-  CUDNN_CALL(::cudnnGetConvolutionBackwardFilterWorkspaceSize(
+  PRIMITIV_CUDNN_CALL(::cudnnGetConvolutionBackwardFilterWorkspaceSize(
         state_->cudnn.get(),
         x_desc.get(), y_desc.get(), conv_desc.get(), w_desc.get(),
         w_algo, &w_ws_size));
@@ -1423,12 +1446,12 @@ void CUDA::conv2d_bw_impl(
   float *gx_ptr = MDATA(gx);
   float *gw_ptr = MDATA(gw);
   for (std::uint32_t bn = 0; bn < w_shape.batch(); ++bn) {
-    CUDNN_CALL(::cudnnConvolutionBackwardData(
+    PRIMITIV_CUDNN_CALL(::cudnnConvolutionBackwardData(
           state_->cudnn.get(),
           &alpha, w_desc.get(), w_ptr, y_desc.get(), gy_ptr,
           conv_desc.get(), x_algo, ws_ptr.get(), ws_size,
           &beta, x_desc.get(), gx_ptr));
-    CUDNN_CALL(::cudnnConvolutionBackwardFilter(
+    PRIMITIV_CUDNN_CALL(::cudnnConvolutionBackwardFilter(
           state_->cudnn.get(),
           &alpha, x_desc.get(), x_ptr, y_desc.get(), gy_ptr,
           conv_desc.get(), w_algo, ws_ptr.get(), ws_size,
@@ -1451,7 +1474,7 @@ void CUDA::max_pool2d_fw_impl(
   const Shape y_shape = y.shape();
 
   // Specifies a target device.
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
 
   // Prepares descriptors.
   const cuda::CuDNNTensorDescriptor x_desc(
@@ -1467,7 +1490,7 @@ void CUDA::max_pool2d_fw_impl(
   const float beta = 0.f;
   const float *x_ptr = CDATA(x);
   float *y_ptr = MDATA(y);
-  CUDNN_CALL(::cudnnPoolingForward(
+  PRIMITIV_CUDNN_CALL(::cudnnPoolingForward(
         state_->cudnn.get(), pool_desc.get(),
         &alpha, x_desc.get(), x_ptr,
         &beta, y_desc.get(), y_ptr));
@@ -1483,7 +1506,7 @@ void CUDA::max_pool2d_bw_impl(
   const Shape y_shape = y.shape();
 
   // Specifies a target device.
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
 
   // Prepares descriptors.
   const cuda::CuDNNTensorDescriptor x_desc(
@@ -1501,7 +1524,7 @@ void CUDA::max_pool2d_bw_impl(
   const float *y_ptr = CDATA(y);
   const float *gy_ptr = CDATA(gy);
   float *gx_ptr = MDATA(gx);
-  CUDNN_CALL(::cudnnPoolingBackward(
+  PRIMITIV_CUDNN_CALL(::cudnnPoolingBackward(
         state_->cudnn.get(), pool_desc.get(),
         &alpha, y_desc.get(), y_ptr, y_desc.get(), gy_ptr, x_desc.get(), x_ptr,
         &beta, x_desc.get(), gx_ptr));
@@ -1510,7 +1533,7 @@ void CUDA::max_pool2d_bw_impl(
 void CUDA::inplace_multiply_const_impl(float k, Tensor &x) {
   const std::uint32_t size = x.shape().size();
   const std::uint32_t g1 = GRID_SIZE(size, dim1_x_);
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   ::inplace_multiply_const_dev<<<g1, dim1_x_>>>(k, size, MDATA(x));
 }
 
@@ -1518,7 +1541,7 @@ void CUDA::inplace_add_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t size = y.shape().volume();
   const std::uint32_t g1 = GRID_SIZE(size, dim1_x_);
   const std::uint32_t bs = std::max(x.shape().batch(), y.shape().batch());
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   ::inplace_add_dev<<<dim3(g1, bs, 1), dim1_x_>>>(
       CDATA(x), size, x.shape().has_batch(), y.shape().has_batch(), MDATA(y));
 }
@@ -1527,7 +1550,7 @@ void CUDA::inplace_subtract_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t size = y.shape().volume();
   const std::uint32_t g1 = GRID_SIZE(size, dim1_x_);
   const std::uint32_t bs = std::max(x.shape().batch(), y.shape().batch());
-  CUDA_CALL(::cudaSetDevice(dev_id_));
+  PRIMITIV_CUDA_CALL(::cudaSetDevice(dev_id_));
   ::inplace_subtract_dev<<<dim3(g1, bs, 1), dim1_x_>>>(
       CDATA(x), size, x.shape().has_batch(), y.shape().has_batch(), MDATA(y));
 }

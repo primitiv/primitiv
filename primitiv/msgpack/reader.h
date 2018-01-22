@@ -54,16 +54,18 @@ private:
     return (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | c[3];
   }
 
-#define ULL(expr) static_cast<std::uint64_t>(expr)
+#define PRIMITIV_ULL(expr) static_cast<std::uint64_t>(expr)
   std::uint64_t get_uint64() {
     std::uint8_t c[8];
     is_.read(reinterpret_cast<char *>(c), 8);
     check_eof();
-    return (ULL(c[0]) << 56) | (ULL(c[1]) << 48) | (ULL(c[2]) << 40) |
-      (ULL(c[3]) << 32) | (ULL(c[4]) << 24) | (ULL(c[5]) << 16) |
-      (ULL(c[6]) << 8) | ULL(c[7]);
+    return (
+        (PRIMITIV_ULL(c[0]) << 56) | (PRIMITIV_ULL(c[1]) << 48) |
+        (PRIMITIV_ULL(c[2]) << 40) | (PRIMITIV_ULL(c[3]) << 32) |
+        (PRIMITIV_ULL(c[4]) << 24) | (PRIMITIV_ULL(c[5]) << 16) |
+        (PRIMITIV_ULL(c[6]) << 8) | PRIMITIV_ULL(c[7]));
   }
-#undef ULL
+#undef PRIMITIV_ULL
 
   void read(char *ptr, std::size_t size) {
     is_.read(ptr, size);

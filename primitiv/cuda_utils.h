@@ -10,7 +10,7 @@
 
 #include <primitiv/mixins.h>
 
-#define CUDA_CALL(f) { \
+#define PRIMITIV_CUDA_CALL(f) { \
   ::cudaError_t err = (f); \
   if (err != cudaSuccess) { \
     THROW_ERROR( \
@@ -20,7 +20,7 @@
   } \
 }
 
-#define CUBLAS_CALL(f) { \
+#define PRIMITIV_CUBLAS_CALL(f) { \
   ::cublasStatus_t err = (f); \
   if (err != CUBLAS_STATUS_SUCCESS) { \
     THROW_ERROR( \
@@ -30,7 +30,7 @@
   } \
 }
 
-#define CURAND_CALL(f) { \
+#define PRIMITIV_CURAND_CALL(f) { \
   ::curandStatus_t err = (f); \
   if (err != CURAND_STATUS_SUCCESS) { \
     THROW_ERROR( \
@@ -40,7 +40,7 @@
   } \
 }
 
-#define CUDNN_CALL(f) { \
+#define PRIMITIV_CUDNN_CALL(f) { \
   ::cudnnStatus_t err = (f); \
   if (err != CUDNN_STATUS_SUCCESS) { \
     THROW_ERROR( \
