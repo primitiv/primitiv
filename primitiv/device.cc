@@ -513,13 +513,65 @@ Tensor Device::broadcast_fw(
 }
 
 Tensor Device::batch_concat_fw(const std::vector<const Tensor *> &xs) {
-  THROW_NOT_IMPLEMENTED;
+  if (xs.empty()) THROW_ERROR("No tensors to concat.");
+  vector<Shape> shapes;
+  shapes.reserve(xs.size());
+
+  for (std::uint32_t i = 0; i < xs.size(); ++i) {
+    CHECK_DEVICE(*xs[i]);
+    shapes.emplace_back(xs[i]->shape());
+  }
+
+  Tensor y = new_raw_tensor(shape_ops::batch_concat(shapes));
+  batch_concat_fw_impl(xs, y);
+  return y;
 }
 
 void Device::batch_concat_bw(
     const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
     const std::vector<Tensor *> &gxs) {
-  THROW_NOT_IMPLEMENTED;
+  if (xs.empty() || gxs.empty() || xs.size() != gxs.size()) {
+    THROW_ERROR(
+        "Invalid number of tensors to perform `batch_concat_bw` operation."
+        << "\n  #x: " << xs.size()
+        << "\n  #gx: " << gxs.size() << '\n');
+  }
+
+  bool ok = true;
+  std::vector<Shape> shapes;
+  shapes.reserve(xs.size());
+
+  for (std::uint32_t i = 0; i < xs.size(); ++i) {
+    const Tensor &x = *xs[i];
+    const Tensor &gx = *gxs[i];
+    shapes.emplace_back(x.shape());
+    CHECK_DEVICE(x);
+    CHECK_DEVICE(gx);
+    if (shapes.back() != gx.shape()) ok = false;
+  }
+
+  CHECK_DEVICE(y);
+  CHECK_DEVICE(gy);
+
+  if (!ok ||
+      y.shape() != gy.shape() ||
+      y.shape() != shape_ops::batch_concat(shapes)) {
+    std::stringstream ss;
+    ss << "Shape mismatched at batch_concat_bw."
+      << "\n  x: " << xs[0]->shape().to_string();
+    for (std::uint32_t i = 1; i < xs.size(); ++i) {
+      ss << ", " << xs[i]->shape().to_string();
+    }
+    ss << "\n  gx: " << gxs[0]->shape().to_string();
+    for (std::uint32_t i = 1; i < gxs.size(); ++i) {
+      ss << ", " << gxs[i]->shape().to_string();
+    }
+    ss << "\n  y: " << y.shape().to_string()
+      << "\n  gy: " << gy.shape().to_string() << '\n';
+    THROW_ERROR(ss.str());
+  }
+
+  batch_concat_bw_impl(xs, y, gy, gxs);
 }
 
 Tensor Device::batch_sum_fw(const Tensor &x) {
