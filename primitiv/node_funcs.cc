@@ -276,6 +276,30 @@ Node stop_gradient(const Node &x) {
   return REGX(x, StopGradient(), x);
 }
 
+template<>
+Node conv2d(
+    const Node &x, const Node &w,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    std::uint32_t dilation0, std::uint32_t dilation1) {
+  return REGX(
+      x,
+      Convolution2D(padding0, padding1, stride0, stride1, dilation0, dilation1),
+      x, w);
+}
+
+template<>
+Node max_pool2d(
+    const Node &x,
+    std::uint32_t window0, std::uint32_t window1,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1) {
+  return REGX(
+      x,
+      MaxPooling2D(window0, window1, padding0, padding1, stride0, stride1),
+      x);
+}
+
 namespace batch {
 
 template<>

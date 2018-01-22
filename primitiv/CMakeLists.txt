@@ -138,7 +138,8 @@ if(PRIMITIV_USE_CUDA)
   list(APPEND primitiv_all_DEPS
     ${CUDA_LIBRARIES}
     ${CUDA_cublas_LIBRARY}
-    ${CUDA_curand_LIBRARY})
+    ${CUDA_curand_LIBRARY}
+    ${CUDNN_LIBRARIES})
 endif()
 
 # Build rules of the OpenCL backend.

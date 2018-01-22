@@ -148,7 +148,8 @@ Tensor Device::pick_fw(
 }
 
 Tensor Device::slice_fw(
-    const Tensor &x, std::uint32_t dim, std::uint32_t lower, std::uint32_t upper) {
+    const Tensor &x, std::uint32_t dim,
+    std::uint32_t lower, std::uint32_t upper) {
   CHECK_DEVICE(x);
   Tensor y = new_raw_tensor(shape_ops::slice(x.shape(), dim, lower, upper));
   slice_fw_impl(x, dim, lower, y);
@@ -344,7 +345,8 @@ DEV_BW_X_CONST(prelu);
 DEV_BW_X_CONST(elu);
 
 void Device::pown_bw(
-    const Tensor &x, const Tensor &y, const Tensor &gy, std::int32_t k, Tensor &gx) {
+    const Tensor &x, const Tensor &y, const Tensor &gy, std::int32_t k,
+    Tensor &gx) {
   CHECK_DEVICE(x);
   CHECK_DEVICE(y);
   CHECK_DEVICE(gy);
@@ -377,12 +379,109 @@ DEV_FW_AB(divide, shape_ops::elementwise);
 DEV_FW_AB(pow, shape_ops::elementwise);
 DEV_FW_AB(matmul, shape_ops::matmul);
 
+Tensor Device::conv2d_fw(
+    const Tensor &x, const Tensor &w,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    std::uint32_t dilation0, std::uint32_t dilation1) {
+  CHECK_DEVICE(x);
+  CHECK_DEVICE(w);
+  Tensor y = new_raw_tensor(shape_ops::conv2d(
+        x.shape(), w.shape(),
+        padding0, padding1, stride0, stride1, dilation0, dilation1));
+  conv2d_fw_impl(
+      x, w, padding0, padding1, stride0, stride1, dilation0, dilation1, y);
+  return y;
+}
+
+Tensor Device::max_pool2d_fw(
+    const Tensor &x,
+    std::uint32_t window0, std::uint32_t window1,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1) {
+  CHECK_DEVICE(x);
+  Tensor y = new_raw_tensor(shape_ops::pool2d(
+        x.shape(), window0, window1, padding0, padding1, stride0, stride1));
+  max_pool2d_fw_impl(
+      x, window0, window1, padding0, padding1, stride0, stride1, y);
+  return y;
+}
+
 DEV_BW_AB(add, shape_ops::elementwise);
 DEV_BW_AB(subtract, shape_ops::elementwise);
 DEV_BW_AB(multiply, shape_ops::elementwise);
 DEV_BW_AB(divide, shape_ops::elementwise);
 DEV_BW_AB(pow, shape_ops::elementwise);
 DEV_BW_AB(matmul, shape_ops::matmul);
+
+void Device::conv2d_bw(
+    const Tensor &x, const Tensor &w, const Tensor &y, const Tensor &gy,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    std::uint32_t dilation0, std::uint32_t dilation1,
+    Tensor &gx, Tensor &gw) {
+  CHECK_DEVICE(x);
+  CHECK_DEVICE(w);
+  CHECK_DEVICE(y);
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(gx);
+  CHECK_DEVICE(gw);
+  if (x.shape() != gx.shape() ||
+      w.shape() != gw.shape() ||
+      y.shape() != gy.shape() ||
+      y.shape() != shape_ops::conv2d(
+        x.shape(), w.shape(),
+        padding0, padding1, stride0, stride1, dilation0, dilation1)) {
+    THROW_ERROR(
+        "Shape mismatched at conv2d_bw"
+        << ". x.shape: " << x.shape().to_string()
+        << ", w.shape: " << w.shape().to_string()
+        << ", y.shape: " << y.shape().to_string()
+        << ", gy.shape: " << gy.shape().to_string()
+        << ", gx.shape: " << gx.shape().to_string()
+        << ", gw.shape: " << gw.shape().to_string()
+        << ", padding0: " << padding0
+        << ", padding1: " << padding1
+        << ", stride0: " << stride0
+        << ", stride1: " << stride1
+        << ", dilation0: " << dilation0
+        << ", dilation1: " << dilation1);
+  }
+  conv2d_bw_impl(
+      x, w, y, gy, padding0, padding1, stride0, stride1, dilation0, dilation1,
+      gx, gw);
+}
+
+void Device::max_pool2d_bw(
+    const Tensor &x, const Tensor &y, const Tensor &gy,
+    std::uint32_t window0, std::uint32_t window1,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    Tensor &gx) {
+  CHECK_DEVICE(x);
+  CHECK_DEVICE(y);
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(gx);
+  if (x.shape() != gx.shape() ||
+      y.shape() != gy.shape() ||
+      y.shape() != shape_ops::pool2d(
+        x.shape(), window0, window1, padding0, padding1, stride0, stride1)) {
+    THROW_ERROR(
+        "Shape mismatched at max_pool2d_bw"
+        << ". x.shape: " << x.shape().to_string()
+        << ", y.shape: " << y.shape().to_string()
+        << ", gy.shape: " << gy.shape().to_string()
+        << ", gx.shape: " << gx.shape().to_string()
+        << ", window0: " << window0
+        << ", window1: " << window1
+        << ", padding0: " << padding0
+        << ", padding1: " << padding1
+        << ", stride0: " << stride0
+        << ", stride1: " << stride1);
+  }
+  max_pool2d_bw_impl(
+      x, y, gy, window0, window1, padding0, padding1, stride0, stride1, gx);
+}
 
 #undef DEV_FW_X
 #undef DEV_BW_X
@@ -405,7 +504,8 @@ Tensor Device::logsumexp_fw(const Tensor &x, std::uint32_t dim) {
   return y;
 }
 
-Tensor Device::broadcast_fw(const Tensor &x, std::uint32_t dim, std::uint32_t size) {
+Tensor Device::broadcast_fw(
+    const Tensor &x, std::uint32_t dim, std::uint32_t size) {
   CHECK_DEVICE(x);
   Tensor y = new_raw_tensor(shape_ops::broadcast(x.shape(), dim, size));
   broadcast_fw_impl(x, dim, size, y);
