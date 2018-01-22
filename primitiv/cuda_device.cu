@@ -523,6 +523,18 @@ __global__ void inplace_subtract_dev(
   if (i < size) ::atomicAdd(py + i + mby * shift, -px[i + mbx * shift]);
 }
 
+__global__ void set_gemm_ptrs(
+    const float *pa, const float *pb, const float *py,
+    std::uint32_t na, std::uint32_t nb, std::uint32_t ny, std::uint32_t bs,
+    const float **ptrs) {
+  const std::uint32_t i = IDX;
+  if (i < bs) {
+    ptrs[i] = pa + i * na;
+    ptrs[i + bs] = pb + i * nb;
+    ptrs[i + 2 * bs] = py + i * ny;
+  }
+}
+
 #undef IDX
 #undef IDY
 
@@ -1102,20 +1114,31 @@ void CUDA::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   const std::uint32_t dk = b.shape()[1];
   float alpha = 1.;
   float beta = 0.;
+
   CUDA_CALL(::cudaSetDevice(dev_id_));
+
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
-    const std::uint32_t a_skip = di * dj;
-    const std::uint32_t b_skip = b.shape().has_batch() * dj * dk;
-    const std::uint32_t y_skip = di * dk;
+    const float *pa = CDATA(a);
+    const float *pb = CDATA(b);
+    float *py = MDATA(y);
+    const std::uint32_t na = di * dj;
+    const std::uint32_t nb = b.shape().has_batch() * dj * dk;
+    const std::uint32_t ny = di * dk;
     const std::uint32_t bs = a.shape().batch();
-    for (std::uint32_t n = 0; n < bs; ++n) {
-      CUBLAS_CALL(::cublasSgemm(
-            state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_N,
-            di, dk, dj,
-            &alpha, CDATA(a) + n * a_skip, di, CDATA(b) + n * b_skip, dj,
-            &beta, MDATA(y) + n * y_skip, di));
-    }
+
+    std::shared_ptr<void> ptrs = state_->pool.allocate(3 * bs * sizeof(void *));
+    const float **fptrs = static_cast<const float **>(ptrs.get());
+
+    const std::uint32_t gs = GRID_SIZE(bs, dim1_x_);
+
+    ::set_gemm_ptrs<<<gs, dim1_x_>>>(pa, pb, py, na, nb, ny, bs, fptrs);
+    CUBLAS_CALL(::cublasSgemmBatched(
+          state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_N,
+          di, dk, dj,
+          &alpha, fptrs, di, fptrs + bs, dj,
+          &beta, const_cast<float **>(fptrs) + 2 * bs, di,
+          bs));
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
     CUBLAS_CALL(::cublasSgemm(
@@ -1151,21 +1174,48 @@ void CUDA::matmul_bw_impl(
   CUDA_CALL(::cudaSetDevice(dev_id_));
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
-    const std::uint32_t a_skip = di * dj;
-    const std::uint32_t b_skip = b.shape().has_batch() * dj * dk;
-    const std::uint32_t y_skip = di * dk;
+    const float *pa = CDATA(a);
+    const float *pb = CDATA(b);
+    const float *pgy = CDATA(gy);
+    float *pga = MDATA(ga);
+    float *pgb = MDATA(gb);
+    const std::uint32_t na = di * dj;
+    const std::uint32_t nb = b.shape().has_batch() * dj * dk;
+    const std::uint32_t ny = di * dk;
     const std::uint32_t bs = a.shape().batch();
-    for (std::uint32_t n = 0; n < bs; ++n) {
-      CUBLAS_CALL(::cublasSgemm(
-            state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_T,
-            di, dj, dk,
-            &alpha, CDATA(gy) + n * y_skip, di, CDATA(b) + n * b_skip, dj,
-            &beta, MDATA(ga) + n * a_skip, di));
-      CUBLAS_CALL(::cublasSgemm(
+
+    std::shared_ptr<void> ptrs = state_->pool.allocate(3 * bs * sizeof(void *));
+    const float **fptrs = static_cast<const float **>(ptrs.get());
+
+    const std::uint32_t gs = GRID_SIZE(bs, dim1_x_);
+
+    ::set_gemm_ptrs<<<gs, dim1_x_>>>(pgy, pb, pga, ny, nb, na, bs, fptrs);
+    CUBLAS_CALL(::cublasSgemmBatched(
+          state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_T,
+          di, dj, dk,
+          &alpha, fptrs, di, fptrs + bs, dj,
+          &beta, const_cast<float **>(fptrs) + 2 * bs, di,
+          bs));
+
+    if (nb > 0 /* `b` has minibatch */) {
+      ::set_gemm_ptrs<<<gs, dim1_x_>>>(pa, pgy, pgb, na, ny, nb, bs, fptrs);
+      CUBLAS_CALL(::cublasSgemmBatched(
             state_->cublas.get(), ::CUBLAS_OP_T, ::CUBLAS_OP_N,
             dj, dk, di,
-            &alpha, CDATA(a) + n * a_skip, di, CDATA(gy) + n * y_skip, di,
-            &beta, MDATA(gb) + n * b_skip, dj));
+            &alpha, fptrs, di, fptrs + bs, di,
+            &beta, const_cast<float **>(fptrs) + 2 * bs, dj,
+            bs));
+    } else {
+      // NOTE(odashi):
+      // `cublasSgemmBatched` can not be used due to a data race against
+      // shared values in `b` by multiple GEMM operations.
+      for (std::uint32_t batch = 0; batch < bs; ++batch) {
+        CUBLAS_CALL(::cublasSgemm(
+              state_->cublas.get(), ::CUBLAS_OP_T, ::CUBLAS_OP_N,
+              dj, dk, di,
+              &alpha, pa + batch * na, di, pgy + batch * ny, di,
+              &beta, pgb, dj));
+      }
     }
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
