@@ -1,6 +1,6 @@
-========================
-*primitiv* Build Options
-========================
+=============
+Build Options
+=============
 
 
 Standard Options

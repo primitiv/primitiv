@@ -99,7 +99,7 @@ Version numbers are typically equal to following:
 Following table shows the correspondence between ``data_type`` and ``data``:
 
 ============= =========
-``data_type`` ``data``
+data_type     data
 ============= =========
 ``0x0``       Shape
 ``0x100``     Tensor
