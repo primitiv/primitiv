@@ -12,6 +12,7 @@ Legend
 
 
 ::
+
     +------+     +---------------+---------------+...
     | Type |  =  | Member Type 1 | Member Type 2 |
     |      |     | Member name 1 | Member name 2 |
