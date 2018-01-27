@@ -8,7 +8,7 @@
 /**
  * Opaque type of Optimizer.
  */
-typedef struct primitiv_Optimizer primitiv_Optimizer;
+typedef struct primitivOptimizer primitivOptimizer_t;
 
 /**
  * Deletes the Optimizer object.
@@ -16,7 +16,7 @@ typedef struct primitiv_Optimizer primitiv_Optimizer;
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_delete(
-    primitiv_Optimizer *optimizer);
+    primitivOptimizer_t *optimizer);
 
 /**
  * Loads configurations from a file.
@@ -25,7 +25,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_delete(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_load(
-    primitiv_Optimizer *optimizer, const char *path);
+    primitivOptimizer_t *optimizer, const char *path);
 
 /**
  * Saves current configurations to a file.
@@ -34,7 +34,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_load(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_save(
-    const primitiv_Optimizer *optimizer, const char *path);
+    const primitivOptimizer_t *optimizer, const char *path);
 
 /**
  * Retrieves current epoch.
@@ -43,7 +43,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_save(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_get_epoch(
-    const primitiv_Optimizer *optimizer, uint32_t *epoch);
+    const primitivOptimizer_t *optimizer, uint32_t *epoch);
 
 /**
  * Sets current epoch.
@@ -52,7 +52,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_get_epoch(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_set_epoch(
-    primitiv_Optimizer *optimizer, uint32_t epoch);
+    primitivOptimizer_t *optimizer, uint32_t epoch);
 
 /**
  * Retrieves current learning rate scaling factor.
@@ -62,7 +62,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_set_epoch(
  */
 PRIMITIV_C_API
 PRIMITIV_C_STATUS primitiv_Optimizer_get_learning_rate_scaling(
-    const primitiv_Optimizer *optimizer, float *scale);
+    const primitivOptimizer_t *optimizer, float *scale);
 
 /**
  * Sets learning rate scaling factor.
@@ -73,7 +73,7 @@ PRIMITIV_C_STATUS primitiv_Optimizer_get_learning_rate_scaling(
  */
 PRIMITIV_C_API
 PRIMITIV_C_STATUS primitiv_Optimizer_set_learning_rate_scaling(
-    primitiv_Optimizer *optimizer, float scale);
+    primitivOptimizer_t *optimizer, float scale);
 
 /**
  * Retrieves current L2 decay strength.
@@ -82,7 +82,7 @@ PRIMITIV_C_STATUS primitiv_Optimizer_set_learning_rate_scaling(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_get_weight_decay(
-    const primitiv_Optimizer *optimizer, float *strength);
+    const primitivOptimizer_t *optimizer, float *strength);
 
 /**
  * Sets L2 decay strength.
@@ -92,7 +92,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_get_weight_decay(
  * @remarks Could not set negative values.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_set_weight_decay(
-    primitiv_Optimizer *optimizer, float strength);
+    primitivOptimizer_t *optimizer, float strength);
 
 /**
  * Retrieves current gradient clipping threshold.
@@ -101,7 +101,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_set_weight_decay(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_get_gradient_clipping(
-    const primitiv_Optimizer *optimizer, float *threshold);
+    const primitivOptimizer_t *optimizer, float *threshold);
 
 /**
  * Sets gradient clipping threshold.
@@ -111,7 +111,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_get_gradient_clipping(
  * @remarks Could not set negative values.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_set_gradient_clipping(
-    primitiv_Optimizer *optimizer, float threshold);
+    primitivOptimizer_t *optimizer, float threshold);
 
 /**
  * Registers a parameter.
@@ -120,7 +120,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_set_gradient_clipping(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_add_parameter(
-    primitiv_Optimizer *optimizer, primitiv_Parameter *param);
+    primitivOptimizer_t *optimizer, primitivParameter_t *param);
 
 /**
  * Registers multiple parameters.
@@ -130,7 +130,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_add_parameter(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_add_parameters(
-  primitiv_Optimizer *optimizer, primitiv_Parameter **params, size_t n);
+  primitivOptimizer_t *optimizer, primitivParameter_t **params, size_t n);
 
 /**
  * Registers a model.
@@ -139,7 +139,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_add_parameters(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_add_model(
-    primitiv_Optimizer *optimizer, primitiv_Model *model);
+    primitivOptimizer_t *optimizer, primitivModel_t *model);
 
 /**
  * Registers multiple models.
@@ -149,7 +149,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_add_model(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_add_models(
-    primitiv_Optimizer *optimizer, primitiv_Model **models, size_t n);
+    primitivOptimizer_t *optimizer, primitivModel_t **models, size_t n);
 
 /**
  * Resets all gradients of registered parameters.
@@ -157,7 +157,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_add_models(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_reset_gradients(
-  primitiv_Optimizer *optimizer);
+  primitivOptimizer_t *optimizer);
 
 /**
  * Updates parameter values.
@@ -165,7 +165,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_reset_gradients(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_update(
-    primitiv_Optimizer *optimizer);
+    primitivOptimizer_t *optimizer);
 
 /**
  * Gets a configuration value.
@@ -175,7 +175,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_update(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_get_int_config(
-    primitiv_Optimizer *optimizer, const char *key, uint32_t *value);
+    primitivOptimizer_t *optimizer, const char *key, uint32_t *value);
 
 /**
  * Sets a configuration value.
@@ -185,7 +185,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_get_int_config(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_set_int_config(
-    primitiv_Optimizer *optimizer, const char *key, uint32_t value);
+    primitivOptimizer_t *optimizer, const char *key, uint32_t value);
 
 /**
  * Gets a configuration value.
@@ -195,7 +195,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_set_int_config(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_get_float_config(
-    primitiv_Optimizer *optimizer, const char *key, float *value);
+    primitivOptimizer_t *optimizer, const char *key, float *value);
 
 /**
  * Sets a configuration value.
@@ -205,6 +205,6 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_get_float_config(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Optimizer_set_float_config(
-    primitiv_Optimizer *optimizer, const char *key, float value);
+    primitivOptimizer_t *optimizer, const char *key, float value);
 
 #endif  // PRIMITIV_C_OPTIMIZER_H_

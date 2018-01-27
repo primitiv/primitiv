@@ -26,23 +26,23 @@ class CGraphTest : public testing::Test {
     ::primitiv_Device_delete(dev2);
   }
  protected:
-  ::primitiv_Device *dev;
-  ::primitiv_Device *dev2;
+  ::primitivDevice_t *dev;
+  ::primitivDevice_t *dev2;
 };
 
 TEST_F(CGraphTest, CheckDefault) {
   ::primitiv_reset();
-  ::primitiv_Graph *graph;
+  ::primitivGraph_t *graph;
   EXPECT_EQ(PRIMITIV_C_ERROR,
             ::primitiv_Graph_get_default(&graph));
   {
-    ::primitiv_Graph *g1;
+    ::primitivGraph_t *g1;
     ASSERT_EQ(PRIMITIV_C_OK, ::primitiv_Graph_new(&g1));
     ::primitiv_Graph_set_default(g1);
     ::primitiv_Graph_get_default(&graph);
     EXPECT_EQ(g1, graph);
     {
-      ::primitiv_Graph *g2;
+      ::primitivGraph_t *g2;
       ASSERT_EQ(PRIMITIV_C_OK, ::primitiv_Graph_new(&g2));
       ::primitiv_Graph_set_default(g2);
       ::primitiv_Graph_get_default(&graph);
@@ -51,7 +51,7 @@ TEST_F(CGraphTest, CheckDefault) {
     }
     EXPECT_EQ(PRIMITIV_C_ERROR,
               ::primitiv_Graph_get_default(&graph));
-    ::primitiv_Graph *g3;
+    ::primitivGraph_t *g3;
     ASSERT_EQ(PRIMITIV_C_OK, ::primitiv_Graph_new(&g3));
     ::primitiv_Graph_set_default(g3);
     ::primitiv_Graph_get_default(&graph);
@@ -65,12 +65,12 @@ TEST_F(CGraphTest, CheckDefault) {
 
 TEST_F(CGraphTest, CheckInvalidNode) {
   ::primitiv_reset();
-  ::primitiv_Node *node;
+  ::primitivNode_t *node;
   ASSERT_EQ(PRIMITIV_C_OK, ::primitiv_Node_new(&node));
   PRIMITIV_C_BOOL valid;
   ::primitiv_Node_valid(node, &valid);
   EXPECT_FALSE(valid);
-  ::primitiv_Graph *graph;
+  ::primitivGraph_t *graph;
   EXPECT_EQ(PRIMITIV_C_ERROR,
             ::primitiv_Node_graph(node, &graph));
   uint32_t id;
@@ -78,10 +78,10 @@ TEST_F(CGraphTest, CheckInvalidNode) {
             ::primitiv_Node_operator_id(node, &id));
   EXPECT_EQ(PRIMITIV_C_ERROR,
             ::primitiv_Node_value_id(node, &id));
-  ::primitiv_Shape *shape;
+  ::primitivShape_t *shape;
   EXPECT_EQ(PRIMITIV_C_ERROR,
             ::primitiv_Node_shape(node, &shape));
-  ::primitiv_Device *device;
+  ::primitivDevice_t *device;
   EXPECT_EQ(PRIMITIV_C_ERROR,
             ::primitiv_Node_device(node, &device));
   float value;
@@ -100,7 +100,7 @@ TEST_F(CGraphTest, CheckClear) {
   ::primitiv_reset();
   ::primitiv_Device_set_default(dev);
 
-  ::primitiv_Graph *g;
+  ::primitivGraph_t *g;
   ASSERT_EQ(PRIMITIV_C_OK, ::primitiv_Graph_new(&g));
   ::primitiv_Graph_set_default(g);
 
@@ -109,13 +109,13 @@ TEST_F(CGraphTest, CheckClear) {
   EXPECT_EQ(0u, num);
 
   {
-    ::primitiv_Shape *shape;
+    ::primitivShape_t *shape;
     ASSERT_EQ(PRIMITIV_C_OK, ::primitiv_Shape_new(&shape));
     float values[] = {1};
-    ::primitiv_Node *node1;
+    ::primitivNode_t *node1;
     ::primitiv_node_func_input(shape, values, 1, nullptr, nullptr, &node1);
     ::primitiv_Node_delete(node1);
-    ::primitiv_Node *node2;
+    ::primitivNode_t *node2;
     ::primitiv_node_func_input(shape, values, 1, nullptr, nullptr, &node2);
     ::primitiv_Node_delete(node2);
     ::primitiv_Graph_num_operators(g, &num);
@@ -127,10 +127,10 @@ TEST_F(CGraphTest, CheckClear) {
   EXPECT_EQ(0u, num);
 
   {
-    ::primitiv_Shape *shape;
+    ::primitivShape_t *shape;
     ASSERT_EQ(PRIMITIV_C_OK, ::primitiv_Shape_new(&shape));
     float values[] = {1};
-    ::primitiv_Node *node;
+    ::primitivNode_t *node;
     ::primitiv_node_func_input(shape, values, 1, nullptr, nullptr, &node);
     ::primitiv_Node_delete(node);
     ::primitiv_node_func_input(shape, values, 1, nullptr, nullptr, &node);
@@ -157,7 +157,7 @@ TEST_F(CGraphTest, CheckForward) {
   ::primitiv_reset();
   ::primitiv_Device_set_default(dev);
 
-  ::primitiv_Graph *g;
+  ::primitivGraph_t *g;
   ASSERT_EQ(PRIMITIV_C_OK, ::primitiv_Graph_new(&g));
   ::primitiv_Graph_set_default(g);
 
@@ -165,40 +165,40 @@ TEST_F(CGraphTest, CheckForward) {
   const float data3[] = {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
   vector<::primitiv_Node*> nodes;
   const uint32_t dims1[] = {2, 2};
-  ::primitiv_Shape *shape1;
+  ::primitivShape_t *shape1;
   ASSERT_EQ(PRIMITIV_C_OK,
             ::primitiv_Shape_new_with_dims(dims1, 2, 3, &shape1));
-  ::primitiv_Node *node1;
+  ::primitivNode_t *node1;
   ::primitiv_node_func_input(shape1, data1, 12, nullptr, nullptr, &node1);
   nodes.emplace_back(node1);
-  ::primitiv_Shape *shape2;
+  ::primitivShape_t *shape2;
   ASSERT_EQ(PRIMITIV_C_OK,
             ::primitiv_Shape_new_with_dims(dims1, 2, 1, &shape2));
-  ::primitiv_Node *node2;
+  ::primitivNode_t *node2;
   ::primitiv_node_func_ones(shape2, nullptr, nullptr, &node2);
   nodes.emplace_back(node2);
-  ::primitiv_Node *node3;
+  ::primitivNode_t *node3;
   ::primitiv_node_func_input(shape1, data3, 12, nullptr, nullptr, &node3);
   nodes.emplace_back(node3);
-  ::primitiv_Node *node4;
+  ::primitivNode_t *node4;
   ::primitiv_node_func_add_node_node(nodes[0], nodes[1], &node4);
   nodes.emplace_back(node4);
-  ::primitiv_Node *node5;
+  ::primitivNode_t *node5;
   ::primitiv_node_func_subtract_node_node(nodes[1], nodes[2], &node5);
   nodes.emplace_back(node5);
-  ::primitiv_Node *node6;
+  ::primitivNode_t *node6;
   ::primitiv_node_func_multiply_node_node(nodes[3], nodes[4], &node6);
   nodes.emplace_back(node6);
-  ::primitiv_Node *node7;
+  ::primitivNode_t *node7;
   ::primitiv_node_func_add_node_const(nodes[5], 1, &node7);
   nodes.emplace_back(node7);
-  ::primitiv_Node *node8;
+  ::primitivNode_t *node8;
   ::primitiv_node_func_sum(nodes[6], 0, &node8);
   nodes.emplace_back(node8);
-  ::primitiv_Node *node9;
+  ::primitivNode_t *node9;
   ::primitiv_node_func_sum(nodes[7], 1, &node9);
   nodes.emplace_back(node9);
-  ::primitiv_Node *node10;
+  ::primitivNode_t *node10;
   ::primitiv_node_func_batch_sum(nodes[8], &node10);
   nodes.emplace_back(node10);
 
@@ -217,14 +217,14 @@ TEST_F(CGraphTest, CheckForward) {
 
   // Check all shapes and devices.
   const uint32_t dims2[] = {1, 2};
-  ::primitiv_Shape *shape3;
+  ::primitivShape_t *shape3;
   ASSERT_EQ(PRIMITIV_C_OK,
             ::primitiv_Shape_new_with_dims(dims2, 2, 3, &shape3));
   const uint32_t dims3[] = {};
-  ::primitiv_Shape *shape4;
+  ::primitivShape_t *shape4;
   ASSERT_EQ(PRIMITIV_C_OK,
             ::primitiv_Shape_new_with_dims(dims3, 0, 3, &shape4));
-  ::primitiv_Shape *shape5;
+  ::primitivShape_t *shape5;
   ASSERT_EQ(PRIMITIV_C_OK,
             ::primitiv_Shape_new_with_dims(dims3, 0, 1, &shape5));
   const vector<::primitiv_Shape*> expected_shapes {
@@ -234,8 +234,8 @@ TEST_F(CGraphTest, CheckForward) {
     shape3, shape4, shape5,
   };
   for (std::uint32_t i = 0; i < nodes.size(); ++i) {
-    ::primitiv_Shape *shape;
-    ::primitiv_Device *device;
+    ::primitivShape_t *shape;
+    ::primitivDevice_t *device;
     ::primitiv_Node_shape(nodes[i], &shape);
     ::primitiv_Node_device(nodes[i], &device);
     PRIMITIV_C_BOOL eq;
@@ -246,7 +246,7 @@ TEST_F(CGraphTest, CheckForward) {
     // ::primitiv_Device_delete(device);  // do not delete the reference
   }
 
-  const ::primitiv_Tensor *tensor;
+  const ::primitivTensor_t *tensor;
   ::primitiv_Graph_forward(g, nodes.back(), &tensor);
   // ::primitiv_Tensor_delete(const_cast<::primitiv_Tensor*>(tensor));
   // do not delete the reference
@@ -267,7 +267,7 @@ TEST_F(CGraphTest, CheckForward) {
   for (std::uint32_t i = 0; i < nodes.size(); ++i) {
     // This forward method has no effect and only returns the reference to the
     // inner value.
-    const ::primitiv_Tensor *val;
+    const ::primitivTensor_t *val;
     ::primitiv_Graph_forward(g, nodes[i], &val);
     PRIMITIV_C_BOOL valid;
     ::primitiv_Tensor_valid(val, &valid);

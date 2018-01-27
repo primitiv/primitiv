@@ -11,7 +11,7 @@
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_SGD_new(
-    float eta, primitiv_Optimizer **optimizer);
+    float eta, primitivOptimizer_t **optimizer);
 
 /**
  * Creates a new (MomentumSGD) Optimizer object.
@@ -21,7 +21,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_SGD_new(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_MomentumSGD_new(
-    float eta, float momentum, primitiv_Optimizer **optimizer);
+    float eta, float momentum, primitivOptimizer_t **optimizer);
 
 /**
  * Creates a new (AdaGrad) Optimizer object.
@@ -31,7 +31,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_MomentumSGD_new(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_AdaGrad_new(
-    float eta, float eps, primitiv_Optimizer **optimizer);
+    float eta, float eps, primitivOptimizer_t **optimizer);
 
 /**
  * Creates a new (RMSProp) Optimizer object.
@@ -42,7 +42,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_AdaGrad_new(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_RMSProp_new(
-    float eta, float alpha, float eps, primitiv_Optimizer **optimizer);
+    float eta, float alpha, float eps, primitivOptimizer_t **optimizer);
 
 /**
  * Creates a new (AdaDelta) Optimizer object.
@@ -52,7 +52,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_RMSProp_new(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_AdaDelta_new(
-    float rho, float eps, primitiv_Optimizer **optimizer);
+    float rho, float eps, primitivOptimizer_t **optimizer);
 
 /**
  * Creates a new Adam object.
@@ -65,6 +65,6 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_AdaDelta_new(
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_Adam_new(
     float alpha, float beta1, float beta2, float eps,
-    primitiv_Optimizer **optimizer);
+    primitivOptimizer_t **optimizer);
 
 #endif  // PRIMITIV_C_OPTIMIZER_IMPL_H_

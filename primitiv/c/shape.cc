@@ -12,7 +12,7 @@ using primitiv::c::internal::to_c_ptr;
 using primitiv::c::internal::to_cpp_ptr;
 using primitiv::c::internal::to_c_ptr_from_value;
 
-PRIMITIV_C_STATUS primitiv_Shape_new(primitiv_Shape **shape) try {
+PRIMITIV_C_STATUS primitiv_Shape_new(primitivShape_t **shape) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   *shape = to_c_ptr(new Shape());
   return PRIMITIV_C_OK;
@@ -20,21 +20,21 @@ PRIMITIV_C_STATUS primitiv_Shape_new(primitiv_Shape **shape) try {
 
 PRIMITIV_C_STATUS primitiv_Shape_new_with_dims(
     const uint32_t *dims, size_t n, uint32_t batch,
-    primitiv_Shape **shape) try {
+    primitivShape_t **shape) try {
   PRIMITIV_C_CHECK_NOT_NULL(dims);
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   *shape = to_c_ptr(new Shape(std::vector<uint32_t>(dims, dims + n), batch));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Shape_delete(primitiv_Shape *shape) try {
+PRIMITIV_C_STATUS primitiv_Shape_delete(primitivShape_t *shape) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   delete to_cpp_ptr(shape);
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_at(
-    const primitiv_Shape *shape, uint32_t i, uint32_t *ret) try {
+    const primitivShape_t *shape, uint32_t i, uint32_t *ret) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(ret);
   *ret = to_cpp_ptr(shape)->operator[](i);
@@ -42,7 +42,7 @@ PRIMITIV_C_STATUS primitiv_Shape_at(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_dims(
-    const primitiv_Shape *shape, uint32_t *dims, size_t *size) try {
+    const primitivShape_t *shape, uint32_t *dims, size_t *size) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(size);
   primitiv::c::internal::copy_vector_to_array(
@@ -51,7 +51,7 @@ PRIMITIV_C_STATUS primitiv_Shape_dims(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_depth(
-    const primitiv_Shape *shape, uint32_t *depth) try {
+    const primitivShape_t *shape, uint32_t *depth) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(depth);
   *depth = to_cpp_ptr(shape)->depth();
@@ -59,7 +59,7 @@ PRIMITIV_C_STATUS primitiv_Shape_depth(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_batch(
-    const primitiv_Shape *shape, uint32_t *batch) try {
+    const primitivShape_t *shape, uint32_t *batch) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(batch);
   *batch = to_cpp_ptr(shape)->batch();
@@ -67,7 +67,7 @@ PRIMITIV_C_STATUS primitiv_Shape_batch(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_volume(
-    const primitiv_Shape *shape, uint32_t *volume) try {
+    const primitivShape_t *shape, uint32_t *volume) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(volume);
   *volume = to_cpp_ptr(shape)->volume();
@@ -75,7 +75,7 @@ PRIMITIV_C_STATUS primitiv_Shape_volume(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_lower_volume(
-    const primitiv_Shape *shape, uint32_t dim, uint32_t *lower_volume) try {
+    const primitivShape_t *shape, uint32_t dim, uint32_t *lower_volume) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(lower_volume);
   *lower_volume = to_cpp_ptr(shape)->lower_volume(dim);
@@ -83,7 +83,7 @@ PRIMITIV_C_STATUS primitiv_Shape_lower_volume(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_size(
-    const primitiv_Shape *shape, uint32_t *size) try {
+    const primitivShape_t *shape, uint32_t *size) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(size);
   *size = to_cpp_ptr(shape)->size();
@@ -91,7 +91,7 @@ PRIMITIV_C_STATUS primitiv_Shape_size(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_to_string(
-    const primitiv_Shape *shape, char *buffer, size_t *size) try {
+    const primitivShape_t *shape, char *buffer, size_t *size) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(buffer);
   PRIMITIV_C_CHECK_NOT_NULL(size);
@@ -101,7 +101,7 @@ PRIMITIV_C_STATUS primitiv_Shape_to_string(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_op_eq(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs,
+    const primitivShape_t *shape, const primitivShape_t *rhs,
     PRIMITIV_C_BOOL *eq) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(rhs);
@@ -111,7 +111,7 @@ PRIMITIV_C_STATUS primitiv_Shape_op_eq(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_op_ne(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs,
+    const primitivShape_t *shape, const primitivShape_t *rhs,
     PRIMITIV_C_BOOL *ne) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(rhs);
@@ -121,7 +121,7 @@ PRIMITIV_C_STATUS primitiv_Shape_op_ne(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_has_batch(
-    const primitiv_Shape *shape, PRIMITIV_C_BOOL *has_batch) try {
+    const primitivShape_t *shape, PRIMITIV_C_BOOL *has_batch) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(has_batch);
   *has_batch = to_cpp_ptr(shape)->has_batch();
@@ -129,7 +129,7 @@ PRIMITIV_C_STATUS primitiv_Shape_has_batch(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_has_compatible_batch(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs,
+    const primitivShape_t *shape, const primitivShape_t *rhs,
     PRIMITIV_C_BOOL *has_compatible_batch) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(rhs);
@@ -140,7 +140,7 @@ PRIMITIV_C_STATUS primitiv_Shape_has_compatible_batch(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_is_scalar(
-    const primitiv_Shape *shape, PRIMITIV_C_BOOL *is_scalar) try {
+    const primitivShape_t *shape, PRIMITIV_C_BOOL *is_scalar) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(is_scalar);
   *is_scalar = to_cpp_ptr(shape)->is_scalar();
@@ -148,7 +148,7 @@ PRIMITIV_C_STATUS primitiv_Shape_is_scalar(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_is_column_vector(
-    const primitiv_Shape *shape, PRIMITIV_C_BOOL *is_column_vector) try {
+    const primitivShape_t *shape, PRIMITIV_C_BOOL *is_column_vector) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(is_column_vector);
   *is_column_vector = to_cpp_ptr(shape)->is_column_vector();
@@ -156,7 +156,7 @@ PRIMITIV_C_STATUS primitiv_Shape_is_column_vector(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_is_matrix(
-    const primitiv_Shape *shape, PRIMITIV_C_BOOL *is_matrix) try {
+    const primitivShape_t *shape, PRIMITIV_C_BOOL *is_matrix) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(is_matrix);
   *is_matrix = to_cpp_ptr(shape)->is_matrix();
@@ -164,7 +164,7 @@ PRIMITIV_C_STATUS primitiv_Shape_is_matrix(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_has_same_dims(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs,
+    const primitivShape_t *shape, const primitivShape_t *rhs,
     PRIMITIV_C_BOOL *has_same_dims) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(rhs);
@@ -174,7 +174,7 @@ PRIMITIV_C_STATUS primitiv_Shape_has_same_dims(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_has_same_loo_dims(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs, uint32_t dim,
+    const primitivShape_t *shape, const primitivShape_t *rhs, uint32_t dim,
     PRIMITIV_C_BOOL *has_same_loo_dims) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(rhs);
@@ -185,8 +185,8 @@ PRIMITIV_C_STATUS primitiv_Shape_has_same_loo_dims(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_resize_dim(
-    const primitiv_Shape *shape, uint32_t dim, uint32_t m,
-    primitiv_Shape **new_shape) try {
+    const primitivShape_t *shape, uint32_t dim, uint32_t m,
+    primitivShape_t **new_shape) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(new_shape);
   *new_shape = to_c_ptr_from_value(to_cpp_ptr(shape)->resize_dim(dim, m));
@@ -194,8 +194,8 @@ PRIMITIV_C_STATUS primitiv_Shape_resize_dim(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_resize_batch(
-    const primitiv_Shape *shape, uint32_t batch,
-    primitiv_Shape **new_shape) try {
+    const primitivShape_t *shape, uint32_t batch,
+    primitivShape_t **new_shape) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(new_shape);
   *new_shape = to_c_ptr_from_value(to_cpp_ptr(shape)->resize_batch(batch));
@@ -203,14 +203,14 @@ PRIMITIV_C_STATUS primitiv_Shape_resize_batch(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_update_dim(
-    primitiv_Shape *shape, uint32_t dim, uint32_t m) try {
+    primitivShape_t *shape, uint32_t dim, uint32_t m) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   to_cpp_ptr(shape)->update_dim(dim, m);
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Shape_update_batch(
-    primitiv_Shape *shape, uint32_t batch) try {
+    primitivShape_t *shape, uint32_t batch) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   to_cpp_ptr(shape)->update_batch(batch);
   return PRIMITIV_C_OK;

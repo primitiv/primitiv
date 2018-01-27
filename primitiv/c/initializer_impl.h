@@ -12,7 +12,7 @@
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Constant_new(
-    float k, primitiv_Initializer **initializer);
+    float k, primitivInitializer_t **initializer);
 
 /**
  * Creates a new Initializer object that uses a parameterized uniform
@@ -23,7 +23,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Constant_new(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Uniform_new(
-    float lower, float upper, primitiv_Initializer **initializer);
+    float lower, float upper, primitivInitializer_t **initializer);
 
 /**
  * Creates a new Initializer object that uses a parameterized normal
@@ -34,7 +34,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Uniform_new(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Normal_new(
-    float mean, float sd, primitiv_Initializer **initializer);
+    float mean, float sd, primitivInitializer_t **initializer);
 
 /**
  * Creates a new Initializer object that generates a identity tensor.
@@ -42,7 +42,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Normal_new(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Identity_new(
-    primitiv_Initializer **initializer);
+    primitivInitializer_t **initializer);
 
 /**
  * Creates a new Initializer object that generates a tensor by the Xavier matrix
@@ -53,7 +53,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Identity_new(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_XavierUniform_new(
-    float scale, primitiv_Initializer **initializer);
+    float scale, primitivInitializer_t **initializer);
 
 /**
  * Creates a new Initializer object that generates a tensor by the Xavier matrix
@@ -64,6 +64,6 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_XavierUniform_new(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_XavierNormal_new(
-    float scale, primitiv_Initializer **initializer);
+    float scale, primitivInitializer_t **initializer);
 
 #endif  // PRIMITIV_C_INITIALIZER_IMPL_H_

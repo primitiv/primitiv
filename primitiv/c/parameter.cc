@@ -11,15 +11,15 @@ using primitiv::c::internal::to_c_ptr;
 using primitiv::c::internal::to_cpp_ptr;
 using primitiv::c::internal::to_c_ptr_from_value;
 
-PRIMITIV_C_STATUS primitiv_Parameter_new(primitiv_Parameter **parameter) try {
+PRIMITIV_C_STATUS primitiv_Parameter_new(primitivParameter_t **parameter) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   *parameter = to_c_ptr(new Parameter());
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Parameter_new_with_values(
-    const primitiv_Shape *shape, const float *value, size_t n,
-    primitiv_Device *device, primitiv_Parameter **parameter) try {
+    const primitivShape_t *shape, const float *value, size_t n,
+    primitivDevice_t *device, primitivParameter_t **parameter) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(value);
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
@@ -31,8 +31,8 @@ PRIMITIV_C_STATUS primitiv_Parameter_new_with_values(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Parameter_new_with_initializer(
-    const primitiv_Shape *shape, const primitiv_Initializer *initializer,
-    primitiv_Device *device, primitiv_Parameter **parameter) try {
+    const primitivShape_t *shape, const primitivInitializer_t *initializer,
+    primitivDevice_t *device, primitivParameter_t **parameter) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(initializer);
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
@@ -41,15 +41,15 @@ PRIMITIV_C_STATUS primitiv_Parameter_new_with_initializer(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Parameter_delete(primitiv_Parameter *parameter) try {
+PRIMITIV_C_STATUS primitiv_Parameter_delete(primitivParameter_t *parameter) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   delete to_cpp_ptr(parameter);
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Parameter_init_with_values(
-    primitiv_Parameter *parameter, const primitiv_Shape *shape,
-    const float *value, size_t n, primitiv_Device *device) try {
+    primitivParameter_t *parameter, const primitivShape_t *shape,
+    const float *value, size_t n, primitivDevice_t *device) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(value);
@@ -61,8 +61,8 @@ PRIMITIV_C_STATUS primitiv_Parameter_init_with_values(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Parameter_init_with_initializer(
-    primitiv_Parameter *parameter, const primitiv_Shape *shape,
-    const primitiv_Initializer *initializer, primitiv_Device *device) try {
+    primitivParameter_t *parameter, const primitivShape_t *shape,
+    const primitivInitializer_t *initializer, primitivDevice_t *device) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(initializer);
@@ -74,10 +74,10 @@ PRIMITIV_C_STATUS primitiv_Parameter_init_with_initializer(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Parameter_load(
-    primitiv_Parameter *parameter,
+    primitivParameter_t *parameter,
     const char *path,
     PRIMITIV_C_BOOL with_stats,
-    primitiv_Device *device) try {
+    primitivDevice_t *device) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   PRIMITIV_C_CHECK_NOT_NULL(path);
   to_cpp_ptr(parameter)->load(path, with_stats, *to_cpp_ptr(device));
@@ -85,7 +85,7 @@ PRIMITIV_C_STATUS primitiv_Parameter_load(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Parameter_save(
-    const primitiv_Parameter *parameter,
+    const primitivParameter_t *parameter,
     const char *path,
     PRIMITIV_C_BOOL with_stats) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
@@ -95,7 +95,7 @@ PRIMITIV_C_STATUS primitiv_Parameter_save(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Parameter_valid(
-    const primitiv_Parameter *parameter, PRIMITIV_C_BOOL *valid) try {
+    const primitivParameter_t *parameter, PRIMITIV_C_BOOL *valid) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   PRIMITIV_C_CHECK_NOT_NULL(valid);
   *valid = to_cpp_ptr(parameter)->valid();
@@ -103,16 +103,16 @@ PRIMITIV_C_STATUS primitiv_Parameter_valid(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Parameter_reset_gradients(
-    primitiv_Parameter *parameter) try {
+    primitivParameter_t *parameter) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   to_cpp_ptr(parameter)->reset_gradient();
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Parameter_add_stats(
-    primitiv_Parameter *parameter,
+    primitivParameter_t *parameter,
     const char *name,
-    const primitiv_Shape *shape) try {
+    const primitivShape_t *shape) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   PRIMITIV_C_CHECK_NOT_NULL(name);
   PRIMITIV_C_CHECK_NOT_NULL(shape);
@@ -121,7 +121,7 @@ PRIMITIV_C_STATUS primitiv_Parameter_add_stats(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Parameter_has_stats(
-    primitiv_Parameter *parameter, const char *name,
+    primitivParameter_t *parameter, const char *name,
     PRIMITIV_C_BOOL *has_stats) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   PRIMITIV_C_CHECK_NOT_NULL(name);
@@ -131,8 +131,8 @@ PRIMITIV_C_STATUS primitiv_Parameter_has_stats(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Parameter_shape(
-    const primitiv_Parameter *parameter,
-    primitiv_Shape **shape) try {
+    const primitivParameter_t *parameter,
+    primitivShape_t **shape) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   *shape = to_c_ptr_from_value(to_cpp_ptr(parameter)->shape());
@@ -140,8 +140,8 @@ PRIMITIV_C_STATUS primitiv_Parameter_shape(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Parameter_device(
-    const primitiv_Parameter *parameter,
-    primitiv_Device **device) try {
+    const primitivParameter_t *parameter,
+    primitivDevice_t **device) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   PRIMITIV_C_CHECK_NOT_NULL(device);
   *device = to_c_ptr(&to_cpp_ptr(parameter)->device());
@@ -149,8 +149,8 @@ PRIMITIV_C_STATUS primitiv_Parameter_device(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Parameter_value(
-    const primitiv_Parameter *parameter,
-    const primitiv_Tensor **tensor) try {
+    const primitivParameter_t *parameter,
+    const primitivTensor_t **tensor) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   *tensor = to_c_ptr(&to_cpp_ptr(parameter)->value());
@@ -158,8 +158,8 @@ PRIMITIV_C_STATUS primitiv_Parameter_value(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Parameter_gradient(
-    const primitiv_Parameter *parameter,
-    const primitiv_Tensor **tensor) try {
+    const primitivParameter_t *parameter,
+    const primitivTensor_t **tensor) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   *tensor = to_c_ptr(&to_cpp_ptr(parameter)->gradient());
@@ -167,9 +167,9 @@ PRIMITIV_C_STATUS primitiv_Parameter_gradient(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Parameter_stats(
-    const primitiv_Parameter *parameter,
+    const primitivParameter_t *parameter,
     const char *name,
-    const primitiv_Tensor **tensor) try {
+    const primitivTensor_t **tensor) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   PRIMITIV_C_CHECK_NOT_NULL(name);
   PRIMITIV_C_CHECK_NOT_NULL(tensor);

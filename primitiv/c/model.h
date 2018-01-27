@@ -8,7 +8,7 @@
 /**
  * Opaque type of Model.
  */
-typedef struct primitiv_Model primitiv_Model;
+typedef struct primitivModel primitivModel_t;
 
 /**
  * Creates a new Model object.
@@ -16,7 +16,7 @@ typedef struct primitiv_Model primitiv_Model;
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_new(
-    primitiv_Model **model);
+    primitivModel_t **model);
 
 /**
  * Deletes the Model object.
@@ -24,7 +24,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_new(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_delete(
-    primitiv_Model *model);
+    primitivModel_t *model);
 
 /**
  * Loads all parameters from a file.
@@ -35,8 +35,8 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_delete(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_load(
-    primitiv_Model *model, const char *path, PRIMITIV_C_BOOL with_stats,
-    primitiv_Device *device);
+    primitivModel_t *model, const char *path, PRIMITIV_C_BOOL with_stats,
+    primitivDevice_t *device);
 
 /**
  * Saves all parameters to a file.
@@ -46,7 +46,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_load(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_save(
-    const primitiv_Model *model, const char *path, PRIMITIV_C_BOOL with_stats);
+    const primitivModel_t *model, const char *path, PRIMITIV_C_BOOL with_stats);
 
 /**
  * Registers a new parameter.
@@ -58,7 +58,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_save(
  *          submodels.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_add_parameter(
-    primitiv_Model *model, const char *name, primitiv_Parameter *param);
+    primitivModel_t *model, const char *name, primitivParameter_t *param);
 
 /**
  * Registers a new submodel.
@@ -70,7 +70,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_add_parameter(
  *          submodels.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_add_model(
-    primitiv_Model *model, const char *name, primitiv_Model *submodel);
+    primitivModel_t *model, const char *name, primitivModel_t *submodel);
 
 /**
  * Recursively searches a parameter with specified name hierarchy.
@@ -82,8 +82,8 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_add_model(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_get_parameter(
-    const primitiv_Model *model, const char **names, size_t n,
-    const primitiv_Parameter **param);
+    const primitivModel_t *model, const char **names, size_t n,
+    const primitivParameter_t **param);
 
 /**
  * Recursively searches a submodel with specified name hierarchy.
@@ -95,8 +95,8 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_get_parameter(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_get_submodel(
-    const primitiv_Model *model, const char **names, size_t n,
-    const primitiv_Model **submodel);
+    const primitivModel_t *model, const char **names, size_t n,
+    const primitivModel_t **submodel);
 
 // @TODO: Implement primitiv_Model_get_all_parameters()
 // @TODO: Implement primitiv_Model_get_trainable_parameters()

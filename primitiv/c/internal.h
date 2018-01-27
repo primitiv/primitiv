@@ -50,15 +50,15 @@ if (!var) { \
   THROW_ERROR("Argument `" #var "` must not be null."); \
 }
 
-struct primitiv_Device;
-struct primitiv_Node;
-struct primitiv_Graph;
-struct primitiv_Initializer;
-struct primitiv_Model;
-struct primitiv_Parameter;
-struct primitiv_Shape;
-struct primitiv_Tensor;
-struct primitiv_Optimizer;
+struct primitivDevice;
+struct primitivNode;
+struct primitivGraph;
+struct primitivInitializer;
+struct primitivModel;
+struct primitivParameter;
+struct primitivShape;
+struct primitivTensor;
+struct primitivOptimizer;
 
 namespace primitiv {
 
@@ -135,18 +135,18 @@ inline void copy_string_to_array(
   }
 }
 
-PRIMITIV_C_PTR_TO_PTR(Device, primitiv_Device);
-PRIMITIV_C_PTR_TO_PTR(Node, primitiv_Node);
-PRIMITIV_C_VAL_TO_PTR(Node, primitiv_Node);
-PRIMITIV_C_PTR_TO_PTR(Graph, primitiv_Graph);
-PRIMITIV_C_PTR_TO_PTR(Initializer, primitiv_Initializer);
-PRIMITIV_C_PTR_TO_PTR(Model, primitiv_Model);
-PRIMITIV_C_PTR_TO_PTR(Parameter, primitiv_Parameter);
-PRIMITIV_C_PTR_TO_PTR(Shape, primitiv_Shape);
-PRIMITIV_C_VAL_TO_PTR(Shape, primitiv_Shape);
-PRIMITIV_C_PTR_TO_PTR(Tensor, primitiv_Tensor);
-PRIMITIV_C_VAL_TO_PTR(Tensor, primitiv_Tensor);
-PRIMITIV_C_PTR_TO_PTR(Optimizer, primitiv_Optimizer);
+PRIMITIV_C_PTR_TO_PTR(Device, primitivDevice);
+PRIMITIV_C_PTR_TO_PTR(Node, primitivNode);
+PRIMITIV_C_VAL_TO_PTR(Node, primitivNode);
+PRIMITIV_C_PTR_TO_PTR(Graph, primitivGraph);
+PRIMITIV_C_PTR_TO_PTR(Initializer, primitivInitializer);
+PRIMITIV_C_PTR_TO_PTR(Model, primitivModel);
+PRIMITIV_C_PTR_TO_PTR(Parameter, primitivParameter);
+PRIMITIV_C_PTR_TO_PTR(Shape, primitivShape);
+PRIMITIV_C_VAL_TO_PTR(Shape, primitivShape);
+PRIMITIV_C_PTR_TO_PTR(Tensor, primitivTensor);
+PRIMITIV_C_VAL_TO_PTR(Tensor, primitivTensor);
+PRIMITIV_C_PTR_TO_PTR(Optimizer, primitivOptimizer);
 
 }  // namespace internal
 

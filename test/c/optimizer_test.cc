@@ -17,19 +17,19 @@ class COptimizerTest : public testing::Test {
     ::primitiv_Device_delete(dev);
   }
  protected:
-  ::primitiv_Device *dev;
+  ::primitivDevice_t *dev;
 };
 
 TEST_F(COptimizerTest, CheckAddParameter) {
   ::primitiv_reset();
   ::primitiv_Device_set_default(dev);
-  ::primitiv_Optimizer *optimizer;
+  ::primitivOptimizer_t *optimizer;
   ::primitiv_optimizers_SGD_new(0.1, &optimizer);
-  ::primitiv_Parameter *param1;
+  ::primitivParameter_t *param1;
   ::primitiv_Parameter_new(&param1);
-  ::primitiv_Parameter *param2;
+  ::primitivParameter_t *param2;
   ::primitiv_Parameter_new(&param2);
-  ::primitiv_Parameter *param3;
+  ::primitivParameter_t *param3;
   ::primitiv_Parameter_new(&param3);
 
   EXPECT_EQ(PRIMITIV_C_OK,
@@ -62,15 +62,15 @@ TEST_F(COptimizerTest, CheckAddParameter) {
 TEST_F(COptimizerTest, CheckAddModel) {
   ::primitiv_reset();
   ::primitiv_Device_set_default(dev);
-  ::primitiv_Optimizer *optimizer;
+  ::primitivOptimizer_t *optimizer;
   ::primitiv_optimizers_SGD_new(0.1, &optimizer);
-  ::primitiv_Model *m;
+  ::primitivModel_t *m;
   ::primitiv_Model_new(&m);
-  ::primitiv_Parameter *param1;
+  ::primitivParameter_t *param1;
   ::primitiv_Parameter_new(&param1);
-  ::primitiv_Parameter *param2;
+  ::primitivParameter_t *param2;
   ::primitiv_Parameter_new(&param2);
-  ::primitiv_Parameter *param3;
+  ::primitivParameter_t *param3;
   ::primitiv_Parameter_new(&param3);
   ::primitiv_Model_add_parameter(m, "param1", param1);
   ::primitiv_Model_add_parameter(m, "param2", param2);
@@ -97,19 +97,19 @@ TEST_F(COptimizerTest, CheckAddModel) {
 TEST_F(COptimizerTest, CheckAddModelWithMultipleModels) {
   ::primitiv_reset();
   ::primitiv_Device_set_default(dev);
-  ::primitiv_Optimizer *optimizer;
+  ::primitivOptimizer_t *optimizer;
   ::primitiv_optimizers_SGD_new(0.1, &optimizer);
-  ::primitiv_Model *m1;
+  ::primitivModel_t *m1;
   ::primitiv_Model_new(&m1);
-  ::primitiv_Model *m2;
+  ::primitivModel_t *m2;
   ::primitiv_Model_new(&m2);
-  ::primitiv_Model *m3;
+  ::primitivModel_t *m3;
   ::primitiv_Model_new(&m3);
-  ::primitiv_Parameter *param1;
+  ::primitivParameter_t *param1;
   ::primitiv_Parameter_new(&param1);
-  ::primitiv_Parameter *param2;
+  ::primitivParameter_t *param2;
   ::primitiv_Parameter_new(&param2);
-  ::primitiv_Parameter *param3;
+  ::primitivParameter_t *param3;
   ::primitiv_Parameter_new(&param3);
   ::primitiv_Model_add_parameter(m1, "param1", param1);
   ::primitiv_Model_add_parameter(m2, "param2", param2);
@@ -146,7 +146,7 @@ TEST_F(COptimizerTest, CheckAddModelWithMultipleModels) {
 TEST_F(COptimizerTest, CheckConfigs) {
   ::primitiv_reset();
   ::primitiv_Device_set_default(dev);
-  ::primitiv_Optimizer *optimizer;
+  ::primitivOptimizer_t *optimizer;
   ::primitiv_optimizers_SGD_new(0.1, &optimizer);
 
   ::primitiv_Optimizer_update(optimizer);

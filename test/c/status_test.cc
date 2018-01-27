@@ -18,13 +18,13 @@ TEST_F(CStatusTest, CheckMessage) {
   char buffer1[length];
   ::primitiv_get_message(buffer1, &length);
   EXPECT_STREQ("OK", buffer1);
-  ::primitiv_Tensor *tensor;
+  ::primitivTensor_t *tensor;
   ASSERT_EQ(PRIMITIV_C_OK, ::primitiv_Tensor_new(&tensor));
   ::primitiv_get_message(nullptr, &length);
   char buffer2[length];
   ::primitiv_get_message(buffer2, &length);
   EXPECT_STREQ("OK", buffer2);
-  ::primitiv_Device *device;
+  ::primitivDevice_t *device;
   EXPECT_EQ(PRIMITIV_C_ERROR,
             ::primitiv_Tensor_device(tensor, &device));
   ::primitiv_get_message(nullptr, &length);

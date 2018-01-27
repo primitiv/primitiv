@@ -10,7 +10,7 @@
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_Naive_new(
-    primitiv_Device **device);
+    primitivDevice_t **device);
 
 /**
  * Creates a new Device object.
@@ -19,6 +19,6 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_Naive_new(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_Naive_new_with_seed(
-    uint32_t seed, primitiv_Device **device);
+    uint32_t seed, primitivDevice_t **device);
 
 #endif  // PRIMITIV_C_NAIVE_DEVICE_H_

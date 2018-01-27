@@ -11,28 +11,28 @@ using primitiv::c::internal::to_c_ptr;
 using primitiv::c::internal::to_cpp_ptr;
 using primitiv::c::internal::to_c_ptr_from_value;
 
-PRIMITIV_C_STATUS primitiv_Tensor_new(primitiv_Tensor **tensor) try {
+PRIMITIV_C_STATUS primitiv_Tensor_new(primitivTensor_t **tensor) try {
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   *tensor = to_c_ptr(new Tensor());
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Tensor_clone(
-    primitiv_Tensor *src, primitiv_Tensor **tensor) try {
+    primitivTensor_t *src, primitivTensor_t **tensor) try {
   PRIMITIV_C_CHECK_NOT_NULL(src);
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   *tensor = to_c_ptr(new Tensor(*to_cpp_ptr(src)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Tensor_delete(primitiv_Tensor *tensor) try {
+PRIMITIV_C_STATUS primitiv_Tensor_delete(primitivTensor_t *tensor) try {
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   delete to_cpp_ptr(tensor);
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Tensor_valid(
-    const primitiv_Tensor *tensor, PRIMITIV_C_BOOL *valid) try {
+    const primitivTensor_t *tensor, PRIMITIV_C_BOOL *valid) try {
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   PRIMITIV_C_CHECK_NOT_NULL(valid);
   *valid = to_cpp_ptr(tensor)->valid();
@@ -40,7 +40,7 @@ PRIMITIV_C_STATUS primitiv_Tensor_valid(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Tensor_shape(
-    const primitiv_Tensor *tensor, primitiv_Shape **shape) try {
+    const primitivTensor_t *tensor, primitivShape_t **shape) try {
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   *shape = to_c_ptr_from_value(to_cpp_ptr(tensor)->shape());
@@ -48,7 +48,7 @@ PRIMITIV_C_STATUS primitiv_Tensor_shape(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Tensor_device(
-    const primitiv_Tensor *tensor, primitiv_Device **device) try {
+    const primitivTensor_t *tensor, primitivDevice_t **device) try {
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   PRIMITIV_C_CHECK_NOT_NULL(device);
   *device = to_c_ptr(&to_cpp_ptr(tensor)->device());
@@ -56,7 +56,7 @@ PRIMITIV_C_STATUS primitiv_Tensor_device(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Tensor_to_float(
-    const primitiv_Tensor *tensor, float *value) try {
+    const primitivTensor_t *tensor, float *value) try {
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   PRIMITIV_C_CHECK_NOT_NULL(value);
   *value = to_cpp_ptr(tensor)->to_float();
@@ -64,7 +64,7 @@ PRIMITIV_C_STATUS primitiv_Tensor_to_float(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Tensor_to_array(
-    const primitiv_Tensor *tensor, float *array, size_t *size) try {
+    const primitivTensor_t *tensor, float *array, size_t *size) try {
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   PRIMITIV_C_CHECK_NOT_NULL(size);
   primitiv::c::internal::copy_vector_to_array(
@@ -73,7 +73,7 @@ PRIMITIV_C_STATUS primitiv_Tensor_to_array(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Tensor_argmax(
-    const primitiv_Tensor *tensor, uint32_t dim, uint32_t *indices,
+    const primitivTensor_t *tensor, uint32_t dim, uint32_t *indices,
     size_t *size) try {
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   PRIMITIV_C_CHECK_NOT_NULL(size);
@@ -83,7 +83,7 @@ PRIMITIV_C_STATUS primitiv_Tensor_argmax(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Tensor_argmin(
-    const primitiv_Tensor *tensor, uint32_t dim, uint32_t *indices,
+    const primitivTensor_t *tensor, uint32_t dim, uint32_t *indices,
     size_t *size) try {
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   PRIMITIV_C_CHECK_NOT_NULL(size);
@@ -92,14 +92,14 @@ PRIMITIV_C_STATUS primitiv_Tensor_argmin(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Tensor_reset(primitiv_Tensor *tensor, float k) try {
+PRIMITIV_C_STATUS primitiv_Tensor_reset(primitivTensor_t *tensor, float k) try {
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   to_cpp_ptr(tensor)->reset(k);
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Tensor_reset_by_array(
-    primitiv_Tensor *tensor, const float *values) try {
+    primitivTensor_t *tensor, const float *values) try {
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   PRIMITIV_C_CHECK_NOT_NULL(values);
   to_cpp_ptr(tensor)->reset_by_array(values);
@@ -107,8 +107,8 @@ PRIMITIV_C_STATUS primitiv_Tensor_reset_by_array(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Tensor_reshape(
-    const primitiv_Tensor *tensor, const primitiv_Shape *new_shape,
-    primitiv_Tensor **new_tensor) try {
+    const primitivTensor_t *tensor, const primitivShape_t *new_shape,
+    primitivTensor_t **new_tensor) try {
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   PRIMITIV_C_CHECK_NOT_NULL(new_shape);
   PRIMITIV_C_CHECK_NOT_NULL(new_tensor);
@@ -118,7 +118,7 @@ PRIMITIV_C_STATUS primitiv_Tensor_reshape(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Tensor_flatten(
-    const primitiv_Tensor *tensor, primitiv_Tensor **new_tensor) try {
+    const primitivTensor_t *tensor, primitivTensor_t **new_tensor) try {
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   PRIMITIV_C_CHECK_NOT_NULL(new_tensor);
   *new_tensor = to_c_ptr_from_value(to_cpp_ptr(tensor)->flatten());
@@ -126,14 +126,14 @@ PRIMITIV_C_STATUS primitiv_Tensor_flatten(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Tensor_inplace_multiply_const(
-    primitiv_Tensor *tensor, float k) try {
+    primitivTensor_t *tensor, float k) try {
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   to_c_ptr(&(to_cpp_ptr(tensor)->inplace_multiply_const(k)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Tensor_inplace_add(
-    primitiv_Tensor *tensor, const primitiv_Tensor *x) try {
+    primitivTensor_t *tensor, const primitivTensor_t *x) try {
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   PRIMITIV_C_CHECK_NOT_NULL(x);
   to_c_ptr(&(to_cpp_ptr(tensor)->inplace_add(*to_cpp_ptr(x))));
@@ -141,7 +141,7 @@ PRIMITIV_C_STATUS primitiv_Tensor_inplace_add(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitiv_Tensor_inplace_subtract(
-    primitiv_Tensor *tensor, const primitiv_Tensor *x) try {
+    primitivTensor_t *tensor, const primitivTensor_t *x) try {
   PRIMITIV_C_CHECK_NOT_NULL(tensor);
   PRIMITIV_C_CHECK_NOT_NULL(x);
   to_c_ptr(&(to_cpp_ptr(tensor)->inplace_subtract(*to_cpp_ptr(x))));

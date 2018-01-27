@@ -12,7 +12,7 @@
  *          `std::random_device`.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_Eigen_new(
-    primitiv_Device **device);
+    primitivDevice_t **device);
 
 /**
  * Creates a new Device object.
@@ -21,6 +21,6 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_Eigen_new(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_Eigen_new_with_seed(
-    uint32_t rng_seed, primitiv_Device **device);
+    uint32_t rng_seed, primitivDevice_t **device);
 
 #endif  // PRIMITIV_C_EIGEN_DEVICE_H_

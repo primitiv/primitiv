@@ -13,7 +13,7 @@
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_OpenCL_new(
-    uint32_t platform_id, uint32_t device_id, primitiv_Device **device);
+    uint32_t platform_id, uint32_t device_id, primitivDevice_t **device);
 
 /**
  * Creates a new Device object.
@@ -25,7 +25,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_OpenCL_new(
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_OpenCL_new_with_seed(
     uint32_t platform_id, uint32_t device_id, uint32_t rng_seed,
-    primitiv_Device **device);
+    primitivDevice_t **device);
 
 /**
  * Retrieves the number of active platforms.

@@ -15,7 +15,7 @@ namespace c {
 class CShapeTest : public testing::Test {};
 
 TEST_F(CShapeTest, CheckNewDefault) {
-  ::primitiv_Shape *shape;
+  ::primitivShape_t *shape;
   ASSERT_EQ(PRIMITIV_C_OK, ::primitiv_Shape_new(&shape));
 
   uint32_t ret = 0u;
@@ -50,7 +50,7 @@ TEST_F(CShapeTest, CheckNewDefault) {
 }
 
 TEST_F(CShapeTest, CheckNewByArray1) {
-  ::primitiv_Shape *shape;
+  ::primitivShape_t *shape;
   uint32_t dims[] = {};
   ASSERT_EQ(PRIMITIV_C_OK, ::primitiv_Shape_new_with_dims(dims, 0, 1, &shape));
 
@@ -86,7 +86,7 @@ TEST_F(CShapeTest, CheckNewByArray1) {
 }
 
 TEST_F(CShapeTest, CheckNewByArray2) {
-  ::primitiv_Shape *shape;
+  ::primitivShape_t *shape;
   uint32_t dims[] = {1, 2, 3};
   ASSERT_EQ(PRIMITIV_C_OK, ::primitiv_Shape_new_with_dims(dims, 3, 4, &shape));
 
@@ -195,7 +195,7 @@ TEST_F(CShapeTest, CheckInvalidNew) {
 }
 
 TEST_F(CShapeTest, CheckNumElementsUnderRank) {
-  ::primitiv_Shape *src;
+  ::primitivShape_t *src;
   uint32_t dims[] = {2, 3, 5, 7, 11, 13};
   EXPECT_EQ(PRIMITIV_C_OK, ::primitiv_Shape_new_with_dims(dims, 6, 17, &src));
   uint32_t lower_volume;

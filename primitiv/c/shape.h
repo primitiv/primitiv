@@ -6,7 +6,7 @@
 /**
  * Opaque type of Shape.
  */
-typedef struct primitiv_Shape primitiv_Shape;
+typedef struct primitivShape primitivShape_t;
 
 /**
  * Creates a new Shape object.
@@ -14,7 +14,7 @@ typedef struct primitiv_Shape primitiv_Shape;
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_new(
-    primitiv_Shape **shape);
+    primitivShape_t **shape);
 
 /**
  * Creates a new Shape object.
@@ -25,7 +25,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_new(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_new_with_dims(
-    const uint32_t *dims, size_t n, uint32_t batch, primitiv_Shape **shape);
+    const uint32_t *dims, size_t n, uint32_t batch, primitivShape_t **shape);
 
 /**
  * Deletes the Shape object.
@@ -33,7 +33,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_new_with_dims(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_delete(
-    primitiv_Shape *shape);
+    primitivShape_t *shape);
 
 /**
  * Returns the size of the i-th dimension.
@@ -43,7 +43,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_delete(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_at(
-    const primitiv_Shape *shape, uint32_t i, uint32_t *ret);
+    const primitivShape_t *shape, uint32_t i, uint32_t *ret);
 
 /**
  * Returns the dimension array.
@@ -53,7 +53,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_at(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_dims(
-    const primitiv_Shape *shape, uint32_t *dims, size_t *size);
+    const primitivShape_t *shape, uint32_t *dims, size_t *size);
 
 /**
  * Returns the depth (length of non-1 dimensions) of the shape.
@@ -62,7 +62,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_dims(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_depth(
-    const primitiv_Shape *shape, uint32_t *depth);
+    const primitivShape_t *shape, uint32_t *depth);
 
 /**
  * Returns the batch size.
@@ -71,7 +71,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_depth(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_batch(
-    const primitiv_Shape *shape, uint32_t *batch);
+    const primitivShape_t *shape, uint32_t *batch);
 
 /**
  * Returns the number of elements in each sample.
@@ -81,7 +81,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_batch(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_volume(
-    const primitiv_Shape *shape, uint32_t *volume);
+    const primitivShape_t *shape, uint32_t *volume);
 
 /**
  * Returns the number of elements in 1 to specified dim.
@@ -92,7 +92,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_volume(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_lower_volume(
-    const primitiv_Shape *shape, uint32_t dim, uint32_t *lower_volume);
+    const primitivShape_t *shape, uint32_t dim, uint32_t *lower_volume);
 
 /**
  * Returns the number of elements in all samples of the mini-batch.
@@ -102,7 +102,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_lower_volume(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_size(
-    const primitiv_Shape *shape, uint32_t *size);
+    const primitivShape_t *shape, uint32_t *size);
 
 /**
  * Returns a string representation of the shape.
@@ -113,7 +113,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_size(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_to_string(
-    const primitiv_Shape *shape, char *buffer, size_t *size);
+    const primitivShape_t *shape, char *buffer, size_t *size);
 
 /**
  * Compares this and other shape.
@@ -124,7 +124,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_to_string(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_op_eq(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs,
+    const primitivShape_t *shape, const primitivShape_t *rhs,
     PRIMITIV_C_BOOL *eq);
 
 /**
@@ -136,7 +136,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_op_eq(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_op_ne(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs,
+    const primitivShape_t *shape, const primitivShape_t *rhs,
     PRIMITIV_C_BOOL *ne);
 
 /**
@@ -147,7 +147,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_op_ne(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_has_batch(
-    const primitiv_Shape *shape, PRIMITIV_C_BOOL *has_batch);
+    const primitivShape_t *shape, PRIMITIV_C_BOOL *has_batch);
 
 /**
  * Checks whether two batch size is compatible (broadcastable) or not.
@@ -158,7 +158,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_has_batch(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_has_compatible_batch(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs,
+    const primitivShape_t *shape, const primitivShape_t *rhs,
     PRIMITIV_C_BOOL *has_compatible_batch);
 
 /**
@@ -169,7 +169,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_has_compatible_batch(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_is_scalar(
-    const primitiv_Shape *shape, PRIMITIV_C_BOOL *is_scalar);
+    const primitivShape_t *shape, PRIMITIV_C_BOOL *is_scalar);
 
 /**
  * Checks whether the shape is a column vector or not.
@@ -179,7 +179,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_is_scalar(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_is_column_vector(
-    const primitiv_Shape *shape, PRIMITIV_C_BOOL *is_column_vector);
+    const primitivShape_t *shape, PRIMITIV_C_BOOL *is_column_vector);
 
 /**
  * Checks whether the shape is a vector or a matrix, or not.
@@ -189,7 +189,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_is_column_vector(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_is_matrix(
-    const primitiv_Shape *shape, PRIMITIV_C_BOOL *is_matrix);
+    const primitivShape_t *shape, PRIMITIV_C_BOOL *is_matrix);
 
 /**
  * Checks whether two shapes have completely same dimensions.
@@ -200,7 +200,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_is_matrix(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_has_same_dims(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs,
+    const primitivShape_t *shape, const primitivShape_t *rhs,
     PRIMITIV_C_BOOL *has_same_dims);
 
 /**
@@ -215,7 +215,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_has_same_dims(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_has_same_loo_dims(
-    const primitiv_Shape *shape, const primitiv_Shape *rhs, uint32_t dim,
+    const primitivShape_t *shape, const primitivShape_t *rhs, uint32_t dim,
     PRIMITIV_C_BOOL *has_same_loo_dims);
 
 /**
@@ -227,8 +227,8 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_has_same_loo_dims(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_resize_dim(
-    const primitiv_Shape *shape, uint32_t dim, uint32_t m,
-    primitiv_Shape **new_shape);
+    const primitivShape_t *shape, uint32_t dim, uint32_t m,
+    primitivShape_t **new_shape);
 
 /**
  * Creates a new shape which have specified batch size.
@@ -238,7 +238,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_resize_dim(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_resize_batch(
-    const primitiv_Shape *shape, uint32_t batch, primitiv_Shape **new_shape);
+    const primitivShape_t *shape, uint32_t batch, primitivShape_t **new_shape);
 
 /**
  * Directly updates a specified dimension.
@@ -248,7 +248,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_resize_batch(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_update_dim(
-    primitiv_Shape *shape, uint32_t dim, uint32_t m);
+    primitivShape_t *shape, uint32_t dim, uint32_t m);
 
 /**
  * Directly updates the batch size.
@@ -257,6 +257,6 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_update_dim(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Shape_update_batch(
-    primitiv_Shape *shape, uint32_t batch);
+    primitivShape_t *shape, uint32_t batch);
 
 #endif  // PRIMITIV_C_SHAPE_H_

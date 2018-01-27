@@ -7,7 +7,7 @@
 /**
  * Opaque type of Tensor.
  */
-typedef struct primitiv_Tensor primitiv_Tensor;
+typedef struct primitivTensor primitivTensor_t;
 
 /**
  * Creates an invalid Tensor object.
@@ -15,7 +15,7 @@ typedef struct primitiv_Tensor primitiv_Tensor;
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_new(
-    primitiv_Tensor **tensor);
+    primitivTensor_t **tensor);
 
 /**
  * Creates a clone of an existing Tensor object.
@@ -24,7 +24,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_new(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_clone(
-    primitiv_Tensor *src, primitiv_Tensor **tensor);
+    primitivTensor_t *src, primitivTensor_t **tensor);
 
 /**
  * Deletes the Tensor object.
@@ -32,7 +32,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_clone(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_delete(
-    primitiv_Tensor *tensor);
+    primitivTensor_t *tensor);
 
 /**
  * Check whether the object is valid or not.
@@ -44,7 +44,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_delete(
  *          constructor or the object had been moved.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_valid(
-    const primitiv_Tensor *tensor, PRIMITIV_C_BOOL *valid);
+    const primitivTensor_t *tensor, PRIMITIV_C_BOOL *valid);
 
 /**
  * Returns the shape of the Tensor.
@@ -53,7 +53,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_valid(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_shape(
-    const primitiv_Tensor *tensor, primitiv_Shape **shape);
+    const primitivTensor_t *tensor, primitivShape_t **shape);
 
 /**
  * Returns the Device object related to the internal memory.
@@ -62,7 +62,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_shape(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_device(
-    const primitiv_Tensor *tensor, primitiv_Device **device);
+    const primitivTensor_t *tensor, primitivDevice_t **device);
 
 /**
  * Retrieves one internal value in the tensor.
@@ -73,7 +73,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_device(
  *          non-minibatched (i.e., shape() == Shape()).
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_to_float(
-    const primitiv_Tensor *tensor, float *value);
+    const primitivTensor_t *tensor, float *value);
 
 /**
  * Retrieves internal values in the tensor as a vector.
@@ -85,7 +85,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_to_float(
  *          the batch size is assumed as the last dimension of the tensor.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_to_array(
-    const primitiv_Tensor *tensor, float *array, size_t *size);
+    const primitivTensor_t *tensor, float *array, size_t *size);
 
 /**
  * Retrieves argmax indices along an axis.
@@ -97,7 +97,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_to_array(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_argmax(
-    const primitiv_Tensor *tensor, uint32_t dim, uint32_t *indices,
+    const primitivTensor_t *tensor, uint32_t dim, uint32_t *indices,
     size_t *size);
 
 /**
@@ -110,7 +110,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_argmax(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_argmin(
-    const primitiv_Tensor *tensor, uint32_t dim, uint32_t *indices,
+    const primitivTensor_t *tensor, uint32_t dim, uint32_t *indices,
     size_t *size);
 
 /**
@@ -120,7 +120,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_argmin(
  * @param k A value to be used to initialize each element.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_reset(
-    primitiv_Tensor *tensor, float k);
+    primitivTensor_t *tensor, float k);
 
 /**
  * Reset internal values using a vector.
@@ -132,7 +132,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_reset(
  *          size is assumed as the last dimension.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_reset_by_array(
-    primitiv_Tensor *tensor, const float *values);
+    primitivTensor_t *tensor, const float *values);
 
 /**
  * Returns a tensor which have the same values and different shape.
@@ -142,8 +142,8 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_reset_by_array(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_reshape(
-    const primitiv_Tensor *tensor, const primitiv_Shape *new_shape,
-    primitiv_Tensor **new_tensor);
+    const primitivTensor_t *tensor, const primitivShape_t *new_shape,
+    primitivTensor_t **new_tensor);
 
 /**
  * Returns a flattened tensor.
@@ -152,7 +152,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_reshape(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_flatten(
-    const primitiv_Tensor *tensor, primitiv_Tensor **new_tensor);
+    const primitivTensor_t *tensor, primitivTensor_t **new_tensor);
 
 /**
  * Directly multiplies a constant.
@@ -161,7 +161,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_flatten(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_inplace_multiply_const(
-    primitiv_Tensor *tensor, float k);
+    primitivTensor_t *tensor, float k);
 
 /**
  * Directly adds a value.
@@ -170,7 +170,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_inplace_multiply_const(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_inplace_add(
-    primitiv_Tensor *tensor, const primitiv_Tensor *x);
+    primitivTensor_t *tensor, const primitivTensor_t *x);
 
 /**
  * Directly subtracts a value.
@@ -179,6 +179,6 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_inplace_add(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Tensor_inplace_subtract(
-    primitiv_Tensor *tensor, const primitiv_Tensor *x);
+    primitivTensor_t *tensor, const primitivTensor_t *x);
 
 #endif  // PRIMITIV_C_TENSOR_H_

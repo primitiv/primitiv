@@ -9,19 +9,19 @@
 /**
  * Opaque type of Node.
  */
-typedef struct primitiv_Node primitiv_Node;
+typedef struct primitivNode primitivNode_t;
 
 /**
  * Opaque type of Graph.
  */
-typedef struct primitiv_Graph primitiv_Graph;
+typedef struct primitivGraph primitivGraph_t;
 
 /**
  * Creates a new Node object.
  * @param node Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_new(primitiv_Node **node);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_new(primitivNode_t **node);
 
 /**
  * Creates a clone of existing Node object.
@@ -30,14 +30,14 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_new(primitiv_Node **node);
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_clone(
-    primitiv_Node *src, primitiv_Node **node);
+    primitivNode_t *src, primitivNode_t **node);
 
 /**
  * Deletes the Node object.
  * @param node Pointer of a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_delete(primitiv_Node *node);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_delete(primitivNode_t *node);
 
 /**
  * Returns whether the node is valid or not.
@@ -47,7 +47,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_delete(primitiv_Node *node);
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_valid(
-    const primitiv_Node *node, PRIMITIV_C_BOOL *valid);
+    const primitivNode_t *node, PRIMITIV_C_BOOL *valid);
 
 /**
  * Returns corresponding Graph object.
@@ -56,7 +56,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_valid(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_graph(
-    const primitiv_Node *node, primitiv_Graph **graph);
+    const primitivNode_t *node, primitivGraph_t **graph);
 
 /**
  * Returns the operator ID.
@@ -65,7 +65,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_graph(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_operator_id(
-    const primitiv_Node *node, uint32_t *id);
+    const primitivNode_t *node, uint32_t *id);
 
 /**
  * Returns the value ID of the operator.
@@ -74,7 +74,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_operator_id(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_value_id(
-    const primitiv_Node *node, uint32_t *id);
+    const primitivNode_t *node, uint32_t *id);
 
 /**
  * Returns shape of the node.
@@ -83,7 +83,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_value_id(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_shape(
-    const primitiv_Node *node, primitiv_Shape **shape);
+    const primitivNode_t *node, primitivShape_t **shape);
 
 /**
  * Returns device of the node.
@@ -92,7 +92,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_shape(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_device(
-    const primitiv_Node *node, primitiv_Device **device);
+    const primitivNode_t *node, primitivDevice_t **device);
 
 /**
  * Calculates the value of this node and returns a float.
@@ -104,7 +104,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_device(
  *          non-minibatched shape (i.e., shape() == Shape())
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_to_float(
-    const primitiv_Node *node, float *value);
+    const primitivNode_t *node, float *value);
 
 /**
  * Calculates the value of this node and returns a list of float.
@@ -115,7 +115,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_to_float(
  * @remarks This function calls Graph::forward() internally.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_to_array(
-    const primitiv_Node *node, float *array, size_t *size);
+    const primitivNode_t *node, float *array, size_t *size);
 
 /**
  * Returns argmax indices along an axis of this node.
@@ -127,7 +127,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_to_array(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_argmax(
-    const primitiv_Node *node, uint32_t dim, uint32_t *indices,
+    const primitivNode_t *node, uint32_t dim, uint32_t *indices,
     size_t *size);
 
 /**
@@ -140,7 +140,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_argmax(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_argmin(
-    const primitiv_Node *node, uint32_t dim, uint32_t *indices,
+    const primitivNode_t *node, uint32_t dim, uint32_t *indices,
     size_t *size);
 
 /**
@@ -149,7 +149,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_argmin(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_backward(
-    const primitiv_Node *node);
+    const primitivNode_t *node);
 
 /**
  * Creates a new Graph object.
@@ -157,7 +157,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Node_backward(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_new(
-    primitiv_Graph **graph);
+    primitivGraph_t **graph);
 
 /**
  * Deletes the Graph object.
@@ -165,7 +165,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_new(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_delete(
-    primitiv_Graph *graph);
+    primitivGraph_t *graph);
 
 /**
  * Retrieves the current default graph.
@@ -173,7 +173,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_delete(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_get_default(
-    primitiv_Graph **graph);
+    primitivGraph_t **graph);
 
 /**
  * Specifies a new default graph.
@@ -181,7 +181,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_get_default(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_set_default(
-    primitiv_Graph *graph);
+    primitivGraph_t *graph);
 
 /**
  * Clear all operators in the graph.
@@ -191,7 +191,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_set_default(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_clear(
-    primitiv_Graph *graph);
+    primitivGraph_t *graph);
 
 /**
  * Calculates the value of given node.
@@ -206,8 +206,8 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_clear(
  *          the lifetime of the Graph object.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_forward(
-    primitiv_Graph *graph, const primitiv_Node *node,
-    const primitiv_Tensor **tensor);
+    primitivGraph_t *graph, const primitivNode_t *node,
+    const primitivTensor_t **tensor);
 
 /**
  * Calculates the backpropagation.
@@ -218,7 +218,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_forward(
  *          `forward(node)`.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_backward(
-    primitiv_Graph *graph, const primitiv_Node *node);
+    primitivGraph_t *graph, const primitivNode_t *node);
 
 /**
  * Retrieves the shape of the node.
@@ -228,8 +228,8 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_backward(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_get_shape(
-    const primitiv_Graph *graph, const primitiv_Node *node,
-    primitiv_Shape **shape);
+    const primitivGraph_t *graph, const primitivNode_t *node,
+    primitivShape_t **shape);
 
 /**
  * Retrieves the device of the node.
@@ -239,8 +239,8 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_get_shape(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_get_device(
-    const primitiv_Graph *graph, const primitiv_Node *node,
-    primitiv_Device **device);
+    const primitivGraph_t *graph, const primitivNode_t *node,
+    primitivDevice_t **device);
 
 /**
  * Dump internal graph structure.
@@ -253,7 +253,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_get_device(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_dump(
-    const primitiv_Graph *graph, const char *format, char *buffer,
+    const primitivGraph_t *graph, const char *format, char *buffer,
     size_t *size);
 
 /**
@@ -263,6 +263,6 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_dump(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Graph_num_operators(
-    const primitiv_Graph *graph, uint32_t *num);
+    const primitivGraph_t *graph, uint32_t *num);
 
 #endif  // PRIMITIV_C_GRAPH_H_

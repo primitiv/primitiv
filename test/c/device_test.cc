@@ -9,18 +9,18 @@ namespace c {
 class CDeviceTest : public testing::Test {};
 
 TEST_F(CDeviceTest, CheckDefault) {
-  ::primitiv_Device *device;
+  ::primitivDevice_t *device;
   EXPECT_EQ(PRIMITIV_C_ERROR,
             ::primitiv_Device_get_default(&device));
   {
-    ::primitiv_Device *dev1;
+    ::primitivDevice_t *dev1;
     ASSERT_EQ(PRIMITIV_C_OK,
               ::primitiv_devices_Naive_new(&dev1));
     ::primitiv_Device_set_default(dev1);
     ::primitiv_Device_get_default(&device);
     EXPECT_EQ(dev1, device);
     {
-      ::primitiv_Device *dev2;
+      ::primitivDevice_t *dev2;
     ASSERT_EQ(PRIMITIV_C_OK,
       ::primitiv_devices_Naive_new(&dev2));
       ::primitiv_Device_set_default(dev2);
@@ -30,7 +30,7 @@ TEST_F(CDeviceTest, CheckDefault) {
     }
     EXPECT_EQ(PRIMITIV_C_ERROR,
               ::primitiv_Device_get_default(&device));
-    ::primitiv_Device *dev3;
+    ::primitivDevice_t *dev3;
     ASSERT_EQ(PRIMITIV_C_OK,
     ::primitiv_devices_Naive_new(&dev3));
     ::primitiv_Device_set_default(dev3);

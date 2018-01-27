@@ -6,7 +6,7 @@
 /**
  * Opaque type of Device.
  */
-typedef struct primitiv_Device primitiv_Device;
+typedef struct primitivDevice primitivDevice_t;
 
 /**
  * Retrieves the current default device.
@@ -16,7 +16,7 @@ typedef struct primitiv_Device primitiv_Device;
  *          should not be passed to `primitiv_Device_delete()`.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Device_get_default(
-    primitiv_Device **device);
+    primitivDevice_t **device);
 
 /**
  * Specifies a new default device.
@@ -24,7 +24,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Device_get_default(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Device_set_default(
-    primitiv_Device *device);
+    primitivDevice_t *device);
 
 /**
  * Deletes the Device object.
@@ -32,7 +32,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Device_set_default(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Device_delete(
-    primitiv_Device *device);
+    primitivDevice_t *device);
 
 /**
  * Prints device description to stderr.
@@ -40,6 +40,6 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Device_delete(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Device_dump_description(
-    const primitiv_Device *device);
+    const primitivDevice_t *device);
 
 #endif  // PRIMITIV_C_DEVICE_H_

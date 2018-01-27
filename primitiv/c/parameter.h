@@ -9,7 +9,7 @@
 /**
  * Opaque type of Parameter.
  */
-typedef struct primitiv_Parameter primitiv_Parameter;
+typedef struct primitivParameter primitivParameter_t;
 
 /**
  * Creates an invalid Parameter object.
@@ -17,7 +17,7 @@ typedef struct primitiv_Parameter primitiv_Parameter;
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_new(
-    primitiv_Parameter **parameter);
+    primitivParameter_t **parameter);
 
 /**
  * Creates a new Parameter object.
@@ -30,8 +30,8 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_new(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_new_with_values(
-    const primitiv_Shape *shape, const float *value, size_t n,
-    primitiv_Device *device, primitiv_Parameter **parameter);
+    const primitivShape_t *shape, const float *value, size_t n,
+    primitivDevice_t *device, primitivParameter_t **parameter);
 
 /**
  * Creates a new Parameter object.
@@ -42,8 +42,8 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_new_with_values(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_new_with_initializer(
-    const primitiv_Shape *shape, const primitiv_Initializer *initializer,
-    primitiv_Device *device, primitiv_Parameter **parameter);
+    const primitivShape_t *shape, const primitivInitializer_t *initializer,
+    primitivDevice_t *device, primitivParameter_t **parameter);
 
 /**
  * Deletes the Parameter object.
@@ -51,7 +51,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_new_with_initializer(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_delete(
-    primitiv_Parameter *parameter);
+    primitivParameter_t *parameter);
 
 /**
  * Initializes the Parameter object.
@@ -63,8 +63,8 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_delete(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_init_with_values(
-    primitiv_Parameter *parameter, const primitiv_Shape *shape,
-    const float *value, size_t n, primitiv_Device *device);
+    primitivParameter_t *parameter, const primitivShape_t *shape,
+    const float *value, size_t n, primitivDevice_t *device);
 
 /**
  * Initializes the Parameter object.
@@ -75,8 +75,8 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_init_with_values(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_init_with_initializer(
-    primitiv_Parameter *parameter, const primitiv_Shape *shape,
-    const primitiv_Initializer *initializer, primitiv_Device *device);
+    primitivParameter_t *parameter, const primitivShape_t *shape,
+    const primitivInitializer_t *initializer, primitivDevice_t *device);
 
 /**
  * Loads parameters from specified file.
@@ -88,8 +88,8 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_init_with_initializer(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_load(
-    primitiv_Parameter *parameter, const char *path, PRIMITIV_C_BOOL with_stats,
-    primitiv_Device *device);
+    primitivParameter_t *parameter, const char *path, PRIMITIV_C_BOOL with_stats,
+    primitivDevice_t *device);
 
 /**
  * Saves current parameters into specified file.
@@ -100,7 +100,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_load(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_save(
-    const primitiv_Parameter *parameter, const char *path,
+    const primitivParameter_t *parameter, const char *path,
     PRIMITIV_C_BOOL with_stats);
 
 /**
@@ -111,7 +111,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_save(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_valid(
-    const primitiv_Parameter *parameter, PRIMITIV_C_BOOL *valid);
+    const primitivParameter_t *parameter, PRIMITIV_C_BOOL *valid);
 
 /**
  * Set all gradients to 0.
@@ -119,7 +119,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_valid(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_reset_gradients(
-    primitiv_Parameter *parameter);
+    primitivParameter_t *parameter);
 
 /**
  * Adds a new optional statistics tensor.
@@ -130,9 +130,9 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_reset_gradients(
  * @remarks All elements in the new statistics tensor is initialized by 0.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_add_stats(
-    primitiv_Parameter *parameter,
+    primitivParameter_t *parameter,
     const char *name,
-    const primitiv_Shape *shape);
+    const primitivShape_t *shape);
 
 /**
  * Checks whether the statistics with name `name` exists or not.
@@ -143,7 +143,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_add_stats(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_has_stats(
-    primitiv_Parameter *parameter, const char *name,
+    primitivParameter_t *parameter, const char *name,
     PRIMITIV_C_BOOL *has_stats);
 
 /**
@@ -153,7 +153,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_has_stats(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_shape(
-    const primitiv_Parameter *parameter, primitiv_Shape **shape);
+    const primitivParameter_t *parameter, primitivShape_t **shape);
 
 /**
  * Returns the Device object to manage the internal memory.
@@ -162,7 +162,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_shape(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_device(
-    const primitiv_Parameter *parameter, primitiv_Device **device);
+    const primitivParameter_t *parameter, primitivDevice_t **device);
 
 /**
  * Returns the values of the parameter.
@@ -172,7 +172,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_device(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_value(
-    const primitiv_Parameter *parameter, const primitiv_Tensor **tensor);
+    const primitivParameter_t *parameter, const primitivTensor_t **tensor);
 
 /**
  * Returns the current gradient of the parameter.
@@ -182,7 +182,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_value(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_gradient(
-    const primitiv_Parameter *parameter, const primitiv_Tensor **tensor);
+    const primitivParameter_t *parameter, const primitivTensor_t **tensor);
 
 /**
  * Returns the current opotional statistics tensor specified by given name.
@@ -192,7 +192,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_gradient(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_stats(
-    const primitiv_Parameter *parameter, const char *name,
-    const primitiv_Tensor **tensor);
+    const primitivParameter_t *parameter, const char *name,
+    const primitivTensor_t **tensor);
 
 #endif  // PRIMITIV_C_PARAMETER_H_
