@@ -39,11 +39,11 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivSaveOptimizer(
 /**
  * Retrieves current epoch.
  * @param optimizer Pointer of a handler.
- * @param epoch Pointer to receive the current epoch.
+ * @param retcval Pointer to receive the current epoch.
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetOptimizerEpoch(
-    const primitivOptimizer_t *optimizer, uint32_t *epoch);
+    const primitivOptimizer_t *optimizer, uint32_t *retval);
 
 /**
  * Sets current epoch.
@@ -57,12 +57,12 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivSetOptimizerEpoch(
 /**
  * Retrieves current learning rate scaling factor.
  * @param optimizer Pointer of a handler.
- * @param scale Pointer to receive the scaling factor.
+ * @param retval Pointer to receive the scaling factor.
  * @return Status code.
  */
 PRIMITIV_C_API
 PRIMITIV_C_STATUS primitivGetOptimizerLearningRateScaling(
-    const primitivOptimizer_t *optimizer, float *scale);
+    const primitivOptimizer_t *optimizer, float *retval);
 
 /**
  * Sets learning rate scaling factor.
@@ -78,11 +78,11 @@ PRIMITIV_C_STATUS primitivSetOptimizerLearningRateScaling(
 /**
  * Retrieves current L2 decay strength.
  * @param optimizer Pointer of a handler.
- * @param strength Pointer to receive the current L2 decay strength.
+ * @param retval Pointer to receive the current L2 decay strength.
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetOptimizerWeightDecay(
-    const primitivOptimizer_t *optimizer, float *strength);
+    const primitivOptimizer_t *optimizer, float *retval);
 
 /**
  * Sets L2 decay strength.
@@ -97,11 +97,11 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivSetOptimizerWeightDecay(
 /**
  * Retrieves current gradient clipping threshold.
  * @param optimizer Pointer of a handler.
- * @param threshold Current gradient clipping threshold.
+ * @param retval Current gradient clipping threshold.
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetOptimizerGradientClipping(
-    const primitivOptimizer_t *optimizer, float *threshold);
+    const primitivOptimizer_t *optimizer, float *retval);
 
 /**
  * Sets gradient clipping threshold.
@@ -171,11 +171,11 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivExecuteOptimizerUpdate(
  * Gets a configuration value.
  * @param optimizer Pointer of a handler.
  * @param key Configuration name.
- * @param value Pointer to receive the value.
+ * @param retval Pointer to receive the value.
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetOptimizerIntConfig(
-    primitivOptimizer_t *optimizer, const char *key, uint32_t *value);
+    primitivOptimizer_t *optimizer, const char *key, uint32_t *retval);
 
 /**
  * Sets a configuration value.
@@ -191,11 +191,11 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivSetOptimizerIntConfig(
  * Gets a configuration value.
  * @param optimizer Pointer of a handler.
  * @param key Configuration name.
- * @param value Pointer to receive the value.
+ * @param retval Pointer to receive the value.
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetOptimizerFloatConfig(
-    primitivOptimizer_t *optimizer, const char *key, float *value);
+    primitivOptimizer_t *optimizer, const char *key, float *retval);
 
 /**
  * Sets a configuration value.

@@ -43,15 +43,15 @@ PRIMITIV_C_DECL_BINARY_OP(Divide);
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeInput(
     const primitivShape_t *shape, const float *data, size_t n,
-    primitivDevice_t *dev, primitivGraph_t *g, primitivNode_t **node);
+    primitivDevice_t *dev, primitivGraph_t *g, primitivNode_t **newobj);
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorInput(
     const primitivShape_t *shape, const float *data, size_t n,
-    primitivDevice_t *dev, primitivTensor_t **tensor);
+    primitivDevice_t *dev, primitivTensor_t **newobj);
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeParameter(
-    primitivParameter_t *param, primitivGraph_t *g, primitivNode_t **node);
+    primitivParameter_t *param, primitivGraph_t *g, primitivNode_t **newobj);
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorParameter(
-    primitivParameter_t *param, primitivTensor_t **tensor);
+    primitivParameter_t *param, primitivTensor_t **newobj);
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeCopy(
     const primitivNode_t *x, primitivDevice_t *dev, primitivNode_t **y);
@@ -162,51 +162,51 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorBatchSum(
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeConstant(
     const primitivShape_t *shape, float k, primitivDevice_t *dev,
-    primitivGraph_t *g, primitivNode_t **node);
+    primitivGraph_t *g, primitivNode_t **newobj);
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorConstant(
     const primitivShape_t *shape, float k, primitivDevice_t *dev,
-    primitivTensor_t **tensor);
+    primitivTensor_t **newobj);
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeIdentity(
     uint32_t size, primitivDevice_t *dev, primitivGraph_t *g,
-    primitivNode_t **node);
+    primitivNode_t **newobj);
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorIdentity(
-    uint32_t size, primitivDevice_t *dev, primitivTensor_t **tensor);
+    uint32_t size, primitivDevice_t *dev, primitivTensor_t **newobj);
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeRandomBernoulli(
     const primitivShape_t *shape, float p, primitivDevice_t *dev,
-    primitivGraph_t *g, primitivNode_t **node);
+    primitivGraph_t *g, primitivNode_t **newobj);
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorRandomBernoulli(
     const primitivShape_t *shape, float p, primitivDevice_t *dev,
-    primitivTensor_t **tensor);
+    primitivTensor_t **newobj);
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeRandomUniform(
     const primitivShape_t *shape, float lower, float upper, primitivDevice_t *dev,
-    primitivGraph_t *g, primitivNode_t **node);
+    primitivGraph_t *g, primitivNode_t **newobj);
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorRandomUniform(
     const primitivShape_t *shape, float lower, float upper, primitivDevice_t *dev,
-    primitivTensor_t **tensor);
+    primitivTensor_t **newobj);
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeRandomNormal(
     const primitivShape_t *shape, float mean, float sd, primitivDevice_t *dev,
-    primitivGraph_t *g, primitivNode_t **node);
+    primitivGraph_t *g, primitivNode_t **newobj);
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorRandomNormal(
     const primitivShape_t *shape, float mean, float sd, primitivDevice_t *dev,
-    primitivTensor_t **tensor);
+    primitivTensor_t **newobj);
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeRandomLogNormal(
     const primitivShape_t *shape, float mean, float sd, primitivDevice_t *dev,
-    primitivGraph_t *g, primitivNode_t **node);
+    primitivGraph_t *g, primitivNode_t **newobj);
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorRandomLogNormal(
     const primitivShape_t *shape, float mean, float sd, primitivDevice_t *dev,
-    primitivTensor_t **tensor);
+    primitivTensor_t **newobj);
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeRandomGumbel(
     const primitivShape_t *shape, float mu, float beta, primitivDevice_t *dev,
-    primitivGraph_t *g, primitivNode_t **node);
+    primitivGraph_t *g, primitivNode_t **newobj);
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorRandomGumbel(
     const primitivShape_t *shape, float mu, float beta, primitivDevice_t *dev,
-    primitivTensor_t **tensor);
+    primitivTensor_t **newobj);
 
 PRIMITIV_C_DECL_BINARY_OP(Pow);
 
@@ -244,17 +244,17 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorBatchNormalize(
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeZeros(
     const primitivShape_t *shape, primitivDevice_t *dev, primitivGraph_t *g,
-    primitivNode_t **node);
+    primitivNode_t **newobj);
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorZeros(
     const primitivShape_t *shape, primitivDevice_t *dev,
-    primitivTensor_t **tensor);
+    primitivTensor_t **newobj);
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeOnes(
     const primitivShape_t *shape, primitivDevice_t *dev, primitivGraph_t *g,
-    primitivNode_t **node);
+    primitivNode_t **newobj);
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorOnes(
     const primitivShape_t *shape, primitivDevice_t *dev,
-    primitivTensor_t **tensor);
+    primitivTensor_t **newobj);
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeDropout(
     const primitivNode_t *x, float rate, PRIMITIV_C_BOOL enabled,

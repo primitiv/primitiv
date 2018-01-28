@@ -11,19 +11,19 @@ using primitiv::c::internal::to_c_ptr;
 using primitiv::c::internal::to_cpp_ptr;
 using primitiv::c::internal::to_c_ptr_from_value;
 
-PRIMITIV_C_STATUS primitivCreateParameter(primitivParameter_t **parameter) try {
-  PRIMITIV_C_CHECK_NOT_NULL(parameter);
-  *parameter = to_c_ptr(new Parameter());
+PRIMITIV_C_STATUS primitivCreateParameter(primitivParameter_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr(new Parameter());
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivCreateParameterWithValues(
     const primitivShape_t *shape, const float *value, size_t n,
-    primitivDevice_t *device, primitivParameter_t **parameter) try {
+    primitivDevice_t *device, primitivParameter_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(value);
-  PRIMITIV_C_CHECK_NOT_NULL(parameter);
-  *parameter = to_c_ptr(new Parameter(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr(new Parameter(
         *to_cpp_ptr(shape),
         std::vector<float>(value, value + n),
         *to_cpp_ptr(device)));
@@ -32,11 +32,11 @@ PRIMITIV_C_STATUS primitivCreateParameterWithValues(
 
 PRIMITIV_C_STATUS primitivCreateParameterWithInitializer(
     const primitivShape_t *shape, const primitivInitializer_t *initializer,
-    primitivDevice_t *device, primitivParameter_t **parameter) try {
+    primitivDevice_t *device, primitivParameter_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(initializer);
-  PRIMITIV_C_CHECK_NOT_NULL(parameter);
-  *parameter = to_c_ptr(new Parameter(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr(new Parameter(
       *to_cpp_ptr(shape), *to_cpp_ptr(initializer), *to_cpp_ptr(device)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
@@ -95,10 +95,10 @@ PRIMITIV_C_STATUS primitivSaveParameter(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivIsValidParameter(
-    const primitivParameter_t *parameter, PRIMITIV_C_BOOL *valid) try {
+    const primitivParameter_t *parameter, PRIMITIV_C_BOOL *retval) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
-  PRIMITIV_C_CHECK_NOT_NULL(valid);
-  *valid = to_cpp_ptr(parameter)->valid();
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_cpp_ptr(parameter)->valid();
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
@@ -122,57 +122,57 @@ PRIMITIV_C_STATUS primitivAddStatsToParameter(
 
 PRIMITIV_C_STATUS primitivHasParameterStats(
     primitivParameter_t *parameter, const char *name,
-    PRIMITIV_C_BOOL *has_stats) try {
+    PRIMITIV_C_BOOL *retval) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   PRIMITIV_C_CHECK_NOT_NULL(name);
-  PRIMITIV_C_CHECK_NOT_NULL(has_stats);
-  *has_stats = to_cpp_ptr(parameter)->has_stats(name);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_cpp_ptr(parameter)->has_stats(name);
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivGetParameterShape(
     const primitivParameter_t *parameter,
-    primitivShape_t **shape) try {
+    primitivShape_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
-  PRIMITIV_C_CHECK_NOT_NULL(shape);
-  *shape = to_c_ptr_from_value(to_cpp_ptr(parameter)->shape());
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(to_cpp_ptr(parameter)->shape());
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivGetDeviceFromParameter(
     const primitivParameter_t *parameter,
-    primitivDevice_t **device) try {
+    primitivDevice_t **retval) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
-  PRIMITIV_C_CHECK_NOT_NULL(device);
-  *device = to_c_ptr(&to_cpp_ptr(parameter)->device());
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_c_ptr(&to_cpp_ptr(parameter)->device());
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivGetParameterValue(
     const primitivParameter_t *parameter,
-    const primitivTensor_t **tensor) try {
+    const primitivTensor_t **retval) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
-  PRIMITIV_C_CHECK_NOT_NULL(tensor);
-  *tensor = to_c_ptr(&to_cpp_ptr(parameter)->value());
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_c_ptr(&to_cpp_ptr(parameter)->value());
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivGetParameterGradient(
     const primitivParameter_t *parameter,
-    const primitivTensor_t **tensor) try {
+    const primitivTensor_t **retval) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
-  PRIMITIV_C_CHECK_NOT_NULL(tensor);
-  *tensor = to_c_ptr(&to_cpp_ptr(parameter)->gradient());
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_c_ptr(&to_cpp_ptr(parameter)->gradient());
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivGetParameterStats(
     const primitivParameter_t *parameter,
     const char *name,
-    const primitivTensor_t **tensor) try {
+    const primitivTensor_t **retval) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   PRIMITIV_C_CHECK_NOT_NULL(name);
-  PRIMITIV_C_CHECK_NOT_NULL(tensor);
-  *tensor = to_c_ptr(&to_cpp_ptr(parameter)->stats(name));
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_c_ptr(&to_cpp_ptr(parameter)->stats(name));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS

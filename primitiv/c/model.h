@@ -12,11 +12,11 @@ typedef struct primitivModel primitivModel_t;
 
 /**
  * Creates a new Model object.
- * @param model Pointer to receive a handler.
+ * @param newobj Pointer to receive a handler.
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateModel(
-    primitivModel_t **model);
+    primitivModel_t **newobj);
 
 /**
  * Deletes the Model object.
@@ -77,26 +77,26 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivAddSubmodelToModel(
  * @param model Pointer of a handler.
  * @param names Name hierarchy of the parameter.
  * @param n Number of the names.
- * @param param Pointer to receive a const-reference of the corresponding
- *              `Parameter` object.
+ * @param retval Pointer to receive a const-reference of the corresponding
+ *               `Parameter` object.
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetParameterFromModel(
     const primitivModel_t *model, const char **names, size_t n,
-    const primitivParameter_t **param);
+    const primitivParameter_t **retval);
 
 /**
  * Recursively searches a submodel with specified name hierarchy.
  * @param model Pointer of a handler.
  * @param names Name hierarchy of the submodel.
  * @param n Number of the names.
- * @param submodel Pointer to receive a const-reference of the corresponding
- *                 `Model` object.
+ * @param retval Pointer to receive a const-reference of the corresponding
+ *               `Model` object.
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetSubmodelFromModel(
     const primitivModel_t *model, const char **names, size_t n,
-    const primitivModel_t **submodel);
+    const primitivModel_t **retval);
 
 // @TODO: Implement primitiv_Model_get_all_parameters()
 // @TODO: Implement primitiv_Model_get_trainable_parameters()

@@ -8,9 +8,9 @@ using primitiv::Device;
 using primitiv::c::internal::to_c_ptr;
 using primitiv::c::internal::to_cpp_ptr;
 
-PRIMITIV_C_STATUS primitivGetDefaultDevice(primitivDevice_t **device) try {
-  PRIMITIV_C_CHECK_NOT_NULL(device);
-  *device = to_c_ptr(&Device::get_default());
+PRIMITIV_C_STATUS primitivGetDefaultDevice(primitivDevice_t **retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_c_ptr(&Device::get_default());
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 

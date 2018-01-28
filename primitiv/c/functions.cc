@@ -86,11 +86,11 @@ PRIMITIV_C_IMPL_BINARY_OP(Divide, divide);
 
 PRIMITIV_C_STATUS primitivNodeInput(
     const primitivShape_t *shape, const float *data, size_t n,
-    primitivDevice_t *dev, primitivGraph_t *g, primitivNode_t **node) try {
+    primitivDevice_t *dev, primitivGraph_t *g, primitivNode_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(data);
-  PRIMITIV_C_CHECK_NOT_NULL(node);
-  *node = to_c_ptr_from_value(primitiv::functions::input_node(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(primitiv::functions::input_node(
       *to_cpp_ptr(shape), std::vector<float>(data, data + n), to_cpp_ptr(dev),
       to_cpp_ptr(g)));
   return PRIMITIV_C_OK;
@@ -98,11 +98,11 @@ PRIMITIV_C_STATUS primitivNodeInput(
 
 PRIMITIV_C_STATUS primitivTensorInput(
     const primitivShape_t *shape, const float *data, size_t n,
-    primitivDevice_t *dev, primitivTensor_t **tensor) try {
+    primitivDevice_t *dev, primitivTensor_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(data);
-  PRIMITIV_C_CHECK_NOT_NULL(tensor);
-  *tensor = to_c_ptr_from_value(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(
       primitiv::functions::input_tensor(
         *to_cpp_ptr(shape),
         std::vector<float>(data, data + n),
@@ -111,19 +111,19 @@ PRIMITIV_C_STATUS primitivTensorInput(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivNodeParameter(
-    primitivParameter_t *param, primitivGraph_t *g, primitivNode_t **node) try {
+    primitivParameter_t *param, primitivGraph_t *g, primitivNode_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(param);
-  PRIMITIV_C_CHECK_NOT_NULL(node);
-  *node = to_c_ptr_from_value(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(
       primitiv::functions::parameter_node(*to_cpp_ptr(param), to_cpp_ptr(g)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivTensorParameter(
-    primitivParameter_t *param, primitivTensor_t **tensor) try {
+    primitivParameter_t *param, primitivTensor_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(param);
-  PRIMITIV_C_CHECK_NOT_NULL(tensor);
-  *tensor = to_c_ptr_from_value(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(
       primitiv::functions::parameter_tensor(*to_cpp_ptr(param)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
@@ -460,20 +460,20 @@ PRIMITIV_C_STATUS primitivTensorBatchSum(
 
 PRIMITIV_C_STATUS primitivNodeConstant(
     const primitivShape_t *shape, float k, primitivDevice_t *dev,
-    primitivGraph_t *g, primitivNode_t **node) try {
+    primitivGraph_t *g, primitivNode_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
-  PRIMITIV_C_CHECK_NOT_NULL(node);
-  *node = to_c_ptr_from_value(primitiv::functions::constant_node(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(primitiv::functions::constant_node(
       *to_cpp_ptr(shape), k, to_cpp_ptr(dev), to_cpp_ptr(g)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivTensorConstant(
     const primitivShape_t *shape, float k, primitivDevice_t *dev,
-    primitivTensor_t **tensor) try {
+    primitivTensor_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
-  PRIMITIV_C_CHECK_NOT_NULL(tensor);
-  *tensor = to_c_ptr_from_value(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(
       primitiv::functions::constant_tensor(
           *to_cpp_ptr(shape), k, to_cpp_ptr(dev)));
   return PRIMITIV_C_OK;
@@ -481,98 +481,98 @@ PRIMITIV_C_STATUS primitivTensorConstant(
 
 PRIMITIV_C_STATUS primitivNodeIdentity(
     uint32_t size, primitivDevice_t *dev, primitivGraph_t *g,
-    primitivNode_t **node) try {
-  PRIMITIV_C_CHECK_NOT_NULL(node);
-  *node = to_c_ptr_from_value(
+    primitivNode_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(
       primitiv::functions::identity_node(
           size, to_cpp_ptr(dev), to_cpp_ptr(g)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivTensorIdentity(
-    uint32_t size, primitivDevice_t *dev, primitivTensor_t **tensor) try {
-  PRIMITIV_C_CHECK_NOT_NULL(tensor);
-  *tensor = to_c_ptr_from_value(
+    uint32_t size, primitivDevice_t *dev, primitivTensor_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(
       primitiv::functions::identity_tensor(size, to_cpp_ptr(dev)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivNodeRandomBernoulli(
     const primitivShape_t *shape, float p, primitivDevice_t *dev,
-    primitivGraph_t *g, primitivNode_t **node) try {
+    primitivGraph_t *g, primitivNode_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
-  PRIMITIV_C_CHECK_NOT_NULL(node);
-  *node = to_c_ptr_from_value(primitiv::functions::random::bernoulli_node(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(primitiv::functions::random::bernoulli_node(
       *to_cpp_ptr(shape), p, to_cpp_ptr(dev), to_cpp_ptr(g)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivTensorRandomBernoulli(
     const primitivShape_t *shape, float p, primitivDevice_t *dev,
-    primitivTensor_t **tensor) try {
+    primitivTensor_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
-  PRIMITIV_C_CHECK_NOT_NULL(tensor);
-  *tensor = to_c_ptr_from_value(primitiv::functions::random::bernoulli_tensor(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(primitiv::functions::random::bernoulli_tensor(
       *to_cpp_ptr(shape), p, to_cpp_ptr(dev)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivNodeRandomUniform(
     const primitivShape_t *shape, float lower, float upper, primitivDevice_t *dev,
-    primitivGraph_t *g, primitivNode_t **node) try {
+    primitivGraph_t *g, primitivNode_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
-  PRIMITIV_C_CHECK_NOT_NULL(node);
-  *node = to_c_ptr_from_value(primitiv::functions::random::uniform_node(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(primitiv::functions::random::uniform_node(
       *to_cpp_ptr(shape), lower, upper, to_cpp_ptr(dev), to_cpp_ptr(g)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivTensorRandomUniform(
     const primitivShape_t *shape, float lower, float upper, primitivDevice_t *dev,
-    primitivTensor_t **tensor) try {
+    primitivTensor_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
-  PRIMITIV_C_CHECK_NOT_NULL(tensor);
-  *tensor = to_c_ptr_from_value(primitiv::functions::random::uniform_tensor(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(primitiv::functions::random::uniform_tensor(
       *to_cpp_ptr(shape), lower, upper, to_cpp_ptr(dev)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivNodeRandomNormal(
     const primitivShape_t *shape, float mean, float sd, primitivDevice_t *dev,
-    primitivGraph_t *g, primitivNode_t **node) try {
+    primitivGraph_t *g, primitivNode_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
-  PRIMITIV_C_CHECK_NOT_NULL(node);
-  *node = to_c_ptr_from_value(primitiv::functions::random::normal_node(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(primitiv::functions::random::normal_node(
       *to_cpp_ptr(shape), mean, sd, to_cpp_ptr(dev), to_cpp_ptr(g)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivTensorRandomNormal(
     const primitivShape_t *shape, float mean, float sd, primitivDevice_t *dev,
-    primitivTensor_t **tensor) try {
+    primitivTensor_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
-  PRIMITIV_C_CHECK_NOT_NULL(tensor);
-  *tensor = to_c_ptr_from_value(primitiv::functions::random::normal_tensor(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(primitiv::functions::random::normal_tensor(
       *to_cpp_ptr(shape), mean, sd, to_cpp_ptr(dev)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivNodeRandomLogNormal(
     const primitivShape_t *shape, float mean, float sd, primitivDevice_t *dev,
-    primitivGraph_t *g, primitivNode_t **node) try {
+    primitivGraph_t *g, primitivNode_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
-  PRIMITIV_C_CHECK_NOT_NULL(node);
-  *node = to_c_ptr_from_value(primitiv::functions::random::log_normal_node(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(primitiv::functions::random::log_normal_node(
       *to_cpp_ptr(shape), mean, sd, to_cpp_ptr(dev), to_cpp_ptr(g)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivTensorRandomLogNormal(
     const primitivShape_t *shape, float mean, float sd, primitivDevice_t *dev,
-    primitivTensor_t **tensor) try {
+    primitivTensor_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
-  PRIMITIV_C_CHECK_NOT_NULL(tensor);
-  *tensor = to_c_ptr_from_value(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(
       primitiv::functions::random::log_normal_tensor(
           *to_cpp_ptr(shape), mean, sd, to_cpp_ptr(dev)));
   return PRIMITIV_C_OK;
@@ -580,20 +580,20 @@ PRIMITIV_C_STATUS primitivTensorRandomLogNormal(
 
 PRIMITIV_C_STATUS primitivNodeRandomGumbel(
     const primitivShape_t *shape, float mu, float beta, primitivDevice_t *dev,
-    primitivGraph_t *g, primitivNode_t **node) try {
+    primitivGraph_t *g, primitivNode_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
-  PRIMITIV_C_CHECK_NOT_NULL(node);
-  *node = to_c_ptr_from_value(primitiv::functions::random::gumbel_node(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(primitiv::functions::random::gumbel_node(
       *to_cpp_ptr(shape), mu, beta, to_cpp_ptr(dev), to_cpp_ptr(g)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivTensorRandomGumbel(
     const primitivShape_t *shape, float mu, float beta, primitivDevice_t *dev,
-    primitivTensor_t **tensor) try {
+    primitivTensor_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
-  PRIMITIV_C_CHECK_NOT_NULL(tensor);
-  *tensor = to_c_ptr_from_value(primitiv::functions::random::gumbel_tensor(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(primitiv::functions::random::gumbel_tensor(
       *to_cpp_ptr(shape), mu, beta, to_cpp_ptr(dev)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
@@ -710,10 +710,10 @@ PRIMITIV_C_STATUS primitivTensorBatchNormalize(
 
 PRIMITIV_C_STATUS primitivNodeZeros(
     const primitivShape_t *shape, primitivDevice_t *dev, primitivGraph_t *g,
-    primitivNode_t **node) try {
+    primitivNode_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
-  PRIMITIV_C_CHECK_NOT_NULL(node);
-  *node = to_c_ptr_from_value(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(
       primitiv::functions::zeros_node(
           *to_cpp_ptr(shape), to_cpp_ptr(dev), to_cpp_ptr(g)));
   return PRIMITIV_C_OK;
@@ -721,20 +721,20 @@ PRIMITIV_C_STATUS primitivNodeZeros(
 
 PRIMITIV_C_STATUS primitivTensorZeros(
     const primitivShape_t *shape, primitivDevice_t *dev,
-    primitivTensor_t **tensor) try {
+    primitivTensor_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
-  PRIMITIV_C_CHECK_NOT_NULL(tensor);
-  *tensor = to_c_ptr_from_value(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(
       primitiv::functions::zeros_tensor(*to_cpp_ptr(shape), to_cpp_ptr(dev)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivNodeOnes(
     const primitivShape_t *shape, primitivDevice_t *dev, primitivGraph_t *g,
-    primitivNode_t **node) try {
+    primitivNode_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
-  PRIMITIV_C_CHECK_NOT_NULL(node);
-  *node = to_c_ptr_from_value(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(
       primitiv::functions::ones_node(
           *to_cpp_ptr(shape), to_cpp_ptr(dev), to_cpp_ptr(g)));
   return PRIMITIV_C_OK;
@@ -742,10 +742,10 @@ PRIMITIV_C_STATUS primitivNodeOnes(
 
 PRIMITIV_C_STATUS primitivTensorOnes(
     const primitivShape_t *shape, primitivDevice_t *dev,
-    primitivTensor_t **tensor) try {
+    primitivTensor_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
-  PRIMITIV_C_CHECK_NOT_NULL(tensor);
-  *tensor = to_c_ptr_from_value(
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(
       primitiv::functions::ones_tensor(*to_cpp_ptr(shape), to_cpp_ptr(dev)));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
