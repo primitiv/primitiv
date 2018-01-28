@@ -3,9 +3,9 @@
 
 #include <primitiv/c/define.h>
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_reset();
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivResetStatus();
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_get_message(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetMessage(
     char *buffer, size_t *size);
 
 #endif  // PRIMITIV_C_STATUS_H_

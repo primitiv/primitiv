@@ -15,7 +15,7 @@ typedef struct primitivDevice primitivDevice_t;
  * @remarks The pointer returned by this function is owned by the library, and
  *          should not be passed to `primitiv_Device_delete()`.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Device_get_default(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetDefaultDevice(
     primitivDevice_t **device);
 
 /**
@@ -23,7 +23,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Device_get_default(
  * @param device Pointer of the new default device.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Device_set_default(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivSetDefaultDevice(
     primitivDevice_t *device);
 
 /**
@@ -31,7 +31,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Device_set_default(
  * @param device Pointer of a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Device_delete(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivDeleteDevice(
     primitivDevice_t *device);
 
 /**
@@ -39,7 +39,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Device_delete(
  * @param device Pointer of a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Device_dump_description(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivDumpDeviceDescription(
     const primitivDevice_t *device);
 
 #endif  // PRIMITIV_C_DEVICE_H_

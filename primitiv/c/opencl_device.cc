@@ -7,14 +7,14 @@
 using primitiv::devices::OpenCL;
 using primitiv::c::internal::to_c_ptr;
 
-PRIMITIV_C_STATUS primitiv_devices_OpenCL_new(
+PRIMITIV_C_STATUS primitivCreateOpenCLDevice(
     uint32_t platform_id, uint32_t device_id, primitivDevice_t **device) try {
   PRIMITIV_C_CHECK_NOT_NULL(device);
   *device = to_c_ptr(new OpenCL(platform_id, device_id));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_devices_OpenCL_new_with_seed(
+PRIMITIV_C_STATUS primitivCreateOpenCLDeviceWithSeed(
     uint32_t platform_id, uint32_t device_id, uint32_t rng_seed,
     primitivDevice_t **device) try {
   PRIMITIV_C_CHECK_NOT_NULL(device);
@@ -22,14 +22,14 @@ PRIMITIV_C_STATUS primitiv_devices_OpenCL_new_with_seed(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_devices_OpenCL_num_platforms(
+PRIMITIV_C_STATUS primitivGetNumOpenCLPlatforms(
     uint32_t *num_platforms) try {
   PRIMITIV_C_CHECK_NOT_NULL(num_platforms);
   *num_platforms = OpenCL::num_platforms();
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_devices_OpenCL_num_devices(
+PRIMITIV_C_STATUS primitivGetNumOpenCLDevices(
     uint32_t platform_id, uint32_t *num_devices) try {
   PRIMITIV_C_CHECK_NOT_NULL(num_devices);
   *num_devices = OpenCL::num_devices(platform_id);

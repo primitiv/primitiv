@@ -9,7 +9,7 @@
  * @param device Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_Naive_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateNaiveDevice(
     primitivDevice_t **device);
 
 /**
@@ -18,7 +18,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_Naive_new(
  * @param device Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_Naive_new_with_seed(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateNaiveWithSeed(
     uint32_t seed, primitivDevice_t **device);
 
 #endif  // PRIMITIV_C_NAIVE_DEVICE_H_

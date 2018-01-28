@@ -11,13 +11,13 @@ using primitiv::Optimizer;
 using primitiv::c::internal::to_c_ptr;
 using primitiv::c::internal::to_cpp_ptr;
 
-PRIMITIV_C_STATUS primitiv_Optimizer_delete(primitivOptimizer_t *optimizer) try {
+PRIMITIV_C_STATUS primitivDeleteOptimizer(primitivOptimizer_t *optimizer) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   delete to_cpp_ptr(optimizer);
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_load(
+PRIMITIV_C_STATUS primitivLoadOptimizer(
     primitivOptimizer_t *optimizer, const char *path) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   PRIMITIV_C_CHECK_NOT_NULL(path);
@@ -25,7 +25,7 @@ PRIMITIV_C_STATUS primitiv_Optimizer_load(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_save(
+PRIMITIV_C_STATUS primitivSaveOptimizer(
     const primitivOptimizer_t *optimizer, const char *path) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   PRIMITIV_C_CHECK_NOT_NULL(path);
@@ -33,7 +33,7 @@ PRIMITIV_C_STATUS primitiv_Optimizer_save(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_get_epoch(
+PRIMITIV_C_STATUS primitivGetOptimizerEpoch(
     const primitivOptimizer_t *optimizer, uint32_t *epoch) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   PRIMITIV_C_CHECK_NOT_NULL(epoch);
@@ -41,14 +41,14 @@ PRIMITIV_C_STATUS primitiv_Optimizer_get_epoch(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_set_epoch(
+PRIMITIV_C_STATUS primitivSetOptimizerEpoch(
     primitivOptimizer_t *optimizer, uint32_t epoch) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   to_cpp_ptr(optimizer)->set_epoch(epoch);
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_get_learning_rate_scaling(
+PRIMITIV_C_STATUS primitivGetOptimizerLearningRateScaling(
     const primitivOptimizer_t *optimizer, float *scale) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   PRIMITIV_C_CHECK_NOT_NULL(scale);
@@ -56,14 +56,14 @@ PRIMITIV_C_STATUS primitiv_Optimizer_get_learning_rate_scaling(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_set_learning_rate_scaling(
+PRIMITIV_C_STATUS primitivSetOptimizerLearningRateScaling(
     primitivOptimizer_t *optimizer, float scale) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   to_cpp_ptr(optimizer)->set_learning_rate_scaling(scale);
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_get_weight_decay(
+PRIMITIV_C_STATUS primitivGetOptimizerWeightDecay(
     const primitivOptimizer_t *optimizer, float *strength) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   PRIMITIV_C_CHECK_NOT_NULL(strength);
@@ -71,14 +71,14 @@ PRIMITIV_C_STATUS primitiv_Optimizer_get_weight_decay(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_set_weight_decay(
+PRIMITIV_C_STATUS primitivSetOptimizerWeightDecay(
     primitivOptimizer_t *optimizer, float strength) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   to_cpp_ptr(optimizer)->set_weight_decay(strength);
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_get_gradient_clipping(
+PRIMITIV_C_STATUS primitivGetOptimizerGradientClipping(
     const primitivOptimizer_t *optimizer, float *threshold) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   PRIMITIV_C_CHECK_NOT_NULL(threshold);
@@ -86,14 +86,14 @@ PRIMITIV_C_STATUS primitiv_Optimizer_get_gradient_clipping(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_set_gradient_clipping(
+PRIMITIV_C_STATUS primitivSetOptimizerGradientClipping(
     primitivOptimizer_t *optimizer, float threshold) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   to_cpp_ptr(optimizer)->set_gradient_clipping(threshold);
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_add_parameter(
+PRIMITIV_C_STATUS primitivAddParameterToOptimizer(
     primitivOptimizer_t *optimizer, primitivParameter_t *param) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   PRIMITIV_C_CHECK_NOT_NULL(param);
@@ -101,7 +101,7 @@ PRIMITIV_C_STATUS primitiv_Optimizer_add_parameter(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_add_parameters(
+PRIMITIV_C_STATUS primitivAddParametersToOptimizer(
     primitivOptimizer_t *optimizer, primitivParameter_t **params, size_t n) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   PRIMITIV_C_CHECK_NOT_NULL(params);
@@ -112,7 +112,7 @@ PRIMITIV_C_STATUS primitiv_Optimizer_add_parameters(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_add_model(
+PRIMITIV_C_STATUS primitivAddModelToOptimizer(
     primitivOptimizer_t *optimizer, primitivModel_t *model) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   PRIMITIV_C_CHECK_NOT_NULL(model);
@@ -120,7 +120,7 @@ PRIMITIV_C_STATUS primitiv_Optimizer_add_model(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_add_models(
+PRIMITIV_C_STATUS primitivAddModelsToOptimizer(
     primitivOptimizer_t *optimizer, primitivModel_t **models, size_t n) try {
   Optimizer *cc_optimizer = to_cpp_ptr(optimizer);
   PRIMITIV_C_CHECK_NOT_NULL(models);
@@ -130,20 +130,20 @@ PRIMITIV_C_STATUS primitiv_Optimizer_add_models(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_reset_gradients(
+PRIMITIV_C_STATUS primitivResetOptimizerGradients(
     primitivOptimizer_t *optimizer) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   to_cpp_ptr(optimizer)->reset_gradients();
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_update(primitivOptimizer_t *optimizer) try {
+PRIMITIV_C_STATUS primitivExecuteOptimizerUpdate(primitivOptimizer_t *optimizer) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   to_cpp_ptr(optimizer)->update();
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_get_int_config(
+PRIMITIV_C_STATUS primitivGetOptimizerIntConfig(
     primitivOptimizer_t *optimizer, const char *key, uint32_t *value) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   PRIMITIV_C_CHECK_NOT_NULL(key);
@@ -158,7 +158,7 @@ PRIMITIV_C_STATUS primitiv_Optimizer_get_int_config(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_set_int_config(
+PRIMITIV_C_STATUS primitivSetOptimizerIntConfig(
     primitivOptimizer_t *optimizer, const char *key, uint32_t value) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   PRIMITIV_C_CHECK_NOT_NULL(key);
@@ -169,7 +169,7 @@ PRIMITIV_C_STATUS primitiv_Optimizer_set_int_config(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_get_float_config(
+PRIMITIV_C_STATUS primitivGetOptimizerFloatConfig(
     primitivOptimizer_t *optimizer, const char *key, float *value) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   PRIMITIV_C_CHECK_NOT_NULL(key);
@@ -184,7 +184,7 @@ PRIMITIV_C_STATUS primitiv_Optimizer_get_float_config(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Optimizer_set_float_config(
+PRIMITIV_C_STATUS primitivSetOptimizerFloatConfig(
     primitivOptimizer_t *optimizer, const char *key, float value) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   PRIMITIV_C_CHECK_NOT_NULL(key);

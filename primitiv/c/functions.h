@@ -9,260 +9,257 @@
 #include <primitiv/c/tensor.h>
 
 #define PRIMITIV_C_DECL_UNARY_FUNC(name) \
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_##name( \
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNode##name( \
     const primitivNode_t *x, primitivNode_t **y); \
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_##name( \
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensor##name( \
     const primitivTensor_t *x, primitivTensor_t **y);
 
 #define PRIMITIV_C_DECL_BINARY_OP(name) \
 PRIMITIV_C_API PRIMITIV_C_STATUS \
-primitiv_node_func_##name##_node_const( \
+primitivNode##name##NodeConst( \
     const primitivNode_t *x, float k, primitivNode_t **y); \
 PRIMITIV_C_API PRIMITIV_C_STATUS \
-primitiv_node_func_##name##_const_node( \
+primitivNode##name##ConstNode( \
     float k, const primitivNode_t *x, primitivNode_t **y); \
 PRIMITIV_C_API PRIMITIV_C_STATUS \
-primitiv_node_func_##name##_node_node( \
+primitivNode##name##NodeNode( \
     const primitivNode_t *a, const primitivNode_t *b, primitivNode_t **y); \
 PRIMITIV_C_API PRIMITIV_C_STATUS \
-primitiv_tensor_func_##name##_tensor_const( \
+primitivTensor##name##TensorConst( \
     const primitivTensor_t *x, float k, primitivTensor_t **y); \
 PRIMITIV_C_API PRIMITIV_C_STATUS \
-primitiv_tensor_func_##name##_const_tensor( \
+primitivTensor##name##ConstTensor( \
     float k, const primitivTensor_t *x, primitivTensor_t **y); \
 PRIMITIV_C_API PRIMITIV_C_STATUS \
-primitiv_tensor_func_##name##_tensor_tensor( \
+primitivTensor##name##TensorTensor( \
     const primitivTensor_t *a, const primitivTensor_t *b, primitivTensor_t **y);
 
-PRIMITIV_C_DECL_UNARY_FUNC(positive);
-PRIMITIV_C_DECL_UNARY_FUNC(negative);
-PRIMITIV_C_DECL_BINARY_OP(add);
-PRIMITIV_C_DECL_BINARY_OP(subtract);
-PRIMITIV_C_DECL_BINARY_OP(multiply);
-PRIMITIV_C_DECL_BINARY_OP(divide);
+PRIMITIV_C_DECL_UNARY_FUNC(Positive);
+PRIMITIV_C_DECL_UNARY_FUNC(Negative);
+PRIMITIV_C_DECL_BINARY_OP(Add);
+PRIMITIV_C_DECL_BINARY_OP(Subtract);
+PRIMITIV_C_DECL_BINARY_OP(Multiply);
+PRIMITIV_C_DECL_BINARY_OP(Divide);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_input(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeInput(
     const primitivShape_t *shape, const float *data, size_t n,
     primitivDevice_t *dev, primitivGraph_t *g, primitivNode_t **node);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_input(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorInput(
     const primitivShape_t *shape, const float *data, size_t n,
     primitivDevice_t *dev, primitivTensor_t **tensor);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_parameter(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeParameter(
     primitivParameter_t *param, primitivGraph_t *g, primitivNode_t **node);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_parameter(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorParameter(
     primitivParameter_t *param, primitivTensor_t **tensor);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_copy(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeCopy(
     const primitivNode_t *x, primitivDevice_t *dev, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_copy(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorCopy(
     const primitivTensor_t *x, primitivDevice_t *dev, primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_pick(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodePick(
     const primitivNode_t *x, const uint32_t *ids, size_t n, uint32_t dim,
     primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_pick(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorPick(
     const primitivTensor_t *x, const uint32_t *ids, size_t n, uint32_t dim,
     primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_slice(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeSlice(
     const primitivNode_t *x, uint32_t dim, uint32_t lower, uint32_t upper,
     primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_slice(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorSlice(
     const primitivTensor_t *x, uint32_t dim, uint32_t lower, uint32_t upper,
     primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_concat(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeConcat(
     const primitivNode_t *const *xs, size_t n, uint32_t dim, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_concat(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorConcat(
     const primitivTensor_t *const *xs, size_t n, uint32_t dim,
     primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_reshape(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeReshape(
     const primitivNode_t *x, const primitivShape_t *new_shape, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_reshape(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorReshape(
     const primitivTensor_t *x, const primitivShape_t *new_shape,
     primitivTensor_t **y);
 
-PRIMITIV_C_DECL_UNARY_FUNC(flatten);
-PRIMITIV_C_DECL_UNARY_FUNC(transpose);
+PRIMITIV_C_DECL_UNARY_FUNC(Flatten);
+PRIMITIV_C_DECL_UNARY_FUNC(Transpose);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_matmul(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeMatmul(
     const primitivNode_t *a, const primitivNode_t *b, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_matmul(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorMatmul(
     const primitivTensor_t *a, const primitivTensor_t *b, primitivTensor_t **y);
 
-PRIMITIV_C_DECL_UNARY_FUNC(sqrt);
-PRIMITIV_C_DECL_UNARY_FUNC(exp);
-PRIMITIV_C_DECL_UNARY_FUNC(log);
-PRIMITIV_C_DECL_UNARY_FUNC(tanh);
-PRIMITIV_C_DECL_UNARY_FUNC(sigmoid);
-PRIMITIV_C_DECL_UNARY_FUNC(softplus);
-PRIMITIV_C_DECL_UNARY_FUNC(sin);
-PRIMITIV_C_DECL_UNARY_FUNC(cos);
-PRIMITIV_C_DECL_UNARY_FUNC(tan);
-PRIMITIV_C_DECL_UNARY_FUNC(relu);
-PRIMITIV_C_DECL_UNARY_FUNC(lrelu);
+PRIMITIV_C_DECL_UNARY_FUNC(Sqrt);
+PRIMITIV_C_DECL_UNARY_FUNC(Exp);
+PRIMITIV_C_DECL_UNARY_FUNC(Log);
+PRIMITIV_C_DECL_UNARY_FUNC(Tanh);
+PRIMITIV_C_DECL_UNARY_FUNC(Sigmoid);
+PRIMITIV_C_DECL_UNARY_FUNC(Softplus);
+PRIMITIV_C_DECL_UNARY_FUNC(Sin);
+PRIMITIV_C_DECL_UNARY_FUNC(Cos);
+PRIMITIV_C_DECL_UNARY_FUNC(Tan);
+PRIMITIV_C_DECL_UNARY_FUNC(Relu);
+PRIMITIV_C_DECL_UNARY_FUNC(Lrelu);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_prelu(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodePrelu(
     const primitivNode_t *x, float a, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_prelu(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorPrelu(
     const primitivTensor_t *x, float a, primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_elu(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeElu(
     const primitivNode_t *x, float a, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_elu(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorElu(
     const primitivTensor_t *x, float a, primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_sum(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeSum(
     const primitivNode_t *x, uint32_t dim, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_sum(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorSum(
     const primitivTensor_t *x, uint32_t dim, primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_broadcast(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeBroadcast(
     const primitivNode_t *x, uint32_t dim, uint32_t size, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_broadcast(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorBroadcast(
     const primitivTensor_t *x, uint32_t dim, uint32_t size, primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_logsumexp(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeLogsumexp(
     const primitivNode_t *x, uint32_t dim, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_logsumexp(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorLogsumexp(
     const primitivTensor_t *x, uint32_t dim, primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_log_softmax(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeLogSoftmax(
     const primitivNode_t *x, uint32_t dim, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_log_softmax(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorLogSoftmax(
     const primitivTensor_t *x, uint32_t dim, primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_softmax(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeSoftmax(
     const primitivNode_t *x, uint32_t dim, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_softmax(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorSoftmax(
     const primitivTensor_t *x, uint32_t dim, primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_softmax_cross_entropy(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeSoftmaxCrossEntropy(
     const primitivNode_t *x, const primitivNode_t *t, uint32_t dim,
     primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS
-primitiv_tensor_func_softmax_cross_entropy(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorSoftmaxCrossEntropy(
     const primitivTensor_t *x, const primitivTensor_t *t, uint32_t dim,
     primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS
-primitiv_node_func_softmax_cross_entropy_with_array(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeSoftmaxCrossEntropyWithArray(
     const primitivNode_t *x, const uint32_t *ids, size_t n, uint32_t dim,
     primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS
-primitiv_tensor_func_softmax_cross_entropy_with_array(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorSoftmaxCrossEntropyWithArray(
     const primitivTensor_t *x, const uint32_t *ids, size_t n, uint32_t dim,
     primitivTensor_t **y);
 
-PRIMITIV_C_DECL_UNARY_FUNC(stop_gradient);
+PRIMITIV_C_DECL_UNARY_FUNC(StopGradient);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_batch_sum(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeBatchSum(
     const primitivNode_t *x, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_batch_sum(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorBatchSum(
     const primitivTensor_t *x, primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_constant(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeConstant(
     const primitivShape_t *shape, float k, primitivDevice_t *dev,
     primitivGraph_t *g, primitivNode_t **node);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_constant(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorConstant(
     const primitivShape_t *shape, float k, primitivDevice_t *dev,
     primitivTensor_t **tensor);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_identity(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeIdentity(
     uint32_t size, primitivDevice_t *dev, primitivGraph_t *g,
     primitivNode_t **node);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_identity(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorIdentity(
     uint32_t size, primitivDevice_t *dev, primitivTensor_t **tensor);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_random_bernoulli(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeRandomBernoulli(
     const primitivShape_t *shape, float p, primitivDevice_t *dev,
     primitivGraph_t *g, primitivNode_t **node);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_random_bernoulli(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorRandomBernoulli(
     const primitivShape_t *shape, float p, primitivDevice_t *dev,
     primitivTensor_t **tensor);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_random_uniform(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeRandomUniform(
     const primitivShape_t *shape, float lower, float upper, primitivDevice_t *dev,
     primitivGraph_t *g, primitivNode_t **node);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_random_uniform(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorRandomUniform(
     const primitivShape_t *shape, float lower, float upper, primitivDevice_t *dev,
     primitivTensor_t **tensor);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_random_normal(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeRandomNormal(
     const primitivShape_t *shape, float mean, float sd, primitivDevice_t *dev,
     primitivGraph_t *g, primitivNode_t **node);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_random_normal(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorRandomNormal(
     const primitivShape_t *shape, float mean, float sd, primitivDevice_t *dev,
     primitivTensor_t **tensor);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_random_log_normal(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeRandomLogNormal(
     const primitivShape_t *shape, float mean, float sd, primitivDevice_t *dev,
     primitivGraph_t *g, primitivNode_t **node);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_random_log_normal(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorRandomLogNormal(
     const primitivShape_t *shape, float mean, float sd, primitivDevice_t *dev,
     primitivTensor_t **tensor);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_random_gumbel(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeRandomGumbel(
     const primitivShape_t *shape, float mu, float beta, primitivDevice_t *dev,
     primitivGraph_t *g, primitivNode_t **node);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_random_gumbel(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorRandomGumbel(
     const primitivShape_t *shape, float mu, float beta, primitivDevice_t *dev,
     primitivTensor_t **tensor);
 
-PRIMITIV_C_DECL_BINARY_OP(pow);
+PRIMITIV_C_DECL_BINARY_OP(Pow);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_pown(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodePown(
     const primitivNode_t *x, uint32_t k, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_pown(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorPown(
     const primitivTensor_t *x, uint32_t k, primitivTensor_t **y);
 
-PRIMITIV_C_DECL_UNARY_FUNC(selu);
+PRIMITIV_C_DECL_UNARY_FUNC(Selu);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_sum_nodes(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeSumNodes(
     const primitivNode_t *const *xs, size_t n, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_sum_tensors(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorSumTensors(
     const primitivTensor_t *const *xs, size_t n, primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_mean(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeMean(
     const primitivNode_t *x, uint32_t dim, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_mean(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorMean(
     const primitivTensor_t *x, uint32_t dim, primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_mean_nodes(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeMeanNodes(
     const primitivNode_t *const *xs, size_t n, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_mean_tensors(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorMeanTensors(
     const primitivTensor_t *const *xs, size_t n, primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_batch_mean(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeBatchMean(
     const primitivNode_t *x, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_batch_mean(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorBatchMean(
     const primitivTensor_t *x, primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_batch_normalize(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeBatchNormalize(
     const primitivNode_t *x, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_batch_normalize(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorBatchNormalize(
     const primitivTensor_t *x, primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_zeros(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeZeros(
     const primitivShape_t *shape, primitivDevice_t *dev, primitivGraph_t *g,
     primitivNode_t **node);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_zeros(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorZeros(
     const primitivShape_t *shape, primitivDevice_t *dev,
     primitivTensor_t **tensor);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_ones(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeOnes(
     const primitivShape_t *shape, primitivDevice_t *dev, primitivGraph_t *g,
     primitivNode_t **node);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_ones(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorOnes(
     const primitivShape_t *shape, primitivDevice_t *dev,
     primitivTensor_t **tensor);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_node_func_dropout(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeDropout(
     const primitivNode_t *x, float rate, PRIMITIV_C_BOOL enabled,
     primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_tensor_func_dropout(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorDropout(
     const primitivTensor_t *x, float rate, PRIMITIV_C_BOOL enabled,
     primitivTensor_t **y);
 

@@ -11,7 +11,7 @@
  * @param initializer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Constant_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateConstantInitializer(
     float k, primitivInitializer_t **initializer);
 
 /**
@@ -22,7 +22,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Constant_new(
  * @param initializer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Uniform_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateUniformInitializer(
     float lower, float upper, primitivInitializer_t **initializer);
 
 /**
@@ -33,7 +33,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Uniform_new(
  * @param initializer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Normal_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateNormalInitializer(
     float mean, float sd, primitivInitializer_t **initializer);
 
 /**
@@ -41,7 +41,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Normal_new(
  * @param initializer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Identity_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateIdentityInitializer(
     primitivInitializer_t **initializer);
 
 /**
@@ -52,7 +52,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_Identity_new(
  * @param initializer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_XavierUniform_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateXavierUniformInitializer(
     float scale, primitivInitializer_t **initializer);
 
 /**
@@ -63,7 +63,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_XavierUniform_new(
  * @param initializer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_initializers_XavierNormal_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateXavierNormalInitializer(
     float scale, primitivInitializer_t **initializer);
 
 #endif  // PRIMITIV_C_INITIALIZER_IMPL_H_

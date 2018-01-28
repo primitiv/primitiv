@@ -12,7 +12,7 @@
  * @param device Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_OpenCL_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateOpenCLDevice(
     uint32_t platform_id, uint32_t device_id, primitivDevice_t **device);
 
 /**
@@ -23,7 +23,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_OpenCL_new(
  * @param device Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_OpenCL_new_with_seed(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateOpenCLDeviceWithSeed(
     uint32_t platform_id, uint32_t device_id, uint32_t rng_seed,
     primitivDevice_t **device);
 
@@ -32,7 +32,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_OpenCL_new_with_seed(
  * @param num_platforms Pointer to receive the number of active platforms.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_OpenCL_num_platforms(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetNumOpenCLPlatforms(
     uint32_t *num_platforms);
 
 /**
@@ -42,7 +42,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_OpenCL_num_platforms(
  * @param num_devices Pointer to receive the number of active devices.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_OpenCL_num_devices(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetNumOpenCLDevices(
     uint32_t platform_id, uint32_t *num_devices);
 
 #endif  // PRIMITIV_C_OPENCL_DEVICE_H_

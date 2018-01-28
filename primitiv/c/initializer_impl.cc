@@ -12,42 +12,42 @@ using primitiv::initializers::XavierUniform;
 using primitiv::initializers::XavierNormal;
 using primitiv::c::internal::to_c_ptr;
 
-PRIMITIV_C_STATUS primitiv_initializers_Constant_new(
+PRIMITIV_C_STATUS primitivCreateConstantInitializer(
     float k, primitivInitializer_t **initializer) try {
   PRIMITIV_C_CHECK_NOT_NULL(initializer);
   *initializer = to_c_ptr(new Constant(k));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_initializers_Uniform_new(
+PRIMITIV_C_STATUS primitivCreateUniformInitializer(
     float lower, float upper, primitivInitializer_t **initializer) try {
   PRIMITIV_C_CHECK_NOT_NULL(initializer);
   *initializer = to_c_ptr(new Uniform(lower, upper));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_initializers_Normal_new(
+PRIMITIV_C_STATUS primitivCreateNormalInitializer(
     float mean, float sd, primitivInitializer_t **initializer) try {
   PRIMITIV_C_CHECK_NOT_NULL(initializer);
   *initializer = to_c_ptr(new Normal(mean, sd));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_initializers_Identity_new(
+PRIMITIV_C_STATUS primitivCreateIdentityInitializer(
     primitivInitializer_t **initializer) try {
   PRIMITIV_C_CHECK_NOT_NULL(initializer);
   *initializer = to_c_ptr(new Identity());
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_initializers_XavierUniform_new(
+PRIMITIV_C_STATUS primitivCreateXavierUniformInitializer(
     float scale, primitivInitializer_t **initializer) try {
   PRIMITIV_C_CHECK_NOT_NULL(initializer);
   *initializer = to_c_ptr(new XavierUniform(scale));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_initializers_XavierNormal_new(
+PRIMITIV_C_STATUS primitivCreateXavierNormalInitializer(
     float scale, primitivInitializer_t **initializer) try {
   PRIMITIV_C_CHECK_NOT_NULL(initializer);
   *initializer = to_c_ptr(new XavierNormal(scale));

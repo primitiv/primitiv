@@ -10,7 +10,7 @@
  * @param optimizer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_SGD_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateSgdOptimizer(
     float eta, primitivOptimizer_t **optimizer);
 
 /**
@@ -20,7 +20,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_SGD_new(
  * @param optimizer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_MomentumSGD_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateMomentumSgdOptimizer(
     float eta, float momentum, primitivOptimizer_t **optimizer);
 
 /**
@@ -30,7 +30,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_MomentumSGD_new(
  * @param optimizer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_AdaGrad_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateAdaGradOptimizer(
     float eta, float eps, primitivOptimizer_t **optimizer);
 
 /**
@@ -41,7 +41,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_AdaGrad_new(
  * @param optimizer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_RMSProp_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateRmsPropOptimizer(
     float eta, float alpha, float eps, primitivOptimizer_t **optimizer);
 
 /**
@@ -51,7 +51,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_RMSProp_new(
  * @param optimizer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_AdaDelta_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateAdaDeltaOptimizer(
     float rho, float eps, primitivOptimizer_t **optimizer);
 
 /**
@@ -63,7 +63,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_AdaDelta_new(
  * @param optimizer Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_optimizers_Adam_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateAdamOptimizer(
     float alpha, float beta1, float beta2, float eps,
     primitivOptimizer_t **optimizer);
 

@@ -15,7 +15,7 @@ typedef struct primitivModel primitivModel_t;
  * @param model Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateModel(
     primitivModel_t **model);
 
 /**
@@ -23,7 +23,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_new(
  * @param model Pointer of a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_delete(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivDeleteModel(
     primitivModel_t *model);
 
 /**
@@ -34,7 +34,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_delete(
  * @param device Device object to manage parameters.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_load(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivLoadModel(
     primitivModel_t *model, const char *path, PRIMITIV_C_BOOL with_stats,
     primitivDevice_t *device);
 
@@ -45,7 +45,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_load(
  * @param with_stats Whether or not to save all additional statistics.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_save(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivSaveModel(
     const primitivModel_t *model, const char *path, PRIMITIV_C_BOOL with_stats);
 
 /**
@@ -57,7 +57,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_save(
  * @remarks `name` should not be overlapped with all registered parameters and
  *          submodels.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_add_parameter(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivAddParameterToModel(
     primitivModel_t *model, const char *name, primitivParameter_t *param);
 
 /**
@@ -69,7 +69,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_add_parameter(
  * @remarks `name` should not be overlapped with all registered parameters and
  *          submodels.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_add_model(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivAddSubmodelToModel(
     primitivModel_t *model, const char *name, primitivModel_t *submodel);
 
 /**
@@ -81,7 +81,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_add_model(
  *              `Parameter` object.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_get_parameter(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetParameterFromModel(
     const primitivModel_t *model, const char **names, size_t n,
     const primitivParameter_t **param);
 
@@ -94,7 +94,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_get_parameter(
  *                 `Model` object.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Model_get_submodel(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetSubmodelFromModel(
     const primitivModel_t *model, const char **names, size_t n,
     const primitivModel_t **submodel);
 

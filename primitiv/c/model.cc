@@ -11,19 +11,19 @@ using primitiv::Model;
 using primitiv::c::internal::to_c_ptr;
 using primitiv::c::internal::to_cpp_ptr;
 
-PRIMITIV_C_STATUS primitiv_Model_new(primitivModel_t **model) try {
+PRIMITIV_C_STATUS primitivCreateModel(primitivModel_t **model) try {
   PRIMITIV_C_CHECK_NOT_NULL(model);
   *model = to_c_ptr(new Model());
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Model_delete(primitivModel_t *model) try {
+PRIMITIV_C_STATUS primitivDeleteModel(primitivModel_t *model) try {
   PRIMITIV_C_CHECK_NOT_NULL(model);
   delete to_cpp_ptr(model);
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Model_load(
+PRIMITIV_C_STATUS primitivLoadModel(
     primitivModel_t *model, const char *path, PRIMITIV_C_BOOL with_stats,
     primitivDevice_t *device) try {
   PRIMITIV_C_CHECK_NOT_NULL(model);
@@ -32,7 +32,7 @@ PRIMITIV_C_STATUS primitiv_Model_load(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Model_save(
+PRIMITIV_C_STATUS primitivSaveModel(
     const primitivModel_t *model, const char *path,
     PRIMITIV_C_BOOL with_stats) try {
   PRIMITIV_C_CHECK_NOT_NULL(model);
@@ -41,7 +41,7 @@ PRIMITIV_C_STATUS primitiv_Model_save(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Model_add_parameter(
+PRIMITIV_C_STATUS primitivAddParameterToModel(
     primitivModel_t *model, const char *name, primitivParameter_t *param) try {
   PRIMITIV_C_CHECK_NOT_NULL(model);
   PRIMITIV_C_CHECK_NOT_NULL(name);
@@ -50,7 +50,7 @@ PRIMITIV_C_STATUS primitiv_Model_add_parameter(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Model_add_model(
+PRIMITIV_C_STATUS primitivAddSubmodelToModel(
     primitivModel_t *model, const char *name, primitivModel_t *submodel) try {
   PRIMITIV_C_CHECK_NOT_NULL(model);
   PRIMITIV_C_CHECK_NOT_NULL(name);
@@ -59,7 +59,7 @@ PRIMITIV_C_STATUS primitiv_Model_add_model(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Model_get_parameter(
+PRIMITIV_C_STATUS primitivGetParameterFromModel(
     const primitivModel_t *model, const char **names, size_t n,
     const primitivParameter_t **param) try {
   PRIMITIV_C_CHECK_NOT_NULL(model);
@@ -70,7 +70,7 @@ PRIMITIV_C_STATUS primitiv_Model_get_parameter(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_Model_get_submodel(
+PRIMITIV_C_STATUS primitivGetSubmodelFromModel(
     const primitivModel_t *model, const char **names, size_t n,
     const primitivModel_t **submodel) try {
   PRIMITIV_C_CHECK_NOT_NULL(model);

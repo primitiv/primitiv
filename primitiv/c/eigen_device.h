@@ -11,7 +11,7 @@
  * @remarks The random number generator is initialized using
  *          `std::random_device`.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_Eigen_new(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateEigenDevice(
     primitivDevice_t **device);
 
 /**
@@ -20,7 +20,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_Eigen_new(
  * @param device Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_Eigen_new_with_seed(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateEigenDeviceWithSeed(
     uint32_t rng_seed, primitivDevice_t **device);
 
 #endif  // PRIMITIV_C_EIGEN_DEVICE_H_

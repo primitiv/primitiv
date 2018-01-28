@@ -11,36 +11,36 @@ class CDeviceTest : public testing::Test {};
 TEST_F(CDeviceTest, CheckDefault) {
   ::primitivDevice_t *device;
   EXPECT_EQ(PRIMITIV_C_ERROR,
-            ::primitiv_Device_get_default(&device));
+            ::primitivGetDefaultDevice(&device));
   {
     ::primitivDevice_t *dev1;
     ASSERT_EQ(PRIMITIV_C_OK,
-              ::primitiv_devices_Naive_new(&dev1));
-    ::primitiv_Device_set_default(dev1);
-    ::primitiv_Device_get_default(&device);
+              ::primitivCreateNaiveDevice(&dev1));
+    ::primitivSetDefaultDevice(dev1);
+    ::primitivGetDefaultDevice(&device);
     EXPECT_EQ(dev1, device);
     {
       ::primitivDevice_t *dev2;
     ASSERT_EQ(PRIMITIV_C_OK,
-      ::primitiv_devices_Naive_new(&dev2));
-      ::primitiv_Device_set_default(dev2);
-      ::primitiv_Device_get_default(&device);
+      ::primitivCreateNaiveDevice(&dev2));
+      ::primitivSetDefaultDevice(dev2);
+      ::primitivGetDefaultDevice(&device);
       EXPECT_EQ(dev2, device);
-      ::primitiv_Device_delete(dev2);
+      ::primitivDeleteDevice(dev2);
     }
     EXPECT_EQ(PRIMITIV_C_ERROR,
-              ::primitiv_Device_get_default(&device));
+              ::primitivGetDefaultDevice(&device));
     ::primitivDevice_t *dev3;
     ASSERT_EQ(PRIMITIV_C_OK,
-    ::primitiv_devices_Naive_new(&dev3));
-    ::primitiv_Device_set_default(dev3);
-    ::primitiv_Device_get_default(&device);
+    ::primitivCreateNaiveDevice(&dev3));
+    ::primitivSetDefaultDevice(dev3);
+    ::primitivGetDefaultDevice(&device);
     EXPECT_EQ(dev3, device);
-    ::primitiv_Device_delete(dev1);
-    ::primitiv_Device_delete(dev3);
+    ::primitivDeleteDevice(dev1);
+    ::primitivDeleteDevice(dev3);
   }
   EXPECT_EQ(PRIMITIV_C_ERROR,
-            ::primitiv_Device_get_default(&device));
+            ::primitivGetDefaultDevice(&device));
 }
 
 }  // namespace c
