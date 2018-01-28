@@ -44,7 +44,8 @@ PRIMITIV_C_STATUS primitivNode##name##ConstNode( \
   return PRIMITIV_C_OK; \
 } PRIMITIV_C_HANDLE_EXCEPTIONS \
 PRIMITIV_C_STATUS primitivNode##name##NodeNode( \
-    const primitivNode_t *a, const primitivNode_t *b, primitivNode_t **y) try { \
+    const primitivNode_t *a, const primitivNode_t *b, \
+    primitivNode_t **y) try { \
   PRIMITIV_C_CHECK_NOT_NULL(a); \
   PRIMITIV_C_CHECK_NOT_NULL(b); \
   PRIMITIV_C_CHECK_NOT_NULL(y); \
@@ -111,7 +112,8 @@ PRIMITIV_C_STATUS primitivTensorInput(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivNodeParameter(
-    primitivParameter_t *param, primitivGraph_t *g, primitivNode_t **newobj) try {
+    primitivParameter_t *param, primitivGraph_t *g,
+    primitivNode_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(param);
   PRIMITIV_C_CHECK_NOT_NULL(newobj);
   *newobj = to_c_ptr_from_value(
@@ -140,7 +142,8 @@ PRIMITIV_C_STATUS primitivNodeCopy(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivTensorCopy(
-    const primitivTensor_t *x, primitivDevice_t *dev, primitivTensor_t **y) try {
+    const primitivTensor_t *x, primitivDevice_t *dev,
+    primitivTensor_t **y) try {
   PRIMITIV_C_CHECK_NOT_NULL(x);
   PRIMITIV_C_CHECK_NOT_NULL(y);
   *y = to_c_ptr_from_value(
@@ -518,8 +521,8 @@ PRIMITIV_C_STATUS primitivTensorRandomBernoulli(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivNodeRandomUniform(
-    const primitivShape_t *shape, float lower, float upper, primitivDevice_t *dev,
-    primitivGraph_t *g, primitivNode_t **newobj) try {
+    const primitivShape_t *shape, float lower, float upper,
+    primitivDevice_t *dev, primitivGraph_t *g, primitivNode_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(newobj);
   *newobj = to_c_ptr_from_value(primitiv::functions::random::uniform_node(
@@ -528,8 +531,8 @@ PRIMITIV_C_STATUS primitivNodeRandomUniform(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivTensorRandomUniform(
-    const primitivShape_t *shape, float lower, float upper, primitivDevice_t *dev,
-    primitivTensor_t **newobj) try {
+    const primitivShape_t *shape, float lower, float upper,
+    primitivDevice_t *dev, primitivTensor_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   PRIMITIV_C_CHECK_NOT_NULL(newobj);
   *newobj = to_c_ptr_from_value(primitiv::functions::random::uniform_tensor(

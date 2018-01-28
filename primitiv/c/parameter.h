@@ -88,8 +88,8 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivInitializeParameterWithInitializer(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivLoadParameter(
-    primitivParameter_t *parameter, const char *path, PRIMITIV_C_BOOL with_stats,
-    primitivDevice_t *device);
+    primitivParameter_t *parameter, const char *path,
+    PRIMITIV_C_BOOL with_stats, primitivDevice_t *device);
 
 /**
  * Saves current parameters into specified file.

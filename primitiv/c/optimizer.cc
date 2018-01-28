@@ -102,7 +102,8 @@ PRIMITIV_C_STATUS primitivAddParameterToOptimizer(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivAddParametersToOptimizer(
-    primitivOptimizer_t *optimizer, primitivParameter_t **params, size_t n) try {
+    primitivOptimizer_t *optimizer, primitivParameter_t **params,
+    size_t n) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   PRIMITIV_C_CHECK_NOT_NULL(params);
   Optimizer *cc_optimizer = to_cpp_ptr(optimizer);
@@ -137,7 +138,8 @@ PRIMITIV_C_STATUS primitivResetOptimizerGradients(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitivExecuteOptimizerUpdate(primitivOptimizer_t *optimizer) try {
+PRIMITIV_C_STATUS primitivExecuteOptimizerUpdate(
+    primitivOptimizer_t *optimizer) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   to_cpp_ptr(optimizer)->update();
   return PRIMITIV_C_OK;
