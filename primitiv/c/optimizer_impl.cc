@@ -12,45 +12,45 @@ using primitiv::optimizers::AdaDelta;
 using primitiv::optimizers::Adam;
 using primitiv::c::internal::to_c_ptr;
 
-PRIMITIV_C_STATUS primitiv_optimizers_SGD_new(
-    float eta, primitiv_Optimizer **optimizer) try {
-  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
-  *optimizer = to_c_ptr(new SGD(eta));
+PRIMITIV_C_STATUS primitivCreateSgdOptimizer(
+    float eta, primitivOptimizer_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr(new SGD(eta));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_optimizers_MomentumSGD_new(
-    float eta, float momentum, primitiv_Optimizer **optimizer) try {
-  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
-  *optimizer = to_c_ptr(new MomentumSGD(eta, momentum));
+PRIMITIV_C_STATUS primitivCreateMomentumSgdOptimizer(
+    float eta, float momentum, primitivOptimizer_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr(new MomentumSGD(eta, momentum));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_optimizers_AdaGrad_new(
-    float eta, float eps, primitiv_Optimizer **optimizer) try {
-  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
-  *optimizer = to_c_ptr(new AdaGrad(eta, eps));
+PRIMITIV_C_STATUS primitivCreateAdaGradOptimizer(
+    float eta, float eps, primitivOptimizer_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr(new AdaGrad(eta, eps));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_optimizers_RMSProp_new(
-    float eta, float alpha, float eps, primitiv_Optimizer **optimizer) try {
-  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
-  *optimizer = to_c_ptr(new RMSProp(eta, alpha, eps));
+PRIMITIV_C_STATUS primitivCreateRmsPropOptimizer(
+    float eta, float alpha, float eps, primitivOptimizer_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr(new RMSProp(eta, alpha, eps));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_optimizers_AdaDelta_new(
-    float rho, float eps, primitiv_Optimizer **optimizer) try {
-  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
-  *optimizer = to_c_ptr(new AdaDelta(rho, eps));
+PRIMITIV_C_STATUS primitivCreateAdaDeltaOptimizer(
+    float rho, float eps, primitivOptimizer_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr(new AdaDelta(rho, eps));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitiv_optimizers_Adam_new(
+PRIMITIV_C_STATUS primitivCreateAdamOptimizer(
     float alpha, float beta1, float beta2, float eps,
-    primitiv_Optimizer **optimizer) try {
-  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
-  *optimizer = to_c_ptr(new Adam(alpha, beta1, beta2, eps));
+    primitivOptimizer_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr(new Adam(alpha, beta1, beta2, eps));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS

@@ -9,15 +9,15 @@
 /**
  * Opaque type of Parameter.
  */
-typedef struct primitiv_Parameter primitiv_Parameter;
+typedef struct primitivParameter primitivParameter_t;
 
 /**
  * Creates an invalid Parameter object.
- * @param parameter Pointer to receive a handler.
+ * @param newobj Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_new(
-    primitiv_Parameter **parameter);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateParameter(
+    primitivParameter_t **newobj);
 
 /**
  * Creates a new Parameter object.
@@ -26,32 +26,32 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_new(
  *              column-major (Fortran) order.
  * @param n Number of values.
  * @param device The device object to manage internal memory.
- * @param parameter Pointer to receive a handler.
+ * @param newobj Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_new_with_values(
-    const primitiv_Shape *shape, const float *value, size_t n,
-    primitiv_Device *device, primitiv_Parameter **parameter);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateParameterWithValues(
+    const primitivShape_t *shape, const float *value, size_t n,
+    primitivDevice_t *device, primitivParameter_t **newobj);
 
 /**
  * Creates a new Parameter object.
  * @param shape The shape of the parameter. The batch size should be 1.
  * @param init An Initializer object.
  * @param device The device object to manage internal memory.
- * @param parameter Pointer to receive a handler.
+ * @param newobj Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_new_with_initializer(
-    const primitiv_Shape *shape, const primitiv_Initializer *initializer,
-    primitiv_Device *device, primitiv_Parameter **parameter);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateParameterWithInitializer(
+    const primitivShape_t *shape, const primitivInitializer_t *initializer,
+    primitivDevice_t *device, primitivParameter_t **newobj);
 
 /**
  * Deletes the Parameter object.
  * @param parameter Pointer of a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_delete(
-    primitiv_Parameter *parameter);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivDeleteParameter(
+    primitivParameter_t *parameter);
 
 /**
  * Initializes the Parameter object.
@@ -62,9 +62,9 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_delete(
  * @param device The device object to manage internal memory.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_init_with_values(
-    primitiv_Parameter *parameter, const primitiv_Shape *shape,
-    const float *value, size_t n, primitiv_Device *device);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivInitializeParameterWithValues(
+    primitivParameter_t *parameter, const primitivShape_t *shape,
+    const float *value, size_t n, primitivDevice_t *device);
 
 /**
  * Initializes the Parameter object.
@@ -74,9 +74,9 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_init_with_values(
  * @param device The device object to manage internal memory.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_init_with_initializer(
-    primitiv_Parameter *parameter, const primitiv_Shape *shape,
-    const primitiv_Initializer *initializer, primitiv_Device *device);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivInitializeParameterWithInitializer(
+    primitivParameter_t *parameter, const primitivShape_t *shape,
+    const primitivInitializer_t *initializer, primitivDevice_t *device);
 
 /**
  * Loads parameters from specified file.
@@ -87,9 +87,9 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_init_with_initializer(
  * @param device The device object to manage internal memory.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_load(
-    primitiv_Parameter *parameter, const char *path, PRIMITIV_C_BOOL with_stats,
-    primitiv_Device *device);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivLoadParameter(
+    primitivParameter_t *parameter, const char *path,
+    PRIMITIV_C_BOOL with_stats, primitivDevice_t *device);
 
 /**
  * Saves current parameters into specified file.
@@ -99,27 +99,27 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_load(
  *                   as parameter values if the parameter object has them.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_save(
-    const primitiv_Parameter *parameter, const char *path,
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivSaveParameter(
+    const primitivParameter_t *parameter, const char *path,
     PRIMITIV_C_BOOL with_stats);
 
 /**
  * Returns whether the parameter is valid or not.
  * @param parameter Pointer of a handler.
- * @param valid Pointer to receive a result: true or false w.r.t. the parameter
- *              is valid or not.
+ * @param retval Pointer to receive a result: true or false w.r.t. the parameter
+ *               is valid or not.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_valid(
-    const primitiv_Parameter *parameter, PRIMITIV_C_BOOL *valid);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivIsValidParameter(
+    const primitivParameter_t *parameter, PRIMITIV_C_BOOL *retval);
 
 /**
  * Set all gradients to 0.
  * @param parameter Pointer of a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_reset_gradients(
-    primitiv_Parameter *parameter);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivResetParameterGradients(
+    primitivParameter_t *parameter);
 
 /**
  * Adds a new optional statistics tensor.
@@ -129,70 +129,70 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_reset_gradients(
  * @return Status code.
  * @remarks All elements in the new statistics tensor is initialized by 0.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_add_stats(
-    primitiv_Parameter *parameter,
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivAddStatsToParameter(
+    primitivParameter_t *parameter,
     const char *name,
-    const primitiv_Shape *shape);
+    const primitivShape_t *shape);
 
 /**
  * Checks whether the statistics with name `name` exists or not.
  * @param parameter Pointer of a handler.
  * @param name Name of the statistics.
- * @param has_stats Pointer to receive a result (true if the entry exists,
- *                  false otherwise).
+ * @param retval Pointer to receive a result (true if the entry exists,
+ *               false otherwise).
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_has_stats(
-    primitiv_Parameter *parameter, const char *name,
-    PRIMITIV_C_BOOL *has_stats);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivHasParameterStats(
+    primitivParameter_t *parameter, const char *name,
+    PRIMITIV_C_BOOL *retval);
 
 /**
  * Returns the shape of the parameter.
  * @param parameter Pointer of a handler.
- * @param shape Pointer to receive a Shape object.
+ * @param newobj Pointer to receive a Shape object.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_shape(
-    const primitiv_Parameter *parameter, primitiv_Shape **shape);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetParameterShape(
+    const primitivParameter_t *parameter, primitivShape_t **newobj);
 
 /**
  * Returns the Device object to manage the internal memory.
  * @param parameter Pointer of a handler.
- * @param device Pointer to receive a reference of the Device object.
+ * @param retval Pointer to receive a reference of the Device object.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_device(
-    const primitiv_Parameter *parameter, primitiv_Device **device);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetDeviceFromParameter(
+    const primitivParameter_t *parameter, primitivDevice_t **retval);
 
 /**
  * Returns the values of the parameter.
  * @param parameter Pointer of a handler.
- * @param tensor Pointer to receive a reference of a tensor representing the
+ * @param retval Pointer to receive a reference of a tensor representing the
  *               parameter tensor.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_value(
-    const primitiv_Parameter *parameter, const primitiv_Tensor **tensor);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetParameterValue(
+    const primitivParameter_t *parameter, const primitivTensor_t **retval);
 
 /**
  * Returns the current gradient of the parameter.
  * @param parameter Pointer of a handler.
- * @param tensor Pointer to receive a reference of a tensor representing the
+ * @param retval Pointer to receive a reference of a tensor representing the
  *               gradient of the value.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_gradient(
-    const primitiv_Parameter *parameter, const primitiv_Tensor **tensor);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetParameterGradient(
+    const primitivParameter_t *parameter, const primitivTensor_t **retval);
 
 /**
  * Returns the current opotional statistics tensor specified by given name.
  * @param parameter Pointer of a handler.
  * @param name Name of the statistics.
- * @param tensor Pointer to receive a reference of a tensor.
+ * @param retval Pointer to receive a reference of a tensor.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Parameter_stats(
-    const primitiv_Parameter *parameter, const char *name,
-    const primitiv_Tensor **tensor);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetParameterStats(
+    const primitivParameter_t *parameter, const char *name,
+    const primitivTensor_t **retval);
 
 #endif  // PRIMITIV_C_PARAMETER_H_

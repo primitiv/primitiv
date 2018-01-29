@@ -6,19 +6,19 @@
 
 /**
  * Creates a new Device object.
- * @param device Pointer to receive a handler.
+ * @param newobj Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_Naive_new(
-    primitiv_Device **device);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateNaiveDevice(
+    primitivDevice_t **newobj);
 
 /**
  * Creates a new Device object.
  * @param seed The seed value of internal random number generator.
- * @param device Pointer to receive a handler.
+ * @param newobj Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_devices_Naive_new_with_seed(
-    uint32_t seed, primitiv_Device **device);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateNaiveWithSeed(
+    uint32_t seed, primitivDevice_t **newobj);
 
 #endif  // PRIMITIV_C_NAIVE_DEVICE_H_

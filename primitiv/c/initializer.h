@@ -7,15 +7,15 @@
 /**
  * Opaque type of Initializer.
  */
-typedef struct primitiv_Initializer primitiv_Initializer;
+typedef struct primitivInitializer primitivInitializer_t;
 
 /**
  * Deletes the Initializer object.
  * @param initializer Pointer of a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Initializer_delete(
-    primitiv_Initializer *initializer);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivDeleteInitializer(
+    primitivInitializer_t *initializer);
 
 /**
  * Provides an initialized tensor.
@@ -23,7 +23,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Initializer_delete(
  * @param x Tensor object to be initialized.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitiv_Initializer_apply(
-    const primitiv_Initializer *initializer, primitiv_Tensor *x);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyInitializer(
+    const primitivInitializer_t *initializer, primitivTensor_t *x);
 
 #endif  // PRIMITIV_C_INITIALIZER_H_
