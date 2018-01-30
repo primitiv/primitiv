@@ -12,7 +12,7 @@ Prerequisites
 
 primitiv is designed based on a device-independent policy, and you can choose
 dependencies between primitiv and other hardwares using
-:doc:`build options </references/build_options>`.
+:doc:`build options </reference/build_options>`.
 
 For the minimal configuration (no other hardwares), primitiv requries below
 softwares/libraries:
