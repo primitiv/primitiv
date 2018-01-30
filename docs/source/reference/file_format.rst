@@ -1,10 +1,12 @@
 ===========================
-*primitiv* File Format v0.1
+primitiv File Format v0.1
 ===========================
 
 
-*primitiv* file format is using `MessagePack <https://msgpack.org/>`_ wire
-format as the inner binary representation.
+**primitiv File Format** is a common binary format to store/load data used in
+primitiv.
+It uses the `MessagePack <https://msgpack.org/>`_ wire format as the inner
+binary representation.
 
 
 Legend
@@ -15,7 +17,7 @@ Legend
 
     +------+     +---------------+---------------+...
     | Type |  =  | Member Type 1 | Member Type 2 |
-    |      |     | Member name 1 | Member name 2 |
+    |      |     | Member Name 1 | Member Name 2 |
     +------+     +---------------+---------------+...
 
 
