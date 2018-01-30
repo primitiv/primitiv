@@ -46,9 +46,6 @@ Installing primitiv from source (Debian/Ubuntu)
 -----------------------------------------------
 
 
-First, we install some required libraries described in the previous section.
-
-
 Installing common prerequisites
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -113,6 +110,13 @@ Then we build primitiv using a standard process of CMake:
 
 ``make install`` will create ``libprimitiv.so`` in the system library directory
 and ``primitiv`` directory in the system include directory.
+
+In some cases, you also need to add the path to the library directory to the
+``${LD_LIBRARY_PATH}`` environment variable:
+
+.. code-block:: shell
+
+  $ export LD_LIBRARY_PATH=/path/to/your/lib:${LD_LIBRARY_PATH}
 
 If we use the Eigen backend, specify both ``EIGEN3_INCLUDE_DIR`` and
 ``PRIMITIV_USE_EIGEN`` options to ``cmake``:

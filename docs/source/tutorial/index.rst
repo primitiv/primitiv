@@ -1,15 +1,13 @@
-==================
-primitiv Tutorials
-==================
+======================
+primitiv C++ Tutorials
+======================
 
 
-This section describes how to use primitiv in your code.
+This section describes tutorials to learn how to use primitiv in your C++ code..
+
 
 .. toctree::
-  :caption: C++ Tutorials:
-  :maxdepth: 2
-  :numbered:
+  :caption: Contents:
   :titlesonly:
 
-  cpp/basics/index
-  cpp/design/index
+  xor

@@ -1,11 +1,13 @@
-========================
-Learning Library Designs
-========================
+===============
+Library Designs
+===============
+
+
+This section describes concepts and designs of primitiv.
 
 
 .. toctree::
   :caption: Contents:
-  :numbered:
   :titlesonly:
 
   header_and_library

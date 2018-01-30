@@ -87,7 +87,7 @@ PRIMITIV_USE_OPENCL
     This option introduces dependencies to an
     `OpenCL <https://www.khronos.org/opencl/>`_
     v1.2 implementation and
-    `OpenCL C++ Bindings<http://github.khronos.org/OpenCL-CLHPP/>`_
+    `OpenCL C++ Bindings <http://github.khronos.org/OpenCL-CLHPP/>`_
     v2.
     `FindOpenCL <https://cmake.org/cmake/help/v3.1/module/FindOpenCL.html>`_
     options can also be used, and ``cl2.hpp`` should be found in

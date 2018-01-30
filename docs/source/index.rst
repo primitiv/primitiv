@@ -18,11 +18,12 @@ Eigen, CUDA and OpenCL with no (or few) modifications of the original code.
 
 .. toctree::
   :caption: Contents:
-  :maxdepth: 2
   :numbered:
+  :titlesonly:
 
   installation
   tutorial/index
+  design/index
   reference/index
 
 
