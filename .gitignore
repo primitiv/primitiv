@@ -1,3 +1,4 @@
+*.swp
 /build
 /docs/build
 /examples/*/a.out
