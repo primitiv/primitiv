@@ -14,8 +14,8 @@ class Constant : public Initializer {
 
 public:
   /**
-   * Crates a new initializer object.
-   * @param k Constant to provide.
+   * Crates a new ``Constant`` initializer.
+   * @param k Initial value of all variables in the parameter.
    */
   explicit Constant(float k) : k_(k) {}
 
@@ -26,10 +26,16 @@ private:
 };
 
 /**
- * Initializer using a parameterized uniform distribution (lower, upper].
+ * Initializer using a parameterized uniform distribution with the range
+ * \f$ (L, U] \f$.
  */
 class Uniform : public Initializer {
 public:
+  /**
+   * Creates a new ``Uniform`` initializer.
+   * @param lower Lower bound \f$ L \f$ of the uniform distribution.
+   * @param upper Upper bound \f$ U \f$ of the uniform distribution.
+   */
   Uniform(float lower, float upper) : lower_(lower), upper_(upper) {}
 
   void apply(Tensor &x) const override;
@@ -40,10 +46,16 @@ private:
 };
 
 /**
- * Initializer using a parameterized normal distribution N(mean, sd).
+ * Initializer using a parameterized normal distribution
+ * \f$ \mathcal{N}(\mu, \sigma) \f$.
  */
 class Normal : public Initializer {
 public:
+  /**
+   * Creates a new ``Normal`` initializer.
+   * @param mean Mean \f$ \mu \f$ of the normal distribution.
+   * @param sd Standard deviation \f$ \sigma \f$ of the normal distribution.
+   */
   Normal(float mean, float sd) : mean_(mean), sd_(sd) {}
 
   void apply(Tensor &x) const override;
@@ -58,6 +70,9 @@ private:
  */
 class Identity : public Initializer {
 public:
+  /**
+   * Creates a new ``Identity`` initializer.
+   */
   Identity() {}
 
   void apply(Tensor &x) const override;
@@ -68,6 +83,10 @@ public:
  */
 class XavierUniform : public Initializer {
 public:
+  /**
+   * Creates a new ``XavierUniform`` initializer.
+   * @param scale Additional scaling factor of the uniform distribution.
+   */
   XavierUniform(float scale = 1.0f) : scale_(scale) {}
 
   void apply(Tensor &x) const override;
@@ -81,6 +100,10 @@ private:
  */
 class XavierNormal : public Initializer {
 public:
+  /**
+   * Creates a new ``XavierNormal`` initializer.
+   * @param scale Additional scaling factor of the normal distribution.
+   */
   XavierNormal(float scale = 1.0f) : scale_(scale) {}
 
   void apply(Tensor &x) const override;
@@ -94,6 +117,10 @@ private:
  */
 class XavierUniformConv2D : public Initializer {
 public:
+  /**
+   * Creates a new ``XavierUniformConv2D`` initializer.
+   * @param scale Additional scaling factor of the uniform distribution.
+   */
   XavierUniformConv2D(float scale = 1.0f) : scale_(scale) {}
 
   void apply(Tensor &x) const override;
@@ -107,6 +134,10 @@ private:
  */
 class XavierNormalConv2D : public Initializer {
 public:
+  /**
+   * Creates a new ``XavierNormalConv2D`` initializer.
+   * @param scale Additional scaling factor of the normal distribution.
+   */
   XavierNormalConv2D(float scale = 1.0f) : scale_(scale) {}
 
   void apply(Tensor &x) const override;

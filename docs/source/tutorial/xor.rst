@@ -25,10 +25,10 @@ Following lines are the formulation of the problem used in this tutorial:
 
 where :math:`x_1, x_2 \in \mathbb{R}`.
 This is known as the *XOR problem*; :math:`f` detects whether the signs of two
-arguments are same or not. We know that this problem is *linearly non-separatable*,
-i.e., the decision boundary of :math:`f` can NOT be represented as a straight
-line on the :math:`\mathbb{R}^2`:
-:math:`\alpha x_1 + \beta x_2 + \gamma = 0`,
+arguments are same or not.
+We know that this problem is *linearly non-separatable*, i.e., the decision
+boundary of :math:`f` can NOT be represented as a straight line on
+:math:`\mathbb{R}`: :math:`\alpha x_1 + \beta x_2 + \gamma = 0`,
 where :math:`\alpha, \beta, \gamma \in \mathbb{R}`.
 
 For example, following code generates random data points

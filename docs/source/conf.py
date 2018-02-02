@@ -21,6 +21,15 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+import os
+import subprocess
+import sys
+
+# -- Doxygen preprocessing ------------------------------------------------
+
+read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
+if read_the_docs_build:
+    subprocess.call('cd ../doxygen; doxygen', shell=True)
 
 # -- General configuration ------------------------------------------------
 
@@ -31,7 +40,14 @@
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.mathjax']
+extensions = [
+    'breathe',
+    'sphinx.ext.mathjax',
+]
+
+# Breathe configurations
+breathe_projects = {"primitiv": "../doxygen/xml/"}
+breathe_default_project = "primitiv"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
