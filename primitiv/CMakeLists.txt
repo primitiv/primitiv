@@ -56,7 +56,6 @@ set(primitiv_base_SRCS
   initializer_impl.cc
   memory_pool.cc
   model.cc
-  naive_device.cc
   node_funcs.cc
   operator_impl.cc
   optimizer.cc
@@ -67,6 +66,7 @@ set(primitiv_base_SRCS
   tensor.cc
   tensor_funcs.cc
 )
+file(GLOB primitiv_naive_devops_SRCS "device_ops/*_naive.cc")
 install(FILES ${primitiv_base_HDRS} DESTINATION include/primitiv)
 
 # MessagePack libraries.
@@ -79,7 +79,7 @@ install(FILES ${primitiv_msgpack_HDRS} DESTINATION include/primitiv/msgpack)
 
 # Core library: all of above libraries.
 set(primitiv_core_HDRS ${primitiv_base_HDRS} ${primitiv_msgpack_HDRS})
-set(primitiv_core_SRCS ${primitiv_base_SRCS})
+set(primitiv_core_SRCS ${primitiv_base_SRCS} ${primitiv_naive_devops_SRCS})
 
 # Builds core library.
 add_library(primitiv_core_OBJS OBJECT
