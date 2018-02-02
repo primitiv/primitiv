@@ -25,8 +25,6 @@ import os
 import subprocess
 import sys
 
-sys.path.insert(0, os.path.abspath('.'))
-
 # -- Doxygen preprocessing ------------------------------------------------
 
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
