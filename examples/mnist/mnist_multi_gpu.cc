@@ -22,13 +22,13 @@
 
 #include <primitiv/primitiv.h>
 
+#include "utils.h"
+
 using namespace std;
 using namespace primitiv;
 namespace F = primitiv::functions;
 namespace I = primitiv::initializers;
 namespace O = primitiv::optimizers;
-
-namespace {
 
 const unsigned NUM_TRAIN_SAMPLES = 60000;
 const unsigned NUM_TEST_SAMPLES = 10000;
@@ -40,49 +40,16 @@ const unsigned NUM_TRAIN_BATCHES = NUM_TRAIN_SAMPLES / BATCH_SIZE;
 const unsigned NUM_TEST_BATCHES = NUM_TEST_SAMPLES / BATCH_SIZE;
 const unsigned MAX_EPOCH = 100;
 
-// Helper function to load input images.
-vector<float> load_images(const string &filename, const unsigned n) {
-  ifstream ifs(filename, ios::binary);
-  if (!ifs.is_open()) {
-    cerr << "File could not be opened: " << filename << endl;
-    abort();
-  }
-
-  ifs.ignore(16);  // header
-  const unsigned size = n * NUM_INPUT_UNITS;
-  vector<unsigned char> buf(size);
-  ifs.read(reinterpret_cast<char *>(&buf[0]), size);
-  vector<float> ret(size);
-  for (unsigned i = 0; i < size; ++i) ret[i] = buf[i] / 255.0;
-  return ret;
-}
-
-// Helper function to load labels.
-vector<char> load_labels(const string &filename, const unsigned n) {
-  ifstream ifs(filename, ios::binary);
-  if (!ifs.is_open()) {
-    cerr << "File could not be opened: " << filename << endl;
-    abort();
-  }
-
-  ifs.ignore(8);  // header
-  vector<char> ret(n);
-  ifs.read(&ret[0], n);
-  return ret;
-}
-
-}  // namespace
-
 int main() {
   // Loads data
-  vector<float> train_inputs
-    = ::load_images("data/train-images-idx3-ubyte", NUM_TRAIN_SAMPLES);
-  vector<char> train_labels
-    = ::load_labels("data/train-labels-idx1-ubyte", NUM_TRAIN_SAMPLES);
-  vector<float> test_inputs
-    = ::load_images("data/t10k-images-idx3-ubyte", NUM_TEST_SAMPLES);
-  vector<char> test_labels
-    = ::load_labels("data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES);
+  vector<float> train_inputs = utils::load_mnist_images(
+      "data/train-images-idx3-ubyte", NUM_TRAIN_SAMPLES);
+  vector<char> train_labels = utils::load_mnist_labels(
+      "data/train-labels-idx1-ubyte", NUM_TRAIN_SAMPLES);
+  vector<float> test_inputs = utils::load_mnist_images(
+      "data/t10k-images-idx3-ubyte", NUM_TEST_SAMPLES);
+  vector<char> test_labels = utils::load_mnist_labels(
+      "data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES);
 
   // Initializes 2 device objects which manage different GPUs.
   devices::CUDA dev0(0);  // GPU 0
@@ -102,10 +69,7 @@ int main() {
 
   // Optimizer
   O::SGD optimizer(.1);
-  optimizer.add_parameter(pw1);
-  optimizer.add_parameter(pb1);
-  optimizer.add_parameter(pw2);
-  optimizer.add_parameter(pb2);
+  optimizer.add(pw1, pb1, pw2, pb2);
 
   // Helper lambda to construct the predictor network.
   auto make_graph = [&](const vector<float> &inputs) {
