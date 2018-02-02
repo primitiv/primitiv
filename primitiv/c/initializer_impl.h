@@ -66,4 +66,26 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateXavierUniformInitializer(
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateXavierNormalInitializer(
     float scale, primitivInitializer_t **newobj);
 
+/**
+ * Creates a new Initializer object that generates a tensor by the Xavier matrix
+ * initialization with the uniform distribution for conv2d filters.
+ * @param scale Constant value that determines the scale of the uniform
+ *              distribution.
+ * @param newobj Pointer to receive a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateXavierUniformConv2DInitializer(
+    float scale, primitivInitializer_t **newobj);
+
+/**
+ * Creates a new Initializer object that generates a tensor by the Xavier matrix
+ * initialization with the normal distribution for conv2d filters.
+ * @param scale Constant value that determines the scale of the normal
+ *              distribution.
+ * @param newobj Pointer to receive a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateXavierNormalConv2DInitializer(
+    float scale, primitivInitializer_t **newobj);
+
 #endif  // PRIMITIV_C_INITIALIZER_IMPL_H_

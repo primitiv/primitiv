@@ -10,6 +10,8 @@ using primitiv::initializers::Normal;
 using primitiv::initializers::Identity;
 using primitiv::initializers::XavierUniform;
 using primitiv::initializers::XavierNormal;
+using primitiv::initializers::XavierUniformConv2D;
+using primitiv::initializers::XavierNormalConv2D;
 using primitiv::c::internal::to_c_ptr;
 
 PRIMITIV_C_STATUS primitivCreateConstantInitializer(
@@ -51,5 +53,19 @@ PRIMITIV_C_STATUS primitivCreateXavierNormalInitializer(
     float scale, primitivInitializer_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(newobj);
   *newobj = to_c_ptr(new XavierNormal(scale));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitivCreateXavierUniformConv2DInitializer(
+    float scale, primitivInitializer_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr(new XavierUniformConv2D(scale));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitivCreateXavierNormalConv2DInitializer(
+    float scale, primitivInitializer_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr(new XavierNormalConv2D(scale));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
