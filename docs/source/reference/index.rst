@@ -12,3 +12,5 @@ This section contains low-level information about primitiv.
 
   build_options
   file_format
+
+.. doxygenindex::
