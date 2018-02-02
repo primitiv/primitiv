@@ -7,6 +7,7 @@ primitiv API Reference
   :caption: Contents:
   :titlesonly:
 
+  devices
   graph
   initializers
   model
