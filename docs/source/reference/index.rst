@@ -10,7 +10,6 @@ This section contains low-level information about primitiv.
   :caption: Contents:
   :titlesonly:
 
+  api/index
   build_options
   file_format
-
-.. doxygenindex::
