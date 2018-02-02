@@ -77,7 +77,7 @@ public:
   /**
    * Creates a new Parameter object.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @param init An Initializer object.
+   * @param initializer An Initializer object.
    * @param device The device object to manage internal memory.
    */
   Parameter(
@@ -86,7 +86,7 @@ public:
   /**
    * Creates a new Parameter object.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @param init An Initializer object.
+   * @param initializer An Initializer object.
    * @param device The device object to manage internal memory.
    */
   Parameter(
@@ -96,7 +96,7 @@ public:
   /**
    * Creates a new Parameter object.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @param init An Initializer object.
+   * @param initializer An Initializer object.
    */
   Parameter(const Shape &shape, const Initializer &initializer)
     : Parameter(shape, initializer, nullptr) {}
@@ -136,7 +136,7 @@ public:
   /**
    * Initializes the Parameter object.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @param init An Initializer object.
+   * @param initializer An Initializer object.
    * @param device The device object to manage internal memory.
    */
   void init(
@@ -145,7 +145,7 @@ public:
   /**
    * Initializes the Parameter object.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @param init An Initializer object.
+   * @param initializer An Initializer object.
    * @param device The device object to manage internal memory.
    */
   void init(
@@ -156,7 +156,7 @@ public:
   /**
    * Initializes the Parameter object.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @param init An Initializer object.
+   * @param initializer An Initializer object.
    */
   void init(
       const Shape &shape, const Initializer &initializer) {

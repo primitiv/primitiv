@@ -54,7 +54,6 @@ public:
   /**
    * Loads all parameters from a file.
    * @param path Path of the file.
-   * @param with_stats Whether or not to load all additional statistics.
    */
   void load(const std::string &path) {
     load(path, true, nullptr);
