@@ -7,5 +7,11 @@ primitiv API Reference
   :caption: Contents:
   :titlesonly:
 
+  graph
   initializers
+  model
+  node
   optimizers
+  parameter
+  shape
+  tensor
