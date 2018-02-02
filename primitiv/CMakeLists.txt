@@ -91,7 +91,7 @@ set(primitiv_all_DEPS)
 # Build rules of the Eigen backend.
 if(PRIMITIV_USE_EIGEN)
   set(primitiv_eigen_HDRS eigen_device.h)
-  set(primitiv_eigen_SRCS eigen_device.cc)
+  file(GLOB primitiv_eigen_SRCS "device_ops/*_eigen.cc")
   install(FILES ${primitiv_eigen_HDRS} DESTINATION include/primitiv)
 
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")

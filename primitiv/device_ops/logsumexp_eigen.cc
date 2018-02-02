@@ -2,13 +2,15 @@
 
 #include <cmath>
 
-#include <primitiv/naive_device.h>
-#include <primitiv/device_ops/naive_utils.h>
+#include <primitiv/eigen_device.h>
+#include <primitiv/device_ops/eigen_utils.h>
 
 namespace primitiv {
 namespace devices {
 
-void Naive::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
+void Eigen::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
+  // TODO(odashi): Optimize this functions using Eigen operations.
+
   const std::uint32_t n = x.shape()[dim];
   const std::uint32_t repeat = y.shape().size();
   const std::uint32_t skip1 = y.shape().lower_volume(dim);

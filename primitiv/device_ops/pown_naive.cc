@@ -1,5 +1,8 @@
 #include <primitiv/config.h>
 
+#include <cmath>
+#include <limits>
+
 #include <primitiv/naive_device.h>
 #include <primitiv/device_ops/naive_utils.h>
 
