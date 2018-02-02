@@ -158,6 +158,32 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorSoftmaxCrossEntropyWithArray(
 
 PRIMITIV_C_DECL_UNARY_FUNC(StopGradient);
 
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeConv2d(
+    const primitivNode_t *x, const primitivNode_t *w,
+    uint32_t padding0, uint32_t padding1,
+    uint32_t stride0, uint32_t stride1,
+    uint32_t dilation0, uint32_t dilation1,
+    primitivNode_t **y);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorConv2d(
+    const primitivTensor_t *x, const primitivTensor_t *w,
+    uint32_t padding0, uint32_t padding1,
+    uint32_t stride0, uint32_t stride1,
+    uint32_t dilation0, uint32_t dilation1,
+    primitivTensor_t **y);
+
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeMaxPool2d(
+    const primitivNode_t *x,
+    uint32_t window0, uint32_t window1,
+    uint32_t padding0, uint32_t padding1,
+    uint32_t stride0, uint32_t stride1,
+    primitivNode_t **y);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorMaxPool2d(
+    const primitivTensor_t *x,
+    uint32_t window0, uint32_t window1,
+    uint32_t padding0, uint32_t padding1,
+    uint32_t stride0, uint32_t stride1,
+    primitivTensor_t **y);
+
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivNodeBatchSum(
     const primitivNode_t *x, primitivNode_t **y);
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivTensorBatchSum(
