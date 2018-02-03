@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_C_DEFINE_H_
 #define PRIMITIV_C_DEFINE_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
