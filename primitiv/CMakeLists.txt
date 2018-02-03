@@ -94,13 +94,28 @@ if(PRIMITIV_USE_EIGEN)
   set(primitiv_eigen_SRCS eigen_device.cc)
   install(FILES ${primitiv_eigen_HDRS} DESTINATION include/primitiv)
 
+  set(primitiv_eigen_COMPILE_FLAGS "")
+
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    set_source_files_properties(
-      eigen_device.cc PROPERTIES COMPILE_FLAGS -march=native)
+    set(primitiv_eigen_COMPILE_FLAGS
+      "${primitiv_eigen_COMPILE_FLAGS} -march=native")
+    # NOTE(odashi):
+    # Explicitly disabling `-Wint-in-bool-context` to avoid warnings caused by
+    # Eigen v3.3.4 or earlier.
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 7.0 OR
+        CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0)
+      if (EIGEN3_VERSION VERSION_LESS 3.3.5)
+        set(primitiv_eigen_COMPILE_FLAGS
+          "${primitiv_eigen_COMPILE_FLAGS} -Wno-int-in-bool-context")
+      endif()
+    endif()
   elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set_source_files_properties(
-      eigen_device.cc PROPERTIES COMPILE_FLAGS -march=native)
+    set(primitiv_eigen_COMPILE_FLAGS
+      "${primitiv_eigen_COMPILE_FLAGS} -march=native")
   endif()
+
+  set_source_files_properties(
+    eigen_device.cc PROPERTIES COMPILE_FLAGS ${primitiv_eigen_COMPILE_FLAGS})
 
   add_library(primitiv_eigen_OBJS OBJECT
     ${primitiv_base_HDRS}
