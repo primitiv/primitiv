@@ -199,7 +199,6 @@ if(PRIMITIV_BUILD_C_API)
     c/shape.h
     c/status.h
     c/tensor.h
-    c/utils.h
   )
   set(primitiv_c_SRCS
     c/device.cc
@@ -207,6 +206,7 @@ if(PRIMITIV_BUILD_C_API)
     c/graph.cc
     c/initializer.cc
     c/initializer_impl.cc
+    c/internal.cc
     c/model.cc
     c/naive_device.cc
     c/optimizer.cc
@@ -215,7 +215,6 @@ if(PRIMITIV_BUILD_C_API)
     c/shape.cc
     c/status.cc
     c/tensor.cc
-    c/utils.cc
   )
   install(FILES ${primitiv_c_HDRS} DESTINATION include/primitiv/c)
 
@@ -224,12 +223,20 @@ if(PRIMITIV_BUILD_C_API)
       ${primitiv_c_SRCS})
   set(primitiv_c_all_OBJS $<TARGET_OBJECTS:primitiv_c_OBJS>)
 
+  if(PRIMITIV_USE_EIGEN)
+    set(primitiv_c_eigen_HDRS c/eigen_device.h)
+    set(primitiv_c_eigen_SRCS c/eigen_device.cc)
+    install(FILES ${primitiv_c_eigen_HDRS} DESTINATION include/primitiv/c)
+
+    add_library(primitiv_c_eigen_OBJS OBJECT
+        ${primitiv_c_eigen_HDRS}
+        ${primitiv_c_eigen_SRCS})
+    list(APPEND primitiv_c_all_OBJS $<TARGET_OBJECTS:primitiv_c_eigen_OBJS>)
+  endif()
+
   if(PRIMITIV_USE_CUDA)
-    set(primitiv_c_cuda_HDRS
-      c/api_cuda.h
-      c/cuda_device.h)
-    set(primitiv_c_cuda_SRCS
-      c/cuda_device.cc)
+    set(primitiv_c_cuda_HDRS c/cuda_device.h)
+    set(primitiv_c_cuda_SRCS c/cuda_device.cc)
     install(FILES ${primitiv_c_cuda_HDRS} DESTINATION include/primitiv/c)
 
     add_library(primitiv_c_cuda_OBJS OBJECT
@@ -239,11 +246,8 @@ if(PRIMITIV_BUILD_C_API)
   endif()
 
   if(PRIMITIV_USE_OPENCL)
-    set(primitiv_c_opencl_HDRS
-      c/api_opencl.h
-      c/opencl_device.h)
-    set(primitiv_c_opencl_SRCS
-      c/opencl_device.cc)
+    set(primitiv_c_opencl_HDRS c/opencl_device.h)
+    set(primitiv_c_opencl_SRCS c/opencl_device.cc)
     install(FILES ${primitiv_c_opencl_HDRS} DESTINATION include/primitiv/c)
 
     add_library(primitiv_c_opencl_OBJS OBJECT
