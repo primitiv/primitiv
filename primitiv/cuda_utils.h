@@ -1,6 +1,8 @@
 #ifndef PRIMITIV_CUDA_UTILS_H_
 #define PRIMITIV_CUDA_UTILS_H_
 
+#include <cstdlib>
+#include <iostream>
 #include <string>
 
 #include <cublas_v2.h>
@@ -14,8 +16,8 @@
   ::cudaError_t err = (f); \
   if (err != cudaSuccess) { \
     THROW_ERROR( \
-        "CUDA function failed. statement: " << #f \
-        << ", error: " << err \
+        "CUDA function failed.\n  statement: " << #f \
+        << "\n  error: " << err \
         << ": " << ::cudaGetErrorString(err)); \
   } \
 }
@@ -24,8 +26,8 @@
   ::cublasStatus_t err = (f); \
   if (err != CUBLAS_STATUS_SUCCESS) { \
     THROW_ERROR( \
-        "CUBLAS function failed. statement: " << #f \
-        << ", error: " << err \
+        "CUBLAS function failed.\n  statement: " << #f \
+        << "\n  error: " << err \
         << ": " << primitiv::cuda::cublasGetErrorString(err)); \
   } \
 }
@@ -34,8 +36,8 @@
   ::curandStatus_t err = (f); \
   if (err != CURAND_STATUS_SUCCESS) { \
     THROW_ERROR( \
-        "CURAND function failed. statement: " << #f \
-        << ", error: " << err \
+        "CURAND function failed.\n  statement: " << #f \
+        << "\n  error: " << err \
         << ": " << primitiv::cuda::curandGetErrorString(err)); \
   } \
 }
@@ -44,8 +46,8 @@
   ::cudnnStatus_t err = (f); \
   if (err != CUDNN_STATUS_SUCCESS) { \
     THROW_ERROR( \
-        "CUDNN function failed. statement: " << #f \
-        << ", error: " << err \
+        "CUDNN function failed.\n  statement: " << #f \
+        << "\n  error: " << err \
         << ": " << ::cudnnGetErrorString(err)); \
   } \
 }
@@ -78,7 +80,15 @@ public:
   }
 
   ~CuBLASHandle() {
-    CUBLAS_CALL(::cublasDestroy(handle_));
+    try {
+      CUBLAS_CALL(::cublasDestroy(handle_));
+    } catch (...) {
+      std::cerr
+        << "Unexpected exception occurred at "
+        << "`CuBLASHandle::~CuBLASHandle()`"
+        << std::endl;
+      std::abort();
+    }
   }
 
   ::cublasHandle_t get() const { return handle_; }
@@ -99,7 +109,15 @@ public:
   }
 
   ~CuRANDHandle() {
-    CURAND_CALL(::curandDestroyGenerator(handle_));
+    try {
+      CURAND_CALL(::curandDestroyGenerator(handle_));
+    } catch (...) {
+      std::cerr
+        << "Unexpected exception occurred at "
+        << "`CuRANDHandle::~CuRANDHandle()`"
+        << std::endl;
+      std::abort();
+    }
   }
 
   ::curandGenerator_t get() const { return handle_; }
@@ -119,7 +137,15 @@ public:
   }
 
   ~CuDNNHandle() {
-    CUDNN_CALL(::cudnnDestroy(handle_));
+    try {
+      CUDNN_CALL(::cudnnDestroy(handle_));
+    } catch (...) {
+      std::cerr
+        << "Unexpected exception occurred at "
+        << "`CuDNNHandle::~CuDNNHandle()`"
+        << std::endl;
+      std::abort();
+    }
   }
 
   ::cudnnHandle_t get() const { return handle_; }
@@ -142,7 +168,15 @@ public:
   }
 
   ~CuDNNTensorDescriptor() {
-    CUDNN_CALL(::cudnnDestroyTensorDescriptor(handle_));
+    try {
+      CUDNN_CALL(::cudnnDestroyTensorDescriptor(handle_));
+    } catch (...) {
+      std::cerr
+        << "Unexpected exception occurred at "
+        << "`CuDNNTensorDescriptor::~CuDNNTensorDescriptor()`"
+        << std::endl;
+      std::abort();
+    }
   }
 
   ::cudnnTensorDescriptor_t get() const { return handle_; }
@@ -165,7 +199,15 @@ public:
   }
 
   ~CuDNNFilterDescriptor() {
-    CUDNN_CALL(::cudnnDestroyFilterDescriptor(handle_));
+    try {
+      CUDNN_CALL(::cudnnDestroyFilterDescriptor(handle_));
+    } catch (...) {
+      std::cerr
+        << "Unexpected exception occurred at "
+        << "`CuDNNFilterDescriptor::~CuDNNFilterDescriptor()`"
+        << std::endl;
+      std::abort();
+    }
   }
 
   ::cudnnFilterDescriptor_t get() const { return handle_; }
@@ -203,7 +245,15 @@ public:
   }
 
   ~CuDNNConvolutionDescriptor() {
-    CUDNN_CALL(::cudnnDestroyConvolutionDescriptor(handle_));
+    try {
+      CUDNN_CALL(::cudnnDestroyConvolutionDescriptor(handle_));
+    } catch (...) {
+      std::cerr
+        << "Unexpected exception occurred at "
+        << "`CuDNNConvolutionDescriptor::~CuDNNConvolutionDescriptor()`"
+        << std::endl;
+      std::abort();
+    }
   }
 
   ::cudnnConvolutionDescriptor_t get() const { return handle_; }
@@ -230,7 +280,15 @@ public:
   }
 
   ~CuDNNPoolingDescriptor() {
-    CUDNN_CALL(::cudnnDestroyPoolingDescriptor(handle_));
+    try {
+      CUDNN_CALL(::cudnnDestroyPoolingDescriptor(handle_));
+    } catch (...) {
+      std::cerr
+        << "Unexpected exception occurred at "
+        << "`CuDNNPoolingDescriptor::~CuDNNPoolingDescriptor()`"
+        << std::endl;
+      std::abort();
+    }
   }
 
   ::cudnnPoolingDescriptor_t get() const { return handle_; }
