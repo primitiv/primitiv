@@ -121,7 +121,7 @@ PRIMITIV_C_STATUS primitivAddStatsToParameter(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivHasParameterStats(
-    primitivParameter_t *parameter, const char *name,
+    const primitivParameter_t *parameter, const char *name,
     PRIMITIV_C_BOOL *retval) try {
   PRIMITIV_C_CHECK_NOT_NULL(parameter);
   PRIMITIV_C_CHECK_NOT_NULL(name);
