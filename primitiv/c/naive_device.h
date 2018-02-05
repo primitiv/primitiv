@@ -18,7 +18,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateNaiveDevice(
  * @param newobj Pointer to receive a handler.
  * @return Status code.
  */
-PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateNaiveWithSeed(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateNaiveDeviceWithSeed(
     uint32_t seed, primitivDevice_t **newobj);
 
 #endif  // PRIMITIV_C_NAIVE_DEVICE_H_
