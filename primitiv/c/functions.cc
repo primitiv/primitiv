@@ -84,6 +84,23 @@ PRIMITIV_C_IMPL_BINARY_OP(Add, add);
 PRIMITIV_C_IMPL_BINARY_OP(Subtract, subtract);
 PRIMITIV_C_IMPL_BINARY_OP(Multiply, multiply);
 PRIMITIV_C_IMPL_BINARY_OP(Divide, divide);
+PRIMITIV_C_IMPL_BINARY_OP(Pow, pow);
+
+PRIMITIV_C_STATUS primitivApplyNodePown(
+    const primitivNode_t *x, int32_t k, primitivNode_t **y) try {
+  PRIMITIV_C_CHECK_NOT_NULL(x);
+  PRIMITIV_C_CHECK_NOT_NULL(y);
+  *y = to_c_ptr_from_value(primitiv::functions::pown(*to_cpp_ptr(x), k));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitivApplyTensorPown(
+    const primitivTensor_t *x, int32_t k, primitivTensor_t **y) try {
+  PRIMITIV_C_CHECK_NOT_NULL(x);
+  PRIMITIV_C_CHECK_NOT_NULL(y);
+  *y = to_c_ptr_from_value(primitiv::functions::pown(*to_cpp_ptr(x), k));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivApplyNodeInput(
     const primitivShape_t *shape, const float *data, size_t n,
@@ -654,24 +671,6 @@ PRIMITIV_C_STATUS primitivApplyTensorRandomGumbel(
   PRIMITIV_C_CHECK_NOT_NULL(newobj);
   *newobj = to_c_ptr_from_value(primitiv::functions::random::gumbel_tensor(
       *to_cpp_ptr(shape), mu, beta, to_cpp_ptr(dev)));
-  return PRIMITIV_C_OK;
-} PRIMITIV_C_HANDLE_EXCEPTIONS
-
-PRIMITIV_C_IMPL_BINARY_OP(Pow, pow);
-
-PRIMITIV_C_STATUS primitivApplyNodePown(
-    const primitivNode_t *x, uint32_t k, primitivNode_t **y) try {
-  PRIMITIV_C_CHECK_NOT_NULL(x);
-  PRIMITIV_C_CHECK_NOT_NULL(y);
-  *y = to_c_ptr_from_value(primitiv::functions::pown(*to_cpp_ptr(x), k));
-  return PRIMITIV_C_OK;
-} PRIMITIV_C_HANDLE_EXCEPTIONS
-
-PRIMITIV_C_STATUS primitivApplyTensorPown(
-    const primitivTensor_t *x, uint32_t k, primitivTensor_t **y) try {
-  PRIMITIV_C_CHECK_NOT_NULL(x);
-  PRIMITIV_C_CHECK_NOT_NULL(y);
-  *y = to_c_ptr_from_value(primitiv::functions::pown(*to_cpp_ptr(x), k));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 

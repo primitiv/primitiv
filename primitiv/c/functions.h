@@ -40,6 +40,12 @@ PRIMITIV_C_DECL_BINARY_OP(Add);
 PRIMITIV_C_DECL_BINARY_OP(Subtract);
 PRIMITIV_C_DECL_BINARY_OP(Multiply);
 PRIMITIV_C_DECL_BINARY_OP(Divide);
+PRIMITIV_C_DECL_BINARY_OP(Pow);
+
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodePown(
+    const primitivNode_t *x, int32_t k, primitivNode_t **y);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorPown(
+    const primitivTensor_t *x, int32_t k, primitivTensor_t **y);
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeInput(
     const primitivShape_t *shape, const float *data, size_t n,
@@ -236,13 +242,6 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeRandomGumbel(
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorRandomGumbel(
     const primitivShape_t *shape, float mu, float beta, primitivDevice_t *dev,
     primitivTensor_t **newobj);
-
-PRIMITIV_C_DECL_BINARY_OP(Pow);
-
-PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodePown(
-    const primitivNode_t *x, uint32_t k, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorPown(
-    const primitivTensor_t *x, uint32_t k, primitivTensor_t **y);
 
 PRIMITIV_C_DECL_UNARY_FUNC(Selu);
 
