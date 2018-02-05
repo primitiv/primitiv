@@ -143,7 +143,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivAddStatsToParameter(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivHasParameterStats(
-    primitivParameter_t *parameter, const char *name,
+    const primitivParameter_t *parameter, const char *name,
     PRIMITIV_C_BOOL *retval);
 
 /**

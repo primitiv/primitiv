@@ -13,7 +13,7 @@ PRIMITIV_C_STATUS primitivCreateNaiveDevice(primitivDevice_t **newobj) try {
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitivCreateNaiveWithSeed(
+PRIMITIV_C_STATUS primitivCreateNaiveDeviceWithSeed(
     uint32_t seed, primitivDevice_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(newobj);
   *newobj = to_c_ptr(new Naive(seed));

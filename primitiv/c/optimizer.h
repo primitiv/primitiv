@@ -175,7 +175,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivExecuteOptimizerUpdate(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetOptimizerIntConfig(
-    primitivOptimizer_t *optimizer, const char *key, uint32_t *retval);
+    const primitivOptimizer_t *optimizer, const char *key, uint32_t *retval);
 
 /**
  * Sets a configuration value.
@@ -195,7 +195,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivSetOptimizerIntConfig(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetOptimizerFloatConfig(
-    primitivOptimizer_t *optimizer, const char *key, float *retval);
+    const primitivOptimizer_t *optimizer, const char *key, float *retval);
 
 /**
  * Sets a configuration value.

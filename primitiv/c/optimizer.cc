@@ -146,7 +146,7 @@ PRIMITIV_C_STATUS primitivExecuteOptimizerUpdate(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivGetOptimizerIntConfig(
-    primitivOptimizer_t *optimizer, const char *key, uint32_t *retval) try {
+    const primitivOptimizer_t *optimizer, const char *key, uint32_t *retval) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   PRIMITIV_C_CHECK_NOT_NULL(key);
   PRIMITIV_C_CHECK_NOT_NULL(retval);
@@ -172,7 +172,7 @@ PRIMITIV_C_STATUS primitivSetOptimizerIntConfig(
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivGetOptimizerFloatConfig(
-    primitivOptimizer_t *optimizer, const char *key, float *retval) try {
+    const primitivOptimizer_t *optimizer, const char *key, float *retval) try {
   PRIMITIV_C_CHECK_NOT_NULL(optimizer);
   PRIMITIV_C_CHECK_NOT_NULL(key);
   PRIMITIV_C_CHECK_NOT_NULL(retval);
