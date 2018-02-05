@@ -8,6 +8,7 @@ primitiv API Reference
   :titlesonly:
 
   devices
+  functions
   graph
   initializers
   model

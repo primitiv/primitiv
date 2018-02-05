@@ -18,57 +18,167 @@ class Parameter;
 
 namespace functions {
 
+/**
+ * Applies a unary \f$ + \f$ operation.
+ * This function does not change any values of the argument, and returns a copy
+ * of it.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ +x \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> positive(const Var &x);
 
+/**
+ * Applies a unary \f$ - \f$ operation.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ -x \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> negative(const Var &x);
 
+/**
+ * Applies an elementwise addition between a variable and a constant.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @param k A constant \f$ k \f$.
+ * @return A variable representing \f$ x + k \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> add(const Var &x, float k);
 
+/**
+ * Applies an elementwise addition between a constant and a variable.
+ * @param k A constant \f$ k \f$.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ k + x \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> add(float k, const Var &x);
 
+/**
+ * Applies an elementwise addition between two variables.
+ * @param a A variable representing an argument \f$ a \f$.
+ * @param b A variable representing an argument \f$ b \f$.
+ * @return A variable representing \f$ a + b \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> add(const Var &a, const Var &b);
 
+/**
+ * Applies an elementwise subtraction between a variable and a constant.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @param k A constant \f$ k \f$.
+ * @return A variable representing \f$ x - k \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> subtract(const Var &x, float k);
 
+/**
+ * Applies an elementwise subtraction between a constant and a variable.
+ * @param k A constant \f$ k \f$.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ k - x \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> subtract(float k, const Var &x);
 
+/**
+ * Applies an elementwise subtraction between two variables.
+ * @param a A variable representing an argument \f$ a \f$.
+ * @param b A variable representing an argument \f$ b \f$.
+ * @return A variable representing \f$ a - b \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> subtract(const Var &a, const Var &b);
 
+/**
+ * Applies an elementwise multiplication between a variable and a constant.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @param k A constant \f$ k \f$.
+ * @return A variable representing \f$ x \times k \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> multiply(const Var &x, float k);
 
+/**
+ * Applies an elementwise multiplication between a constant and a variable.
+ * @param k A constant \f$ k \f$.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ k \times x \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> multiply(float k, const Var &x);
 
+/**
+ * Applies an elementwise multiplication between two variables.
+ * @param a A variable representing an argument \f$ a \f$.
+ * @param b A variable representing an argument \f$ b \f$.
+ * @return A variable representing \f$ a \times b \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> multiply(const Var &a, const Var &b);
 
+/**
+ * Applies an elementwise division between a variable and a constant.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @param k A constant \f$ k \f$.
+ * @return A variable representing \f$ x / k \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> divide(const Var &x, float k);
 
+/**
+ * Applies an elementwise division between a constant and a variable.
+ * @param k A constant \f$ k \f$.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ k / x \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> divide(float k, const Var &x);
 
+/**
+ * Applies an elementwise division between two variables.
+ * @param a A variable representing an argument \f$ a \f$.
+ * @param b A variable representing an argument \f$ b \f$.
+ * @return A variable representing \f$ a / b \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> divide(const Var &a, const Var &b);
 
+/**
+ * Applies an elementwise exponentation between a variable and a constant.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @param k A constant \f$ k \f$.
+ * @return A variable representing \f$ x^k \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> pow(const Var &x, float k);
 
+/**
+ * Applies an elementwise exponentation between a constant and a variable.
+ * @param k A constant \f$ k \f$.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ k^x \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> pow(float k, const Var &x);
 
+/**
+ * Applies an elementwise exponentation between two variables.
+ * @param a A variable representing an argument \f$ a \f$.
+ * @param b A variable representing an argument \f$ b \f$.
+ * @return A variable representing \f$ a^b \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> pow(const Var &a, const Var &b);
 
+/**
+ * Applies an elementwise exponentation between a variable and an integer
+ * constant. This function can be applied correctly when `x` has some negative
+ * values.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @param k An integer constant \f$ k \f$.
+ * @return A variable representing \f$ x^k \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> pown(const Var &x, std::int32_t k);
 
