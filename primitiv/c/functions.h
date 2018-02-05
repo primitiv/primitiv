@@ -42,9 +42,9 @@ PRIMITIV_C_DECL_BINARY_OP(Multiply);
 PRIMITIV_C_DECL_BINARY_OP(Divide);
 PRIMITIV_C_DECL_BINARY_OP(Pow);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodePown(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodePowN(
     const primitivNode_t *x, int32_t k, primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorPown(
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorPowN(
     const primitivTensor_t *x, int32_t k, primitivTensor_t **y);
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeInput(

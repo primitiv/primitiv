@@ -86,7 +86,7 @@ PRIMITIV_C_IMPL_BINARY_OP(Multiply, multiply);
 PRIMITIV_C_IMPL_BINARY_OP(Divide, divide);
 PRIMITIV_C_IMPL_BINARY_OP(Pow, pow);
 
-PRIMITIV_C_STATUS primitivApplyNodePown(
+PRIMITIV_C_STATUS primitivApplyNodePowN(
     const primitivNode_t *x, int32_t k, primitivNode_t **y) try {
   PRIMITIV_C_CHECK_NOT_NULL(x);
   PRIMITIV_C_CHECK_NOT_NULL(y);
@@ -94,7 +94,7 @@ PRIMITIV_C_STATUS primitivApplyNodePown(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitivApplyTensorPown(
+PRIMITIV_C_STATUS primitivApplyTensorPowN(
     const primitivTensor_t *x, int32_t k, primitivTensor_t **y) try {
   PRIMITIV_C_CHECK_NOT_NULL(x);
   PRIMITIV_C_CHECK_NOT_NULL(y);
