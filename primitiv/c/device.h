@@ -1,28 +1,45 @@
-/* Copyright 2017 The primitiv Authors. All Rights Reserved. */
-
 #ifndef PRIMITIV_C_DEVICE_H_
 #define PRIMITIV_C_DEVICE_H_
 
 #include <primitiv/c/define.h>
-#include <primitiv/c/status.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+/**
+ * Opaque type of Device.
+ */
+typedef struct primitivDevice primitivDevice_t;
 
-typedef struct primitiv_Device primitiv_Device;
+/**
+ * Retrieves the current default device.
+ * @param retval Pointer to receive the current default device.
+ * @return Status code.
+ * @remarks The pointer returned by this function is owned by the library, and
+ *          should not be passed to `primitiv_Device_delete()`.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetDefaultDevice(
+    primitivDevice_t **retval);
 
-CAPI extern primitiv_Device *primitiv_Device_get_default();
-CAPI extern primitiv_Device *safe_primitiv_Device_get_default(
-    primitiv_Status *status);
+/**
+ * Specifies a new default device.
+ * @param device Pointer of the new default device.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivSetDefaultDevice(
+    primitivDevice_t *device);
 
-CAPI extern void primitiv_Device_set_default(
-    primitiv_Device *device);
-CAPI extern void safe_primitiv_Device_set_default(primitiv_Device *device,
-                                                  primitiv_Status *status);
+/**
+ * Deletes the Device object.
+ * @param device Pointer of a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivDeleteDevice(
+    primitivDevice_t *device);
 
-#ifdef __cplusplus
-}  // end extern "C"
-#endif
+/**
+ * Prints device description to stderr.
+ * @param device Pointer of a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivDumpDeviceDescription(
+    const primitivDevice_t *device);
 
 #endif  // PRIMITIV_C_DEVICE_H_

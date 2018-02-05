@@ -94,13 +94,28 @@ if(PRIMITIV_USE_EIGEN)
   set(primitiv_eigen_SRCS eigen_device.cc)
   install(FILES ${primitiv_eigen_HDRS} DESTINATION include/primitiv)
 
+  set(primitiv_eigen_COMPILE_FLAGS "")
+
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    set_source_files_properties(
-      eigen_device.cc PROPERTIES COMPILE_FLAGS -march=native)
+    set(primitiv_eigen_COMPILE_FLAGS
+      "${primitiv_eigen_COMPILE_FLAGS} -march=native")
+    # NOTE(odashi):
+    # Explicitly disabling `-Wint-in-bool-context` to avoid warnings caused by
+    # Eigen v3.3.4 or earlier.
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 7.0 OR
+        CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0)
+      if (EIGEN3_VERSION VERSION_LESS 3.3.5)
+        set(primitiv_eigen_COMPILE_FLAGS
+          "${primitiv_eigen_COMPILE_FLAGS} -Wno-int-in-bool-context")
+      endif()
+    endif()
   elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set_source_files_properties(
-      eigen_device.cc PROPERTIES COMPILE_FLAGS -march=native)
+    set(primitiv_eigen_COMPILE_FLAGS
+      "${primitiv_eigen_COMPILE_FLAGS} -march=native")
   endif()
+
+  set_source_files_properties(
+    eigen_device.cc PROPERTIES COMPILE_FLAGS ${primitiv_eigen_COMPILE_FLAGS})
 
   add_library(primitiv_eigen_OBJS OBJECT
     ${primitiv_base_HDRS}
@@ -199,7 +214,6 @@ if(PRIMITIV_BUILD_C_API)
     c/shape.h
     c/status.h
     c/tensor.h
-    c/utils.h
   )
   set(primitiv_c_SRCS
     c/device.cc
@@ -207,6 +221,7 @@ if(PRIMITIV_BUILD_C_API)
     c/graph.cc
     c/initializer.cc
     c/initializer_impl.cc
+    c/internal.cc
     c/model.cc
     c/naive_device.cc
     c/optimizer.cc
@@ -215,7 +230,6 @@ if(PRIMITIV_BUILD_C_API)
     c/shape.cc
     c/status.cc
     c/tensor.cc
-    c/utils.cc
   )
   install(FILES ${primitiv_c_HDRS} DESTINATION include/primitiv/c)
 
@@ -224,12 +238,20 @@ if(PRIMITIV_BUILD_C_API)
       ${primitiv_c_SRCS})
   set(primitiv_c_all_OBJS $<TARGET_OBJECTS:primitiv_c_OBJS>)
 
+  if(PRIMITIV_USE_EIGEN)
+    set(primitiv_c_eigen_HDRS c/eigen_device.h)
+    set(primitiv_c_eigen_SRCS c/eigen_device.cc)
+    install(FILES ${primitiv_c_eigen_HDRS} DESTINATION include/primitiv/c)
+
+    add_library(primitiv_c_eigen_OBJS OBJECT
+        ${primitiv_c_eigen_HDRS}
+        ${primitiv_c_eigen_SRCS})
+    list(APPEND primitiv_c_all_OBJS $<TARGET_OBJECTS:primitiv_c_eigen_OBJS>)
+  endif()
+
   if(PRIMITIV_USE_CUDA)
-    set(primitiv_c_cuda_HDRS
-      c/api_cuda.h
-      c/cuda_device.h)
-    set(primitiv_c_cuda_SRCS
-      c/cuda_device.cc)
+    set(primitiv_c_cuda_HDRS c/cuda_device.h)
+    set(primitiv_c_cuda_SRCS c/cuda_device.cc)
     install(FILES ${primitiv_c_cuda_HDRS} DESTINATION include/primitiv/c)
 
     add_library(primitiv_c_cuda_OBJS OBJECT
@@ -239,11 +261,8 @@ if(PRIMITIV_BUILD_C_API)
   endif()
 
   if(PRIMITIV_USE_OPENCL)
-    set(primitiv_c_opencl_HDRS
-      c/api_opencl.h
-      c/opencl_device.h)
-    set(primitiv_c_opencl_SRCS
-      c/opencl_device.cc)
+    set(primitiv_c_opencl_HDRS c/opencl_device.h)
+    set(primitiv_c_opencl_SRCS c/opencl_device.cc)
     install(FILES ${primitiv_c_opencl_HDRS} DESTINATION include/primitiv/c)
 
     add_library(primitiv_c_opencl_OBJS OBJECT
