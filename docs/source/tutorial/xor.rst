@@ -33,8 +33,8 @@ where :math:`\alpha, \beta, \gamma \in \mathbb{R}`.
 
 For example, following code generates random data points
 :math:`(x_1 + \epsilon_1, x_2 + \epsilon_2, f(x_1, x_2))` according to this
-formulation with :math:`x_1, x_2 \sim \mathcal{N}(0, \sigma_{\mathrm{data}})`
-and :math:`\epsilon_1, \epsilon_2 \sim \mathcal{N}(0, \sigma_{\mathrm{noise}})`:
+formulation with :math:`x_1, x_2 \sim \mathcal{N}(x; 0, \sigma_{\mathrm{data}})`
+and :math:`\epsilon_1, \epsilon_2 \sim \mathcal{N}(\epsilon; 0, \sigma_{\mathrm{noise}})`:
 
 .. code-block:: c++
 

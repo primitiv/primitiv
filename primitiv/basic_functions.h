@@ -211,7 +211,6 @@ Node input_node(
 
 /**
  * Creates a new variable from specific shape and data.
- * This function uses a default graph when creating a new Node.
  * @param shape Shape of the new variable.
  * @param data Inner data of the new variable. `data.size()` should be equal to
  *             `shape.size()` and each data is ordered by the column-major
@@ -219,6 +218,8 @@ Node input_node(
  * @param dev Device to manage inner data of the variable, or `nullptr` to use
  *            the default device.
  * @return A new variable.
+ * @remarks This function uses the default graph when specifying Node as the
+ *          template variable.
  */
 template<typename Var>
 type_traits::Identity<Var> input(
@@ -242,12 +243,13 @@ inline Node input<Node>(
 
 /**
  * Creates a new variable from specific shape and data.
- * This function uses a default graph when creating a new Node.
  * @param shape Shape of the new variable.
  * @param data Inner data of the new variable. `data.size()` should be equal to
  *        `shape.size()` and each data is ordered by the column-major order.
  * @param dev Device to manage inner data of the variable.
  * @return A new variable.
+ * @remarks This function uses the default graph when specifying Node as the
+ *          template variable.
  */
 template<typename Var>
 inline type_traits::Identity<Var> input(
@@ -257,11 +259,12 @@ inline type_traits::Identity<Var> input(
 
 /**
  * Creates a new variable from specific shape and data.
- * This function uses a default device and graph.
  * @param shape Shape of the new variable.
  * @param data Inner data of the new variable. `data.size()` should be equal to
  *        `shape.size()` and each data is ordered by the column-major order.
  * @return A new variable.
+ * @remarks This function always uses the default device, and also uses the
+ *          default graph when specifying Node as the template variable.
  */
 template<typename Var>
 inline type_traits::Identity<Var> input(
@@ -287,9 +290,10 @@ Node parameter_node(Parameter &param, Graph *g);
 
 /**
  * Creates a new variable from a specific Parameter.
- * This function uses a default graph when creating a new Node.
  * @param param Parameter to be associated with the variable.
  * @return A new variable.
+ * @remarks This function uses the default graph when specifying Node as the
+ *          template variable.
  */
 template<typename Var>
 type_traits::Identity<Var> parameter(Parameter &param);
@@ -475,7 +479,7 @@ inline type_traits::Identity<Var> concat(
  *        1 & 4 & 7 & 11 & 14 & 17 \\
  *        2 & 5 & 8 & 12 & 15 & 18 \\
  *        3 & 6 & 9 & 13 & 16 & 19 \\
- *      \end{array} \right). \\
+ *      \end{array} \right), \\
  *    \mathrm{concat}([x_1, x_2], 2) & = &
  *      \left( \left( \begin{array}{ccc}
  *        1 & 4 & 7 \\
@@ -675,33 +679,155 @@ type_traits::Identity<Var> prelu(const Var &x, float a);
 template<typename Var>
 type_traits::Identity<Var> elu(const Var &x, float a);
 
+/**
+ * Applies summation along an axis.
+ * Following examples show how this function work:
+ * @f[
+ *  \begin{array}{lcl}
+ *    x & := &
+ *      \left( \begin{array}{ccc}
+ *        1 & 4 & 7 \\ 2 & 5 & 8 \\ 3 & 6 & 9
+ *      \end{array} \right), \\
+ *    \mathrm{sum}(x, 0) & = &
+ *      \left( \begin{array}{ccc}
+ *        6 & 15 & 24
+ *      \end{array} \right), \\
+ *    \mathrm{sum}(x, 1) & = &
+ *      \left( \begin{array}{c}
+ *        12 \\ 15 \\ 18
+ *      \end{array} \right), \\
+ *    \mathrm{sum}(x, 2) & = &
+ *      \left( \begin{array}{ccc}
+ *        1 & 4 & 7 \\ 2 & 5 & 8 \\ 3 & 6 & 9
+ *      \end{array} \right).
+ *  \end{array}
+ * @f]
+ * @param x A variable representing values before reduction.
+ * @param dim Axis to be processed.
+ * @return A new variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> sum(const Var &x, std::uint32_t dim);
 
+/**
+ * Applies broadcasting along an axis.
+ * Following examples show how this function work:
+ * @f[
+ *  \begin{array}{lcl}
+ *    x_1 & := &
+ *      \left( \begin{array}{ccc}
+ *        1 & 2 & 3
+ *      \end{array} \right), \\
+ *    \mathrm{broadcast}(x_1, 0, 3) & = &
+ *      \left( \begin{array}{ccc}
+ *        1 & 2 & 3 \\ 1 & 2 & 3 \\ 1 & 2 & 3
+ *      \end{array} \right), \\
+ *    x_2 & := &
+ *      \left( \begin{array}{c}
+ *        1 \\ 2 \\ 3
+ *      \end{array} \right), \\
+ *    \mathrm{broadcast}(x_2, 1, 3) & = &
+ *      \left( \begin{array}{ccc}
+ *        1 & 1 & 1 \\ 2 & 2 & 2 \\ 3 & 3 & 3
+ *      \end{array} \right), \\
+ *    \mathrm{broadcast}(x_2, 2, 3) & = &
+ *      \left(
+ *        \left( \begin{array}{c} 1 \\ 2 \\ 3 \end{array} \right),
+ *        \left( \begin{array}{c} 1 \\ 2 \\ 3 \end{array} \right),
+ *        \left( \begin{array}{c} 1 \\ 2 \\ 3 \end{array} \right)
+ *      \right).
+ *  \end{array}
+ * @f]
+ * @param x A variable representing values before reduction.
+ * @param dim Axis to be processed.
+ * @param size New size of the axis `dim`.
+ * @return A new variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> broadcast(
     const Var &x, std::uint32_t dim, std::uint32_t size);
 
+/**
+ * Applies a logsumexp reduction along an axis.
+ * This function performs similarly to `primitiv::functions::sum` w.r.t. the
+ * axis.
+ * @param x A variable representing values before expansion.
+ * @param dim Axis to be processed.
+ * @return A new variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> logsumexp(const Var &x, std::uint32_t dim);
 
+/**
+ * Applies a softmax operation along an axis, and returns the natural logarithm
+ * of resulting values.
+ * @param x A variable representing original values.
+ * @param dim Axis to be processed.
+ * @return A new variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> log_softmax(const Var &x, std::uint32_t dim);
 
+/**
+ * Applies a softmax operation along an axis.
+ * @param x A variable representing original values.
+ * @param dim Axis to be processed.
+ * @return A new variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> softmax(const Var &x, std::uint32_t dim);
 
+/**
+ * Applies a softmax cross entropy function between two variables along an axis.
+ * @param x A variable representing logit values.
+ * @param t A variable representing ground-truth distribution along the axis
+ *          `dim`.
+ * @param dim Axis to be processed.
+ * @return A new variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> softmax_cross_entropy(
     const Var &x, const Var &t, std::uint32_t dim);
 
+/**
+ * Applies a softmax cross entropy function between logits and one-hot
+ * distributions along an axis.
+ * @param x A variable representing logit values.
+ * @param ids List of one-hot IDs along the axis `dim`. Each value must be lower
+ *            than `x.shape()[dim]`.
+ * @param dim Axis to be processed.
+ * @return A new variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> softmax_cross_entropy(
     const Var &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim);
 
+/**
+ * Blocks the gradient propagation beyond this function.
+ * This function does not modify any values in the input variable, and force to
+ * make all gradients \f$ 0 \f$.
+ * @param x A variable representing original values.
+ * @return A new variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> stop_gradient(const Var &x);
 
+/**
+ * Applies a 2D convolution between two variables.
+ * @param x A variable with Shape \f$ [d_0, d_1, c_1] \f$.
+ * @param w A variable with Shape \f$ [u_0, u_1, c_1, c_2] \f$.
+ * @param padding0 Width of zero-padding along the first axis.
+ * @param padding1 Width of zero-padding along the second axis.
+ * @param stride0 Stride along the first axis.
+ * @param stride1 Stride along the second axis.
+ * @param dilation0 Dilation factor along the first axis.
+ * @param dilation1 Dilation factor along the second axis.
+ * @return A new variable with Shape \f$ [d'_0, d'_1, c_2] \f$. The first and
+ *         second dimension are calculated as following:
+ * @f[
+ *  d'_i := \frac{d_i + 2 \times \mathrm{padding}_i - (u_i - 1) \times \mathrm{dilation}_i + 1}{\mathrm{stride}_i} + 1.
+ * @f]
+ */
 template<typename Var>
 type_traits::Identity<Var> conv2d(
     const Var &x, const Var &w,
@@ -709,6 +835,21 @@ type_traits::Identity<Var> conv2d(
     std::uint32_t stride0, std::uint32_t stride1,
     std::uint32_t dilation0, std::uint32_t dilation1);
 
+/**
+ * Applies a 2D max-pooling operation.
+ * @param x A variable with Shape \f$ [d_0, d_1, c] \f$.
+ * @param window0 Window size along the first axis.
+ * @param window1 Window size along the second axis.
+ * @param padding0 Width of \f$ -\infty \f$ padding along the first axis.
+ * @param padding1 Width of \f$ -\infty \f$ padding along the second axis.
+ * @param stride0 Stride along the first axis.
+ * @param stride1 Stride along the second axis.
+ * @return A new variable with Shape \f$ [d'_0, d'_1, c] \f$. The first and
+ *         second dimension are calculated as following:
+ * @f[
+ *  d'_i := \frac{d_i + 2 \times \mathrm{padding}_i - \mathrm{window}_i}{\mathrm{stride}_i} + 1.
+ * @f]
+ */
 template<typename Var>
 type_traits::Identity<Var> max_pool2d(
     const Var &x,
@@ -718,23 +859,64 @@ type_traits::Identity<Var> max_pool2d(
 
 namespace batch {
 
+/**
+ * Applies broadcasting along minibatches.
+ * Following example shows how this function work:
+ * @f[
+ *  \begin{array}{lcl}
+ *    x & := &
+ *      \left( \begin{array}{ccc}
+ *        1 & 4 & 7 \\ 2 & 5 & 8 \\ 3 & 6 & 9
+ *      \end{array} \right),
+ *      \left( \begin{array}{ccc}
+ *        11 & 14 & 17 \\ 12 & 15 & 18 \\ 13 & 16 & 19
+ *      \end{array} \right), \\
+ *    \mathrm{batch::sum}(x) & = &
+ *      \left( \begin{array}{ccc}
+ *        12 & 18 & 24 \\ 14 & 20 & 26 \\ 16 & 22 & 28
+ *      \end{array} \right).
+ *  \end{array}
+ * @f]
+ * @param x A variable representing values before reduction.
+ * @return A new variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> sum(const Var &x);
 
 }  // namespace batch
 
 /**
- * constant_tensor(shape, k, &dev)
- * constant_node(shape, k, &dev, &g)
- * constant<Var>(shape, k, &dev)
- * constant<Var>(shape, k, dev)
- * constant<Var>(shape, k)
+ * Creates a new Tensor with all values the constant \f$ k \f$.
+ * @param shape Shape of the new Tensor.
+ * @param k The constant \f$ k \f$ of values in the Tensor.
+ * @param dev Device to manage the new Tensor, or `nullptr` to use the default
+ *            device.
+ * @return A new Tensor.
  */
-
 Tensor constant_tensor(const Shape &shape, float k, Device *dev);
 
+/**
+ * Creates a new Node with all values the constant \f$ k \f$.
+ * @param shape Shape of the new Node.
+ * @param k The constant \f$ k \f$ of values in the Node.
+ * @param dev Device to manage the new Node, or `nullptr` to use the default
+ *            device.
+ * @param g Graph to manage the instance of the Node, or `nullptr` to use the
+ *          default graph.
+ * @return A new Node.
+ */
 Node constant_node(const Shape &shape, float k, Device *dev, Graph *g);
 
+/**
+ * Creates a new variable with all values the constant \f$ k \f$.
+ * @param shape Shape of the new variable.
+ * @param k The constant \f$ k \f$ of values in the variable.
+ * @param dev Device to manage the new variable, or `nullptr` to use the default
+ *            device.
+ * @return A new variable.
+ * @remarks This function uses the default graph when specifying Node as the
+ *          template variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> constant(const Shape &shape, float k, Device *dev);
 
@@ -752,29 +934,61 @@ inline Node constant<Node>(const Shape &shape, float k, Device *dev) {
 
 /// @endcond
 
+/**
+ * Creates a new variable with all values the constant \f$ k \f$.
+ * @param shape Shape of the new variable.
+ * @param k The constant \f$ k \f$ of values in the variable.
+ * @param dev Device to manage the new variable.
+ * @remarks This function uses the default graph when specifying Node as the
+ *          template variable.
+ */
 template<typename Var>
 inline type_traits::Identity<Var> constant(
     const Shape &shape, float k, Device &dev) {
   return constant<Var>(shape, k, &dev);
 }
 
+/**
+ * Creates a new variable with all values the constant \f$ k \f$.
+ * @param shape Shape of the new variable.
+ * @param k The constant \f$ k \f$ of values in the variable.
+ * @remarks This function always uses the default device, and also uses the
+ *          default graph when specifying Node as the template variable.
+ */
 template<typename Var>
 inline type_traits::Identity<Var> constant(const Shape &shape, float k) {
   return constant<Var>(shape, k, nullptr);
 }
 
 /**
- * identity_tensor(size, &dev)
- * identity_node(size, &dev, &g)
- * identity<Var>(size, &dev)
- * identity<Var>(size, dev)
- * identity<Var>(size)
+ * Creates a new Tensor with an \f$ N \f$-dimensional identity matrix.
+ * @param size Size \f$ N \f$ of the matrix in the new Tensor.
+ * @param dev Device to manage the new Tensor, or `nullptr` to use the default
+ *            device.
+ * @return A new Tensor.
  */
-
 Tensor identity_tensor(std::uint32_t size, Device *dev);
 
+/**
+ * Creates a new Node with an \f$ N \f$-dimensional identity matrix.
+ * @param size Size \f$ N \f$ of the matrix in the new Node.
+ * @param dev Device to manage the new Node, or `nullptr` to use the default
+ *            device.
+ * @param g Graph to manage the instance of the Node, or `nullptr` to use the
+ *          default graph.
+ * @return A new Node.
+ */
 Node identity_node(std::uint32_t size, Device *dev, Graph *g);
 
+/**
+ * Creates a new variable with an \f$ N \f$-dimensional identity matrix.
+ * @param size Size \f$ N \f$ of the matrix in the new Node.
+ * @param dev Device to manage the new variable, or `nullptr` to use the default
+ *            device.
+ * @return A new variable.
+ * @remarks This function uses the default graph when specifying Node as the
+ *          template variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> identity(std::uint32_t size, Device *dev);
 
@@ -792,11 +1006,26 @@ inline Node identity<Node>(std::uint32_t size, Device *dev) {
 
 /// @endcond
 
+/**
+ * Creates a new variable with an \f$ N \f$-dimensional identity matrix.
+ * @param size Size \f$ N \f$ of the matrix in the new Node.
+ * @param dev Device to manage the new variable.
+ * @return A new variable.
+ * @remarks This function uses the default graph when specifying Node as the
+ *          template variable.
+ */
 template<typename Var>
 inline type_traits::Identity<Var> identity(std::uint32_t size, Device &dev) {
   return identity<Var>(size, &dev);
 }
 
+/**
+ * Creates a new variable with an \f$ N \f$-dimensional identity matrix.
+ * @param size Size \f$ N \f$ of the matrix in the new Node.
+ * @return A new variable.
+ * @remarks This function always uses the default device, and also uses the
+ *          default graph when specifying Node as the template variable.
+ */
 template<typename Var>
 inline type_traits::Identity<Var> identity(std::uint32_t size) {
   return identity<Var>(size, nullptr);
@@ -805,19 +1034,39 @@ inline type_traits::Identity<Var> identity(std::uint32_t size) {
 namespace random {
 
 /**
- * bernoulli_tensor(shape, p, &dev)
- * bernoulli_node(shape, p, &dev, &g)
- * bernoulli<Var>(shape, p, &dev)
- * bernoulli<Var>(shape, p, dev)
- * bernoulli<Var>(shape, p)
+ * Creates a new Tensor with values sampled from the Bernoulli distribution.
+ * @param shape Shape of the new Tensor.
+ * @param p The parameter \f$ p \f$ of the Bernoulli distribution.
+ * @param dev Device to manage the new Tensor, or `nullptr` to use the default
+ *            device.
+ * @return A new Tensor.
  */
-
 Tensor bernoulli_tensor(
     const Shape &shape, float p, Device *dev);
 
+/**
+ * Creates a new Node with values sampled from the Bernoulli distribution.
+ * @param shape Shape of the new Node.
+ * @param p The parameter \f$ p \f$ of the Bernoulli distribution.
+ * @param dev Device to manage the new Node, or `nullptr` to use the default
+ *            device.
+ * @param g Graph to manage the instance of the Node, or `nullptr` to use the
+ *          default graph.
+ * @return A new Node.
+ */
 Node bernoulli_node(
     const Shape &shape, float p, Device *dev, Graph *g);
 
+/**
+ * Creates a new variable with values sampled from the Bernoulli distribution.
+ * @param shape Shape of the new variable.
+ * @param p The parameter \f$ p \f$ of the Bernoulli distribution.
+ * @param dev Device to manage the new variable, or `nullptr` to use the default
+ *            device.
+ * @return A new variable.
+ * @remarks This function uses the default graph when specifying Node as the
+ *          template variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> bernoulli(
     const Shape &shape, float p, Device *dev);
@@ -838,12 +1087,29 @@ inline Node bernoulli<Node>(
 
 /// @endcond
 
+/**
+ * Creates a new variable with values sampled from the Bernoulli distribution.
+ * @param shape Shape of the new variable.
+ * @param p The parameter \f$ p \f$ of the Bernoulli distribution.
+ * @param dev Device to manage the new variable.
+ * @return A new variable.
+ * @remarks This function uses the default graph when specifying Node as the
+ *          template variable.
+ */
 template<typename Var>
 inline type_traits::Identity<Var> bernoulli(
     const Shape &shape, float p, Device &dev) {
   return bernoulli<Var>(shape, p, &dev);
 }
 
+/**
+ * Creates a new variable with values sampled from the Bernoulli distribution.
+ * @param shape Shape of the new variable.
+ * @param p The parameter \f$ p \f$ of the Bernoulli distribution.
+ * @return A new variable.
+ * @remarks This function always uses the default device, and also uses the
+ *          default graph when specifying Node as the template variable.
+ */
 template<typename Var>
 inline type_traits::Identity<Var> bernoulli(
     const Shape &shape, float p) {
@@ -851,19 +1117,42 @@ inline type_traits::Identity<Var> bernoulli(
 }
 
 /**
- * uniform_tensor(shape, lower, upper, &dev)
- * uniform_node(shape, lower, upper, &dev, &g)
- * uniform<Var>(shape, lower, upper, &dev)
- * uniform<Var>(shape, lower, upper, dev)
- * uniform<Var>(shape, lower, upper)
+ * Creates a new Tensor with values sampled from the uniform distribution.
+ * @param shape Shape of the new Tensor.
+ * @param lower The lower bound \f$ L \f$ of the uniform distribution.
+ * @param upper The upper bound \f$ U \f$ of the uniform distribution.
+ * @param dev Device to manage the new Tensor, or `nullptr` to use the default
+ *            device.
+ * @return A new Tensor.
  */
-
 Tensor uniform_tensor(
     const Shape &shape, float lower, float upper, Device *dev);
 
+/**
+ * Creates a new Node with values sampled from the uniform distribution.
+ * @param shape Shape of the new Node.
+ * @param lower The lower bound \f$ L \f$ of the uniform distribution.
+ * @param upper The upper bound \f$ U \f$ of the uniform distribution.
+ * @param dev Device to manage the new Node, or `nullptr` to use the default
+ *            device.
+ * @param g Graph to manage the instance of the Node, or `nullptr` to use the
+ *          default graph.
+ * @return A new Node.
+ */
 Node uniform_node(
     const Shape &shape, float lower, float upper, Device *dev, Graph *g);
 
+/**
+ * Creates a new variable with values sampled from the uniform distribution.
+ * @param shape Shape of the new variable.
+ * @param lower The lower bound \f$ L \f$ of the uniform distribution.
+ * @param upper The upper bound \f$ U \f$ of the uniform distribution.
+ * @param dev Device to manage the new variable, or `nullptr` to use the default
+ *            device.
+ * @return A new variable.
+ * @remarks This function uses the default graph when specifying Node as the
+ *          template variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> uniform(
     const Shape &shape, float lower, float upper, Device *dev);
@@ -884,12 +1173,31 @@ inline Node uniform<Node>(
 
 /// @endcond
 
+/**
+ * Creates a new variable with values sampled from the uniform distribution.
+ * @param shape Shape of the new variable.
+ * @param lower The lower bound \f$ L \f$ of the uniform distribution.
+ * @param upper The upper bound \f$ U \f$ of the uniform distribution.
+ * @param dev Device to manage the new variable.
+ * @return A new variable.
+ * @remarks This function uses the default graph when specifying Node as the
+ *          template variable.
+ */
 template<typename Var>
 inline type_traits::Identity<Var> uniform(
     const Shape &shape, float lower, float upper, Device &dev) {
   return uniform<Var>(shape, lower, upper, &dev);
 }
 
+/**
+ * Creates a new variable with values sampled from the uniform distribution.
+ * @param shape Shape of the new variable.
+ * @param lower The lower bound \f$ L \f$ of the uniform distribution.
+ * @param upper The upper bound \f$ U \f$ of the uniform distribution.
+ * @return A new variable.
+ * @remarks This function always uses the default device, and also uses the
+ *          default graph when specifying Node as the template variable.
+ */
 template<typename Var>
 inline type_traits::Identity<Var> uniform(
     const Shape &shape, float lower, float upper) {
@@ -897,19 +1205,42 @@ inline type_traits::Identity<Var> uniform(
 }
 
 /**
- * normal_tensor(shape, mean, sd, &dev)
- * normal_node(shape, mean, sd, &dev, &g)
- * normal<Var>(shape, mean, sd, &dev)
- * normal<Var>(shape, mean, sd, dev)
- * normal<Var>(shape, mean, sd)
+ * Creates a new Tensor with values sampled from the normal distribution.
+ * @param shape Shape of the new Tensor.
+ * @param mean The mean \f$ \mu \f$ of the normal distribution.
+ * @param sd The standard deviation \f$ \sigma \f$ of the normal distribution.
+ * @param dev Device to manage the new Tensor, or `nullptr` to use the default
+ *            device.
+ * @return A new Tensor.
  */
-
 Tensor normal_tensor(
     const Shape &shape, float mean, float sd, Device *dev);
 
+/**
+ * Creates a new Node with values sampled from the normal distribution.
+ * @param shape Shape of the new Node.
+ * @param mean The mean \f$ \mu \f$ of the normal distribution.
+ * @param sd The standard deviation \f$ \sigma \f$ of the normal distribution.
+ * @param dev Device to manage the new Node, or `nullptr` to use the default
+ *            device.
+ * @param g Graph to manage the instance of the Node, or `nullptr` to use the
+ *          default graph.
+ * @return A new Node.
+ */
 Node normal_node(
     const Shape &shape, float mean, float sd, Device *dev, Graph *g);
 
+/**
+ * Creates a new variable with values sampled from the normal distribution.
+ * @param shape Shape of the new variable.
+ * @param mean The mean \f$ \mu \f$ of the normal distribution.
+ * @param sd The standard deviation \f$ \sigma \f$ of the normal distribution.
+ * @param dev Device to manage the new variable, or `nullptr` to use the default
+ *            device.
+ * @return A new variable.
+ * @remarks This function uses the default graph when specifying Node as the
+ *          template variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> normal(
     const Shape &shape, float mean, float sd, Device *dev);
@@ -930,12 +1261,31 @@ inline Node normal<Node>(
 
 /// @endcond
 
+/**
+ * Creates a new variable with values sampled from the normal distribution.
+ * @param shape Shape of the new variable.
+ * @param mean The mean \f$ \mu \f$ of the normal distribution.
+ * @param sd The standard deviation \f$ \sigma \f$ of the normal distribution.
+ * @param dev Device to manage the new variable.
+ * @return A new variable.
+ * @remarks This function uses the default graph when specifying Node as the
+ *          template variable.
+ */
 template<typename Var>
 inline type_traits::Identity<Var> normal(
     const Shape &shape, float mean, float sd, Device &dev) {
   return normal<Var>(shape, mean, sd, &dev);
 }
 
+/**
+ * Creates a new variable with values sampled from the normal distribution.
+ * @param shape Shape of the new variable.
+ * @param mean The mean \f$ \mu \f$ of the normal distribution.
+ * @param sd The standard deviation \f$ \sigma \f$ of the normal distribution.
+ * @return A new variable.
+ * @remarks This function always uses the default device, and also uses the
+ *          default graph when specifying Node as the template variable.
+ */
 template<typename Var>
 inline type_traits::Identity<Var> normal(
     const Shape &shape, float mean, float sd) {
@@ -943,19 +1293,42 @@ inline type_traits::Identity<Var> normal(
 }
 
 /**
- * log_normal_tensor(shape, mean, sd, &dev)
- * log_normal_node(shape, mean, sd, &dev, &g)
- * log_normal<Var>(shape, mean, sd, &dev)
- * log_normal<Var>(shape, mean, sd, dev)
- * log_normal<Var>(shape, mean, sd)
+ * Creates a new Tensor with values sampled from the log-normal distribution.
+ * @param shape Shape of the new Tensor.
+ * @param mean The parameter \f$ \mu \f$ of the log-normal distribution.
+ * @param sd The parameter \f$ \sigma \f$ of the log-normal distribution.
+ * @param dev Device to manage the new Tensor, or `nullptr` to use the default
+ *            device.
+ * @return A new Tensor.
  */
-
 Tensor log_normal_tensor(
     const Shape &shape, float mean, float sd, Device *dev);
 
+/**
+ * Creates a new Node with values sampled from the log-normal distribution.
+ * @param shape Shape of the new Node.
+ * @param mean The parameter \f$ \mu \f$ of the log-normal distribution.
+ * @param sd The parameter \f$ \sigma \f$ of the log-normal distribution.
+ * @param dev Device to manage the new Node, or `nullptr` to use the default
+ *            device.
+ * @param g Graph to manage the instance of the Node, or `nullptr` to use the
+ *          default graph.
+ * @return A new Node.
+ */
 Node log_normal_node(
     const Shape &shape, float mean, float sd, Device *dev, Graph *g);
 
+/**
+ * Creates a new variable with values sampled from the log-normal distribution.
+ * @param shape Shape of the new variable.
+ * @param mean The parameter \f$ \mu \f$ of the log-normal distribution.
+ * @param sd The parameter \f$ \sigma \f$ of the log-normal distribution.
+ * @param dev Device to manage the new variable, or `nullptr` to use the default
+ *            device.
+ * @return A new variable.
+ * @remarks This function uses the default graph when specifying Node as the
+ *          template variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> log_normal(
     const Shape &shape, float mean, float sd, Device &dev);
@@ -976,12 +1349,31 @@ inline Node log_normal<Node>(
 
 /// @endcond
 
+/**
+ * Creates a new variable with values sampled from the log-normal distribution.
+ * @param shape Shape of the new variable.
+ * @param mean The parameter \f$ \mu \f$ of the log-normal distribution.
+ * @param sd The parameter \f$ \sigma \f$ of the log-normal distribution.
+ * @param dev Device to manage the new variable.
+ * @return A new variable.
+ * @remarks This function uses the default graph when specifying Node as the
+ *          template variable.
+ */
 template<typename Var>
 inline type_traits::Identity<Var> log_normal(
     const Shape &shape, float mean, float sd, Device &dev) {
   return log_normal<Var>(shape, mean, sd, &dev);
 }
 
+/**
+ * Creates a new variable with values sampled from the log-normal distribution.
+ * @param shape Shape of the new variable.
+ * @param mean The parameter \f$ \mu \f$ of the log-normal distribution.
+ * @param sd The parameter \f$ \sigma \f$ of the log-normal distribution.
+ * @return A new variable.
+ * @remarks This function always uses the default device, and also uses the
+ *          default graph when specifying Node as the template variable.
+ */
 template<typename Var>
 inline type_traits::Identity<Var> log_normal(
     const Shape &shape, float mean, float sd) {
@@ -989,19 +1381,42 @@ inline type_traits::Identity<Var> log_normal(
 }
 
 /**
- * gumbel_tensor(shape, mu, beta, &dev)
- * gumbel_node(shape, mu, beta, &dev, &g)
- * gumbel<Var>(shape, mu, beta, &dev)
- * gumbel<Var>(shape, mu, beta, dev)
- * gumbel<Var>(shape, mu, beta)
+ * Creates a new Tensor with values sampled from the Gumbel distribution.
+ * @param shape Shape of the new Tensor.
+ * @param mu The location parameter \f$ \mu \f$ of the Gumbel distribution.
+ * @param beta The scale parameter \f$ \beta \f$ of the Gumbel distribution.
+ * @param dev Device to manage the new Tensor, or `nullptr` to use the default
+ *            device.
+ * @return A new Tensor.
  */
-
 Tensor gumbel_tensor(
     const Shape &shape, float mu, float beta, Device *dev);
 
+/**
+ * Creates a new Node with values sampled from the Gumbel distribution.
+ * @param shape Shape of the new Node.
+ * @param mu The location parameter \f$ \mu \f$ of the Gumbel distribution.
+ * @param beta The scale parameter \f$ \beta \f$ of the Gumbel distribution.
+ * @param dev Device to manage the new Node, or `nullptr` to use the default
+ *            device.
+ * @param g Graph to manage the instance of the Node, or `nullptr` to use the
+ *          default graph.
+ * @return A new Node.
+ */
 Node gumbel_node(
     const Shape &shape, float mu, float beta, Device *dev, Graph *g);
 
+/**
+ * Creates a new variable with values sampled from the Gumbel distribution.
+ * @param shape Shape of the new variable.
+ * @param mu The location parameter \f$ \mu \f$ of the Gumbel distribution.
+ * @param beta The scale parameter \f$ \beta \f$ of the Gumbel distribution.
+ * @param dev Device to manage the new variable, or `nullptr` to use the default
+ *            device.
+ * @return A new variable.
+ * @remarks This function uses the default graph when specifying Node as the
+ *          template variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> gumbel(
     const Shape &shape, float mu, float beta, Device *dev);
@@ -1022,12 +1437,31 @@ inline Node gumbel<Node>(
 
 /// @endcond
 
+/**
+ * Creates a new variable with values sampled from the Gumbel distribution.
+ * @param shape Shape of the new variable.
+ * @param mu The location parameter \f$ \mu \f$ of the Gumbel distribution.
+ * @param beta The scale parameter \f$ \beta \f$ of the Gumbel distribution.
+ * @param dev Device to manage the new variable.
+ * @return A new variable.
+ * @remarks This function uses the default graph when specifying Node as the
+ *          template variable.
+ */
 template<typename Var>
 inline type_traits::Identity<Var> gumbel(
     const Shape &shape, float mu, float beta, Device &dev) {
   return gumbel<Var>(shape, mu, beta, &dev);
 }
 
+/**
+ * Creates a new variable with values sampled from the Gumbel distribution.
+ * @param shape Shape of the new variable.
+ * @param mu The location parameter \f$ \mu \f$ of the Gumbel distribution.
+ * @param beta The scale parameter \f$ \beta \f$ of the Gumbel distribution.
+ * @return A new variable.
+ * @remarks This function always uses the default device, and also uses the
+ *          default graph when specifying Node as the template variable.
+ */
 template<typename Var>
 inline type_traits::Identity<Var> gumbel(
     const Shape &shape, float mu, float beta) {
