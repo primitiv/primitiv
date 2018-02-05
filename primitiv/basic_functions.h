@@ -183,22 +183,48 @@ template<typename Var>
 type_traits::Identity<Var> pown(const Var &x, std::int32_t k);
 
 /**
- * input_tensor(shape, data, &dev)
- * input_node(shape, data, &dev, &g)
- * input<Var>(shape, data, &dev)
- * input<Var>(shape, data, dev)
- * input<Var>(shape, data)
+ * Creates a new Tensor from specific shape and data.
+ * @param shape Shape of the new Tensor.
+ * @param data Inner data of the new Tensor. `data.size()` should be equal to
+ *        `shape.size()` and each data is ordered by the column-major order.
+ * @param dev Device to manage inner data of the Tensor, or `nullptr` to use the
+ *            default device.
+ * @return A new Tensor.
  */
-
 Tensor input_tensor(
     const Shape &shape, const std::vector<float> &data, Device *dev);
 
+/**
+ * Creates a new Node from specific shape and data.
+ * @param shape Shape of the new Node.
+ * @param data Inner data of the new Node. `data.size()` should be equal to
+ *             `shape.size()` and each data is ordered by the column-major
+ *             order.
+ * @param dev Device to manage inner data of the Node, or `nullptr` to use the
+ *            default device.
+ * @param g Graph to manage the instance of the Node, or `nullptr` to use the
+ *          default graph.
+ * @return A new Node.
+ */
 Node input_node(
     const Shape &shape, const std::vector<float> &data, Device *dev, Graph *g);
 
+/**
+ * Creates a new variable from specific shape and data.
+ * This function uses a default graph when creating a new Node.
+ * @param shape Shape of the new variable.
+ * @param data Inner data of the new variable. `data.size()` should be equal to
+ *             `shape.size()` and each data is ordered by the column-major
+ *             order.
+ * @param dev Device to manage inner data of the variable, or `nullptr` to use
+ *            the default device.
+ * @return A new variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> input(
     const Shape &shape, const std::vector<float> &data, Device *dev);
+
+/// @cond
 
 template<>
 inline Tensor input<Tensor>(
@@ -212,12 +238,31 @@ inline Node input<Node>(
   return input_node(shape, data, dev, nullptr);
 }
 
+/// @endcond
+
+/**
+ * Creates a new variable from specific shape and data.
+ * This function uses a default graph when creating a new Node.
+ * @param shape Shape of the new variable.
+ * @param data Inner data of the new variable. `data.size()` should be equal to
+ *        `shape.size()` and each data is ordered by the column-major order.
+ * @param dev Device to manage inner data of the variable.
+ * @return A new variable.
+ */
 template<typename Var>
 inline type_traits::Identity<Var> input(
     const Shape &shape, const std::vector<float> &data, Device &dev) {
   return input<Var>(shape, data, &dev);
 }
 
+/**
+ * Creates a new variable from specific shape and data.
+ * This function uses a default device and graph.
+ * @param shape Shape of the new variable.
+ * @param data Inner data of the new variable. `data.size()` should be equal to
+ *        `shape.size()` and each data is ordered by the column-major order.
+ * @return A new variable.
+ */
 template<typename Var>
 inline type_traits::Identity<Var> input(
     const Shape &shape, const std::vector<float> &data) {
@@ -225,17 +270,31 @@ inline type_traits::Identity<Var> input(
 }
 
 /**
- * parameter_tensor(param)
- * parameter_node(param, &g)
- * parameter<Var>(param)
+ * Creates a new Tensor from a specific Parameter.
+ * @param param Parameter to be associated with the Tensor.
+ * @return A new Tensor.
  */
-
 Tensor parameter_tensor(Parameter &param);
 
+/**
+ * Creates a new Node from a specific Parameter.
+ * @param param Parameter to be associated with the Node.
+ * @param g Graph to manage the instance of the Node, or `nullptr` to use the
+ *          default graph.
+ * @return A new Node.
+ */
 Node parameter_node(Parameter &param, Graph *g);
 
+/**
+ * Creates a new variable from a specific Parameter.
+ * This function uses a default graph when creating a new Node.
+ * @param param Parameter to be associated with the variable.
+ * @return A new variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> parameter(Parameter &param);
+
+/// @cond
 
 template<>
 inline Tensor parameter<Tensor>(Parameter &param) {
@@ -247,32 +306,129 @@ inline Node parameter<Node>(Parameter &param) {
   return parameter_node(param, nullptr);
 }
 
-/**
- * copy<Var>(x, *dev)
- * copy<Var>(x, dev)
- * copy<Var>(x)
- */
+/// @endcond
 
+/**
+ * Copies a variable onto a specific device.
+ * @param x A variable to be copied.
+ * @param dev Device to manage the new variable, or `nullptr` to use the default
+ *            device.
+ * @return A new variable managed on `dev`.
+ */
 template<typename Var>
 type_traits::Identity<Var> copy(const Var &x, Device *dev);
 
+/**
+ * Copies a variable onto a specific device.
+ * @param x A variable to be copied.
+ * @param dev Device to manage the new variable.
+ * @return A new variable managed on `dev`.
+ */
 template<typename Var>
 inline type_traits::Identity<Var> copy(const Var &x, Device &dev) {
   return copy(x, &dev);
 }
 
+/**
+ * Copies a variable onto the default device.
+ * @param x A variable to be copied.
+ * @return A new variable managed on the default device.
+ */
 template<typename Var>
 inline type_traits::Identity<Var> copy(const Var &x) {
   return copy(x, nullptr);
 }
 
+/**
+ * Lookups subplanes according to the specific axis and addresses. This function
+ * can be used to an embedding lookup associated with a fixed vocabulary.
+ * Following examples show how this function work:
+ * @f[
+ *  \begin{array}{lcl}
+ *    x & := & \left( \begin{array}{ccc}
+ *      1 & 4 & 7 \\ 2 & 5 & 8 \\ 3 & 6 & 9
+ *    \end{array} \right), \\
+ *    \mathrm{pick}(x, [0, 0, 1], 0) & = &
+ *      \left( \begin{array}{ccc} 1 & 4 & 7 \end{array} \right),
+ *      \left( \begin{array}{ccc} 1 & 4 & 7 \end{array} \right),
+ *      \left( \begin{array}{ccc} 2 & 5 & 8 \end{array} \right), \\
+ *    \mathrm{pick}(x, [1, 2], 1) & = &
+ *      \left( \begin{array}{c} 4 \\ 5 \\ 6 \end{array} \right),
+ *      \left( \begin{array}{c} 7 \\ 8 \\ 9 \end{array} \right), \\
+ *    \mathrm{pick}(x, [0], 2) & = &
+ *      \left( \begin{array}{ccc}
+ *        1 & 4 & 7 \\ 2 & 5 & 8 \\ 3 & 6 & 9
+ *      \end{array} \right).
+ *  \end{array}
+ * @f]
+ * The minibatch broadcasting rule is applied between the Shape of `x` and the
+ * number of values in `ids`:
+ * @f[
+ *  \begin{array}{lcl}
+ *    x & := &
+ *      \left( \begin{array}{ccc}
+ *        1 & 4 & 7 \\ 2 & 5 & 8 \\ 3 & 6 & 9
+ *      \end{array} \right),
+ *      \left( \begin{array}{ccc}
+ *        11 & 14 & 17 \\ 12 & 15 & 18 \\ 13 & 16 & 19
+ *      \end{array} \right),
+ *      \left( \begin{array}{ccc}
+ *        21 & 24 & 27 \\ 22 & 25 & 28 \\ 23 & 26 & 29
+ *      \end{array} \right), \\
+ *    \mathrm{pick}(x, [0], 1) & = &
+ *      \left( \begin{array}{c} 4 \\ 5 \\ 6 \end{array} \right),
+ *      \left( \begin{array}{c} 14 \\ 15 \\ 16 \end{array} \right),
+ *      \left( \begin{array}{c} 24 \\ 25 \\ 26 \end{array} \right), \\
+ *    \mathrm{pick}(x, [0, 1, 2], 1) & = &
+ *      \left( \begin{array}{c} 1 \\ 2 \\ 3 \end{array} \right),
+ *      \left( \begin{array}{c} 14 \\ 15 \\ 16 \end{array} \right),
+ *      \left( \begin{array}{c} 27 \\ 28 \\ 29 \end{array} \right).
+ *  \end{array}
+ * @f]
+ * @param x A variable representing an original data.
+ * @param ids List of subplane IDs according to the axis `dim`. Each value must
+ *            be lower than `x.shape()[dim]`.
+ * @param dim Axis to be processed.
+ * @return A new variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> pick(
     const Var &x, const std::vector<std::uint32_t> &ids, std::uint32_t dim);
 
+/**
+ * Extracts a specific range \f$ [L, U) \f$ of subplanes along a specific axis.
+ * Following examples show how this function work:
+ * @f[
+ *  \begin{array}{lcl}
+ *    x & := &
+ *      \left( \begin{array}{ccc}
+ *        1 & 4 & 7 \\ 2 & 5 & 8 \\ 3 & 6 & 9
+ *      \end{array} \right), \\
+ *    \mathrm{slice}(x, 0, 0, 1) & = &
+ *      \left( \begin{array}{ccc}
+ *        1 & 4 & 7
+ *      \end{array} \right), \\
+ *    \mathrm{slice}(x, 1, 1, 3) & = &
+ *      \left( \begin{array}{ccc}
+ *        4 & 7 \\ 5 & 8 \\ 6 & 9
+ *      \end{array} \right), \\
+ *    \mathrm{slice}(x, 2, 0, 1) & = &
+ *      \left( \begin{array}{ccc}
+ *        1 & 4 & 7 \\ 2 & 5 & 8 \\ 3 & 6 & 9
+ *      \end{array} \right).
+ *  \end{array}
+ * @f]
+ * @param x A variable representing an original data.
+ * @param dim Axis to be processed.
+ * @param lower Lower bound \f$ L \f$ of ``dim``.
+ * @param upper Upper bound \f$ U \f$ of ``dim``.
+ * @return A new variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> slice(
     const Var &x, std::uint32_t dim, std::uint32_t lower, std::uint32_t upper);
+
+/// @cond
 
 template<typename Var>
 type_traits::Identity<Var> concat(
@@ -294,6 +450,49 @@ inline type_traits::Identity<Var> concat(
   return concat(std::vector<const Var *>(xs), dim);
 }
 
+/// @endcond
+
+/**
+ * Concatenates multiple variables along specific axis.
+ * Following examples show how this function work:
+ * @f[
+ *  \begin{array}{lcl}
+ *    x_1 & := &
+ *      \left( \begin{array}{ccc}
+ *        1 & 4 & 7 \\ 2 & 5 & 8 \\ 3 & 6 & 9
+ *      \end{array} \right), \\
+ *    x_2 & := &
+ *      \left( \begin{array}{ccc}
+ *        11 & 14 & 17 \\ 12 & 15 & 18 \\ 13 & 16 & 19
+ *      \end{array} \right), \\
+ *    \mathrm{concat}([x_1, x_2], 0) & = &
+ *      \left( \begin{array}{ccc}
+ *        1 & 4 & 7 \\ 2 & 5 & 8 \\ 3 & 6 & 9 \\
+ *        11 & 14 & 17 \\ 12 & 15 & 18 \\ 13 & 16 & 19 \\
+ *      \end{array} \right), \\
+ *    \mathrm{concat}([x_1, x_2], 1) & = &
+ *      \left( \begin{array}{cccccc}
+ *        1 & 4 & 7 & 11 & 14 & 17 \\
+ *        2 & 5 & 8 & 12 & 15 & 18 \\
+ *        3 & 6 & 9 & 13 & 16 & 19 \\
+ *      \end{array} \right). \\
+ *    \mathrm{concat}([x_1, x_2], 2) & = &
+ *      \left( \left( \begin{array}{ccc}
+ *        1 & 4 & 7 \\
+ *        2 & 5 & 8 \\
+ *        3 & 6 & 9 \\
+ *      \end{array} \right), \left( \begin{array}{ccc}
+ *        11 & 14 & 17 \\
+ *        12 & 15 & 18 \\
+ *        13 & 16 & 19 \\
+ *      \end{array} \right) \right).
+ *  \end{array}
+ * @f]
+ * @param xs Iterable container of variables which have both `begin()` and
+ *           `end()` functions that return an iterator.
+ * @param dim Axis to be processed.
+ * @return A new variable.
+ */
 template<typename Container>
 inline type_traits::Reduce<Container> concat(
     const Container &xs, std::uint32_t dim) {
@@ -301,6 +500,13 @@ inline type_traits::Reduce<Container> concat(
   return concat(std::vector<Var>(xs.begin(), xs.end()), dim);
 }
 
+/**
+ * Same as above, but `xs` has pointers of variables.
+ * @param xs Iterable container of pointers of variables which have both
+ *           `begin()` and `end()` functions that return an iterator.
+ * @param dim Axis to be processed.
+ * @return A new variable.
+ */
 template<typename Container>
 inline type_traits::ReducePtr<Container> concat(
     const Container &xs, std::uint32_t dim) {
@@ -308,54 +514,164 @@ inline type_traits::ReducePtr<Container> concat(
   return concat(std::vector<const Var *>(xs.begin(), xs.end()), dim);
 }
 
+/**
+ * Changes the Shape of the variable.
+ * @param x A variable with an old Shape.
+ * @param new_shape A new Shape to be applied to the new variable. The volume
+ *                  and the minibatch size must be same as that of `x.shape()`.
+ * @return A new variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> reshape(const Var &x, const Shape &new_shape);
 
+/**
+ * Changes the Shape of the variable to the column vector.
+ * @param x A variable with an old Shape.
+ * @return A new variable.
+ */
 template<typename Var>
 type_traits::Identity<Var> flatten(const Var &x);
 
+/**
+ * Applies a matrix transposition.
+ * @param x A variable representing an argument \f$ X \f$. The shape of `x`
+ *          must be either a scalar, a column vector or a matrix.
+ * @return A new variable representing \f$ X^\top \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> transpose(const Var &x);
 
+/**
+ * Applies a matrix multiplication between two matrices.
+ * @param a A variable representing an argument \f$ A \f$. The shape of `a`
+ *          must be either a scalar, a column vector or a matrix.
+ * @param b A variable representing an argument \f$ B \f$. The shape of `b`
+ *          must be either a scalar, a column vector or a matrix, and
+ *          `b.shape()[0]` must be equal to `a.shape()[1]`.
+ * @return A new variable representing \f$ AB \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> matmul(const Var &a, const Var &b);
 
+/**
+ * Applies an elementwise square root function.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ \sqrt{x} \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> sqrt(const Var &x);
 
+/**
+ * Applies an elementwise exponential function.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ e^x \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> exp(const Var &x);
 
+/**
+ * Applies an elementwise natural logarithm function.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ \ln (x) \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> log(const Var &x);
 
+/**
+ * Applies an elementwise hyperbolic tangent function.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ \tanh (x) \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> tanh(const Var &x);
 
+/**
+ * Applies an elementwise logistic sigmoid function:
+ * @f[ \mathrm{sigmoid}(x) := \frac{1}{1 + e^{-x}}. @f]
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ \mathrm{sigmoid}(x) \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> sigmoid(const Var &x);
 
+/**
+ * Applies an elementwise softplus function:
+ * @f[ \mathrm{softplus}(x) := \ln (1 + e^x). @f]
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ \mathrm{softplus}(x) \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> softplus(const Var &x);
 
+/**
+ * Applies an elementwise sin function.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ \sin (x) \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> sin(const Var &x);
 
+/**
+ * Applies an elementwise cos function.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ \cos (x) \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> cos(const Var &x);
 
+/**
+ * Applies an elementwise tangent function.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ \tan (x) \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> tan(const Var &x);
 
+/**
+ * Applies an elementwise rectified linear unit (ReLU) function:
+ * @f[ \mathrm{ReLU}(x) := \max (x, 0). @f]
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ \mathrm{ReLU}(x) \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> relu(const Var &x);
 
+/**
+ * Applies an elementwise leaky ReLU function:
+ * @f[ \mathrm{LReLU}(x) := \max (x, 0.01x). @f]
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ \mathrm{LReLU}(x) \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> lrelu(const Var &x);
 
+/**
+ * Applies an elementwise parameterized ReLU function:
+ * @f[
+ *  \mathrm{PReLU}(x) := \left\{ \begin{array}{ll}
+ *    x, & \mathrm{if} \ x \geq 0, \\
+ *    \alpha x, & \mathrm{otherwise}.
+ *  \end{array} \right.
+ * @f]
+ * @param x A variable representing an argument \f$ x \f$.
+ * @param a A scaling factor \f$ \alpha \f$.
+ * @return A variable representing \f$ \mathrm{PReLU}(x) \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> prelu(const Var &x, float a);
 
+/**
+ * Applies an elementwise exponential linear unit (ELU) function:
+ * @f[
+ *  \mathrm{ELU}(x) := \left\{ \begin{array}{ll}
+ *    x, & \mathrm{if} \ x \geq 0, \\
+ *    \alpha (e^x- 1), & \mathrm{otherwise}.
+ *  \end{array} \right.
+ * @f]
+ * @param x A variable representing an argument \f$ x \f$.
+ * @param a A scaling factor \f$ \alpha \f$.
+ * @return A variable representing \f$ \mathrm{ELU}(x) \f$.
+ */
 template<typename Var>
 type_traits::Identity<Var> elu(const Var &x, float a);
 
@@ -422,6 +738,8 @@ Node constant_node(const Shape &shape, float k, Device *dev, Graph *g);
 template<typename Var>
 type_traits::Identity<Var> constant(const Shape &shape, float k, Device *dev);
 
+/// @cond
+
 template<>
 inline Tensor constant<Tensor>(const Shape &shape, float k, Device *dev) {
   return constant_tensor(shape, k, dev);
@@ -431,6 +749,8 @@ template<>
 inline Node constant<Node>(const Shape &shape, float k, Device *dev) {
   return constant_node(shape, k, dev, nullptr);
 }
+
+/// @endcond
 
 template<typename Var>
 inline type_traits::Identity<Var> constant(
@@ -458,6 +778,8 @@ Node identity_node(std::uint32_t size, Device *dev, Graph *g);
 template<typename Var>
 type_traits::Identity<Var> identity(std::uint32_t size, Device *dev);
 
+/// @cond
+
 template<>
 inline Tensor identity<Tensor>(std::uint32_t size, Device *dev) {
   return identity_tensor(size, dev);
@@ -467,6 +789,8 @@ template<>
 inline Node identity<Node>(std::uint32_t size, Device *dev) {
   return identity_node(size, dev, nullptr);
 }
+
+/// @endcond
 
 template<typename Var>
 inline type_traits::Identity<Var> identity(std::uint32_t size, Device &dev) {
@@ -498,6 +822,8 @@ template<typename Var>
 type_traits::Identity<Var> bernoulli(
     const Shape &shape, float p, Device *dev);
 
+/// @cond
+
 template<>
 inline Tensor bernoulli<Tensor>(
     const Shape &shape, float p, Device *dev) {
@@ -509,6 +835,8 @@ inline Node bernoulli<Node>(
     const Shape &shape, float p, Device *dev) {
   return bernoulli_node(shape, p, dev, nullptr);
 }
+
+/// @endcond
 
 template<typename Var>
 inline type_traits::Identity<Var> bernoulli(
@@ -540,6 +868,8 @@ template<typename Var>
 type_traits::Identity<Var> uniform(
     const Shape &shape, float lower, float upper, Device *dev);
 
+/// @cond
+
 template<>
 inline Tensor uniform<Tensor>(
     const Shape &shape, float lower, float upper, Device *dev) {
@@ -551,6 +881,8 @@ inline Node uniform<Node>(
     const Shape &shape, float lower, float upper, Device *dev) {
   return uniform_node(shape, lower, upper, dev, nullptr);
 }
+
+/// @endcond
 
 template<typename Var>
 inline type_traits::Identity<Var> uniform(
@@ -582,6 +914,8 @@ template<typename Var>
 type_traits::Identity<Var> normal(
     const Shape &shape, float mean, float sd, Device *dev);
 
+/// @cond
+
 template<>
 inline Tensor normal<Tensor>(
     const Shape &shape, float mean, float sd, Device *dev) {
@@ -593,6 +927,8 @@ inline Node normal<Node>(
     const Shape &shape, float mean, float sd, Device *dev) {
   return normal_node(shape, mean, sd, dev, nullptr);
 }
+
+/// @endcond
 
 template<typename Var>
 inline type_traits::Identity<Var> normal(
@@ -624,6 +960,8 @@ template<typename Var>
 type_traits::Identity<Var> log_normal(
     const Shape &shape, float mean, float sd, Device &dev);
 
+/// @cond
+
 template<>
 inline Tensor log_normal<Tensor>(
     const Shape &shape, float mean, float sd, Device &dev) {
@@ -635,6 +973,8 @@ inline Node log_normal<Node>(
     const Shape &shape, float mean, float sd, Device &dev) {
   return log_normal_node(shape, mean, sd, &dev, nullptr);
 }
+
+/// @endcond
 
 template<typename Var>
 inline type_traits::Identity<Var> log_normal(
@@ -666,6 +1006,8 @@ template<typename Var>
 type_traits::Identity<Var> gumbel(
     const Shape &shape, float mu, float beta, Device *dev);
 
+/// @cond
+
 template<>
 inline Tensor gumbel<Tensor>(
     const Shape &shape, float mu, float beta, Device *dev) {
@@ -677,6 +1019,8 @@ inline Node gumbel<Node>(
     const Shape &shape, float mu, float beta, Device *dev) {
   return gumbel_node(shape, mu, beta, dev, nullptr);
 }
+
+/// @endcond
 
 template<typename Var>
 inline type_traits::Identity<Var> gumbel(

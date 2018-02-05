@@ -23,6 +23,5 @@ argument appropriately:
   auto x = primitiv::functions::input<Node>(...);  // `x` becomes a `Node`.
   auto w = primitiv::functions::parameter<Tensor>(...);  // `w` becomes a `Tensor`.
 
-
 .. doxygennamespace:: primitiv::functions
   :members:
