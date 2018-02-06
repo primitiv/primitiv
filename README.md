@@ -49,7 +49,7 @@ Prerequisites
 Documentation
 -------------
 
-- [Official documentation site]() describes various information including
+- [Official documentation site](http://primitiv.readthedocs.io/en/develop/) describes various information including
   installation, usage and library references.
 - [Example code](examples) shows some actual usages of primitiv.
 
