@@ -492,8 +492,8 @@ inline type_traits::Identity<Var> concat(
  *      \end{array} \right) \right).
  *  \end{array}
  * @f]
- * @param xs Iterable container of variables which have both `begin()` and
- *           `end()` functions that return an iterator.
+ * @param xs Iterable container of variables. `xs` must have both `begin()` and
+ *           `end()` functions that return the begin/end iterators.
  * @param dim Axis to be processed.
  * @return A new variable.
  */
@@ -506,8 +506,9 @@ inline type_traits::Reduce<Container> concat(
 
 /**
  * Same as above, but `xs` has pointers of variables.
- * @param xs Iterable container of pointers of variables which have both
- *           `begin()` and `end()` functions that return an iterator.
+ * @param xs Iterable container of pointers of variables. `xs` must have both
+ *           `begin()` and `end()` functions that return the begin/end
+ *           iterators.
  * @param dim Axis to be processed.
  * @return A new variable.
  */
@@ -669,7 +670,7 @@ type_traits::Identity<Var> prelu(const Var &x, float a);
  * @f[
  *  \mathrm{ELU}(x) := \left\{ \begin{array}{ll}
  *    x, & \mathrm{if} \ x \geq 0, \\
- *    \alpha (e^x- 1), & \mathrm{otherwise}.
+ *    \alpha (e^x - 1), & \mathrm{otherwise}.
  *  \end{array} \right.
  * @f]
  * @param x A variable representing an argument \f$ x \f$.
@@ -860,7 +861,7 @@ type_traits::Identity<Var> max_pool2d(
 namespace batch {
 
 /**
- * Applies broadcasting along minibatches.
+ * Applies summation along the minibatch.
  * Following example shows how this function work:
  * @f[
  *  \begin{array}{lcl}
