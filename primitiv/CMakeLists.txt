@@ -66,8 +66,8 @@ set(primitiv_base_SRCS
   tensor.cc
   tensor_funcs.cc
 )
-file(GLOB primitiv_naive_devops_HDRS "device_ops/*_naive.h")
-file(GLOB primitiv_naive_devops_SRCS "device_ops/*_naive.cc")
+file(GLOB primitiv_naive_devops_HDRS "device_ops/naive/*.h")
+file(GLOB primitiv_naive_devops_SRCS "device_ops/naive/*.cc")
 install(FILES ${primitiv_base_HDRS} DESTINATION include/primitiv)
 
 # MessagePack libraries.
@@ -94,8 +94,8 @@ set(primitiv_all_DEPS)
 # Build rules of the Eigen backend.
 if(PRIMITIV_USE_EIGEN)
   set(primitiv_eigen_HDRS eigen_device.h)
-  file(GLOB primitiv_eigen_devops_HDRS "device_ops/*_eigen.h")
-  file(GLOB primitiv_eigen_devops_SRCS "device_ops/*_eigen.cc")
+  file(GLOB primitiv_eigen_devops_HDRS "device_ops/eigen/*.h")
+  file(GLOB primitiv_eigen_devops_SRCS "device_ops/eigen/*.cc")
   install(FILES ${primitiv_eigen_HDRS} DESTINATION include/primitiv)
 
   set(primitiv_eigen_COMPILE_FLAGS "")
@@ -135,8 +135,8 @@ endif()
 if(PRIMITIV_USE_CUDA)
   set(primitiv_cuda_HDRS cuda_device.h cuda_utils.h)
   set(primitiv_cuda_SRCS cuda_device.cu cuda_utils.cu)
-  file(GLOB primitiv_cuda_devops_HDRS "device_ops/*_cuda.h")
-  file(GLOB primitiv_cuda_devops_SRCS "device_ops/*_cuda.cu")
+  file(GLOB primitiv_cuda_devops_HDRS "device_ops/cuda/*.h")
+  file(GLOB primitiv_cuda_devops_SRCS "device_ops/cuda/*.cu")
   install(FILES ${primitiv_cuda_HDRS} DESTINATION include/primitiv)
 
   list(APPEND CUDA_NVCC_FLAGS "-std=c++11 -O3 -Xcompiler -fPIC")
