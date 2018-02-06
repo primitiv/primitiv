@@ -15,13 +15,13 @@ Following lines are the formulation of the problem used in this tutorial:
 
 .. math::
 
-  \begin{eqnarray}
-    f: \mathbb{R}^2 & \rightarrow & [-1, 1]; \\
-    f: (x_1, x_2) & \mapsto & \left\{ \begin{array}{rl}
+  \begin{array}{rrcl}
+    f: & \mathbb{R}^2 & \rightarrow & [-1, 1]; \\
+    f: & (x_1, x_2) & \mapsto & \left\{ \begin{array}{rl}
       1, & \mathrm{if} \ \ x_1 x_2 \geq 0, \\
       -1, & \mathrm{otherwise},
     \end{array} \right.
-  \end{eqnarray}
+  \end{array}
 
 where :math:`x_1, x_2 \in \mathbb{R}`.
 This is known as the *XOR problem*; :math:`f` detects whether the signs of two
