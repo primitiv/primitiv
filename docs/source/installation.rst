@@ -18,7 +18,7 @@ For the minimal configuration (no other hardwares), primitiv requries below
 softwares/libraries:
 
 * C++11 compiler (`GCC <https://gcc.gnu.org/>`_, `Clang <https://clang.llvm.org/>`_, others)
-* `CMake 3.1.0 <https://cmake.org/>`_
+* `CMake 3.1.0 <https://cmake.org/>`_ or later
 
 For building unit tests, it requires below libraries:
 
@@ -28,12 +28,12 @@ For using specific hardwares, it requires some hardware-dependent libraries:
 
 * ``primitiv::devices::Eigen``
 
-  * `Eigen 3.3.0 <http://eigen.tuxfamily.org/index.php?title=Main_Page>`_
+  * `Eigen 3.3.0 <http://eigen.tuxfamily.org/index.php?title=Main_Page>`_ or later
 
 * ``primitiv::devices::CUDA``
 
-  * `CUDA Toolkit 8.0 <https://developer.nvidia.com/cuda-toolkit>`_
-  * `cuDNN 5.1.0 <https://developer.nvidia.com/cudnn>`_
+  * `CUDA Toolkit 8.0 <https://developer.nvidia.com/cuda-toolkit>`_ or later
+  * `cuDNN 5.1.0 <https://developer.nvidia.com/cudnn>`_ or later
 
 * ``primitiv::devices::OpenCL``
 
