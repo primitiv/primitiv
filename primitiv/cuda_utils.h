@@ -10,6 +10,7 @@
 #include <cudnn.h>
 #include <curand.h>
 
+#include <primitiv/memory_pool.h>
 #include <primitiv/mixins.h>
 
 #define CUDA_CALL(f) { \
@@ -295,6 +296,31 @@ public:
 
 private:
   ::cudnnPoolingDescriptor_t handle_ = NULL;
+};
+
+/**
+ * Hidden objects of CUDA devices.
+ */
+struct InternalState {
+  InternalState(std::uint32_t dev_id, std::uint32_t rng_seed)
+    : cublas(dev_id)
+    , curand(dev_id, rng_seed)
+    , cudnn(dev_id)
+    , pool(
+        [dev_id](std::size_t size) -> void * {  // allocator
+          void *ptr;
+          CUDA_CALL(::cudaSetDevice(dev_id));
+          CUDA_CALL(::cudaMalloc(&ptr, size));
+          return ptr;
+        },
+        [](void *ptr) -> void {  // deleter
+          CUDA_CALL(::cudaFree(ptr));
+        }) {}
+  CuBLASHandle cublas;
+  CuRANDHandle curand;
+  CuDNNHandle cudnn;
+  MemoryPool pool;
+  ::cudaDeviceProp prop;
 };
 
 }  // namespace cuda

@@ -245,14 +245,6 @@ CUDADEV_KERNEL_FW_AB(multiply, ::__fmul_rn);
 CUDADEV_KERNEL_FW_AB(divide, ::__fdiv_rn);
 CUDADEV_KERNEL_FW_AB(pow, ::powf);
 
-#undef CUDADEV_KERNEL_FW_X
-#undef CUDADEV_KERNEL_BW_X
-#undef CUDADEV_KERNEL_FW_X_CONST
-#undef CUDADEV_KERNEL_BW_X_CONST
-#undef CUDADEV_KERNEL_FW_X_SCALAR_R
-#undef CUDADEV_KERNEL_FW_X_SCALAR_L
-#undef CUDADEV_KERNEL_FW_AB
-
 __global__ void add_bw_dev(
     const float *, const float *, const float *, const float *pgy,
     std::uint32_t size, std::uint32_t mba, std::uint32_t mbb, float *pga, float *pgb) {
@@ -543,31 +535,6 @@ __global__ void set_gemm_ptrs(
 namespace primitiv {
 namespace devices {
 
-/*
- * Hidden objects of CUDA devices.
- */
-struct CUDAInternalState {
-  CUDAInternalState(std::uint32_t dev_id, std::uint32_t rng_seed)
-    : cublas(dev_id)
-    , curand(dev_id, rng_seed)
-    , cudnn(dev_id)
-    , pool(
-        [dev_id](std::size_t size) -> void * {  // allocator
-          void *ptr;
-          CUDA_CALL(::cudaSetDevice(dev_id));
-          CUDA_CALL(::cudaMalloc(&ptr, size));
-          return ptr;
-        },
-        [](void *ptr) -> void {  // deleter
-          CUDA_CALL(::cudaFree(ptr));
-        }) {}
-  cuda::CuBLASHandle cublas;
-  cuda::CuRANDHandle curand;
-  cuda::CuDNNHandle cudnn;
-  MemoryPool pool;
-  ::cudaDeviceProp prop;
-};
-
 std::uint32_t CUDA::num_devices() {
   int ret;
   CUDA_CALL(::cudaGetDeviceCount(&ret));
@@ -654,7 +621,7 @@ void CUDA::initialize() {
   max_batch_ = prop.maxGridSize[1];
 
   // Initializes additional libraries
-  state_.reset(new CUDAInternalState(dev_id_, rng_seed_));
+  state_.reset(new cuda::InternalState(dev_id_, rng_seed_));
   state_->prop = prop;
 
   // Initializes the device pointer for integer IDs.
@@ -1088,14 +1055,6 @@ CUDADEV_BW_AB(subtract);
 CUDADEV_BW_AB(multiply);
 CUDADEV_BW_AB(divide);
 CUDADEV_BW_AB(pow);
-
-#undef CUDADEV_FW_X
-#undef CUDADEV_BW_X
-#undef CUDADEV_FW_X_CONST
-#undef CUDADEV_BW_X_CONST
-#undef CUDADEV_FW_X_SCALAR
-#undef CUDADEV_FW_AB
-#undef CUDADEV_BW_AB
 
 void CUDA::transpose_fw_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t rows = x.shape()[0];
