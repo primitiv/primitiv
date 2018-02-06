@@ -10,7 +10,7 @@ This section describes concepts and designs of primitiv.
   :caption: Contents:
   :titlesonly:
 
-  header_and_library
+  compilation
   shape_and_minibatch
   lazy_evaluation
   devices
