@@ -1,5 +1,5 @@
-#ifndef PRIMITIV_DEVICE_OPS_NAIVE_UTILS_H_
-#define PRIMITIV_DEVICE_OPS_NAIVE_UTILS_H_
+#ifndef PRIMITIV_DEVICE_OPS_COMMON_NAIVE_H_
+#define PRIMITIV_DEVICE_OPS_COMMON_NAIVE_H_
 
 #define CDATA(x) static_cast<const float *>(get_handle(x))
 #define MDATA(x) static_cast<float *>(get_mutable_handle(x))
@@ -79,4 +79,4 @@ void Naive::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
   } \
 }
 
-#endif  // PRIMITIV_DEVICE_OPS_NAIVE_UTILS_H_
+#endif  // PRIMITIV_DEVICE_OPS_COMMON_NAIVE_H_

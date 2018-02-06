@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include <primitiv/naive_device.h>
-#include <primitiv/device_ops/naive_utils.h>
+#include <primitiv/device_ops/common_naive.h>
 
 namespace primitiv {
 namespace devices {

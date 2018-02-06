@@ -3,7 +3,7 @@
 #include <cstring>
 
 #include <primitiv/eigen_device.h>
-#include <primitiv/device_ops/eigen_utils.h>
+#include <primitiv/device_ops/common_eigen.h>
 
 namespace primitiv {
 namespace devices {

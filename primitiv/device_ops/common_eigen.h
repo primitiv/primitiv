@@ -1,5 +1,5 @@
-#ifndef PRIMITIV_DEVICE_OPS_EIGEN_UTILS_H_
-#define PRIMITIV_DEVICE_OPS_EIGEN_UTILS_H_
+#ifndef PRIMITIV_DEVICE_OPS_COMMON_EIGEN_H_
+#define PRIMITIV_DEVICE_OPS_COMMON_EIGEN_H_
 
 // NOTE(vbkaisetsu):
 // Eigen contains a few LGPL-licensed features. They conflict with
@@ -99,4 +99,4 @@ void Eigen::name##_fw_impl(const Tensor &a_, const Tensor &b_, Tensor &y_) { \
   } \
 }
 
-#endif  // PRIMITIV_DEVICE_OPS_EIGEN_UTILS_H_
+#endif  // PRIMITIV_DEVICE_OPS_COMMON_EIGEN_H_
