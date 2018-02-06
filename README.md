@@ -42,29 +42,12 @@ Prerequisites
   - Required only when `-DPRIMITIV_USE_OPENCL=ON`
 
 
-Install
--------
-
-    git clone <this repository>
-    cd primitiv
-    mkdir build
-    cd build
-    cmake .. [-D(Options you need)]
-    make [-j <threads>]
-    [make test]
-    [make install]
-
-
-Build Options
+Documentation
 -------------
 
-- See [Build Options](doc/build_options.md).
-
-
-Usage
------
-
-- See [Examples](examples).
+- [Official documentation site]() describes various information including
+  installation, usage and library references.
+- [Example code](examples) shows some actual usages of primitiv.
 
 
 Contact
