@@ -1,172 +1,198 @@
-/* Copyright 2017 The primitiv Authors. All Rights Reserved. */
 #include <primitiv/config.h>
 
-#include <primitiv/optimizer.h>
+#include <string>
+#include <unordered_map>
 
+#include <primitiv/optimizer.h>
 #include <primitiv/c/internal.h>
 #include <primitiv/c/optimizer.h>
 
 using primitiv::Optimizer;
+using primitiv::c::internal::to_c_ptr;
+using primitiv::c::internal::to_cpp_ptr;
 
-extern "C" {
+PRIMITIV_C_STATUS primitivDeleteOptimizer(primitivOptimizer_t *optimizer) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  delete to_cpp_ptr(optimizer);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Optimizer_load(primitiv_Optimizer *optimizer, const char *path) {
-  to_cc(optimizer)->load(path);
-}
-void safe_primitiv_Optimizer_load(primitiv_Optimizer *optimizer,
-                                  const char *path,
-                                  primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Optimizer_load(optimizer, path), status);
-}
+PRIMITIV_C_STATUS primitivLoadOptimizer(
+    primitivOptimizer_t *optimizer, const char *path) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(path);
+  to_cpp_ptr(optimizer)->load(path);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Optimizer_save(const primitiv_Optimizer *optimizer,
-                             const char *path) {
-  to_cc(optimizer)->save(path);
-}
-void safe_primitiv_Optimizer_save(const primitiv_Optimizer *optimizer,
-                                  const char *path,
-                                  primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Optimizer_save(optimizer, path), status);
-}
+PRIMITIV_C_STATUS primitivSaveOptimizer(
+    const primitivOptimizer_t *optimizer, const char *path) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(path);
+  to_cpp_ptr(optimizer)->save(path);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-uint32_t primitiv_Optimizer_get_epoch(const primitiv_Optimizer *optimizer) {
-  return to_cc(optimizer)->get_epoch();
-}
-uint32_t safe_primitiv_Optimizer_get_epoch(const primitiv_Optimizer *optimizer,
-                                           primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Optimizer_get_epoch(optimizer), status, 0);
-}
+PRIMITIV_C_STATUS primitivGetOptimizerEpoch(
+    const primitivOptimizer_t *optimizer, uint32_t *retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_cpp_ptr(optimizer)->get_epoch();
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Optimizer_set_epoch(primitiv_Optimizer *optimizer,
-                                  uint32_t epoch) {
-  to_cc(optimizer)->set_epoch(epoch);
-}
-void safe_primitiv_Optimizer_set_epoch(primitiv_Optimizer *optimizer,
-                                       uint32_t epoch,
-                                       primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Optimizer_set_epoch(optimizer, epoch), status);
-}
+PRIMITIV_C_STATUS primitivSetOptimizerEpoch(
+    primitivOptimizer_t *optimizer, uint32_t epoch) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  to_cpp_ptr(optimizer)->set_epoch(epoch);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-float primitiv_Optimizer_get_learning_rate_scaling(
-    const primitiv_Optimizer *optimizer) {
-  return to_cc(optimizer)->get_learning_rate_scaling();
-}
-float safe_primitiv_Optimizer_get_learning_rate_scaling(
-    const primitiv_Optimizer *optimizer, primitiv_Status *status) {
-  SAFE_RETURN(
-      primitiv_Optimizer_get_learning_rate_scaling(optimizer), status, 0.0);
-}
+PRIMITIV_C_STATUS primitivGetOptimizerLearningRateScaling(
+    const primitivOptimizer_t *optimizer, float *retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_cpp_ptr(optimizer)->get_learning_rate_scaling();
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Optimizer_set_learning_rate_scaling(primitiv_Optimizer *optimizer,
-                                                  float scale) {
-  to_cc(optimizer)->set_epoch(scale);
-}
-void safe_primitiv_Optimizer_set_learning_rate_scaling(
-    primitiv_Optimizer *optimizer, float scale, primitiv_Status *status) {
-  SAFE_EXPR(
-      primitiv_Optimizer_set_learning_rate_scaling(optimizer, scale), status);
-}
+PRIMITIV_C_STATUS primitivSetOptimizerLearningRateScaling(
+    primitivOptimizer_t *optimizer, float scale) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  to_cpp_ptr(optimizer)->set_learning_rate_scaling(scale);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-float primitiv_Optimizer_get_weight_decay(const primitiv_Optimizer *optimizer) {
-  return to_cc(optimizer)->get_weight_decay();
-}
-float safe_primitiv_Optimizer_get_weight_decay(
-    const primitiv_Optimizer *optimizer, primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Optimizer_get_weight_decay(optimizer), status, 0.0);
-}
+PRIMITIV_C_STATUS primitivGetOptimizerWeightDecay(
+    const primitivOptimizer_t *optimizer, float *retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_cpp_ptr(optimizer)->get_weight_decay();
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Optimizer_set_weight_decay(primitiv_Optimizer *optimizer,
-                                         float strength) {
-  to_cc(optimizer)->set_weight_decay(strength);
-}
-void safe_primitiv_Optimizer_set_weight_decay(primitiv_Optimizer *optimizer,
-                                              float strength,
-                                              primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Optimizer_set_weight_decay(optimizer, strength), status);
-}
+PRIMITIV_C_STATUS primitivSetOptimizerWeightDecay(
+    primitivOptimizer_t *optimizer, float strength) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  to_cpp_ptr(optimizer)->set_weight_decay(strength);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-float primitiv_Optimizer_get_gradient_clipping(
-    const primitiv_Optimizer *optimizer) {
-  return to_cc(optimizer)->get_gradient_clipping();
-}
-float safe_primitiv_Optimizer_get_gradient_clipping(
-    const primitiv_Optimizer *optimizer, primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Optimizer_get_gradient_clipping(optimizer), status, 0.0);
-}
+PRIMITIV_C_STATUS primitivGetOptimizerGradientClipping(
+    const primitivOptimizer_t *optimizer, float *retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_cpp_ptr(optimizer)->get_gradient_clipping();
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Optimizer_set_gradient_clipping(primitiv_Optimizer *optimizer,
-                                              float threshold) {
-  to_cc(optimizer)->set_gradient_clipping(threshold);
-}
-void safe_primitiv_Optimizer_set_gradient_clipping(
-    primitiv_Optimizer *optimizer, float threshold, primitiv_Status *status) {
-  SAFE_EXPR(
-      primitiv_Optimizer_set_gradient_clipping(optimizer, threshold), status);
-}
+PRIMITIV_C_STATUS primitivSetOptimizerGradientClipping(
+    primitivOptimizer_t *optimizer, float threshold) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  to_cpp_ptr(optimizer)->set_gradient_clipping(threshold);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Optimizer_add_parameter(primitiv_Optimizer *optimizer,
-                                      primitiv_Parameter *param) {
-  to_cc(optimizer)->add(*to_cc(param));
-}
-void safe_primitiv_Optimizer_add_parameter(primitiv_Optimizer *optimizer,
-                                           primitiv_Parameter *param,
-                                           primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Optimizer_add_parameter(optimizer, param), status);
-}
+PRIMITIV_C_STATUS primitivAddParameterToOptimizer(
+    primitivOptimizer_t *optimizer, primitivParameter_t *param) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(param);
+  to_cpp_ptr(optimizer)->add(*to_cpp_ptr(param));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Optimizer_add_parameters(primitiv_Optimizer *optimizer,
-                                       primitiv_Parameter **params, size_t n) {
-  Optimizer *cc_optimizer = to_cc(optimizer);
+PRIMITIV_C_STATUS primitivAddParametersToOptimizer(
+    primitivOptimizer_t *optimizer, primitivParameter_t **params,
+    size_t n) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(params);
+  Optimizer *cc_optimizer = to_cpp_ptr(optimizer);
   for (size_t i = 0; i < n; ++i) {
-    cc_optimizer->add(*to_cc(params[i]));
+    cc_optimizer->add(*to_cpp_ptr(params[i]));
   }
-}
-void safe_primitiv_Optimizer_add_parameters(primitiv_Optimizer *optimizer,
-                                            primitiv_Parameter **params,
-                                            size_t n,
-                                            primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Optimizer_add_parameters(optimizer, params, n), status);
-}
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Optimizer_add_model(primitiv_Optimizer *optimizer,
-                                  primitiv_Model *model) {
-  to_cc(optimizer)->add(*to_cc(model));
-}
-void safe_primitiv_Optimizer_add_model(primitiv_Optimizer *optimizer,
-                                       primitiv_Model *model,
-                                       primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Optimizer_add_model(optimizer, model), status);
-}
+PRIMITIV_C_STATUS primitivAddModelToOptimizer(
+    primitivOptimizer_t *optimizer, primitivModel_t *model) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(model);
+  to_cpp_ptr(optimizer)->add(*to_cpp_ptr(model));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Optimizer_add_models(primitiv_Optimizer *optimizer,
-                                   primitiv_Model **models,
-                                   size_t n) {
-  Optimizer *cc_optimizer = to_cc(optimizer);
+PRIMITIV_C_STATUS primitivAddModelsToOptimizer(
+    primitivOptimizer_t *optimizer, primitivModel_t **models, size_t n) try {
+  Optimizer *cc_optimizer = to_cpp_ptr(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(models);
   for (size_t i = 0; i < n; ++i) {
-    cc_optimizer->add(*to_cc(models[i]));
+    cc_optimizer->add(*to_cpp_ptr(models[i]));
   }
-}
-void safe_primitiv_Optimizer_add_models(primitiv_Optimizer *optimizer,
-                                        primitiv_Model **models,
-                                        size_t n,
-                                        primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Optimizer_add_models(optimizer, models, n), status);
-}
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Optimizer_reset_gradients(primitiv_Optimizer *optimizer) {
-  to_cc(optimizer)->reset_gradients();
-}
-void safe_primitiv_Optimizer_reset_gradients(primitiv_Optimizer *optimizer,
-                                             primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Optimizer_reset_gradients(optimizer), status);
-}
+PRIMITIV_C_STATUS primitivResetOptimizerGradients(
+    primitivOptimizer_t *optimizer) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  to_cpp_ptr(optimizer)->reset_gradients();
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Optimizer_update(primitiv_Optimizer *optimizer) {
-  to_cc(optimizer)->update();
-}
-void safe_primitiv_Optimizer_update(primitiv_Optimizer *optimizer,
-                                    primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Optimizer_update(optimizer), status);
-}
+PRIMITIV_C_STATUS primitivExecuteOptimizerUpdate(
+    primitivOptimizer_t *optimizer) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  to_cpp_ptr(optimizer)->update();
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-}  // end extern "C"
+PRIMITIV_C_STATUS primitivGetOptimizerIntConfig(
+    const primitivOptimizer_t *optimizer, const char *key, uint32_t *retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(key);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  std::unordered_map<std::string, uint32_t> uint_configs;
+  std::unordered_map<std::string, float> float_configs;
+  to_cpp_ptr(optimizer)->get_configs(uint_configs, float_configs);
+  const auto it = uint_configs.find(key);
+  if (it != uint_configs.end()) {
+    *retval = uint_configs[key];
+  }
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitivSetOptimizerIntConfig(
+    primitivOptimizer_t *optimizer, const char *key, uint32_t value) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(key);
+  PRIMITIV_C_CHECK_NOT_NULL(value);
+  std::unordered_map<std::string, uint32_t> uint_configs{{key, value}};
+  std::unordered_map<std::string, float> float_configs;
+  to_cpp_ptr(optimizer)->set_configs(uint_configs, float_configs);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitivGetOptimizerFloatConfig(
+    const primitivOptimizer_t *optimizer, const char *key, float *retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(key);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  std::unordered_map<std::string, uint32_t> uint_configs;
+  std::unordered_map<std::string, float> float_configs;
+  to_cpp_ptr(optimizer)->get_configs(uint_configs, float_configs);
+  const auto it = float_configs.find(key);
+  if (it != float_configs.end()) {
+    *retval = float_configs[key];
+  }
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitivSetOptimizerFloatConfig(
+    primitivOptimizer_t *optimizer, const char *key, float value) try {
+  PRIMITIV_C_CHECK_NOT_NULL(optimizer);
+  PRIMITIV_C_CHECK_NOT_NULL(key);
+  PRIMITIV_C_CHECK_NOT_NULL(value);
+  std::unordered_map<std::string, uint32_t> uint_configs;
+  std::unordered_map<std::string, float> float_configs{{key, value}};
+  to_cpp_ptr(optimizer)->set_configs(uint_configs, float_configs);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
