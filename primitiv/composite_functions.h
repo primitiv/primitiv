@@ -118,11 +118,11 @@ inline type_traits::Identity<Var> mean(const Var &x) {
 /**
  * Applies the batch normalization:
  * @f[
- *  \begin{eqnarray}
+ *  \begin{array}{rcl}
  *    m_x & := & \frac{1}{B} \sum_{i=1}^{B} x_i, \\
  *    v_x & := & \frac{B}{B - 1} \left( \frac{1}{B} \sum_{i=0}^{B} x_i^2 - m_x^2 \right), \\
  *    \mathrm{batch::normalize}(x) & := & \frac{x - m_x}{\sqrt{v_x + \epsilon}},
- *  \end{eqnarray}
+ *  \end{array}
  * @f]
  * where \f$ B \f$ is the minibatch size of \f$ x \f$.
  * @param x A variable representing values before normalization.
@@ -280,10 +280,10 @@ inline type_traits::Identity<Var> ones(const Shape &shape) {
 /**
  * Applies the dropout:
  * @f[
- *  \begin{eqnarray}
- *    w & \sim & \mathrm{Bernoulli(w; 1 - r)}, \\
+ *  \begin{array}{rcl}
+ *    w & \sim & \mathrm{Bernoulli}(w; 1 - r), \\
  *    \mathrm{dropout}(x) & := & \frac{1}{1 - r} \times w \times x.
- *  \end{eqnarray}
+ *  \end{array}
  * @f]
  * @param x A variable representing original values.
  * @param rate The dropout probability \f$ r \f$.

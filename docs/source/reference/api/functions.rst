@@ -4,7 +4,7 @@ Functions
 
 
 This page describes the basic/composite functions implemented in primitiv.
-They return a template type ``Var``, and return 0 or more number of references
+They return a template type ``Var``, and take 0 or more number of references
 of ``Var`` as their arguments. ``Var`` becomes either ``Node`` or ``Tensor``
 according to the usage:
 
