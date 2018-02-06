@@ -115,7 +115,8 @@ if(PRIMITIV_USE_EIGEN)
   endif()
 
   set_source_files_properties(
-    eigen_device.cc PROPERTIES COMPILE_FLAGS ${primitiv_eigen_COMPILE_FLAGS})
+    ${primitiv_eigen_SRCS}
+    PROPERTIES COMPILE_FLAGS ${primitiv_eigen_COMPILE_FLAGS})
 
   add_library(primitiv_eigen_OBJS OBJECT
     ${primitiv_base_HDRS}
@@ -167,7 +168,8 @@ if(PRIMITIV_USE_OPENCL)
       ${CMAKE_CURRENT_SOURCE_DIR}/opencl_device_kernel.cl
       ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/opencl_device_kernel.cl)
-  add_custom_target(primitiv_opencl_KERNEL_DATA DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc)
+  add_custom_target(primitiv_opencl_KERNEL_DATA DEPENDS
+    ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc)
 
   set(primitiv_opencl_HDRS opencl_device.h)
   set(primitiv_opencl_SRCS opencl_device.cc)
