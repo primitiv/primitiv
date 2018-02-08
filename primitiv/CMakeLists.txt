@@ -87,7 +87,8 @@ add_library(primitiv_core_OBJS OBJECT
   ${primitiv_core_HDRS}
   ${primitiv_naive_devops_HDRS}
   ${primitiv_core_SRCS}
-  ${primitiv_naive_devops_SRCS})
+  ${primitiv_naive_devops_SRCS}
+)
 set(primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_core_OBJS>)
 set(primitiv_all_DEPS)
 
@@ -117,23 +118,27 @@ if(PRIMITIV_USE_EIGEN)
 
   set_source_files_properties(
     ${primitiv_eigen_devops_SRCS}
-    PROPERTIES COMPILE_FLAGS ${primitiv_eigen_COMPILE_FLAGS})
+    PROPERTIES COMPILE_FLAGS ${primitiv_eigen_COMPILE_FLAGS}
+  )
 
   add_library(primitiv_eigen_OBJS OBJECT
     ${primitiv_base_HDRS}
     ${primitiv_eigen_HDRS}
     ${primitiv_eigen_devops_HDRS}
-    ${primitiv_eigen_devops_SRCS})
+    ${primitiv_eigen_devops_SRCS}
+  )
 
   list(APPEND primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_eigen_OBJS>)
 endif()
 
 # Build rules of the CUDA backend.
 if(PRIMITIV_USE_CUDA)
-  set(primitiv_cuda_HDRS cuda_device.h cuda_utils.h)
-  set(primitiv_cuda_SRCS cuda_device.cu cuda_utils.cu)
+  set(primitiv_cuda_HDRS cuda_device.h cuda16_device.h cuda_utils.h)
+  set(primitiv_cuda_SRCS cuda_device.cu cuda16_device.cu cuda_utils.cu)
   file(GLOB primitiv_cuda_devops_HDRS "device_ops/cuda/*.h")
   file(GLOB primitiv_cuda_devops_SRCS "device_ops/cuda/*.cu")
+  file(GLOB primitiv_cuda16_devops_HDRS "device_ops/cuda16/*.h")
+  file(GLOB primitiv_cuda16_devops_SRCS "device_ops/cuda16/*.cu")
   install(FILES ${primitiv_cuda_HDRS} DESTINATION include/primitiv)
 
   list(APPEND CUDA_NVCC_FLAGS "-std=c++11 -O3 -Xcompiler -fPIC")
@@ -170,15 +175,19 @@ if(PRIMITIV_USE_CUDA)
   cuda_compile(primitiv_cuda_OBJS
     ${primitiv_core_HDRS}
     ${primitiv_cuda_HDRS}
-    ${primitiv_cuda_devops_HDRS}
     ${primitiv_cuda_SRCS}
-    ${primitiv_cuda_devops_SRCS})
+    ${primitiv_cuda_devops_HDRS}
+    ${primitiv_cuda_devops_SRCS}
+    ${primitiv_cuda16_devops_HDRS}
+    ${primitiv_cuda16_devops_SRCS}
+  )
   list(APPEND primitiv_all_OBJS ${primitiv_cuda_OBJS})
   list(APPEND primitiv_all_DEPS
     ${CUDA_LIBRARIES}
     ${CUDA_cublas_LIBRARY}
     ${CUDA_curand_LIBRARY}
-    ${CUDNN_LIBRARIES})
+    ${CUDNN_LIBRARIES}
+  )
 endif()
 
 # Build rules of the OpenCL backend.
@@ -190,9 +199,11 @@ if(PRIMITIV_USE_OPENCL)
       ${PROJECT_SOURCE_DIR}/cmake/generate_char_array.cmake
       ${CMAKE_CURRENT_SOURCE_DIR}/opencl_device_kernel.cl
       ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/opencl_device_kernel.cl)
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/opencl_device_kernel.cl
+  )
   add_custom_target(primitiv_opencl_KERNEL_DATA DEPENDS
-    ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc)
+    ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc
+  )
 
   set(primitiv_opencl_HDRS opencl_device.h)
   set(primitiv_opencl_SRCS opencl_device.cc)
@@ -201,13 +212,15 @@ if(PRIMITIV_USE_OPENCL)
   add_library(primitiv_opencl_OBJS OBJECT
     ${primitiv_base_HDRS}
     ${primitiv_opencl_HDRS}
-    ${primitiv_opencl_SRCS})
+    ${primitiv_opencl_SRCS}
+  )
   add_dependencies(primitiv_opencl_OBJS primitiv_opencl_KERNEL_DATA)
 
   list(APPEND primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_opencl_OBJS>)
   list(APPEND primitiv_all_DEPS
     ${OpenCL_LIBRARIES}
-    ${CLBLAS_LIBRARIES})
+    ${CLBLAS_LIBRARIES}
+  )
 endif()
 
 # Builds the integrated binary.
@@ -259,8 +272,9 @@ if(PRIMITIV_BUILD_C_API)
   install(FILES ${primitiv_c_HDRS} DESTINATION include/primitiv/c)
 
   add_library(primitiv_c_OBJS OBJECT
-      ${primitiv_c_HDRS}
-      ${primitiv_c_SRCS})
+    ${primitiv_c_HDRS}
+    ${primitiv_c_SRCS}
+  )
   set(primitiv_c_all_OBJS $<TARGET_OBJECTS:primitiv_c_OBJS>)
 
   if(PRIMITIV_USE_EIGEN)
@@ -269,8 +283,9 @@ if(PRIMITIV_BUILD_C_API)
     install(FILES ${primitiv_c_eigen_HDRS} DESTINATION include/primitiv/c)
 
     add_library(primitiv_c_eigen_OBJS OBJECT
-        ${primitiv_c_eigen_HDRS}
-        ${primitiv_c_eigen_SRCS})
+      ${primitiv_c_eigen_HDRS}
+      ${primitiv_c_eigen_SRCS}
+    )
     list(APPEND primitiv_c_all_OBJS $<TARGET_OBJECTS:primitiv_c_eigen_OBJS>)
   endif()
 
@@ -281,7 +296,8 @@ if(PRIMITIV_BUILD_C_API)
 
     add_library(primitiv_c_cuda_OBJS OBJECT
       ${primitiv_c_cuda_HDRS}
-      ${primitiv_c_cuda_SRCS})
+      ${primitiv_c_cuda_SRCS}
+    )
     list(APPEND primitiv_c_all_OBJS $<TARGET_OBJECTS:primitiv_c_cuda_OBJS>)
   endif()
 
@@ -292,7 +308,8 @@ if(PRIMITIV_BUILD_C_API)
 
     add_library(primitiv_c_opencl_OBJS OBJECT
       ${primitiv_c_opencl_HDRS}
-      ${primitiv_c_opencl_SRCS})
+      ${primitiv_c_opencl_SRCS}
+    )
     list(APPEND primitiv_c_all_OBJS $<TARGET_OBJECTS:primitiv_c_opencl_OBJS>)
   endif()
 
