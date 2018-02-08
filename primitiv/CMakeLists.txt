@@ -66,7 +66,8 @@ set(primitiv_base_SRCS
   tensor.cc
   tensor_funcs.cc
 )
-file(GLOB primitiv_naive_devops_SRCS "device_ops/*_naive.cc")
+file(GLOB primitiv_naive_devops_HDRS "device_ops/naive/*.h")
+file(GLOB primitiv_naive_devops_SRCS "device_ops/naive/*.cc")
 install(FILES ${primitiv_base_HDRS} DESTINATION include/primitiv)
 
 # MessagePack libraries.
@@ -79,19 +80,22 @@ install(FILES ${primitiv_msgpack_HDRS} DESTINATION include/primitiv/msgpack)
 
 # Core library: all of above libraries.
 set(primitiv_core_HDRS ${primitiv_base_HDRS} ${primitiv_msgpack_HDRS})
-set(primitiv_core_SRCS ${primitiv_base_SRCS} ${primitiv_naive_devops_SRCS})
+set(primitiv_core_SRCS ${primitiv_base_SRCS})
 
 # Builds core library.
 add_library(primitiv_core_OBJS OBJECT
   ${primitiv_core_HDRS}
-  ${primitiv_core_SRCS})
+  ${primitiv_naive_devops_HDRS}
+  ${primitiv_core_SRCS}
+  ${primitiv_naive_devops_SRCS})
 set(primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_core_OBJS>)
 set(primitiv_all_DEPS)
 
 # Build rules of the Eigen backend.
 if(PRIMITIV_USE_EIGEN)
   set(primitiv_eigen_HDRS eigen_device.h)
-  set(primitiv_eigen_SRCS eigen_device.cc)
+  file(GLOB primitiv_eigen_devops_HDRS "device_ops/eigen/*.h")
+  file(GLOB primitiv_eigen_devops_SRCS "device_ops/eigen/*.cc")
   install(FILES ${primitiv_eigen_HDRS} DESTINATION include/primitiv)
 
   set(primitiv_eigen_COMPILE_FLAGS "")
@@ -115,12 +119,14 @@ if(PRIMITIV_USE_EIGEN)
   endif()
 
   set_source_files_properties(
-    eigen_device.cc PROPERTIES COMPILE_FLAGS ${primitiv_eigen_COMPILE_FLAGS})
+    ${primitiv_eigen_devops_SRCS}
+    PROPERTIES COMPILE_FLAGS ${primitiv_eigen_COMPILE_FLAGS})
 
   add_library(primitiv_eigen_OBJS OBJECT
     ${primitiv_base_HDRS}
     ${primitiv_eigen_HDRS}
-    ${primitiv_eigen_SRCS})
+    ${primitiv_eigen_devops_HDRS}
+    ${primitiv_eigen_devops_SRCS})
 
   list(APPEND primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_eigen_OBJS>)
 endif()
@@ -129,6 +135,8 @@ endif()
 if(PRIMITIV_USE_CUDA)
   set(primitiv_cuda_HDRS cuda_device.h cuda_utils.h)
   set(primitiv_cuda_SRCS cuda_device.cu cuda_utils.cu)
+  file(GLOB primitiv_cuda_devops_HDRS "device_ops/cuda/*.h")
+  file(GLOB primitiv_cuda_devops_SRCS "device_ops/cuda/*.cu")
   install(FILES ${primitiv_cuda_HDRS} DESTINATION include/primitiv)
 
   list(APPEND CUDA_NVCC_FLAGS "-std=c++11 -O3 -Xcompiler -fPIC")
@@ -165,7 +173,9 @@ if(PRIMITIV_USE_CUDA)
   cuda_compile(primitiv_cuda_OBJS
     ${primitiv_core_HDRS}
     ${primitiv_cuda_HDRS}
-    ${primitiv_cuda_SRCS})
+    ${primitiv_cuda_devops_HDRS}
+    ${primitiv_cuda_SRCS}
+    ${primitiv_cuda_devops_SRCS})
   list(APPEND primitiv_all_OBJS ${primitiv_cuda_OBJS})
   list(APPEND primitiv_all_DEPS
     ${CUDA_LIBRARIES}
@@ -184,7 +194,8 @@ if(PRIMITIV_USE_OPENCL)
       ${CMAKE_CURRENT_SOURCE_DIR}/opencl_device_kernel.cl
       ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/opencl_device_kernel.cl)
-  add_custom_target(primitiv_opencl_KERNEL_DATA DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc)
+  add_custom_target(primitiv_opencl_KERNEL_DATA DEPENDS
+    ${CMAKE_CURRENT_BINARY_DIR}/opencl_device_kernel.inc)
 
   set(primitiv_opencl_HDRS opencl_device.h)
   set(primitiv_opencl_SRCS opencl_device.cc)
