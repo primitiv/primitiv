@@ -152,24 +152,21 @@ if(PRIMITIV_USE_CUDA)
   #
 
   list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30")
-  list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_32,code=sm_32")
   list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_35,code=sm_35")
-  list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_37,code=sm_37")
+
   list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_50,code=sm_50")
   list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=sm_52")
-  list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_53,code=sm_53")
-  #list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_53,code=compute_53")
+  list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=compute_52")
 
   if(CUDA_VERSION VERSION_EQUAL 8.0 OR CUDA_VERSION VERSION_GREATER 8.0)
     list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_60,code=sm_60")
     list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_61,code=sm_61")
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_62,code=sm_62")
-    #list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_62,code=compute_62")
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_61,code=compute_61")
   endif()
 
   if(CUDA_VERSION VERSION_EQUAL 9.0 OR CUDA_VERSION VERSION_GREATER 9.0)
     list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_70,code=sm_70")
-    #list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_70,code=compute_70")
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_70,code=compute_70")
   endif()
 
   cuda_compile(primitiv_cuda_OBJS
