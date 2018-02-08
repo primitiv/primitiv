@@ -25,9 +25,11 @@ void CUDA16::assert_support(std::uint32_t device_id) {
 
   // Checks compute capability
   // NOTE(odashi):
-  // FP16 calculation requires at least the compute capability 5.3.
+  // At least following compute capabilities are required:
+  // float <-> half conversion: 5.0
+  // Full support of half operations: 5.3
   static const int MIN_CC_MAJOR = 5;
-  static const int MIN_CC_MINOR = 3;
+  static const int MIN_CC_MINOR = 0;
   if (prop.major < MIN_CC_MAJOR ||
       (prop.major == MIN_CC_MAJOR && prop.minor < MIN_CC_MINOR)) {
     THROW_ERROR(
