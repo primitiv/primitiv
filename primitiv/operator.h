@@ -21,7 +21,7 @@ public:
 
   /**
    * Calculates only the resulting shape.
-   * @pasram args Shapes of argument values.
+   * @param args Shapes of argument values.
    * @return Shape of the resulting value.
    */
   virtual Shape forward_shape(

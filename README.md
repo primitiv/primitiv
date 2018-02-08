@@ -2,9 +2,13 @@
 [![backend](https://img.shields.io/badge/backend-CPU%2c%20CUDA%2c%20OpenCL-blue.svg)](README.md)
 [![os](https://img.shields.io/badge/os-Ubuntu%2c%20Debian%2c%20Fedora%2c%20OSX-blue.svg)](https://travis-ci.org/odashi/primitiv)
 [![license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Build Status (master)](https://img.shields.io/travis/primitiv/primitiv/master.svg?label=build+%28master%29)](https://travis-ci.org/primitiv/primitiv)
-[![Build Status (develop)](https://img.shields.io/travis/primitiv/primitiv/develop.svg?label=build+%28develop%29)](https://travis-ci.org/primitiv/primitiv)
 
+- Branch **master**:
+  [![Build status (master)](https://travis-ci.org/primitiv/primitiv.svg?branch=master)](https://travis-ci.org/primitiv/primitiv)
+  [![Documentation Status (master)](https://readthedocs.org/projects/primitiv/badge/?version=master)](http://primitiv.readthedocs.io/en/master/)
+- Branch **develop**:
+  [![Build status (develop)](https://travis-ci.org/primitiv/primitiv.svg?branch=develop)](https://travis-ci.org/primitiv/primitiv)
+  [![Documentation Status (develop)](https://readthedocs.org/projects/primitiv/badge/?version=develop)](http://primitiv.readthedocs.io/en/develop/)
 
 primitiv
 ========
@@ -42,29 +46,12 @@ Prerequisites
   - Required only when `-DPRIMITIV_USE_OPENCL=ON`
 
 
-Install
--------
-
-    git clone <this repository>
-    cd primitiv
-    mkdir build
-    cd build
-    cmake .. [-D(Options you need)]
-    make [-j <threads>]
-    [make test]
-    [make install]
-
-
-Build Options
+Documentation
 -------------
 
-- See [Build Options](doc/build_options.md).
-
-
-Usage
------
-
-- See [Examples](examples).
+- [Official documentation site](http://primitiv.readthedocs.io/en/develop/) describes various information including
+  installation, usage and library references.
+- [Example code](examples) shows some actual usages of primitiv.
 
 
 Contact
