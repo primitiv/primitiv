@@ -6,17 +6,17 @@
 
 namespace {
 
-CUDADEV_KERNEL_FW_X(
+CUDA16DEV_KERNEL_FW_X(
     softplus, ::fmaxf(px[i], .0f) + ::logf(1.f + ::expf(-::fabs(px[i]))));
-CUDADEV_KERNEL_BW_X(softplus, (.5f + .5f * ::tanhf(.5f * px[i])) * pgy[i]);
+CUDA16DEV_KERNEL_BW_X(softplus, (.5f + .5f * ::tanhf(.5f * px[i])) * pgy[i]);
 
 }  // namespace
 
 namespace primitiv {
 namespace devices {
 
-CUDADEV_FW_X(softplus);
-CUDADEV_BW_X(softplus);
+CUDA16DEV_FW_X(softplus);
+CUDA16DEV_BW_X(softplus);
 
 }  // namespace devices
 }  // namespace primitiv

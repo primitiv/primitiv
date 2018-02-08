@@ -6,12 +6,12 @@
 
 namespace {
 
-CUDADEV_KERNEL_FW_X_CONST(multiply_const, px[i] * k);
-CUDADEV_KERNEL_BW_X_CONST(multiply_const, k * pgy[i]);
+CUDA16DEV_KERNEL_FW_X_CONST(multiply_const, px[i] * k);
+CUDA16DEV_KERNEL_BW_X_CONST(multiply_const, k * pgy[i]);
 
-CUDADEV_KERNEL_FW_X_SCALAR_R(multiply_scalar, ::__fmul_rn);
+CUDA16DEV_KERNEL_FW_X_SCALAR_R(multiply_scalar, ::__fmul_rn);
 
-CUDADEV_KERNEL_FW_AB(multiply, ::__fmul_rn);
+CUDA16DEV_KERNEL_FW_AB(multiply, ::__fmul_rn);
 
 __global__ void multiply_bw_dev(
     const float *pa, const float *pb, const float *, const float *pgy,
@@ -33,13 +33,13 @@ __global__ void multiply_bw_dev(
 namespace primitiv {
 namespace devices {
 
-CUDADEV_FW_X_CONST(multiply_const);
-CUDADEV_BW_X_CONST(multiply_const);
+CUDA16DEV_FW_X_CONST(multiply_const);
+CUDA16DEV_BW_X_CONST(multiply_const);
 
-CUDADEV_FW_X_SCALAR(multiply_scalar);
+CUDA16DEV_FW_X_SCALAR(multiply_scalar);
 
-CUDADEV_FW_AB(multiply);
-CUDADEV_BW_AB(multiply);
+CUDA16DEV_FW_AB(multiply);
+CUDA16DEV_BW_AB(multiply);
 
 }  // namespace devices
 }  // namespace primitiv

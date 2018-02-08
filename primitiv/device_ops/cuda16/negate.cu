@@ -6,14 +6,14 @@
 
 namespace {
 
-CUDADEV_KERNEL_FW_X(negate, -px[i]);
+CUDA16DEV_KERNEL_FW_X(negate, -px[i]);
 
 }  // namespace
 
 namespace primitiv {
 namespace devices {
 
-CUDADEV_FW_X(negate);
+CUDA16DEV_FW_X(negate);
 
 }  // namespace devices
 }  // namespace primitiv

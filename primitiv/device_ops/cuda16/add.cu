@@ -6,12 +6,12 @@
 
 namespace {
 
-CUDADEV_KERNEL_FW_X_CONST(add_const, px[i] + k);
-CUDADEV_KERNEL_BW_X_CONST(add_const, pgy[i]);
+CUDA16DEV_KERNEL_FW_X_CONST(add_const, px[i] + k);
+CUDA16DEV_KERNEL_BW_X_CONST(add_const, pgy[i]);
 
-CUDADEV_KERNEL_FW_X_SCALAR_R(add_scalar, ::__fadd_rn);
+CUDA16DEV_KERNEL_FW_X_SCALAR_R(add_scalar, ::__fadd_rn);
 
-CUDADEV_KERNEL_FW_AB(add, ::__fadd_rn);
+CUDA16DEV_KERNEL_FW_AB(add, ::__fadd_rn);
 
 __global__ void add_bw_dev(
     const float *, const float *, const float *, const float *pgy,
@@ -31,13 +31,13 @@ __global__ void add_bw_dev(
 namespace primitiv {
 namespace devices {
 
-CUDADEV_FW_X_CONST(add_const);
-CUDADEV_BW_X_CONST(add_const);
+CUDA16DEV_FW_X_CONST(add_const);
+CUDA16DEV_BW_X_CONST(add_const);
 
-CUDADEV_FW_X_SCALAR(add_scalar);
+CUDA16DEV_FW_X_SCALAR(add_scalar);
 
-CUDADEV_FW_AB(add);
-CUDADEV_BW_AB(add);
+CUDA16DEV_FW_AB(add);
+CUDA16DEV_BW_AB(add);
 
 }  // namespace devices
 }  // namespace primitiv

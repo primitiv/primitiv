@@ -1,5 +1,5 @@
-#ifndef PRIMITIV_DEVICE_OPS_COMMON_CUDA_H_
-#define PRIMITIV_DEVICE_OPS_COMMON_CUDA_H_
+#ifndef PRIMITIV_DEVICE_OPS_COMMON_CUDA16_H_
+#define PRIMITIV_DEVICE_OPS_COMMON_CUDA16_H_
 
 /*
  * Macros for device functions.
@@ -8,13 +8,13 @@
 #define IDX (threadIdx.x + blockIdx.x * blockDim.x)
 #define IDY (threadIdx.y + blockIdx.y * blockDim.y)
 
-#define CUDADEV_KERNEL_FW_X(name, op) \
+#define CUDA16DEV_KERNEL_FW_X(name, op) \
 __global__ void name##_fw_dev(const float *px, std::uint32_t size, float *py) { \
   const std::uint32_t i = IDX; \
   if (i < size) py[i] = (op); \
 }
 
-#define CUDADEV_KERNEL_BW_X(name, op) \
+#define CUDA16DEV_KERNEL_BW_X(name, op) \
 __global__ void name##_bw_dev( \
     const float *px, const float *py, const float *pgy, std::uint32_t size, \
     float *pgx) { \
@@ -24,14 +24,14 @@ __global__ void name##_bw_dev( \
   if (i < size) pgx[i] += (op); \
 }
 
-#define CUDADEV_KERNEL_FW_X_CONST(name, op) \
+#define CUDA16DEV_KERNEL_FW_X_CONST(name, op) \
 __global__ void name##_fw_dev( \
     const float *px, float k, std::uint32_t size, float *py) { \
   const std::uint32_t i = IDX; \
   if (i < size) py[i] = (op); \
 }
 
-#define CUDADEV_KERNEL_BW_X_CONST(name, op) \
+#define CUDA16DEV_KERNEL_BW_X_CONST(name, op) \
 __global__ void name##_bw_dev( \
     const float *px, const float *py, const float *pgy, float k, \
     std::uint32_t size, float *pgx) { \
@@ -41,7 +41,7 @@ __global__ void name##_bw_dev( \
   if (i < size) pgx[i] += (op); \
 }
 
-#define CUDADEV_KERNEL_FW_X_SCALAR_R(name, op) \
+#define CUDA16DEV_KERNEL_FW_X_SCALAR_R(name, op) \
 __global__ void name##_fw_dev( \
     const float *px, const float *pk, std::uint32_t size, std::uint32_t mbx, \
     std::uint32_t mbk, float *py) { \
@@ -50,7 +50,7 @@ __global__ void name##_fw_dev( \
   if (i < size) py[i + shift] = op(px[i + mbx * shift], pk[mbk * blockIdx.y]); \
 }
 
-#define CUDADEV_KERNEL_FW_X_SCALAR_L(name, op) \
+#define CUDA16DEV_KERNEL_FW_X_SCALAR_L(name, op) \
 __global__ void name##_fw_dev( \
     const float *px, const float *pk, std::uint32_t size, std::uint32_t mbx, \
     std::uint32_t mbk, float *py) { \
@@ -59,7 +59,7 @@ __global__ void name##_fw_dev( \
   if (i < size) py[i + shift] = op(pk[mbk * blockIdx.y], px[i + mbx * shift]); \
 }
 
-#define CUDADEV_KERNEL_FW_AB(name, op) \
+#define CUDA16DEV_KERNEL_FW_AB(name, op) \
 __global__ void name##_fw_dev( \
     const float *pa, const float *pb, std::uint32_t size, std::uint32_t mba, \
     std::uint32_t mbb, float *py) { \
@@ -76,7 +76,7 @@ __global__ void name##_fw_dev( \
 #define CDATA(x) static_cast<const float *>(get_handle(x))
 #define MDATA(x) static_cast<float *>(get_mutable_handle(x))
 
-#define CUDADEV_FW_X(name) \
+#define CUDA16DEV_FW_X(name) \
 void CUDA16::name##_fw_impl(const Tensor &x, Tensor &y) { \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_); \
@@ -84,7 +84,7 @@ void CUDA16::name##_fw_impl(const Tensor &x, Tensor &y) { \
   ::name##_fw_dev<<<num_blocks, dim1_x_>>>(CDATA(x), size, MDATA(y)); \
 }
 
-#define CUDADEV_BW_X(name) \
+#define CUDA16DEV_BW_X(name) \
 void CUDA16::name##_bw_impl( \
     const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) { \
   const std::uint32_t size = x.shape().size(); \
@@ -94,7 +94,7 @@ void CUDA16::name##_bw_impl( \
       CDATA(x), CDATA(y), CDATA(gy), size, MDATA(gx)); \
 }
 
-#define CUDADEV_FW_X_CONST(name) \
+#define CUDA16DEV_FW_X_CONST(name) \
 void CUDA16::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = GRID_SIZE(size,dim1_x_); \
@@ -102,7 +102,7 @@ void CUDA16::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
   ::name##_fw_dev<<<num_blocks, dim1_x_>>>(CDATA(x), k, size, MDATA(y)); \
 }
 
-#define CUDADEV_BW_X_CONST(name) \
+#define CUDA16DEV_BW_X_CONST(name) \
 void CUDA16::name##_bw_impl( \
     const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) { \
   const std::uint32_t size = x.shape().size(); \
@@ -112,7 +112,7 @@ void CUDA16::name##_bw_impl( \
       CDATA(x), CDATA(y), CDATA(gy), k, size, MDATA(gx)); \
 }
 
-#define CUDADEV_FW_X_SCALAR(name) \
+#define CUDA16DEV_FW_X_SCALAR(name) \
 void CUDA16::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
   const std::uint32_t size = y.shape().volume(); \
   const std::uint32_t g1 = GRID_SIZE(size, dim1_x_); \
@@ -123,7 +123,7 @@ void CUDA16::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
       x.shape().has_batch(), k.shape().has_batch(), MDATA(y)); \
 }
 
-#define CUDADEV_FW_AB(name) \
+#define CUDA16DEV_FW_AB(name) \
 void CUDA16::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
   const std::uint32_t size = y.shape().volume(); \
   const std::uint32_t g1 = GRID_SIZE(size, dim1_x_); \
@@ -134,7 +134,7 @@ void CUDA16::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
       a.shape().has_batch(), b.shape().has_batch(), MDATA(y)); \
 }
 
-#define CUDADEV_BW_AB(name) \
+#define CUDA16DEV_BW_AB(name) \
 void CUDA16::name##_bw_impl( \
     const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy, \
     Tensor &ga, Tensor &gb) { \
@@ -147,4 +147,4 @@ void CUDA16::name##_bw_impl( \
       a.shape().has_batch(), b.shape().has_batch(), MDATA(ga), MDATA(gb)); \
 }
 
-#endif  // PRIMITIV_DEVICE_OPS_COMMON_CUDA_H_
+#endif  // PRIMITIV_DEVICE_OPS_COMMON_CUDA16_H_

@@ -6,17 +6,17 @@
 
 namespace {
 
-CUDADEV_KERNEL_FW_X_CONST(subtract_const_r, px[i] - k);
-CUDADEV_KERNEL_BW_X_CONST(subtract_const_r, pgy[i]);
+CUDA16DEV_KERNEL_FW_X_CONST(subtract_const_r, px[i] - k);
+CUDA16DEV_KERNEL_BW_X_CONST(subtract_const_r, pgy[i]);
 
-CUDADEV_KERNEL_FW_X_SCALAR_R(subtract_scalar_r, ::__fsub_rn);
+CUDA16DEV_KERNEL_FW_X_SCALAR_R(subtract_scalar_r, ::__fsub_rn);
 
-CUDADEV_KERNEL_FW_X_CONST(subtract_const_l, k - px[i]);
-CUDADEV_KERNEL_BW_X_CONST(subtract_const_l, -pgy[i]);
+CUDA16DEV_KERNEL_FW_X_CONST(subtract_const_l, k - px[i]);
+CUDA16DEV_KERNEL_BW_X_CONST(subtract_const_l, -pgy[i]);
 
-CUDADEV_KERNEL_FW_X_SCALAR_L(subtract_scalar_l, ::__fsub_rn);
+CUDA16DEV_KERNEL_FW_X_SCALAR_L(subtract_scalar_l, ::__fsub_rn);
 
-CUDADEV_KERNEL_FW_AB(subtract, ::__fsub_rn);
+CUDA16DEV_KERNEL_FW_AB(subtract, ::__fsub_rn);
 
 __global__ void subtract_bw_dev(
     const float *, const float *, const float *, const float *pgy,
@@ -36,18 +36,18 @@ __global__ void subtract_bw_dev(
 namespace primitiv {
 namespace devices {
 
-CUDADEV_FW_X_CONST(subtract_const_r);
-CUDADEV_BW_X_CONST(subtract_const_r);
+CUDA16DEV_FW_X_CONST(subtract_const_r);
+CUDA16DEV_BW_X_CONST(subtract_const_r);
 
-CUDADEV_FW_X_CONST(subtract_const_l);
-CUDADEV_BW_X_CONST(subtract_const_l);
+CUDA16DEV_FW_X_CONST(subtract_const_l);
+CUDA16DEV_BW_X_CONST(subtract_const_l);
 
-CUDADEV_FW_X_SCALAR(subtract_scalar_r);
+CUDA16DEV_FW_X_SCALAR(subtract_scalar_r);
 
-CUDADEV_FW_X_SCALAR(subtract_scalar_l);
+CUDA16DEV_FW_X_SCALAR(subtract_scalar_l);
 
-CUDADEV_FW_AB(subtract);
-CUDADEV_BW_AB(subtract);
+CUDA16DEV_FW_AB(subtract);
+CUDA16DEV_BW_AB(subtract);
 
 }  // namespace devices
 }  // namespace primitiv
