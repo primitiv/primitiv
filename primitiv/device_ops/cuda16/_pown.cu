@@ -6,6 +6,7 @@
 
 namespace {
 
+/*
 __device__ float pown_fw_element_dev(float x, std::int32_t k) {
   // NOTE(odashi):
   // std::abs(-0x80000000) is UB under 2's complement systems.
@@ -41,26 +42,30 @@ __global__ void pown_bw_dev(
   if (i < size) pgx[i] += k * pgy[i] * py[i] / px[i];
 }
 
+*/
+
 }  // namespace
 
 namespace primitiv {
 namespace devices {
 
 void CUDA16::pown_fw_impl(const Tensor &x, std::int32_t k, Tensor &y) {
-  const std::uint32_t size = x.shape().size();
-  const std::uint32_t num_blocks = GRID_SIZE(size,dim1_x_);
-  CUDA_CALL(::cudaSetDevice(dev_id_));
-  ::pown_fw_dev<<<num_blocks, dim1_x_>>>(CDATA(x), k, size, MDATA(y));
+  THROW_NOT_IMPLEMENTED;
+  //const std::uint32_t size = x.shape().size();
+  //const std::uint32_t num_blocks = GRID_SIZE(size,dim1_x_);
+  //CUDA_CALL(::cudaSetDevice(dev_id_));
+  //::pown_fw_dev<<<num_blocks, dim1_x_>>>(CDATA(float, x), k, size, MDATA(float, y));
 }
 
 void CUDA16::pown_bw_impl(
     const Tensor &x, const Tensor &y, const Tensor &gy, std::int32_t k,
     Tensor &gx) {
-  const std::uint32_t size = x.shape().size();
-  const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
-  CUDA_CALL(::cudaSetDevice(dev_id_));
-  ::pown_bw_dev<<<num_blocks, dim1_x_>>>(
-      CDATA(x), CDATA(y), CDATA(gy), k, size, MDATA(gx));
+  THROW_NOT_IMPLEMENTED;
+  //const std::uint32_t size = x.shape().size();
+  //const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
+  //CUDA_CALL(::cudaSetDevice(dev_id_));
+  //::pown_bw_dev<<<num_blocks, dim1_x_>>>(
+  //    CDATA(float, x), CDATA(float, y), CDATA(float, gy), k, size, MDATA(float, gx));
 }
 
 }  // namespace devices

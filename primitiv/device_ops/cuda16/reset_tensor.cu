@@ -6,9 +6,9 @@
 
 namespace {
 
-__global__ void set_const_dev(float k, std::uint32_t size, float *py) {
+__global__ void set_const_dev(float k, std::uint32_t size, half *py) {
   const std::uint32_t i = IDX;
-  if (i < size) py[i] = k;
+  if (i < size) py[i] = __float2half(k);
 }
 
 }  // namespace
@@ -20,7 +20,7 @@ void CUDA16::reset_tensor_impl(float k, Tensor &x) {
   const std::uint32_t size = x.shape().size();
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  ::set_const_dev<<<num_blocks, dim1_x_>>>(k, size, MDATA(x));
+  ::set_const_dev<<<num_blocks, dim1_x_>>>(k, size, MDATA(half, x));
 }
 
 }  // namespace devices

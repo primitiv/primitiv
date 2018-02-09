@@ -18,6 +18,7 @@ CUDA16DEV_KERNEL_FW_X_SCALAR_L(divide_scalar_l, ::__fdiv_rn);
 
 CUDA16DEV_KERNEL_FW_AB(divide, ::__fdiv_rn);
 
+/*
 __global__ void divide_bw_dev(
     const float *, const float *pb, const float *py, const float *pgy,
     std::uint32_t size, std::uint32_t mba, std::uint32_t mbb,
@@ -32,6 +33,7 @@ __global__ void divide_bw_dev(
     ::atomicAdd(pgb + b_ofs, -k * py[y_ofs]);
   }
 }
+*/
 
 }  // namespace
 

@@ -5,7 +5,7 @@
 #include <primitiv/device_ops/cuda16/common.h>
 
 namespace {
-
+/*
 template<std::uint32_t BLOCK_SIZE>
 __global__ void argmin_dev(
     const float *px, std::uint32_t skip, std::uint32_t n, std::uint32_t *py) {
@@ -46,7 +46,7 @@ __global__ void argmin_dev(
 #undef REDUCE
   if (tid == 0) py[bid] = argmin_val[0];
 }
-
+*/
 }  // namespace
 
 namespace primitiv {
@@ -54,7 +54,8 @@ namespace devices {
 
 std::vector<std::uint32_t> CUDA16::argmin_impl(
     const Tensor &x, std::uint32_t dim) {
-  const Shape &shape = x.shape();
+  THROW_NOT_IMPLEMENTED;
+  /*const Shape &shape = x.shape();
   const std::uint32_t n = shape[dim];
   const std::uint32_t r = shape.size() / n;
   const std::uint32_t s = shape.lower_volume(dim);
@@ -65,7 +66,7 @@ std::vector<std::uint32_t> CUDA16::argmin_impl(
   switch (block_size) {
 #define CASE(k) \
     case k: ::argmin_dev<k><<<r, k>>>( \
-        CDATA(x), s, n, static_cast<std::uint32_t *>(py.get())); break
+        CDATA(float, x), s, n, static_cast<std::uint32_t *>(py.get())); break
     CASE(1024);
     CASE(512);
     CASE(256);
@@ -83,7 +84,7 @@ std::vector<std::uint32_t> CUDA16::argmin_impl(
   CUDA_CALL(::cudaMemcpy(
         &ret[0], py.get(), sizeof(std::uint32_t) * r, cudaMemcpyDeviceToHost));
   return ret;
-}
+*/}
 
 }  // namespace devices
 }  // namespace primitiv

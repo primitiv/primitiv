@@ -13,7 +13,8 @@ void CUDA16::conv2d_fw_impl(
     std::uint32_t stride0, std::uint32_t stride1,
     std::uint32_t dilation0, std::uint32_t dilation1,
     Tensor &y) {
-  const Shape x_shape = x.shape();
+  THROW_NOT_IMPLEMENTED;
+  /*const Shape x_shape = x.shape();
   const Shape w_shape = w.shape();
   const Shape y_shape = y.shape();
 
@@ -53,9 +54,9 @@ void CUDA16::conv2d_fw_impl(
   const std::size_t y_shift = y_shape.volume();
   const float alpha = 1.f;
   const float beta = 0.f;
-  const float *x_ptr = CDATA(x);
-  const float *w_ptr = CDATA(w);
-  float *y_ptr = MDATA(y);
+  const float *x_ptr = CDATA(float, x);
+  const float *w_ptr = CDATA(float, w);
+  float *y_ptr = MDATA(float, y);
   for (std::uint32_t bn = 0; bn < w_shape.batch(); ++bn) {
     CUDNN_CALL(::cudnnConvolutionForward(
           state_->cudnn.get(),
@@ -65,7 +66,7 @@ void CUDA16::conv2d_fw_impl(
     x_ptr += x_shift;
     w_ptr += w_shift;
     y_ptr += y_shift;
-  }
+  }*/
 }
 
 void CUDA16::conv2d_bw_impl(
@@ -74,7 +75,8 @@ void CUDA16::conv2d_bw_impl(
     std::uint32_t stride0, std::uint32_t stride1,
     std::uint32_t dilation0, std::uint32_t dilation1,
     Tensor &gx, Tensor &gw) {
-  const Shape x_shape = x.shape();
+  THROW_NOT_IMPLEMENTED;
+  /*const Shape x_shape = x.shape();
   const Shape w_shape = w.shape();
   const Shape y_shape = gy.shape();
 
@@ -124,11 +126,11 @@ void CUDA16::conv2d_bw_impl(
   const std::size_t y_shift = y_shape.volume();
   const float alpha = 1.f;
   const float beta = 1.f;
-  const float *x_ptr = CDATA(x);
-  const float *w_ptr = CDATA(w);
-  const float *gy_ptr = CDATA(gy);
-  float *gx_ptr = MDATA(gx);
-  float *gw_ptr = MDATA(gw);
+  const float *x_ptr = CDATA(float, x);
+  const float *w_ptr = CDATA(float, w);
+  const float *gy_ptr = CDATA(float, gy);
+  float *gx_ptr = MDATA(float, gx);
+  float *gw_ptr = MDATA(float, gw);
   for (std::uint32_t bn = 0; bn < w_shape.batch(); ++bn) {
     CUDNN_CALL(::cudnnConvolutionBackwardData(
           state_->cudnn.get(),
@@ -145,7 +147,7 @@ void CUDA16::conv2d_bw_impl(
     gy_ptr += y_shift;
     gx_ptr += x_shift;
     gw_ptr += w_shift;
-  }
+  }*/
 }
 
 }  // namespace devices

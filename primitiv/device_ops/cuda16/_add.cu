@@ -13,6 +13,7 @@ CUDA16DEV_KERNEL_FW_X_SCALAR_R(add_scalar, ::__fadd_rn);
 
 CUDA16DEV_KERNEL_FW_AB(add, ::__fadd_rn);
 
+/*
 __global__ void add_bw_dev(
     const float *, const float *, const float *, const float *pgy,
     std::uint32_t size, std::uint32_t mba, std::uint32_t mbb,
@@ -25,6 +26,7 @@ __global__ void add_bw_dev(
     ::atomicAdd(pgb + i + mbb * shift, gy);
   }
 }
+*/
 
 }  // namespace
 

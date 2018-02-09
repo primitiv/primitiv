@@ -14,7 +14,7 @@ void CUDA16::dump_description() const {
   using std::endl;
 
   cerr << "Device " << this << endl;
-  cerr << "  Type: CUDA" << endl;
+  cerr << "  Type: CUDA16" << endl;
 
   const ::cudaDeviceProp &prop = state_->prop;
   cerr << "  Device ID: " << dev_id_ << endl;

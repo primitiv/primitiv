@@ -18,6 +18,7 @@ CUDA16DEV_KERNEL_FW_X_SCALAR_L(pow_scalar_l, ::powf);
 
 CUDA16DEV_KERNEL_FW_AB(pow, ::powf);
 
+/*
 __global__ void pow_bw_dev(
     const float *pa, const float *pb, const float *py, const float *pgy,
     std::uint32_t size, std::uint32_t mba, std::uint32_t mbb,
@@ -33,6 +34,7 @@ __global__ void pow_bw_dev(
     ::atomicAdd(pgb + b_ofs, k * ::logf(pa[a_ofs]));
   }
 }
+*/
 
 }  // namespace
 

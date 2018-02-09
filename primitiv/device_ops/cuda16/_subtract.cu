@@ -18,6 +18,7 @@ CUDA16DEV_KERNEL_FW_X_SCALAR_L(subtract_scalar_l, ::__fsub_rn);
 
 CUDA16DEV_KERNEL_FW_AB(subtract, ::__fsub_rn);
 
+/*
 __global__ void subtract_bw_dev(
     const float *, const float *, const float *, const float *pgy,
     std::uint32_t size, std::uint32_t mba, std::uint32_t mbb,
@@ -30,6 +31,7 @@ __global__ void subtract_bw_dev(
     ::atomicAdd(pgb + i + mbb * shift, -gy);
   }
 }
+*/
 
 }  // namespace
 

@@ -13,7 +13,8 @@ void CUDA16::max_pool2d_fw_impl(
     std::uint32_t padding0, std::uint32_t padding1,
     std::uint32_t stride0, std::uint32_t stride1,
     Tensor &y) {
-  const Shape x_shape = x.shape();
+  THROW_NOT_IMPLEMENTED;
+  /*const Shape x_shape = x.shape();
   const Shape y_shape = y.shape();
 
   // Specifies a target device.
@@ -31,13 +32,13 @@ void CUDA16::max_pool2d_fw_impl(
   // Performs a forward operation.
   const float alpha = 1.f;
   const float beta = 0.f;
-  const float *x_ptr = CDATA(x);
-  float *y_ptr = MDATA(y);
+  const float *x_ptr = CDATA(float, x);
+  float *y_ptr = MDATA(float, y);
   CUDNN_CALL(::cudnnPoolingForward(
         state_->cudnn.get(), pool_desc.get(),
         &alpha, x_desc.get(), x_ptr,
         &beta, y_desc.get(), y_ptr));
-}
+*/}
 
 void CUDA16::max_pool2d_bw_impl(
     const Tensor &x, const Tensor &y, const Tensor &gy,
@@ -45,7 +46,8 @@ void CUDA16::max_pool2d_bw_impl(
     std::uint32_t padding0, std::uint32_t padding1,
     std::uint32_t stride0, std::uint32_t stride1,
     Tensor &gx) {
-  const Shape x_shape = x.shape();
+  THROW_NOT_IMPLEMENTED;
+  /*const Shape x_shape = x.shape();
   const Shape y_shape = y.shape();
 
   // Specifies a target device.
@@ -63,15 +65,15 @@ void CUDA16::max_pool2d_bw_impl(
   // Performs a backward operation.
   const float alpha = 1.f;
   const float beta = 1.f;
-  const float *x_ptr = CDATA(x);
-  const float *y_ptr = CDATA(y);
-  const float *gy_ptr = CDATA(gy);
-  float *gx_ptr = MDATA(gx);
+  const float *x_ptr = CDATA(float, x);
+  const float *y_ptr = CDATA(float, y);
+  const float *gy_ptr = CDATA(float, gy);
+  float *gx_ptr = MDATA(float, gx);
   CUDNN_CALL(::cudnnPoolingBackward(
         state_->cudnn.get(), pool_desc.get(),
         &alpha, y_desc.get(), y_ptr, y_desc.get(), gy_ptr, x_desc.get(), x_ptr,
         &beta, x_desc.get(), gx_ptr));
-}
+*/}
 
 }  // namespace devices
 }  // namespace primitiv

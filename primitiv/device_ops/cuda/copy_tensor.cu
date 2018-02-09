@@ -22,6 +22,8 @@ void CUDA::copy_tensor_impl(const Tensor &x, Tensor &y) {
             sizeof(float) * x.shape().size(),
             cudaMemcpyDeviceToDevice, 0));
       break;
+    //case Device::DeviceType::CUDA16:
+      // TODO(odashi): Implement this section.
     default:
       reset_tensor_by_vector(x.to_vector(), y);
   }

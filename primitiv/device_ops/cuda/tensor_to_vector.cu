@@ -12,7 +12,7 @@ std::vector<float> CUDA::tensor_to_vector_impl(const Tensor &x) {
   std::vector<float> ret(size);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CUDA_CALL(::cudaMemcpy(
-        &ret[0], CDATA(x), sizeof(float) * size, cudaMemcpyDeviceToHost));
+        ret.data(), CDATA(x), sizeof(float) * size, cudaMemcpyDeviceToHost));
   return ret;
 }
 

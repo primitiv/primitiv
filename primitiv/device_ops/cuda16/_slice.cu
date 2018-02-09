@@ -5,7 +5,7 @@
 #include <primitiv/device_ops/cuda16/common.h>
 
 namespace {
-
+/*
 __global__ void slice_fw_dev(
     const float *px,
     std::uint32_t span, std::uint32_t skip, std::uint32_t size,
@@ -24,7 +24,7 @@ __global__ void slice_bw_dev(
         pgx + ((i / wy) * wx + (i % wy)) % (wx * nx), pgy[i % (wy * ny)]);
   }
 }
-
+*/
 }  // namespace
 
 namespace primitiv {
@@ -32,19 +32,21 @@ namespace devices {
 
 void CUDA16::slice_fw_impl(
     const Tensor &x, std::uint32_t dim, std::uint32_t offset, Tensor &y) {
-  const std::uint32_t base = y.shape().lower_volume(dim);
+  THROW_NOT_IMPLEMENTED;
+  /*const std::uint32_t base = y.shape().lower_volume(dim);
   const std::uint32_t span = base * y.shape()[dim];
   const std::uint32_t skip = base * x.shape()[dim];
   const std::uint32_t size = y.shape().size();
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::slice_fw_dev<<<num_blocks, dim1_x_>>>(
-      CDATA(x) + base * offset, span, skip, size, MDATA(y));
-}
+      CDATA(float, x) + base * offset, span, skip, size, MDATA(float, y));
+*/}
 
 void CUDA16::slice_bw_impl(
     const Tensor &gy, std::uint32_t dim, std::uint32_t offset, Tensor &gx) {
-  const Shape &sx = gx.shape();
+  THROW_NOT_IMPLEMENTED;
+  /*const Shape &sx = gx.shape();
   const Shape &sy = gy.shape();
   const std::uint32_t base = sx.lower_volume(dim);
   const std::uint32_t ox = base * offset;
@@ -55,8 +57,8 @@ void CUDA16::slice_bw_impl(
   const std::uint32_t ny = repeat * sy.batch();
   const std::uint32_t g1 = GRID_SIZE(wy * std::max(nx, ny), dim1_x_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  ::slice_bw_dev<<<g1, dim1_x_>>>(CDATA(gy), wx, wy, nx, ny, MDATA(gx) + ox);
-}
+  ::slice_bw_dev<<<g1, dim1_x_>>>(CDATA(float, gy), wx, wy, nx, ny, MDATA(float, gx) + ox);
+*/}
 
 }  // namespace devices
 }  // namespace primitiv

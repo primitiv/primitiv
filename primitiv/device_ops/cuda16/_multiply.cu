@@ -13,6 +13,7 @@ CUDA16DEV_KERNEL_FW_X_SCALAR_R(multiply_scalar, ::__fmul_rn);
 
 CUDA16DEV_KERNEL_FW_AB(multiply, ::__fmul_rn);
 
+/*
 __global__ void multiply_bw_dev(
     const float *pa, const float *pb, const float *, const float *pgy,
     std::uint32_t size, std::uint32_t mba, std::uint32_t mbb,
@@ -27,6 +28,7 @@ __global__ void multiply_bw_dev(
     ::atomicAdd(pgb + b_ofs, gy * pa[a_ofs]);
   }
 }
+*/
 
 }  // namespace
 

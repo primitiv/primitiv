@@ -5,7 +5,7 @@
 #include <primitiv/device_ops/cuda16/common.h>
 
 namespace {
-
+/*
 __global__ void set_gemm_ptrs(
     const float *pa, const float *pb, const float *py,
     std::uint32_t na, std::uint32_t nb, std::uint32_t ny, std::uint32_t bs,
@@ -17,14 +17,15 @@ __global__ void set_gemm_ptrs(
     ptrs[i + 2 * bs] = py + i * ny;
   }
 }
-
+*/
 }  // namespace
 
 namespace primitiv {
 namespace devices {
 
 void CUDA16::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
-  const std::uint32_t di = a.shape()[0];
+  THROW_NOT_IMPLEMENTED;
+  /*const std::uint32_t di = a.shape()[0];
   const std::uint32_t dj = a.shape()[1];
   const std::uint32_t dk = b.shape()[1];
   float alpha = 1.;
@@ -34,9 +35,9 @@ void CUDA16::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
 
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
-    const float *pa = CDATA(a);
-    const float *pb = CDATA(b);
-    float *py = MDATA(y);
+    const float *pa = CDATA(float, a);
+    const float *pb = CDATA(float, b);
+    float *py = MDATA(float, y);
     const std::uint32_t na = di * dj;
     const std::uint32_t nb = b.shape().has_batch() * dj * dk;
     const std::uint32_t ny = di * dk;
@@ -59,14 +60,17 @@ void CUDA16::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
     CUBLAS_CALL(::cublasSgemm(
           state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_N,
           di, dk * b.shape().batch(), dj,
-          &alpha, CDATA(a), di, CDATA(b), dj,
-          &beta, MDATA(y), di));
+          &alpha, CDATA(float, a), di, CDATA(float, b), dj,
+          &beta, MDATA(float, y), di));
   }
+  */
 }
 
 void CUDA16::matmul_bw_impl(
     const Tensor &a, const Tensor &b, const Tensor &, const Tensor &gy,
     Tensor &ga, Tensor &gb) {
+  THROW_NOT_IMPLEMENTED;
+#if false
   // ga += gy . b^T
   // gb += a^T . gy
   const std::uint32_t di = a.shape()[0];
@@ -77,11 +81,11 @@ void CUDA16::matmul_bw_impl(
   CUDA_CALL(::cudaSetDevice(dev_id_));
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
-    const float *pa = CDATA(a);
-    const float *pb = CDATA(b);
-    const float *pgy = CDATA(gy);
-    float *pga = MDATA(ga);
-    float *pgb = MDATA(gb);
+    const float *pa = CDATA(float, a);
+    const float *pb = CDATA(float, b);
+    const float *pgy = CDATA(float, gy);
+    float *pga = MDATA(float, ga);
+    float *pgb = MDATA(float, gb);
     const std::uint32_t na = di * dj;
     const std::uint32_t nb = b.shape().has_batch() * dj * dk;
     const std::uint32_t ny = di * dk;
@@ -125,14 +129,15 @@ void CUDA16::matmul_bw_impl(
     CUBLAS_CALL(::cublasSgemm(
           state_->cublas.get(), ::CUBLAS_OP_N, ::CUBLAS_OP_T,
           di, dj, dk * b.shape().batch(),
-          &alpha, CDATA(gy), di, CDATA(b), dj,
-          &beta, MDATA(ga), di));
+          &alpha, CDATA(float, gy), di, CDATA(float, b), dj,
+          &beta, MDATA(float, ga), di));
     CUBLAS_CALL(::cublasSgemm(
           state_->cublas.get(), ::CUBLAS_OP_T, ::CUBLAS_OP_N,
           dj, dk * b.shape().batch(), di,
-          &alpha, CDATA(a), di, CDATA(gy), di,
-          &beta, MDATA(gb), dj));
+          &alpha, CDATA(float, a), di, CDATA(float, gy), di,
+          &beta, MDATA(float, gb), dj));
   }
+#endif
 }
 
 }  // namespace devices
