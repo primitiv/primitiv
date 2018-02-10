@@ -8,7 +8,7 @@ namespace {
 
 __global__ void fp32to16(const float *src, half *dest, std::size_t size) {
   const std::size_t i = IDX;
-  if (i < size) dest[i] = __float2half(src[i]);
+  if (i < size) dest[i] = ::__float2half(src[i]);
 }
 
 }  // namespace

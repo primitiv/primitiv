@@ -9,7 +9,7 @@ namespace {
 __global__ void inplace_multiply_const_dev(
     float k, std::uint32_t size, half *px) {
   const std::uint32_t i = IDX;
-  if (i < size) px[i] = __float2half(__half2float(px[i]) * k);
+  if (i < size) px[i] = ::__float2half(::__half2float(px[i]) * k);
 }
 
 }  // namespace

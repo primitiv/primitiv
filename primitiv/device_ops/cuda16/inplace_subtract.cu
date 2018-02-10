@@ -14,7 +14,7 @@ __global__ void inplace_subtract_dev(
 
   if (i < volume) {
     const std::uint32_t offset = blockIdx.y * volume;
-    const float x = __half2float(px[i + mbx * offset]);
+    const float x = ::__half2float(px[i + mbx * offset]);
     const std::uint32_t iy = i + mby * offset;
     const std::uint32_t shift = 16 * (iy & 1);
     const std::uint32_t filter = 0xffff << (16 - shift);
@@ -25,10 +25,10 @@ __global__ void inplace_subtract_dev(
 
     do {
       assumed = oldval;
-      const half a = __ushort_as_half((oldval >> shift) & 0xffff);
-      const half b = __float2half(__half2float(a) - x);
+      const half a = ::__ushort_as_half((oldval >> shift) & 0xffff);
+      const half b = ::__float2half(::__half2float(a) - x);
       const std::uint32_t newval
-        = (oldval & filter) | (__half_as_ushort(b) << shift);
+        = (oldval & filter) | (::__half_as_ushort(b) << shift);
       oldval = ::atomicCAS(addr, assumed, newval);
     } while (oldval != assumed);
   }

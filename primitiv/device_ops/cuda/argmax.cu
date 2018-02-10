@@ -22,7 +22,7 @@ __global__ void argmax_dev(
       argmax_val[tid] = i;
     }
   }
-  __syncthreads();
+  ::__syncthreads();
 #define REDUCE(k) \
   if (BLOCK_SIZE >= k << 1) { \
     if (tid < k) { \
@@ -31,7 +31,7 @@ __global__ void argmax_dev(
         argmax_val[tid] = argmax_val[tid + k]; \
       } \
     } \
-    __syncthreads(); \
+    ::__syncthreads(); \
   }
   REDUCE(512)
   REDUCE(256)

@@ -8,7 +8,7 @@ namespace {
 
 __global__ void set_const_dev(float k, std::uint32_t size, half *py) {
   const std::uint32_t i = IDX;
-  if (i < size) py[i] = __float2half(k);
+  if (i < size) py[i] = ::__float2half(k);
 }
 
 }  // namespace
