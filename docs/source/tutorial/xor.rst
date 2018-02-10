@@ -220,7 +220,7 @@ returned by functions declared in the ``primitiv::functions`` namespace and can
 be used as an argument of their functions. Each ``Node`` has a *shape*, which
 represents the volume and the size of the minibatch of the ``Node``.
 primitiv encapsulates the treatment of minibatches according to the
-:doc:`minibatch broadcasting rule </design/shape_and_minibatch>`,
+:doc:`minibatch broadcasting rule </design/shape_and_operation>`,
 and users can concentrate on writing the network structure without considering
 actual minibatch sizes.
 
