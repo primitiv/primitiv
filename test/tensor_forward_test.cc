@@ -14,6 +14,7 @@
 #include <test_utils.h>
 
 using std::vector;
+using test_utils::get_default_ulps;
 using test_utils::make_iota_vector;
 using test_utils::vector_match_ulps;
 using test_utils::vector_match;
@@ -1526,7 +1527,9 @@ TEST_F(TensorForwardTest, CheckExp) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
     const Tensor y = exp(x);
     EXPECT_EQ(Shape({2, 3}, 2), y.shape());
-    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+
+    EXPECT_TRUE(
+        vector_match_ulps(y_data, y.to_vector(), get_default_ulps(*dev)));
   }
 }
 

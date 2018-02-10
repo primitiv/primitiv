@@ -176,6 +176,9 @@ inline std::vector<float> make_iota_vector(std::size_t size, float bias) {
   return ret;
 }
 
+// Retrieves the default boundary of ULP errors.
+std::uint32_t get_default_ulps(const primitiv::Device &dev);
+
 // helper to add all available devices.
 void add_available_devices(std::vector<primitiv::Device *> &devices);
 void add_available_naive_devices(std::vector<primitiv::Device *> &devices);

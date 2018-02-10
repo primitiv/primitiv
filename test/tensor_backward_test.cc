@@ -9,6 +9,7 @@
 #include <test_utils.h>
 
 using std::vector;
+using test_utils::get_default_ulps;
 using test_utils::make_iota_vector;
 using test_utils::vector_match_ulps;
 using test_utils::vector_match;
@@ -388,7 +389,8 @@ TEST_F(TensorBackwardTest, CheckExp) {
       1, -2.7182818, 14.778112, -40.171074,
       2, -.73575888, .13533528, -.049787068,
     };
-    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    EXPECT_TRUE(
+        vector_match_ulps(gx_val, gx.to_vector(), get_default_ulps(*dev)));
   }
 }
 

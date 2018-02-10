@@ -13,25 +13,29 @@
 #define FLOAT_POSITIVE_INFINITY ::__uint_as_float(0x7f800000)
 #define FLOAT_NEGATIVE_INFINITY ::__uint_as_float(0xff800000)
 
-#define CUDA16DEV_KERNEL_FW_X(name, op)
-/*
-__global__ void name##_fw_dev(const float *px, std::uint32_t size, float *py) { \
-  const std::uint32_t i = IDX; \
-  if (i < size) py[i] = (op); \
-}
-*/
+#define X_VAL ::__half2float(px[i])
+#define Y_VAL ::__half2float(py[i])
+#define GX_VAL ::__half2float(pgx[i])
+#define GY_VAL ::__half2float(pgy[i])
 
-#define CUDA16DEV_KERNEL_BW_X(name, op)
-/*
+#define CUDA16_KERNEL_FW_X(name, op) \
+__global__ void name##_fw_dev(const half *px, std::uint32_t size, half *py) { \
+  const std::uint32_t i = IDX; \
+  if (i < size) py[i] = ::__float2half(op); \
+}
+
+#define CUDA16_KERNEL_BW_X(name, op) \
 __global__ void name##_bw_dev( \
-    const float *px, const float *py, const float *pgy, std::uint32_t size, \
-    float *pgx) { \
+    const half *px, const half *py, const half *pgy, std::uint32_t size, \
+    half *pgx) { \
   static_cast<void>(px); \
   static_cast<void>(py); \
   const std::uint32_t i = IDX; \
-  if (i < size) pgx[i] += (op); \
+  if (i < size) pgx[i] = ::__float2half(op); \
 }
-*/
+
+#define CUDA16DEV_KERNEL_FW_X(name, op)
+#define CUDA16DEV_KERNEL_BW_X(name, op)
 
 #define CUDA16DEV_KERNEL_FW_X_CONST(name, op)
 /*
@@ -95,29 +99,33 @@ __global__ void name##_fw_dev( \
 #define CDATA(type, x) static_cast<const type *>(get_handle(x))
 #define MDATA(type, x) static_cast<type *>(get_mutable_handle(x))
 
-#define CUDA16DEV_FW_X(name) \
+#define CUDA16_DEV_FW_X(name) \
 void CUDA16::name##_fw_impl(const Tensor &x, Tensor &y) { \
-  THROW_NOT_IMPLEMENTED; }
-/*
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_); \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
-  ::name##_fw_dev<<<num_blocks, dim1_x_>>>(CDATA(float, x), size, MDATA(float, y)); \
+  ::name##_fw_dev<<<num_blocks, dim1_x_>>>( \
+      CDATA(half, x), size, MDATA(half, y)); \
 }
-*/
 
-#define CUDA16DEV_BW_X(name) \
+#define CUDA16_DEV_BW_X(name) \
 void CUDA16::name##_bw_impl( \
     const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) { \
-  THROW_NOT_IMPLEMENTED; }
-/*
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = GRID_SIZE(size, dim1_x_); \
   CUDA_CALL(::cudaSetDevice(dev_id_)); \
   ::name##_bw_dev<<<num_blocks, dim1_x_>>>( \
-      CDATA(float, x), CDATA(float, y), CDATA(float, gy), size, MDATA(float, gx)); \
+      CDATA(half, x), CDATA(half, y), CDATA(half, gy), size, \
+      MDATA(half, gx)); \
 }
-*/
+
+#define CUDA16DEV_FW_X(name) \
+void CUDA16::name##_fw_impl(const Tensor &x, Tensor &y) { \
+  THROW_NOT_IMPLEMENTED; }
+#define CUDA16DEV_BW_X(name) \
+void CUDA16::name##_bw_impl( \
+    const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) { \
+  THROW_NOT_IMPLEMENTED; }
 
 #define CUDA16DEV_FW_X_CONST(name) \
 void CUDA16::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \

@@ -36,6 +36,21 @@ void add_device(std::vector<primitiv::Device *> &devs, primitiv::Device *dev) {
 
 namespace test_utils {
 
+std::uint32_t get_default_ulps(const primitiv::Device &dev) {
+  switch (dev.type()) {
+    case primitiv::Device::DeviceType::CUDA16:
+      // NOTE(odashi):
+      // Returns the difference of number of fraction bits between
+      // float (23 bits) and half (10 bits).
+      return 1 << 13;
+    default:
+      // NOTE(odashi):
+      // 4-ULPs test is identical with the ASSERT(EXPECT)_FLOAT_EQ directives in
+      // the Google Test.
+      return 4;
+  }
+}
+
 void add_available_devices(std::vector<primitiv::Device *> &devs) {
   add_available_naive_devices(devs);
   add_available_eigen_devices(devs);

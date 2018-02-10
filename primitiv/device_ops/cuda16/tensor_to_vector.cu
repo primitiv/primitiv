@@ -19,11 +19,11 @@ namespace devices {
 std::vector<float> CUDA16::tensor_to_vector_impl(const Tensor &x) {
   const std::size_t size = x.shape().size();
   const std::size_t gs = GRID_SIZE(size, dim1_x_);
-  
+
   auto temp = state_->pool.allocate(sizeof(float) * size);
   float *temp_ptr = static_cast<float *>(temp.get());
   std::vector<float> ret(size);
-  
+
   CUDA_CALL(::cudaSetDevice(dev_id_));
   ::fp16to32<<<gs, dim1_x_>>>(CDATA(half, x), temp_ptr, size);
   CUDA_CALL(::cudaMemcpy(

@@ -18,7 +18,7 @@ __global__ void inplace_subtract_dev(
     const std::uint32_t iy = i + mby * offset;
     const std::uint32_t shift = 16 * (iy & 1);
     const std::uint32_t filter = 0xffff << (16 - shift);
-    
+
     std::uint32_t *addr = reinterpret_cast<std::uint32_t *>(py) + (iy >> 1);
     std::uint32_t oldval = *addr;
     std::uint32_t assumed;
