@@ -14,7 +14,7 @@ __global__ void argmin_dev(
   const std::uint32_t bid = blockIdx.x;
   const std::uint32_t tid = threadIdx.x;
   px += bid % skip + (bid / skip) * skip * n;
-  min_val[tid] = 1e38;  // NOTE(odashi): Near the maximum of the float.
+  min_val[tid] = FLOAT_POSITIVE_INFINITY;
   for (std::uint32_t i = tid; i < n; i += BLOCK_SIZE) {
     const float val = px[i * skip];
     if (val < min_val[tid]) {

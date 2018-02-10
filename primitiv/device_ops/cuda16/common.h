@@ -10,6 +10,9 @@
 #define IDX (threadIdx.x + blockIdx.x * blockDim.x)
 #define IDY (threadIdx.y + blockIdx.y * blockDim.y)
 
+#define FLOAT_POSITIVE_INFINITY ::__uint_as_float(0x7f800000)
+#define FLOAT_NEGATIVE_INFINITY ::__uint_as_float(0xff800000)
+
 #define CUDA16DEV_KERNEL_FW_X(name, op)
 /*
 __global__ void name##_fw_dev(const float *px, std::uint32_t size, float *py) { \
