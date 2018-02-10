@@ -11,7 +11,7 @@ This section describes concepts and designs of primitiv.
   :titlesonly:
 
   compilation
-  shape_and_minibatch
+  shape_and_operation
   lazy_evaluation
   devices
   default_object

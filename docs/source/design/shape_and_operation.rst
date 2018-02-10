@@ -1,6 +1,6 @@
-=========================================
-Shapes, Operation Rules with Minibatching
-=========================================
+==========================
+Shapes and Operation Rules
+==========================
 
 
 Shapes
@@ -82,3 +82,65 @@ dimensions **1**:
   cout << (vector1 == vector2) << endl;  // true
   cout << (matrix1 == matrix2) << endl;  // true
 
+
+Minibatch Broadcasting
+----------------------
+
+
+All functions that take 2 or more Nodes or Tensors applies following rules:
+
+#. If the shapes of two variables **have the same minibatch size**,
+   the function performs independently for each data in the minibatch.
+#. If at least one shape of a variable **has no minibatch (= minibatch size 1)**,
+   the function broadcasts values to the minibatch size of the opposite side.
+#. Otherwise, the function generates an error.
+#. Functions that take more than 2 Nodes or Tensors perform above rules
+   recursively.
+
+Following examples shows how these rules work.
+
+.. code-block:: c++
+
+  using primitiv::Node;
+  namespace F = primitiv::functions;
+
+  const Node a = F::input<Node>(Shape({}, 3), {1, 2, 3});
+  
+  Node b = F::input<Node>(Shape({}, 3), {4, 5, 6});
+  Node y = a + b;  // values: 5, 7, 9
+
+  b = F::input<Node>({}, {4});
+  y = a + b;  // values: 5, 6, 7
+  y = b + a;  // values: 5, 6, 7
+
+  b = F::input<Node>(Shape({}, 2), {4, 5});
+  y = a + b;  // Error: different minibatch sizes: 3 and 2.
+  y = b + a;  // Error: different minibatch sizes: 2 and 3.
+
+  b = F::input<Node>({}, {4});
+  const Node c = F::input(Shape({}, 3), {5, 6, 7});
+  y = F::concat({a, b, c}, 0);  // values: [1, 4, 5], [2, 4, 6], [3, 4, 7]
+
+
+Scalar Operations
+-----------------
+
+
+Elementwise binary operations such as **arithmetic operations**
+(``operator+``, ``operator-``, ``operator*`` and ``operator/``) and
+**exponentation** (``primitiv::functions::pow``) supports the calculation
+between an arbitrary and scalar shapes.
+If a shape of one operand is a scalar, these functions broadcast the scalar
+value to all elements in the opposite side:
+
+.. code-block:: c++
+
+  using primitiv::Node;
+  namespace F = primitiv::functions;
+
+  const Node a = F::input<Node>({3}, {1, 2, 3});
+  const Node b = F::input<Node>({}, {4});
+
+  Node y = a + b;  // values: [5, 6, 7]
+  y = a - b;  // values: [-3, -2, -1]
+  y = b - a;  // values: [3, 2, 1]
