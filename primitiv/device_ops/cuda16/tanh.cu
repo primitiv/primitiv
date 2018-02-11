@@ -6,16 +6,16 @@
 
 namespace {
 
-CUDA16DEV_KERNEL_FW_X(sin, ::sinf(px[i]));
-CUDA16DEV_KERNEL_BW_X(sin, ::cosf(px[i]) * pgy[i]);
+CUDA16_KERNEL_FW_X(tanh, ::tanhf(X_VAL));
+CUDA16_KERNEL_BW_X(tanh, (1.f - Y_VAL * Y_VAL) * GY_VAL);
 
 }  // namespace
 
 namespace primitiv {
 namespace devices {
 
-CUDA16DEV_FW_X(sin);
-CUDA16DEV_BW_X(sin);
+CUDA16_DEV_FW_X(tanh);
+CUDA16_DEV_BW_X(tanh);
 
 }  // namespace devices
 }  // namespace primitiv

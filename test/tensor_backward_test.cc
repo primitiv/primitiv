@@ -372,7 +372,8 @@ TEST_F(TensorBackwardTest, CheckSqrt) {
     Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
     dev->sqrt_bw(x, y, gy, gx);
     const vector<float> gx_val {5, -.5, .5, -1./3, 10, -1, .25, -1./6};
-    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(
+          gx_val, gx.to_vector(), get_default_ulps(*dev)));
   }
 }
 
@@ -404,7 +405,8 @@ TEST_F(TensorBackwardTest, CheckLog) {
     Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
     dev->log_bw(x, y, gy, gx);
     const vector<float> gx_val { 100, -1, 1, -2./3, 200, -2, .5, -1./3 };
-    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(
+          gx_val, gx.to_vector(), get_default_ulps(*dev)));
   }
 }
 
@@ -421,7 +423,12 @@ TEST_F(TensorBackwardTest, CheckTanh) {
       1, -.41997434, .14130165, -.019732074,
       2, -.83994868, .070650825, -.0098660372,
     };
-    EXPECT_TRUE(vector_near(gx_val, gx.to_vector(), 1e-6));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 150000
+      : 75;
+    EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
   }
 }
 
@@ -438,7 +445,14 @@ TEST_F(TensorBackwardTest, CheckSigmoid) {
       .25, -.19661193, .20998717, -.090353319,
       .5, -.39322387, .10499359, -.045176660,
     };
-    EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), 6));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 32768
+      : dev_type == Device::DeviceType::EIGEN ? 6
+      : dev_type == Device::DeviceType::OPENCL ? 6
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
   }
 }
 
@@ -455,7 +469,13 @@ TEST_F(TensorBackwardTest, CheckSoftplus) {
       .5, -.73105858, 1.7615942, -1.9051483,
       1, -.53788284, .11920292, -.047425873,
     };
-    EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), 6));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::EIGEN ? 6
+      : dev_type == Device::DeviceType::OPENCL ? 6
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
   }
 }
 
@@ -472,7 +492,8 @@ TEST_F(TensorBackwardTest, CheckSin) {
       1, -.54030231, -.83229367, 1.9799850,
       2, -1.0806046, -.41614684, .98999250,
     };
-    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(
+          gx_val, gx.to_vector(), get_default_ulps(*dev)));
   }
 }
 
@@ -489,7 +510,8 @@ TEST_F(TensorBackwardTest, CheckCos) {
       0, .84147098, -1.8185949, .28224002,
       0, -1.6829420, .90929743, -.14112001,
     };
-    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(
+          gx_val, gx.to_vector(), get_default_ulps(*dev)));
   }
 }
 
@@ -506,7 +528,12 @@ TEST_F(TensorBackwardTest, CheckTan) {
       1, -3.4255188, 11.548798, -2.0406390,
       2, -6.8510376, 5.7743992, -1.0203195,
     };
-    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
   }
 }
 
@@ -678,7 +705,8 @@ TEST_F(TensorBackwardTest, CheckPReLU) {
       const vector<float> gx_val {
         k, -1, 2, -2, 2 * k, -2 * k, k, -k,
       };
-      EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            gx_val, gx.to_vector(), get_default_ulps(*dev)));
     }
   }
 }
@@ -698,7 +726,12 @@ TEST_F(TensorBackwardTest, CheckELU) {
         k, -1, 2, -2,
         2 * k, -7.3575888e-01f * k, 1.3533528e-01f * k, -4.9787068e-02f * k,
       };
-      EXPECT_TRUE(vector_near(gx_val, gx.to_vector(), 1e-5));
+
+      const auto dev_type = dev->type();
+      const std::uint32_t ulps
+        = dev_type == Device::DeviceType::CUDA16 ? 75000
+        : 12;
+      EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
     }
   }
 }

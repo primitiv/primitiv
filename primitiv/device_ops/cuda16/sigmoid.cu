@@ -6,18 +6,16 @@
 
 namespace {
 
-CUDA16DEV_KERNEL_FW_X_CONST(
-    elu, ::fmaxf(px[i], .0f) + k * (::expf(::fminf(px[i], .0f)) - 1.0f));
-CUDA16DEV_KERNEL_BW_X_CONST(
-    elu, pgy[i] * ((px[i] > .0f) + (py[i] + k) * (px[i] <= .0f)));
+CUDA16_KERNEL_FW_X(sigmoid, .5f + .5f * ::tanhf(.5f * X_VAL));
+CUDA16_KERNEL_BW_X(sigmoid, Y_VAL * (1.f - Y_VAL) * GY_VAL);
 
 }  // namespace
 
 namespace primitiv {
 namespace devices {
 
-CUDA16DEV_FW_X_CONST(elu);
-CUDA16DEV_BW_X_CONST(elu);
+CUDA16_DEV_FW_X(sigmoid);
+CUDA16_DEV_BW_X(sigmoid);
 
 }  // namespace devices
 }  // namespace primitiv

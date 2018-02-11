@@ -6,16 +6,16 @@
 
 namespace {
 
-CUDA16DEV_KERNEL_FW_X(log, ::logf(px[i]));
-CUDA16DEV_KERNEL_BW_X(log, pgy[i] / px[i]);
+CUDA16_KERNEL_FW_X_CONST(prelu, ::fmaxf(X_VAL, .0f) + k * ::fminf(X_VAL, .0f));
+CUDA16_KERNEL_BW_X_CONST(prelu, GY_VAL * ((X_VAL > .0f) + k * (X_VAL <= .0f)));
 
 }  // namespace
 
 namespace primitiv {
 namespace devices {
 
-CUDA16DEV_FW_X(log);
-CUDA16DEV_BW_X(log);
+CUDA16_DEV_FW_X_CONST(prelu);
+CUDA16_DEV_BW_X_CONST(prelu);
 
 }  // namespace devices
 }  // namespace primitiv

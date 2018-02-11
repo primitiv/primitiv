@@ -40,9 +40,9 @@ std::uint32_t get_default_ulps(const primitiv::Device &dev) {
   switch (dev.type()) {
     case primitiv::Device::DeviceType::CUDA16:
       // NOTE(odashi):
-      // Returns the difference of number of fraction bits between
+      // Returns the half of the difference of the resolution between
       // float (23 bits) and half (10 bits).
-      return 1 << 13;
+      return 1 << (13 - 1);
     default:
       // NOTE(odashi):
       // 4-ULPs test is identical with the ASSERT(EXPECT)_FLOAT_EQ directives in

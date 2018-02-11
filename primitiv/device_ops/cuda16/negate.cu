@@ -6,16 +6,14 @@
 
 namespace {
 
-CUDA16DEV_KERNEL_FW_X(sqrt, ::__fsqrt_rn(px[i]));
-CUDA16DEV_KERNEL_BW_X(sqrt, .5f * pgy[i] / py[i]);
+CUDA16_KERNEL_FW_X(negate, -X_VAL);
 
 }  // namespace
 
 namespace primitiv {
 namespace devices {
 
-CUDA16DEV_FW_X(sqrt);
-CUDA16DEV_BW_X(sqrt);
+CUDA16_DEV_FW_X(negate);
 
 }  // namespace devices
 }  // namespace primitiv

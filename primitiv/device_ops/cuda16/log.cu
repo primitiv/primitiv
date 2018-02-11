@@ -6,16 +6,16 @@
 
 namespace {
 
-CUDA16DEV_KERNEL_FW_X(tan, ::tanf(px[i]));
-CUDA16DEV_KERNEL_BW_X(tan, (1.f + py[i] * py[i]) * pgy[i]);
+CUDA16_KERNEL_FW_X(log, ::logf(X_VAL));
+CUDA16_KERNEL_BW_X(log, GY_VAL / X_VAL);
 
 }  // namespace
 
 namespace primitiv {
 namespace devices {
 
-CUDA16DEV_FW_X(tan);
-CUDA16DEV_BW_X(tan);
+CUDA16_DEV_FW_X(log);
+CUDA16_DEV_BW_X(log);
 
 }  // namespace devices
 }  // namespace primitiv
