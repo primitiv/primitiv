@@ -5,10 +5,10 @@
 #include <primitiv/device_ops/cuda16/common.h>
 
 namespace {
-/*
+
 template<std::uint32_t BLOCK_SIZE>
 __global__ void argmax_dev(
-    const float *px, std::uint32_t skip, std::uint32_t n, std::uint32_t *py) {
+    const half *px, std::uint32_t skip, std::uint32_t n, std::uint32_t *py) {
   __shared__ float max_val[BLOCK_SIZE];
   __shared__ std::uint32_t argmax_val[BLOCK_SIZE];
   const std::uint32_t bid = blockIdx.x;
@@ -16,7 +16,7 @@ __global__ void argmax_dev(
   px += bid % skip + (bid / skip) * skip * n;
   max_val[tid] = FLOAT_NEGATIVE_INFINITY;
   for (std::uint32_t i = tid; i < n; i += BLOCK_SIZE) {
-    const float val = px[i * skip];
+    const float val = ::__half2float(px[i * skip]);
     if (val > max_val[tid]) {
       max_val[tid] = val;
       argmax_val[tid] = i;
@@ -46,7 +46,7 @@ __global__ void argmax_dev(
 #undef REDUCE
   if (tid == 0) py[bid] = argmax_val[0];
 }
-*/
+
 }  // namespace
 
 namespace primitiv {
@@ -54,8 +54,7 @@ namespace devices {
 
 std::vector<std::uint32_t> CUDA16::argmax_impl(
     const Tensor &x, std::uint32_t dim) {
-  THROW_NOT_IMPLEMENTED;
-  /*const Shape &shape = x.shape();
+  const Shape &shape = x.shape();
   const std::uint32_t n = shape[dim];
   const std::uint32_t r = shape.size() / n;
   const std::uint32_t s = shape.lower_volume(dim);
@@ -66,7 +65,7 @@ std::vector<std::uint32_t> CUDA16::argmax_impl(
   switch (block_size) {
 #define CASE(k) \
     case k: ::argmax_dev<k><<<r, k>>>( \
-        CDATA(float, x), s, n, static_cast<std::uint32_t *>(py.get())); break
+        CDATA(half, x), s, n, static_cast<std::uint32_t *>(py.get())); break
     CASE(1024);
     CASE(512);
     CASE(256);
@@ -84,7 +83,7 @@ std::vector<std::uint32_t> CUDA16::argmax_impl(
   CUDA_CALL(::cudaMemcpy(
         &ret[0], py.get(), sizeof(std::uint32_t) * r, cudaMemcpyDeviceToHost));
   return ret;
-*/}
+}
 
 }  // namespace devices
 }  // namespace primitiv

@@ -670,11 +670,18 @@ TEST_F(TensorTest, CheckArgMaxDims) {
 TEST_F(TensorTest, CheckArgMaxLarge) {
   std::mt19937 rng;
   const vector<std::uint32_t> ns {
-    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025, 65535, 65536, 65537,
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024,
+    1025, 2047, 2048, 2049, 65535, 65536, 65537,
   };
 
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
+      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+        // NOTE(odashi):
+        // Half-precision types have only (10+1) bits resolution.
+        continue;
+      }
+
       vector<float> data(n);
       std::iota(begin(data), end(data), 0);
       std::shuffle(begin(data), end(data), rng);
@@ -707,11 +714,17 @@ TEST_F(TensorTest, CheckArgMinDims) {
 TEST_F(TensorTest, CheckArgMinLarge) {
   std::mt19937 rng;
   const vector<std::uint32_t> ns {
-    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025, 65535, 65536, 65537,
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024,
+    1025, 2047, 2048, 2049, 65535, 65536, 65537,
   };
 
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
+      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+        // NOTE(odashi):
+        // Half-precision types have only (10+1) bits resolution.
+        continue;
+      }
       vector<float> data(n);
       std::iota(begin(data), end(data), 0);
       std::shuffle(begin(data), end(data), rng);
