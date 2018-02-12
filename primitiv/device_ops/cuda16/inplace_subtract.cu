@@ -6,6 +6,8 @@
 
 namespace {
 
+DECL_ATOMIC_OP(atomicHSub, ::__fsub_rn);
+
 __global__ void inplace_subtract_dev(
     const half *px,
     std::uint32_t volume, std::uint32_t mbx, std::uint32_t mby,
@@ -16,21 +18,7 @@ __global__ void inplace_subtract_dev(
     const std::uint32_t offset = blockIdx.y * volume;
     const float x = ::__half2float(px[i + mbx * offset]);
     const std::uint32_t iy = i + mby * offset;
-    const std::uint32_t shift = 16 * (iy & 1);
-    const std::uint32_t filter = 0xffff << (16 - shift);
-
-    std::uint32_t *addr = reinterpret_cast<std::uint32_t *>(py) + (iy >> 1);
-    std::uint32_t oldval = *addr;
-    std::uint32_t assumed;
-
-    do {
-      assumed = oldval;
-      const half a = ::__ushort_as_half((oldval >> shift) & 0xffff);
-      const half b = ::__float2half(::__half2float(a) - x);
-      const std::uint32_t newval
-        = (oldval & filter) | (::__half_as_ushort(b) << shift);
-      oldval = ::atomicCAS(addr, assumed, newval);
-    } while (oldval != assumed);
+    ::atomicHSub(py, iy, x);
   }
 }
 

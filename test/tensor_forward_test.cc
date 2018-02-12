@@ -511,18 +511,22 @@ TEST_F(TensorForwardTest, CheckAddConst) {
     {
       const Tensor y1 = add(k, x);
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y1.to_vector(), get_default_ulps(*dev)));
       const Tensor y2 = add(x, k);
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y2.to_vector(), get_default_ulps(*dev)));
     }
     {
       const Tensor y1 = k + x;
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y1.to_vector(), get_default_ulps(*dev)));
       const Tensor y2 = x + k;
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y2.to_vector(), get_default_ulps(*dev)));
     }
   }
 }
@@ -537,18 +541,22 @@ TEST_F(TensorForwardTest, CheckAddScalar) {
     {
       const Tensor y1 = add(k, x);
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y1.to_vector(), get_default_ulps(*dev)));
       const Tensor y2 = add(x, k);
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y2.to_vector(), get_default_ulps(*dev)));
     }
     {
       const Tensor y1 = k + x;
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y1.to_vector(), get_default_ulps(*dev)));
       const Tensor y2 = x + k;
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y2.to_vector(), get_default_ulps(*dev)));
     }
   }
 }
@@ -564,18 +572,22 @@ TEST_F(TensorForwardTest, CheckAddScalarBatchBroadcast) {
       {
         const Tensor y1 = add(k, x);
         EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-        EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(
+              y_data, y1.to_vector(), get_default_ulps(*dev)));
         const Tensor y2 = add(x, k);
         EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-        EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(
+              y_data, y2.to_vector(), get_default_ulps(*dev)));
       }
       {
         const Tensor y1 = k + x;
         EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-        EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(
+              y_data, y1.to_vector(), get_default_ulps(*dev)));
         const Tensor y2 = x + k;
         EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-        EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(
+              y_data, y2.to_vector(), get_default_ulps(*dev)));
       }
     }
   }
@@ -589,18 +601,22 @@ TEST_F(TensorForwardTest, CheckAddScalarBatchBroadcast) {
       {
         const Tensor y1 = add(k, x);
         EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-        EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(
+              y_data, y1.to_vector(), get_default_ulps(*dev)));
         const Tensor y2 = add(x, k);
         EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-        EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(
+              y_data, y2.to_vector(), get_default_ulps(*dev)));
       }
       {
         const Tensor y1 = k + x;
         EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-        EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(
+              y_data, y1.to_vector(), get_default_ulps(*dev)));
         const Tensor y2 = x + k;
         EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-        EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(
+              y_data, y2.to_vector(), get_default_ulps(*dev)));
       }
     }
   }
@@ -616,18 +632,22 @@ TEST_F(TensorForwardTest, CheckAdd) {
     {
       const Tensor y1 = add(a, b);
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y1.to_vector(), get_default_ulps(*dev)));
       const Tensor y2 = add(b, a);
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y2.to_vector(), get_default_ulps(*dev)));
     }
     {
       const Tensor y1 = a + b;
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y1.to_vector(), get_default_ulps(*dev)));
       const Tensor y2 = b + a;
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y2.to_vector(), get_default_ulps(*dev)));
     }
   }
 }
@@ -642,18 +662,22 @@ TEST_F(TensorForwardTest, CheckAddBatchBroadcast) {
     {
       const Tensor y1 = add(a, b);
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y1.to_vector(), get_default_ulps(*dev)));
       const Tensor y2 = add(b, a);
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y2.to_vector(), get_default_ulps(*dev)));
     }
     {
       const Tensor y1 = a + b;
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y1.to_vector(), get_default_ulps(*dev)));
       const Tensor y2 = b + a;
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y2.to_vector(), get_default_ulps(*dev)));
     }
   }
 }
@@ -668,18 +692,22 @@ TEST_F(TensorForwardTest, CheckSubtractConst) {
     {
       const Tensor y1 = subtract(k, x);
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y1_data, y1.to_vector(), get_default_ulps(*dev)));
       const Tensor y2 = subtract(x, k);
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y2_data, y2.to_vector(), get_default_ulps(*dev)));
     }
     {
       const Tensor y1 = k - x;
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y1_data, y1.to_vector(), get_default_ulps(*dev)));
       const Tensor y2 = x - k;
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y2_data, y2.to_vector(), get_default_ulps(*dev)));
     }
   }
 }
@@ -695,18 +723,22 @@ TEST_F(TensorForwardTest, CheckSubtractScalar) {
     {
       const Tensor y1 = subtract(k, x);
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y1_data, y1.to_vector(), get_default_ulps(*dev)));
       const Tensor y2 = subtract(x, k);
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y2_data, y2.to_vector(), get_default_ulps(*dev)));
     }
     {
       const Tensor y1 = k - x;
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y1_data, y1.to_vector(), get_default_ulps(*dev)));
       const Tensor y2 = x - k;
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y2_data, y2.to_vector(), get_default_ulps(*dev)));
     }
   }
 }
@@ -723,18 +755,22 @@ TEST_F(TensorForwardTest, CheckSubtractScalarBatchBroadcast) {
       {
         const Tensor y1 = subtract(k, x);
         EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-        EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(
+              y1_data, y1.to_vector(), get_default_ulps(*dev)));
         const Tensor y2 = subtract(x, k);
         EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-        EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(
+              y2_data, y2.to_vector(), get_default_ulps(*dev)));
       }
       {
         const Tensor y1 = k - x;
         EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-        EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(
+              y1_data, y1.to_vector(), get_default_ulps(*dev)));
         const Tensor y2 = x - k;
         EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-        EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(
+              y2_data, y2.to_vector(), get_default_ulps(*dev)));
       }
     }
   }
@@ -749,18 +785,22 @@ TEST_F(TensorForwardTest, CheckSubtractScalarBatchBroadcast) {
       {
         const Tensor y1 = subtract(k, x);
         EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-        EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(
+              y1_data, y1.to_vector(), get_default_ulps(*dev)));
         const Tensor y2 = subtract(x, k);
         EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-        EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(
+              y2_data, y2.to_vector(), get_default_ulps(*dev)));
       }
       {
         const Tensor y1 = k - x;
         EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-        EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(
+              y1_data, y1.to_vector(), get_default_ulps(*dev)));
         const Tensor y2 = x - k;
         EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-        EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(
+              y2_data, y2.to_vector(), get_default_ulps(*dev)));
       }
     }
   }
@@ -774,21 +814,27 @@ TEST_F(TensorForwardTest, CheckSubtract) {
   for (Device *dev : devices) {
     const Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 2), a_data);
     const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 2), b_data);
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      : get_default_ulps(*dev);
+
     {
       const Tensor y1 = subtract(a, b);
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y1_data, y1.to_vector(), ulps));
       const Tensor y2 = subtract(b, a);
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y2_data, y2.to_vector(), ulps));
     }
     {
       const Tensor y1 = a - b;
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y1_data, y1.to_vector(), ulps));
       const Tensor y2 = b - a;
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y2_data, y2.to_vector(), ulps));
     }
   }
 }
@@ -804,18 +850,22 @@ TEST_F(TensorForwardTest, CheckSubtractBatchBroadcast) {
     {
       const Tensor y1 = subtract(a, b);
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y1_data, y1.to_vector(), get_default_ulps(*dev)));
       const Tensor y2 = subtract(b, a);
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y2_data, y2.to_vector(), get_default_ulps(*dev)));
     }
     {
       const Tensor y1 = a - b;
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y1_data, y1.to_vector(), get_default_ulps(*dev)));
       const Tensor y2 = b - a;
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y2_data, y2.to_vector(), get_default_ulps(*dev)));
     }
   }
 }
@@ -826,21 +876,27 @@ TEST_F(TensorForwardTest, CheckMultiplyConst) {
   const vector<float> y_data {10000, -1000, 100, -10, 1, -0.1, 0.01, -0.001};
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), x_data);
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      : get_default_ulps(*dev);
+
     {
       const Tensor y1 = multiply(k, x);
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y_data, y1.to_vector(), ulps));
       const Tensor y2 = multiply(x, k);
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y_data, y2.to_vector(), ulps));
     }
     {
       const Tensor y1 = k * x;
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y_data, y1.to_vector(), ulps));
       const Tensor y2 = x * k;
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y_data, y2.to_vector(), ulps));
     }
   }
 }
@@ -852,21 +908,27 @@ TEST_F(TensorForwardTest, CheckMultiplyScalar) {
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), x_data);
     const Tensor k = dev->new_tensor_by_vector(Shape({}, 2), k_data);
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      : get_default_ulps(*dev);
+
     {
       const Tensor y1 = multiply(k, x);
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y_data, y1.to_vector(), ulps));
       const Tensor y2 = multiply(x, k);
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y_data, y2.to_vector(), ulps));
     }
     {
       const Tensor y1 = k * x;
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y_data, y1.to_vector(), ulps));
       const Tensor y2 = x * k;
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y_data, y2.to_vector(), ulps));
     }
   }
 }
@@ -879,21 +941,27 @@ TEST_F(TensorForwardTest, CheckMultiplyScalarBatchBroadcast) {
     for (Device *dev : devices) {
       const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), x_data);
       const Tensor k = dev->new_tensor_by_vector({}, k_data);
+
+      const auto dev_type = dev->type();
+      const std::uint32_t ulps
+        = dev_type == Device::DeviceType::CUDA16 ? 8192
+        : get_default_ulps(*dev);
+
       {
         const Tensor y1 = multiply(k, x);
         EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-        EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(y_data, y1.to_vector(), ulps));
         const Tensor y2 = multiply(x, k);
         EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-        EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(y_data, y2.to_vector(), ulps));
       }
       {
         const Tensor y1 = k * x;
         EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-        EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(y_data, y1.to_vector(), ulps));
         const Tensor y2 = x * k;
         EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-        EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(y_data, y2.to_vector(), ulps));
       }
     }
   }
@@ -904,21 +972,27 @@ TEST_F(TensorForwardTest, CheckMultiplyScalarBatchBroadcast) {
     for (Device *dev : devices) {
       const Tensor x = dev->new_tensor_by_vector({2, 2}, x_data);
       const Tensor k = dev->new_tensor_by_vector(Shape({}, 2), k_data);
+
+      const auto dev_type = dev->type();
+      const std::uint32_t ulps
+        = dev_type == Device::DeviceType::CUDA16 ? 8192
+        : get_default_ulps(*dev);
+
       {
         const Tensor y1 = multiply(k, x);
         EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-        EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(y_data, y1.to_vector(), ulps));
         const Tensor y2 = multiply(x, k);
         EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-        EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(y_data, y2.to_vector(), ulps));
       }
       {
         const Tensor y1 = k * x;
         EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-        EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(y_data, y1.to_vector(), ulps));
         const Tensor y2 = x * k;
         EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-        EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(y_data, y2.to_vector(), ulps));
       }
     }
   }
@@ -931,21 +1005,27 @@ TEST_F(TensorForwardTest, CheckMultiply) {
   for (Device *dev : devices) {
     const Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 2), a_data);
     const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 2), b_data);
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 16384
+      : get_default_ulps(*dev);
+
     {
       const Tensor y1 = multiply(a, b);
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y_data, y1.to_vector(), ulps));
       const Tensor y2 = multiply(b, a);
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y_data, y2.to_vector(), ulps));
     }
     {
       const Tensor y1 = a * b;
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y_data, y1.to_vector(), ulps));
       const Tensor y2 = b * a;
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y_data, y2.to_vector(), ulps));
     }
   }
 }
@@ -960,46 +1040,56 @@ TEST_F(TensorForwardTest, CheckMultiplyBatchBroadcast) {
     {
       const Tensor y1 = multiply(a, b);
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y1.to_vector(), get_default_ulps(*dev)));
       const Tensor y2 = multiply(b, a);
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y2.to_vector(), get_default_ulps(*dev)));
     }
     {
       const Tensor y1 = a * b;
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y1.to_vector(), get_default_ulps(*dev)));
       const Tensor y2 = b * a;
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y2.to_vector(), get_default_ulps(*dev)));
     }
   }
 }
 
 TEST_F(TensorForwardTest, CheckDivideConst) {
-  const vector<float> x_data {1000, -100, 10, -1, 0.1, -0.01, 0.001, -0.0001};
+  const vector<float> x_data {1000, -100, 10, -1, 0.1, -0.01, 0.001, -0.001};
   const float k = 10;
-  const vector<float> y1_data {0.01, -0.1, 1, -10, 100, -1000, 10000, -100000};
+  const vector<float> y1_data {0.01, -0.1, 1, -10, 100, -1000, 10000, -10000};
   const vector<float> y2_data {
-    100, -10, 1, -0.1, 0.01, -0.001, 0.0001, -0.00001,
+    100, -10, 1, -0.1, 0.01, -0.001, 0.0001, -0.0001,
   };
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), x_data);
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      : get_default_ulps(*dev);
+
     {
       const Tensor y1 = divide(k, x);
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y1_data, y1.to_vector(), ulps));
       const Tensor y2 = divide(x, k);
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y2_data, y2.to_vector(), ulps));
     }
     {
       const Tensor y1 = k / x;
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y1_data, y1.to_vector(), ulps));
       const Tensor y2 = x / k;
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y2_data, y2.to_vector(), ulps));
     }
   }
 }
@@ -1012,49 +1102,61 @@ TEST_F(TensorForwardTest, CheckDivideScalar) {
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), x_data);
     const Tensor k = dev->new_tensor_by_vector(Shape({}, 2), k_data);
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 16384
+      : get_default_ulps(*dev);
+
     {
       const Tensor y1 = divide(k, x);
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y1_data, y1.to_vector(), ulps));
       const Tensor y2 = divide(x, k);
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y2_data, y2.to_vector(), ulps));
     }
     {
       const Tensor y1 = k / x;
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y1_data, y1.to_vector(), ulps));
       const Tensor y2 = x / k;
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y2_data, y2.to_vector(), ulps));
     }
   }
 }
 
 TEST_F(TensorForwardTest, CheckDivideScalarBatchBroadcast) {
   {
-    const vector<float> x_data {1000, 100, 10, 1, 0.1, 0.01, 0.001, 0.0001};
+    const vector<float> x_data {1000, 100, 10, 1, 0.1, 0.01, 0.001, 0.001};
     const vector<float> k_data {10};
-    const vector<float> y1_data {0.01, 0.1, 1, 10, 100, 1000, 10000, 100000};
-    const vector<float> y2_data {100, 10, 1, 0.1, 0.01, 0.001, 0.0001, 0.00001};
+    const vector<float> y1_data {0.01, 0.1, 1, 10, 100, 1000, 10000, 10000};
+    const vector<float> y2_data {100, 10, 1, 0.1, 0.01, 0.001, 0.0001, 0.0001};
     for (Device *dev : devices) {
       const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), x_data);
       const Tensor k = dev->new_tensor_by_vector({}, k_data);
+
+      const auto dev_type = dev->type();
+      const std::uint32_t ulps
+        = dev_type == Device::DeviceType::CUDA16 ? 16384
+        : get_default_ulps(*dev);
+
       {
         const Tensor y1 = divide(k, x);
         EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-        EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(y1_data, y1.to_vector(), ulps));
         const Tensor y2 = divide(x, k);
         EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-        EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(y2_data, y2.to_vector(), ulps));
       }
       {
         const Tensor y1 = k / x;
         EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-        EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(y1_data, y1.to_vector(), ulps));
         const Tensor y2 = x / k;
         EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-        EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(y2_data, y2.to_vector(), ulps));
       }
     }
   }
@@ -1066,51 +1168,63 @@ TEST_F(TensorForwardTest, CheckDivideScalarBatchBroadcast) {
     for (Device *dev : devices) {
       const Tensor x = dev->new_tensor_by_vector({2, 2}, x_data);
       const Tensor k = dev->new_tensor_by_vector(Shape({}, 2), k_data);
+
+      const auto dev_type = dev->type();
+      const std::uint32_t ulps
+        = dev_type == Device::DeviceType::CUDA16 ? 8192
+        : get_default_ulps(*dev);
+
       {
         const Tensor y1 = divide(k, x);
         EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-        EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(y1_data, y1.to_vector(), ulps));
         const Tensor y2 = divide(x, k);
         EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-        EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(y2_data, y2.to_vector(), ulps));
       }
       {
         const Tensor y1 = k / x;
         EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-        EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(y1_data, y1.to_vector(), ulps));
         const Tensor y2 = x / k;
         EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-        EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+        EXPECT_TRUE(vector_match_ulps(y2_data, y2.to_vector(), ulps));
       }
     }
   }
 }
 
 TEST_F(TensorForwardTest, CheckDivide) {
-  const vector<float> a_data {1000, -100, 10, -1, 0.1, -0.01, 0.001, -0.0001};
+  const vector<float> a_data {1000, -100, 10, -1, 0.1, -0.01, 0.001, -0.001};
   const vector<float> b_data {1, 2, 3, 4, -5, -6, -7, -8};
   const vector<float> y1_data {
-    1000, -50, 10.0/3, -0.25, -0.02, 0.01/6, -0.001/7, 1.25e-5,
+    1000, -50, 10.0/3, -0.25, -0.02, 0.01/6, -0.001/7, 1.25e-4,
   };
-  const vector<float> y2_data {0.001, -0.02, 0.3, -4, -50, 600, -7000, 80000};
+  const vector<float> y2_data {0.001, -0.02, 0.3, -4, -50, 600, -7000, 8000};
   for (Device *dev : devices) {
     const Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 2), a_data);
     const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 2), b_data);
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      : get_default_ulps(*dev);
+
     {
       const Tensor y1 = divide(a, b);
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y1_data, y1.to_vector(), ulps));
       const Tensor y2 = divide(b, a);
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y2_data, y2.to_vector(), ulps));
     }
     {
       const Tensor y1 = a / b;
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y1_data, y1.to_vector(), ulps));
       const Tensor y2 = b / a;
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(y2_data, y2.to_vector(), ulps));
     }
   }
 }
@@ -1126,32 +1240,37 @@ TEST_F(TensorForwardTest, CheckDivideBatchBroadcast) {
     {
       const Tensor y1 = divide(a, b);
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y1_data, y1.to_vector(), get_default_ulps(*dev)));
       const Tensor y2 = divide(b, a);
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y2_data, y2.to_vector(), get_default_ulps(*dev)));
     }
     {
       const Tensor y1 = a / b;
       EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-      EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y1_data, y1.to_vector(), get_default_ulps(*dev)));
       const Tensor y2 = b / a;
       EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-      EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y2_data, y2.to_vector(), get_default_ulps(*dev)));
     }
   }
 }
 
 TEST_F(TensorForwardTest, CheckPowConstR) {
-  const vector<float> x_data {1e3, 1e2, 1e1, 1e0, 1e-1, 1e-2, 1e-3, 1e-4};
+  const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8};
   const float k = 3;
-  const vector<float> y_data {1e9, 1e6, 1e3, 1e0, 1e-3, 1e-6, 1e-9, 1e-12};
+  const vector<float> y_data {1, 8, 27, 64, 125, 216, 343, 512};
 
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), x_data);
     const Tensor y = pow(x, k);
     EXPECT_EQ(Shape({2, 2}, 2), y.shape());
-    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(
+          y_data, y.to_vector(), get_default_ulps(*dev)));
   }
 }
 
@@ -1164,21 +1283,23 @@ TEST_F(TensorForwardTest, CheckPowConstL) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), x_data);
     const Tensor y = pow(k, x);
     EXPECT_EQ(Shape({2, 2}, 2), y.shape());
-    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(
+          y_data, y.to_vector(), get_default_ulps(*dev)));
   }
 }
 
 TEST_F(TensorForwardTest, CheckPowScalarR) {
-  const vector<float> x_data {1e3, 1e2, 1e1, 1e0, 1e-1, 1e-2, 1e-3, 1e-4};
+  const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8};
   const vector<float> k_data {3, -3};
-  const vector<float> y_data {1e9, 1e6, 1e3, 1e0, 1e3, 1e6, 1e9, 1e12};
+  const vector<float> y_data {1, 8, 27, 64, 1./125, 1./216, 1./343, 1./512};
 
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), x_data);
     const Tensor k = dev->new_tensor_by_vector(Shape({}, 2), k_data);
     const Tensor y = pow(x, k);
     EXPECT_EQ(Shape({2, 2}, 2), y.shape());
-    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(
+          y_data, y.to_vector(), get_default_ulps(*dev)));
   }
 }
 
@@ -1192,35 +1313,38 @@ TEST_F(TensorForwardTest, CheckPowScalarL) {
     const Tensor k = dev->new_tensor_by_vector(Shape({}, 2), k_data);
     const Tensor y = pow(k, x);
     EXPECT_EQ(Shape({2, 2}, 2), y.shape());
-    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(
+          y_data, y.to_vector(), get_default_ulps(*dev)));
   }
 }
 
 TEST_F(TensorForwardTest, CheckPowScalarRBatchBroadcast) {
   {
-    const vector<float> x_data {1e3, 1e2, 1e1, 1e0, 1e-1, 1e-2, 1e-3, 1e-4};
+    const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8};
     const vector<float> k_data {3};
-    const vector<float> y_data {1e9, 1e6, 1e3, 1e0, 1e-3, 1e-6, 1e-9, 1e-12};
+    const vector<float> y_data {1, 8, 27, 64, 125, 216, 343, 512};
 
     for (Device *dev : devices) {
       const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 2), x_data);
       const Tensor k = dev->new_tensor_by_vector({}, k_data);
       const Tensor y = pow(x, k);
       EXPECT_EQ(Shape({2, 2}, 2), y.shape());
-      EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y.to_vector(), get_default_ulps(*dev)));
     }
   }
   {
-    const vector<float> x_data {1e3, 1e2, 1e1, 1e0};
+    const vector<float> x_data {1, 2, 3, 4};
     const vector<float> k_data {3, -3};
-    const vector<float> y_data {1e9, 1e6, 1e3, 1e0, 1e-9, 1e-6, 1e-3, 1e0};
+    const vector<float> y_data {1, 8, 27, 64, 1, 1./8, 1./27, 1./64};
 
     for (Device *dev : devices) {
       const Tensor x = dev->new_tensor_by_vector({2, 2}, x_data);
       const Tensor k = dev->new_tensor_by_vector(Shape({}, 2), k_data);
       const Tensor y = pow(x, k);
       EXPECT_EQ(Shape({2, 2}, 2), y.shape());
-      EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y.to_vector(), get_default_ulps(*dev)));
     }
   }
 }
@@ -1236,7 +1360,8 @@ TEST_F(TensorForwardTest, CheckPowScalarLBatchBroadcast) {
       const Tensor k = dev->new_tensor_by_vector({}, k_data);
       const Tensor y = pow(k, x);
       EXPECT_EQ(Shape({2, 2}, 2), y.shape());
-      EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y.to_vector(), get_default_ulps(*dev)));
     }
   }
   {
@@ -1249,7 +1374,8 @@ TEST_F(TensorForwardTest, CheckPowScalarLBatchBroadcast) {
       const Tensor k = dev->new_tensor_by_vector(Shape({}, 2), k_data);
       const Tensor y = pow(k, x);
       EXPECT_EQ(Shape({2, 2}, 2), y.shape());
-      EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data, y.to_vector(), get_default_ulps(*dev)));
     }
   }
 }
@@ -1265,10 +1391,12 @@ TEST_F(TensorForwardTest, CheckPow) {
     const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 2), b_data);
     const Tensor y1 = pow(a, b);
     EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-    EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(
+          y1_data, y1.to_vector(), get_default_ulps(*dev)));
     const Tensor y2 = pow(b, a);
     EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-    EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(
+          y2_data, y2.to_vector(), get_default_ulps(*dev)));
   }
 }
 
@@ -1283,10 +1411,12 @@ TEST_F(TensorForwardTest, CheckPowBatchBroadcast) {
     const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 2), b_data);
     const Tensor y1 = pow(a, b);
     EXPECT_EQ(Shape({2, 2}, 2), y1.shape());
-    EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(
+          y1_data, y1.to_vector(), get_default_ulps(*dev)));
     const Tensor y2 = pow(b, a);
     EXPECT_EQ(Shape({2, 2}, 2), y2.shape());
-    EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(
+          y2_data, y2.to_vector(), get_default_ulps(*dev)));
   }
 }
 
@@ -1556,12 +1686,12 @@ TEST_F(TensorForwardTest, CheckLog) {
 
 TEST_F(TensorForwardTest, CheckPowNPositive) {
   const vector<float> x_data {
-    0.01, .5, 1, 2, 4, 8,
-    -0.01, -.5, -1, -2, -4, -8,
+    .25, .5, 1, 2, 4, 8,
+    -.25, -.5, -1, -2, -4, -8,
   };
   const vector<float> y_data {
-    0.000001, 0.125, 1, 8, 64, 512,
-    -0.000001, -0.125, -1, -8, -64, -512,
+    1./64, 0.125, 1, 8, 64, 512,
+    -1./64, -0.125, -1, -8, -64, -512,
   };
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
@@ -1573,12 +1703,12 @@ TEST_F(TensorForwardTest, CheckPowNPositive) {
 
 TEST_F(TensorForwardTest, CheckPowNNegative) {
   const vector<float> x_data {
-    0.01, .5, 1, 2, 4, 8,
-    -0.01, -.5, -1, -2, -4, -8,
+    .25, .5, 1, 2, 4, 8,
+    -.25, -.5, -1, -2, -4, -8,
   };
   const vector<float> y_data {
-    1000000, 8, 1, 0.125, 0.015625, 0.001953125,
-    -1000000, -8, -1, -0.125, -0.015625, -0.001953125,
+    64, 8, 1, 0.125, 0.015625, 0.001953125,
+    -64, -8, -1, -0.125, -0.015625, -0.001953125,
   };
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
@@ -1624,8 +1754,8 @@ TEST_F(TensorForwardTest, CheckPowNLowerBound) {
 
 TEST_F(TensorForwardTest, CheckPowNPositiveConvergence) {
   const vector<float> x_data {
-    0.9999999, -0.9999999, 0.9999999, -0.9999999, 0.9999999, -0.9999999,
-    0.9999999, -0.9999999, 0.9999999, -0.9999999, 0.9999999, -0.9999999,
+    0.999, -0.999, 0.999, -0.999, 0.999, -0.999,
+    0.999, -0.999, 0.999, -0.999, 0.999, -0.999,
   };
   const vector<float> y_data {
     0, 0, 0, 0, 0, 0,
@@ -1641,8 +1771,8 @@ TEST_F(TensorForwardTest, CheckPowNPositiveConvergence) {
 
 TEST_F(TensorForwardTest, CheckPowNNegativeConvergence) {
   const vector<float> x_data {
-    1.000001, -1.000001, 1.000001, -1.000001, 1.000001, -1.000001,
-    1.000001, -1.000001, 1.000001, -1.000001, 1.000001, -1.000001,
+    1.001, -1.001, 1.001, -1.001, 1.001, -1.001,
+    1.001, -1.001, 1.001, -1.001, 1.001, -1.001,
   };
   const vector<float> y_data {
     0, 0, 0, 0, 0, 0,

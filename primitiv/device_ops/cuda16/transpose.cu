@@ -22,7 +22,7 @@ __global__ void transpose_bw_dev(
   if (i < rows && j < cols) {
     const std::size_t ox = ofs + i + j * rows;
     const std::size_t oy = ofs + j + i * cols;
-    px[ox] = ::__float2half(::__half2float(px[ox]) + ::__half2float(py[oy]));
+    INPLACE_ADD(px + ox, ::__half2float(py[oy]));
   }
 }
 
