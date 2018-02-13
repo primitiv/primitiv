@@ -228,6 +228,9 @@ private:
   // be declared after `pool_` due to the destruction order of class members.
   std::shared_ptr<void> ids_ptr_;
 
+  // whether the half operations are supported or not.
+  bool support_half_ops_;
+
   /**
    * Internal method to initialize the object.
    */

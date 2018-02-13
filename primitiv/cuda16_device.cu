@@ -36,11 +36,10 @@ void CUDA16::assert_support(std::uint32_t device_id) {
   // Checks compute capability
   // NOTE(odashi):
   // At least following compute capabilities are required:
-  // float <-> half conversion ........ 5.0
-  // Support of typical operations .... 5.3
-  // cublasHgemm/cublasHgemmBatched ... 6.1
-  constexpr std::uint32_t MIN_CC_MAJOR = 6;
-  constexpr std::uint32_t MIN_CC_MINOR = 1;
+  // float <-> half conversion ............ 5.0
+  // Full support of typical operations ... 5.3
+  constexpr std::uint32_t MIN_CC_MAJOR = 5;
+  constexpr std::uint32_t MIN_CC_MINOR = 0;
   constexpr std::uint32_t MIN_CC = ::get_capability(MIN_CC_MAJOR, MIN_CC_MINOR);
   const std::uint32_t dev_cc = ::get_capability(prop.major, prop.minor);
   if (dev_cc < MIN_CC) {
@@ -117,6 +116,9 @@ void CUDA16::initialize() {
 
   // Initializes the device pointer for integer IDs.
   ids_ptr_ = state_->pool.allocate(sizeof(std::uint32_t) * max_batch_);
+
+  // Check half operation support.
+  support_half_ops_ = ::get_capability(prop.major, prop.minor) >= 50003;
 }
 
 CUDA16::CUDA16(std::uint32_t device_id, std::uint32_t rng_seed)

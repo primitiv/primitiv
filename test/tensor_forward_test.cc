@@ -1512,7 +1512,6 @@ TEST_F(TensorForwardTest, CheckMatMulAA) {
   const vector<float> x_data {1, 2, 3, 4, 1, 0, 0, 1, 0, 2, 3, 0};
   const vector<float> y_data {7, 10, 15, 22, 1, 0, 0, 1, 6, 0, 0, 6};
   for (Device *dev : devices) {
-    std::cout << dev << std::endl;
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
     const Tensor y = matmul(x, x);
     EXPECT_EQ(Shape({2, 2}, 3), y.shape());
@@ -1523,9 +1522,9 @@ TEST_F(TensorForwardTest, CheckMatMulAA) {
 TEST_F(TensorForwardTest, CheckMatMulAB) {
   const vector<float> a_data {
     1, 1000, 1,
-    10, 100, 100,
-    100, 10, 10000,
-    1000, 1, 1000000,
+    10, 100, 10,
+    100, 10, 100,
+    1000, 1, 1000,
   };
   const vector<float> b_data {
     0, 2, 4, 6,
@@ -1536,19 +1535,20 @@ TEST_F(TensorForwardTest, CheckMatMulAB) {
     9, 4, 1, 0,
   };
   const vector<float> y_data {
-    6420, 246, 6040200,
-    7531, 1357, 7050301,
-    2468, 8642, 2040608,
-    3579, 9753, 3050709,
-    7532, 2357, 7050302,
-    149, 9410, 10409,
+    6420,  246, 6420,
+    7531, 1357, 7531,
+    2468, 8642, 2468,
+    3579, 9753, 3579,
+    7532, 2357, 7532,
+     149, 9410,  149,
   };
   for (Device *dev : devices) {
     const Tensor a = dev->new_tensor_by_vector({3, 4}, a_data);
     const Tensor b = dev->new_tensor_by_vector({4, 6}, b_data);
     const Tensor y = matmul(a, b);
     EXPECT_EQ(Shape({3, 6}), y.shape());
-    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(
+          y_data, y.to_vector(), get_default_ulps(*dev)));
   }
 }
 
@@ -1590,21 +1590,23 @@ TEST_F(TensorForwardTest, CheckMatMulLarge) {
   }
   for (std::uint32_t i = 0; i < N; ++i) {
     for (std::uint32_t j = 0; j < N; ++j) {
-      a_data[i + j * N] = i;
-      b_data[i + j * N] = j;
-      y1_data[i + j * N] = N * i * j;
-      y2_data[i + j * N] = k;
+      a_data[i + j * N] = i / 16.;
+      b_data[i + j * N] = j / 16.;
+      y1_data[i + j * N] = N * i * j / 256.;
+      y2_data[i + j * N] = k / 256.;
     }
   }
   for (Device *dev : devices) {
-    const Tensor a = dev->new_tensor_by_vector(Shape({N, N}), a_data);
+    const Tensor a = dev->new_tensor_by_vector({N, N}, a_data);
     const Tensor b = dev->new_tensor_by_vector({N, N}, b_data);
     const Tensor y1 = matmul(a, b);
     const Tensor y2 = matmul(b, a);
     EXPECT_EQ(Shape({N, N}), y1.shape());
     EXPECT_EQ(Shape({N, N}), y2.shape());
-    EXPECT_TRUE(vector_match(y1_data, y1.to_vector()));
-    EXPECT_TRUE(vector_match(y2_data, y2.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(
+          y1_data, y1.to_vector(), get_default_ulps(*dev)));
+    EXPECT_TRUE(vector_match_ulps(
+          y2_data, y2.to_vector(), get_default_ulps(*dev)));
   }
 }
 
@@ -3039,7 +3041,6 @@ TEST_F(TensorForwardTest, CheckInvalidConv2D) {
 
 #define TEST_MAX_POOL2D(win0, win1, pad0, pad1, str0, str1) { \
   for (Device *dev : devices) try { \
-    std::cout << dev << std::endl; \
     const Tensor x = dev->new_tensor_by_vector(x_shape, x_data); \
     const Tensor y = max_pool2d(x, win0, win1, pad0, pad1, str0, str1); \
     EXPECT_EQ(y_shape, y.shape()); \
