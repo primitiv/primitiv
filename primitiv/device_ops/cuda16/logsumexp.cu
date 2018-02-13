@@ -5,7 +5,7 @@
 #include <primitiv/device_ops/cuda16/common.h>
 
 namespace {
-/*
+
 __device__ float logsumexp2_fw_dev(float a, float b) {
   return a > b
     ? a + ::log(1.f + ::exp(b - a))
@@ -14,14 +14,14 @@ __device__ float logsumexp2_fw_dev(float a, float b) {
 
 template<std::uint32_t BLOCK_SIZE>
 __global__ void logsumexp_fw_dev(
-    const float *px, std::uint32_t skip, std::uint32_t n, float *py) {
+    const half *px, std::uint32_t skip, std::uint32_t n, half *py) {
   __shared__ float temp[BLOCK_SIZE];
   const std::uint32_t bid = blockIdx.x;
   const std::uint32_t tid = threadIdx.x;
   px += bid % skip + (bid / skip) * skip * n;
   temp[tid] = FLOAT_NEGATIVE_INFINITY;
   for (std::uint32_t i = tid; i < n; i += BLOCK_SIZE) {
-    temp[tid] = ::logsumexp2_fw_dev(temp[tid], px[i * skip]);
+    temp[tid] = ::logsumexp2_fw_dev(temp[tid], ::__half2float(px[i * skip]));
   }
   ::__syncthreads();
 #define REDUCE(k) \
@@ -40,17 +40,16 @@ __global__ void logsumexp_fw_dev(
   REDUCE(2)
   REDUCE(1)
 #undef REDUCE
-  if (tid == 0) py[bid] = temp[0];
+  if (tid == 0) py[bid] = ::__float2half(temp[0]);
 }
-*/
+
 }  // namespace
 
 namespace primitiv {
 namespace devices {
 
 void CUDA16::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
-  THROW_NOT_IMPLEMENTED;
-  /*const std::uint32_t n = x.shape()[dim];
+  const std::uint32_t n = x.shape()[dim];
   const std::uint32_t r = y.shape().size();
   const std::uint32_t s = y.shape().lower_volume(dim);
   std::uint32_t block_size = dim1_x_;
@@ -58,7 +57,9 @@ void CUDA16::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   CUDA_CALL(::cudaSetDevice(dev_id_));
   switch (block_size) {
 #define CASE(k) \
-    case k: ::logsumexp_fw_dev<k><<<r, k>>>(CDATA(float, x), s, n, MDATA(float, y)); break
+    case k: \
+      ::logsumexp_fw_dev<k><<<r, k>>>(CDATA(half, x), s, n, MDATA(half, y)); \
+      break;
     CASE(1024);
     CASE(512);
     CASE(256);
@@ -71,7 +72,7 @@ void CUDA16::logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
     CASE(2);
     CASE(1);
 #undef CASE
-  }*/
+  }
 }
 
 }  // namespace devices

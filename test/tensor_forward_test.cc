@@ -2009,10 +2009,17 @@ TEST_F(TensorForwardTest, CheckSum) {
 
 TEST_F(TensorForwardTest, CheckSum2) {
   const vector<std::uint32_t> ns {
-    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025, 65535, 65536, 65537,
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025,
+    2047, 2048, 2049, 65535, 65536, 65537,
   };
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
+      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+        // NOTE(odashi):
+        // Half-precision types have only (10+1) bits resolution.
+        continue;
+      }
+
       const Tensor x = dev->new_tensor_by_constant({n}, 1);
       const Tensor y = sum(x, 0);
       EXPECT_EQ(Shape(), y.shape());
@@ -2046,14 +2053,16 @@ TEST_F(TensorForwardTest, CheckLogSumExp) {
     for (std::uint32_t i = 0; i < 4; ++i) {
       const Tensor y = logsumexp(x, i);
       EXPECT_EQ(shape[i], y.shape());
-      EXPECT_TRUE(vector_match(y_data[i], y.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            y_data[i], y.to_vector(), get_default_ulps(*dev)));
     }
   }
 }
 
 TEST_F(TensorForwardTest, CheckLogSumExp2) {
   const vector<std::uint32_t> ns {
-    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025, 65535, 65536, 65537,
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025,
+    2047, 2048, 2049, 65535, 65536, 65537,
   };
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
@@ -2061,10 +2070,14 @@ TEST_F(TensorForwardTest, CheckLogSumExp2) {
         const Tensor x = dev->new_tensor_by_constant({n}, k);
         const Tensor y = logsumexp(x, 0);
         EXPECT_EQ(Shape(), y.shape());
-        // TODO(odashi): 1e-3 might not be enough precision.
-        EXPECT_TRUE(vector_near(
-              vector<float>(1, k + std::log(n)), y.to_vector(), 1e-3));
-    }
+
+        const auto dev_type = dev->type();
+        const std::uint32_t ulps
+          = dev_type == Device::DeviceType::CUDA16 ? get_default_ulps(*dev)
+          : 320;
+        EXPECT_TRUE(vector_match_ulps(
+              vector<float>(1, k + std::log(n)), y.to_vector(), ulps));
+      }
     }
   }
 }
@@ -2093,14 +2106,20 @@ TEST_F(TensorForwardTest, CheckLogSoftmax) {
     for (std::uint32_t i = 0; i < 4; ++i) {
       const Tensor y = log_softmax(x, i);
       EXPECT_EQ(Shape({2, 2, 2}, 2), y.shape());
-      EXPECT_TRUE(vector_near(y_data[i], y.to_vector(), 1e-6));
+
+      const auto dev_type = dev->type();
+      const float err
+        = dev_type == Device::DeviceType::CUDA16 ? 1e-2
+        : 1e-6;
+      EXPECT_TRUE(vector_near(y_data[i], y.to_vector(), err));
     }
   }
 }
 
 TEST_F(TensorForwardTest, CheckLogSoftmax2) {
   const vector<std::uint32_t> ns {
-    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025, 65535, 65536, 65537,
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025,
+    2047, 2048, 2049, 65535, 65536, 65537,
   };
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
@@ -2108,9 +2127,13 @@ TEST_F(TensorForwardTest, CheckLogSoftmax2) {
         const Tensor x = dev->new_tensor_by_constant({n}, k);
         const Tensor y = log_softmax(x, 0);
         EXPECT_EQ(Shape({n}), y.shape());
-        // TODO(odashi): 1e-3 might not be enough precision.
-        EXPECT_TRUE(
-            vector_near(vector<float>(n, -std::log(n)), y.to_vector(), 1e-3));
+
+        const auto dev_type = dev->type();
+        const float err
+          = dev_type == Device::DeviceType::CUDA16 ? 1e-2
+          : 1e-3;
+        EXPECT_TRUE(vector_near(
+              vector<float>(n, -std::log(n)), y.to_vector(), err));
       }
     }
   }
@@ -2140,14 +2163,20 @@ TEST_F(TensorForwardTest, CheckSoftmax) {
     for (std::uint32_t i = 0; i < 4; ++i) {
       const Tensor y = softmax(x, i);
       EXPECT_EQ(Shape({2, 2, 2}, 2), y.shape());
-      EXPECT_TRUE(vector_near(y_data[i], y.to_vector(), 1e-6));
+
+      const auto dev_type = dev->type();
+      const float err
+        = dev_type == Device::DeviceType::CUDA16 ? 1e-2
+        : 1e-6;
+      EXPECT_TRUE(vector_near(y_data[i], y.to_vector(), err));
     }
   }
 }
 
 TEST_F(TensorForwardTest, CheckSoftmax2) {
   const vector<std::uint32_t> ns {
-    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025, 65535, 65536, 65537,
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025,
+    2047, 2048, 2049, 65535, 65536, 65537,
   };
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
@@ -2155,8 +2184,13 @@ TEST_F(TensorForwardTest, CheckSoftmax2) {
         const Tensor x = dev->new_tensor_by_constant({n}, k);
         const Tensor y = softmax(x, 0);
         EXPECT_EQ(Shape({n}), y.shape());
+
+        const auto dev_type = dev->type();
+        const float err
+          = dev_type == Device::DeviceType::CUDA16 ? 1e-3
+          : 1e-6;
         EXPECT_TRUE(
-            vector_near(vector<float>(n, 1./n), y.to_vector(), 1e-6));
+            vector_near(vector<float>(n, 1./n), y.to_vector(), err));
       }
     }
   }
@@ -2284,7 +2318,12 @@ TEST_F(TensorForwardTest, CheckSoftmaxCrossEntropy) {
       const Tensor t = dev->new_tensor_by_vector({3, 3}, t_data[dim]);
       const Tensor y = softmax_cross_entropy(x, t, dim);
       EXPECT_EQ(shape[dim], y.shape());
-      EXPECT_TRUE(vector_match(y_data[dim], y.to_vector()));
+
+      const auto dev_type = dev->type();
+      const std::uint32_t ulps
+        = dev_type == Device::DeviceType::CUDA16 ? 16384
+        : get_default_ulps(*dev);
+      EXPECT_TRUE(vector_match_ulps(y_data[dim], y.to_vector(), ulps));
     }
   }
 }
@@ -2310,7 +2349,12 @@ TEST_F(TensorForwardTest, CheckSoftmaxCrossEntropyBatchBroadcast) {
       const Tensor t = dev->new_tensor_by_vector(tc.t_shape, tc.t_data);
       const Tensor y = softmax_cross_entropy(x, t, 0);
       EXPECT_EQ(tc.y_shape, y.shape());
-      EXPECT_TRUE(vector_match(tc.y_data, y.to_vector()));
+
+      const auto dev_type = dev->type();
+      const std::uint32_t ulps
+        = dev_type == Device::DeviceType::CUDA16 ? 16384
+        : get_default_ulps(*dev);
+      EXPECT_TRUE(vector_match_ulps(tc.y_data, y.to_vector(), ulps));
     }
   }
 }
@@ -2374,7 +2418,12 @@ TEST_F(TensorForwardTest, CheckSparseSoftmaxCrossEntropy) {
       const Tensor x = dev->new_tensor_by_vector(tc.x_shape, tc.x_data);
       const Tensor y = softmax_cross_entropy(x, tc.ids, tc.dim);
       EXPECT_EQ(tc.y_shape, y.shape());
-      EXPECT_TRUE(vector_near(tc.y_data, y.to_vector(), 1e-6));
+
+      const auto dev_type = dev->type();
+      const float err
+        = dev_type == Device::DeviceType::CUDA16 ? 1e-2
+        : 1e-6;
+      EXPECT_TRUE(vector_near(tc.y_data, y.to_vector(), err));
     }
   }
 }
