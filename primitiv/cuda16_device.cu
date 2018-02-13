@@ -6,6 +6,16 @@
 #include <primitiv/cuda_utils.h>
 #include <primitiv/error.h>
 
+namespace {
+
+// Helper to obtain a single integer representing the compute capability.
+constexpr std::uint32_t get_capability(
+    std::uint32_t major, std::uint32_t minor) {
+  return 10000 * major + minor;
+}
+
+}  // namespace
+
 namespace primitiv {
 namespace devices {
 
@@ -26,12 +36,14 @@ void CUDA16::assert_support(std::uint32_t device_id) {
   // Checks compute capability
   // NOTE(odashi):
   // At least following compute capabilities are required:
-  // float <-> half conversion: 5.0
-  // Full support of half operations: 5.3
-  static const int MIN_CC_MAJOR = 5;
-  static const int MIN_CC_MINOR = 0;
-  if (prop.major < MIN_CC_MAJOR ||
-      (prop.major == MIN_CC_MAJOR && prop.minor < MIN_CC_MINOR)) {
+  // float <-> half conversion ........ 5.0
+  // Support of typical operations .... 5.3
+  // cublasHgemm/cublasHgemmBatched ... 6.1
+  constexpr std::uint32_t MIN_CC_MAJOR = 6;
+  constexpr std::uint32_t MIN_CC_MINOR = 1;
+  constexpr std::uint32_t MIN_CC = ::get_capability(MIN_CC_MAJOR, MIN_CC_MINOR);
+  const std::uint32_t dev_cc = ::get_capability(prop.major, prop.minor);
+  if (dev_cc < MIN_CC) {
     THROW_ERROR(
         "CUDA Device " << device_id << " does not satisfy the "
         "minimum requirement of the compute capability: "

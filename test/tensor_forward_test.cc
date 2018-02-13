@@ -1512,6 +1512,7 @@ TEST_F(TensorForwardTest, CheckMatMulAA) {
   const vector<float> x_data {1, 2, 3, 4, 1, 0, 0, 1, 0, 2, 3, 0};
   const vector<float> y_data {7, 10, 15, 22, 1, 0, 0, 1, 6, 0, 0, 6};
   for (Device *dev : devices) {
+    std::cout << dev << std::endl;
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), x_data);
     const Tensor y = matmul(x, x);
     EXPECT_EQ(Shape({2, 2}, 3), y.shape());
