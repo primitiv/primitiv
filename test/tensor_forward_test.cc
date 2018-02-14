@@ -1547,8 +1547,12 @@ TEST_F(TensorForwardTest, CheckMatMulAB) {
     const Tensor b = dev->new_tensor_by_vector({4, 6}, b_data);
     const Tensor y = matmul(a, b);
     EXPECT_EQ(Shape({3, 6}), y.shape());
-    EXPECT_TRUE(vector_match_ulps(
-          y_data, y.to_vector(), get_default_ulps(*dev)));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 16384
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(y_data, y.to_vector(), ulps));
   }
 }
 
@@ -1603,10 +1607,13 @@ TEST_F(TensorForwardTest, CheckMatMulLarge) {
     const Tensor y2 = matmul(b, a);
     EXPECT_EQ(Shape({N, N}), y1.shape());
     EXPECT_EQ(Shape({N, N}), y2.shape());
-    EXPECT_TRUE(vector_match_ulps(
-          y1_data, y1.to_vector(), get_default_ulps(*dev)));
-    EXPECT_TRUE(vector_match_ulps(
-          y2_data, y2.to_vector(), get_default_ulps(*dev)));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 262144
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(y1_data, y1.to_vector(), ulps));
+    EXPECT_TRUE(vector_match_ulps(y2_data, y2.to_vector(), ulps));
   }
 }
 
