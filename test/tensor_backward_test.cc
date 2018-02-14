@@ -427,7 +427,7 @@ TEST_F(TensorBackwardTest, CheckTanh) {
     const auto dev_type = dev->type();
     const std::uint32_t ulps
       = dev_type == Device::DeviceType::CUDA16 ? 150000
-      : 75;
+      : 96;
     EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
   }
 }
