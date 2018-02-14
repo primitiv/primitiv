@@ -1,5 +1,7 @@
 #include <primitiv/config.h>
 
+#include <cstring>
+
 #include <primitiv/cuda16_device.h>
 #include <primitiv/cuda_utils.h>
 #include <primitiv/device_ops/cuda16/common.h>
@@ -13,8 +15,7 @@ void CUDA16::conv2d_fw_impl(
     std::uint32_t stride0, std::uint32_t stride1,
     std::uint32_t dilation0, std::uint32_t dilation1,
     Tensor &y) {
-  THROW_NOT_IMPLEMENTED;
-  /*const Shape x_shape = x.shape();
+  const Shape x_shape = x.shape();
   const Shape w_shape = w.shape();
   const Shape y_shape = y.shape();
 
@@ -24,14 +25,18 @@ void CUDA16::conv2d_fw_impl(
   // Prepares descriptors.
   const cuda::CuDNNTensorDescriptor x_desc(
       w_shape.has_batch() ? 1 : x_shape.batch(),
-      x_shape[2], x_shape[1], x_shape[0]);
+      x_shape[2], x_shape[1], x_shape[0],
+      ::CUDNN_DATA_HALF);
   const cuda::CuDNNTensorDescriptor y_desc(
       w_shape.has_batch() ? 1 : y_shape.batch(),
-      y_shape[2], y_shape[1], y_shape[0]);
+      y_shape[2], y_shape[1], y_shape[0],
+      ::CUDNN_DATA_HALF);
   const cuda::CuDNNFilterDescriptor w_desc(
-      w_shape[3], w_shape[2], w_shape[1], w_shape[0]);
+      w_shape[3], w_shape[2], w_shape[1], w_shape[0],
+      ::CUDNN_DATA_HALF);
   const cuda::CuDNNConvolutionDescriptor conv_desc(
-      padding1, padding0, stride1, stride0, dilation1, dilation0);
+      padding1, padding0, stride1, stride0, dilation1, dilation0,
+      ::CUDNN_DATA_HALF);
 
   // Obtains the most efficient algorithm.
   ::cudnnConvolutionFwdAlgo_t algo;
@@ -54,9 +59,9 @@ void CUDA16::conv2d_fw_impl(
   const std::size_t y_shift = y_shape.volume();
   const float alpha = 1.f;
   const float beta = 0.f;
-  const float *x_ptr = CDATA(float, x);
-  const float *w_ptr = CDATA(float, w);
-  float *y_ptr = MDATA(float, y);
+  const half *x_ptr = CDATA(half, x);
+  const half *w_ptr = CDATA(half, w);
+  half *y_ptr = MDATA(half, y);
   for (std::uint32_t bn = 0; bn < w_shape.batch(); ++bn) {
     CUDNN_CALL(::cudnnConvolutionForward(
           state_->cudnn.get(),
@@ -66,7 +71,7 @@ void CUDA16::conv2d_fw_impl(
     x_ptr += x_shift;
     w_ptr += w_shift;
     y_ptr += y_shift;
-  }*/
+  }
 }
 
 void CUDA16::conv2d_bw_impl(
@@ -75,8 +80,7 @@ void CUDA16::conv2d_bw_impl(
     std::uint32_t stride0, std::uint32_t stride1,
     std::uint32_t dilation0, std::uint32_t dilation1,
     Tensor &gx, Tensor &gw) {
-  THROW_NOT_IMPLEMENTED;
-  /*const Shape x_shape = x.shape();
+  const Shape x_shape = x.shape();
   const Shape w_shape = w.shape();
   const Shape y_shape = gy.shape();
 
@@ -86,14 +90,18 @@ void CUDA16::conv2d_bw_impl(
   // Prepares descriptors.
   const cuda::CuDNNTensorDescriptor x_desc(
       w_shape.has_batch() ? 1 : x_shape.batch(),
-      x_shape[2], x_shape[1], x_shape[0]);
+      x_shape[2], x_shape[1], x_shape[0],
+      ::CUDNN_DATA_HALF);
   const cuda::CuDNNTensorDescriptor y_desc(
       w_shape.has_batch() ? 1 : y_shape.batch(),
-      y_shape[2], y_shape[1], y_shape[0]);
+      y_shape[2], y_shape[1], y_shape[0],
+      ::CUDNN_DATA_HALF);
   const cuda::CuDNNFilterDescriptor w_desc(
-      w_shape[3], w_shape[2], w_shape[1], w_shape[0]);
+      w_shape[3], w_shape[2], w_shape[1], w_shape[0],
+      ::CUDNN_DATA_HALF);
   const cuda::CuDNNConvolutionDescriptor conv_desc(
-      padding1, padding0, stride1, stride0, dilation1, dilation0);
+      padding1, padding0, stride1, stride0, dilation1, dilation0,
+      ::CUDNN_DATA_HALF);
 
   // Obtains the most efficient algorithms.
   ::cudnnConvolutionBwdDataAlgo_t x_algo;
@@ -126,11 +134,11 @@ void CUDA16::conv2d_bw_impl(
   const std::size_t y_shift = y_shape.volume();
   const float alpha = 1.f;
   const float beta = 1.f;
-  const float *x_ptr = CDATA(float, x);
-  const float *w_ptr = CDATA(float, w);
-  const float *gy_ptr = CDATA(float, gy);
-  float *gx_ptr = MDATA(float, gx);
-  float *gw_ptr = MDATA(float, gw);
+  const half *x_ptr = CDATA(half, x);
+  const half *w_ptr = CDATA(half, w);
+  const half *gy_ptr = CDATA(half, gy);
+  half *gx_ptr = MDATA(half, gx);
+  half *gw_ptr = MDATA(half, gw);
   for (std::uint32_t bn = 0; bn < w_shape.batch(); ++bn) {
     CUDNN_CALL(::cudnnConvolutionBackwardData(
           state_->cudnn.get(),
@@ -147,7 +155,7 @@ void CUDA16::conv2d_bw_impl(
     gy_ptr += y_shift;
     gx_ptr += x_shift;
     gw_ptr += w_shift;
-  }*/
+  }
 }
 
 }  // namespace devices

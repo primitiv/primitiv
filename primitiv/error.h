@@ -37,8 +37,8 @@ private:
 class NotImplementedError : public Error {
 public:
   NotImplementedError(
-      const std::string &file, std::uint32_t line, const std::string &func_name)
-  : Error(file, line, "Not implemented: " + func_name) {}
+      const std::string &file, std::uint32_t line, const std::string &message)
+  : Error(file, line, "Not implemented: " + message) {}
 };
 
 }  // namespace primitiv

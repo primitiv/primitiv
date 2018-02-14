@@ -2477,14 +2477,15 @@ TEST_F(TensorForwardTest, CheckStopGradient) {
     const Tensor w = dev->new_tensor_by_vector(w_shape, w_data); \
     const Tensor y = conv2d(x, w, pad0, pad1, str0, str1, dil0, dil1); \
     EXPECT_EQ(y_shape, y.shape()); \
-    EXPECT_TRUE(vector_match(y_data, y.to_vector())); \
+    EXPECT_TRUE(vector_match_ulps( \
+          y_data, y.to_vector(), get_default_ulps(*dev))); \
   } IGNORE_NOT_IMPLEMENTED \
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_1x1x1_1x1x1x1) {
-  const vector<float> x_data {123};
-  const vector<float> w_data {42};
-  const vector<float> y_data {123 * 42};
+  const vector<float> x_data {12};
+  const vector<float> w_data {34};
+  const vector<float> y_data {12 * 34};
   const Shape x_shape {};
   const Shape w_shape {};
   const Shape y_shape {};
@@ -2675,7 +2676,19 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_5x5x1x1) {
   const Shape x_shape {5, 5};
   const Shape w_shape {5, 5};
   const Shape y_shape {};
-  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+
+  for (Device *dev : devices) try {
+    const Tensor x = dev->new_tensor_by_vector(x_shape, x_data);
+    const Tensor w = dev->new_tensor_by_vector(w_shape, w_data);
+    const Tensor y = conv2d(x, w, 0, 0, 1, 1, 1, 1);
+    EXPECT_EQ(y_shape, y.shape());
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 32768
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(y_data, y.to_vector(), ulps));
+  } IGNORE_NOT_IMPLEMENTED
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x3_2x2x3x1) {
@@ -2742,7 +2755,19 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x3_2x2x3x3) {
   const Shape x_shape {5, 5, 3};
   const Shape w_shape {2, 2, 3, 3};
   const Shape y_shape {4, 4, 3};
-  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+
+  for (Device *dev : devices) try {
+    const Tensor x = dev->new_tensor_by_vector(x_shape, x_data);
+    const Tensor w = dev->new_tensor_by_vector(w_shape, w_data);
+    const Tensor y = conv2d(x, w, 0, 0, 1, 1, 1, 1);
+    EXPECT_EQ(y_shape, y.shape());
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(y_data, y.to_vector(), ulps));
+  } IGNORE_NOT_IMPLEMENTED
 }
 
 TEST_F(TensorForwardTest, CheckConv2D_5x5x1_2x2x1x1_Padding10) {
@@ -3347,17 +3372,23 @@ TEST_F(TensorForwardTest, CheckMaxPool2D_5x5x1_2x2_N) {
 }
 
 TEST_F(TensorForwardTest, CheckMaxPool2D_VGG16ThirdLayer) {
-  // NOTE(odashi): 224*224*64 < 2^23 (float precision)
-  const vector<float> x_data = make_iota_vector(224 * 224 * 64, 1);
+  vector<float> x_data(224 * 224 * 64);
+  for (unsigned b = 0; b < 64; ++b) {
+    float *px = x_data.data() + b * 224 * 224;
+    for (unsigned x = 0; x < 224; ++x) {
+      float *px2 = px + x * 224;
+      for (unsigned y = 0; y < 224; ++y) {
+        px2[y] = x + y;
+      }
+    }
+  }
   vector<float> y_data(112 * 112 * 64);
   for (unsigned b = 0; b < 64; ++b) {
     float *py = y_data.data() + b * 112 * 112;
-    const unsigned b_ofs = b * 224 * 224;
     for (unsigned x = 0; x < 112; ++x) {
       float *py2 = py + x * 112;
-      const unsigned x_ofs = b_ofs + (2 * x + 1) * 224;
       for (unsigned y = 0; y < 112; ++y) {
-        py2[y] = x_ofs + 2 * y + 2;
+        py2[y] = (2 * x + 1) + (2 * y + 1);
       }
     }
   }

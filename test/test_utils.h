@@ -10,8 +10,13 @@
 
 #include <primitiv/primitiv.h>
 
-#define IGNORE_NOT_IMPLEMENTED catch (primitiv::NotImplementedError &ex) { \
+#define IGNORE_NOT_IMPLEMENTED \
+catch (const primitiv::NotImplementedError &ex) { \
   std::cerr << ex.what() << std::endl; \
+} catch (const primitiv::Error &ex) { \
+  if (std::strstr(ex.what(), "NOT_SUPPORTED") != 0) { \
+    std::cerr << ex.what() << std::endl; \
+  } \
 }
 
 namespace test_utils {

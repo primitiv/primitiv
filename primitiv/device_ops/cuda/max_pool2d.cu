@@ -21,9 +21,11 @@ void CUDA::max_pool2d_fw_impl(
 
   // Prepares descriptors.
   const cuda::CuDNNTensorDescriptor x_desc(
-      x_shape.batch(), x_shape[2], x_shape[1], x_shape[0]);
+      x_shape.batch(), x_shape[2], x_shape[1], x_shape[0],
+      ::CUDNN_DATA_FLOAT);
   const cuda::CuDNNTensorDescriptor y_desc(
-      y_shape.batch(), y_shape[2], y_shape[1], y_shape[0]);
+      y_shape.batch(), y_shape[2], y_shape[1], y_shape[0],
+      ::CUDNN_DATA_FLOAT);
   const cuda::CuDNNPoolingDescriptor pool_desc(
       CUDNN_POOLING_MAX,
       window1, window0, padding1, padding0, stride1, stride0);
@@ -53,9 +55,11 @@ void CUDA::max_pool2d_bw_impl(
 
   // Prepares descriptors.
   const cuda::CuDNNTensorDescriptor x_desc(
-      x_shape.batch(), x_shape[2], x_shape[1], x_shape[0]);
+      x_shape.batch(), x_shape[2], x_shape[1], x_shape[0],
+      ::CUDNN_DATA_FLOAT);
   const cuda::CuDNNTensorDescriptor y_desc(
-      y_shape.batch(), y_shape[2], y_shape[1], y_shape[0]);
+      y_shape.batch(), y_shape[2], y_shape[1], y_shape[0],
+      ::CUDNN_DATA_FLOAT);
   const cuda::CuDNNPoolingDescriptor pool_desc(
       CUDNN_POOLING_MAX,
       window1, window0, padding1, padding0, stride1, stride0);

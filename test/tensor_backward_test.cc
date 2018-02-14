@@ -1910,8 +1910,14 @@ TEST_F(TensorBackwardTest, CheckConv2D_VGG16FirstLayer) {
     Tensor gx = dev->new_tensor_by_constant(x_shape, 1);
     Tensor gw = dev->new_tensor_by_constant(w_shape, 1);
     dev->conv2d_bw(x, w, y, gy, 1, 1, 1, 1, 1, 1, gx, gw);
+
     EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
-    EXPECT_TRUE(vector_match(gw_data, gw.to_vector()));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 65536
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(gw_data, gw.to_vector(), ulps));
   } IGNORE_NOT_IMPLEMENTED
 }
 
@@ -2228,9 +2234,20 @@ TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x2_N) {
 #undef TEST_MAX_POOL2D
 
 TEST_F(TensorBackwardTest, CheckMaxPool2D_VGG16ThirdLayer) {
-  // NOTE(odashi): 224*224*64 < 2^23 (float precision)
   const Shape x_shape {224, 224, 64};
   const Shape y_shape {112, 112, 64};
+
+  vector<float> x_data(224 * 224 * 64);
+  for (unsigned b = 0; b < 64; ++b) {
+    float *px = x_data.data() + b * 224 * 224;
+    for (unsigned x = 0; x < 224; ++x) {
+      float *px2 = px + x * 224;
+      for (unsigned y = 0; y < 224; ++y) {
+        px2[y] = x + y;
+      }
+    }
+  }
+
   vector<float> gx_data(224 * 224 * 64, 1);
   for (unsigned b = 0; b < 64; ++b) {
     float *pgx = gx_data.data() + b * 224 * 224;
@@ -2242,7 +2259,6 @@ TEST_F(TensorBackwardTest, CheckMaxPool2D_VGG16ThirdLayer) {
     }
   }
 
-  const vector<float> x_data = make_iota_vector(x_shape.size(), 1);
   const vector<float> gy_data(y_shape.size(), 1);
 
   for (Device *dev : devices) try {
