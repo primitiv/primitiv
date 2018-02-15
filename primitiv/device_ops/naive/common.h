@@ -1,6 +1,8 @@
 #ifndef PRIMITIV_DEVICE_OPS_COMMON_NAIVE_H_
 #define PRIMITIV_DEVICE_OPS_COMMON_NAIVE_H_
 
+#define MAYBE_USED(x) static_cast<void>(x)
+
 #define CDATA(x) static_cast<const float *>(get_handle(x))
 #define MDATA(x) static_cast<float *>(get_mutable_handle(x))
 
@@ -18,8 +20,8 @@ void Naive::name##_fw_impl(const Tensor &x, Tensor &y) { \
 #define CPUDEV_BW_X(name, op) \
 void Naive::name##_bw_impl( \
     const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) { \
-  const float *px = CDATA(x); static_cast<void>(px); \
-  const float *py = CDATA(y); static_cast<void>(py); \
+  const float *px = CDATA(x); MAYBE_USED(px); \
+  const float *py = CDATA(y); MAYBE_USED(py); \
   const float *pgy = CDATA(gy); \
   float *pgx = MDATA(gx); \
   const std::uint32_t size = x.shape().size(); \
@@ -37,8 +39,9 @@ void Naive::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
 #define CPUDEV_BW_X_CONST(name, op) \
 void Naive::name##_bw_impl( \
     const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) { \
-  const float *px = CDATA(x); static_cast<void>(px); \
-  const float *py = CDATA(y); static_cast<void>(py); \
+  MAYBE_USED(k); \
+  const float *px = CDATA(x); MAYBE_USED(px); \
+  const float *py = CDATA(y); MAYBE_USED(py); \
   const float *pgy = CDATA(gy); \
   float *pgx = MDATA(gx); \
   const std::uint32_t size = x.shape().size(); \

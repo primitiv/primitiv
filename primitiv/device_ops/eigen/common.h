@@ -21,10 +21,10 @@ using EMatrixXf = ::Eigen::MatrixXf;
 #define CDATA(x) static_cast<const float *>(get_handle(x))
 #define MDATA(x) static_cast<float *>(get_mutable_handle(x))
 
+#define MAYBE_USED(x) static_cast<void>(x)
+
 #define REPEAT_OP(i, n, op) \
   for (std::uint32_t (i) = 0; (i) < (n); ++(i)) { (op); }
-
-#define MAYBE_USED(x) static_cast<void>(x)
 
 #define EIGEN_DEV_FW_X(name, op) \
 void Eigen::name##_fw_impl(const Tensor &x_, Tensor &y_) { \
@@ -54,6 +54,7 @@ void Eigen::name##_fw_impl(const Tensor &x_, float k, Tensor &y_) { \
 void Eigen::name##_bw_impl( \
     const Tensor &x_, const Tensor &y_, const Tensor &gy_, float k, \
     Tensor &gx_) { \
+  MAYBE_USED(k); \
   const std::size_t size = x_.shape().size(); \
   EMap<const EArrayXf> x(CDATA(x_), size); MAYBE_USED(x); \
   EMap<const EArrayXf> y(CDATA(y_), size); MAYBE_USED(y); \
