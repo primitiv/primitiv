@@ -102,6 +102,7 @@ void add_available_cuda_devices(std::vector<primitiv::Device *> &devs) {
 }
 
 void add_available_cuda16_devices(std::vector<primitiv::Device *> &devs) {
+  MAYBE_USED(devs);
 #ifdef PRIMITIV_USE_CUDA
   const std::uint32_t num_devs = CUDA16::num_devices();
   std::uint32_t num_avail_devs = 0;
