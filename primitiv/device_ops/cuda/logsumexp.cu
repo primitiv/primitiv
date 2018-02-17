@@ -19,15 +19,15 @@ __global__ void logsumexp_fw_dev(
   const std::uint32_t bid = blockIdx.x;
   const std::uint32_t tid = threadIdx.x;
   px += bid % skip + (bid / skip) * skip * n;
-  temp[tid] = -1e38;  // NOTE(odashi): Near the minimum of the float.
+  temp[tid] = FLOAT_NEGATIVE_INFINITY;
   for (std::uint32_t i = tid; i < n; i += BLOCK_SIZE) {
     temp[tid] = ::logsumexp2_fw_dev(temp[tid], px[i * skip]);
   }
-  __syncthreads();
+  ::__syncthreads();
 #define REDUCE(k) \
   if (BLOCK_SIZE >= k << 1) { \
     if (tid < k) temp[tid] = ::logsumexp2_fw_dev(temp[tid], temp[tid + k]); \
-    __syncthreads(); \
+    ::__syncthreads(); \
   }
   REDUCE(512)
   REDUCE(256)

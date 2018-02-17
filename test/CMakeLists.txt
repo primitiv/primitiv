@@ -73,6 +73,7 @@ endif()
 
 if(PRIMITIV_USE_CUDA)
   primitiv_test(cuda_device)
+  primitiv_test(cuda16_device)
   primitiv_test(cuda_memory_pool)
 endif()
 
