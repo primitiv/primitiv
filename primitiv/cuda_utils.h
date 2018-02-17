@@ -162,10 +162,11 @@ class CuDNNTensorDescriptor
 : public primitiv::mixins::Nonmovable<CuDNNTensorDescriptor> {
 public:
   CuDNNTensorDescriptor(
-      std::uint32_t n, std::uint32_t c, std::uint32_t h, std::uint32_t w) {
+      std::uint32_t n, std::uint32_t c, std::uint32_t h, std::uint32_t w,
+      ::cudnnDataType_t data_type) {
     CUDNN_CALL(::cudnnCreateTensorDescriptor(&handle_));
     CUDNN_CALL(::cudnnSetTensor4dDescriptor(
-          handle_, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, n, c, h, w));
+          handle_, CUDNN_TENSOR_NCHW, data_type, n, c, h, w));
   }
 
   ~CuDNNTensorDescriptor() {
@@ -193,10 +194,11 @@ class CuDNNFilterDescriptor
 : public primitiv::mixins::Nonmovable<CuDNNFilterDescriptor> {
 public:
   CuDNNFilterDescriptor(
-      std::uint32_t k, std::uint32_t c, std::uint32_t h, std::uint32_t w) {
+      std::uint32_t k, std::uint32_t c, std::uint32_t h, std::uint32_t w,
+      ::cudnnDataType_t data_type) {
     CUDNN_CALL(::cudnnCreateFilterDescriptor(&handle_));
     CUDNN_CALL(::cudnnSetFilter4dDescriptor(
-          handle_, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW, k, c, h, w));
+          handle_, data_type, CUDNN_TENSOR_NCHW, k, c, h, w));
   }
 
   ~CuDNNFilterDescriptor() {
@@ -226,13 +228,14 @@ public:
   CuDNNConvolutionDescriptor(
       std::uint32_t padding_h, std::uint32_t padding_w,
       std::uint32_t stride_h, std::uint32_t stride_w,
-      std::uint32_t dilation_h, std::uint32_t dilation_w) {
+      std::uint32_t dilation_h, std::uint32_t dilation_w,
+      ::cudnnDataType_t data_type) {
     CUDNN_CALL(::cudnnCreateConvolutionDescriptor(&handle_));
 #if CUDNN_MAJOR >= 6
     CUDNN_CALL(::cudnnSetConvolution2dDescriptor(
           handle_,
           padding_h, padding_w, stride_h, stride_w, dilation_h, dilation_w,
-          CUDNN_CONVOLUTION, CUDNN_DATA_FLOAT));
+          CUDNN_CONVOLUTION, data_type));
 #else
     if (dilation_h > 1 || dilation_w > 1) {
       THROW_NOT_IMPLEMENTED_WITH_MESSAGE(

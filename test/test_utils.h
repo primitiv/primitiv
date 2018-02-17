@@ -10,14 +10,19 @@
 
 #include <primitiv/primitiv.h>
 
-#define IGNORE_NOT_IMPLEMENTED catch (primitiv::NotImplementedError &ex) { \
+#define IGNORE_NOT_IMPLEMENTED \
+catch (const primitiv::NotImplementedError &ex) { \
   std::cerr << ex.what() << std::endl; \
+} catch (const primitiv::Error &ex) { \
+  if (std::strstr(ex.what(), "NOT_SUPPORTED") != 0) { \
+    std::cerr << ex.what() << std::endl; \
+  } \
 }
 
 namespace test_utils {
 
-// check whether or not two float values are near than the ULP-based threshold.
-inline bool float_eq(float a, float b, int max_ulps) {
+// obtains the difference of ULPs.
+inline std::int32_t float_ulp_diff(float a, float b) {
   static_assert(sizeof(std::int32_t) == sizeof(float), "");
   std::int32_t ai;
   std::memcpy(&ai, &a, sizeof(std::int32_t));
@@ -25,8 +30,12 @@ inline bool float_eq(float a, float b, int max_ulps) {
   std::int32_t bi;
   std::memcpy(&bi, &b, sizeof(std::int32_t));
   if (bi < 0) bi = 0x80000000 - bi;
-  const std::int32_t diff = ai > bi ? ai - bi : bi - ai;
-  return diff <= max_ulps;
+  return ai > bi ? ai - bi : bi - ai;
+}
+
+// check whether or not two float values are near than the ULP-based threshold.
+inline bool float_eq(float a, float b, int max_ulps) {
+  return test_utils::float_ulp_diff(a, b) <= max_ulps;
 }
 
 // check whether or not two float values are near than the given error.
@@ -48,7 +57,8 @@ inline testing::AssertionResult vector_match_ulps(
     if (!test_utils::float_eq(expected[i], actual[i], max_ulps)) {
       return testing::AssertionFailure()
         << "expected[" << i << "]: " << expected[i]
-        << " != actual[" << i << "]: " << actual[i];
+        << " != actual[" << i << "]: " << actual[i]
+        << " diff: " << test_utils::float_ulp_diff(expected[i], actual[i]);
     }
   }
   return testing::AssertionSuccess();
@@ -176,11 +186,15 @@ inline std::vector<float> make_iota_vector(std::size_t size, float bias) {
   return ret;
 }
 
+// Retrieves the default boundary of ULP errors.
+std::uint32_t get_default_ulps(const primitiv::Device &dev);
+
 // helper to add all available devices.
 void add_available_devices(std::vector<primitiv::Device *> &devices);
 void add_available_naive_devices(std::vector<primitiv::Device *> &devices);
 void add_available_eigen_devices(std::vector<primitiv::Device *> &devices);
 void add_available_cuda_devices(std::vector<primitiv::Device *> &devices);
+void add_available_cuda16_devices(std::vector<primitiv::Device *> &devices);
 void add_available_opencl_devices(std::vector<primitiv::Device *> &devices);
 
 }  // namespace test_utils

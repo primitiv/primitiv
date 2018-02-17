@@ -14,7 +14,7 @@ __global__ void argmax_dev(
   const std::uint32_t bid = blockIdx.x;
   const std::uint32_t tid = threadIdx.x;
   px += bid % skip + (bid / skip) * skip * n;
-  max_val[tid] = -1e38;  // NOTE(odashi): Near the minimum of the float.
+  max_val[tid] = FLOAT_NEGATIVE_INFINITY;
   for (std::uint32_t i = tid; i < n; i += BLOCK_SIZE) {
     const float val = px[i * skip];
     if (val > max_val[tid]) {
@@ -22,7 +22,7 @@ __global__ void argmax_dev(
       argmax_val[tid] = i;
     }
   }
-  __syncthreads();
+  ::__syncthreads();
 #define REDUCE(k) \
   if (BLOCK_SIZE >= k << 1) { \
     if (tid < k) { \
@@ -31,7 +31,7 @@ __global__ void argmax_dev(
         argmax_val[tid] = argmax_val[tid + k]; \
       } \
     } \
-    __syncthreads(); \
+    ::__syncthreads(); \
   }
   REDUCE(512)
   REDUCE(256)

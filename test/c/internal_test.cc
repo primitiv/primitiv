@@ -21,13 +21,13 @@ TEST_F(CInternalTest, CheckCopyVectorToArray) {
 
   std::size_t size = 0u;
   int *dummy = nullptr;
-  
+
   EXPECT_NO_THROW(copy_vector_to_array(src1, dummy, &size));
   EXPECT_EQ(1u, size);
-  
+
   EXPECT_NO_THROW(copy_vector_to_array(src2, dummy, &size));
   EXPECT_EQ(2u, size);
-  
+
   EXPECT_NO_THROW(copy_vector_to_array(src3, dummy, &size));
   EXPECT_EQ(3u, size);
 
@@ -36,11 +36,11 @@ TEST_F(CInternalTest, CheckCopyVectorToArray) {
   EXPECT_NO_THROW(copy_vector_to_array(src1, dest, &size));
   EXPECT_TRUE(
       vector_match(vector<int> {1, 0, 0, 0}, vector<int>(dest, dest + 4)));
-  
+
   EXPECT_NO_THROW(copy_vector_to_array(src2, dest, &size));
   EXPECT_TRUE(
       vector_match(vector<int> {2, 2, 0, 0}, vector<int>(dest, dest + 4)));
-  
+
   EXPECT_THROW(copy_vector_to_array(src3, dest, &size), Error);
   EXPECT_TRUE(
       vector_match(vector<int> {2, 2, 0, 0}, vector<int>(dest, dest + 4)));
@@ -52,13 +52,13 @@ TEST_F(CInternalTest, CheckCopyStringToArray) {
 
   std::size_t size = 0u;
   char *dummy = nullptr;
-  
+
   EXPECT_NO_THROW(copy_string_to_array(src1, dummy, &size));
   EXPECT_EQ(1u, size);
-  
+
   EXPECT_NO_THROW(copy_string_to_array(src2, dummy, &size));
   EXPECT_EQ(6u, size);
-  
+
   EXPECT_NO_THROW(copy_string_to_array(src3, dummy, &size));
   EXPECT_EQ(7u, size);
 
@@ -66,10 +66,10 @@ TEST_F(CInternalTest, CheckCopyStringToArray) {
 
   EXPECT_NO_THROW(copy_string_to_array(src1, dest, &size));
   EXPECT_EQ("", string(dest));
-  
+
   EXPECT_NO_THROW(copy_string_to_array(src2, dest, &size));
   EXPECT_EQ("hello", string(dest));
-  
+
   EXPECT_THROW(copy_string_to_array(src3, dest, &size), Error);
   EXPECT_EQ("hello", string(dest));
 }

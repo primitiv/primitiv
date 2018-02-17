@@ -22,6 +22,7 @@
 #endif  // PRIMITIV_USE_EIGEN
 #ifdef PRIMITIV_USE_CUDA
 #include <primitiv/cuda_device.h>
+#include <primitiv/cuda16_device.h>
 #endif  // PRIMITIV_USE_CUDA
 #ifdef PRIMITIV_USE_OPENCL
 #include <primitiv/opencl_device.h>

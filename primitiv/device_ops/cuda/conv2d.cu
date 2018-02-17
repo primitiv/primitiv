@@ -23,14 +23,18 @@ void CUDA::conv2d_fw_impl(
   // Prepares descriptors.
   const cuda::CuDNNTensorDescriptor x_desc(
       w_shape.has_batch() ? 1 : x_shape.batch(),
-      x_shape[2], x_shape[1], x_shape[0]);
+      x_shape[2], x_shape[1], x_shape[0],
+      ::CUDNN_DATA_FLOAT);
   const cuda::CuDNNTensorDescriptor y_desc(
       w_shape.has_batch() ? 1 : y_shape.batch(),
-      y_shape[2], y_shape[1], y_shape[0]);
+      y_shape[2], y_shape[1], y_shape[0],
+      ::CUDNN_DATA_FLOAT);
   const cuda::CuDNNFilterDescriptor w_desc(
-      w_shape[3], w_shape[2], w_shape[1], w_shape[0]);
+      w_shape[3], w_shape[2], w_shape[1], w_shape[0],
+      ::CUDNN_DATA_FLOAT);
   const cuda::CuDNNConvolutionDescriptor conv_desc(
-      padding1, padding0, stride1, stride0, dilation1, dilation0);
+      padding1, padding0, stride1, stride0, dilation1, dilation0,
+      ::CUDNN_DATA_FLOAT);
 
   // Obtains the most efficient algorithm.
   ::cudnnConvolutionFwdAlgo_t algo;
@@ -84,14 +88,18 @@ void CUDA::conv2d_bw_impl(
   // Prepares descriptors.
   const cuda::CuDNNTensorDescriptor x_desc(
       w_shape.has_batch() ? 1 : x_shape.batch(),
-      x_shape[2], x_shape[1], x_shape[0]);
+      x_shape[2], x_shape[1], x_shape[0],
+      ::CUDNN_DATA_FLOAT);
   const cuda::CuDNNTensorDescriptor y_desc(
       w_shape.has_batch() ? 1 : y_shape.batch(),
-      y_shape[2], y_shape[1], y_shape[0]);
+      y_shape[2], y_shape[1], y_shape[0],
+      ::CUDNN_DATA_FLOAT);
   const cuda::CuDNNFilterDescriptor w_desc(
-      w_shape[3], w_shape[2], w_shape[1], w_shape[0]);
+      w_shape[3], w_shape[2], w_shape[1], w_shape[0],
+      ::CUDNN_DATA_FLOAT);
   const cuda::CuDNNConvolutionDescriptor conv_desc(
-      padding1, padding0, stride1, stride0, dilation1, dilation0);
+      padding1, padding0, stride1, stride0, dilation1, dilation0,
+      ::CUDNN_DATA_FLOAT);
 
   // Obtains the most efficient algorithms.
   ::cudnnConvolutionBwdDataAlgo_t x_algo;

@@ -74,7 +74,9 @@ void CUDA::matmul_bw_impl(
   const std::uint32_t dk = b.shape()[1];
   float alpha = 1.;
   float beta = 1.;
+
   CUDA_CALL(::cudaSetDevice(dev_id_));
+
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
     const float *pa = CDATA(a);
