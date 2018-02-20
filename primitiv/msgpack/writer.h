@@ -57,7 +57,7 @@ public:
    */
   Writer(std::ostream &os) : os_(os) {}
 
-  Writer &operator<<(std::nullptr_t x) {
+  Writer &operator<<(std::nullptr_t) {
     const char buf[1] { UC(0xc0) };
     os_.write(buf, 1);
     return *this;

@@ -87,7 +87,7 @@ public:
    */
   Reader(std::istream &is) : is_(is) {}
 
-  Reader &operator>>(std::nullptr_t x) {
+  Reader &operator>>(std::nullptr_t) {
     // Do nothing. Only checking the type.
     check_type(0xc0);
     return *this;

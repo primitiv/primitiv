@@ -25,6 +25,8 @@ using primitiv::devices::CUDA16;
 using primitiv::devices::OpenCL;
 #endif  // PRIMITIV_USE_OPENCL
 
+#define MAYBE_USED(x) static_cast<void>(x)
+
 namespace {
 
 void add_device(std::vector<primitiv::Device *> &devs, primitiv::Device *dev) {
@@ -66,6 +68,7 @@ void add_available_naive_devices(std::vector<primitiv::Device *> &devs) {
 }
 
 void add_available_eigen_devices(std::vector<primitiv::Device *> &devs) {
+  MAYBE_USED(devs);
 #ifdef PRIMITIV_USE_EIGEN
   ::add_device(devs, new Eigen());
   ::add_device(devs, new Eigen());
@@ -73,6 +76,7 @@ void add_available_eigen_devices(std::vector<primitiv::Device *> &devs) {
 }
 
 void add_available_cuda_devices(std::vector<primitiv::Device *> &devs) {
+  MAYBE_USED(devs);
 #ifdef PRIMITIV_USE_CUDA
   const std::uint32_t num_devs = CUDA::num_devices();
   std::uint32_t num_avail_devs = 0;
@@ -98,6 +102,7 @@ void add_available_cuda_devices(std::vector<primitiv::Device *> &devs) {
 }
 
 void add_available_cuda16_devices(std::vector<primitiv::Device *> &devs) {
+  MAYBE_USED(devs);
 #ifdef PRIMITIV_USE_CUDA
   const std::uint32_t num_devs = CUDA16::num_devices();
   std::uint32_t num_avail_devs = 0;
@@ -123,6 +128,7 @@ void add_available_cuda16_devices(std::vector<primitiv::Device *> &devs) {
 }
 
 void add_available_opencl_devices(std::vector<primitiv::Device *> &devs) {
+  MAYBE_USED(devs);
 #ifdef PRIMITIV_USE_OPENCL
   const std::uint32_t num_pfs = OpenCL::num_platforms();
   if (num_pfs > 0) {
@@ -154,3 +160,5 @@ void add_available_opencl_devices(std::vector<primitiv::Device *> &devs) {
 }
 
 }  // namespace test_utils
+
+#undef MAYBE_USED

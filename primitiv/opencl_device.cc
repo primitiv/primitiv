@@ -1329,6 +1329,41 @@ void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
       cl::NDRange(state_->batch_sum_fw_group_size));
 }
 
+void OpenCL::conv2d_fw_impl(const Tensor &, const Tensor &,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    Tensor &) {
+  THROW_NOT_IMPLEMENTED;
+}
+
+void OpenCL::conv2d_bw_impl(
+    const Tensor &, const Tensor &, const Tensor &, const Tensor &,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    Tensor &, Tensor &) {
+  THROW_NOT_IMPLEMENTED;
+}
+
+void OpenCL::max_pool2d_fw_impl(
+    const Tensor &,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    Tensor &) {
+  THROW_NOT_IMPLEMENTED;
+}
+
+void OpenCL::max_pool2d_bw_impl(
+    const Tensor &, const Tensor &, const Tensor &,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    Tensor &) {
+  THROW_NOT_IMPLEMENTED;
+}
+
 void OpenCL::inplace_multiply_const_impl(float k, Tensor &x) {
   const std::uint32_t size = x.shape().size();
   const std::uint32_t g1 = ::calc_num_blocks(
