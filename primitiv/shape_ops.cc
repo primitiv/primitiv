@@ -10,7 +10,7 @@ namespace shape_ops {
 Shape reshape(const Shape &before, const Shape &after) {
   if (before.volume() != after.volume() ||
       (after.has_batch() && after.batch() != before.batch())) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Invalid shapes to reshape. before: " << before.to_string()
         << ", after: " << after.to_string());
   }
@@ -23,7 +23,7 @@ Shape flatten(const Shape &x) {
 
 Shape scalar_op(const Shape &x, const Shape &k) {
   if (!k.is_scalar() || !x.has_compatible_batch(k)) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Shape mismatched for the scalar operation. "
         "x: " << x.to_string() << " != k: " << k.to_string());
   }
@@ -32,7 +32,7 @@ Shape scalar_op(const Shape &x, const Shape &k) {
 
 Shape elementwise(const Shape &a, const Shape &b) {
   if (!a.has_same_dims(b) || !a.has_compatible_batch(b)) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Shape mismatched for the elementwise operation. "
         "a: " << a.to_string() << " != b: " << b.to_string());
   }
@@ -43,7 +43,7 @@ Shape slice(
     const Shape &x, std::uint32_t dim,
     std::uint32_t lower, std::uint32_t upper) {
   if (lower >= upper || upper > x[dim]) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Invalid slice operation. shape: " << x.to_string()
         << ", dim: " << dim << ", lower: " << lower << ", upper: " << upper);
   }
@@ -60,7 +60,7 @@ Shape concat(const std::vector<Shape> &xs, std::uint32_t dim) {
 
 Shape concat(const std::vector<const Shape *> &xs, std::uint32_t dim) {
   if (xs.empty()) {
-    THROW_ERROR("No tensors to be concatenated.");
+    PRIMITIV_THROW_ERROR("No tensors to be concatenated.");
   }
 
   Shape s0 = *xs[0];
@@ -73,7 +73,7 @@ Shape concat(const std::vector<const Shape *> &xs, std::uint32_t dim) {
       for (std::uint32_t i = 1; i < xs.size(); ++i) {
         dims_str += ", " + xs[i]->to_string();
       }
-      THROW_ERROR("Invalid shapes to concatenate: " << dims_str);
+      PRIMITIV_THROW_ERROR("Invalid shapes to concatenate: " << dims_str);
     }
     if (!s0.has_batch()) s0.update_batch(s.batch());
     sum += s[dim];
@@ -85,7 +85,7 @@ Shape concat(const std::vector<const Shape *> &xs, std::uint32_t dim) {
 
 Shape broadcast(const Shape &x, std::uint32_t dim, std::uint32_t size) {
   if (x[dim] != 1 || size == 0) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Invalid broadcasting. x: "
         << x.to_string() << ", dim: " << dim << ", size: " << size);
   }
@@ -97,13 +97,13 @@ Shape pick(
   const std::uint32_t n = x[dim];
   const std::uint32_t bi = ids.size();
   if (bi == 0 || (x.batch() != bi && x.has_batch() && bi > 1)) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Invalid IDs to pick. shape: " << x.to_string()
         << ", ids.size(): " << ids.size());
   }
   for (std::uint32_t i = 0; i < bi; ++i) {
     if (ids[i] >= n) {
-      THROW_ERROR(
+      PRIMITIV_THROW_ERROR(
           "Invalid IDs to pick. shape: " << x.to_string()
           << ", ids[" << i << "]: " << ids[i]);
     }
@@ -116,7 +116,7 @@ Shape pick(
 
 Shape transpose(const Shape &x) {
   if (!x.is_matrix()) {
-    THROW_ERROR("Invalid shape to transpose: " << x.to_string());
+    PRIMITIV_THROW_ERROR("Invalid shape to transpose: " << x.to_string());
   }
   return Shape({x[1], x[0]}, x.batch());
 }
@@ -124,7 +124,7 @@ Shape transpose(const Shape &x) {
 Shape matmul(const Shape &l, const Shape &r) {
   if (!l.is_matrix() || !r.is_matrix() || l[1] != r[0] ||
       !l.has_compatible_batch(r)) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Invalid shapes to calculate the matrix product: "
         << l.to_string() << ", " << r.to_string());
   }
@@ -146,7 +146,7 @@ Shape conv2d(
       !x.has_compatible_batch(w) ||
       stride0 == 0 || stride1 == 0 ||
       dilation0 == 0 || dilation1 == 0) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Invalid arguments to calculate a convolution: "
         << x.to_string() << ", " << w.to_string() << ", "
         << padding0 << ", " << padding1 << ", "
@@ -170,7 +170,7 @@ Shape pool2d(
       x0 < window0 || x1 < window1 ||
       window0 == 0 || window1 == 0 ||
       stride0 == 0 || stride1 == 0) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Invalid arguments to calculate a pooling: "
         << x.to_string() << ", "
         << window0 << ", " << window1 << ", "

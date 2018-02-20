@@ -105,7 +105,7 @@ std::vector<cl::Platform> get_all_platforms() {
 std::vector<cl::Device> get_all_devices(std::uint32_t platform_id) {
   const auto all_pfs = ::get_all_platforms();
   if (platform_id >= all_pfs.size()) {
-    THROW_ERROR("Invalid platform ID: " << platform_id);
+    PRIMITIV_THROW_ERROR("Invalid platform ID: " << platform_id);
   }
   std::vector<cl::Device> ret;
   all_pfs[platform_id].getDevices(CL_DEVICE_TYPE_ALL, &ret);
@@ -121,7 +121,7 @@ std::vector<cl::Device> get_all_devices(std::uint32_t platform_id) {
 cl::Device get_device(std::uint32_t platform_id, std::uint32_t device_id) {
   const auto all_devs = ::get_all_devices(platform_id);
   if (device_id >= all_devs.size()) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Invalid device ID: " << device_id
         << " (on the platform " << platform_id << ")");
   }
@@ -204,7 +204,7 @@ public:
       try {
         program.build({device});
       } catch (...) {
-        THROW_ERROR("OpenCL kernel compile error:" << std::endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
+        PRIMITIV_THROW_ERROR("OpenCL kernel compile error:" << std::endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
       }
 
 #define CONFIGURE_KERNEL(name) \
@@ -460,7 +460,7 @@ void OpenCL::assert_support(
 
   // Checks whether the device is globally available.
   if (!dev.getInfo<CL_DEVICE_AVAILABLE>()) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "OpenCL Device " << device_id << " on the platform " << platform_id
         << " is not available (CL_DEVICE_AVAILABLE == false).");
   }
@@ -470,7 +470,7 @@ void OpenCL::assert_support(
   { \
     const auto actual = dev.getInfo<name>(); \
     if (actual < (value)) { \
-      THROW_ERROR( \
+      PRIMITIV_THROW_ERROR( \
           "OpenCL Device " << device_id << " on the platform " << platform_id \
           << " does not satisfy the minimum requirement by primitiv. " \
           << "property: " << #name << ", " \
@@ -482,7 +482,7 @@ void OpenCL::assert_support(
   { \
     const auto actual = dev.getInfo<name>()[index]; \
     if (actual < (value)) { \
-      THROW_ERROR( \
+      PRIMITIV_THROW_ERROR( \
           "OpenCL Device " << device_id << " on the platform " << platform_id \
           << " does not satisfy the minimum requirement by primitiv. " \
           << "property: " << #name << "[" << #index << "], " \
@@ -1334,7 +1334,7 @@ void OpenCL::conv2d_fw_impl(const Tensor &, const Tensor &,
     std::uint32_t, std::uint32_t,
     std::uint32_t, std::uint32_t,
     Tensor &) {
-  THROW_NOT_IMPLEMENTED;
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
 }
 
 void OpenCL::conv2d_bw_impl(
@@ -1343,7 +1343,7 @@ void OpenCL::conv2d_bw_impl(
     std::uint32_t, std::uint32_t,
     std::uint32_t, std::uint32_t,
     Tensor &, Tensor &) {
-  THROW_NOT_IMPLEMENTED;
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
 }
 
 void OpenCL::max_pool2d_fw_impl(
@@ -1352,7 +1352,7 @@ void OpenCL::max_pool2d_fw_impl(
     std::uint32_t, std::uint32_t,
     std::uint32_t, std::uint32_t,
     Tensor &) {
-  THROW_NOT_IMPLEMENTED;
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
 }
 
 void OpenCL::max_pool2d_bw_impl(
@@ -1361,7 +1361,7 @@ void OpenCL::max_pool2d_bw_impl(
     std::uint32_t, std::uint32_t,
     std::uint32_t, std::uint32_t,
     Tensor &) {
-  THROW_NOT_IMPLEMENTED;
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
 }
 
 void OpenCL::inplace_multiply_const_impl(float k, Tensor &x) {

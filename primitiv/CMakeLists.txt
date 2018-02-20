@@ -133,8 +133,10 @@ endif()
 
 # Build rules of the CUDA backend.
 if(PRIMITIV_USE_CUDA)
-  set(primitiv_cuda_HDRS cuda_device.h cuda16_device.h cuda_utils.h)
-  set(primitiv_cuda_SRCS cuda_device.cu cuda16_device.cu cuda_utils.cu)
+  set(primitiv_cuda_HDRS cuda_device.h cuda16_device.h)
+  set(primitiv_cuda_SRCS cuda_device.cu cuda16_device.cu)
+  set(primitiv_cuda_internal_HDRS internal/cuda_utils.h)
+  set(primitiv_cuda_internal_SRCS internal/cuda_utils.cu)
   file(GLOB primitiv_cuda_devops_HDRS "device_ops/cuda/*.h")
   file(GLOB primitiv_cuda_devops_SRCS "device_ops/cuda/*.cu")
   file(GLOB primitiv_cuda16_devops_HDRS "device_ops/cuda16/*.h")
@@ -173,6 +175,8 @@ if(PRIMITIV_USE_CUDA)
     ${primitiv_core_HDRS}
     ${primitiv_cuda_HDRS}
     ${primitiv_cuda_SRCS}
+    ${primitiv_cuda_internal_HDRS}
+    ${primitiv_cuda_internal_SRCS}
     ${primitiv_cuda_devops_HDRS}
     ${primitiv_cuda_devops_SRCS}
     ${primitiv_cuda16_devops_HDRS}

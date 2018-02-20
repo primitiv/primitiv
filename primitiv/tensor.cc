@@ -9,7 +9,7 @@ namespace primitiv {
 float Tensor::to_float() const {
   check_valid();
   if (shape_.size() != 1) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Tensor has more than 1 values. shape = " << shape_.to_string());
   }
   return device_->tensor_to_vector(*this)[0];

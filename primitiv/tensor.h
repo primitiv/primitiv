@@ -58,7 +58,7 @@ public:
    */
   void check_valid() const {
     if (!valid()) {
-      THROW_ERROR("Invalid Tensor object.");
+      PRIMITIV_THROW_ERROR("Invalid Tensor object.");
     }
   }
 

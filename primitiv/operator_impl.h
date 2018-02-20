@@ -13,7 +13,7 @@ class Device;
 
 namespace operators {
 
-#define DEFAULT_CLASS_DECL(name_) \
+#define PRIMITIV_DEFAULT_CLASS_DECL(name_) \
 public: \
   Shape forward_shape(const std::vector<const Shape *> &args) const override; \
   Tensor forward(const std::vector<const Tensor *> &args) override; \
@@ -23,13 +23,13 @@ public: \
       const std::vector<const Tensor *> &arg_values, \
       const std::vector<Tensor *> &arg_grads) const override;
 
-#define NO_CTOR_CLASS_DECL(name_) \
-  DEFAULT_CLASS_DECL(name_); \
+#define PRIMITIV_NO_CTOR_CLASS_DECL(name_) \
+  PRIMITIV_DEFAULT_CLASS_DECL(name_); \
 private: \
   name_() = delete;
 
 class Input : public Operator {
-  NO_CTOR_CLASS_DECL(Input);
+  PRIMITIV_NO_CTOR_CLASS_DECL(Input);
 public:
   Input(const Shape &shape, const std::vector<float> &data, Device &device);
   Device *get_device() const override { return &device_; }
@@ -41,7 +41,7 @@ private:
 };
 
 class ParameterInput : public Operator {
-  NO_CTOR_CLASS_DECL(ParameterInput);
+  PRIMITIV_NO_CTOR_CLASS_DECL(ParameterInput);
 public:
   explicit ParameterInput(Parameter &param) : param_(param) {}
   Device *get_device() const override { return &param_.device(); }
@@ -52,7 +52,7 @@ private:
 };
 
 class Copy : public Operator {
-  NO_CTOR_CLASS_DECL(Copy);
+  PRIMITIV_NO_CTOR_CLASS_DECL(Copy);
 public:
   Copy(Device &device) : device_(device) {}
   Device *get_device() const override { return &device_; }
@@ -62,7 +62,7 @@ private:
 };
 
 class Constant : public Operator {
-  NO_CTOR_CLASS_DECL(Constant);
+  PRIMITIV_NO_CTOR_CLASS_DECL(Constant);
 public:
   Constant(const Shape &shape, float k, Device &device)
     : shape_(shape), k_(k), device_(device) {}
@@ -77,7 +77,7 @@ private:
 };
 
 class IdentityMatrix : public Operator {
-  NO_CTOR_CLASS_DECL(IdentityMatrix);
+  PRIMITIV_NO_CTOR_CLASS_DECL(IdentityMatrix);
 public:
   IdentityMatrix(std::uint32_t size, Device &device)
     : size_(size), device_(device) {}
@@ -91,7 +91,7 @@ private:
 };
 
 class RandomBernoulli : public Operator {
-  NO_CTOR_CLASS_DECL(RandomBernoulli);
+  PRIMITIV_NO_CTOR_CLASS_DECL(RandomBernoulli);
 public:
   RandomBernoulli(const Shape &shape, float p, Device &device)
     : shape_(shape), p_(p), device_(device) {}
@@ -106,7 +106,7 @@ private:
 };
 
 class RandomUniform : public Operator {
-  NO_CTOR_CLASS_DECL(RandomUniform);
+  PRIMITIV_NO_CTOR_CLASS_DECL(RandomUniform);
 public:
   RandomUniform(const Shape &shape, float lower, float upper, Device &device)
     : shape_(shape), lower_(lower), upper_(upper), device_(device) {}
@@ -124,7 +124,7 @@ private:
 };
 
 class RandomNormal : public Operator {
-  NO_CTOR_CLASS_DECL(RandomNormal);
+  PRIMITIV_NO_CTOR_CLASS_DECL(RandomNormal);
 public:
   RandomNormal(const Shape &shape, float mean, float sd, Device &device)
     : shape_(shape), mean_(mean), sd_(sd), device_(device) {}
@@ -142,7 +142,7 @@ private:
 };
 
 class RandomLogNormal : public Operator {
-  NO_CTOR_CLASS_DECL(RandomLogNormal);
+  PRIMITIV_NO_CTOR_CLASS_DECL(RandomLogNormal);
 public:
   RandomLogNormal(const Shape &shape, float mean, float sd, Device &device)
     : shape_(shape), mean_(mean), sd_(sd), device_(device) {}
@@ -160,7 +160,7 @@ private:
 };
 
 class Pick : public Operator {
-  NO_CTOR_CLASS_DECL(Pick);
+  PRIMITIV_NO_CTOR_CLASS_DECL(Pick);
 public:
   Pick(const std::vector<std::uint32_t> &ids, std::uint32_t dim)
     : ids_(ids), dim_(dim) {}
@@ -173,7 +173,7 @@ private:
 };
 
 class Slice : public Operator {
-  NO_CTOR_CLASS_DECL(Slice);
+  PRIMITIV_NO_CTOR_CLASS_DECL(Slice);
 public:
   Slice(std::uint32_t dim, std::uint32_t lower, std::uint32_t upper)
     : dim_(dim), lower_(lower), upper_(upper) {}
@@ -188,7 +188,7 @@ private:
 };
 
 class Concat : public Operator {
-  NO_CTOR_CLASS_DECL(Concat);
+  PRIMITIV_NO_CTOR_CLASS_DECL(Concat);
 public:
   Concat(std::uint32_t dim) : dim_(dim) {}
   std::string name() const override {
@@ -199,7 +199,7 @@ private:
 };
 
 class Reshape : public Operator {
-  NO_CTOR_CLASS_DECL(Reshape);
+  PRIMITIV_NO_CTOR_CLASS_DECL(Reshape);
 public:
   explicit Reshape(const Shape &shape) : shape_(shape) {}
   std::string name() const override {
@@ -210,7 +210,7 @@ private:
 };
 
 class Sum : public Operator {
-  NO_CTOR_CLASS_DECL(Sum);
+  PRIMITIV_NO_CTOR_CLASS_DECL(Sum);
 public:
   explicit Sum(std::uint32_t dim) : dim_(dim) {}
   std::string name() const override {
@@ -221,7 +221,7 @@ private:
 };
 
 class LogSumExp : public Operator {
-  NO_CTOR_CLASS_DECL(LogSumExp);
+  PRIMITIV_NO_CTOR_CLASS_DECL(LogSumExp);
 public:
   explicit LogSumExp(std::uint32_t dim) : dim_(dim) {}
   std::string name() const override {
@@ -232,7 +232,7 @@ private:
 };
 
 class Broadcast : public Operator {
-  NO_CTOR_CLASS_DECL(Broadcast);
+  PRIMITIV_NO_CTOR_CLASS_DECL(Broadcast);
 public:
   Broadcast(std::uint32_t dim, std::uint32_t size) : dim_(dim), size_(size) {}
   std::string name() const override {
@@ -245,7 +245,7 @@ private:
 };
 
 class SoftmaxCrossEntropy : public Operator {
-  NO_CTOR_CLASS_DECL(SoftmaxCrossEntropy);
+  PRIMITIV_NO_CTOR_CLASS_DECL(SoftmaxCrossEntropy);
 public:
   explicit SoftmaxCrossEntropy(std::uint32_t dim) : dim_(dim) {}
   std::string name() const override {
@@ -256,7 +256,7 @@ private:
 };
 
 class SparseSoftmaxCrossEntropy : public Operator {
-  NO_CTOR_CLASS_DECL(SparseSoftmaxCrossEntropy);
+  PRIMITIV_NO_CTOR_CLASS_DECL(SparseSoftmaxCrossEntropy);
 public:
   explicit SparseSoftmaxCrossEntropy(
       const std::vector<std::uint32_t> ids, std::uint32_t dim) : ids_(ids), dim_(dim) {}
@@ -270,25 +270,25 @@ private:
 };
 
 class StopGradient : public Operator {
-  DEFAULT_CLASS_DECL(StopGradient);
+  PRIMITIV_DEFAULT_CLASS_DECL(StopGradient);
 public:
   StopGradient() {}
   std::string name() const override { return "StopGradient"; }
 };
 
 // Operator with no parameter.
-#define DECL_OPERATOR(name_) \
+#define PRIMITIV_DECL_OPERATOR(name_) \
   class name_ : public Operator { \
-    DEFAULT_CLASS_DECL(name_); \
+    PRIMITIV_DEFAULT_CLASS_DECL(name_); \
   public: \
     name_() {} \
     std::string name() const override { return #name_; } \
   }
 
 // Operator with a constant.
-#define DECL_OPERATOR_K(name_) \
+#define PRIMITIV_DECL_OPERATOR_K(name_) \
   class name_ : public Operator { \
-    NO_CTOR_CLASS_DECL(name_); \
+    PRIMITIV_NO_CTOR_CLASS_DECL(name_); \
   public: \
     explicit name_(float k) : k_(k) {} \
     std::string name() const override { \
@@ -298,24 +298,24 @@ public:
     float k_; \
   }
 
-DECL_OPERATOR(Flatten);
+PRIMITIV_DECL_OPERATOR(Flatten);
 
-DECL_OPERATOR(Positive);
-DECL_OPERATOR(Negative);
+PRIMITIV_DECL_OPERATOR(Positive);
+PRIMITIV_DECL_OPERATOR(Negative);
 
-DECL_OPERATOR_K(AddConst);
-DECL_OPERATOR_K(SubtractConstR);
-DECL_OPERATOR_K(SubtractConstL);
-DECL_OPERATOR_K(MultiplyConst);
-DECL_OPERATOR_K(DivideConstR);
-DECL_OPERATOR_K(DivideConstL);
-DECL_OPERATOR_K(PowConstR);
-DECL_OPERATOR_K(PowConstL);
-DECL_OPERATOR_K(PReLU);
-DECL_OPERATOR_K(ELU);
+PRIMITIV_DECL_OPERATOR_K(AddConst);
+PRIMITIV_DECL_OPERATOR_K(SubtractConstR);
+PRIMITIV_DECL_OPERATOR_K(SubtractConstL);
+PRIMITIV_DECL_OPERATOR_K(MultiplyConst);
+PRIMITIV_DECL_OPERATOR_K(DivideConstR);
+PRIMITIV_DECL_OPERATOR_K(DivideConstL);
+PRIMITIV_DECL_OPERATOR_K(PowConstR);
+PRIMITIV_DECL_OPERATOR_K(PowConstL);
+PRIMITIV_DECL_OPERATOR_K(PReLU);
+PRIMITIV_DECL_OPERATOR_K(ELU);
 
 class PowN : public Operator {
-  NO_CTOR_CLASS_DECL(PowN);
+  PRIMITIV_NO_CTOR_CLASS_DECL(PowN);
 public:
   explicit PowN(std::int32_t k) : k_(k) {}
   std::string name() const override {
@@ -325,40 +325,40 @@ private:
   std::int32_t k_;
 };
 
-DECL_OPERATOR(AddScalar);
-DECL_OPERATOR(SubtractScalarR);
-DECL_OPERATOR(SubtractScalarL);
-DECL_OPERATOR(MultiplyScalar);
-DECL_OPERATOR(DivideScalarR);
-DECL_OPERATOR(DivideScalarL);
-DECL_OPERATOR(PowScalarR);
-DECL_OPERATOR(PowScalarL);
+PRIMITIV_DECL_OPERATOR(AddScalar);
+PRIMITIV_DECL_OPERATOR(SubtractScalarR);
+PRIMITIV_DECL_OPERATOR(SubtractScalarL);
+PRIMITIV_DECL_OPERATOR(MultiplyScalar);
+PRIMITIV_DECL_OPERATOR(DivideScalarR);
+PRIMITIV_DECL_OPERATOR(DivideScalarL);
+PRIMITIV_DECL_OPERATOR(PowScalarR);
+PRIMITIV_DECL_OPERATOR(PowScalarL);
 
-DECL_OPERATOR(Add);
-DECL_OPERATOR(Subtract);
-DECL_OPERATOR(Multiply);
-DECL_OPERATOR(Divide);
-DECL_OPERATOR(Pow);
+PRIMITIV_DECL_OPERATOR(Add);
+PRIMITIV_DECL_OPERATOR(Subtract);
+PRIMITIV_DECL_OPERATOR(Multiply);
+PRIMITIV_DECL_OPERATOR(Divide);
+PRIMITIV_DECL_OPERATOR(Pow);
 
-DECL_OPERATOR(Transpose);
-DECL_OPERATOR(MatrixMultiply);
+PRIMITIV_DECL_OPERATOR(Transpose);
+PRIMITIV_DECL_OPERATOR(MatrixMultiply);
 
-DECL_OPERATOR(Sqrt);
-DECL_OPERATOR(Exp);
-DECL_OPERATOR(Log);
-DECL_OPERATOR(Tanh);
-DECL_OPERATOR(Sigmoid);
-DECL_OPERATOR(Softplus);
-DECL_OPERATOR(Sin);
-DECL_OPERATOR(Cos);
-DECL_OPERATOR(Tan);
-DECL_OPERATOR(ReLU);
-DECL_OPERATOR(LReLU);
+PRIMITIV_DECL_OPERATOR(Sqrt);
+PRIMITIV_DECL_OPERATOR(Exp);
+PRIMITIV_DECL_OPERATOR(Log);
+PRIMITIV_DECL_OPERATOR(Tanh);
+PRIMITIV_DECL_OPERATOR(Sigmoid);
+PRIMITIV_DECL_OPERATOR(Softplus);
+PRIMITIV_DECL_OPERATOR(Sin);
+PRIMITIV_DECL_OPERATOR(Cos);
+PRIMITIV_DECL_OPERATOR(Tan);
+PRIMITIV_DECL_OPERATOR(ReLU);
+PRIMITIV_DECL_OPERATOR(LReLU);
 
-DECL_OPERATOR(BatchSum);
+PRIMITIV_DECL_OPERATOR(BatchSum);
 
 class Convolution2D : public Operator {
-  NO_CTOR_CLASS_DECL(Convolution2D);
+  PRIMITIV_NO_CTOR_CLASS_DECL(Convolution2D);
 
 public:
   Convolution2D(
@@ -386,7 +386,7 @@ private:
 };
 
 class MaxPooling2D : public Operator {
-  NO_CTOR_CLASS_DECL(MaxPooling2D);
+  PRIMITIV_NO_CTOR_CLASS_DECL(MaxPooling2D);
 
 public:
   MaxPooling2D(
@@ -413,10 +413,10 @@ private:
   std::uint32_t stride0_, stride1_;
 };
 
-#undef DECL_OPERATOR
-#undef DECL_OPERATOR_K
-#undef NO_CTOR_CLASS_DECL
-#undef DEFAULT_CLASS_DECL
+#undef PRIMITIV_DECL_OPERATOR
+#undef PRIMITIV_DECL_OPERATOR_K
+#undef PRIMITIV_NO_CTOR_CLASS_DECL
+#undef PRIMITIV_DEFAULT_CLASS_DECL
 
 }  // namespace operators
 }  // namespace primitiv

@@ -153,7 +153,7 @@ Tensor slice(const Tensor &x, std::uint32_t dim, std::uint32_t lower, std::uint3
 
 template<>
 Tensor concat(const std::vector<const Tensor *> &xs, std::uint32_t dim) {
-  if (xs.empty()) THROW_ERROR("No tensors to be concatenated.");
+  if (xs.empty()) PRIMITIV_THROW_ERROR("No tensors to be concatenated.");
   return xs[0]->device().concat_fw(xs, dim);
 }
 
