@@ -680,7 +680,7 @@ BACKWARD(StopGradient) {
 }
 
 #undef BACKWARD
-#undef UNPUSED
+#undef UNUSED
 
 }  // namespace operators
 }  // namespace primitive
