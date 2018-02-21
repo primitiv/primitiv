@@ -204,30 +204,4 @@ void CUDA16::name##_bw_impl( \
       MDATA(half, ga), MDATA(half, gb)); \
 }
 
-#define CUDA16DEV_FW_X(name) \
-void CUDA16::name##_fw_impl(const Tensor &x, Tensor &y) { \
-  PRIMITIV_THROW_NOT_IMPLEMENTED; }
-#define CUDA16DEV_BW_X(name) \
-void CUDA16::name##_bw_impl( \
-    const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) { \
-  PRIMITIV_THROW_NOT_IMPLEMENTED; }
-#define CUDA16DEV_FW_X_CONST(name) \
-void CUDA16::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
-  PRIMITIV_THROW_NOT_IMPLEMENTED; }
-#define CUDA16DEV_BW_X_CONST(name) \
-void CUDA16::name##_bw_impl( \
-    const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) { \
-  PRIMITIV_THROW_NOT_IMPLEMENTED; }
-#define CUDA16DEV_FW_X_SCALAR(name) \
-void CUDA16::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
-  PRIMITIV_THROW_NOT_IMPLEMENTED; }
-#define CUDA16DEV_FW_AB(name) \
-void CUDA16::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
-  PRIMITIV_THROW_NOT_IMPLEMENTED; }
-#define CUDA16DEV_BW_AB(name) \
-void CUDA16::name##_bw_impl( \
-    const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy, \
-    Tensor &ga, Tensor &gb) { \
-  PRIMITIV_THROW_NOT_IMPLEMENTED; }
-
 #endif  // PRIMITIV_DEVICE_OPS_COMMON_CUDA16_H_
