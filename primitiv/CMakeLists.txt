@@ -26,6 +26,7 @@ set(primitiv_base_HDRS
   basic_functions.h
   composite_functions.h
   device.h
+  dynamic_library.h
   error.h
   file_format.h
   functions.h
@@ -52,6 +53,7 @@ set(primitiv_base_HDRS
 )
 set(primitiv_base_SRCS
   device.cc
+  dynamic_library.cc
   graph.cc
   initializer_impl.cc
   memory_pool.cc

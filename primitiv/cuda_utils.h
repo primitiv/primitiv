@@ -237,6 +237,7 @@ public:
           padding_h, padding_w, stride_h, stride_w, dilation_h, dilation_w,
           CUDNN_CONVOLUTION, data_type));
 #else
+    static_cast<void>(data_type);  // unused
     if (dilation_h > 1 || dilation_w > 1) {
       THROW_NOT_IMPLEMENTED_WITH_MESSAGE(
           "Dilated convolution is supported by cuDNN 6.0 or later.");
