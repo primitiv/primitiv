@@ -67,14 +67,15 @@ TEST_F(TensorForwardTest, CheckCopy) {
   for (Device *dev : devices) {
     for (Device *dev2 : devices) {
       // Sets different (count-up) data to be copied every time.
-      std::generate(data.begin(), data.end(), [&]() { i += 1; return i; });
+      std::generate(data.begin(), data.end(), [&]() { return ++i; });
       for (float x : data) std::cout << x << ' ';
       std::cout << std::endl;
 
       const Tensor x = dev->new_tensor_by_vector(Shape({2, 2}, 3), data);
       const Tensor y = copy(x, *dev2);
       EXPECT_EQ(Shape({2, 2}, 3), y.shape());
-      EXPECT_TRUE(vector_match(data, y.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            data, y.to_vector(), get_default_ulps(*dev2)));
     }
   }
 }

@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include <primitiv/cuda_device.h>
-#include <primitiv/cuda_utils.h>
+#include <primitiv/internal/cuda_utils.h>
 #include <primitiv/device_ops/cuda/common.h>
 
 namespace primitiv {

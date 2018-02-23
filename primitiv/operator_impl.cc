@@ -15,7 +15,7 @@ namespace operators {
 
 #define CHECK_ARGNUM(args, n) \
   if (args.size() != n) { \
-    THROW_ERROR( \
+    PRIMITIV_THROW_ERROR( \
         "Number of arguments mismatched." \
         << " operator: " << name() \
         << ", required: " << n \
@@ -27,7 +27,7 @@ Input::Input(const Shape &shape, const vector<float> &data, Device &device)
 , data_(data)
 , device_(device) {
   if (data_.size() != shape_.size()) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Data sizes mismatched."
         << " operator: Input"
         << ", required: " << shape_.size() << " (" << shape_.to_string() << ")"
@@ -57,7 +57,7 @@ Shape ParameterInput::forward_shape(const vector<const Shape *> &args) const {
 }
 
 Tensor ParameterInput::forward(const vector<const Tensor *> &) {
-  THROW_ERROR(
+  PRIMITIV_THROW_ERROR(
       "Attempted to get return values of ParameterInput via forward().");
 }
 

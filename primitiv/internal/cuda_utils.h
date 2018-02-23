@@ -16,7 +16,7 @@
 #define CUDA_CALL(f) { \
   ::cudaError_t err = (f); \
   if (err != cudaSuccess) { \
-    THROW_ERROR( \
+    PRIMITIV_THROW_ERROR( \
         "CUDA function failed.\n  statement: " << #f \
         << "\n  error: " << err \
         << ": " << ::cudaGetErrorString(err)); \
@@ -26,7 +26,7 @@
 #define CUBLAS_CALL(f) { \
   ::cublasStatus_t err = (f); \
   if (err != CUBLAS_STATUS_SUCCESS) { \
-    THROW_ERROR( \
+    PRIMITIV_THROW_ERROR( \
         "CUBLAS function failed.\n  statement: " << #f \
         << "\n  error: " << err \
         << ": " << primitiv::cuda::cublasGetErrorString(err)); \
@@ -36,7 +36,7 @@
 #define CURAND_CALL(f) { \
   ::curandStatus_t err = (f); \
   if (err != CURAND_STATUS_SUCCESS) { \
-    THROW_ERROR( \
+    PRIMITIV_THROW_ERROR( \
         "CURAND function failed.\n  statement: " << #f \
         << "\n  error: " << err \
         << ": " << primitiv::cuda::curandGetErrorString(err)); \
@@ -46,7 +46,7 @@
 #define CUDNN_CALL(f) { \
   ::cudnnStatus_t err = (f); \
   if (err != CUDNN_STATUS_SUCCESS) { \
-    THROW_ERROR( \
+    PRIMITIV_THROW_ERROR( \
         "CUDNN function failed.\n  statement: " << #f \
         << "\n  error: " << err \
         << ": " << ::cudnnGetErrorString(err)); \
@@ -239,7 +239,7 @@ public:
 #else
     static_cast<void>(data_type);  // unused
     if (dilation_h > 1 || dilation_w > 1) {
-      THROW_NOT_IMPLEMENTED_WITH_MESSAGE(
+      PRIMITIV_THROW_NOT_IMPLEMENTED_WITH_MESSAGE(
           "Dilated convolution is supported by cuDNN 6.0 or later.");
     }
     CUDNN_CALL(::cudnnSetConvolution2dDescriptor(

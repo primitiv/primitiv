@@ -101,7 +101,7 @@ public:
   const Parameter &get_parameter(const std::string &name) const {
     const auto it = param_kv_.find(name);
     if (it == param_kv_.end()) {
-      THROW_ERROR("Parameter with name '" << name << "' not found.");
+      PRIMITIV_THROW_ERROR("Parameter with name '" << name << "' not found.");
     }
     return *it->second;
   }
@@ -166,7 +166,7 @@ public:
   const Model &get_submodel(const std::string &name) const {
     const auto it = submodel_kv_.find(name);
     if (it == submodel_kv_.end()) {
-      THROW_ERROR("Submodel with name '" << name << "' not found.");
+      PRIMITIV_THROW_ERROR("Submodel with name '" << name << "' not found.");
     }
     return *it->second;
   }

@@ -3,7 +3,7 @@
 #include <random>
 
 #include <primitiv/cuda16_device.h>
-#include <primitiv/cuda_utils.h>
+#include <primitiv/internal/cuda_utils.h>
 #include <primitiv/error.h>
 
 namespace {
@@ -27,7 +27,7 @@ std::uint32_t CUDA16::num_devices() {
 
 void CUDA16::assert_support(std::uint32_t device_id) {
   if (device_id >= num_devices()) {
-    THROW_ERROR("Invalid device ID: " << device_id);
+    PRIMITIV_THROW_ERROR("Invalid device ID: " << device_id);
   }
 
   ::cudaDeviceProp prop;
@@ -43,7 +43,7 @@ void CUDA16::assert_support(std::uint32_t device_id) {
   constexpr std::uint32_t MIN_CC = ::get_capability(MIN_CC_MAJOR, MIN_CC_MINOR);
   const std::uint32_t dev_cc = ::get_capability(prop.major, prop.minor);
   if (dev_cc < MIN_CC) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "CUDA Device " << device_id << " does not satisfy the "
         "minimum requirement of the compute capability: "
         << prop.major << '.' << prop.minor << " < "
@@ -55,7 +55,7 @@ void CUDA16::assert_support(std::uint32_t device_id) {
 #define CHECK_REQUIREMENT(name, value) \
   { \
     if (prop.name < (value)) { \
-      THROW_ERROR( \
+      PRIMITIV_THROW_ERROR( \
           "CUDA Device " << device_id \
           << " does not satisfy the minimum requirement by primitiv. " \
           << "property: " << #name << ", " \
@@ -66,7 +66,7 @@ void CUDA16::assert_support(std::uint32_t device_id) {
 #define CHECK_REQUIREMENT_VECTOR(name, index, value) \
   { \
     if (prop.name[index] < (value)) { \
-      THROW_ERROR( \
+      PRIMITIV_THROW_ERROR( \
           "CUDA16 Device " << device_id \
           << " does not satisfy the minimum requirement by primitiv. " \
           << "property: " << #name << "[" << #index << "], " \

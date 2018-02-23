@@ -52,7 +52,7 @@ public:
    * @return Graph object.
    */
   Graph &graph() const {
-    if (!valid()) THROW_ERROR("Invalid node.");
+    if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
     return *g_;
   }
 
@@ -61,7 +61,7 @@ public:
    * @return Operator ID.
    */
   std::uint32_t operator_id() const {
-    if (!valid()) THROW_ERROR("Invalid node.");
+    if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
     return op_id_;
   }
 
@@ -70,7 +70,7 @@ public:
    * @return Value ID.
    */
   std::uint32_t value_id() const {
-    if (!valid()) THROW_ERROR("Invalid node.");
+    if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
     return val_id_;
   }
 
@@ -246,37 +246,37 @@ private:
 };
 
 inline Shape Node::shape() const {
-  if (!valid()) THROW_ERROR("Invalid node.");
+  if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
   return g_->get_shape(*this);
 }
 
 inline Device &Node::device() const {
-  if (!valid()) THROW_ERROR("Invalid node.");
+  if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
   return g_->get_device(*this);
 }
 
 inline float Node::to_float() const {
-  if (!valid()) THROW_ERROR("Invalid node.");
+  if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
   return g_->forward(*this).to_float();
 }
 
 inline std::vector<float> Node::to_vector() const {
-  if (!valid()) THROW_ERROR("Invalid node.");
+  if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
   return g_->forward(*this).to_vector();
 }
 
 inline std::vector<std::uint32_t> Node::argmax(std::uint32_t dim) const {
-  if (!valid()) THROW_ERROR("Invalid node.");
+  if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
   return g_->forward(*this).argmax(dim);
 }
 
 inline std::vector<std::uint32_t> Node::argmin(std::uint32_t dim) const {
-  if (!valid()) THROW_ERROR("Invalid node.");
+  if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
   return g_->forward(*this).argmin(dim);
 }
 
 inline void Node::backward() const {
-  if (!valid()) THROW_ERROR("Invalid node.");
+  if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
   g_->backward(*this);
 }
 
