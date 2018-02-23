@@ -30,7 +30,7 @@ void Graph::clear() {
 
 #define CHECK_NODE(n) { \
   if ((n).g_ != this) { \
-    THROW_ERROR( \
+    PRIMITIV_THROW_ERROR( \
         "Graph mismatched. node.g_: " << (n).g_ << " != this: " << this); \
   } \
   if ((n).op_id_ >= ops_.size() || \
@@ -70,7 +70,7 @@ Node Graph::add_operator(
     // If nullptr, the device object is inherited from `args[0]`.
     ret_device = args.size() > 0 ? &ACCESS(args[0]).device : nullptr;
     if (!ret_device) {
-      THROW_ERROR(
+      PRIMITIV_THROW_ERROR(
           "Bad device forwarding of operator '" << op->name()
           << "' with " << args.size() << " argument(s).");
     }
@@ -137,7 +137,7 @@ void Graph::backward(const Node &node) {
     last_v = &last_n.value;
     if (!last_v) {
       // NOTE(ocashi): Should never arrive here.
-      THROW_ERROR(
+      PRIMITIV_THROW_ERROR(
           "The node [op_id=" << node.op_id_ << ", val_id=" << node.val_id_
           << "] is not yet forwarded.");
     }
@@ -199,7 +199,7 @@ Device &Graph::get_device(const Node &node) const {
 }
 
 std::string Graph::dump(const std::string &format) const {
-  if (format != "dot") THROW_ERROR("Unknown format: " << format);
+  if (format != "dot") PRIMITIV_THROW_ERROR("Unknown format: " << format);
 
   std::stringstream ss;
   ss << R"(digraph ComputationGraph {

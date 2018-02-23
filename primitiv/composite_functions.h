@@ -40,7 +40,7 @@ inline type_traits::Identity<Var> selu(
 template<typename Container>
 inline type_traits::Reduce<Container> sum(const Container &xs) {
   using Var = type_traits::Reduce<Container>;
-  if (xs.empty()) THROW_ERROR("No nodes to sum.");
+  if (xs.empty()) PRIMITIV_THROW_ERROR("No nodes to sum.");
   auto it = xs.begin();
   Var ret = *it++;
   while (it != xs.end()) ret = ret + *it++;
@@ -58,7 +58,7 @@ inline type_traits::Reduce<Container> sum(const Container &xs) {
 template<typename Container>
 inline type_traits::ReducePtr<Container> sum(const Container &xs) {
   using Var = type_traits::ReducePtr<Container>;
-  if (xs.empty()) THROW_ERROR("No nodes to sum.");
+  if (xs.empty()) PRIMITIV_THROW_ERROR("No nodes to sum.");
   auto it = xs.begin();
   Var ret = **it++;
   while (it != xs.end()) ret = ret + **it++;

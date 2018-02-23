@@ -47,7 +47,7 @@ catch (const std::exception &e) { \
 
 #define PRIMITIV_C_CHECK_NOT_NULL(var) \
 if (!var) { \
-  THROW_ERROR("Argument `" #var "` must not be null."); \
+  PRIMITIV_THROW_ERROR("Argument `" #var "` must not be null."); \
 }
 
 struct primitivDevice;
@@ -115,7 +115,7 @@ inline void copy_vector_to_array(
     const std::vector<T> &vector, T *array, std::size_t *size) {
   if (array) {
     if (*size < vector.size()) {
-      THROW_ERROR("Size is not enough to copy a vector.");
+      PRIMITIV_THROW_ERROR("Size is not enough to copy a vector.");
     }
     std::copy(vector.begin(), vector.end(), array);
   } else {
@@ -127,7 +127,7 @@ inline void copy_string_to_array(
     const std::string &str, char *buffer, std::size_t *size) {
   if (buffer) {
     if (*size <= str.length()) {
-      THROW_ERROR("Size is not enough to copy a string.");
+      PRIMITIV_THROW_ERROR("Size is not enough to copy a string.");
     }
     std::strcpy(buffer, str.c_str());
   } else {

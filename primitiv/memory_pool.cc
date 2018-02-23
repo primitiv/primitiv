@@ -36,7 +36,7 @@ std::shared_ptr<void> MemoryPool::allocate(std::size_t size) {
 
   static const std::uint64_t MAX_SHIFTS = 63;
   const std::uint64_t shift = numeric_utils::calculate_shifts(size);
-  if (shift > MAX_SHIFTS) THROW_ERROR("Invalid memory size: " << size);
+  if (shift > MAX_SHIFTS) PRIMITIV_THROW_ERROR("Invalid memory size: " << size);
 
   void *ptr;
   if (reserved_[shift].empty()) {
@@ -65,7 +65,7 @@ std::shared_ptr<void> MemoryPool::allocate(std::size_t size) {
 void MemoryPool::free(void *ptr) {
   auto it = supplied_.find(ptr);
   if (it == supplied_.end()) {
-    THROW_ERROR("Detected to dispose unknown handle: " << ptr);
+    PRIMITIV_THROW_ERROR("Detected to dispose unknown handle: " << ptr);
   }
   reserved_[it->second].emplace_back(ptr);
   supplied_.erase(it);

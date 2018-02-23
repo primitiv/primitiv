@@ -16,7 +16,7 @@ namespace primitiv {
 void Optimizer::load(const std::string &path) {
   std::ifstream ifs(path);
   if (!ifs.is_open()) {
-    THROW_ERROR("Could not open file: " << path);
+    PRIMITIV_THROW_ERROR("Could not open file: " << path);
   }
   msgpack::Reader reader(ifs);
 
@@ -41,7 +41,7 @@ void Optimizer::save(const std::string &path) const {
 
   std::ofstream ofs(path);
   if (!ofs.is_open()) {
-    THROW_ERROR("Could not open file: " << path);
+    PRIMITIV_THROW_ERROR("Could not open file: " << path);
   }
   msgpack::Writer writer(ofs);
 

@@ -24,7 +24,7 @@ public:
 
   static void assert_version(std::uint32_t major, std::uint32_t minor) {
     if (major != CurrentVersion::MAJOR || minor != CurrentVersion::MINOR) {
-      THROW_ERROR(
+      PRIMITIV_THROW_ERROR(
           "File version mismatched. required: "
           << CurrentVersion::MAJOR << "." << CurrentVersion::MINOR
           << ", observed: "
@@ -34,7 +34,7 @@ public:
 
   static void assert_datatype(DataType required, std::uint32_t observed) {
     if (observed != static_cast<std::uint32_t>(required)) {
-      THROW_ERROR(
+      PRIMITIV_THROW_ERROR(
           "Data type mismatched. required: "
           << std::hex << static_cast<std::uint32_t>(required)
           << ", observed: "

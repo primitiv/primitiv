@@ -140,7 +140,7 @@ Node slice(
 
 template<>
 Node concat(const std::vector<Node> &xs, std::uint32_t dim) {
-  if (xs.empty()) THROW_ERROR("No nodes to concat.");
+  if (xs.empty()) PRIMITIV_THROW_ERROR("No nodes to concat.");
   return xs[0].graph().add_operator(
       std::unique_ptr<Operator>(new operators::Concat(dim)), xs);
 }

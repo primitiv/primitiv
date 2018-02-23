@@ -28,7 +28,7 @@ primitiv::Tensor read_tensor(
   primitiv::msgpack::objects::Binary data;
   reader >> data;
   if (data.size() != shape.size() * sizeof(float)) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Shape and data length mismatched. "
         "shape.size() * sizeof(float): " << (shape.size() * sizeof(float))
         << " != data.size(): " << data.size());
@@ -61,12 +61,12 @@ void assert_shape(
   const primitiv::Shape &sv = value.shape();
   const primitiv::Shape &sg = grad.shape();
   if (sv != sg) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Shape mismatched between value and gradient. value: "
         << sv.to_string() << ", gradient: " << sg.to_string());
   }
   if (sv.has_batch()) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "The batch size of the parameter should be 1. shape: "
         << sv.to_string());
   }
@@ -162,7 +162,7 @@ void Parameter::save_inner(msgpack::Writer &writer, bool with_stats) const {
 
   if (with_stats) {
     if (stats_.size() > 0xffffffffull) {
-      THROW_ERROR(
+      PRIMITIV_THROW_ERROR(
           "Could not store more than 2^32 - 1 stats in one parameter file.");
     }
     writer << static_cast<std::uint32_t>(stats_.size());
@@ -178,7 +178,7 @@ void Parameter::save_inner(msgpack::Writer &writer, bool with_stats) const {
 void Parameter::load(const string &path, bool with_stats, Device *device) {
   std::ifstream ifs(path);
   if (!ifs.is_open()) {
-    THROW_ERROR("Could not open file: " << path);
+    PRIMITIV_THROW_ERROR("Could not open file: " << path);
   }
   msgpack::Reader reader(ifs);
 
@@ -194,11 +194,11 @@ void Parameter::load(const string &path, bool with_stats, Device *device) {
 }
 
 void Parameter::save(const string &path, bool with_stats) const  {
-  if (!valid()) THROW_ERROR("Attempted to save an invalid Parameter object.");
+  if (!valid()) PRIMITIV_THROW_ERROR("Attempted to save an invalid Parameter object.");
 
   std::ofstream ofs(path);
   if (!ofs.is_open()) {
-    THROW_ERROR("Could not open file: " << path);
+    PRIMITIV_THROW_ERROR("Could not open file: " << path);
   }
   msgpack::Writer writer(ofs);
 
@@ -210,14 +210,14 @@ void Parameter::save(const string &path, bool with_stats) const  {
 }
 
 void Parameter::reset_gradient() {
-  if (!valid()) THROW_ERROR("Invalid parameter.");
+  if (!valid()) PRIMITIV_THROW_ERROR("Invalid parameter.");
   grad_.reset(0);
 }
 
 void Parameter::add_stats(const string &name, const Shape &shape) {
-  if (!valid()) THROW_ERROR("Invalid parameter.");
+  if (!valid()) PRIMITIV_THROW_ERROR("Invalid parameter.");
   if (has_stats(name)) {
-    THROW_ERROR("Statistics with name `" << name << "` already exists.");
+    PRIMITIV_THROW_ERROR("Statistics with name `" << name << "` already exists.");
   }
   stats_.emplace(
       std::make_pair(name, functions::zeros<Tensor>(shape, device_)));
