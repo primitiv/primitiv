@@ -19,7 +19,7 @@ DynamicLibrary::DynamicLibrary(const std::string &path)
   handle_ = ::dlopen(path_.c_str(), RTLD_NOW);
   const char *msg = ::dlerror();
   if (msg != NULL) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "::dlopen() failed. path: '"
         << path_ << "', message: '" << msg << "'");
   }
@@ -42,7 +42,7 @@ void *DynamicLibrary::get_symbol(const std::string &symbol) {
   void *ptr = ::dlsym(handle_, symbol.c_str());
   const char *msg = ::dlerror();
   if (msg != NULL) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "::dlsym() failed. path: '"
         << path_ << "', symbol: '" << symbol << "', message: '" << msg << "'");
   }
