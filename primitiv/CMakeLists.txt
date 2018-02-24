@@ -92,7 +92,7 @@ add_library(primitiv_core_OBJS OBJECT
   ${primitiv_naive_devops_SRCS}
 )
 set(primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_core_OBJS>)
-set(primitiv_all_DEPS)
+set(primitiv_all_DEPS dl)
 
 # Build rules of the Eigen backend.
 if(PRIMITIV_USE_EIGEN)
