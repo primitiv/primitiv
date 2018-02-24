@@ -12,10 +12,9 @@ This section describes concepts and designs of primitiv.
 
   compilation
   shape_and_operation
-  lazy_evaluation
+  node_and_tensor
   devices
   default_object
   training
   model
   save_and_load
-  node_and_tensor

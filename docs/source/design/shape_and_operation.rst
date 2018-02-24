@@ -18,7 +18,7 @@ For example, following code creates new Shape descriptors of a *scalar*, a
 .. code-block:: c++
 
   using primitiv::Shape;
-  
+
   // Creating Shape of scalars.
   const Shape scalar1({});
   const Shape scalar2 {};
@@ -105,7 +105,7 @@ Following examples shows how these rules work.
   namespace F = primitiv::functions;
 
   const Node a = F::input<Node>(Shape({}, 3), {1, 2, 3});
-  
+
   Node b = F::input<Node>(Shape({}, 3), {4, 5, 6});
   Node y = a + b;  // values: 5, 7, 9
 
