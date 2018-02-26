@@ -64,6 +64,18 @@ public:
   void dump_description() const override;
   Device::DeviceType type() const override { return Device::DeviceType::CUDA; }
 
+  /**
+   * Retrieves the device ID managed by this device object.
+   * @return Device ID.
+   */
+  std::uint32_t device_id() const { return dev_id_; }
+
+  /**
+   * Retrieves the maximum number of threads in X axis.
+   * @return Maximum number of threads in X axis.
+   */
+  std::uint32_t max_x_size() const { return dim1_x_; }
+
 private:
   std::shared_ptr<void> new_handle(const Shape &shape) override;
 

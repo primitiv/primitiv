@@ -179,6 +179,22 @@ public:
    */
   Tensor &inplace_subtract(const Tensor &x);
 
+  /**
+   * Returns the raw const-pointer of the internal memory.
+   * @return Const-pointer of the internal memory.
+   * @remarks This function is provided for inner implementations of primitiv.
+   *          Users should NOT use this function.
+   */
+  const void *unsafe_handle() const { return handle(); }
+
+  /**
+   * Returns the raw pointer of the internal memory.
+   * @return Pointer of the internal memory.
+   * @remarks This function is provided for inner implementations of primitiv.
+   *          Users should NOT use this function.
+   */
+  void *unsafe_mutable_handle() { return mutable_handle(); }
+
 private:
   /**
    * Creates a new uninitialized Tensor.
