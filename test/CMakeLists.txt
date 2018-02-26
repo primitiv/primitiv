@@ -49,15 +49,8 @@ function(primitiv_test name)
   )
 endfunction()
 
-# Additional rules for dynamic_library_test
-add_library(test_dll SHARED test_dll.cc)
-set_target_properties(test_dll PROPERTIES PREFIX "" SUFFIX "")
-set(TEST_DLL_PATH "${CMAKE_CURRENT_BINARY_DIR}/test_dll")
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/dynamic_library_test_config.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/dynamic_library_test_config.h
-  @ONLY
-)
+# Building additional DLLs
+add_subdirectory(dlls)
 
 primitiv_test(device)
 primitiv_test(dynamic_library

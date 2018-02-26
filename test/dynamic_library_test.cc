@@ -1,5 +1,5 @@
 #include <primitiv/config.h>
-#include "dynamic_library_test_config.h"
+#include <dlls/location.h>
 
 #include <functional>
 #include <string>
@@ -15,12 +15,13 @@ namespace primitiv {
 class DynamicLibraryTest : public testing::Test {};
 
 TEST_F(DynamicLibraryTest, CheckInitialize) {
-  EXPECT_NO_THROW(DynamicLibrary lib(TEST_DLL_PATH));
-  EXPECT_THROW(DynamicLibrary lib(TEST_DLL_PATH + std::string("foo")), Error);
+  const std::string dirname = DLLS_DIR;
+  EXPECT_NO_THROW(DynamicLibrary lib(dirname + "/basic_test.dll"));
+  EXPECT_THROW(DynamicLibrary lib(dirname + "/foo"), Error);
 }
 
 TEST_F(DynamicLibraryTest, CheckGetSymbol) {
-  DynamicLibrary lib(TEST_DLL_PATH);
+  DynamicLibrary lib(std::string(DLLS_DIR) + "/basic_test.dll");
   void *fp1 = nullptr;
   int (*fp2)(int) = nullptr;
   EXPECT_NO_THROW(fp1 = lib.get_symbol("testfunc"));
@@ -32,7 +33,7 @@ TEST_F(DynamicLibraryTest, CheckGetSymbol) {
 }
 
 TEST_F(DynamicLibraryTest, CheckExecute) {
-  DynamicLibrary lib(TEST_DLL_PATH);
+  DynamicLibrary lib(std::string(DLLS_DIR) + "/basic_test.dll");
   std::function<int(int)> fp = lib.get_symbol<int(int)>("testfunc");
 
   for (int i : {1, 2, 3, 4}) {
