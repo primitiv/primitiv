@@ -32,12 +32,11 @@ include_directories(
 add_library(test_utils_OBJS OBJECT test_utils.h test_utils.cc)
 
 # Custom build rule for all test cases.
-# @param name Name of the test case. This value should be the file name except
-#             the extension (e.g., "foo_test.cc" -> "foo_test")
-# @param ARGN Additional files required to build the binary.
+# @param name Name of the test case. This value should be the source file name
+#             except the extension (e.g., "foo_test.cc" -> "foo_test")
 function(primitiv_test name)
   add_executable(${name}_test
-    test_utils.h ${name}_test.cc $<TARGET_OBJECTS:test_utils_OBJS> ${ARGN})
+    test_utils.h ${name}_test.cc $<TARGET_OBJECTS:test_utils_OBJS>)
   if(PRIMITIV_GTEST_SOURCE_DIR)
     add_dependencies(${name}_test GTest)
   endif()
@@ -49,12 +48,11 @@ function(primitiv_test name)
   )
 endfunction()
 
-# Building additional DLLs
+# Building additional DLLs used in test cases.
 add_subdirectory(dlls)
 
 primitiv_test(device)
-primitiv_test(dynamic_library
-  ${CMAKE_CURRENT_BINARY_DIR}/dynamic_library_test_config.h)
+primitiv_test(dynamic_library)
 primitiv_test(graph)
 primitiv_test(initializer_impl)
 primitiv_test(mixins)
