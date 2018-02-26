@@ -1,3 +1,7 @@
+// NOTE(odashi):
+// This code contains a sample implementation of a precompiled function on the
+// CUDA device that performs the elementwise addition: `y0 = x0 + x1`.
+
 #include <primitiv/config.h>
 
 #include <algorithm>
