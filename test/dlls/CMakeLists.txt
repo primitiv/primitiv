@@ -38,4 +38,4 @@ function(primitiv_cuda_dll name)
 endfunction()
 
 primitiv_dll(basic_test)
-primitiv_cuda_dll(precompiled_operator)
+primitiv_cuda_dll(precompiled_function)
