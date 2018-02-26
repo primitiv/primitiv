@@ -67,8 +67,8 @@ __global__ void backward_device(
   const std::size_t i = threadIdx.x + blockIdx.x * blockDim.x;
   const std::size_t j = blockIdx.y * volume;
   if (i < volume) {
-    x0_g[i + j * x0_b] += y0_g[i + j * y0_b];
-    x1_g[i + j * x1_b] += y0_g[i + j * y0_b];
+    ::atomicAdd(x0_g + i + j * x0_b, y0_g[i + j * y0_b]);
+    ::atomicAdd(x1_g + i + j * x1_b, y0_g[i + j * y0_b]);
   }
 }
 
