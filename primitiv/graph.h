@@ -228,7 +228,7 @@ private:
     Device *device;
     Tensor value;
     Tensor grad;
-    std::vector<std::uint32_t> sinks;
+    //std::vector<std::uint32_t> sinks;
   };
 
   /**
