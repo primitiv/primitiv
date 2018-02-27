@@ -1,10 +1,3 @@
-/*
- * NOTE(odashi):
- * Inner structure of Graph is designed to handle multivalued operators for
- * future extensions, but for now this code handels only one results of each
- * operator.
- */
-
 #include <primitiv/config.h>
 
 #include <cstdlib>
@@ -47,8 +40,6 @@ void Graph::clear() {
   } \
 }
 
-#define ACCESS(n) (ops_[n.oid_].rets[n.vid_])
-
 vector<Node> Graph::add_operator(
     std::unique_ptr<Operator> &&op, const std::vector<Node> &args) {
   const std::uint32_t argn_req = op->num_arguments();
@@ -68,31 +59,33 @@ vector<Node> Graph::add_operator(
   // Retrieves the device object which manages return values itself.
   Device *ret_device = op->get_device();
   if (!ret_device) {
-    // If nullptr, the device object is inherited from `args[0]`.
-    ret_device = argn > 0 ? ACCESS(args[0]).device : nullptr;
+    // The device object should be inherited from `args[0]`.
+    ret_device = argn > 0
+      ? ops_[args[0].oid_].rets[args[0].vid_].device
+      : nullptr;
     if (!ret_device) {
       PRIMITIV_THROW_ERROR(
-          "Bad device forwarding of operator '" << op->name()
-          << "' with " << argn << " argument(s).");
+          "Bad device propagation occurred. operator: '" << op->name()
+          << "', argn: " << argn);
     }
   }
 
-  // Gathers information of args.
+  // Gathers information of arguments.
   vector<Address> arg_addrs(argn);
   vector<const Shape *> arg_shapes(argn);
   for (std::uint32_t i = 0; i < argn; ++i) {
     const Node &arg = args[i];
     CHECK_NODE(arg);
     arg_addrs[i] = { arg.oid_, arg.vid_ };
-    arg_shapes[i] = &ACCESS(arg).shape;
+    arg_shapes[i] = &ops_[arg.oid_].rets[arg.vid_].shape;
   }
 
   // Makes nodes of return values.
   vector<NodeInfo> rets(retn);
   vector<Shape *> ret_shapes(retn);
   for (std::uint32_t i = 0; i < retn; ++i) {
-    ret_shapes[i] = &rets[i].shape;
     rets[i].device = ret_device;
+    ret_shapes[i] = &rets[i].shape;
   }
 
   // Calculates the shape of the resulting value.
@@ -101,9 +94,9 @@ vector<Node> Graph::add_operator(
 
   // Updates the graph.
   const std::uint32_t ret_oid = ops_.size();
-  for (const Address &arg_addr : arg_addrs) {
-    ops_[arg_addr.oid].rets[arg_addr.vid].sinks.emplace_back(ret_oid);
-  }
+  //for (const Address &arg_addr : arg_addrs) {
+  //  ops_[arg_addr.oid].rets[arg_addr.vid].sinks.emplace_back(ret_oid);
+  //}
   ops_.emplace_back(OperatorInfo { move(op), move(arg_addrs), move(rets) });
 
   // Creates Node objects.
@@ -127,23 +120,24 @@ const Tensor &Graph::forward(const Node &node) {
     }
 
     NodeInfo &cur_n = cur_f.rets[addr.vid];
-
-    if (!cur_n.value.valid()) {
-      // Gathers arguments and return values.
-      vector<const Tensor *> args_v;
-      vector<Tensor *> rets_v;
-      args_v.reserve(cur_f.args.size());
-      rets_v.reserve(cur_f.rets.size());
-      for (const Address arg : cur_f.args) {
-        args_v.emplace_back(forward_recursive(arg));
-      }
-      for (NodeInfo &ret : cur_f.rets) {
-        rets_v.emplace_back(&ret.value);
-      }
-
-      // Calculates the value.
-      cur_f.op->forward(args_v, rets_v);
+    if (cur_n.value.valid()) {
+      return &cur_n.value;
     }
+
+    // Gathers arguments and return values.
+    vector<const Tensor *> args_v;
+    vector<Tensor *> rets_v;
+    args_v.reserve(cur_f.args.size());
+    rets_v.reserve(cur_f.rets.size());
+    for (const Address arg : cur_f.args) {
+      args_v.emplace_back(forward_recursive(arg));
+    }
+    for (NodeInfo &ret : cur_f.rets) {
+      rets_v.emplace_back(&ret.value);
+    }
+
+    // Calculates the value.
+    cur_f.op->forward(args_v, rets_v);
 
     return &cur_n.value;
   };
@@ -158,12 +152,14 @@ void Graph::backward(const Node &node) {
   NodeInfo &last_n = last_f.rets[node.vid_];
 
   // Force to perform the forward operation.
-  const Tensor &last_v = forward(node);
+  if (!last_n.value.valid() && last_f.op->has_inner_values()) {
+    forward(node);
+  }
 
   // Makes the identity gradient (dx/dx = 1) at the last node.
-  last_n.grad = functions::ones<Tensor>(last_v.shape(), last_n.device);
+  last_n.grad = functions::ones<Tensor>(last_n.shape, last_n.device);
 
-  // Performs a backpropagation.
+  // Performs the backpropagation.
   // NOTE(odashi):
   // In the current implementation, the node ID corresponds to the inverse
   // topological order of the computation graph.
@@ -182,8 +178,8 @@ void Graph::backward(const Node &node) {
       enabled = enabled || cur_n.grad.valid();
     }
     if (!enabled) {
-      // This operator is out of forward path because all gradients of return
-      // values are invalid.
+      // This operator is out of the forward path because all gradients of
+      // return values are invalid.
       continue;
     }
 
@@ -191,7 +187,7 @@ void Graph::backward(const Node &node) {
     for (uint32_t i = 0; i < retn; ++i) {
       NodeInfo &cur_n = cur_f.rets[i];
       if (!cur_n.grad.valid()) {
-        cur_n.grad = functions::zeros<Tensor>(rets_v[i]->shape(), cur_n.device);
+        cur_n.grad = functions::zeros<Tensor>(cur_n.shape, cur_n.device);
       }
     }
 
@@ -207,7 +203,7 @@ void Graph::backward(const Node &node) {
         : arg_f.op->get_inner_values()[arg.vid];
       args_g[i] = &arg_n.grad;
       if (!arg_n.grad.valid()) {
-        arg_n.grad = functions::zeros<Tensor>(args_v[i]->shape(), arg_n.device);
+        arg_n.grad = functions::zeros<Tensor>(arg_n.shape, arg_n.device);
       }
     }
 
@@ -223,12 +219,12 @@ void Graph::backward(const Node &node) {
 
 Shape Graph::get_shape(const Node &node) const {
   CHECK_NODE(node);
-  return ACCESS(node).shape;
+  return ops_[node.oid_].rets[node.vid_].shape;
 }
 
 Device &Graph::get_device(const Node &node) const {
   CHECK_NODE(node);
-  return *ACCESS(node).device;
+  return *ops_[node.oid_].rets[node.vid_].device;
 }
 
 std::string Graph::dump(const std::string &format) const {
@@ -249,6 +245,9 @@ std::string Graph::dump(const std::string &format) const {
   edge [
     fontname = "Courier",
   ];)";
+
+  // TODO(odashi):
+  // Following implementation does not distinguish multiple return values.
 
   for (std::uint32_t i = 0; i < ops_.size(); ++i) {
     const OperatorInfo &f = ops_[i];
