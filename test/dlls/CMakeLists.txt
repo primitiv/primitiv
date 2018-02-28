@@ -32,10 +32,15 @@ endif()
 # Custom build rule for CUDA DLLs.
 # @param name Name of the DLL. This value should be the source file name except
 #             the extension (e.g., "foo_lib.cc" -> "foo_lib")
-function(primitiv_cuda_dll name)
-  cuda_add_library(${name} ${name}.cu SHARED)
-  set_target_properties(${name} PROPERTIES PREFIX "" SUFFIX ".cudll")
-endfunction()
+if(PRIMITIV_USE_CUDA)
+  function(primitiv_cuda_dll name)
+    cuda_add_library(${name} ${name}.cu SHARED)
+    set_target_properties(${name} PROPERTIES PREFIX "" SUFFIX ".cudll")
+  endfunction()
+endif()
 
 primitiv_dll(basic_test)
-primitiv_cuda_dll(precompiled_function)
+
+if(PRIMITIV_USE_CUDA)
+  primitiv_cuda_dll(precompiled_function)
+endif()
