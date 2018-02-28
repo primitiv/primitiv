@@ -246,6 +246,56 @@ TEST_F(GraphTest, CheckForwardBackward) {
 #endif
 }
 
+TEST_F(GraphTest, CheckImplicitForwardBackward) {
+  Device::set_default(dev);
+
+  Graph g;
+  Graph::set_default(g);
+
+  // Launches the forward calculation from Graph::backward().
+  const vector<float> data {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4};
+  const Node x = functions::input<Node>(Shape({2, 2}, 3), data);
+  const Node y = functions::exp(x);
+  EXPECT_NO_THROW(x.backward());
+  EXPECT_NO_THROW(y.backward());
+
+  // Does not launch the forward calculation,
+  // get_inner_values() will be called instead.
+  Parameter pw({2, 2}, initializers::Constant(0));
+  const Node w = functions::parameter<Node>(pw);
+  EXPECT_NO_THROW(w.backward());
+}
+
+TEST_F(GraphTest, CheckNonzeroArgs) {
+  Device::set_default(dev);
+
+  Graph g;
+  Graph::set_default(g);
+
+  const Node a = functions::input<Node>({}, {1});
+  const Node b = functions::input<Node>({}, {2});
+  const Node c = functions::input<Node>({}, {3});
+
+  vector<float> y_val;
+
+  Node y = functions::concat({a}, 0);
+  EXPECT_EQ(Shape {}, y.shape());
+  EXPECT_NO_THROW(y_val = y.to_vector());
+  EXPECT_TRUE(vector_match({1}, y_val));
+
+  y = functions::concat({a, b}, 0);
+  EXPECT_EQ(Shape {2}, y.shape());
+  EXPECT_NO_THROW(y_val = y.to_vector());
+  EXPECT_TRUE(vector_match({1, 2}, y_val));
+
+  y = functions::concat({a, b, c}, 0);
+  EXPECT_EQ(Shape {3}, y.shape());
+  EXPECT_NO_THROW(y_val = y.to_vector());
+  EXPECT_TRUE(vector_match({1, 2, 3}, y_val));
+
+  EXPECT_THROW(functions::concat(vector<Node> {}, 0), Error);
+}
+
 TEST_F(GraphTest, CheckXor) {
   Device::set_default(dev);
 
