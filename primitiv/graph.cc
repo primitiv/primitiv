@@ -47,13 +47,17 @@ vector<Node> Graph::add_operator(
   const std::uint32_t argn = args.size();
 
   // Checks the number of arguments.
-  if ((argn_req == Operator::ARGN_NONZERO && argn == 0) || argn != argn_req) {
-    const std::string argn_req_str
-      = argn_req == Operator::ARGN_NONZERO ? "NONZERO"
-      : string_utils::to_string(argn_req);
-    PRIMITIV_THROW_ERROR(
-        "Invalid number of arguments. required: " << argn_req_str
-        << ", actual: " << argn);
+  if (argn_req == Operator::NONZERO) {
+    if (argn == 0) {
+      PRIMITIV_THROW_ERROR(
+          "Invalid number of arguments. required: NONZERO, actual: " << argn);
+    }
+  } else if (argn_req != Operator::ANY) {
+    if (argn != argn_req) {
+      PRIMITIV_THROW_ERROR(
+          "Invalid number of arguments. required: " << argn_req
+          << ", actual: " << argn);
+    }
   }
 
   // Retrieves the device object which manages return values itself.
@@ -152,7 +156,7 @@ void Graph::backward(const Node &node) {
   NodeInfo &last_n = last_f.rets[node.vid_];
 
   // Force to perform the forward operation.
-  if (!last_n.value.valid() && last_f.op->has_inner_values()) {
+  if (!last_n.value.valid()) {
     forward(node);
   }
 

@@ -144,107 +144,108 @@ protected:
   vector<Tensor *> arg_grads;
 };
 
-#define TEST_1ARG(name_) { \
-  name_ node; \
-  const Shape cur_shape = node.forward_shape(arg_shapes); \
-  const Tensor cur_value = node.forward(arg_values); \
+#define COMMON_PROC \
+  Shape cur_shape; \
+  Tensor cur_value; \
+  node.forward_shape(arg_shapes, { &cur_shape }); \
+  node.forward(arg_values, { &cur_value }); \
   const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev); \
-  node.backward(cur_value, cur_grad, arg_values, arg_grads); \
-  EXPECT_EQ(#name_, node.name()); \
+  node.backward(arg_values, { &cur_value } , { &cur_grad }, arg_grads);
+
+#define COMMON_CHECK \
   EXPECT_EQ(ret_shape, cur_shape); \
   EXPECT_EQ(nullptr, node.get_device()); \
   EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector())); \
-  EXPECT_TRUE(vector_match(bw_grad, arg_grads[0]->to_vector())); \
-}
+  EXPECT_TRUE(vector_match(bw_grad, arg_grads[0]->to_vector()));
 
-#define TEST_1ARG_K(name_, k_) { \
-  name_ node(k_); \
-  const Shape cur_shape = node.forward_shape(arg_shapes); \
-  const Tensor cur_value = node.forward(arg_values); \
-  const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev); \
-  node.backward(cur_value, cur_grad, arg_values, arg_grads); \
-  EXPECT_EQ( \
-      std::string(#name_) + '(' + \
-      std::to_string(static_cast<float>(k_)) + ')', node.name()); \
-  EXPECT_EQ(ret_shape, cur_shape); \
-  EXPECT_EQ(nullptr, node.get_device()); \
-  EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector())); \
-  EXPECT_TRUE(vector_match(bw_grad, arg_grads[0]->to_vector())); \
-}
-
-#define TEST_1ARG_NEAR(name_, err) { \
-  name_ node; \
-  const Shape cur_shape = node.forward_shape(arg_shapes); \
-  const Tensor cur_value = node.forward(arg_values); \
-  const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev); \
-  node.backward(cur_value, cur_grad, arg_values, arg_grads); \
-  EXPECT_EQ(#name_, node.name()); \
-  EXPECT_EQ(ret_shape, cur_shape); \
-  EXPECT_EQ(nullptr, node.get_device()); \
-  EXPECT_TRUE(vector_near(ret_data, cur_value.to_vector(), err)); \
-  EXPECT_TRUE(vector_near(bw_grad, arg_grads[0]->to_vector(), err)); \
-}
-
-#define TEST_1ARG_K_NEAR(name_, k_, err) { \
-  name_ node(k_); \
-  const Shape cur_shape = node.forward_shape(arg_shapes); \
-  const Tensor cur_value = node.forward(arg_values); \
-  const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev); \
-  node.backward(cur_value, cur_grad, arg_values, arg_grads); \
-  EXPECT_EQ( \
-      std::string(#name_) + '(' + \
-      std::to_string(static_cast<float>(k_)) + ')', node.name()); \
-  EXPECT_EQ(ret_shape, cur_shape); \
-  EXPECT_EQ(nullptr, node.get_device()); \
-  EXPECT_TRUE(vector_near(ret_data, cur_value.to_vector(), err)); \
-  EXPECT_TRUE(vector_near(bw_grad, arg_grads[0]->to_vector(), err)); \
-}
-
-#define TEST_2ARGS(name_) { \
-  name_ node; \
-  const Shape cur_shape = node.forward_shape(arg_shapes); \
-  const Tensor cur_value = node.forward(arg_values); \
-  const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev); \
-  node.backward(cur_value, cur_grad, arg_values, arg_grads); \
-  EXPECT_EQ(#name_, node.name()); \
+#define COMMON_CHECK_2ARGS \
   EXPECT_EQ(ret_shape, cur_shape); \
   EXPECT_EQ(nullptr, node.get_device()); \
   EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector())); \
   EXPECT_TRUE(vector_match(bw_grads[0], arg_grads[0]->to_vector())); \
-  EXPECT_TRUE(vector_match(bw_grads[1], arg_grads[1]->to_vector())); \
+  EXPECT_TRUE(vector_match(bw_grads[1], arg_grads[1]->to_vector()));
+
+#define COMMON_CHECK_NEAR(err) \
+  EXPECT_EQ(ret_shape, cur_shape); \
+  EXPECT_EQ(nullptr, node.get_device()); \
+  EXPECT_TRUE(vector_near(ret_data, cur_value.to_vector(), err)); \
+  EXPECT_TRUE(vector_near(bw_grad, arg_grads[0]->to_vector(), err));
+
+#define TEST_1ARG(name_) { \
+  name_ node; \
+  EXPECT_EQ(#name_, node.name()); \
+  COMMON_PROC; \
+  COMMON_CHECK; \
+}
+
+#define TEST_1ARG_K(name_, k_) { \
+  name_ node(k_); \
+  EXPECT_EQ( \
+      std::string(#name_) + '(' + \
+      std::to_string(static_cast<float>(k_)) + ')', node.name()); \
+  COMMON_PROC; \
+  COMMON_CHECK; \
+}
+
+#define TEST_1ARG_NEAR(name_, err) { \
+  name_ node; \
+  EXPECT_EQ(#name_, node.name()); \
+  COMMON_PROC; \
+  COMMON_CHECK_NEAR(err); \
+}
+
+#define TEST_1ARG_K_NEAR(name_, k_, err) { \
+  name_ node(k_); \
+  EXPECT_EQ( \
+      std::string(#name_) + '(' + \
+      std::to_string(static_cast<float>(k_)) + ')', node.name()); \
+  COMMON_PROC; \
+  COMMON_CHECK_NEAR(err); \
+}
+
+#define TEST_2ARGS(name_) { \
+  name_ node; \
+  EXPECT_EQ(#name_, node.name()); \
+  COMMON_PROC; \
+  COMMON_CHECK_2ARGS; \
 }
 
 TEST_F(OperatorImplTest, CheckInput) {
   const Shape ret_shape({2, 2}, 3);
   const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4};
   Input node(ret_shape, ret_data, *dev);
-  const Shape cur_shape = node.forward_shape(arg_shapes);
-  const Tensor cur_value = node.forward(arg_values);
+  Shape cur_shape;
+  Tensor cur_value;
+  node.forward_shape(arg_shapes, { &cur_shape });
+  node.forward(arg_values, { &cur_value });
   const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev);
   // backward() has no effect.
-  EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
+  EXPECT_NO_THROW(node.backward(
+        { &cur_value } , { &cur_grad }, arg_values, arg_grads));
   EXPECT_EQ("Input", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
   EXPECT_EQ(dev, node.get_device());
   EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector()));
 }
 
-TEST_F(OperatorImplTest, CheckParameterInput) {
+TEST_F(OperatorImplTest, CheckParameter) {
   const Shape ret_shape {2, 2};
   const initializers::Constant init(42);
-  Parameter param(ret_shape, init, *dev);
+  primitiv::Parameter param(ret_shape, init, *dev);
   ASSERT_TRUE(vector_match(vector<float>(4, 42), param.value().to_vector()));
   ASSERT_TRUE(vector_match(vector<float>(4, 0), param.gradient().to_vector()));
 
-  ParameterInput node(param);
-  const Shape cur_shape = node.forward_shape(arg_shapes);
-  // ParameterInput could not return values from forward().
-  EXPECT_THROW(node.forward(arg_values), Error);
-  const Tensor *cur_value = node.get_inner_value();
+  Parameter node(param);
+  Shape cur_shape;
+  node.forward_shape(arg_shapes, { &cur_shape });
+  // Parameter could not return values from forward().
+  EXPECT_THROW(node.forward(arg_values, {}), Error);
+  const Tensor *cur_value = node.get_inner_values()[0];
   const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev);
   // backward() updates the gradient of `param`.
-  EXPECT_NO_THROW(node.backward(*cur_value, cur_grad, arg_values, arg_grads));
-  EXPECT_EQ("ParameterInput", node.name());
+  EXPECT_NO_THROW(node.backward(
+        arg_values, { cur_value }, { &cur_grad }, arg_grads));
+  EXPECT_EQ("Parameter", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
   EXPECT_EQ(dev, node.get_device());
   EXPECT_TRUE(vector_match(vector<float>(4, 42), cur_value->to_vector()));
@@ -258,11 +259,14 @@ TEST_F(OperatorImplTest, CheckCopy) {
   const Shape ret_shape({2, 2}, 3);
   setup_1arg();
   Copy node(dev2);
-  const Shape cur_shape = node.forward_shape(arg_shapes);
-  const Tensor cur_value = node.forward(arg_values);
+  Shape cur_shape;
+  Tensor cur_value;
+  node.forward_shape(arg_shapes, { &cur_shape });
+  node.forward(arg_values, { &cur_value });
   const Tensor cur_grad = dev2.new_tensor_by_vector(
       ret_shape, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
-  EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
+  EXPECT_NO_THROW(node.backward(
+        arg_values, { &cur_value }, { &cur_grad }, arg_grads));
   EXPECT_EQ("Copy", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
   EXPECT_EQ(&dev2, node.get_device());
@@ -284,11 +288,14 @@ TEST_F(OperatorImplTest, CheckConstant) {
   };
   for (const TestCase &tc : test_cases) {
     Constant node(tc.shape, tc.k, *dev);
-    const Shape cur_shape = node.forward_shape(arg_shapes);
-    const Tensor cur_value = node.forward(arg_values);
+    Shape cur_shape;
+    Tensor cur_value;
+    node.forward_shape(arg_shapes, { &cur_shape });
+    node.forward(arg_values, { &cur_value });
     const Tensor cur_grad = functions::ones<Tensor>(tc.shape, *dev);
     // backward() has no effect.
-    EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
+    EXPECT_NO_THROW(node.backward(
+          arg_values, { &cur_value }, { &cur_grad }, arg_grads));
     EXPECT_EQ("Constant(" + std::to_string(tc.k) + ')', node.name());
     EXPECT_EQ(tc.shape, cur_shape);
     EXPECT_EQ(dev, node.get_device());
@@ -310,13 +317,16 @@ TEST_F(OperatorImplTest, CheckIdentity) {
     {4, {4, 4}, {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}},
   };
   for (const TestCase &tc : test_cases) {
-    IdentityMatrix node(tc.size, *dev);
-    const Shape cur_shape = node.forward_shape(arg_shapes);
-    const Tensor cur_value = node.forward(arg_values);
+    Identity node(tc.size, *dev);
+    Shape cur_shape;
+    Tensor cur_value;
+    node.forward_shape(arg_shapes, { &cur_shape });
+    node.forward(arg_values, { &cur_value });
     const Tensor cur_grad = functions::ones<Tensor>(tc.shape, *dev);
     // backward() has no effect.
-    EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
-    EXPECT_EQ("IdentityMatrix(" + std::to_string(tc.size) + ')', node.name());
+    EXPECT_NO_THROW(node.backward(
+          arg_values, { &cur_value }, { &cur_grad }, arg_grads));
+    EXPECT_EQ("Identity(" + std::to_string(tc.size) + ')', node.name());
     EXPECT_EQ(tc.shape, cur_shape);
     EXPECT_EQ(dev, node.get_device());
     EXPECT_TRUE(vector_match(tc.data, cur_value.to_vector()));
@@ -336,11 +346,14 @@ TEST_F(OperatorImplTest, CheckRandomBernoulli) {
   };
   for (const TestCase &tc : test_cases) {
     RandomBernoulli node(tc.shape, tc.p, *dev);
-    const Shape cur_shape = node.forward_shape(arg_shapes);
-    const Tensor cur_value = node.forward(arg_values);
+    Shape cur_shape;
+    Tensor cur_value;
+    node.forward_shape(arg_shapes, { &cur_shape });
+    node.forward(arg_values, { &cur_value });
     const Tensor cur_grad = functions::ones<Tensor>(tc.shape, *dev);
     // backward() has no effect.
-    EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
+    EXPECT_NO_THROW(node.backward(
+          arg_values, { &cur_value }, { &cur_grad }, arg_grads));
     EXPECT_EQ("RandomBernoulli(" + std::to_string(tc.p) + ')', node.name());
     EXPECT_EQ(tc.shape, cur_shape);
     EXPECT_EQ(dev, node.get_device());
@@ -370,11 +383,14 @@ TEST_F(OperatorImplTest, CheckRandomUniform) {
   };
   for (const TestCase &tc : test_cases) {
     RandomUniform node(tc.shape, tc.lower, tc.upper, *dev);
-    const Shape cur_shape = node.forward_shape(arg_shapes);
-    const Tensor cur_value = node.forward(arg_values);
+    Shape cur_shape;
+    Tensor cur_value;
+    node.forward_shape(arg_shapes, { &cur_shape });
+    node.forward(arg_values, { &cur_value });
     const Tensor cur_grad = functions::ones<Tensor>(tc.shape, *dev);
     // backward() has no effect.
-    EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
+    EXPECT_NO_THROW(node.backward(
+          arg_values, { &cur_value }, { &cur_grad }, arg_grads));
     EXPECT_EQ(
         "RandomUniform(" + std::to_string(tc.lower) + ',' +
         std::to_string(tc.upper) + ')', node.name());
@@ -430,11 +446,14 @@ TEST_F(OperatorImplTest, CheckRandomNormal) {
 #endif
   for (const TestCase &tc : test_cases) {
     RandomNormal node(tc.shape, tc.mean, tc.sd, *dev);
-    const Shape cur_shape = node.forward_shape(arg_shapes);
-    const Tensor cur_value = node.forward(arg_values);
+    Shape cur_shape;
+    Tensor cur_value;
+    node.forward_shape(arg_shapes, { &cur_shape });
+    node.forward(arg_values, { &cur_value });
     const Tensor cur_grad = functions::ones<Tensor>(tc.shape, *dev);
     // backward() has no effect.
-    EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
+    EXPECT_NO_THROW(node.backward(
+          arg_values, { &cur_value }, { &cur_grad }, arg_grads));
     EXPECT_EQ(
         "RandomNormal(" + std::to_string(tc.mean) + ',' +
         std::to_string(tc.sd) + ')', node.name());
@@ -486,15 +505,20 @@ TEST_F(OperatorImplTest, CheckRandomLogNormal) {
     {Shape({2, 2}, 3), 0, 1, {}},
     {Shape({2, 2}, 3), 2, .5, {}},
   };
-  std::cerr << "... Unknown C++ library. Expected results can't be defined." << std::endl;
+  std::cerr
+    << "... Unknown C++ library. Expected results can't be defined."
+    << std::endl;
 #endif
   for (const TestCase &tc : test_cases) {
     RandomLogNormal node(tc.shape, tc.mean, tc.sd, *dev);
-    const Shape cur_shape = node.forward_shape(arg_shapes);
-    const Tensor cur_value = node.forward(arg_values);
+    Shape cur_shape;
+    Tensor cur_value;
+    node.forward_shape(arg_shapes, { &cur_shape });
+    node.forward(arg_values, { &cur_value });
     const Tensor cur_grad = functions::ones<Tensor>(tc.shape, *dev);
     // backward() has no effect.
-    EXPECT_NO_THROW(node.backward(cur_value, cur_grad, arg_values, arg_grads));
+    EXPECT_NO_THROW(node.backward(
+          arg_values, { &cur_value }, { &cur_grad }, arg_grads));
     EXPECT_EQ(
         "RandomLogNormal(" + std::to_string(tc.mean) + ',' +
         std::to_string(tc.sd) + ')', node.name());
@@ -532,11 +556,13 @@ TEST_F(OperatorImplTest, CheckPick) {
   setup_1arg();
   for (const TestCase &tc : test_cases) {
     Pick node(tc.ids, tc.dim);
-    const Shape cur_shape = node.forward_shape(arg_shapes);
-    const Tensor cur_value = node.forward(arg_values);
+    Shape cur_shape;
+    Tensor cur_value;
+    node.forward_shape(arg_shapes, { &cur_shape });
+    node.forward(arg_values, { &cur_value });
     const Tensor cur_grad = functions::ones<Tensor>(tc.ret_shape, *dev);
     reset_gradients();
-    node.backward(cur_value, cur_grad, arg_values, arg_grads);
+    node.backward(arg_values, { &cur_value }, { &cur_grad }, arg_grads);
     EXPECT_EQ("Pick(" + std::to_string(tc.dim) + ')', node.name());
     EXPECT_EQ(tc.ret_shape, cur_shape);
     EXPECT_EQ(nullptr, node.get_device());
@@ -581,11 +607,13 @@ TEST_F(OperatorImplTest, CheckSlice) {
   setup_1arg();
   for (const TestCase &tc : test_cases) {
     Slice node(tc.dim, tc.lower, tc.upper);
-    const Shape cur_shape = node.forward_shape(arg_shapes);
-    const Tensor cur_value = node.forward(arg_values);
+    Shape cur_shape;
+    Tensor cur_value;
+    node.forward_shape(arg_shapes, { &cur_shape });
+    node.forward(arg_values, { &cur_value });
     const Tensor cur_grad = functions::ones<Tensor>(tc.ret_shape, *dev);
     reset_gradients();
-    node.backward(cur_value, cur_grad, arg_values, arg_grads);
+    node.backward(arg_values, { &cur_value }, { &cur_grad }, arg_grads);
     EXPECT_EQ(
         "Slice(" + std::to_string(tc.dim) + ',' +
         std::to_string(tc.lower) + ':' + std::to_string(tc.upper) + ')',
@@ -621,11 +649,14 @@ TEST_F(OperatorImplTest, CheckConcat) {
   setup_2args();
   for (const TestCase &tc : test_cases) {
     Concat node(tc.dim);
-    const Shape cur_shape = node.forward_shape(arg_shapes);
-    const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = dev->new_tensor_by_vector(tc.ret_shape, tc.cur_grad_data);
+    Shape cur_shape;
+    Tensor cur_value;
+    node.forward_shape(arg_shapes, { &cur_shape });
+    node.forward(arg_values, { &cur_value });
+    const Tensor cur_grad = dev->new_tensor_by_vector(
+        tc.ret_shape, tc.cur_grad_data);
     reset_gradients();
-    node.backward(cur_value, cur_grad, arg_values, arg_grads);
+    node.backward(arg_values, { &cur_value }, { &cur_grad }, arg_grads);
     EXPECT_EQ("Concat(" + std::to_string(tc.dim) + ')', node.name());
     EXPECT_EQ(tc.ret_shape, cur_shape);
     EXPECT_EQ(nullptr, node.get_device());
@@ -649,11 +680,14 @@ TEST_F(OperatorImplTest, CheckReshape) {
   const vector<float> bw_grad(arg_shapes[0]->size(), 1);
   for (const Shape ret_shape : shapes) {
     Reshape node(ret_shape);
-    const Shape cur_shape = node.forward_shape(arg_shapes);
-    const Tensor cur_value = node.forward(arg_values);
-    const Tensor cur_grad = functions::ones<Tensor>(ret_shape.resize_batch(3), *dev);
+    Shape cur_shape;
+    Tensor cur_value;
+    node.forward_shape(arg_shapes, { &cur_shape });
+    node.forward(arg_values, { &cur_value });
+    const Tensor cur_grad = functions::ones<Tensor>(
+        ret_shape.resize_batch(3), *dev);
     reset_gradients();
-    node.backward(cur_value, cur_grad, arg_values, arg_grads);
+    node.backward(arg_values, { &cur_value }, { &cur_grad }, arg_grads);
     EXPECT_EQ("Reshape(" + ret_shape.to_string() + ')', node.name());
     EXPECT_EQ(ret_shape.resize_batch(3), cur_shape);
     EXPECT_EQ(nullptr, node.get_device());
@@ -1265,11 +1299,13 @@ TEST_F(OperatorImplTest, CheckSum) {
   };
   for (const TestCase &tc : test_cases) {
     Sum node(tc.dim);
-    const Shape cur_shape = node.forward_shape(arg_shapes);
-    const Tensor cur_value = node.forward(arg_values);
+    Shape cur_shape;
+    Tensor cur_value;
+    node.forward_shape(arg_shapes, { &cur_shape });
+    node.forward(arg_values, { &cur_value });
     const Tensor cur_grad = functions::ones<Tensor>(tc.ret_shape, *dev);
     reset_gradients();
-    node.backward(cur_value, cur_grad, arg_values, arg_grads);
+    node.backward(arg_values, { &cur_value }, { &cur_grad }, arg_grads);
     EXPECT_EQ("Sum(" + std::to_string(tc.dim) + ')', node.name());
     EXPECT_EQ(tc.ret_shape, cur_shape);
     EXPECT_EQ(nullptr, node.get_device());
@@ -1309,11 +1345,13 @@ TEST_F(OperatorImplTest, CheckLogSumExp) {
   };
   for (const TestCase &tc : test_cases) {
     LogSumExp node(tc.dim);
-    const Shape cur_shape = node.forward_shape(arg_shapes);
-    const Tensor cur_value = node.forward(arg_values);
+    Shape cur_shape;
+    Tensor cur_value;
+    node.forward_shape(arg_shapes, { &cur_shape });
+    node.forward(arg_values, { &cur_value });
     const Tensor cur_grad = functions::ones<Tensor>(tc.ret_shape, *dev);
     reset_gradients();
-    node.backward(cur_value, cur_grad, arg_values, arg_grads);
+    node.backward(arg_values, { &cur_value }, { &cur_grad }, arg_grads);
     EXPECT_EQ("LogSumExp(" + std::to_string(tc.dim) + ')', node.name());
     EXPECT_EQ(tc.ret_shape, cur_shape);
     EXPECT_EQ(nullptr, node.get_device());
@@ -1347,11 +1385,13 @@ TEST_F(OperatorImplTest, CheckBroadcast) {
   };
   for (const TestCase tc : test_cases) {
     Broadcast node(tc.dim, tc.size);
-    const Shape cur_shape = node.forward_shape(arg_shapes);
-    const Tensor cur_value = node.forward(arg_values);
+    Shape cur_shape;
+    Tensor cur_value;
+    node.forward_shape(arg_shapes, { &cur_shape });
+    node.forward(arg_values, { &cur_value });
     const Tensor cur_grad = functions::ones<Tensor>(tc.ret_shape, *dev);
     reset_gradients();
-    node.backward(cur_value, cur_grad, arg_values, arg_grads);
+    node.backward(arg_values, { &cur_value }, { &cur_grad }, arg_grads);
     EXPECT_EQ(
         "Broadcast(" + std::to_string(tc.dim) + ','
         + std::to_string(tc.size) + ')', node.name());
@@ -1440,10 +1480,12 @@ TEST_F(OperatorImplTest, CheckConvolution2D_001111) {
   };
 
   Convolution2D node(0, 0, 1, 1, 1, 1);
-  const Shape cur_shape = node.forward_shape(arg_shapes);
-  const Tensor cur_value = node.forward(arg_values);
+  Shape cur_shape;
+  Tensor cur_value;
+  node.forward_shape(arg_shapes, { &cur_shape });
+  node.forward(arg_values, { &cur_value });
   const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev);
-  node.backward(cur_value, cur_grad, arg_values, arg_grads);
+  node.backward(arg_values, { &cur_value }, { &cur_grad }, arg_grads);
   EXPECT_EQ("Convolution2D(0,0,1,1,1,1)", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
   EXPECT_EQ(nullptr, node.get_device());
@@ -1516,10 +1558,12 @@ TEST_F(OperatorImplTest, CheckConvolution2D_112222) {
   };
 
   Convolution2D node(1, 1, 2, 2, 2, 2);
-  const Shape cur_shape = node.forward_shape(arg_shapes);
-  const Tensor cur_value = node.forward(arg_values);
+  Shape cur_shape;
+  Tensor cur_value;
+  node.forward_shape(arg_shapes, { &cur_shape });
+  node.forward(arg_values, { &cur_value });
   const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev);
-  node.backward(cur_value, cur_grad, arg_values, arg_grads);
+  node.backward(arg_values, { &cur_value }, { &cur_grad }, arg_grads);
   EXPECT_EQ("Convolution2D(1,1,2,2,2,2)", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
   EXPECT_EQ(nullptr, node.get_device());
@@ -1543,10 +1587,12 @@ TEST_F(OperatorImplTest, CheckMaxPooling2D_110011) {
   };
 
   MaxPooling2D node(1, 1, 0, 0, 1, 1);
-  const Shape cur_shape = node.forward_shape(arg_shapes);
-  const Tensor cur_value = node.forward(arg_values);
+  Shape cur_shape;
+  Tensor cur_value;
+  node.forward_shape(arg_shapes, { &cur_shape });
+  node.forward(arg_values, { &cur_value });
   const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev);
-  node.backward(cur_value, cur_grad, arg_values, arg_grads);
+  node.backward(arg_values, { &cur_value }, { &cur_grad }, arg_grads);
   EXPECT_EQ("MaxPooling2D(1,1,0,0,1,1)", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
   EXPECT_EQ(nullptr, node.get_device());
@@ -1607,10 +1653,12 @@ TEST_F(OperatorImplTest, CheckMaxPooling2D_221122) {
   };
 
   MaxPooling2D node(2, 2, 1, 1, 2, 2);
-  const Shape cur_shape = node.forward_shape(arg_shapes);
-  const Tensor cur_value = node.forward(arg_values);
+  Shape cur_shape;
+  Tensor cur_value;
+  node.forward_shape(arg_shapes, { &cur_shape });
+  node.forward(arg_values, { &cur_value });
   const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev);
-  node.backward(cur_value, cur_grad, arg_values, arg_grads);
+  node.backward(arg_values, { &cur_value }, { &cur_grad }, arg_grads);
   EXPECT_EQ("MaxPooling2D(2,2,1,1,2,2)", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
   EXPECT_EQ(nullptr, node.get_device());
@@ -1636,10 +1684,12 @@ TEST_F(OperatorImplTest, CheckSoftmaxCrossEntropy) {
       0.31326169, 1.31326169, 0.31326169, 1.31326169},
   };
   SoftmaxCrossEntropy node(0);
-  const Shape cur_shape = node.forward_shape(arg_shapes);
-  const Tensor cur_value = node.forward(arg_values);
+  Shape cur_shape;
+  Tensor cur_value;
+  node.forward_shape(arg_shapes, { &cur_shape });
+  node.forward(arg_values, { &cur_value });
   const Tensor cur_grad = functions::ones<Tensor>(ret_shape, *dev);
-  node.backward(cur_value, cur_grad, arg_values, arg_grads);
+  node.backward(arg_values, { &cur_value }, { &cur_grad }, arg_grads);
   EXPECT_EQ("SoftmaxCrossEntropy(0)", node.name());
   EXPECT_EQ(ret_shape, cur_shape);
   EXPECT_EQ(nullptr, node.get_device());
@@ -1684,11 +1734,13 @@ TEST_F(OperatorImplTest, CheckSparseSoftmaxCrossEntropy) {
   setup_1arg();
   for (const TestCase &tc : test_cases) {
     SparseSoftmaxCrossEntropy node(tc.ids, tc.dim);
-    const Shape cur_shape = node.forward_shape(arg_shapes);
-    const Tensor cur_value = node.forward(arg_values);
+    Shape cur_shape;
+    Tensor cur_value;
+    node.forward_shape(arg_shapes, { &cur_shape });
+    node.forward(arg_values, { &cur_value });
     const Tensor cur_grad = functions::ones<Tensor>(tc.ret_shape, *dev);
     reset_gradients();
-    node.backward(cur_value, cur_grad, arg_values, arg_grads);
+    node.backward(arg_values, { &cur_value }, { &cur_grad }, arg_grads);
     EXPECT_EQ(
         "SparseSoftmaxCrossEntropy(" + std::to_string(tc.dim) + ')',
         node.name());
