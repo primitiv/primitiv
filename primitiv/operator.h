@@ -25,20 +25,21 @@ public:
    */
   virtual std::string name() const = 0;
 
-  static const std::uint32_t ARGN_ANY = 0xffffffff;
-  static const std::uint32_t ARGN_NONZERO = 0xfffffffe;
+  static constexpr std::uint32_t ANY = 0xffffffff;
+  static constexpr std::uint32_t NONZERO = 0xfffffffe;
 
   /**
    * Retrieves the number of required arguments.
    * @return Number of required arguments, or following special values:
-   *           ARGN_ANY: Arbitrary number of arguments, including 0
-   *           ARGN_NONZERO: Arbitrary number of arguments, except 0
+   *           Operator::ANY: Arbitrary number of arguments, including 0
+   *           Operator::NONZERO: Arbitrary number of arguments, except 0
    */
-  virtual std::int32_t num_arguments() const = 0;
+  virtual std::uint32_t num_arguments() const = 0;
 
   /**
    * Retrieves the number of return values.
-   * @return Number of return values.
+   * @return Number of return values, or following special values:
+   *           Operator::NONZERO: Arbitrary number of arguments, except 0
    */
   virtual std::uint32_t num_returns() const = 0;
 
@@ -73,9 +74,10 @@ public:
    *         values.
    * @throw primitiv::Error The operator does not have such values.
    */
-  virtual const std::vector<const Tensor *> get_inner_values() const {
+  virtual std::vector<const Tensor *> get_inner_values() const {
     PRIMITIV_THROW_ERROR(
-        "Operator does not have inner values. Use `forward()` instead.");
+        "Operator `" << name()
+        << "` does not have inner values. Use `forward()` instead.");
   }
 
   /**
@@ -92,7 +94,8 @@ public:
     static_cast<void>(args);
     static_cast<void>(rets);
     PRIMITIV_THROW_ERROR(
-        "Operator has inner values. Use `get_inner_values()` instead.");
+        "Operator `" << name()
+        << "`has inner values. Use `get_inner_values()` instead.");
   }
 
   /**
