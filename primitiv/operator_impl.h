@@ -159,7 +159,7 @@ private:
 };
 
 class Split : public Operator {
-  PRIMITIV_DECL_DEFAULTS_AND_FORWARD(1, Operator::NONZERO);
+  PRIMITIV_DECL_DEFAULTS_AND_FORWARD(1, n_);
 public:
   Split(std::uint32_t dim, std::uint32_t n) : dim_(dim), n_(n) {}
 private:
