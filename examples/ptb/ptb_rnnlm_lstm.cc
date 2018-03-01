@@ -77,31 +77,28 @@ public:
 template <typename Var>
 class LSTM : public Model {
   unsigned out_size_;
-  Parameter pwxh_, pwhh_, pbh_;
-  Var wxh_, whh_, bh_, h_, c_;
+  Parameter pw_, pb_;
+  Var w_, b_, h_, c_;
 
 public:
   LSTM(unsigned in_size, unsigned out_size)
     : out_size_(out_size)
-    , pwxh_({4 * out_size, in_size}, Uniform(-0.1, 0.1))
-    , pwhh_({4 * out_size, out_size}, Uniform(-0.1, 0.1))
-    , pbh_({4 * out_size}, Constant(0)) {
-      add("pwxh", pwxh_);
-      add("pwhh", pwhh_);
-      add("pbh", pbh_);
+    , pw_({4 * out_size, in_size + out_size}, Uniform(-0.1, 0.1))
+    , pb_({4 * out_size}, Constant(0)) {
+      add("pw", pw_);
+      add("pb", pb_);
     }
 
   // Initializes internal values.
   void init() {
-    wxh_ = F::parameter<Var>(pwxh_);
-    whh_ = F::parameter<Var>(pwhh_);
-    bh_ = F::parameter<Var>(pbh_);
+    w_ = F::parameter<Var>(pw_);
+    b_ = F::parameter<Var>(pb_);
     h_ = c_ = F::zeros<Var>({out_size_});
   }
 
   // Forward one step.
   Var forward(const Var &x) {
-    const Var u = F::matmul(wxh_, x) + F::matmul(whh_, h_) + bh_;
+    const Var u = F::matmul(w_, F::concat({x, h_}, 0)) + b_;
     const std::vector<Var> v = F::split(u, 0, 4);
     const Var i = F::sigmoid(v[0]);
     const Var f = F::sigmoid(v[1]);
@@ -190,7 +187,7 @@ int main() {
   cout << "valid: " << num_valid_sents << " sentences, "
                     << num_valid_labels << " labels" << endl;
 
-  devices::Naive dev;  // devices::CUDA dev(0);
+  devices::CUDA dev(0);  // devices::CUDA dev(0);
   Device::set_default(dev);
   Graph g;
   Graph::set_default(g);

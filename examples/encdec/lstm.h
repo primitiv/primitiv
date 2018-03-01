@@ -15,32 +15,29 @@
 //   h[t] = o * tanh(c[t])
 template<typename Var>
 class LSTM : public primitiv::Model {
-  primitiv::Parameter pwxh_, pwhh_, pbh_;
-  Var wxh_, whh_, bh_, h_, c_;
+  primitiv::Parameter pw_, pb_;
+  Var w_, b_, h_, c_;
 
 public:
   LSTM() {
-    add("wxh", pwxh_);
-    add("whh", pwhh_);
-    add("bh", pbh_);
+    add("w", pw_);
+    add("b", pb_);
   }
 
   // Initializes the model.
   void init(unsigned in_size, unsigned out_size) {
-    using primitiv::initializers::XavierUniform;
+    using primitiv::initializers::Uniform;
     using primitiv::initializers::Constant;
-    pwxh_.init({4 * out_size, in_size}, XavierUniform());
-    pwhh_.init({4 * out_size, out_size}, XavierUniform());
-    pbh_.init({4 * out_size}, Constant(0));
+    pw_.init({4 * out_size, in_size + out_size}, Uniform(-0.1, 0.1));
+    pb_.init({4 * out_size}, Constant(0));
   }
 
   // Initializes internal values.
   void restart(const Var &init_c = Var(), const Var &init_h = Var()) {
     namespace F = primitiv::functions;
-    const unsigned out_size = pwhh_.shape()[1];
-    wxh_ = F::parameter<Var>(pwxh_);
-    whh_ = F::parameter<Var>(pwhh_);
-    bh_ = F::parameter<Var>(pbh_);
+    const unsigned out_size = pb_.shape()[0] / 4;
+    w_ = F::parameter<Var>(pw_);
+    b_ = F::parameter<Var>(pb_);
     c_ = init_c.valid() ? init_c : F::zeros<Var>({out_size});
     h_ = init_h.valid() ? init_h : F::zeros<Var>({out_size});
   }
@@ -48,7 +45,7 @@ public:
   // One step forwarding.
   Var forward(const Var &x) {
     namespace F = primitiv::functions;
-    const auto u = F::matmul(wxh_, x) + F::matmul(whh_, h_) + bh_;
+    const auto u = F::matmul(w_, F::concat({x, h_}, 0)) + b_;
     const std::vector<Var> v = F::split(u, 0, 4);
     const auto i = F::sigmoid(v[0]);
     const auto f = F::sigmoid(v[1]);
