@@ -38,8 +38,7 @@ public:
 
   /**
    * Retrieves the number of return values.
-   * @return Number of return values, or following special values:
-   *           Operator::NONZERO: Arbitrary number of arguments, except 0
+   * @return Number of return values.
    */
   virtual std::uint32_t num_returns() const = 0;
 
