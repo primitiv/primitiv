@@ -48,12 +48,12 @@ public:
   // One step forwarding.
   Var forward(const Var &x) {
     namespace F = primitiv::functions;
-    const unsigned out_size = pwhh_.shape()[1];
     const auto u = F::matmul(wxh_, x) + F::matmul(whh_, h_) + bh_;
-    const auto i = F::sigmoid(F::slice(u, 0, 0, out_size));
-    const auto f = F::sigmoid(F::slice(u, 0, out_size, 2 * out_size));
-    const auto o = F::sigmoid(F::slice(u, 0, 2 * out_size, 3 * out_size));
-    const auto j = F::tanh(F::slice(u, 0, 3 * out_size, 4 * out_size));
+    const std::vector<Var> v = F::split(u, 0, 4);
+    const auto i = F::sigmoid(v[0]);
+    const auto f = F::sigmoid(v[1]);
+    const auto o = F::sigmoid(v[2]);
+    const auto j = F::tanh(v[3]);
     c_ = i * j + f * c_;
     h_ = o * F::tanh(c_);
     return h_;

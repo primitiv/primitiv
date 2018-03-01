@@ -102,10 +102,11 @@ public:
   // Forward one step.
   Var forward(const Var &x) {
     const Var u = F::matmul(wxh_, x) + F::matmul(whh_, h_) + bh_;
-    const Var i = F::sigmoid(F::slice(u, 0, 0, out_size_));
-    const Var f = F::sigmoid(F::slice(u, 0, out_size_, 2 * out_size_));
-    const Var o = F::sigmoid(F::slice(u, 0, 2 * out_size_, 3 * out_size_));
-    const Var j = F::tanh(F::slice(u, 0, 3 * out_size_, 4 * out_size_));
+    const std::vector<Var> v = F::split(u, 0, 4);
+    const Var i = F::sigmoid(v[0]);
+    const Var f = F::sigmoid(v[1]);
+    const Var o = F::sigmoid(v[2]);
+    const Var j = F::tanh(v[3]);
     c_ = i * j + f * c_;
     h_ = o * F::tanh(c_);
     return h_;
