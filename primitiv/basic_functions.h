@@ -432,6 +432,22 @@ template<typename Var>
 type_traits::Identity<Var> slice(
     const Var &x, std::uint32_t dim, std::uint32_t lower, std::uint32_t upper);
 
+/**
+ * Splits a given variable into specified number of partitions along an axis.
+ * @param x A variable representing an original data.
+ * @param dim Axis to be processed.
+ * @param n The number of resulting partitions.
+ *          ``n`` should be able to divide ``x.shape()[dim]`` without residue.
+ * @return A list of `n` variables. Each variable is identical with:
+ *         ``split(x, dim, n)[i] == slice(x, dim, L(i), U(i))``,
+ *         where ``L(i) := i * x.shape()[dim] / n``
+ *         and ``U(i) := (i + 1) * x.shape()[dim] / n``.
+ * @throw primitiv::Error ``n`` can not divide ``s.shape()[dim]`` wiout residue.
+ */
+template<typename Var>
+std::vector<type_traits::Identity<Var>> split(
+    const Var &x, std::uint32_t dim, std::uint32_t n);
+
 /// @cond
 
 template<typename Var>
