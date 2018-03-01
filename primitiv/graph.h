@@ -154,7 +154,7 @@ public:
   void clear();
 
   /**
-   * Adds a operator subgraph.
+   * Adds an operator into the graph.
    * @param op Interface of the new operator.
    * @param args List of arguments. Each node should point a node in the same
    *        computation graph.
