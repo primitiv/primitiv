@@ -7,20 +7,18 @@
 #include <primitiv/operator_impl.h>
 #include <primitiv/parameter.h>
 #include <primitiv/shape_ops.h>
+#include <primitiv/string_utils.h>
+
+#define UNUSED(x) static_cast<void>(x)
 
 using std::vector;
 
 namespace primitiv {
 namespace operators {
 
-#define CHECK_ARGNUM(args, n) \
-  if (args.size() != n) { \
-    PRIMITIV_THROW_ERROR( \
-        "Number of arguments mismatched." \
-        << " operator: " << name() \
-        << ", required: " << n \
-        << " != actual: " << args.size()); \
-  }
+/*
+ * Constructors.
+ */
 
 Input::Input(const Shape &shape, const vector<float> &data, Device &device)
 : shape_(shape)
@@ -35,229 +33,157 @@ Input::Input(const Shape &shape, const vector<float> &data, Device &device)
   }
 }
 
-Shape Input::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 0);
-  return shape_;
+/*
+ * Operator names.
+ */
+
+#define IMPL_NAME_0(cls) std::string cls::name() const { return #cls; }
+#define IMPL_NAME_1(cls, k) \
+  std::string cls::name() const { \
+  return #cls "(" + string_utils::to_string(k) + ')'; \
+}
+#define IMPL_NAME_2(cls, k1, k2) \
+  std::string cls::name() const { \
+  return #cls "(" \
+    + string_utils::to_string(k1) + ',' \
+    + string_utils::to_string(k2) + ')'; \
 }
 
-Tensor Input::forward(const vector<const Tensor *> &args) {
-  CHECK_ARGNUM(args, 0);
-  return functions::input<Tensor>(shape_, data_, device_);
+IMPL_NAME_0(Input);
+IMPL_NAME_0(Parameter);
+IMPL_NAME_0(Copy);
+IMPL_NAME_1(Constant, k_);
+IMPL_NAME_1(Identity, size_);
+IMPL_NAME_1(RandomBernoulli, p_);
+IMPL_NAME_2(RandomUniform, lower_, upper_);
+IMPL_NAME_2(RandomNormal, mean_, sd_);
+IMPL_NAME_2(RandomLogNormal, mu_, beta_);
+IMPL_NAME_1(Pick, dim_);
+
+std::string Slice::name() const {
+  return "Slice("
+    + string_utils::to_string(dim_) + ','
+    + string_utils::to_string(lower_) + ':'
+    + string_utils::to_string(upper_) + ')';
 }
 
-void Input::backward(
-    const Tensor &, const Tensor &,
-    const vector<const Tensor *> &, const vector<Tensor *> &) const {
-  // Nothing to do.
+IMPL_NAME_1(Concat, dim_);
+
+std::string Reshape::name() const {
+  return "Reshape(" + shape_.to_string() + ')';
 }
 
-Shape ParameterInput::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 0);
-  return param_.shape();
+IMPL_NAME_1(Sum, dim_);
+IMPL_NAME_1(LogSumExp, dim_);
+IMPL_NAME_2(Broadcast, dim_, size_);
+IMPL_NAME_1(SoftmaxCrossEntropy, dim_);
+IMPL_NAME_1(SparseSoftmaxCrossEntropy, dim_);
+IMPL_NAME_0(StopGradient);
+IMPL_NAME_0(Flatten);
+IMPL_NAME_0(Positive);
+IMPL_NAME_0(Negative);
+
+IMPL_NAME_1(AddConst, k_);
+IMPL_NAME_1(SubtractConstR, k_);
+IMPL_NAME_1(SubtractConstL, k_);
+IMPL_NAME_1(MultiplyConst, k_);
+IMPL_NAME_1(DivideConstR, k_);
+IMPL_NAME_1(DivideConstL, k_);
+IMPL_NAME_1(PowConstR, k_);
+IMPL_NAME_1(PowConstL, k_);
+IMPL_NAME_1(PReLU, k_);
+IMPL_NAME_1(ELU, k_);
+
+IMPL_NAME_1(PowN, k_);
+
+IMPL_NAME_0(AddScalar);
+IMPL_NAME_0(SubtractScalarR);
+IMPL_NAME_0(SubtractScalarL);
+IMPL_NAME_0(MultiplyScalar);
+IMPL_NAME_0(DivideScalarR);
+IMPL_NAME_0(DivideScalarL);
+IMPL_NAME_0(PowScalarR);
+IMPL_NAME_0(PowScalarL);
+
+IMPL_NAME_0(Add);
+IMPL_NAME_0(Subtract);
+IMPL_NAME_0(Multiply);
+IMPL_NAME_0(Divide);
+IMPL_NAME_0(Pow);
+
+IMPL_NAME_0(Transpose);
+IMPL_NAME_0(MatrixMultiply);
+
+IMPL_NAME_0(Sqrt);
+IMPL_NAME_0(Exp);
+IMPL_NAME_0(Log);
+IMPL_NAME_0(Tanh);
+IMPL_NAME_0(Sigmoid);
+IMPL_NAME_0(Softplus);
+IMPL_NAME_0(Sin);
+IMPL_NAME_0(Cos);
+IMPL_NAME_0(Tan);
+IMPL_NAME_0(ReLU);
+IMPL_NAME_0(LReLU);
+
+IMPL_NAME_0(BatchSum);
+
+std::string Convolution2D::name() const {
+  return "Convolution2D("
+    + string_utils::to_string(padding0_) + ','
+    + string_utils::to_string(padding1_) + ','
+    + string_utils::to_string(stride0_) + ','
+    + string_utils::to_string(stride1_) + ','
+    + string_utils::to_string(dilation0_) + ','
+    + string_utils::to_string(dilation1_) + ')';
 }
 
-Tensor ParameterInput::forward(const vector<const Tensor *> &) {
-  PRIMITIV_THROW_ERROR(
-      "Attempted to get return values of ParameterInput via forward().");
+std::string MaxPooling2D::name() const {
+  return "MaxPooling2D("
+    + string_utils::to_string(window0_) + ','
+    + string_utils::to_string(window1_) + ','
+    + string_utils::to_string(padding0_) + ','
+    + string_utils::to_string(padding1_) + ','
+    + string_utils::to_string(stride0_) + ','
+    + string_utils::to_string(stride1_) + ')';
 }
 
-void ParameterInput::backward(
-    const Tensor &, const Tensor &cur_grad,
-    const vector<const Tensor *> &, const vector<Tensor *> &) const {
-  param_.gradient() += cur_grad;
-}
+#undef IMPL_NAME_0
+#undef IMPL_NAME_1
+#undef IMPL_NAME_2
 
-Shape Copy::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return *args[0];
-}
+/*
+ * Shape forwarding operations.
+ */
 
-Tensor Copy::forward(const vector<const Tensor *> &args) {
-  CHECK_ARGNUM(args, 1);
-  return functions::copy(*args[0], device_);
-}
+#define FWD_SHAPE(name) \
+  void name::forward_shape( \
+      const vector<const Shape *> &x, \
+      const vector<Shape *> &y) const
 
-void Copy::backward(
-    const Tensor &, const Tensor &gy,
-    const vector<const Tensor *> &, const vector<Tensor *> &gx) const {
-  *gx[0] += functions::copy(gy, gx[0]->device());
-}
+#define FWD_SHAPE_UNARY(name) \
+  FWD_SHAPE(name) { *y[0] = *x[0]; }
 
-Shape Constant::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 0);
-  return shape_;
-}
+#define FWD_SHAPE_SCALAR(name) \
+  FWD_SHAPE(name) { *y[0] = shape_ops::scalar_op(*x[0], *x[1]); }
 
-Tensor Constant::forward(const vector<const Tensor *> &args) {
-  CHECK_ARGNUM(args, 0);
-  return functions::constant<Tensor>(shape_, k_, device_);
-}
+#define FWD_SHAPE_ELEMENTWISE(name) \
+  FWD_SHAPE(name) { *y[0] = shape_ops::elementwise(*x[0], *x[1]); }
 
-void Constant::backward(
-    const Tensor &, const Tensor &,
-    const vector<const Tensor *> &, const vector<Tensor *> &) const {
-  // Nothing to do.
-}
-
-Shape IdentityMatrix::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 0);
-  return Shape({size_, size_});
-}
-
-Tensor IdentityMatrix::forward(const vector<const Tensor *> &args) {
-  CHECK_ARGNUM(args, 0);
-  return device_.identity(size_);
-}
-
-void IdentityMatrix::backward(
-    const Tensor &, const Tensor &,
-    const vector<const Tensor *> &, const vector<Tensor *> &) const {
-  // Nothing to do.
-}
-
-Shape RandomBernoulli::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 0);
-  return shape_;
-}
-
-Tensor RandomBernoulli::forward(const vector<const Tensor *> &args) {
-  CHECK_ARGNUM(args, 0);
-  return device_.random_bernoulli(shape_, p_);
-}
-
-void RandomBernoulli::backward(
-    const Tensor &, const Tensor &,
-    const vector<const Tensor *> &, const vector<Tensor *> &) const {
-  // Nothing to do.
-}
-
-Shape RandomUniform::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 0);
-  return shape_;
-}
-
-Tensor RandomUniform::forward(const vector<const Tensor *> &args) {
-  CHECK_ARGNUM(args, 0);
-  return device_.random_uniform(shape_, lower_, upper_);
-}
-
-void RandomUniform::backward(
-    const Tensor &, const Tensor &,
-    const vector<const Tensor *> &, const vector<Tensor *> &) const {
-  // Nothing to do.
-}
-
-Shape RandomNormal::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 0);
-  return shape_;
-}
-
-Tensor RandomNormal::forward(const vector<const Tensor *> &args) {
-  CHECK_ARGNUM(args, 0);
-  return device_.random_normal(shape_, mean_, sd_);
-}
-
-void RandomNormal::backward(
-    const Tensor &, const Tensor &,
-    const vector<const Tensor *> &, const vector<Tensor *> &) const {
-  // Nothing to do.
-}
-
-Shape RandomLogNormal::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 0);
-  return shape_;
-}
-
-Tensor RandomLogNormal::forward(const vector<const Tensor *> &args) {
-  CHECK_ARGNUM(args, 0);
-  return device_.random_log_normal(shape_, mean_, sd_);
-}
-
-void RandomLogNormal::backward(
-    const Tensor &, const Tensor &,
-    const vector<const Tensor *> &, const vector<Tensor *> &) const {
-  // Nothing to do.
-}
-
-Shape Pick::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return shape_ops::pick(*args[0], ids_, dim_);
-}
-
-Tensor Pick::forward(const vector<const Tensor *> &args) {
-  CHECK_ARGNUM(args, 1);
-  return functions::pick(*args[0], ids_, dim_);
-}
-
-void Pick::backward(
-    const Tensor &, const Tensor &gy,
-    const vector<const Tensor *> &, const vector<Tensor *> &gx) const {
-  gy.device().pick_bw(gy, ids_, dim_, *gx[0]);
-}
-
-Shape Slice::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return shape_ops::slice(*args[0], dim_, lower_, upper_);
-}
-
-Tensor Slice::forward(const std::vector<const Tensor *> &args) {
-  CHECK_ARGNUM(args, 1);
-  return functions::slice(*args[0], dim_, lower_, upper_);
-}
-
-void Slice::backward(
-    const Tensor &, const Tensor &gy,
-    const vector<const Tensor *> &, const vector<Tensor *> &gx) const {
-  gy.device().slice_bw(gy, dim_, lower_, *gx[0]);
-}
-
-Shape Concat::forward_shape(const vector<const Shape *> &args) const {
-  return shape_ops::concat(args, dim_);
-}
-
-Tensor Concat::forward(const std::vector<const Tensor *> &args) {
-  return functions::concat(args, dim_);
-}
-
-void Concat::backward(
-    const Tensor &, const Tensor &gy,
-    const vector<const Tensor *> &, const vector<Tensor *> &gx) const {
-  std::uint32_t offset = 0;
-  for (Tensor *gxi : gx) {
-    const std::uint32_t span = gxi->shape()[dim_];
-    *gxi += functions::slice(gy, dim_, offset, offset + span);
-    offset += span;
-  }
-}
-
-Shape Reshape::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return shape_ops::reshape(*args[0], shape_);
-}
-
-Shape Flatten::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return shape_ops::flatten(*args[0]);
-}
-
-#define FWD_SHAPE_UNARY(clsname) \
-  Shape clsname::forward_shape(const vector<const Shape *> &args) const { \
-    CHECK_ARGNUM(args, 1); \
-    return *args[0]; \
-  }
-
-#define FWD_SHAPE_SCALAR(clsname) \
-  Shape clsname::forward_shape(const vector<const Shape *> &args) const { \
-    CHECK_ARGNUM(args, 2); \
-    return shape_ops::scalar_op(*args[0], *args[1]); \
-  }
-
-#define FWD_SHAPE_ELEMENTWISE(clsname) \
-  Shape clsname::forward_shape(const vector<const Shape *> &args) const { \
-    CHECK_ARGNUM(args, 2); \
-    return shape_ops::elementwise(*args[0], *args[1]); \
-  }
-
+FWD_SHAPE(Input) { UNUSED(x); *y[0] = shape_; }
+FWD_SHAPE(Parameter) { UNUSED(x); *y[0] = param_.shape(); }
+FWD_SHAPE(Copy) { *y[0] = *x[0]; }
+FWD_SHAPE(Constant) { UNUSED(x); *y[0] = shape_; }
+FWD_SHAPE(Identity) { UNUSED(x); *y[0] = Shape({size_, size_}); }
+FWD_SHAPE(RandomBernoulli) { UNUSED(x); *y[0] = shape_; }
+FWD_SHAPE(RandomUniform) { UNUSED(x); *y[0] = shape_; }
+FWD_SHAPE(RandomNormal) { UNUSED(x); *y[0] = shape_; }
+FWD_SHAPE(RandomLogNormal) { UNUSED(x); *y[0] = shape_; }
+FWD_SHAPE(Pick) { *y[0] = shape_ops::pick(*x[0], ids_, dim_); }
+FWD_SHAPE(Slice) { *y[0] = shape_ops::slice(*x[0], dim_, lower_, upper_); }
+FWD_SHAPE(Concat) { *y[0] = shape_ops::concat(x, dim_); }
+FWD_SHAPE(Reshape) { *y[0] = shape_ops::reshape(*x[0], shape_); }
+FWD_SHAPE(Flatten) { *y[0] = shape_ops::flatten(*x[0]); }
 FWD_SHAPE_UNARY(Positive);
 FWD_SHAPE_UNARY(Negative);
 FWD_SHAPE_UNARY(AddConst);
@@ -295,355 +221,454 @@ FWD_SHAPE_ELEMENTWISE(Subtract);
 FWD_SHAPE_ELEMENTWISE(Multiply);
 FWD_SHAPE_ELEMENTWISE(Divide);
 FWD_SHAPE_ELEMENTWISE(Pow);
-
-#undef FWD_SHAPE_UNARY
-#undef FWD_SHAPE_ELEMENTWISE
-
-Shape Transpose::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return shape_ops::transpose(*args[0]);
-}
-
-Shape MatrixMultiply::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 2);
-  return shape_ops::matmul(*args[0], *args[1]);
-}
-
-Shape Sum::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return args[0]->resize_dim(dim_, 1);
-}
-
-Shape LogSumExp::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return args[0]->resize_dim(dim_, 1);
-}
-
-Shape Broadcast::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return shape_ops::broadcast(*args[0], dim_, size_);
-}
-
-Shape BatchSum::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return args[0]->resize_batch(1);
-}
-
-Shape Convolution2D::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 2);
-  return shape_ops::conv2d(
-      *args[0], *args[1],
+FWD_SHAPE(Transpose) { *y[0] = shape_ops::transpose(*x[0]); }
+FWD_SHAPE(MatrixMultiply) { *y[0] = shape_ops::matmul(*x[0], *x[1]); }
+FWD_SHAPE(Sum) { *y[0] = x[0]->resize_dim(dim_, 1); }
+FWD_SHAPE(LogSumExp) { *y[0] = x[0]->resize_dim(dim_, 1); }
+FWD_SHAPE(Broadcast) { *y[0] = shape_ops::broadcast(*x[0], dim_, size_); }
+FWD_SHAPE(BatchSum) { *y[0] = x[0]->resize_batch(1); }
+FWD_SHAPE(Convolution2D) {
+  *y[0] = shape_ops::conv2d(
+      *x[0], *x[1],
       padding0_, padding1_, stride0_, stride1_, dilation0_, dilation1_);
 }
+FWD_SHAPE(MaxPooling2D) {
+  *y[0] = shape_ops::pool2d(
+      *x[0], window0_, window1_, padding0_, padding1_, stride0_, stride1_);
+}
+FWD_SHAPE(SoftmaxCrossEntropy) {
+  *y[0] = shape_ops::elementwise(*x[0], *x[1]);
+  y[0]->update_dim(dim_, 1);
+}
+FWD_SHAPE(SparseSoftmaxCrossEntropy) {
+  *y[0] = shape_ops::pick(*x[0], ids_, dim_);
+}
+FWD_SHAPE_UNARY(StopGradient);
 
-Shape MaxPooling2D::forward_shape(const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return shape_ops::pool2d(
-      *args[0], window0_, window1_, padding0_, padding1_, stride0_, stride1_);
+#undef FWD_SHAPE_UNARY
+#undef FWD_SHAPE_SCALAR
+#undef FWD_SHAPE_ELEMENTWISE
+#undef FWD_SHAPE
+
+/*
+ * Obtaining inner values.
+ */
+
+vector<const Tensor *> Parameter::get_inner_values() const {
+  return std::vector<const Tensor *> { &param_.value() };
 }
 
-Shape SoftmaxCrossEntropy::forward_shape(
-    const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 2);
-  Shape y = shape_ops::elementwise(*args[0], *args[1]);
-  y.update_dim(dim_, 1);
-  return y;
-}
-
-Shape SparseSoftmaxCrossEntropy::forward_shape(
-    const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return shape_ops::pick(*args[0], ids_, dim_);
-}
-
-Shape StopGradient::forward_shape(
-    const vector<const Shape *> &args) const {
-  CHECK_ARGNUM(args, 1);
-  return *args[0];
-}
+/*
+ * Forward operations.
+ */
 
 #define FORWARD(name) \
-    Tensor name::forward(const vector<const Tensor *> &x)
+  void name::forward( \
+      const vector<const Tensor *> &x, \
+      const vector<Tensor *> &y) const
 
-FORWARD(Reshape) { return functions::reshape(*x[0], shape_); }
-FORWARD(Flatten) { return functions::flatten(*x[0]); }
+FORWARD(Input) {
+  UNUSED(x);
+  *y[0] = functions::input<Tensor>(shape_, data_, device_);
+}
 
-FORWARD(Positive) { return *x[0]; }
-FORWARD(Negative) { return -(*x[0]); }
-FORWARD(Sqrt) { return functions::sqrt(*x[0]); }
-FORWARD(Exp) { return functions::exp(*x[0]); }
-FORWARD(Log) { return functions::log(*x[0]); }
-FORWARD(Tanh) { return functions::tanh(*x[0]); }
-FORWARD(Sigmoid) { return functions::sigmoid(*x[0]); }
-FORWARD(Softplus) { return functions::softplus(*x[0]); }
-FORWARD(Sin) { return functions::sin(*x[0]); }
-FORWARD(Cos) { return functions::cos(*x[0]); }
-FORWARD(Tan) { return functions::tan(*x[0]); }
-FORWARD(ReLU) { return functions::relu(*x[0]); }
-FORWARD(LReLU) { return functions::lrelu(*x[0]); }
+FORWARD(Copy) { *y[0] = functions::copy(*x[0], device_); }
 
-FORWARD(AddConst) { return *x[0] + k_; }
-FORWARD(SubtractConstR) { return *x[0] - k_; }
-FORWARD(SubtractConstL) { return k_ - *x[0]; }
-FORWARD(MultiplyConst) { return *x[0] * k_; }
-FORWARD(DivideConstR) { return *x[0] / k_; }
-FORWARD(DivideConstL) { return k_ / *x[0]; }
-FORWARD(PowConstR) { return functions::pow(*x[0], k_); }
-FORWARD(PowConstL) { return functions::pow(k_, *x[0]); }
-FORWARD(PReLU) { return functions::prelu(*x[0], k_); }
-FORWARD(ELU) { return functions::elu(*x[0], k_); }
+FORWARD(Constant) {
+  UNUSED(x);
+  *y[0] = functions::constant<Tensor>(shape_, k_, device_);
+}
 
-FORWARD(PowN) { return functions::pown(*x[0], k_); }
+FORWARD(Identity) {
+  UNUSED(x);
+  *y[0] = device_.identity(size_);
+}
 
-FORWARD(AddScalar) { return *x[0] + *x[1]; }
-FORWARD(SubtractScalarR) { return *x[0] - *x[1]; }
-FORWARD(SubtractScalarL) { return *x[1] - *x[0]; }
-FORWARD(MultiplyScalar) { return *x[0] * *x[1]; }
-FORWARD(DivideScalarR) { return *x[0] / *x[1]; }
-FORWARD(DivideScalarL) { return *x[1] / *x[0]; }
-FORWARD(PowScalarR) { return functions::pow(*x[0], *x[1]); }
-FORWARD(PowScalarL) { return functions::pow(*x[1], *x[0]); }
+FORWARD(RandomBernoulli) {
+  UNUSED(x);
+  *y[0] = device_.random_bernoulli(shape_, p_);
+}
+FORWARD(RandomUniform) {
+  UNUSED(x);
+  *y[0] = device_.random_uniform(shape_, lower_, upper_);
+}
+FORWARD(RandomNormal) {
+  UNUSED(x);
+  *y[0] = device_.random_normal(shape_, mean_, sd_);
+}
+FORWARD(RandomLogNormal) {
+  UNUSED(x);
+  *y[0] = device_.random_log_normal(shape_, mu_, beta_);
+}
 
-FORWARD(Add) { return *x[0] + *x[1]; }
-FORWARD(Subtract) { return *x[0] - *x[1]; }
-FORWARD(Multiply) { return *x[0] * *x[1]; }
-FORWARD(Divide) { return *x[0] / *x[1]; }
-FORWARD(Pow) { return functions::pow(*x[0], *x[1]); }
+FORWARD(Pick) { *y[0] = functions::pick(*x[0], ids_, dim_); }
+FORWARD(Slice) { *y[0] = functions::slice(*x[0], dim_, lower_, upper_); }
+FORWARD(Concat) { *y[0] = functions::concat(x, dim_); }
 
-FORWARD(Transpose) { return functions::transpose(*x[0]); }
-FORWARD(MatrixMultiply) { return functions::matmul(*x[0], *x[1]); }
+FORWARD(Reshape) { *y[0] = functions::reshape(*x[0], shape_); }
+FORWARD(Flatten) { *y[0] = functions::flatten(*x[0]); }
 
-FORWARD(Sum) { return functions::sum(*x[0], dim_); }
-FORWARD(LogSumExp) { return functions::logsumexp(*x[0], dim_); }
-FORWARD(Broadcast) { return functions::broadcast(*x[0], dim_, size_); }
+FORWARD(Positive) { *y[0] = *x[0]; }
+FORWARD(Negative) { *y[0] = -(*x[0]); }
+FORWARD(Sqrt) { *y[0] = functions::sqrt(*x[0]); }
+FORWARD(Exp) { *y[0] = functions::exp(*x[0]); }
+FORWARD(Log) { *y[0] = functions::log(*x[0]); }
+FORWARD(Tanh) { *y[0] = functions::tanh(*x[0]); }
+FORWARD(Sigmoid) { *y[0] = functions::sigmoid(*x[0]); }
+FORWARD(Softplus) { *y[0] = functions::softplus(*x[0]); }
+FORWARD(Sin) { *y[0] = functions::sin(*x[0]); }
+FORWARD(Cos) { *y[0] = functions::cos(*x[0]); }
+FORWARD(Tan) { *y[0] = functions::tan(*x[0]); }
+FORWARD(ReLU) { *y[0] = functions::relu(*x[0]); }
+FORWARD(LReLU) { *y[0] = functions::lrelu(*x[0]); }
 
-FORWARD(BatchSum) { return functions::batch::sum(*x[0]); }
+FORWARD(AddConst) { *y[0] = *x[0] + k_; }
+FORWARD(SubtractConstR) { *y[0] = *x[0] - k_; }
+FORWARD(SubtractConstL) { *y[0] = k_ - *x[0]; }
+FORWARD(MultiplyConst) { *y[0] = *x[0] * k_; }
+FORWARD(DivideConstR) { *y[0] = *x[0] / k_; }
+FORWARD(DivideConstL) { *y[0] = k_ / *x[0]; }
+FORWARD(PowConstR) { *y[0] = functions::pow(*x[0], k_); }
+FORWARD(PowConstL) { *y[0] = functions::pow(k_, *x[0]); }
+FORWARD(PReLU) { *y[0] = functions::prelu(*x[0], k_); }
+FORWARD(ELU) { *y[0] = functions::elu(*x[0], k_); }
+
+FORWARD(PowN) { *y[0] = functions::pown(*x[0], k_); }
+
+FORWARD(AddScalar) { *y[0] = *x[0] + *x[1]; }
+FORWARD(SubtractScalarR) { *y[0] = *x[0] - *x[1]; }
+FORWARD(SubtractScalarL) { *y[0] = *x[1] - *x[0]; }
+FORWARD(MultiplyScalar) { *y[0] = *x[0] * *x[1]; }
+FORWARD(DivideScalarR) { *y[0] = *x[0] / *x[1]; }
+FORWARD(DivideScalarL) { *y[0] = *x[1] / *x[0]; }
+FORWARD(PowScalarR) { *y[0] = functions::pow(*x[0], *x[1]); }
+FORWARD(PowScalarL) { *y[0] = functions::pow(*x[1], *x[0]); }
+
+FORWARD(Add) { *y[0] = *x[0] + *x[1]; }
+FORWARD(Subtract) { *y[0] = *x[0] - *x[1]; }
+FORWARD(Multiply) { *y[0] = *x[0] * *x[1]; }
+FORWARD(Divide) { *y[0] = *x[0] / *x[1]; }
+FORWARD(Pow) { *y[0] = functions::pow(*x[0], *x[1]); }
+
+FORWARD(Transpose) { *y[0] = functions::transpose(*x[0]); }
+FORWARD(MatrixMultiply) { *y[0] = functions::matmul(*x[0], *x[1]); }
+
+FORWARD(Sum) { *y[0] = functions::sum(*x[0], dim_); }
+FORWARD(LogSumExp) { *y[0] = functions::logsumexp(*x[0], dim_); }
+FORWARD(Broadcast) { *y[0] = functions::broadcast(*x[0], dim_, size_); }
+
+FORWARD(BatchSum) { *y[0] = functions::batch::sum(*x[0]); }
 
 FORWARD(Convolution2D) {
-  return functions::conv2d(
+  *y[0] = functions::conv2d(
       *x[0], *x[1],
       padding0_, padding1_, stride0_, stride1_, dilation0_, dilation1_);
 }
 
 FORWARD(MaxPooling2D) {
-  return functions::max_pool2d(
+  *y[0] = functions::max_pool2d(
       *x[0], window0_, window1_, padding0_, padding1_, stride0_, stride1_);
 }
 
 FORWARD(SoftmaxCrossEntropy) {
-  return functions::softmax_cross_entropy(*x[0], *x[1], dim_);
+  *y[0] = functions::softmax_cross_entropy(*x[0], *x[1], dim_);
 }
 FORWARD(SparseSoftmaxCrossEntropy) {
 #ifdef PRIMITIV_USE_CACHE
   log_softmax_x_ = functions::log_softmax(*x[0], dim_);
-  return functions::pick(-log_softmax_x_, ids_, dim_);
+  *y[0] = functions::pick(-log_softmax_x_, ids_, dim_);
 #else
-  return functions::softmax_cross_entropy(*x[0], ids_, dim_);
+  *y[0] = functions::softmax_cross_entropy(*x[0], ids_, dim_);
 #endif  // PRIMITIV_USE_CACHE
 }
 
-FORWARD(StopGradient) { return *x[0]; }
+FORWARD(StopGradient) { *y[0] = *x[0]; }
 
 #undef FORWARD
 
+/*
+ * Backward operations.
+ */
+
 #define BACKWARD(name) \
   void name::backward( \
-      const Tensor &y, \
-      const Tensor &gy, \
       const vector<const Tensor *> &x, \
+      const vector<const Tensor *> &y, \
+      const vector<const Tensor *> &gy, \
       const vector<Tensor *> &gx) const
 
-#define UNUSED(x) static_cast<void>(x)
+#define BACKWARD_NOP(name) \
+  BACKWARD(name) { UNUSED(x); UNUSED(y); UNUSED(gy); UNUSED(gx); }
+
+BACKWARD_NOP(Input);
+
+BACKWARD(Parameter) {
+  UNUSED(x);
+  UNUSED(y);
+  UNUSED(gx);
+  param_.gradient() += *gy[0];
+}
+
+BACKWARD(Copy) {
+  UNUSED(x);
+  UNUSED(y);
+  *gx[0] += functions::copy(*gy[0], gx[0]->device());
+}
+
+BACKWARD_NOP(Constant);
+BACKWARD_NOP(Identity);
+BACKWARD_NOP(RandomBernoulli);
+BACKWARD_NOP(RandomUniform);
+BACKWARD_NOP(RandomNormal);
+BACKWARD_NOP(RandomLogNormal);
+
+BACKWARD(Pick) {
+  UNUSED(x);
+  UNUSED(y);
+  gy[0]->device().pick_bw(*gy[0], ids_, dim_, *gx[0]);
+}
+
+BACKWARD(Slice) {
+  UNUSED(x);
+  UNUSED(y);
+  gy[0]->device().slice_bw(*gy[0], dim_, lower_, *gx[0]);
+}
+
+BACKWARD(Concat) {
+  UNUSED(x);
+  UNUSED(y);
+  std::uint32_t offset = 0;
+  for (Tensor *gxi : gx) {
+    const std::uint32_t span = gxi->shape()[dim_];
+    *gxi += functions::slice(*gy[0], dim_, offset, offset + span);
+    offset += span;
+  }
+}
 
 BACKWARD(Reshape) {
   UNUSED(y);
-  *gx[0] += gy.reshape(x[0]->shape());
+  *gx[0] += gy[0]->reshape(x[0]->shape());
 }
 
 BACKWARD(Flatten) {
   UNUSED(y);
-  *gx[0] += gy.reshape(x[0]->shape());
+  *gx[0] += gy[0]->reshape(x[0]->shape());
 }
 
 BACKWARD(Positive) {
-  UNUSED(y);
   UNUSED(x);
-  *gx[0] += gy;
+  UNUSED(y);
+  *gx[0] += *gy[0];
 }
 
 BACKWARD(Negative) {
-  UNUSED(y);
   UNUSED(x);
-  *gx[0] -= gy;
+  UNUSED(y);
+  *gx[0] -= *gy[0];
 }
 
-BACKWARD(Sqrt) { gy.device().sqrt_bw(*x[0], y, gy, *gx[0]); }
-BACKWARD(Exp) {  gy.device().exp_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(Log) {  gy.device().log_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(Tanh) {  gy.device().tanh_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(Sigmoid) {  gy.device().sigmoid_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(Softplus) {  gy.device().softplus_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(Sin) {  gy.device().sin_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(Cos) {  gy.device().cos_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(Tan) {  gy.device().tan_bw(*x[0], y, gy, *gx[0]);}
-BACKWARD(ReLU) { gy.device().prelu_bw(*x[0], y, gy, 0, *gx[0]); }
-BACKWARD(LReLU) { gy.device().prelu_bw(*x[0], y, gy, .01, *gx[0]); }
-BACKWARD(Transpose) { gy.device().transpose_bw(*x[0], y, gy, *gx[0]); }
+BACKWARD(Sqrt) {
+  gy[0]->device().sqrt_bw(*x[0], *y[0], *gy[0], *gx[0]);
+}
+
+BACKWARD(Exp) {
+  gy[0]->device().exp_bw(*x[0], *y[0], *gy[0], *gx[0]);
+}
+
+BACKWARD(Log) {
+  gy[0]->device().log_bw(*x[0], *y[0], *gy[0], *gx[0]);
+}
+
+BACKWARD(Tanh) {
+  gy[0]->device().tanh_bw(*x[0], *y[0], *gy[0], *gx[0]);
+}
+
+BACKWARD(Sigmoid) {
+  gy[0]->device().sigmoid_bw(*x[0], *y[0], *gy[0], *gx[0]);
+}
+
+BACKWARD(Softplus) {
+  gy[0]->device().softplus_bw(*x[0], *y[0], *gy[0], *gx[0]);
+}
+
+BACKWARD(Sin) {
+  gy[0]->device().sin_bw(*x[0], *y[0], *gy[0], *gx[0]);
+}
+
+BACKWARD(Cos) {
+  gy[0]->device().cos_bw(*x[0], *y[0], *gy[0], *gx[0]);
+}
+
+BACKWARD(Tan) {
+  gy[0]->device().tan_bw(*x[0], *y[0], *gy[0], *gx[0]);
+}
+
+BACKWARD(ReLU) {
+  gy[0]->device().prelu_bw(*x[0], *y[0], *gy[0], 0, *gx[0]);
+}
+
+BACKWARD(LReLU) {
+  gy[0]->device().prelu_bw(*x[0], *y[0], *gy[0], .01, *gx[0]);
+}
+
+BACKWARD(Transpose) {
+  gy[0]->device().transpose_bw(*x[0], *y[0], *gy[0], *gx[0]);
+}
 
 BACKWARD(AddConst) {
-  gy.device().add_const_bw(*x[0], y, gy, k_, *gx[0]);
+  gy[0]->device().add_const_bw(*x[0], *y[0], *gy[0], k_, *gx[0]);
 }
 
 BACKWARD(SubtractConstR) {
-  gy.device().subtract_const_r_bw(*x[0], y, gy, k_, *gx[0]);
+  gy[0]->device().subtract_const_r_bw(*x[0], *y[0], *gy[0], k_, *gx[0]);
 }
 
 BACKWARD(SubtractConstL) {
-  gy.device().subtract_const_l_bw(*x[0], y, gy, k_, *gx[0]);
+  gy[0]->device().subtract_const_l_bw(*x[0], *y[0], *gy[0], k_, *gx[0]);
 }
 
 BACKWARD(MultiplyConst) {
-  gy.device().multiply_const_bw(*x[0], y, gy, k_, *gx[0]);
+  gy[0]->device().multiply_const_bw(*x[0], *y[0], *gy[0], k_, *gx[0]);
 }
 
 BACKWARD(DivideConstR) {
-  gy.device().divide_const_r_bw(*x[0], y, gy, k_, *gx[0]);
+  gy[0]->device().divide_const_r_bw(*x[0], *y[0], *gy[0], k_, *gx[0]);
 }
 
 BACKWARD(DivideConstL) {
-  gy.device().divide_const_l_bw(*x[0], y, gy, k_, *gx[0]);
+  gy[0]->device().divide_const_l_bw(*x[0], *y[0], *gy[0], k_, *gx[0]);
 }
 
 BACKWARD(PowConstR) {
-  gy.device().pow_const_r_bw(*x[0], y, gy, k_, *gx[0]);
+  gy[0]->device().pow_const_r_bw(*x[0], *y[0], *gy[0], k_, *gx[0]);
 }
 
 BACKWARD(PowConstL) {
-  gy.device().pow_const_l_bw(*x[0], y, gy, k_, *gx[0]);
+  gy[0]->device().pow_const_l_bw(*x[0], *y[0], *gy[0], k_, *gx[0]);
 }
 
 BACKWARD(PReLU) {
-  gy.device().prelu_bw(*x[0], y, gy, k_, *gx[0]);
+  gy[0]->device().prelu_bw(*x[0], *y[0], *gy[0], k_, *gx[0]);
 }
 
 BACKWARD(ELU) {
-  gy.device().elu_bw(*x[0], y, gy, k_, *gx[0]);
+  gy[0]->device().elu_bw(*x[0], *y[0], *gy[0], k_, *gx[0]);
 }
 
 BACKWARD(PowN) {
-  gy.device().pown_bw(*x[0], y, gy, k_, *gx[0]);
+  gy[0]->device().pown_bw(*x[0], *y[0], *gy[0], k_, *gx[0]);
 }
 
 BACKWARD(AddScalar) {
-  UNUSED(y);
   UNUSED(x);
-  *gx[0] += gy;
-  *gx[1] += functions::sum(gy.flatten(), 0);
+  UNUSED(y);
+  *gx[0] += *gy[0];
+  *gx[1] += functions::sum(gy[0]->flatten(), 0);
 }
 
 BACKWARD(SubtractScalarR) {
-  UNUSED(y);
   UNUSED(x);
-  *gx[0] += gy;
-  *gx[1] -= functions::sum(gy.flatten(), 0);
+  UNUSED(y);
+  *gx[0] += *gy[0];
+  *gx[1] -= functions::sum(gy[0]->flatten(), 0);
 }
 
 BACKWARD(SubtractScalarL) {
-  UNUSED(y);
   UNUSED(x);
-  *gx[0] -= gy;
-  *gx[1] += functions::sum(gy.flatten(), 0);
+  UNUSED(y);
+  *gx[0] -= *gy[0];
+  *gx[1] += functions::sum(gy[0]->flatten(), 0);
 }
 
 BACKWARD(MultiplyScalar) {
   UNUSED(y);
-  *gx[0] += *x[1] * gy;
-  *gx[1] += functions::sum((*x[0] * gy).flatten(), 0);
+  *gx[0] += *x[1] * *gy[0];
+  *gx[1] += functions::sum((*x[0] * *gy[0]).flatten(), 0);
 }
 
 BACKWARD(DivideScalarR) {
-  const Tensor a = gy / *x[1];
+  const Tensor a = *gy[0] / *x[1];
   *gx[0] += a;
-  *gx[1] -= functions::sum((a * y).flatten(), 0);
+  *gx[1] -= functions::sum((a * *y[0]).flatten(), 0);
 }
 
 BACKWARD(DivideScalarL) {
-  const Tensor a = gy / *x[0];
-  *gx[0] -= a * y;
+  const Tensor a = *gy[0] / *x[0];
+  *gx[0] -= a * *y[0];
   *gx[1] += functions::sum(a.flatten(), 0);
 }
 
 BACKWARD(PowScalarR) {
-  const Tensor a = gy * y;
+  const Tensor a = *gy[0] * *y[0];
   *gx[0] += a * *x[1] / *x[0];
   *gx[1] += functions::sum((a * functions::log(*x[0])).flatten(), 0);
 }
 
 BACKWARD(PowScalarL) {
-  const Tensor a = gy * y;
+  const Tensor a = *gy[0] * *y[0];
   *gx[0] += a * functions::log(*x[1]);
   *gx[1] += functions::sum((a * *x[0] / *x[1]).flatten(), 0);
 }
 
 BACKWARD(Add) {
-  gy.device().add_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]);
+  gy[0]->device().add_bw(*x[0], *x[1], *y[0], *gy[0], *gx[0], *gx[1]);
 }
 
 BACKWARD(Subtract) {
-  gy.device().subtract_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]);
+  gy[0]->device().subtract_bw(*x[0], *x[1], *y[0], *gy[0], *gx[0], *gx[1]);
 }
 
 BACKWARD(Multiply) {
-  gy.device().multiply_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]);
+  gy[0]->device().multiply_bw(*x[0], *x[1], *y[0], *gy[0], *gx[0], *gx[1]);
 }
 
 BACKWARD(Divide) {
-  gy.device().divide_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]);
+  gy[0]->device().divide_bw(*x[0], *x[1], *y[0], *gy[0], *gx[0], *gx[1]);
 }
 
 BACKWARD(Pow) {
-  gy.device().pow_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]);
+  gy[0]->device().pow_bw(*x[0], *x[1], *y[0], *gy[0], *gx[0], *gx[1]);
 }
 
 BACKWARD(MatrixMultiply) {
-  gy.device().matmul_bw(*x[0], *x[1], y, gy, *gx[0], *gx[1]);
+  gy[0]->device().matmul_bw(*x[0], *x[1], *y[0], *gy[0], *gx[0], *gx[1]);
 }
 
 BACKWARD(Sum) {
   UNUSED(y);
-  *gx[0] += functions::broadcast(gy, dim_, x[0]->shape()[dim_]);
+  *gx[0] += functions::broadcast(*gy[0], dim_, x[0]->shape()[dim_]);
 }
 
 BACKWARD(LogSumExp) {
   // NOTE(odashi): dy/dx = softmax(x) = exp(x - y)
   const std::uint32_t n = x[0]->shape()[dim_];
   *gx[0]
-    += functions::exp(*x[0] - functions::broadcast(y, dim_, n))
-    * functions::broadcast(gy, dim_, n);
+    += functions::exp(*x[0] - functions::broadcast(*y[0], dim_, n))
+    * functions::broadcast(*gy[0], dim_, n);
 }
 
 BACKWARD(Broadcast) {
-  UNUSED(y);
   UNUSED(x);
-  *gx[0] += functions::sum(gy, dim_);
+  UNUSED(y);
+  *gx[0] += functions::sum(*gy[0], dim_);
 }
 
 BACKWARD(BatchSum) {
-  UNUSED(y);
   UNUSED(x);
-  *gx[0] += gy;
+  UNUSED(y);
+  *gx[0] += *gy[0];
 }
 
 BACKWARD(Convolution2D) {
-  gy.device().conv2d_bw(
-      *x[0], *x[1], y, gy,
+  gy[0]->device().conv2d_bw(
+      *x[0], *x[1], *y[0], *gy[0],
       padding0_, padding1_, stride0_, stride1_, dilation0_, dilation1_,
       *gx[0], *gx[1]);
 }
 
 BACKWARD(MaxPooling2D) {
-  gy.device().max_pool2d_bw(
-      *x[0], y, gy,
+  gy[0]->device().max_pool2d_bw(
+      *x[0], *y[0], *gy[0],
       window0_, window1_, padding0_, padding1_, stride0_, stride1_,
       *gx[0]);
 }
@@ -651,7 +676,8 @@ BACKWARD(MaxPooling2D) {
 BACKWARD(SoftmaxCrossEntropy) {
   UNUSED(y);
   const Tensor log_softmax_x = functions::log_softmax(*x[0], dim_);
-  const Tensor bcast_gy = functions::broadcast(gy, dim_, x[0]->shape()[dim_]);
+  const Tensor bcast_gy = functions::broadcast(
+      *gy[0], dim_, x[0]->shape()[dim_]);
   *gx[0] += (functions::exp(log_softmax_x) - *x[1]) * bcast_gy;
   *gx[1] -= log_softmax_x * bcast_gy;
 }
@@ -663,24 +689,21 @@ BACKWARD(SparseSoftmaxCrossEntropy) {
 #ifdef PRIMITIV_USE_CACHE
   *gx[0]
     += functions::exp(log_softmax_x_)
-    * functions::broadcast(gy, dim_, x[0]->shape()[dim_]);
+    * functions::broadcast(*gy[0], dim_, x[0]->shape()[dim_]);
 #else
   *gx[0]
     += functions::softmax(*x[0], dim_)
-    * functions::broadcast(gy, dim_, x[0]->shape()[dim_]);
+    * functions::broadcast(*gy[0], dim_, x[0]->shape()[dim_]);
 #endif  // PRIMITIV_USE_CACHE
-  gy.device().pick_bw(-gy, ids_, dim_, *gx[0]);
+  gy[0]->device().pick_bw(-*gy[0], ids_, dim_, *gx[0]);
 }
 
-BACKWARD(StopGradient) {
-  UNUSED(y);
-  UNUSED(gy);
-  UNUSED(x);
-  UNUSED(gx);
-}
+BACKWARD_NOP(StopGradient);
 
+#undef BACKWARD_NOP
 #undef BACKWARD
-#undef UNUSED
 
 }  // namespace operators
 }  // namespace primitive
+
+#undef UNUSED
