@@ -9,7 +9,6 @@
 
 #include <gtest/gtest.h>
 
-
 namespace primitiv {
 
 class DynamicLibraryTest : public testing::Test {};

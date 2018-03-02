@@ -44,8 +44,8 @@ public:
 
   /**
    * Returns whether the operator have inner values or not.
-   * @return `true` if the operator have inner values,
-   *         `false` otherwise.
+   * @return ``true`` if the operator have inner values,
+   *         ``false`` otherwise.
    */
   virtual bool has_inner_values() const = 0;
 
@@ -60,8 +60,8 @@ public:
    * Calculates only the resulting shape.
    * @param args Shapes of argument values.
    * @param rets Shapes of return values.
-   * @remarks `args` and `rets` should have the same number of pointers with the
-   *          value returned from `num_arguments()` and `num_returns()`.
+   * @remarks ``args`` and ``rets`` should have the same number of pointers with
+   *          the values returned by ``num_arguments()`` and ``num_returns()``.
    */
   virtual void forward_shape(
       const std::vector<const Shape *> &args,
@@ -84,8 +84,8 @@ public:
    * @param args Argument tensors.
    * @param rets Resulting tensors.
    * @return Resulting tensors.
-   * @remarks `args` and `rets` should have the same number of pointers with the
-   *          value returned from `num_arguments()` and `num_returns()`.
+   * @remarks ``args`` and ``rets`` should have the same number of pointers with
+   *          the values returned by ``num_arguments()`` and ``num_returns()``.
    */
   virtual void forward(
       const std::vector<const Tensor *> &args,
@@ -103,9 +103,9 @@ public:
    * @param rets_v Tensors of resulting values.
    * @param rets_g Tensors of gradients of results.
    * @param args_g Tensors of gradients of arguments.
-   * @remarks `args_v/g` and `rets_v/g` should have the same number of pointers
-   *          with the value returned from `num_arguments()` and
-   *          `num_returns()`.
+   * @remarks ``args_v/g`` and ``rets_v/g`` should have the same number of
+   *          pointers with the values returned by ``num_arguments()`` and
+   *          ``num_returns()``.
    */
   virtual void backward(
       const std::vector<const Tensor *> &args_v,

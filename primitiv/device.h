@@ -55,15 +55,15 @@ public:
    */
   virtual DeviceType type() const = 0;
 
-private:
   /**
    * Provides a new Tensor object on the device.
    * @param shape Shape of the tensor.
    * @return A new Tensor object.
+   * @remarks This function does not initialize inner values of the new Tensor.
+   *          Users should use returned Tensor objects to only write new data.
    */
   Tensor new_raw_tensor(const Shape &shape);
 
-public:
   /**
    * Provides a new Tensor object with same-value elements.
    * @param shape Shape of the tensor.

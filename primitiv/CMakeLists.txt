@@ -43,6 +43,7 @@ set(primitiv_base_HDRS
   optimizer.h
   optimizer_impl.h
   parameter.h
+  precompiled_function.h
   primitiv.h
   random.h
   shape.h
@@ -63,6 +64,7 @@ set(primitiv_base_SRCS
   optimizer.cc
   optimizer_impl.cc
   parameter.cc
+  precompiled_function.cc
   shape.cc
   shape_ops.cc
   tensor.cc
