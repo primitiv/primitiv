@@ -152,6 +152,47 @@ Installing primitiv with OpenCL
 -------------------------------
 
 
+OpenCL backend requires OpenCL C++ headers (CLHPP) and CLBlast.
+
+
+Installing CLHPP
+^^^^^^^^^^^^^^^^
+
+
+.. code-block:: shell
+
+  $ git clone https://github.com/KhronosGroup/OpenCL-CLHPP.git
+  $ cd OpenCL-CLHPP
+  $ mkdir build
+  $ cd build
+  $ cmake .. -DOPENCL_DIST_DIR=/path/to/opencl
+  $ make && make install
+
+
+Installing CLBlast
+^^^^^^^^^^^^^^^^^^
+
+
+.. code-block:: shell
+
+  $ apt install wget
+  $ wget https://github.com/CNugteren/CLBlast/archive/1.2.0.tar.gz -O ./clblast.tar.gz
+  $ mkdir clblast
+  $ cd clblast
+  $ tar xf ../clblast.tar.gz --strip-components 1
+  $ mkdir build
+  $ cd build
+  $ cmake .. -DOPENCL_ROOT=/path/to/opencl
+  $ make && make install
+
+
+Configuring primitiv with OpenCL
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+The following command configures to build OpenCL backend using
+system libraries.
+
 .. code-block:: shell
 
   $ cmake .. -DPRIMITIV_USE_OPENCL=ON
@@ -163,6 +204,7 @@ locations of their libraries if searching failed or you want to switch them:
 .. code-block:: shell
 
   $ cmake .. \
-    -DCLHPP_ROOT_DIR=/path/to/clhpp \
+    -DOPENCL_ROOT=/path/to/opencl \
+    -DCLHPP_ROOT_DIR=/path/to/opencl \
     -DCLBLAST_ROOT_DIR=/path/to/clblast \
     -DPRIMITIV_USE_OPENCL=ON
