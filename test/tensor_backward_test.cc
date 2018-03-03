@@ -9,6 +9,8 @@
 #include <test_utils.h>
 
 using std::vector;
+using test_utils::get_default_ulps;
+using test_utils::make_iota_vector;
 using test_utils::vector_match_ulps;
 using test_utils::vector_match;
 using test_utils::vector_near;
@@ -370,7 +372,8 @@ TEST_F(TensorBackwardTest, CheckSqrt) {
     Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
     dev->sqrt_bw(x, y, gy, gx);
     const vector<float> gx_val {5, -.5, .5, -1./3, 10, -1, .25, -1./6};
-    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(
+          gx_val, gx.to_vector(), get_default_ulps(*dev)));
   }
 }
 
@@ -387,7 +390,8 @@ TEST_F(TensorBackwardTest, CheckExp) {
       1, -2.7182818, 14.778112, -40.171074,
       2, -.73575888, .13533528, -.049787068,
     };
-    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    EXPECT_TRUE(
+        vector_match_ulps(gx_val, gx.to_vector(), get_default_ulps(*dev)));
   }
 }
 
@@ -401,7 +405,8 @@ TEST_F(TensorBackwardTest, CheckLog) {
     Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
     dev->log_bw(x, y, gy, gx);
     const vector<float> gx_val { 100, -1, 1, -2./3, 200, -2, .5, -1./3 };
-    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(
+          gx_val, gx.to_vector(), get_default_ulps(*dev)));
   }
 }
 
@@ -418,7 +423,12 @@ TEST_F(TensorBackwardTest, CheckTanh) {
       1, -.41997434, .14130165, -.019732074,
       2, -.83994868, .070650825, -.0098660372,
     };
-    EXPECT_TRUE(vector_near(gx_val, gx.to_vector(), 1e-6));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 150000
+      : 96;
+    EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
   }
 }
 
@@ -435,7 +445,14 @@ TEST_F(TensorBackwardTest, CheckSigmoid) {
       .25, -.19661193, .20998717, -.090353319,
       .5, -.39322387, .10499359, -.045176660,
     };
-    EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), 6));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 32768
+      : dev_type == Device::DeviceType::EIGEN ? 6
+      : dev_type == Device::DeviceType::OPENCL ? 6
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
   }
 }
 
@@ -452,7 +469,13 @@ TEST_F(TensorBackwardTest, CheckSoftplus) {
       .5, -.73105858, 1.7615942, -1.9051483,
       1, -.53788284, .11920292, -.047425873,
     };
-    EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), 6));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::EIGEN ? 6
+      : dev_type == Device::DeviceType::OPENCL ? 6
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
   }
 }
 
@@ -469,7 +492,8 @@ TEST_F(TensorBackwardTest, CheckSin) {
       1, -.54030231, -.83229367, 1.9799850,
       2, -1.0806046, -.41614684, .98999250,
     };
-    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(
+          gx_val, gx.to_vector(), get_default_ulps(*dev)));
   }
 }
 
@@ -486,7 +510,8 @@ TEST_F(TensorBackwardTest, CheckCos) {
       0, .84147098, -1.8185949, .28224002,
       0, -1.6829420, .90929743, -.14112001,
     };
-    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    EXPECT_TRUE(vector_match_ulps(
+          gx_val, gx.to_vector(), get_default_ulps(*dev)));
   }
 }
 
@@ -503,7 +528,12 @@ TEST_F(TensorBackwardTest, CheckTan) {
       1, -3.4255188, 11.548798, -2.0406390,
       2, -6.8510376, 5.7743992, -1.0203195,
     };
-    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
   }
 }
 
@@ -578,7 +608,8 @@ TEST_F(TensorBackwardTest, CheckMultiplyConst) {
       const vector<float> gx_val {
         k, -k, 2 *k, -2 * k, 2 * k, -2 * k, k, -k,
       };
-      EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            gx_val, gx.to_vector(), get_default_ulps(*dev)));
     }
   }
 }
@@ -597,7 +628,8 @@ TEST_F(TensorBackwardTest, CheckDivideConstR) {
       const vector<float> gx_val {
         1 / k, -1 / k, 2 / k, -2 / k, 2 / k, -2 / k, 1 / k, -1 / k,
       };
-      EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            gx_val, gx.to_vector(), get_default_ulps(*dev)));
     }
   }
 }
@@ -614,16 +646,21 @@ TEST_F(TensorBackwardTest, CheckDivideConstL) {
       Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
       dev->divide_const_l_bw(x, y, gy, k, gx);
       const vector<float> gx_val {
-       -100 * k, k, -k / 2, 2 * k / 9, -200 * k, 2 * k, -k / 4, k / 9,
+        -100 * k, k, -k / 2, 2 * k / 9, -200 * k, 2 * k, -k / 4, k / 9,
       };
-      EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+
+      const auto dev_type = dev->type();
+      const std::uint32_t ulps
+        = dev_type == Device::DeviceType::CUDA16 ? 8192
+        : get_default_ulps(*dev);
+      EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
     }
   }
 }
 
 TEST_F(TensorBackwardTest, CheckPowConstR) {
   const vector<float> x_val {1, 2, 4, 8, 16, 32, 64, 128};
-  const vector<float> ks {2., 1., .5, 0, -.5, -1., -2., -4.};
+  const vector<float> ks {1., .5, .25, 0, -.125, -.25, -.5, -.1};
   auto fgx = [](float x, float k) { return k * std::pow(x, k - 1); };
 
   for (const float k : ks) {
@@ -636,13 +673,18 @@ TEST_F(TensorBackwardTest, CheckPowConstR) {
       const Tensor gy = dev->new_tensor_by_constant(y.shape(), 1);
       Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
       dev->pow_const_r_bw(x, y, gy, k, gx);
-      EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+
+      const auto dev_type = dev->type();
+      const std::uint32_t ulps
+        = dev_type == Device::DeviceType::CUDA16 ? 8192
+        : get_default_ulps(*dev);
+      EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
     }
   }
 }
 
 TEST_F(TensorBackwardTest, CheckPowConstL) {
-  const vector<float> x_val {2., 1., .5, 0, -.5, -1., -2., -4.};
+  const vector<float> x_val {1., .5, .25, 0, -.125, -.25, -.5, -1.};
   const vector<float> ks {1, 2, 4, 8, 16, 32, 64, 128};
   auto fgx = [](float x, float k) { return std::log(k) * std::pow(k, x); };
 
@@ -656,7 +698,12 @@ TEST_F(TensorBackwardTest, CheckPowConstL) {
       const Tensor gy = dev->new_tensor_by_constant(y.shape(), 1);
       Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
       dev->pow_const_l_bw(x, y, gy, k, gx);
-      EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+
+      const auto dev_type = dev->type();
+      const std::uint32_t ulps
+        = dev_type == Device::DeviceType::CUDA16 ? 8192
+        : get_default_ulps(*dev);
+      EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
     }
   }
 }
@@ -675,7 +722,8 @@ TEST_F(TensorBackwardTest, CheckPReLU) {
       const vector<float> gx_val {
         k, -1, 2, -2, 2 * k, -2 * k, k, -k,
       };
-      EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+      EXPECT_TRUE(vector_match_ulps(
+            gx_val, gx.to_vector(), get_default_ulps(*dev)));
     }
   }
 }
@@ -695,7 +743,12 @@ TEST_F(TensorBackwardTest, CheckELU) {
         k, -1, 2, -2,
         2 * k, -7.3575888e-01f * k, 1.3533528e-01f * k, -4.9787068e-02f * k,
       };
-      EXPECT_TRUE(vector_near(gx_val, gx.to_vector(), 1e-5));
+
+      const auto dev_type = dev->type();
+      const std::uint32_t ulps
+        = dev_type == Device::DeviceType::CUDA16 ? 75000
+        : 12;
+      EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
     }
   }
 }
@@ -922,8 +975,13 @@ TEST_F(TensorBackwardTest, CheckDivide11) {
     dev->divide_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {.1, -1};
     const vector<float> gb_val {-.01, 10};
-    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
-    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(ga_val, ga.to_vector(), ulps));
+    EXPECT_TRUE(vector_match_ulps(gb_val, gb.to_vector(), ulps));
   }
 }
 
@@ -938,8 +996,13 @@ TEST_F(TensorBackwardTest, CheckDivideNN) {
     dev->divide_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {.1, -1, -.2, 2};
     const vector<float> gb_val {-.01, 10, .02, -20};
-    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
-    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(ga_val, ga.to_vector(), ulps));
+    EXPECT_TRUE(vector_match_ulps(gb_val, gb.to_vector(), ulps));
   }
 }
 
@@ -954,8 +1017,13 @@ TEST_F(TensorBackwardTest, CheckDivide1N) {
     dev->divide_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {-.1, 1};
     const vector<float> gb_val {-.01, 10, -.02, 20};
-    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
-    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(ga_val, ga.to_vector(), ulps));
+    EXPECT_TRUE(vector_match_ulps(gb_val, gb.to_vector(), ulps));
   }
 }
 
@@ -970,8 +1038,13 @@ TEST_F(TensorBackwardTest, CheckDivideN1) {
     dev->divide_bw(a, b, y, gy, ga, gb);
     const vector<float> ga_val {.1, -1, .2, -2};
     const vector<float> gb_val {.01, -10};
-    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
-    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(ga_val, ga.to_vector(), ulps));
+    EXPECT_TRUE(vector_match_ulps(gb_val, gb.to_vector(), ulps));
   }
 }
 
@@ -995,8 +1068,13 @@ TEST_F(TensorBackwardTest, CheckPow11) {
     Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
     Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->pow_bw(a, b, y, gy, ga, gb);
-    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
-    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(ga_val, ga.to_vector(), ulps));
+    EXPECT_TRUE(vector_match_ulps(gb_val, gb.to_vector(), ulps));
   }
 }
 
@@ -1005,7 +1083,7 @@ TEST_F(TensorBackwardTest, CheckPowNN) {
   auto fgb = [](float a, float b) { return std::log(a) * std::pow(a, b); };
 
   const vector<float> a_val {1, 2, 4, 8, 16, 32, 64, 128};
-  const vector<float> b_val {3, 2, 1, 0, -1, -2, -3, -4};
+  const vector<float> b_val {1, .5, .25, 0, -.125, -.25, -.5, -1.};
   vector<float> ga_val, gb_val;
   for (std::size_t i = 0; i < a_val.size(); ++i) {
     ga_val.emplace_back(fga(a_val[i], b_val[i]));
@@ -1020,8 +1098,13 @@ TEST_F(TensorBackwardTest, CheckPowNN) {
     Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
     Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->pow_bw(a, b, y, gy, ga, gb);
-    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
-    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(ga_val, ga.to_vector(), ulps));
+    EXPECT_TRUE(vector_match_ulps(gb_val, gb.to_vector(), ulps));
   }
 }
 
@@ -1046,8 +1129,13 @@ TEST_F(TensorBackwardTest, CheckPow1N) {
     Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
     Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->pow_bw(a, b, y, gy, ga, gb);
-    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
-    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(ga_val, ga.to_vector(), ulps));
+    EXPECT_TRUE(vector_match_ulps(gb_val, gb.to_vector(), ulps));
   }
 }
 
@@ -1072,8 +1160,13 @@ TEST_F(TensorBackwardTest, CheckPowN1) {
     Tensor ga = dev->new_tensor_by_constant(a.shape(), 0);
     Tensor gb = dev->new_tensor_by_constant(b.shape(), 0);
     dev->pow_bw(a, b, y, gy, ga, gb);
-    EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
-    EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(ga_val, ga.to_vector(), ulps));
+    EXPECT_TRUE(vector_match_ulps(gb_val, gb.to_vector(), ulps));
   }
 }
 
@@ -1146,6 +1239,1036 @@ TEST_F(TensorBackwardTest, CheckMatMulN1) {
     EXPECT_TRUE(vector_match(ga_val, ga.to_vector()));
     EXPECT_TRUE(vector_match(gb_val, gb.to_vector()));
   }
+}
+
+#define TEST_CONV2D(pad0, pad1, str0, str1, dil0, dil1) { \
+  const vector<float> x_data = make_iota_vector(x_shape.size(), 1); \
+  const vector<float> w_data = make_iota_vector(w_shape.size(), 1); \
+  const vector<float> gy_data(y_shape.size(), 1); \
+  for (Device *dev : devices) try { \
+    const Tensor x = dev->new_tensor_by_vector(x_shape, x_data); \
+    const Tensor w = dev->new_tensor_by_vector(w_shape, w_data); \
+    const Tensor y = dev->conv2d_fw( \
+        x, w, pad0, pad1, str0, str1, dil0, dil1); \
+    const Tensor gy = dev->new_tensor_by_vector(y_shape, gy_data); \
+    Tensor gx = dev->new_tensor_by_constant(x_shape, 1); \
+    Tensor gw = dev->new_tensor_by_constant(w_shape, 1); \
+    dev->conv2d_bw( \
+        x, w, y, gy, pad0, pad1, str0, str1, dil0, dil1, gx, gw); \
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector())); \
+    EXPECT_TRUE(vector_match(gw_data, gw.to_vector())); \
+  } IGNORE_NOT_IMPLEMENTED \
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_1x1x1_1x1x1x1) {
+  const Shape x_shape {};
+  const Shape w_shape {};
+  const Shape y_shape {};
+  const vector<float> gx_data {2};
+  const vector<float> gw_data {2};
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x1x1_1x1x1x1) {
+  const Shape x_shape {5};
+  const Shape w_shape {};
+  const Shape y_shape {5};
+  const vector<float> gx_data {2, 2, 2, 2, 2};
+  const vector<float> gw_data {16};
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x1x1_2x1x1x1) {
+  const Shape x_shape {5};
+  const Shape w_shape {2};
+  const Shape y_shape {4};
+  const vector<float> gx_data {3, 4, 4, 4, 2};
+  const vector<float> gw_data {15, 11};
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x1x1_5x1x1x1) {
+  const Shape x_shape {5};
+  const Shape w_shape {5};
+  const Shape y_shape {};
+  const vector<float> gx_data {6, 5, 4, 3, 2};
+  const vector<float> gw_data {6, 5, 4, 3, 2};
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_1x5x1_1x1x1x1) {
+  const Shape x_shape {1, 5};
+  const Shape w_shape {};
+  const Shape y_shape {1, 5};
+  const vector<float> gx_data {2, 2, 2, 2, 2};
+  const vector<float> gw_data {16};
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_1x5x1_1x2x1x1) {
+  const Shape x_shape {1, 5};
+  const Shape w_shape {1, 2};
+  const Shape y_shape {1, 4};
+  const vector<float> gx_data {3, 4, 4, 4, 2};
+  const vector<float> gw_data {15, 11};
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_1x5x1_1x5x1x1) {
+  const Shape x_shape {1, 5};
+  const Shape w_shape {1, 5};
+  const Shape y_shape {};
+  const vector<float> gx_data {6, 5, 4, 3, 2};
+  const vector<float> gw_data {6, 5, 4, 3, 2};
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_1x1x1x1) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {};
+  const Shape y_shape {5, 5};
+  const vector<float> gx_data {
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+  };
+  const vector<float> gw_data {326};
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x1x1x1) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2};
+  const Shape y_shape {4, 5};
+  const vector<float> gx_data {
+    3, 4, 4, 4, 2,
+    3, 4, 4, 4, 2,
+    3, 4, 4, 4, 2,
+    3, 4, 4, 4, 2,
+    3, 4, 4, 4, 2,
+  };
+  const vector<float> gw_data {
+    271, 251,
+  };
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_5x1x1x1) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {5, 1};
+  const Shape y_shape {1, 5};
+  const vector<float> gx_data {
+    6, 5, 4, 3, 2,
+    6, 5, 4, 3, 2,
+    6, 5, 4, 3, 2,
+    6, 5, 4, 3, 2,
+    6, 5, 4, 3, 2,
+  };
+  const vector<float> gw_data {
+    76, 71, 66, 61, 56,
+  };
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_1x2x1x1) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {1, 2};
+  const Shape y_shape {5, 4};
+  const vector<float> gx_data {
+    3, 3, 3, 3, 3,
+    4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4,
+    2, 2, 2, 2, 2,
+  };
+  const vector<float> gw_data {
+    311,
+    211,
+  };
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {4, 4};
+  const vector<float> gx_data {
+    5,  8,  8,  8, 4,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    3,  4,  4,  4, 2,
+  };
+  const vector<float> gw_data {
+    257, 241,
+    177, 161,
+  };
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_5x2x1x1) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {5, 2};
+  const Shape y_shape {1, 4};
+  const vector<float> gx_data {
+    11, 10,  9,  8, 7,
+    16, 14, 12, 10, 8,
+    16, 14, 12, 10, 8,
+    16, 14, 12, 10, 8,
+     6,  5,  4,  3, 2,
+  };
+  const vector<float> gw_data {
+    71, 67, 63, 59, 55,
+    51, 47, 43, 39, 35,
+  };
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_1x5x1x1) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {1, 5};
+  const Shape y_shape {5};
+  const vector<float> gx_data {
+    6, 6, 6, 6, 6,
+    5, 5, 5, 5, 5,
+    4, 4, 4, 4, 4,
+    3, 3, 3, 3, 3,
+    2, 2, 2, 2, 2,
+  };
+  const vector<float> gw_data {
+    116,
+     91,
+     66,
+     41,
+     16,
+  };
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x5x1x1) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 5};
+  const Shape y_shape {4};
+  const vector<float> gx_data {
+    11, 20, 20, 20, 10,
+     9, 16, 16, 16,  8,
+     7, 12, 12, 12,  6,
+     5,  8,  8,  8,  4,
+     3,  4,  4,  4,  2,
+  };
+  const vector<float> gw_data {
+    95, 91,
+    75, 71,
+    55, 51,
+    35, 31,
+    15, 11,
+  };
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_5x5x1x1) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {5, 5};
+  const Shape y_shape {};
+  const vector<float> gx_data {
+    26, 25, 24, 23, 22,
+    21, 20, 19, 18, 17,
+    16, 15, 14, 13, 12,
+    11, 10,  9,  8,  7,
+     6,  5,  4,  3,  2,
+  };
+  const vector<float> gw_data {
+    26, 25, 24, 23, 22,
+    21, 20, 19, 18, 17,
+    16, 15, 14, 13, 12,
+    11, 10,  9,  8,  7,
+     6,  5,  4,  3,  2,
+  };
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x3_2x2x3x1) {
+  const Shape x_shape {5, 5, 3};
+  const Shape w_shape {2, 2, 3};
+  const Shape y_shape {4, 4};
+  const vector<float> gx_data {
+    // channel 1
+    5,  8,  8,  8, 4,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    3,  4,  4,  4, 2,
+    // channel 2
+     9, 16, 16, 16,  8,
+    15, 27, 27, 27, 13,
+    15, 27, 27, 27, 13,
+    15, 27, 27, 27, 13,
+     7, 12, 12, 12,  6,
+    // channel 3
+    13, 24, 24, 24, 12,
+    23, 43, 43, 43, 21,
+    23, 43, 43, 43, 21,
+    23, 43, 43, 43, 21,
+    11, 20, 20, 20, 10,
+  };
+  const vector<float> gw_data {
+    // channel 1-1
+    257, 241,
+    177, 161,
+    // channel 2-1
+    657, 641,
+    577, 561,
+    // channel 3-1
+    1057, 1041,
+     977,  961,
+  };
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x3) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2, 1, 3};
+  const Shape y_shape {4, 4, 3};
+  const vector<float> gx_data {
+    25, 46, 46, 46, 22,
+    43, 79, 79, 79, 37,
+    43, 79, 79, 79, 37,
+    43, 79, 79, 79, 37,
+    19, 34, 34, 34, 16,
+  };
+  const vector<float> gw_data {
+    // channel 1-1
+    257, 241,
+    177, 161,
+    // channel 2-1
+    257, 241,
+    177, 161,
+    // channel 3-1
+    257, 241,
+    177, 161,
+  };
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x3_2x2x3x3) {
+  const Shape x_shape {5, 5, 3};
+  const Shape w_shape {2, 2, 3, 3};
+  const Shape y_shape {4, 4, 3};
+  const vector<float> gx_data {
+    // channel 1
+    49,  94,  94,  94, 46,
+    91, 175, 175, 175, 85,
+    91, 175, 175, 175, 85,
+    91, 175, 175, 175, 85,
+    43,  82,  82,  82, 40,
+    // channel 2
+     61, 118, 118, 118,  58,
+    115, 223, 223, 223, 109,
+    115, 223, 223, 223, 109,
+    115, 223, 223, 223, 109,
+     55, 106, 106, 106,  52,
+    // channel 3
+     73, 142, 142, 142,  70,
+    139, 271, 271, 271, 133,
+    139, 271, 271, 271, 133,
+    139, 271, 271, 271, 133,
+     67, 130, 130, 130,  64,
+  };
+  const vector<float> gw_data {
+    // channel 1-1
+    257, 241,
+    177, 161,
+    // channel 2-1
+    657, 641,
+    577, 561,
+    // channel 3-1
+    1057, 1041,
+     977,  961,
+    // channel 1-2
+    257, 241,
+    177, 161,
+    // channel 2-2
+    657, 641,
+    577, 561,
+    // channel 3-2
+    1057, 1041,
+     977,  961,
+    // channel 1-3
+    257, 241,
+    177, 161,
+    // channel 2-3
+    657, 641,
+    577, 561,
+    // channel 3-3
+    1057, 1041,
+     977,  961,
+  };
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_Padding10) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {6, 4};
+  const vector<float> gx_data {
+     8,  8,  8,  8,  8,
+    11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11,
+     4,  4,  4,  4,  4,
+  };
+  const vector<float> gw_data {
+    311, 311,
+    211, 211,
+  };
+  TEST_CONV2D(1, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_Padding01) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {4, 6};
+  const vector<float> gx_data {
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+  };
+  const vector<float> gw_data {
+    271, 251,
+    271, 251,
+  };
+  TEST_CONV2D(0, 1, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_Padding11) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {6, 6};
+  const vector<float> gx_data {
+    11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11,
+  };
+  const vector<float> gw_data {
+    326, 326,
+    326, 326,
+  };
+  TEST_CONV2D(1, 1, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_Stride21) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {2, 4};
+  const vector<float> gx_data {
+    5, 4, 5, 4, 1,
+    7, 5, 7, 5, 1,
+    7, 5, 7, 5, 1,
+    7, 5, 7, 5, 1,
+    3, 2, 3, 2, 1,
+  };
+  const vector<float> gw_data {
+    125, 117,
+     85,  77,
+  };
+  TEST_CONV2D(0, 0, 2, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_Stride12) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {4, 2};
+  const vector<float> gx_data {
+    5, 8, 8, 8, 4,
+    3, 4, 4, 4, 2,
+    5, 8, 8, 8, 4,
+    3, 4, 4, 4, 2,
+    1, 1, 1, 1, 1,
+  };
+  const vector<float> gw_data {
+    109, 101,
+     69,  61,
+  };
+  TEST_CONV2D(0, 0, 1, 2, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_Stride22) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {2, 2};
+  const vector<float> gx_data {
+    5, 4, 5, 4, 1,
+    3, 2, 3, 2, 1,
+    5, 4, 5, 4, 1,
+    3, 2, 3, 2, 1,
+    1, 1, 1, 1, 1,
+  };
+  const vector<float> gw_data {
+    53, 49,
+    33, 29,
+  };
+  TEST_CONV2D(0, 0, 2, 2, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_Dilation21) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {3, 4};
+  const vector<float> gx_data {
+    5, 5,  8, 4, 4,
+    7, 7, 11, 5, 5,
+    7, 7, 11, 5, 5,
+    7, 7, 11, 5, 5,
+    3, 3,  4, 2, 2,
+  };
+  const vector<float> gw_data {
+    199, 175,
+    139, 115,
+  };
+  TEST_CONV2D(0, 0, 1, 1, 2, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_Dilation12) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {4, 3};
+  const vector<float> gx_data {
+    5,  8,  8,  8, 4,
+    5,  8,  8,  8, 4,
+    7, 11, 11, 11, 5,
+    3,  4,  4,  4, 2,
+    3,  4,  4,  4, 2,
+  };
+  const vector<float> gw_data {
+    223, 211,
+    103,  91,
+  };
+  TEST_CONV2D(0, 0, 1, 1, 1, 2);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_Dilation22) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape {2, 2};
+  const Shape y_shape {3, 3};
+  const vector<float> gx_data {
+    5, 5,  8, 4, 4,
+    5, 5,  8, 4, 4,
+    7, 7, 11, 5, 5,
+    3, 3,  4, 2, 2,
+    3, 3,  4, 2, 2,
+  };
+  const vector<float> gw_data {
+    172, 154,
+     82,  64,
+  };
+  TEST_CONV2D(0, 0, 1, 1, 2, 2);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_N1) {
+  const Shape x_shape({5, 5}, 3);
+  const Shape w_shape {2, 2};
+  const Shape y_shape({4, 4}, 3);
+  const vector<float> gx_data {
+    // minibatch 1
+    5,  8,  8,  8, 4,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    3,  4,  4,  4, 2,
+    // minibatch 2
+    5,  8,  8,  8, 4,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    3,  4,  4,  4, 2,
+    // minibatch 3
+    5,  8,  8,  8, 4,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    3,  4,  4,  4, 2,
+  };
+  const vector<float> gw_data {
+    1969, 1921,
+    1729, 1681,
+  };
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_1N) {
+  const Shape x_shape {5, 5};
+  const Shape w_shape({2, 2}, 3);
+  const Shape y_shape({4, 4}, 3);
+  const vector<float> gx_data {
+    25, 46, 46, 46, 22,
+    43, 79, 79, 79, 37,
+    43, 79, 79, 79, 37,
+    43, 79, 79, 79, 37,
+    19, 34, 34, 34, 16,
+  };
+  const vector<float> gw_data {
+    // minibatch 1
+    257, 241,
+    177, 161,
+    // minibatch 2
+    257, 241,
+    177, 161,
+    // minibatch 3
+    257, 241,
+    177, 161,
+  };
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckConv2D_5x5x1_2x2x1x1_NN) {
+  const Shape x_shape({5, 5}, 3);
+  const Shape w_shape({2, 2}, 3);
+  const Shape y_shape({4, 4}, 3);
+  const vector<float> gx_data {
+    // minibatch 1
+    5,  8,  8,  8, 4,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    7, 11, 11, 11, 5,
+    3,  4,  4,  4, 2,
+    // minibatch 2
+     9, 16, 16, 16,  8,
+    15, 27, 27, 27, 13,
+    15, 27, 27, 27, 13,
+    15, 27, 27, 27, 13,
+     7, 12, 12, 12,  6,
+    // minibatch 3
+    13, 24, 24, 24, 12,
+    23, 43, 43, 43, 21,
+    23, 43, 43, 43, 21,
+    23, 43, 43, 43, 21,
+    11, 20, 20, 20, 10,
+  };
+  const vector<float> gw_data {
+    // minibatch 1
+    257, 241,
+    177, 161,
+    // minibatch 2
+    657, 641,
+    577, 561,
+    // minibatch 3
+    1057, 1041,
+     977,  961,
+  };
+  TEST_CONV2D(0, 0, 1, 1, 1, 1);
+}
+
+#undef TEST_CONV2D
+
+TEST_F(TensorBackwardTest, CheckConv2D_VGG16FirstLayer) {
+  const Shape x_shape {224, 224, 3};
+  const Shape w_shape {3, 3, 3, 64};
+  const Shape y_shape {224, 224, 64};
+  vector<float> gx_data(224 * 224 * 3, 1 + 3 * 3 * 64);
+  for (unsigned b = 0; b < 3; ++b) {
+    float *pgx = gx_data.data() + b * 224 * 224;
+    pgx[0] += 64;
+    pgx[223] += 64;
+    pgx[223 * 224] += 64;
+    pgx[223 * 224 + 223] += 64;
+    for (unsigned i = 0; i < 224; ++i) {
+      pgx[i] -= 3 * 64;
+      pgx[223 * 224 + i] -= 3 * 64;
+      pgx[i * 224] -= 3 * 64;
+      pgx[i * 224 + 223] -= 3 * 64;
+    }
+  }
+  vector<float> gw_data(3 * 3 * 3 * 64, 1 + 224 * 224);
+  for (unsigned b = 0; b < 3 * 64; ++b) {
+    float *pgw = gw_data.data() + b * 3 * 3;
+    pgw[0] += -2 * 224 + 1;
+    pgw[1] += -224;
+    pgw[2] += -2 * 224 + 1;
+    pgw[3] += -224;
+    //pgw[4] += 0;
+    pgw[5] += -224;
+    pgw[6] += -2 * 224 + 1;
+    pgw[7] += -224;
+    pgw[8] += -2 * 224 + 1;
+  }
+
+  const vector<float> x_data(x_shape.size(), 1);
+  const vector<float> w_data(w_shape.size(), 1);
+  const vector<float> gy_data(y_shape.size(), 1);
+
+  for (Device *dev : devices) try {
+    const Tensor x = dev->new_tensor_by_vector(x_shape, x_data);
+    const Tensor w = dev->new_tensor_by_vector(w_shape, w_data);
+    const Tensor y = dev->conv2d_fw(x, w, 1, 1, 1, 1, 1, 1);
+    const Tensor gy = dev->new_tensor_by_vector(y_shape, gy_data);
+    Tensor gx = dev->new_tensor_by_constant(x_shape, 1);
+    Tensor gw = dev->new_tensor_by_constant(w_shape, 1);
+    dev->conv2d_bw(x, w, y, gy, 1, 1, 1, 1, 1, 1, gx, gw);
+
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
+
+    const auto dev_type = dev->type();
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::CUDA16 ? 65536
+      : get_default_ulps(*dev);
+    EXPECT_TRUE(vector_match_ulps(gw_data, gw.to_vector(), ulps));
+  } IGNORE_NOT_IMPLEMENTED
+}
+
+#define TEST_MAX_POOL2D(win0, win1, pad0, pad1, str0, str1) { \
+  const vector<float> x_data = make_iota_vector(x_shape.size(), 1); \
+  const vector<float> gy_data(y_shape.size(), 1); \
+  for (Device *dev : devices) try { \
+    const Tensor x = dev->new_tensor_by_vector(x_shape, x_data); \
+    const Tensor y = dev->max_pool2d_fw( \
+        x, win0, win1, pad0, pad1, str0, str1); \
+    const Tensor gy = dev->new_tensor_by_vector(y_shape, gy_data); \
+    Tensor gx = dev->new_tensor_by_constant(x_shape, 1); \
+    dev->max_pool2d_bw(x, y, gy, win0, win1, pad0, pad1, str0, str1, gx); \
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector())); \
+  } IGNORE_NOT_IMPLEMENTED \
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_1x1x1_1x1) {
+  const Shape x_shape {};
+  const Shape y_shape {};
+  const vector<float> gx_data {2};
+  TEST_MAX_POOL2D(1, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x1x1_1x1) {
+  const Shape x_shape {5};
+  const Shape y_shape {5};
+  const vector<float> gx_data {2, 2, 2, 2, 2};
+  TEST_MAX_POOL2D(1, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x1x1_2x1) {
+  const Shape x_shape {5};
+  const Shape y_shape {4};
+  const vector<float> gx_data {1, 2, 2, 2, 2};
+  TEST_MAX_POOL2D(2, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x1x1_5x1) {
+  const Shape x_shape {5};
+  const Shape y_shape {};
+  const vector<float> gx_data {1, 1, 1, 1, 2};
+  TEST_MAX_POOL2D(5, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_1x5x1_1x1) {
+  const Shape x_shape {1, 5};
+  const Shape y_shape {1, 5};
+  const vector<float> gx_data {2, 2, 2, 2, 2};
+  TEST_MAX_POOL2D(1, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_1x5x1_1x2) {
+  const Shape x_shape {1, 5};
+  const Shape y_shape {1, 4};
+  const vector<float> gx_data {1, 2, 2, 2, 2};
+  TEST_MAX_POOL2D(1, 2, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_1x5x1_1x5) {
+  const Shape x_shape {1, 5};
+  const Shape y_shape {};
+  const vector<float> gx_data {1, 1, 1, 1, 2};
+  TEST_MAX_POOL2D(1, 5, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_1x1) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {5, 5};
+  const vector<float> gx_data {
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+  };
+  TEST_MAX_POOL2D(1, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x1) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {4, 5};
+  const vector<float> gx_data {
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+  };
+  TEST_MAX_POOL2D(2, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_5x1) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {1, 5};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 2,
+    1, 1, 1, 1, 2,
+    1, 1, 1, 1, 2,
+    1, 1, 1, 1, 2,
+    1, 1, 1, 1, 2,
+  };
+  TEST_MAX_POOL2D(5, 1, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_1x2) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {5, 4};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2,
+  };
+  TEST_MAX_POOL2D(1, 2, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x2) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {4, 4};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+  };
+  TEST_MAX_POOL2D(2, 2, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_5x2) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {1, 4};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 2,
+    1, 1, 1, 1, 2,
+    1, 1, 1, 1, 2,
+    1, 1, 1, 1, 2,
+  };
+  TEST_MAX_POOL2D(5, 2, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_1x5) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {5};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    2, 2, 2, 2, 2,
+  };
+  TEST_MAX_POOL2D(1, 5, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x5) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {4};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+  };
+  TEST_MAX_POOL2D(2, 5, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_5x5) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 2,
+  };
+  TEST_MAX_POOL2D(5, 5, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x3_2x2) {
+  const Shape x_shape {5, 5, 3};
+  const Shape y_shape {4, 4, 3};
+  const vector<float> gx_data {
+    // channel 1
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    // channel 2
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    // channel 3
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+  };
+  TEST_MAX_POOL2D(2, 2, 0, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x2_Padding10) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {6, 4};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    2, 2, 2, 2, 3,
+    2, 2, 2, 2, 3,
+    2, 2, 2, 2, 3,
+    2, 2, 2, 2, 3,
+  };
+  TEST_MAX_POOL2D(2, 2, 1, 0, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x2_Padding01) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {4, 6};
+  const vector<float> gx_data {
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 3, 3, 3, 3,
+  };
+  TEST_MAX_POOL2D(2, 2, 0, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x2_Padding11) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {6, 6};
+  const vector<float> gx_data {
+    2, 2, 2, 2, 3,
+    2, 2, 2, 2, 3,
+    2, 2, 2, 2, 3,
+    2, 2, 2, 2, 3,
+    3, 3, 3, 3, 5,
+  };
+  TEST_MAX_POOL2D(2, 2, 1, 1, 1, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x2_Stride21) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {2, 4};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    1, 2, 1, 2, 1,
+    1, 2, 1, 2, 1,
+    1, 2, 1, 2, 1,
+    1, 2, 1, 2, 1,
+  };
+  TEST_MAX_POOL2D(2, 2, 0, 0, 2, 1);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x2_Stride12) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {4, 2};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+    1, 1, 1, 1, 1,
+  };
+  TEST_MAX_POOL2D(2, 2, 0, 0, 1, 2);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x2_Stride22) {
+  const Shape x_shape {5, 5};
+  const Shape y_shape {2, 2};
+  const vector<float> gx_data {
+    1, 1, 1, 1, 1,
+    1, 2, 1, 2, 1,
+    1, 1, 1, 1, 1,
+    1, 2, 1, 2, 1,
+    1, 1, 1, 1, 1,
+  };
+  TEST_MAX_POOL2D(2, 2, 0, 0, 2, 2);
+}
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_5x5x1_2x2_N) {
+  const Shape x_shape({5, 5}, 3);
+  const Shape y_shape({4, 4}, 3);
+  const vector<float> gx_data {
+    // minibatch 1
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    // minibatch 2
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    // minibatch 3
+    1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+    1, 2, 2, 2, 2,
+  };
+  TEST_MAX_POOL2D(2, 2, 0, 0, 1, 1);
+}
+
+#undef TEST_MAX_POOL2D
+
+TEST_F(TensorBackwardTest, CheckMaxPool2D_VGG16ThirdLayer) {
+  const Shape x_shape {224, 224, 64};
+  const Shape y_shape {112, 112, 64};
+
+  vector<float> x_data(224 * 224 * 64);
+  for (unsigned b = 0; b < 64; ++b) {
+    float *px = x_data.data() + b * 224 * 224;
+    for (unsigned x = 0; x < 224; ++x) {
+      float *px2 = px + x * 224;
+      for (unsigned y = 0; y < 224; ++y) {
+        px2[y] = x + y;
+      }
+    }
+  }
+
+  vector<float> gx_data(224 * 224 * 64, 1);
+  for (unsigned b = 0; b < 64; ++b) {
+    float *pgx = gx_data.data() + b * 224 * 224;
+    for (unsigned x = 1; x < 224; x += 2) {
+      float *pgx2 = pgx + x * 224;
+      for (unsigned y = 1; y < 224; y += 2) {
+        pgx2[y] += 1;
+      }
+    }
+  }
+
+  const vector<float> gy_data(y_shape.size(), 1);
+
+  for (Device *dev : devices) try {
+    const Tensor x = dev->new_tensor_by_vector(x_shape, x_data);
+    const Tensor y = dev->max_pool2d_fw(x, 2, 2, 0, 0, 2, 2);
+    const Tensor gy = dev->new_tensor_by_vector(y_shape, gy_data);
+    Tensor gx = dev->new_tensor_by_constant(x_shape, 1);
+    dev->max_pool2d_bw(x, y, gy, 2, 2, 0, 0, 2, 2, gx);
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
+  } IGNORE_NOT_IMPLEMENTED
 }
 
 }  // namespace primitiv

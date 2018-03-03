@@ -10,7 +10,7 @@ using std::vector;
 
 #define CHECK_DEVICE(x) \
   if (&(x).device() != this) { \
-    THROW_ERROR( \
+    PRIMITIV_THROW_ERROR( \
         "Device mismatched. &(" #x ").device(): " << &(x).device() \
         << " != this: " << this); \
   }
@@ -70,7 +70,7 @@ void Device::reset_tensor_by_array(const float values[], Tensor &x) {
 void Device::reset_tensor_by_vector(const vector<float> &values, Tensor &x) {
   CHECK_DEVICE(x);
   if (values.size() != x.shape().size()) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Data sizes mismatched. required: " << x.shape().size()
         << " (shape: " << x.shape().to_string() << ") != actual: "
         << values.size());
@@ -81,7 +81,7 @@ void Device::reset_tensor_by_vector(const vector<float> &values, Tensor &x) {
 Tensor Device::copy_tensor(const Tensor &x) {
   // NOTE(odashi):
   // This function should return always different memory with x.
-  if (!x.valid()) THROW_ERROR("Attempted to copy an invalid tensor.");
+  if (!x.valid()) PRIMITIV_THROW_ERROR("Attempted to copy an invalid tensor.");
   Tensor y = new_raw_tensor(x.shape());
   copy_tensor_impl(x, y);
   return y;
@@ -89,7 +89,7 @@ Tensor Device::copy_tensor(const Tensor &x) {
 
 Tensor Device::identity(std::uint32_t size) {
   if (size == 0) {
-    THROW_ERROR("Invalid size of the identity matrix: " << size);
+    PRIMITIV_THROW_ERROR("Invalid size of the identity matrix: " << size);
   }
   Tensor y = new_raw_tensor({size, size});
   identity_impl(y);
@@ -98,7 +98,7 @@ Tensor Device::identity(std::uint32_t size) {
 
 Tensor Device::random_bernoulli(const Shape &shape, float p) {
   if (p < 0 || p > 1) {
-    THROW_ERROR("Invalid Bernoulli probability: " << p);
+    PRIMITIV_THROW_ERROR("Invalid Bernoulli probability: " << p);
   }
   Tensor y = new_raw_tensor(shape);
   random_bernoulli_impl(p, y);
@@ -108,7 +108,7 @@ Tensor Device::random_bernoulli(const Shape &shape, float p) {
 Tensor Device::random_uniform(
     const Shape &shape, float lower, float upper) {
   if (upper < lower) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Invalid parameter of the uniform distribution. lower: " << lower
         << ", upper: " << upper);
   }
@@ -119,7 +119,7 @@ Tensor Device::random_uniform(
 
 Tensor Device::random_normal(const Shape &shape, float mean, float sd) {
   if (sd <= 0) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Invalid parameter of the normal distribution. mean: " << mean
         << ", SD: " << sd);
   }
@@ -130,7 +130,7 @@ Tensor Device::random_normal(const Shape &shape, float mean, float sd) {
 
 Tensor Device::random_log_normal(const Shape &shape, float mean, float sd) {
   if (sd <= 0) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Invalid parameter of the log-normal distribution. mean: " << mean
         << ", SD: " << sd);
   }
@@ -148,7 +148,8 @@ Tensor Device::pick_fw(
 }
 
 Tensor Device::slice_fw(
-    const Tensor &x, std::uint32_t dim, std::uint32_t lower, std::uint32_t upper) {
+    const Tensor &x, std::uint32_t dim,
+    std::uint32_t lower, std::uint32_t upper) {
   CHECK_DEVICE(x);
   Tensor y = new_raw_tensor(shape_ops::slice(x.shape(), dim, lower, upper));
   slice_fw_impl(x, dim, lower, y);
@@ -156,7 +157,7 @@ Tensor Device::slice_fw(
 }
 
 Tensor Device::concat_fw(const vector<const Tensor *> &xs, std::uint32_t dim) {
-  if (xs.empty()) THROW_ERROR("No tensors to concat.");
+  if (xs.empty()) PRIMITIV_THROW_ERROR("No tensors to concat.");
   vector<Shape> shapes;
   shapes.reserve(xs.size());
 
@@ -177,7 +178,7 @@ void Device::pick_bw(
   CHECK_DEVICE(gx);
   const Shape sy = shape_ops::pick(gx.shape(), ids, dim);
   if (gy.shape() != sy) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Shape mismatched. gy.shape(): " << gy.shape().to_string()
         << " != expected shape: " << sy.to_string());
   }
@@ -192,7 +193,7 @@ void Device::slice_bw(
   const Shape &sx = gx.shape();
   if (!sy.has_same_loo_dims(sx, dim) || !sy.has_compatible_batch(sx) ||
       offset + sy[dim] > sx[dim]) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Attempted to add gradients with shape "
         << sy.to_string() << ", dim " << dim << ", offset " << offset
         << " to shape" << sx.to_string() << '.');
@@ -219,7 +220,7 @@ void Device::name##_bw( \
   if (x.shape() != gx.shape() || \
       y.shape() != gy.shape() || \
       y.shape() != sop(x.shape())) { \
-    THROW_ERROR( \
+    PRIMITIV_THROW_ERROR( \
         "Shape mismatched at " #name "_bw" \
         << ". x.shape: " << x.shape().to_string() \
         << ", y.shape: " << y.shape().to_string() \
@@ -246,7 +247,7 @@ void Device::name##_bw( \
   CHECK_DEVICE(gx); \
   const Shape &s = x.shape(); \
   if (y.shape() != s || gy.shape() != s || gx.shape() != s) { \
-    THROW_ERROR( \
+    PRIMITIV_THROW_ERROR( \
         "Shape mismatched at " #name "_bw" \
         << ". x.shape: " << s.to_string() \
         << ", y.shape: " << y.shape().to_string() \
@@ -279,7 +280,7 @@ void Device::name##_bw( \
       b.shape() != gb.shape() || \
       y.shape() != gy.shape() || \
       y.shape() != sop(a.shape(), b.shape())) { \
-    THROW_ERROR( \
+    PRIMITIV_THROW_ERROR( \
         "Shape mismatched at " #name "_bw" \
         << ". a.shape: " << a.shape().to_string() \
         << ", b.shape: " << b.shape().to_string() \
@@ -325,6 +326,13 @@ DEV_FW_X_CONST(pow_const_l);
 DEV_FW_X_CONST(prelu);
 DEV_FW_X_CONST(elu);
 
+Tensor Device::pown_fw(const Tensor &x, std::int32_t k) {
+  CHECK_DEVICE(x);
+  Tensor y = new_raw_tensor(x.shape());
+  pown_fw_impl(x, k, y);
+  return y;
+}
+
 DEV_BW_X_CONST(add_const);
 DEV_BW_X_CONST(subtract_const_r);
 DEV_BW_X_CONST(subtract_const_l);
@@ -335,6 +343,25 @@ DEV_BW_X_CONST(pow_const_r);
 DEV_BW_X_CONST(pow_const_l);
 DEV_BW_X_CONST(prelu);
 DEV_BW_X_CONST(elu);
+
+void Device::pown_bw(
+    const Tensor &x, const Tensor &y, const Tensor &gy, std::int32_t k,
+    Tensor &gx) {
+  CHECK_DEVICE(x);
+  CHECK_DEVICE(y);
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(gx);
+  const Shape &s = x.shape();
+  if (y.shape() != s || gy.shape() != s || gx.shape() != s) {
+    PRIMITIV_THROW_ERROR(
+        "Shape mismatched at pown_bw"
+        << ". x.shape: " << s.to_string()
+        << ", y.shape: " << y.shape().to_string()
+        << ", gy.shape: " << gy.shape().to_string()
+        << ", gx.shape: " << gx.shape().to_string());
+  }
+  pown_bw_impl(x, y, gy, k, gx);
+}
 
 DEV_FW_AB(add_scalar, shape_ops::scalar_op);
 DEV_FW_AB(subtract_scalar_r, shape_ops::scalar_op);
@@ -352,12 +379,109 @@ DEV_FW_AB(divide, shape_ops::elementwise);
 DEV_FW_AB(pow, shape_ops::elementwise);
 DEV_FW_AB(matmul, shape_ops::matmul);
 
+Tensor Device::conv2d_fw(
+    const Tensor &x, const Tensor &w,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    std::uint32_t dilation0, std::uint32_t dilation1) {
+  CHECK_DEVICE(x);
+  CHECK_DEVICE(w);
+  Tensor y = new_raw_tensor(shape_ops::conv2d(
+        x.shape(), w.shape(),
+        padding0, padding1, stride0, stride1, dilation0, dilation1));
+  conv2d_fw_impl(
+      x, w, padding0, padding1, stride0, stride1, dilation0, dilation1, y);
+  return y;
+}
+
+Tensor Device::max_pool2d_fw(
+    const Tensor &x,
+    std::uint32_t window0, std::uint32_t window1,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1) {
+  CHECK_DEVICE(x);
+  Tensor y = new_raw_tensor(shape_ops::pool2d(
+        x.shape(), window0, window1, padding0, padding1, stride0, stride1));
+  max_pool2d_fw_impl(
+      x, window0, window1, padding0, padding1, stride0, stride1, y);
+  return y;
+}
+
 DEV_BW_AB(add, shape_ops::elementwise);
 DEV_BW_AB(subtract, shape_ops::elementwise);
 DEV_BW_AB(multiply, shape_ops::elementwise);
 DEV_BW_AB(divide, shape_ops::elementwise);
 DEV_BW_AB(pow, shape_ops::elementwise);
 DEV_BW_AB(matmul, shape_ops::matmul);
+
+void Device::conv2d_bw(
+    const Tensor &x, const Tensor &w, const Tensor &y, const Tensor &gy,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    std::uint32_t dilation0, std::uint32_t dilation1,
+    Tensor &gx, Tensor &gw) {
+  CHECK_DEVICE(x);
+  CHECK_DEVICE(w);
+  CHECK_DEVICE(y);
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(gx);
+  CHECK_DEVICE(gw);
+  if (x.shape() != gx.shape() ||
+      w.shape() != gw.shape() ||
+      y.shape() != gy.shape() ||
+      y.shape() != shape_ops::conv2d(
+        x.shape(), w.shape(),
+        padding0, padding1, stride0, stride1, dilation0, dilation1)) {
+    PRIMITIV_THROW_ERROR(
+        "Shape mismatched at conv2d_bw"
+        << ". x.shape: " << x.shape().to_string()
+        << ", w.shape: " << w.shape().to_string()
+        << ", y.shape: " << y.shape().to_string()
+        << ", gy.shape: " << gy.shape().to_string()
+        << ", gx.shape: " << gx.shape().to_string()
+        << ", gw.shape: " << gw.shape().to_string()
+        << ", padding0: " << padding0
+        << ", padding1: " << padding1
+        << ", stride0: " << stride0
+        << ", stride1: " << stride1
+        << ", dilation0: " << dilation0
+        << ", dilation1: " << dilation1);
+  }
+  conv2d_bw_impl(
+      x, w, y, gy, padding0, padding1, stride0, stride1, dilation0, dilation1,
+      gx, gw);
+}
+
+void Device::max_pool2d_bw(
+    const Tensor &x, const Tensor &y, const Tensor &gy,
+    std::uint32_t window0, std::uint32_t window1,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    Tensor &gx) {
+  CHECK_DEVICE(x);
+  CHECK_DEVICE(y);
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(gx);
+  if (x.shape() != gx.shape() ||
+      y.shape() != gy.shape() ||
+      y.shape() != shape_ops::pool2d(
+        x.shape(), window0, window1, padding0, padding1, stride0, stride1)) {
+    PRIMITIV_THROW_ERROR(
+        "Shape mismatched at max_pool2d_bw"
+        << ". x.shape: " << x.shape().to_string()
+        << ", y.shape: " << y.shape().to_string()
+        << ", gy.shape: " << gy.shape().to_string()
+        << ", gx.shape: " << gx.shape().to_string()
+        << ", window0: " << window0
+        << ", window1: " << window1
+        << ", padding0: " << padding0
+        << ", padding1: " << padding1
+        << ", stride0: " << stride0
+        << ", stride1: " << stride1);
+  }
+  max_pool2d_bw_impl(
+      x, y, gy, window0, window1, padding0, padding1, stride0, stride1, gx);
+}
 
 #undef DEV_FW_X
 #undef DEV_BW_X
@@ -380,7 +504,8 @@ Tensor Device::logsumexp_fw(const Tensor &x, std::uint32_t dim) {
   return y;
 }
 
-Tensor Device::broadcast_fw(const Tensor &x, std::uint32_t dim, std::uint32_t size) {
+Tensor Device::broadcast_fw(
+    const Tensor &x, std::uint32_t dim, std::uint32_t size) {
   CHECK_DEVICE(x);
   Tensor y = new_raw_tensor(shape_ops::broadcast(x.shape(), dim, size));
   broadcast_fw_impl(x, dim, size, y);
@@ -405,7 +530,7 @@ void Device::inplace_add(const Tensor &x, Tensor &y) {
   const Shape &sx = x.shape();
   const Shape &sy = y.shape();
   if (!sx.has_same_dims(sy) || !sx.has_compatible_batch(sy)) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Attempted to add values of shape "
         << sx.to_string() << " to " << sy.to_string() << '.');
   }
@@ -418,7 +543,7 @@ void Device::inplace_subtract(const Tensor &x, Tensor &y) {
   const Shape &sx = x.shape();
   const Shape &sy = y.shape();
   if (!sx.has_same_dims(sy) || !sx.has_compatible_batch(sy)) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Attempted to subtract values of shape "
         << sx.to_string() << " from " << sy.to_string() << '.');
   }

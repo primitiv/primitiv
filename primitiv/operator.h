@@ -20,12 +20,34 @@ public:
   virtual ~Operator() = default;
 
   /**
-   * Calculates only the resulting shape.
-   * @pasram args Shapes of argument values.
-   * @return Shape of the resulting value.
+   * Returns the name of the Operator.
+   * @return Name of the Operator.
    */
-  virtual Shape forward_shape(
-      const std::vector<const Shape *> &args) const = 0;
+  virtual std::string name() const = 0;
+
+  static constexpr std::uint32_t ANY = 0xffffffff;
+  static constexpr std::uint32_t NONZERO = 0xfffffffe;
+
+  /**
+   * Retrieves the number of required arguments.
+   * @return Number of required arguments, or following special values:
+   *           Operator::ANY: Arbitrary number of arguments, including 0
+   *           Operator::NONZERO: Arbitrary number of arguments, except 0
+   */
+  virtual std::uint32_t num_arguments() const = 0;
+
+  /**
+   * Retrieves the number of return values.
+   * @return Number of return values.
+   */
+  virtual std::uint32_t num_returns() const = 0;
+
+  /**
+   * Returns whether the operator have inner values or not.
+   * @return `true` if the operator have inner values,
+   *         `false` otherwise.
+   */
+  virtual bool has_inner_values() const = 0;
 
   /**
    * Returns the device object if the class holds it.
@@ -35,42 +57,61 @@ public:
   virtual Device *get_device() const { return nullptr; }
 
   /**
-   * Returns the pre-calculated return value of the Operator if they have it.
-   * @return A pointer of the Tensor which represents the return value, or
-   *         nullptr if the Operator does not have such data.
-   * @remarks If this function returns nullptr, the return values of the
-   *          Operator could be obtained through forward().
+   * Calculates only the resulting shape.
+   * @param args Shapes of argument values.
+   * @param rets Shapes of return values.
+   * @remarks `args` and `rets` should have the same number of pointers with the
+   *          value returned from `num_arguments()` and `num_returns()`.
    */
-  virtual const Tensor *get_inner_value() const { return nullptr; }
+  virtual void forward_shape(
+      const std::vector<const Shape *> &args,
+      const std::vector<Shape *> &rets) const = 0;
 
   /**
-   * Calculates the forward path.
-   * @param args argument tensors.
+   * Returns the pre-calculated return value of the operator.
+   * @return A list of pointers of the Tensor which represents the return
+   *         values.
+   * @throw primitiv::Error The operator does not have such values.
+   */
+  virtual std::vector<const Tensor *> get_inner_values() const {
+    PRIMITIV_THROW_ERROR(
+        "Operator `" << name()
+        << "` does not have inner values. Use `forward()` instead.");
+  }
+
+  /**
+   * Calculates the forward operation.
+   * @param args Argument tensors.
+   * @param rets Resulting tensors.
    * @return Resulting tensors.
-   * @remarks This function is not const-qualified because some Operator
-   *          implementations may hold the cache of intermediate results.
+   * @remarks `args` and `rets` should have the same number of pointers with the
+   *          value returned from `num_arguments()` and `num_returns()`.
    */
-  virtual Tensor forward(const std::vector<const Tensor *> &args) = 0;
+  virtual void forward(
+      const std::vector<const Tensor *> &args,
+      const std::vector<Tensor *> &rets) const {
+    static_cast<void>(args);
+    static_cast<void>(rets);
+    PRIMITIV_THROW_ERROR(
+        "Operator `" << name()
+        << "`has inner values. Use `get_inner_values()` instead.");
+  }
 
   /**
-   * Calculates the backward path.
-   * @param cur_value The value of the current node.
-   * @param cur_grad The gradient of the current node.
-   * @param arg_values Values of the argument nodes.
-   * @param arg_grads Gradients of the argument nodes. These values are updated
-   *                  by this method.
+   * Calculates the backward operation.
+   * @param args_v Tensors of argument values.
+   * @param rets_v Tensors of resulting values.
+   * @param rets_g Tensors of gradients of results.
+   * @param args_g Tensors of gradients of arguments.
+   * @remarks `args_v/g` and `rets_v/g` should have the same number of pointers
+   *          with the value returned from `num_arguments()` and
+   *          `num_returns()`.
    */
   virtual void backward(
-      const Tensor &cur_value,
-      const Tensor &cur_grad,
-      const std::vector<const Tensor *> &arg_values,
-      const std::vector<Tensor *> &arg_grads) const = 0;
-
-  /**
-   * Returns the name of the Operator.
-   * @return Name of the Operator.
-   */
-  virtual std::string name() const = 0;
+      const std::vector<const Tensor *> &args_v,
+      const std::vector<const Tensor *> &rets_v,
+      const std::vector<const Tensor *> &rets_g,
+      const std::vector<Tensor *> &args_g) const = 0;
 };
 
 }  // namespace primitiv

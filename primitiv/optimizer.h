@@ -57,7 +57,7 @@ public:
    * @remarks Could not set negative values.
    */
   void set_learning_rate_scaling(float scale) {
-    if (scale < 0) THROW_ERROR(
+    if (scale < 0) PRIMITIV_THROW_ERROR(
         "Could not set negative value to learning_rate_scaling.");
     lr_scale_ = scale;
   }
@@ -74,7 +74,7 @@ public:
    * @remarks Could not set negative values.
    */
   void set_weight_decay(float strength) {
-    if (strength < 0) THROW_ERROR(
+    if (strength < 0) PRIMITIV_THROW_ERROR(
         "Could not set negative value to weight_decay.");
     l2_strength_ = strength;
   }
@@ -91,15 +91,14 @@ public:
    * @remarks Could not set negative values.
    */
   void set_gradient_clipping(float threshold) {
-    if (threshold < 0) THROW_ERROR(
+    if (threshold < 0) PRIMITIV_THROW_ERROR(
         "Could not set negative value to gradient_clipping.");
     clip_threshold_ = threshold;
   }
 
   /**
-   * Registers multiple parameters and models.
-   * This function is defined as the sentinel of other specialized functions.
-   * @param args List of arguments (could be empty).
+   * Do nothing.
+   * This function is used as the sentinel of other specialized functions.
    */
   void add() { /* do nothing */ }
 

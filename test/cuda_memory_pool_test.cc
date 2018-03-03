@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include <primitiv/memory_pool.h>
 #include <primitiv/cuda_device.h>
-#include <primitiv/cuda_utils.h>
+#include <primitiv/internal/cuda_utils.h>
 #include <primitiv/error.h>
 #include <primitiv/shape.h>
 
@@ -52,6 +52,16 @@ TEST_F(MemoryPoolTest_CUDA, CheckPoolIDs) {
   }
   MemoryPool pool5(allocator, deleter);
   EXPECT_EQ(base_id + 9, pool5.id());
+}
+
+TEST_F(MemoryPoolTest_CUDA, CheckEmptyAllocation) {
+  MemoryPool pool(allocator, deleter);
+  const auto sp1 = pool.allocate(0u);
+  const auto sp2 = pool.allocate(0u);
+  const auto sp3 = pool.allocate(0u);
+  EXPECT_EQ(nullptr, sp1.get());
+  EXPECT_EQ(nullptr, sp2.get());
+  EXPECT_EQ(nullptr, sp3.get());
 }
 
 TEST_F(MemoryPoolTest_CUDA, CheckAllocate) {

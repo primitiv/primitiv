@@ -1,11 +1,11 @@
-/* Copyright 2017 The primitiv Authors. All Rights Reserved. */
-
 #ifndef PRIMITIV_C_INTERNAL_H_
 #define PRIMITIV_C_INTERNAL_H_
 
+#include <algorithm>
 #include <cstdint>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include <primitiv/device.h>
@@ -18,145 +18,140 @@
 #include <primitiv/tensor.h>
 #include <primitiv/optimizer.h>
 
-#include <primitiv/c/status.h>
+#include <primitiv/c/define.h>
 
-#define DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(cc_name, c_name) \
-inline c_name *to_c(primitiv::cc_name *instance) { \
+#define PRIMITIV_C_PTR_TO_PTR(cpp_name, c_name) \
+inline c_name *to_c_ptr(primitiv::cpp_name *instance) { \
   return reinterpret_cast<c_name*>(instance); \
 } \
-inline const c_name *to_c(const primitiv::cc_name *instance) { \
+inline const c_name *to_c_ptr(const primitiv::cpp_name *instance) { \
   return reinterpret_cast<const c_name*>(instance); \
 } \
-inline primitiv::cc_name *to_cc(c_name *instance) { \
-  return reinterpret_cast<primitiv::cc_name*>(instance); \
+inline primitiv::cpp_name *to_cpp_ptr(c_name *instance) { \
+  return reinterpret_cast<primitiv::cpp_name*>(instance); \
 } \
-inline const primitiv::cc_name *to_cc(const c_name *instance) { \
-  return reinterpret_cast<const primitiv::cc_name*>(instance); \
+inline const primitiv::cpp_name *to_cpp_ptr(const c_name *instance) { \
+  return reinterpret_cast<const primitiv::cpp_name*>(instance); \
 }
 
-#define DEFINE_VALUE_TO_POINTER_CONVERSION_AS_CAST(cc_name, c_name) \
-inline c_name *to_c_from_value(const primitiv::cc_name &instance) { \
-  return reinterpret_cast<c_name*>(new primitiv::cc_name(instance)); \
+#define PRIMITIV_C_VAL_TO_PTR(cpp_name, c_name) \
+inline c_name *to_c_ptr_from_value(primitiv::cpp_name &&instance) { \
+  return reinterpret_cast<c_name*>( \
+      new primitiv::cpp_name(std::forward<primitiv::cpp_name>(instance))); \
 }
+
+#define PRIMITIV_C_HANDLE_EXCEPTIONS \
+catch (const std::exception &e) { \
+  return primitiv::c::internal::ErrorHandler::get_instance().handle(e); \
+}
+
+#define PRIMITIV_C_CHECK_NOT_NULL(var) \
+if (!var) { \
+  PRIMITIV_THROW_ERROR("Argument `" #var "` must not be null."); \
+}
+
+struct primitivDevice;
+struct primitivNode;
+struct primitivGraph;
+struct primitivInitializer;
+struct primitivModel;
+struct primitivParameter;
+struct primitivShape;
+struct primitivTensor;
+struct primitivOptimizer;
 
 namespace primitiv {
 
-void set_status(primitiv_Status *status,
-                primitiv_Code code,
-                const Error *error);
+namespace c {
 
-#define SAFE_EXPR(expr, status) \
-try { \
-  expr; \
-} catch (primitiv::Error &e) { \
-  primitiv::set_status(status, primitiv_Code::PRIMITIV_ERROR, &e); \
-}
-
-#define SAFE_RETURN(expr, status, default) \
-try { \
-  return expr; \
-} catch (primitiv::Error &e) { \
-  primitiv::set_status(status, primitiv_Code::PRIMITIV_ERROR, &e); \
-} \
-return default
-
-}  // namespace primitiv
-
-struct primitiv_Device;
-
-DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Device, primitiv_Device);
-
-struct primitiv_Node;
-
-DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Node, primitiv_Node);
-DEFINE_VALUE_TO_POINTER_CONVERSION_AS_CAST(Node, primitiv_Node);
-
-struct primitiv_Graph;
-
-DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Graph, primitiv_Graph);
-
-struct primitiv_Initializer;
-
-DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Initializer, primitiv_Initializer);
-
-struct primitiv_Model;
-
-DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Model, primitiv_Model);
-
-struct primitiv_Parameter;
-
-DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Parameter, primitiv_Parameter);
-
-struct primitiv_Shape;
-
-DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Shape, primitiv_Shape);
-DEFINE_VALUE_TO_POINTER_CONVERSION_AS_CAST(Shape, primitiv_Shape);
-
-struct primitiv_Tensor;
-
-DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Tensor, primitiv_Tensor);
-DEFINE_VALUE_TO_POINTER_CONVERSION_AS_CAST(Tensor, primitiv_Tensor);
-
-struct primitiv_Optimizer;
-
-DEFINE_POINTER_TO_POINTER_CONVERSION_AS_CAST(Optimizer, primitiv_Optimizer);
+namespace internal {
 
 template<typename T>
-class StrValMap : public std::unordered_map<std::string, T> {
+using Throwable = typename std::enable_if<
+    std::is_base_of<std::exception, T>::value>::type;
+
+class ErrorHandler {
  public:
-  StrValMap() : keys_{}, values_() {}
+  ErrorHandler() noexcept : exception_(nullptr), message_("OK") {}
+  ~ErrorHandler() = default;
 
-  std::vector<const char*> &keys() {
-    keys_.clear();
-    for (auto it = this->begin(); it != this->end(); ++it) {
-      keys_.push_back(it->first.c_str());
-    }
-    return keys_;
+  template<typename T, typename = Throwable<T>>
+  ::PRIMITIV_C_STATUS handle(const T &e) {
+    exception_ = std::make_exception_ptr(e);
+    message_ = e.what();
+    return PRIMITIV_C_ERROR;
   }
 
-  std::vector<T> &values() {
-    values_.clear();
-    for (auto it = this->begin(); it != this->end(); ++it) {
-      values_.push_back(it->second);
+  std::exception rethrow() {
+    if (has_exception()) {
+      std::rethrow_exception(exception_);
+    } else {
+      throw std::bad_exception();
     }
-    return values_;
   }
 
- protected:
-  std::vector<const char*> keys_;
-  std::vector<T> values_;
+  void reset() noexcept {
+    exception_ = nullptr;
+    message_ = "OK";
+  }
+
+  bool has_exception() const noexcept {
+    return !exception_;
+  }
+
+  const char *get_message() const noexcept {
+    return message_.c_str();
+  }
+
+  static ErrorHandler &get_instance();
+
+ private:
+  std::exception_ptr exception_;
+  std::string message_;
 };
 
-struct primitiv_StrIntMap;
-typedef StrValMap<std::uint32_t> StrIntMap;
-
-inline primitiv_StrIntMap *to_c(StrIntMap *instance) {
-  return reinterpret_cast<primitiv_StrIntMap*>(instance);
-}
-inline const primitiv_StrIntMap *to_c(const StrIntMap *instance) {
-  return reinterpret_cast<const primitiv_StrIntMap*>(instance);
-}
-inline StrIntMap *to_cc(primitiv_StrIntMap *instance) {
-  return reinterpret_cast<StrIntMap*>(instance);
-}
-inline const StrIntMap *to_cc(const primitiv_StrIntMap *instance) {
-  return reinterpret_cast<const StrIntMap*>(instance);
+template<typename T>
+inline void copy_vector_to_array(
+    const std::vector<T> &vector, T *array, std::size_t *size) {
+  if (array) {
+    if (*size < vector.size()) {
+      PRIMITIV_THROW_ERROR("Size is not enough to copy a vector.");
+    }
+    std::copy(vector.begin(), vector.end(), array);
+  } else {
+    *size = vector.size();
+  }
 }
 
-struct primitiv_StrFloatMap;
-typedef StrValMap<float> StrFloatMap;
+inline void copy_string_to_array(
+    const std::string &str, char *buffer, std::size_t *size) {
+  if (buffer) {
+    if (*size <= str.length()) {
+      PRIMITIV_THROW_ERROR("Size is not enough to copy a string.");
+    }
+    std::strcpy(buffer, str.c_str());
+  } else {
+    *size = str.length() + 1u;
+  }
+}
 
-inline primitiv_StrFloatMap *to_c(StrFloatMap *instance) {
-  return reinterpret_cast<primitiv_StrFloatMap*>(instance);
-}
-inline const primitiv_StrFloatMap *to_c(const StrFloatMap *instance) {
-  return reinterpret_cast<const primitiv_StrFloatMap*>(instance);
-}
-inline StrFloatMap *to_cc(primitiv_StrFloatMap *instance) {
-  return reinterpret_cast<StrFloatMap*>(instance);
-}
-inline const StrFloatMap *to_cc(const primitiv_StrFloatMap *instance) {
-  return reinterpret_cast<const StrFloatMap*>(instance);
-}
+PRIMITIV_C_PTR_TO_PTR(Device, primitivDevice);
+PRIMITIV_C_PTR_TO_PTR(Node, primitivNode);
+PRIMITIV_C_VAL_TO_PTR(Node, primitivNode);
+PRIMITIV_C_PTR_TO_PTR(Graph, primitivGraph);
+PRIMITIV_C_PTR_TO_PTR(Initializer, primitivInitializer);
+PRIMITIV_C_PTR_TO_PTR(Model, primitivModel);
+PRIMITIV_C_PTR_TO_PTR(Parameter, primitivParameter);
+PRIMITIV_C_PTR_TO_PTR(Shape, primitivShape);
+PRIMITIV_C_VAL_TO_PTR(Shape, primitivShape);
+PRIMITIV_C_PTR_TO_PTR(Tensor, primitivTensor);
+PRIMITIV_C_VAL_TO_PTR(Tensor, primitivTensor);
+PRIMITIV_C_PTR_TO_PTR(Optimizer, primitivOptimizer);
+
+}  // namespace internal
+
+}  // namespace c
+
+}  // namespace primitiv
 
 #endif  // PRIMITIV_C_INTERNAL_H_

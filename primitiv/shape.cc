@@ -8,7 +8,7 @@ namespace primitiv {
 Shape::Shape(std::initializer_list<std::uint32_t> dims, std::uint32_t batch)
 : depth_(0), batch_(batch), volume_(1) {
   if (dims.size() > MAX_DEPTH) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Exceeds dimension depth limit at Shape::Shape()."
         " depth: " << depth_ << " > MAX_DEPTH: " << MAX_DEPTH);
   }
@@ -18,14 +18,14 @@ Shape::Shape(std::initializer_list<std::uint32_t> dims, std::uint32_t batch)
   }
   while (depth_ > 0 && dims_[depth_ - 1] == 1) --depth_;
   if (volume_ == 0 || batch_ == 0) {
-    THROW_ERROR("Invalid shape: " << to_string());
+    PRIMITIV_THROW_ERROR("Invalid shape: " << to_string());
   }
 }
 
 Shape::Shape(const std::vector<std::uint32_t> &dims, std::uint32_t batch)
 : depth_(0), batch_(batch), volume_(1) {
   if (dims.size() > MAX_DEPTH) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Exceeds dimension depth limit at Shape::Shape()."
         " depth: " << depth_ << " > MAX_DEPTH: " << MAX_DEPTH);
   }
@@ -35,7 +35,7 @@ Shape::Shape(const std::vector<std::uint32_t> &dims, std::uint32_t batch)
   }
   while (depth_ > 0 && dims_[depth_ - 1] == 1) --depth_;
   if (volume_ == 0 || batch_ == 0) {
-    THROW_ERROR("Invalid shape: " << to_string());
+    PRIMITIV_THROW_ERROR("Invalid shape: " << to_string());
   }
 }
 
@@ -88,11 +88,11 @@ Shape Shape::resize_batch(std::uint32_t batch) const {
 
 void Shape::update_dim(std::uint32_t dim, std::uint32_t m) {
   if (dim >= MAX_DEPTH) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
       "Exceeds dimension depth limit at Shape::update_dim()."
       " dim: " << dim << " >= MAX_DEPTH: " << MAX_DEPTH);
   }
-  if (m == 0) THROW_ERROR("Could not set each dimension to 0.");
+  if (m == 0) PRIMITIV_THROW_ERROR("Could not set each dimension to 0.");
   if (dim >= depth_) {
     std::uint32_t new_depth = dim + 1;
     for (std::uint32_t i = depth_; i < new_depth; ++i) dims_[i] = 1;
@@ -104,7 +104,7 @@ void Shape::update_dim(std::uint32_t dim, std::uint32_t m) {
 }
 
 void Shape::update_batch(std::uint32_t batch) {
-  if (batch == 0) THROW_ERROR("Could not set the batch size to 0.");
+  if (batch == 0) PRIMITIV_THROW_ERROR("Could not set the batch size to 0.");
   batch_ = batch;
 }
 

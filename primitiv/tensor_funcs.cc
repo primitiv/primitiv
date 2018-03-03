@@ -122,6 +122,11 @@ Tensor pow(const Tensor &a, const Tensor &b) {
   else return a.device().pow_fw(a, b);
 }
 
+template<>
+Tensor pown(const Tensor &x, std::int32_t k) {
+  return x.device().pown_fw(x, k);
+}
+
 Tensor input_tensor(
     const Shape &shape, const std::vector<float> &data, Device *dev) {
   return ::get_device(dev).new_tensor_by_vector(shape, data);
@@ -148,7 +153,7 @@ Tensor slice(const Tensor &x, std::uint32_t dim, std::uint32_t lower, std::uint3
 
 template<>
 Tensor concat(const std::vector<const Tensor *> &xs, std::uint32_t dim) {
-  if (xs.empty()) THROW_ERROR("No tensors to be concatenated.");
+  if (xs.empty()) PRIMITIV_THROW_ERROR("No tensors to be concatenated.");
   return xs[0]->device().concat_fw(xs, dim);
 }
 
@@ -280,6 +285,26 @@ Tensor softmax_cross_entropy(
 
 template<>
 Tensor stop_gradient(const Tensor &x) { return x; }
+
+template<>
+Tensor conv2d(
+    const Tensor &x, const Tensor &w,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    std::uint32_t dilation0, std::uint32_t dilation1) {
+  return x.device().conv2d_fw(
+      x, w, padding0, padding1, stride0, stride1, dilation0, dilation1);
+}
+
+template<>
+Tensor max_pool2d(
+    const Tensor &x,
+    std::uint32_t window0, std::uint32_t window1,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1) {
+  return x.device().max_pool2d_fw(
+      x, window0, window1, padding0, padding1, stride0, stride1);
+}
 
 namespace batch {
 

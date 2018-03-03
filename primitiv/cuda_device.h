@@ -6,9 +6,13 @@
 #include <primitiv/device.h>
 
 namespace primitiv {
-namespace devices {
+namespace cuda {
+  struct InternalState;
+}  // namespace cuda
+}  // namespace primitiv
 
-struct CUDAInternalState;
+namespace primitiv {
+namespace devices {
 
 /**
  * Device class for CUDA.
@@ -120,6 +124,8 @@ private:
   void prelu_fw_impl(const Tensor &x, float k, Tensor &y) override;
   void elu_fw_impl(const Tensor &x, float k, Tensor &y) override;
 
+  void pown_fw_impl(const Tensor &x, std::int32_t k, Tensor &y) override;
+
   void add_const_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
   void subtract_const_r_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
   void subtract_const_l_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
@@ -130,6 +136,8 @@ private:
   void pow_const_l_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
   void prelu_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
   void elu_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) override;
+
+  void pown_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, std::int32_t k, Tensor &gx) override;
 
   void add_scalar_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override;
   void subtract_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) override;
@@ -171,6 +179,33 @@ private:
   void broadcast_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) override;
   void batch_sum_fw_impl(const Tensor &x, Tensor &y) override;
 
+  void conv2d_fw_impl(const Tensor &x, const Tensor &w,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      std::uint32_t dilation0, std::uint32_t dilation1,
+      Tensor &y) override;
+
+  void conv2d_bw_impl(
+      const Tensor &x, const Tensor &w, const Tensor &y, const Tensor &gy,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      std::uint32_t dilation0, std::uint32_t dilation1,
+      Tensor &gx, Tensor &gw) override;
+
+  void max_pool2d_fw_impl(
+      const Tensor &x,
+      std::uint32_t window0, std::uint32_t window1,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      Tensor &y) override;
+
+  void max_pool2d_bw_impl(
+      const Tensor &x, const Tensor &y, const Tensor &gy,
+      std::uint32_t window0, std::uint32_t window1,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      Tensor &gx) override;
+
   void inplace_multiply_const_impl(float k, Tensor &x) override;
 
   void inplace_add_impl(const Tensor &x, Tensor &y) override;
@@ -183,7 +218,7 @@ private:
   std::uint32_t dim2_x_;
   std::uint32_t dim2_y_;
   std::uint32_t max_batch_;
-  std::unique_ptr<CUDAInternalState> state_;
+  std::unique_ptr<cuda::InternalState> state_;
 
   // Reserved pointer to store temporary integers given from indexing functions
   // such as operators::input().

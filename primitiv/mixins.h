@@ -68,7 +68,7 @@ public:
   static T &get_object(std::uint64_t id) {
     const std::lock_guard<std::mutex> lock(mutex_);
     const auto it = objects_.find(id);
-    if (it == objects_.end()) THROW_ERROR("Invalid object ID: " << id);
+    if (it == objects_.end()) PRIMITIV_THROW_ERROR("Invalid object ID: " << id);
     return *it->second;
   }
 
@@ -118,7 +118,7 @@ public:
    * @throw primitiv::Error Default object is null.
    */
   static T &get_default() {
-    if (!default_obj_) THROW_ERROR("Default object is null.");
+    if (!default_obj_) PRIMITIV_THROW_ERROR("Default object is null.");
     return *default_obj_;
   }
 

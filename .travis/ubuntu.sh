@@ -39,7 +39,7 @@ docker exec travis-ci bash -c "cd ./pocl && cmake . -DCMAKE_INSTALL_PREFIX=/usr"
 docker exec travis-ci bash -c "cd ./pocl && make && make install"
 
 # script
-docker exec travis-ci bash -c "cd /primitiv && cmake . -DPRIMITIV_USE_EIGEN=ON -DPRIMITIV_USE_OPENCL=ON -DPRIMITIV_BUILD_TESTS=ON -DPRIMITIV_GTEST_SOURCE_DIR=/usr/src/googletest/googletest"
+docker exec travis-ci bash -c "cd /primitiv && cmake . -DPRIMITIV_USE_EIGEN=ON -DPRIMITIV_USE_OPENCL=ON -DPRIMITIV_BUILD_C_API=ON -DPRIMITIV_BUILD_TESTS=ON -DPRIMITIV_GTEST_SOURCE_DIR=/usr/src/googletest/googletest"
 docker exec travis-ci bash -c "cd /primitiv && make VERBOSE=1"
 docker exec travis-ci bash -c "cd /primitiv && make test ARGS='-V'"
 docker exec travis-ci bash -c "cd /primitiv && make install"

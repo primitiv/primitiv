@@ -16,7 +16,7 @@ namespace primitiv {
 void Optimizer::load(const std::string &path) {
   std::ifstream ifs(path);
   if (!ifs.is_open()) {
-    THROW_ERROR("Could not open file: " << path);
+    PRIMITIV_THROW_ERROR("Could not open file: " << path);
   }
   msgpack::Reader reader(ifs);
 
@@ -41,7 +41,7 @@ void Optimizer::save(const std::string &path) const {
 
   std::ofstream ofs(path);
   if (!ofs.is_open()) {
-    THROW_ERROR("Could not open file: " << path);
+    PRIMITIV_THROW_ERROR("Could not open file: " << path);
   }
   msgpack::Writer writer(ofs);
 
@@ -53,7 +53,9 @@ void Optimizer::save(const std::string &path) const {
 
 void Optimizer::add_inner(Parameter &param) {
   if (params_.find(&param) != params_.end()) {
-    THROW_ERROR("Parameter '" << &param << "' is already registered.");
+    // Explicitly allows to call this function multiple time using the same
+    // Parameter object.
+    return;
   }
   params_.insert(&param);
   configure_parameter(param);
@@ -115,10 +117,9 @@ void Optimizer::set_configs(
     const std::unordered_map<std::string, float> &float_configs) {
 #define SET_CONFIG(dest, cfg, key) { \
   const auto it = cfg.find(key); \
-  if (it == cfg.end()) { \
-    THROW_ERROR("Key not found in the optimizer config: " << key); \
+  if (it != cfg.end()) { \
+    dest = it->second; \
   } \
-  dest = it->second; \
 }
   SET_CONFIG(epoch_, uint_configs, "Optimizer.epoch");
   SET_CONFIG(lr_scale_, float_configs, "Optimizer.lr_scale");

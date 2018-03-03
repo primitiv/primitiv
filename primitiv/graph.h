@@ -23,7 +23,7 @@ class Node {
 public:
   Node(const Node &) = default;
 
-  Node(Node &&src) : g_(src.g_), op_id_(src.op_id_), val_id_(src.val_id_) {
+  Node(Node &&src) : g_(src.g_), oid_(src.oid_), vid_(src.vid_) {
     src.g_ = nullptr;
   }
 
@@ -32,14 +32,14 @@ public:
   Node &operator=(Node &&src) {
     if (&src != this) {
       g_ = src.g_;
-      op_id_ = src.op_id_;
-      val_id_ = src.val_id_;
+      oid_ = src.oid_;
+      vid_ = src.vid_;
       src.g_ = nullptr;
     }
     return *this;
   }
 
-  Node() : g_(nullptr), op_id_(), val_id_() {}
+  Node() : g_(nullptr), oid_(), vid_() {}
 
   /**
    * Returns whether the node is valid or not.
@@ -52,7 +52,7 @@ public:
    * @return Graph object.
    */
   Graph &graph() const {
-    if (!valid()) THROW_ERROR("Invalid node.");
+    if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
     return *g_;
   }
 
@@ -61,8 +61,8 @@ public:
    * @return Operator ID.
    */
   std::uint32_t operator_id() const {
-    if (!valid()) THROW_ERROR("Invalid node.");
-    return op_id_;
+    if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
+    return oid_;
   }
 
   /**
@@ -70,8 +70,8 @@ public:
    * @return Value ID.
    */
   std::uint32_t value_id() const {
-    if (!valid()) THROW_ERROR("Invalid node.");
-    return val_id_;
+    if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
+    return vid_;
   }
 
   /**
@@ -125,15 +125,15 @@ private:
   /**
    * Creates a new node pointer.
    * @param g Pointer of the computation graph.
-   * @param op_id Operator ID.
-   * @param val_id Value ID.
+   * @param oid Operator ID.
+   * @param vid Value ID.
    */
-  Node(Graph &g, std::uint32_t op_id, std::uint32_t val_id)
-    : g_(&g), op_id_(op_id), val_id_(val_id) {}
+  Node(Graph &g, std::uint32_t oid, std::uint32_t vid)
+    : g_(&g), oid_(oid), vid_(vid) {}
 
   Graph *g_;
-  std::uint32_t op_id_;
-  std::uint32_t val_id_;
+  std::uint32_t oid_;
+  std::uint32_t vid_;
 };
 
 /**
@@ -154,13 +154,13 @@ public:
   void clear();
 
   /**
-   * Adds a operator subgraph.
+   * Adds an operator into the graph.
    * @param op Interface of the new operator.
    * @param args List of arguments. Each node should point a node in the same
    *        computation graph.
-   * @return A new Node object of the resulting value.
+   * @return New Node objects of resulting values.
    */
-  Node add_operator(
+  std::vector<Node> add_operator(
       std::unique_ptr<Operator> &&op, const std::vector<Node> &args);
 
   /**
@@ -216,8 +216,8 @@ private:
    * Tuple of values to determine the location of the node.
    */
   struct Address {
-    std::uint32_t op_id;
-    std::uint32_t val_id;
+    std::uint32_t oid;
+    std::uint32_t vid;
   };
 
   /**
@@ -225,10 +225,10 @@ private:
    */
   struct NodeInfo {
     Shape shape;
-    Device &device;
+    Device *device;
     Tensor value;
     Tensor grad;
-    std::vector<std::uint32_t> sinks;
+    //std::vector<std::uint32_t> sinks;
   };
 
   /**
@@ -246,37 +246,37 @@ private:
 };
 
 inline Shape Node::shape() const {
-  if (!valid()) THROW_ERROR("Invalid node.");
+  if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
   return g_->get_shape(*this);
 }
 
 inline Device &Node::device() const {
-  if (!valid()) THROW_ERROR("Invalid node.");
+  if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
   return g_->get_device(*this);
 }
 
 inline float Node::to_float() const {
-  if (!valid()) THROW_ERROR("Invalid node.");
+  if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
   return g_->forward(*this).to_float();
 }
 
 inline std::vector<float> Node::to_vector() const {
-  if (!valid()) THROW_ERROR("Invalid node.");
+  if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
   return g_->forward(*this).to_vector();
 }
 
 inline std::vector<std::uint32_t> Node::argmax(std::uint32_t dim) const {
-  if (!valid()) THROW_ERROR("Invalid node.");
+  if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
   return g_->forward(*this).argmax(dim);
 }
 
 inline std::vector<std::uint32_t> Node::argmin(std::uint32_t dim) const {
-  if (!valid()) THROW_ERROR("Invalid node.");
+  if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
   return g_->forward(*this).argmin(dim);
 }
 
 inline void Node::backward() const {
-  if (!valid()) THROW_ERROR("Invalid node.");
+  if (!valid()) PRIMITIV_THROW_ERROR("Invalid node.");
   g_->backward(*this);
 }
 

@@ -15,7 +15,7 @@ namespace primitiv {
 void Model::load(const std::string &path, bool with_stats, Device *device) {
   std::ifstream ifs(path);
   if (!ifs.is_open()) {
-    THROW_ERROR("Could not open file: " << path);
+    PRIMITIV_THROW_ERROR("Could not open file: " << path);
   }
   msgpack::Reader reader(ifs);
 
@@ -36,7 +36,7 @@ void Model::load(const std::string &path, bool with_stats, Device *device) {
     reader >> key;
     const auto it = params.find(key);
     if (it == params.end()) {
-      THROW_ERROR(
+      PRIMITIV_THROW_ERROR(
           "Model does not have a parameter with name: '"
           << string_utils::join(key, ".") << "'");
     }
@@ -48,7 +48,7 @@ void Model::load(const std::string &path, bool with_stats, Device *device) {
 void Model::save(const std::string &path, bool with_stats) const {
   std::ofstream ofs(path);
   if (!ofs.is_open()) {
-    THROW_ERROR("Could not open file: " << path);
+    PRIMITIV_THROW_ERROR("Could not open file: " << path);
   }
   msgpack::Writer writer(ofs);
 
@@ -58,7 +58,7 @@ void Model::save(const std::string &path, bool with_stats) const {
 
   const auto params = get_all_parameters();
   if (params.size() > 0xffffffffull) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Could not store more than 2^32 - 1 parameters in one model file.");
   }
   writer << static_cast<std::uint32_t>(params.size());
@@ -70,34 +70,50 @@ void Model::save(const std::string &path, bool with_stats) const {
 }
 
 void Model::add(const std::string &name, Parameter &param) {
+  const auto kv = param_kv_.find(name);
+  if (kv != param_kv_.end() && kv->second == &param) {
+    // Explicitly allows to call this function multiple times using the same
+    // Parameter object.
+    return;
+  }
+
   if (name_set_.find(name) != name_set_.end()) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Name '" << name << "' already exists in the model.");
   }
   if (param_set_.find(&param) != param_set_.end()) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Parameter '" << &param << "' already exists in the model.");
   }
+
   name_set_.emplace(name);
   param_set_.emplace(&param);
   param_kv_.emplace(name, &param);
 }
 
 void Model::add(const std::string &name, Model &model) {
+  const auto kv = submodel_kv_.find(name);
+  if (kv != submodel_kv_.end() && kv->second == &model) {
+    // Explicitly allows to call this function multiple times using the same
+    // Model object.
+    return;
+  }
+
   if (&model == this) {
-    THROW_ERROR("Can't add self as a submodel.");
+    PRIMITIV_THROW_ERROR("Can't add self as a submodel.");
   }
   if (model.has_submodel(*this)) {
-    THROW_ERROR("Can't add an ancestor model as a submodel.");
+    PRIMITIV_THROW_ERROR("Can't add an ancestor model as a submodel.");
   }
   if (name_set_.find(name) != name_set_.end()) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Name '" << name << "' already exists in the model.");
   }
   if (submodel_set_.find(&model) != submodel_set_.end()) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Model '" << &model << "' already exists in the model.");
   }
+
   name_set_.emplace(name);
   submodel_set_.emplace(&model);
   submodel_kv_.emplace(name, &model);
@@ -109,7 +125,7 @@ const Model &Model::get_semiterminal(
   for (auto it = names.begin(), end = names.end() - 1; it != end; ++it) {
     const auto next = cur->submodel_kv_.find(*it);
     if (next == cur->submodel_kv_.end()) {
-      THROW_ERROR(
+      PRIMITIV_THROW_ERROR(
           "Parameter or submodel not found: "
           "'" << string_utils::join(names, ".") << "'");
     }
@@ -123,7 +139,7 @@ const Parameter &Model::get_parameter(
   const Model &st = get_semiterminal(names);
   const auto it = st.param_kv_.find(names.back());
   if (it == st.param_kv_.end()) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Parameter not found: '" << string_utils::join(names, ".") << "'");
   }
   return *it->second;
@@ -133,7 +149,7 @@ const Model &Model::get_submodel(const std::vector<std::string> &names) const {
   const Model &st = get_semiterminal(names);
   const auto it = st.submodel_kv_.find(names.back());
   if (it == st.submodel_kv_.end()) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Submodel not found: '" << string_utils::join(names, ".") << "'");
   }
   return *it->second;

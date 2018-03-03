@@ -6,7 +6,7 @@
 namespace primitiv {
 namespace optimizers {
 
-#define DECL_DEFAULTS \
+#define PRIMITIV_DECL_DEFAULTS \
 public: \
   void get_configs( \
       std::unordered_map<std::string, std::uint32_t> &uint_configs, \
@@ -22,7 +22,7 @@ private: \
  * Simple stochastic gradient descent.
  */
 class SGD : public primitiv::Optimizer {
-  DECL_DEFAULTS;
+  PRIMITIV_DECL_DEFAULTS;
 
 public:
   /**
@@ -45,7 +45,7 @@ private:
  * Stochastic gradient descent with momentum.
  */
 class MomentumSGD : public primitiv::Optimizer {
-  DECL_DEFAULTS;
+  PRIMITIV_DECL_DEFAULTS;
 
 public:
   /**
@@ -77,7 +77,7 @@ private:
  * AdaGrad optimizer.
  */
 class AdaGrad : public primitiv::Optimizer {
-  DECL_DEFAULTS;
+  PRIMITIV_DECL_DEFAULTS;
 
 public:
   /**
@@ -109,7 +109,7 @@ private:
  * RMSProp Optimizer.
  */
 class RMSProp : public primitiv::Optimizer {
-  DECL_DEFAULTS;
+  PRIMITIV_DECL_DEFAULTS;
 
 public:
   /**
@@ -150,7 +150,7 @@ private:
  * https://arxiv.org/abs/1212.5701
  */
 class AdaDelta : public primitiv::Optimizer {
-  DECL_DEFAULTS;
+  PRIMITIV_DECL_DEFAULTS;
 
 public:
   /**
@@ -183,7 +183,7 @@ private:
  * https://arxiv.org/abs/1412.6980
  */
 class Adam : public primitiv::Optimizer {
-  DECL_DEFAULTS;
+  PRIMITIV_DECL_DEFAULTS;
 
 public:
   /**
@@ -229,7 +229,7 @@ private:
   float eps_;
 };
 
-#undef DECL_DEFAULTS
+#undef PRIMITIV_DECL_DEFAULTS
 
 }  // namespace optimizers
 }  // namespace primitiv

@@ -73,6 +73,7 @@ endif()
 
 if(PRIMITIV_USE_CUDA)
   primitiv_test(cuda_device)
+  primitiv_test(cuda16_device)
   primitiv_test(cuda_memory_pool)
 endif()
 
@@ -96,5 +97,10 @@ if(PRIMITIV_BUILD_C_API)
     )
   endfunction()
 
+  primitiv_c_test(device)
+  primitiv_c_test(graph)
+  primitiv_c_test(internal)
+  primitiv_c_test(optimizer)
   primitiv_c_test(shape)
+  primitiv_c_test(status)
 endif()

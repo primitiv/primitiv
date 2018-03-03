@@ -35,6 +35,7 @@ public:
 
     GROUP_CUDA = 0x00010000,
     CUDA = 0x00010000,
+    CUDA16 = 0x00010001,
 
     GROUP_OPENCL = 0x00020000,
     OPENCL = 0x00020000,
@@ -151,6 +152,8 @@ public:
   Tensor prelu_fw(const Tensor &x, float k);
   Tensor elu_fw(const Tensor &x, float k);
 
+  Tensor pown_fw(const Tensor &x, std::int32_t k);
+
   void add_const_bw(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx);
   void subtract_const_r_bw(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx);
   void subtract_const_l_bw(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx);
@@ -161,6 +164,8 @@ public:
   void pow_const_l_bw(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx);
   void prelu_bw(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx);
   void elu_bw(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx);
+
+  void pown_bw(const Tensor &x, const Tensor &y, const Tensor &gy, std::int32_t k, Tensor &gx);
 
   // Tensor-scalar operations.
   Tensor add_scalar_fw(const Tensor &x, const Tensor &k);
@@ -204,6 +209,34 @@ public:
   Tensor logsumexp_fw(const Tensor &x, std::uint32_t dim);
   Tensor broadcast_fw(const Tensor &x, std::uint32_t dim, std::uint32_t size);
   Tensor batch_sum_fw(const Tensor &x);
+
+  // Convolution.
+  Tensor conv2d_fw(
+      const Tensor &x, const Tensor &w,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      std::uint32_t dilation0, std::uint32_t dilation1);
+
+  void conv2d_bw(
+      const Tensor &x, const Tensor &w, const Tensor &y, const Tensor &gy,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      std::uint32_t dilation0, std::uint32_t dilation1,
+      Tensor &gx, Tensor &gw);
+
+  // Pooling.
+  Tensor max_pool2d_fw(
+      const Tensor &x,
+      std::uint32_t window0, std::uint32_t window1,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1);
+
+  void max_pool2d_bw(
+      const Tensor &x, const Tensor &y, const Tensor &gy,
+      std::uint32_t window0, std::uint32_t window1,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      Tensor &gx);
 
   /**
    * Directly multiplies all elements by a constant.
@@ -368,6 +401,8 @@ private:
   virtual void prelu_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
   virtual void elu_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
 
+  virtual void pown_fw_impl(const Tensor &x, std::int32_t k, Tensor &y) = 0;
+
   virtual void add_const_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) = 0;
   virtual void subtract_const_r_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) = 0;
   virtual void subtract_const_l_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) = 0;
@@ -378,6 +413,8 @@ private:
   virtual void pow_const_l_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) = 0;
   virtual void prelu_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) = 0;
   virtual void elu_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) = 0;
+
+  virtual void pown_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, std::int32_t k, Tensor &gx) = 0;
 
   virtual void add_scalar_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) = 0;
   virtual void subtract_scalar_r_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) = 0;
@@ -418,6 +455,34 @@ private:
   virtual void logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
   virtual void broadcast_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) = 0;
   virtual void batch_sum_fw_impl(const Tensor &x, Tensor &y) = 0;
+
+  virtual void conv2d_fw_impl(
+      const Tensor &x, const Tensor &w,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      std::uint32_t dilation0, std::uint32_t dilation1,
+      Tensor &y) = 0;
+
+  virtual void conv2d_bw_impl(
+      const Tensor &x, const Tensor &w, const Tensor &y, const Tensor &gy,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      std::uint32_t dilation0, std::uint32_t dilation1,
+      Tensor &gx, Tensor &gw) = 0;
+
+  virtual void max_pool2d_fw_impl(
+      const Tensor &x,
+      std::uint32_t window0, std::uint32_t window1,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      Tensor &y) = 0;
+
+  virtual void max_pool2d_bw_impl(
+      const Tensor &x, const Tensor &y, const Tensor &gy,
+      std::uint32_t window0, std::uint32_t window1,
+      std::uint32_t padding0, std::uint32_t padding1,
+      std::uint32_t stride0, std::uint32_t stride1,
+      Tensor &gx) = 0;
 
   virtual void inplace_multiply_const_impl(float k, Tensor &x) = 0;
 

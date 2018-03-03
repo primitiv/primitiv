@@ -105,7 +105,7 @@ std::vector<cl::Platform> get_all_platforms() {
 std::vector<cl::Device> get_all_devices(std::uint32_t platform_id) {
   const auto all_pfs = ::get_all_platforms();
   if (platform_id >= all_pfs.size()) {
-    THROW_ERROR("Invalid platform ID: " << platform_id);
+    PRIMITIV_THROW_ERROR("Invalid platform ID: " << platform_id);
   }
   std::vector<cl::Device> ret;
   all_pfs[platform_id].getDevices(CL_DEVICE_TYPE_ALL, &ret);
@@ -121,7 +121,7 @@ std::vector<cl::Device> get_all_devices(std::uint32_t platform_id) {
 cl::Device get_device(std::uint32_t platform_id, std::uint32_t device_id) {
   const auto all_devs = ::get_all_devices(platform_id);
   if (device_id >= all_devs.size()) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Invalid device ID: " << device_id
         << " (on the platform " << platform_id << ")");
   }
@@ -204,7 +204,7 @@ public:
       try {
         program.build({device});
       } catch (...) {
-        THROW_ERROR("OpenCL kernel compile error:" << std::endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
+        PRIMITIV_THROW_ERROR("OpenCL kernel compile error:" << std::endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
       }
 
 #define CONFIGURE_KERNEL(name) \
@@ -276,6 +276,10 @@ public:
       CONFIGURE_KERNEL(divide_const_l_fw);
       CONFIGURE_KERNEL(pow_const_r_fw);
       CONFIGURE_KERNEL(pow_const_l_fw);
+      CONFIGURE_KERNEL(prelu_fw);
+      CONFIGURE_KERNEL(elu_fw);
+
+      CONFIGURE_KERNEL(pown_fw);
 
       CONFIGURE_KERNEL(add_const_bw);
       CONFIGURE_KERNEL(subtract_const_r_bw);
@@ -285,12 +289,10 @@ public:
       CONFIGURE_KERNEL(divide_const_l_bw);
       CONFIGURE_KERNEL(pow_const_r_bw);
       CONFIGURE_KERNEL(pow_const_l_bw);
-
-      CONFIGURE_KERNEL(prelu_fw);
-      CONFIGURE_KERNEL(elu_fw);
-
       CONFIGURE_KERNEL(prelu_bw);
       CONFIGURE_KERNEL(elu_bw);
+
+      CONFIGURE_KERNEL(pown_bw);
 
       CONFIGURE_KERNEL(add_scalar_fw);
       CONFIGURE_KERNEL(subtract_scalar_r_fw);
@@ -394,6 +396,8 @@ public:
   DECL_KERNEL(prelu_fw);
   DECL_KERNEL(elu_fw);
 
+  DECL_KERNEL(pown_fw);
+
   DECL_KERNEL(add_const_bw);
   DECL_KERNEL(subtract_const_r_bw);
   DECL_KERNEL(subtract_const_l_bw);
@@ -404,6 +408,8 @@ public:
   DECL_KERNEL(pow_const_l_bw);
   DECL_KERNEL(prelu_bw);
   DECL_KERNEL(elu_bw);
+
+  DECL_KERNEL(pown_bw);
 
   DECL_KERNEL(add_scalar_fw);
   DECL_KERNEL(subtract_scalar_r_fw);
@@ -454,7 +460,7 @@ void OpenCL::assert_support(
 
   // Checks whether the device is globally available.
   if (!dev.getInfo<CL_DEVICE_AVAILABLE>()) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "OpenCL Device " << device_id << " on the platform " << platform_id
         << " is not available (CL_DEVICE_AVAILABLE == false).");
   }
@@ -464,7 +470,7 @@ void OpenCL::assert_support(
   { \
     const auto actual = dev.getInfo<name>(); \
     if (actual < (value)) { \
-      THROW_ERROR( \
+      PRIMITIV_THROW_ERROR( \
           "OpenCL Device " << device_id << " on the platform " << platform_id \
           << " does not satisfy the minimum requirement by primitiv. " \
           << "property: " << #name << ", " \
@@ -476,7 +482,7 @@ void OpenCL::assert_support(
   { \
     const auto actual = dev.getInfo<name>()[index]; \
     if (actual < (value)) { \
-      THROW_ERROR( \
+      PRIMITIV_THROW_ERROR( \
           "OpenCL Device " << device_id << " on the platform " << platform_id \
           << " does not satisfy the minimum requirement by primitiv. " \
           << "property: " << #name << "[" << #index << "], " \
@@ -1013,6 +1019,20 @@ OPENCLDEV_FW_X_CONST(pow_const_l);
 OPENCLDEV_FW_X_CONST(prelu);
 OPENCLDEV_FW_X_CONST(elu);
 
+void OpenCL::pown_fw_impl(const Tensor &x, std::int32_t k, Tensor &y) {
+  const std::uint32_t size = x.shape().size();
+  const std::uint32_t num_blocks = ::calc_num_blocks(
+      size, state_->pown_fw_group_size);
+  state_->pown_fw_kernel.setArg(0, CDATA(x));
+  state_->pown_fw_kernel.setArg(1, k);
+  state_->pown_fw_kernel.setArg(2, size);
+  state_->pown_fw_kernel.setArg(3, MDATA(y));
+  state_->queue.enqueueNDRangeKernel(
+      state_->pown_fw_kernel, cl::NullRange,
+      cl::NDRange(num_blocks * state_->pown_fw_group_size),
+      cl::NDRange(state_->pown_fw_group_size));
+}
+
 OPENCLDEV_BW_X_CONST(add_const);
 OPENCLDEV_BW_X_CONST(subtract_const_r);
 OPENCLDEV_BW_X_CONST(subtract_const_l);
@@ -1023,6 +1043,24 @@ OPENCLDEV_BW_X_CONST(pow_const_r);
 OPENCLDEV_BW_X_CONST(pow_const_l);
 OPENCLDEV_BW_X_CONST(prelu);
 OPENCLDEV_BW_X_CONST(elu);
+
+void OpenCL::pown_bw_impl(
+    const Tensor &x, const Tensor &y, const Tensor &gy, std::int32_t k,
+    Tensor &gx) {
+  const std::uint32_t size = x.shape().size();
+  const std::uint32_t num_blocks = ::calc_num_blocks(
+      size, state_->pown_bw_group_size);
+  state_->pown_bw_kernel.setArg(0, CDATA(x));
+  state_->pown_bw_kernel.setArg(1, CDATA(y));
+  state_->pown_bw_kernel.setArg(2, CDATA(gy));
+  state_->pown_bw_kernel.setArg(3, k);
+  state_->pown_bw_kernel.setArg(4, size);
+  state_->pown_bw_kernel.setArg(5, MDATA(gx));
+  state_->queue.enqueueNDRangeKernel(
+      state_->pown_bw_kernel, cl::NullRange,
+      cl::NDRange(num_blocks * state_->pown_bw_group_size),
+      cl::NDRange(state_->pown_bw_group_size));
+}
 
 OPENCLDEV_FW_X_SCALAR(add_scalar);
 OPENCLDEV_FW_X_SCALAR(subtract_scalar_r);
@@ -1295,6 +1333,41 @@ void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
       state_->batch_sum_fw_kernel, cl::NullRange,
       cl::NDRange(g1 * state_->batch_sum_fw_group_size),
       cl::NDRange(state_->batch_sum_fw_group_size));
+}
+
+void OpenCL::conv2d_fw_impl(const Tensor &, const Tensor &,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    Tensor &) {
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
+}
+
+void OpenCL::conv2d_bw_impl(
+    const Tensor &, const Tensor &, const Tensor &, const Tensor &,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    Tensor &, Tensor &) {
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
+}
+
+void OpenCL::max_pool2d_fw_impl(
+    const Tensor &,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    Tensor &) {
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
+}
+
+void OpenCL::max_pool2d_bw_impl(
+    const Tensor &, const Tensor &, const Tensor &,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    Tensor &) {
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
 }
 
 void OpenCL::inplace_multiply_const_impl(float k, Tensor &x) {
