@@ -165,13 +165,15 @@ Installing CLHPP
   $ cd OpenCL-CLHPP
   $ mkdir build
   $ cd build
-  $ cmake .. -DOPENCL_DIST_DIR=/path/to/opencl
+  $ cmake .. [OPTIONS]  # See: https://github.com/KhronosGroup/OpenCL-CLHPP
   $ make && make install
 
 
 Installing CLBlast
 ^^^^^^^^^^^^^^^^^^
 
+
+See https://github.com/CNugteren/CLBlast for more details
 
 .. code-block:: shell
 
@@ -182,7 +184,7 @@ Installing CLBlast
   $ tar xf ../clblast.tar.gz --strip-components 1
   $ mkdir build
   $ cd build
-  $ cmake .. -DOPENCL_ROOT=/path/to/opencl
+  $ cmake .. [OPTIONS]  # See: https://github.com/KhronosGroup/OpenCL-CLHPP
   $ make && make install
 
 
@@ -204,7 +206,8 @@ locations of their libraries if searching failed or you want to switch them:
 .. code-block:: shell
 
   $ cmake .. \
-    -DOPENCL_ROOT=/path/to/opencl \
-    -DCLHPP_ROOT_DIR=/path/to/opencl \
-    -DCLBLAST_ROOT_DIR=/path/to/clblast \
+    -DOpenCL_INCLUDE_DIR=/path/to/opencl/include \
+    -DOpenCL_LIBRARY=/path/to/libOpenCL.so \
+    -DCLHPP_INCLUDE_DIR=/path/to/clhpp/include \
+    -DCLBLAST_ROOT=/path/to/clblast/prefix \
     -DPRIMITIV_USE_OPENCL=ON
