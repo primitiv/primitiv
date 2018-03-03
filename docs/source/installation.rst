@@ -39,7 +39,7 @@ For using specific hardwares, it requires some hardware-dependent libraries:
 
   * `OpenCL 1.2 <https://www.khronos.org/opencl/>`_
   * `OpenCL C++ Bindings 2 (cl2.hpp) <http://github.khronos.org/OpenCL-CLHPP/>`_
-  * `clBLAS <https://github.com/clMathLibraries/clBLAS>`_
+  * `CLBlast 1.2.0 <https://github.com/CNugteren/CLBlast>`_
 
 
 Installing primitiv from source (Debian/Ubuntu)
@@ -146,3 +146,23 @@ searching failed or you want to switch them:
     -DCUDA_TOOLKIT_ROOT_DIR=/path/to/cuda \
     -DCUDNN_ROOT_DIR=/path/to/cuda \
     -DPRIMITIV_USE_CUDA=ON
+
+
+Installing primitiv with OpenCL
+-------------------------------
+
+
+.. code-block:: shell
+
+  $ cmake .. -DPRIMITIV_USE_OPENCL=ON
+
+The build process tries to find the OpenCL library, the OpenCL C++ headers,
+and the CLBlast library by default. You can also specify the explicit
+locations of their libraries if searching failed or you want to switch them:
+
+.. code-block:: shell
+
+  $ cmake .. \
+    -DCLHPP_ROOT_DIR=/path/to/clhpp \
+    -DCLBLAST_ROOT_DIR=/path/to/clblast \
+    -DPRIMITIV_USE_OPENCL=ON
