@@ -155,10 +155,12 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorSoftmaxCrossEntropy(
     const primitivTensor_t *x, const primitivTensor_t *t, uint32_t dim,
     primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeSoftmaxCrossEntropyWithArray(
+PRIMITIV_C_API PRIMITIV_C_STATUS
+primitivApplyNodeSoftmaxCrossEntropyWithArray(
     const primitivNode_t *x, const uint32_t *ids, size_t n, uint32_t dim,
     primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorSoftmaxCrossEntropyWithArray(
+PRIMITIV_C_API PRIMITIV_C_STATUS
+primitivApplyTensorSoftmaxCrossEntropyWithArray(
     const primitivTensor_t *x, const uint32_t *ids, size_t n, uint32_t dim,
     primitivTensor_t **y);
 
