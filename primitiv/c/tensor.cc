@@ -18,7 +18,7 @@ PRIMITIV_C_STATUS primitivCreateTensor(primitivTensor_t **newobj) try {
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivCloneTensor(
-    primitivTensor_t *src, primitivTensor_t **newobj) try {
+    const primitivTensor_t *src, primitivTensor_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(src);
   PRIMITIV_C_CHECK_NOT_NULL(newobj);
   *newobj = to_c_ptr(new Tensor(*to_cpp_ptr(src)));

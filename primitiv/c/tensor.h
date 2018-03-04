@@ -25,7 +25,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateTensor(
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivCloneTensor(
-    primitivTensor_t *src, primitivTensor_t **newobj);
+    const primitivTensor_t *src, primitivTensor_t **newobj);
 
 /**
  * Deletes the Tensor object.

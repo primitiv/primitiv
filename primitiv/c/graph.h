@@ -30,7 +30,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateNode(primitivNode_t **newobj);
  * @return Status code.
  */
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivCloneNode(
-    primitivNode_t *src, primitivNode_t **newobj);
+    const primitivNode_t *src, primitivNode_t **newobj);
 
 /**
  * Deletes the Node object.
