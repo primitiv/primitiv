@@ -152,6 +152,26 @@ Tensor slice(const Tensor &x, std::uint32_t dim, std::uint32_t lower, std::uint3
 }
 
 template<>
+std::vector<Tensor> split(const Tensor &x, std::uint32_t dim, std::uint32_t n) {
+  if (n == 0) {
+    PRIMITIV_THROW_ERROR("Invalid number of partitions: " << n);
+  }
+  const std::uint32_t total = x.shape()[dim];
+  const std::uint32_t span = total / n;
+  if (span * n != total) {
+    PRIMITIV_THROW_ERROR(
+        "Could not split the axis " << dim << " with size "
+        << total << " into " << n << " partitions.");
+  }
+  std::vector<Tensor> ret;
+  ret.reserve(n);
+  for (std::uint32_t i = 0; i < n; ++i) {
+    ret.emplace_back(slice(x, dim, i * span, (i + 1) * span));
+  }
+  return ret;
+}
+
+template<>
 Tensor concat(const std::vector<const Tensor *> &xs, std::uint32_t dim) {
   if (xs.empty()) PRIMITIV_THROW_ERROR("No tensors to be concatenated.");
   return xs[0]->device().concat_fw(xs, dim);
