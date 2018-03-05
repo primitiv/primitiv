@@ -223,7 +223,7 @@ if(PRIMITIV_USE_OPENCL)
   list(APPEND primitiv_all_OBJS $<TARGET_OBJECTS:primitiv_opencl_OBJS>)
   list(APPEND primitiv_all_DEPS
     ${OpenCL_LIBRARIES}
-    ${CLBLAS_LIBRARIES}
+    ${CLBLAST_LIBRARIES}
   )
 endif()
 
