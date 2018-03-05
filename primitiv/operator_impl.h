@@ -158,6 +158,15 @@ private:
   std::uint32_t upper_;
 };
 
+class Split : public Operator {
+  PRIMITIV_DECL_DEFAULTS_AND_FORWARD(1, n_);
+public:
+  Split(std::uint32_t dim, std::uint32_t n) : dim_(dim), n_(n) {}
+private:
+  std::uint32_t dim_;
+  std::uint32_t n_;
+};
+
 class Concat : public Operator {
   PRIMITIV_DECL_DEFAULTS_AND_FORWARD(Operator::NONZERO, 1);
 public:

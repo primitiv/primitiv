@@ -67,6 +67,7 @@ std::string Slice::name() const {
     + string_utils::to_string(upper_) + ')';
 }
 
+IMPL_NAME_2(Split, dim_, n_);
 IMPL_NAME_1(Concat, dim_);
 
 std::string Reshape::name() const {
@@ -181,6 +182,23 @@ FWD_SHAPE(RandomNormal) { UNUSED(x); *y[0] = shape_; }
 FWD_SHAPE(RandomLogNormal) { UNUSED(x); *y[0] = shape_; }
 FWD_SHAPE(Pick) { *y[0] = shape_ops::pick(*x[0], ids_, dim_); }
 FWD_SHAPE(Slice) { *y[0] = shape_ops::slice(*x[0], dim_, lower_, upper_); }
+FWD_SHAPE(Split) {
+  if (n_ == 0) {
+    PRIMITIV_THROW_ERROR("Invalid number of partitions: " << n_);
+  }
+  Shape xs = *x[0];
+  const std::uint32_t total = xs[dim_];
+  const std::uint32_t span = total / n_;
+  if (span * n_ != total) {
+    PRIMITIV_THROW_ERROR(
+        "Could not split the axis " << dim_ << " with size "
+        << total << " into " << n_ << " partitions.");
+  }
+  xs.update_dim(dim_, span);
+  for (std::uint32_t i = 0; i < n_; ++i) {
+    *y[i] = xs;
+  }
+}
 FWD_SHAPE(Concat) { *y[0] = shape_ops::concat(x, dim_); }
 FWD_SHAPE(Reshape) { *y[0] = shape_ops::reshape(*x[0], shape_); }
 FWD_SHAPE(Flatten) { *y[0] = shape_ops::flatten(*x[0]); }
@@ -303,6 +321,13 @@ FORWARD(RandomLogNormal) {
 
 FORWARD(Pick) { *y[0] = functions::pick(*x[0], ids_, dim_); }
 FORWARD(Slice) { *y[0] = functions::slice(*x[0], dim_, lower_, upper_); }
+FORWARD(Split) {
+  const std::uint32_t total = x[0]->shape()[dim_];
+  const std::uint32_t span = total / n_;
+  for (std::uint32_t i = 0; i < n_; ++i) {
+    *y[i] = functions::slice(*x[0], dim_, i * span, (i + 1) * span);
+  }
+}
 FORWARD(Concat) { *y[0] = functions::concat(x, dim_); }
 
 FORWARD(Reshape) { *y[0] = functions::reshape(*x[0], shape_); }
@@ -432,6 +457,16 @@ BACKWARD(Slice) {
   UNUSED(x);
   UNUSED(y);
   gy[0]->device().slice_bw(*gy[0], dim_, lower_, *gx[0]);
+}
+
+BACKWARD(Split) {
+  UNUSED(x);
+  UNUSED(y);
+  Device &dev = gy[0]->device();
+  const std::uint32_t span = gy[0]->shape()[dim_];
+  for (std::uint32_t i = 0; i < n_; ++i) {
+    dev.slice_bw(*gy[i], dim_, i * span, *gx[0]);
+  }
 }
 
 BACKWARD(Concat) {

@@ -625,6 +625,68 @@ TEST_F(OperatorImplTest, CheckSlice) {
   }
 }
 
+TEST_F(OperatorImplTest, CheckSplit) {
+  struct TestCase {
+    std::uint32_t dim, n;
+    Shape ret_shape;
+    vector<vector<float>> ret_data;
+    vector<float> bw_grad;
+  };
+  const vector<TestCase> test_cases {
+    {0, 1, Shape({2, 2}, 3),
+      {{1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4}},
+      {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
+    {0, 2, Shape({1, 2}, 3),
+      {{1, 3, 0, 0, -1, -3}, {2, 4, 0, 0, -2, -4}},
+      {1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2}},
+    {1, 1, Shape({2, 2}, 3),
+      {{1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4}},
+      {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
+    {1, 2, Shape({2}, 3),
+      {{1, 2, 0, 0, -1, -2}, {3, 4, 0, 0, -3, -4}},
+      {1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2}},
+    {2, 1, Shape({2, 2}, 3),
+      {{1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4}},
+      {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
+  };
+  setup_1arg();
+  for (const TestCase &tc : test_cases) {
+    Split node(tc.dim, tc.n);
+    EXPECT_EQ(1u, node.num_arguments());
+    EXPECT_EQ(tc.n, node.num_returns());
+    vector<Shape *> cur_shapes;
+    vector<Tensor *> cur_values, cur_grads;
+    for (std::uint32_t i = 0; i < tc.n; ++i) {
+      cur_shapes.emplace_back(new Shape());
+      cur_values.emplace_back(new Tensor());
+      cur_grads.emplace_back(new Tensor(
+            functions::constant<Tensor>(tc.ret_shape, (i + 1), *dev)));
+    }
+    node.forward_shape(arg_shapes, cur_shapes);
+    node.forward(arg_values, cur_values);
+    reset_gradients();
+    node.backward(
+        arg_values,
+        vector<const Tensor *>(cur_values.begin(), cur_values.end()),
+        vector<const Tensor *>(cur_grads.begin(), cur_grads.end()),
+        arg_grads);
+    EXPECT_EQ(
+        "Split(" + std::to_string(tc.dim) + ',' + std::to_string(tc.n) + ')',
+        node.name());
+    EXPECT_EQ(nullptr, node.get_device());
+    for (std::uint32_t i = 0; i < tc.n; ++i) {
+      EXPECT_EQ(tc.ret_shape, *cur_shapes[i]);
+      EXPECT_TRUE(vector_match(tc.ret_data[i], cur_values[i]->to_vector()));
+    }
+    EXPECT_TRUE(vector_match(tc.bw_grad, arg_grads[0]->to_vector()));
+    for (std::uint32_t i = 0; i < tc.n; ++i) {
+      delete cur_shapes[i];
+      delete cur_values[i];
+      delete cur_grads[i];
+    }
+  }
+}
+
 TEST_F(OperatorImplTest, CheckConcat) {
   struct TestCase {
     std::uint32_t dim;
