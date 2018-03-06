@@ -53,6 +53,7 @@ if(PRIMITIV_USE_CUDA)
 endif()
 if(PRIMITIV_USE_OPENCL)
   include_directories(${CLHPP_INCLUDE_DIR})
+  include_directories(${CLBLAST_INCLUDE_DIR})
 endif()
 
 # core library
