@@ -110,6 +110,37 @@ class ErrorHandler {
   std::string message_;
 };
 
+PRIMITIV_C_PTR_TO_PTR(Device, primitivDevice);
+PRIMITIV_C_PTR_TO_PTR(Node, primitivNode);
+PRIMITIV_C_VAL_TO_PTR(Node, primitivNode);
+PRIMITIV_C_PTR_TO_PTR(Graph, primitivGraph);
+PRIMITIV_C_PTR_TO_PTR(Initializer, primitivInitializer);
+PRIMITIV_C_PTR_TO_PTR(Model, primitivModel);
+PRIMITIV_C_PTR_TO_PTR(Parameter, primitivParameter);
+PRIMITIV_C_PTR_TO_PTR(Shape, primitivShape);
+PRIMITIV_C_VAL_TO_PTR(Shape, primitivShape);
+PRIMITIV_C_PTR_TO_PTR(Tensor, primitivTensor);
+PRIMITIV_C_VAL_TO_PTR(Tensor, primitivTensor);
+PRIMITIV_C_PTR_TO_PTR(Optimizer, primitivOptimizer);
+
+template<typename T, typename U>
+inline void move_vector_to_array_of_c_ptrs(
+    std::vector<T> *vector, U **array, std::size_t *size) {
+  if (array) {
+    if (*size < vector->size()) {
+      PRIMITIV_THROW_ERROR("Size is not enough to move a vector.");
+    }
+    std::transform(std::make_move_iterator(vector->begin()),
+                   std::make_move_iterator(vector->end()),
+                   array,
+                   [](T &&x) {
+                     return to_c_ptr_from_value(std::forward<T>(x));
+                   });
+  } else {
+    *size = vector->size();
+  }
+}
+
 template<typename T>
 inline void copy_vector_to_array(
     const std::vector<T> &vector, T *array, std::size_t *size) {
@@ -134,19 +165,6 @@ inline void copy_string_to_array(
     *size = str.length() + 1u;
   }
 }
-
-PRIMITIV_C_PTR_TO_PTR(Device, primitivDevice);
-PRIMITIV_C_PTR_TO_PTR(Node, primitivNode);
-PRIMITIV_C_VAL_TO_PTR(Node, primitivNode);
-PRIMITIV_C_PTR_TO_PTR(Graph, primitivGraph);
-PRIMITIV_C_PTR_TO_PTR(Initializer, primitivInitializer);
-PRIMITIV_C_PTR_TO_PTR(Model, primitivModel);
-PRIMITIV_C_PTR_TO_PTR(Parameter, primitivParameter);
-PRIMITIV_C_PTR_TO_PTR(Shape, primitivShape);
-PRIMITIV_C_VAL_TO_PTR(Shape, primitivShape);
-PRIMITIV_C_PTR_TO_PTR(Tensor, primitivTensor);
-PRIMITIV_C_VAL_TO_PTR(Tensor, primitivTensor);
-PRIMITIV_C_PTR_TO_PTR(Optimizer, primitivOptimizer);
 
 }  // namespace internal
 

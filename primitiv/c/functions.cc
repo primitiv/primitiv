@@ -212,6 +212,28 @@ PRIMITIV_C_STATUS primitivApplyTensorSlice(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
+PRIMITIV_C_STATUS primitivApplyNodeSplit(
+    const primitivNode_t *x, uint32_t dim, uint32_t n,
+    primitivNode_t **ys, size_t *size) try {
+  PRIMITIV_C_CHECK_NOT_NULL(x);
+  PRIMITIV_C_CHECK_NOT_NULL(size);
+  std::vector<primitiv::Node> nodes =
+      primitiv::functions::split(*to_cpp_ptr(x), dim, n);
+  primitiv::c::internal::move_vector_to_array_of_c_ptrs(&nodes, ys, size);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitivApplyTensorSplit(
+    const primitivTensor_t *x, uint32_t dim, uint32_t n,
+    primitivTensor_t **ys, size_t *size) try {
+  PRIMITIV_C_CHECK_NOT_NULL(x);
+  PRIMITIV_C_CHECK_NOT_NULL(size);
+  std::vector<primitiv::Tensor> tensors =
+      primitiv::functions::split(*to_cpp_ptr(x), dim, n);
+  primitiv::c::internal::move_vector_to_array_of_c_ptrs(&tensors, ys, size);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
 PRIMITIV_C_STATUS primitivApplyNodeConcat(
     const primitivNode_t *const *xs, size_t n, uint32_t dim,
     primitivNode_t **y) try {

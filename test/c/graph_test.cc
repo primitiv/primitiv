@@ -6,6 +6,7 @@
 #include <primitiv/c/functions.h>
 #include <primitiv/c/graph.h>
 #include <primitiv/c/naive_device.h>
+#include <primitiv/c/parameter.h>
 #include <primitiv/c/status.h>
 #include <primitiv/c/tensor.h>
 #include <test_utils.h>
@@ -295,6 +296,95 @@ TEST_F(CGraphTest, CheckForward) {
   for (std::uint32_t i = 0; i < nodes.size(); ++i) {
     ::primitivDeleteNode(nodes[i]);
   }
+  ::primitivDeleteGraph(g);
+}
+
+TEST_F(CGraphTest, CheckMultipleReturnValues) {
+  ::primitivResetStatus();
+  ::primitivSetDefaultDevice(dev);
+
+  ::primitivGraph_t *g;
+  ASSERT_EQ(PRIMITIV_C_OK, ::primitivCreateGraph(&g));
+  ::primitivSetDefaultGraph(g);
+
+  const uint32_t dims[] = {9};
+  ::primitivShape_t *shape;
+  ASSERT_EQ(PRIMITIV_C_OK,
+            ::primitivCreateShapeWithDims(dims, 1, 1, &shape));
+  const float data[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+  ::primitivParameter_t *px;
+  ASSERT_EQ(PRIMITIV_C_OK,
+            ::primitivCreateParameterWithValues(shape, data, 9, nullptr, &px));
+  ::primitivNode_t *x;
+  ::primitivApplyNodeParameter(px, nullptr, &x);
+
+  std::size_t length = 0u;
+  ASSERT_EQ(PRIMITIV_C_OK,
+            ::primitivApplyNodeSplit(x, 0, 3, nullptr, &length));
+  EXPECT_EQ(length, 3u);
+  ::primitivNode_t *ys[length];
+  ASSERT_EQ(PRIMITIV_C_OK,
+            ::primitivApplyNodeSplit(x, 0, 3, ys, &length));
+  ::primitivEvaluateNodeAsArray(ys[0], nullptr, &length);
+  float y0_values[length];
+  ::primitivEvaluateNodeAsArray(ys[0], y0_values, &length);
+  float y0_expected[] = {1, 2, 3};
+  EXPECT_TRUE(array_match(y0_expected, y0_values, length));
+  ::primitivEvaluateNodeAsArray(ys[1], nullptr, &length);
+  float y1_values[length];
+  ::primitivEvaluateNodeAsArray(ys[1], y1_values, &length);
+  float y1_expected[] = {4, 5, 6};
+  EXPECT_TRUE(array_match(y1_expected, y1_values, length));
+  ::primitivEvaluateNodeAsArray(ys[2], nullptr, &length);
+  float y2_values[length];
+  ::primitivEvaluateNodeAsArray(ys[2], y2_values, &length);
+  float y2_expected[] = {7, 8, 9};
+  EXPECT_TRUE(array_match(y2_expected, y2_values, length));
+
+  ASSERT_EQ(PRIMITIV_C_OK, ::primitivResetParameterGradients(px));
+
+  ASSERT_EQ(PRIMITIV_C_OK, ::primitivExecuteNodeBackward(ys[1]));
+  const ::primitivTensor_t *grad0;
+  ::primitivGetParameterGradient(px, &grad0);
+  ::primitivEvaluateTensorAsArray(grad0, nullptr, &length);
+  float grad0_values[length];
+  ::primitivEvaluateTensorAsArray(grad0, grad0_values, &length);
+  float grad0_expected[] {0, 0, 0, 1, 1, 1, 0, 0, 0};
+  EXPECT_TRUE(array_match(grad0_expected, grad0_values, length));
+
+  ::primitivNode_t *y3;
+  ::primitivApplyNodeAdd(ys[0], ys[1], &y3);
+  ASSERT_EQ(PRIMITIV_C_OK, ::primitivExecuteNodeBackward(y3));
+  const ::primitivTensor_t *grad1;
+  ::primitivGetParameterGradient(px, &grad1);
+  ::primitivEvaluateTensorAsArray(grad1, nullptr, &length);
+  float grad1_values[length];
+  ::primitivEvaluateTensorAsArray(grad1, grad1_values, &length);
+  float grad1_expected[] {1, 1, 1, 2, 2, 2, 0, 0, 0};
+  EXPECT_TRUE(array_match(grad1_expected, grad1_values, length));
+
+  ::primitivNode_t *y4;
+  ::primitivApplyNodeSumNodes(ys, 3, &y4);
+  ASSERT_EQ(PRIMITIV_C_OK, ::primitivExecuteNodeBackward(y4));
+  const ::primitivTensor_t *grad2;
+  ::primitivGetParameterGradient(px, &grad2);
+  ::primitivEvaluateTensorAsArray(grad2, nullptr, &length);
+  float grad2_values[length];
+  ::primitivEvaluateTensorAsArray(grad2, grad2_values, &length);
+  float grad2_expected[] {2, 2, 2, 3, 3, 3, 1, 1, 1};
+  EXPECT_TRUE(array_match(grad2_expected, grad2_values, length));
+
+  ASSERT_EQ(PRIMITIV_C_ERROR,
+            ::primitivApplyNodeSplit(x, 0, 2, nullptr, &length));
+
+  ::primitivDeleteShape(shape);
+  ::primitivDeleteParameter(px);
+  ::primitivDeleteNode(x);
+  ::primitivDeleteNode(ys[0]);
+  ::primitivDeleteNode(ys[1]);
+  ::primitivDeleteNode(ys[2]);
+  ::primitivDeleteNode(y3);
+  ::primitivDeleteNode(y4);
   ::primitivDeleteGraph(g);
 }
 
