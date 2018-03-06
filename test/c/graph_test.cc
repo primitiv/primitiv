@@ -318,13 +318,9 @@ TEST_F(CGraphTest, CheckMultipleReturnValues) {
   ::primitivNode_t *x;
   ::primitivApplyNodeParameter(px, nullptr, &x);
 
+  ::primitivNode_t *ys[3];
+  ASSERT_EQ(PRIMITIV_C_OK, ::primitivApplyNodeSplit(x, 0, 3, ys));
   std::size_t length = 0u;
-  ASSERT_EQ(PRIMITIV_C_OK,
-            ::primitivApplyNodeSplit(x, 0, 3, nullptr, &length));
-  EXPECT_EQ(length, 3u);
-  ::primitivNode_t *ys[length];
-  ASSERT_EQ(PRIMITIV_C_OK,
-            ::primitivApplyNodeSplit(x, 0, 3, ys, &length));
   ::primitivEvaluateNodeAsArray(ys[0], nullptr, &length);
   float y0_values[length];
   ::primitivEvaluateNodeAsArray(ys[0], y0_values, &length);
@@ -374,8 +370,8 @@ TEST_F(CGraphTest, CheckMultipleReturnValues) {
   float grad2_expected[] {2, 2, 2, 3, 3, 3, 1, 1, 1};
   EXPECT_TRUE(array_match(grad2_expected, grad2_values, length));
 
-  ASSERT_EQ(PRIMITIV_C_ERROR,
-            ::primitivApplyNodeSplit(x, 0, 2, nullptr, &length));
+  ::primitivNode_t *ys2[2];
+  ASSERT_EQ(PRIMITIV_C_ERROR, ::primitivApplyNodeSplit(x, 0, 2, ys2));
 
   ::primitivDeleteShape(shape);
   ::primitivDeleteParameter(px);

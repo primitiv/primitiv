@@ -79,11 +79,9 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorSlice(
     primitivTensor_t **y);
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeSplit(
-    const primitivNode_t *x, uint32_t dim, uint32_t n,
-    primitivNode_t **ys, size_t *size);
+    const primitivNode_t *x, uint32_t dim, uint32_t n, primitivNode_t **ys);
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorSplit(
-    const primitivTensor_t *x, uint32_t dim, uint32_t n,
-    primitivNode_t **ys, size_t *size);
+    const primitivTensor_t *x, uint32_t dim, uint32_t n, primitivNode_t **ys);
 
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeConcat(
     const primitivNode_t *const *xs, size_t n, uint32_t dim,
