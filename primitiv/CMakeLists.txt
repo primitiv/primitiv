@@ -64,7 +64,6 @@ set(primitiv_base_SRCS
   optimizer.cc
   optimizer_impl.cc
   parameter.cc
-  plugin_function.cc
   shape.cc
   shape_ops.cc
   tensor.cc

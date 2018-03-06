@@ -28,7 +28,18 @@ public:
    * @param dev Device
    * @throw primitiv::Error Initialization not succeeded.
    */
-  explicit PluginFunction(const std::string &path);
+  explicit PluginFunction(const std::string &path)
+  : lib_(path)
+  , num_args_fp_(lib_.get_symbol<std::uint32_t(void)>("num_arguments"))
+  , num_rets_fp_(lib_.get_symbol<std::uint32_t(void)>("num_returns"))
+  , fwd_shp_fp_(lib_.get_symbol<
+      void(const Shape *const *const, Shape *const *const)>("forward_shape"))
+  , fwd_fp_(lib_.get_symbol<
+      void(const Tensor *const *const, Tensor *const *const)>("forward"))
+  , bwd_fp_(lib_.get_symbol<
+      void(
+        const Tensor *const *const, const Tensor *const *const,
+        const Tensor *const *const, Tensor *const *const)>("backward")) {}
 
   /**
    * Retrieves the number of required arguments.
@@ -204,13 +215,13 @@ private:
   std::function<std::uint32_t(void)> num_args_fp_;
   std::function<std::uint32_t(void)> num_rets_fp_;
   std::function<
-    void(const Shape * const * const, Shape * const * const)> fwd_shp_fp_;
+    void(const Shape *const *const, Shape *const *const)> fwd_shp_fp_;
   std::function<
-    void(const Tensor * const * const, Tensor * const * const)> fwd_fp_;
+    void(const Tensor *const *const, Tensor *const *const)> fwd_fp_;
   std::function<
     void(
-        const Tensor * const * const, const Tensor * const * const,
-        const Tensor * const * const, Tensor * const * const)> bwd_fp_;
+        const Tensor *const *const, const Tensor *const *const,
+        const Tensor *const *const, Tensor *const *const)> bwd_fp_;
 };
 
 }  // namespace primitiv
