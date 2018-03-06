@@ -89,6 +89,52 @@ public:
     bwd_fp_(args_v.data(), rets_v.data(), rets_g.data(), args_g.data());
   }
 
+  /**
+   * Directly calls the forward operation using argument lists.
+   * @param head The first argument.
+   * @param tail List of remaining arguments.
+   * @return List of return values.
+   */
+  template<typename... Args>
+  std::vector<Tensor> operator()(
+      const Tensor &head, const Args &... tail) {
+    const std::uint32_t argn = num_arguments();
+    const std::uint32_t retn = num_returns();
+    if (sizeof...(tail) + 1 != argn) {
+      PRIMITIV_THROW_ERROR(
+          "Invalid number of arguments. expected: "
+          << argn << ", actual: " << (sizeof...(tail) + 1));
+    }
+
+    const std::vector<const Tensor *> arg_ptrs { &head, &tail... };
+
+    std::vector<Shape> arg_shapes(argn), ret_shapes(retn);
+    std::vector<const Shape *> arg_shape_ptrs(argn);
+    std::vector<Shape *> ret_shape_ptrs(retn);
+    for (std::uint32_t i = 0; i < argn; ++i) {
+      arg_shapes[i] = arg_ptrs[i]->shape();
+      arg_shape_ptrs[i] = &arg_shapes[i];
+    }
+    for (std::uint32_t i = 0; i < retn; ++i) {
+      ret_shape_ptrs[i] = &ret_shapes[i];
+    }
+
+    fwd_shp_fp_(arg_shape_ptrs.data(), ret_shape_ptrs.data());
+
+    Device &dev = head.device();
+    std::vector<Tensor> rets(retn);
+    std::vector<Tensor *> ret_ptrs(retn);
+    for (std::uint32_t i = 0; i < retn; ++i) {
+      rets[i] = dev.new_raw_tensor(ret_shapes[i]);
+      ret_ptrs[i] = &rets[i];
+    }
+
+    fwd_fp_(
+        std::vector<const Tensor *> { &head, &tail... }.data(),
+        ret_ptrs.data());
+    return rets;
+  }
+
 private:
   DynamicLibrary lib_;
   std::function<std::uint32_t(void)> num_args_fp_;

@@ -127,6 +127,22 @@ TEST_F(CUDAPluginFunctionTest, CheckBackward) {
   }
 }
 
+TEST_F(CUDAPluginFunctionTest, CheckCallWithTensor) {
+  const std::string dirname = DLLS_DIR;
+  PluginFunction pf(dirname + "/test_plugin_function.cudll");
+
+  devices::CUDA dev(0);
+  Device::set_default(dev);
+
+  const Tensor a = functions::input<Tensor>(Shape({3}, 2), {1, 2, 3, 4, 5, 6});
+  const Tensor b = functions::ones<Tensor>(Shape({3}, 2));
+  vector<Tensor> ys = pf(a, b);
+  EXPECT_EQ(1u, ys.size());
+  EXPECT_EQ(Shape({3}, 2), ys[0].shape());
+  EXPECT_TRUE(vector_match(
+        vector<float> {2, 3, 4, 5, 6, 7}, ys[0].to_vector()));
+}
+
 TEST_F(CUDAPluginFunctionTest, CheckInvalidInitialize) {
   const std::string dirname = DLLS_DIR;
   EXPECT_THROW(PluginFunction pf(dirname + "/foo"), Error);
