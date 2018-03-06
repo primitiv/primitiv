@@ -19,6 +19,12 @@ TEST_F(DynamicLibraryTest, CheckInitialize) {
   EXPECT_THROW(DynamicLibrary lib(dirname + "/foo"), Error);
 }
 
+TEST_F(DynamicLibraryTest, CheckProperties) {
+  DynamicLibrary lib(std::string(DLLS_DIR) + "/basic_test.dll");
+  EXPECT_EQ(std::string(DLLS_DIR) + "/basic_test.dll", lib.path());
+  EXPECT_NE(nullptr, lib.handle());
+}
+
 TEST_F(DynamicLibraryTest, CheckGetSymbol) {
   DynamicLibrary lib(std::string(DLLS_DIR) + "/basic_test.dll");
   void *fp1 = nullptr;
