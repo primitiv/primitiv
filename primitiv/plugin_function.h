@@ -9,6 +9,7 @@
 
 #include <primitiv/device.h>
 #include <primitiv/dynamic_library.h>
+#include <primitiv/graph.h>
 #include <primitiv/mixins.h>
 #include <primitiv/operator.h>
 #include <primitiv/string_utils.h>
@@ -99,7 +100,7 @@ public:
    */
   template<typename... Args>
   std::vector<Tensor> operator()(
-      const Tensor &head, const Args &... tail) const {
+      const Tensor &head, const Args &...tail) const {
     const std::uint32_t argn = num_arguments();
     const std::uint32_t retn = num_returns();
     if (sizeof...(tail) + 1 != argn) {
@@ -177,6 +178,26 @@ public:
   private:
     const PluginFunction &pf_;
   };
+
+  /**
+   * Registers a new operator representing the plugin function to the graph.
+   * @param head The first argument.
+   * @param tail List of remaining arguments.
+   * @return List of return values.
+   */
+  template<typename... Args>
+  std::vector<Node> operator()(
+      const Node &head, const Args &...tail) const {
+    const std::uint32_t argn = num_arguments();
+    if (sizeof...(tail) + 1 != argn) {
+      PRIMITIV_THROW_ERROR(
+          "Invalid number of arguments. expected: "
+          << argn << ", actual: " << (sizeof...(tail) + 1));
+    }
+    return head.graph().add_operator(
+        std::unique_ptr<Operator>(new PluginFunction::Operator(*this)),
+        { head, tail... });
+  }
 
 private:
   DynamicLibrary lib_;

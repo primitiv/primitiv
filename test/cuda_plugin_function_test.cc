@@ -66,6 +66,7 @@ TEST_F(CUDAPluginFunctionTest, CheckForward) {
     const Tensor b = functions::ones<Tensor>(Shape({3}, 2));
     Tensor y;
     EXPECT_NO_THROW(pf.forward({ &a, &b }, { &y }));
+    EXPECT_EQ(Shape({3}, 2), y.shape());
     EXPECT_TRUE(vector_match(vector<float> {2, 3, 4, 5, 6, 7}, y.to_vector()));
   }
   {
@@ -74,6 +75,7 @@ TEST_F(CUDAPluginFunctionTest, CheckForward) {
     const Tensor b = functions::ones<Tensor>({3});
     Tensor y;
     EXPECT_NO_THROW(pf.forward({ &a, &b }, { &y }));
+    EXPECT_EQ(Shape({3}, 2), y.shape());
     EXPECT_TRUE(vector_match(vector<float> {2, 3, 4, 5, 6, 7}, y.to_vector()));
   }
   {
@@ -81,6 +83,7 @@ TEST_F(CUDAPluginFunctionTest, CheckForward) {
     const Tensor b = functions::ones<Tensor>(Shape({3}, 2));
     Tensor y;
     EXPECT_NO_THROW(pf.forward({ &a, &b }, { &y }));
+    EXPECT_EQ(Shape({3}, 2), y.shape());
     EXPECT_TRUE(vector_match(vector<float> {2, 3, 4, 2, 3, 4}, y.to_vector()));
   }
 }
@@ -127,20 +130,102 @@ TEST_F(CUDAPluginFunctionTest, CheckBackward) {
   }
 }
 
-TEST_F(CUDAPluginFunctionTest, CheckCallWithTensor) {
+TEST_F(CUDAPluginFunctionTest, CheckCallWithTensors) {
   const std::string dirname = DLLS_DIR;
   PluginFunction pf(dirname + "/test_plugin_function.cudll");
 
   devices::CUDA dev(0);
   Device::set_default(dev);
 
-  const Tensor a = functions::input<Tensor>(Shape({3}, 2), {1, 2, 3, 4, 5, 6});
-  const Tensor b = functions::ones<Tensor>(Shape({3}, 2));
-  vector<Tensor> ys = pf(a, b);
-  EXPECT_EQ(1u, ys.size());
-  EXPECT_EQ(Shape({3}, 2), ys[0].shape());
-  EXPECT_TRUE(vector_match(
-        vector<float> {2, 3, 4, 5, 6, 7}, ys[0].to_vector()));
+  {
+    const Tensor a = functions::input<Tensor>(
+        Shape({3}, 2), {1, 2, 3, 4, 5, 6});
+    const Tensor b = functions::ones<Tensor>(Shape({3}, 2));
+    vector<Tensor> ys = pf(a, b);
+    EXPECT_EQ(1u, ys.size());
+    EXPECT_EQ(Shape({3}, 2), ys[0].shape());
+    EXPECT_TRUE(vector_match(
+          vector<float> {2, 3, 4, 5, 6, 7}, ys[0].to_vector()));
+  }
+  {
+    const Tensor a = functions::input<Tensor>({3}, {1, 2, 3});
+    const Tensor b = functions::ones<Tensor>(Shape({3}, 2));
+    vector<Tensor> ys = pf(a, b);
+    EXPECT_EQ(1u, ys.size());
+    EXPECT_EQ(Shape({3}, 2), ys[0].shape());
+    EXPECT_TRUE(vector_match(
+          vector<float> {2, 3, 4, 2, 3, 4}, ys[0].to_vector()));
+  }
+  {
+    const Tensor a = functions::input<Tensor>(
+        Shape({3}, 2), {1, 2, 3, 4, 5, 6});
+    const Tensor b = functions::ones<Tensor>({3});
+    vector<Tensor> ys = pf(a, b);
+    EXPECT_EQ(1u, ys.size());
+    EXPECT_EQ(Shape({3}, 2), ys[0].shape());
+    EXPECT_TRUE(vector_match(
+          vector<float> {2, 3, 4, 5, 6, 7}, ys[0].to_vector()));
+  }
+  {
+    const Tensor a = functions::input<Tensor>(
+        Shape({3}, 2), {1, 2, 3, 4, 5, 6});
+    EXPECT_THROW(pf(a), Error);
+    EXPECT_THROW(pf(a, a, a), Error);
+  }
+}
+
+TEST_F(CUDAPluginFunctionTest, CheckCallWithNodes) {
+  const std::string dirname = DLLS_DIR;
+  PluginFunction pf(dirname + "/test_plugin_function.cudll");
+
+  devices::CUDA dev(0);
+  Device::set_default(dev);
+  Graph g;
+  Graph::set_default(g);
+
+  {
+    Parameter p({3}, {1, 2, 3});
+    const Node a = functions::parameter<Node>(p);
+    const Node b = functions::ones<Node>(Shape({3}, 2));
+    vector<Node> ys = pf(a, b);
+    p.reset_gradient();
+    ys[0].backward();
+    EXPECT_EQ(1u, ys.size());
+    EXPECT_EQ(Shape({3}, 2), ys[0].shape());
+    EXPECT_TRUE(vector_match(
+          vector<float> {2, 3, 4, 2, 3, 4}, ys[0].to_vector()));
+    EXPECT_TRUE(vector_match(vector<float>(3, 2), p.gradient().to_vector()));
+  }
+  {
+    Parameter p({3}, {1, 2, 3});
+    const Node a = functions::ones<Node>(Shape({3}, 2));
+    const Node b = functions::parameter<Node>(p);
+    vector<Node> ys = pf(a, b);
+    p.reset_gradient();
+    ys[0].backward();
+    EXPECT_EQ(1u, ys.size());
+    EXPECT_EQ(Shape({3}, 2), ys[0].shape());
+    EXPECT_TRUE(vector_match(
+          vector<float> {2, 3, 4, 2, 3, 4}, ys[0].to_vector()));
+    EXPECT_TRUE(vector_match(vector<float>(3, 2), p.gradient().to_vector()));
+  }
+  {
+    Parameter p({3}, {1, 2, 3});
+    const Node a = functions::parameter<Node>(p);
+    const Node b = functions::parameter<Node>(p);
+    vector<Node> ys = pf(a, b);
+    p.reset_gradient();
+    ys[0].backward();
+    EXPECT_EQ(1u, ys.size());
+    EXPECT_EQ(Shape {3}, ys[0].shape());
+    EXPECT_TRUE(vector_match(vector<float> {2, 4, 6}, ys[0].to_vector()));
+    EXPECT_TRUE(vector_match(vector<float>(3, 2), p.gradient().to_vector()));
+  }
+  {
+    const Node a = functions::zeros<Node>(Shape({3}, 2));
+    EXPECT_THROW(pf(a), Error);
+    EXPECT_THROW(pf(a, a, a), Error);
+  }
 }
 
 TEST_F(CUDAPluginFunctionTest, CheckInvalidInitialize) {
