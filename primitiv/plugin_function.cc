@@ -1,10 +1,10 @@
 #include <primitiv/config.h>
 
-#include <primitiv/precompiled_function.h>
+#include <primitiv/plugin_function.h>
 
 namespace primitiv {
 
-PrecompiledFunction::PrecompiledFunction(const std::string &path)
+PluginFunction::PluginFunction(const std::string &path)
 : lib_(path)
 , num_args_fp_(lib_.get_symbol<std::uint32_t(void)>("num_arguments"))
 , num_rets_fp_(lib_.get_symbol<std::uint32_t(void)>("num_returns"))

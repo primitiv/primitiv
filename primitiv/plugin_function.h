@@ -1,5 +1,5 @@
-#ifndef PRIMITIV_PRECOMPILED_FUNCTION_H_
-#define PRIMITIV_PRECOMPILED_FUNCTION_H_
+#ifndef PRIMITIV_PLUGIN_FUNCTION_H_
+#define PRIMITIV_PLUGIN_FUNCTION_H_
 
 #include <cstdint>
 #include <functional>
@@ -16,7 +16,7 @@ namespace primitiv {
 /**
  * Interface of precompiled functions.
  */
-class PrecompiledFunction : mixins::Noncopyable<PrecompiledFunction> {
+class PluginFunction : mixins::Noncopyable<PluginFunction> {
 public:
   /**
    * Initializes a new function using a specified binary.
@@ -25,7 +25,7 @@ public:
    * @param dev Device
    * @throw primitiv::Error Initialization not succeeded.
    */
-  explicit PrecompiledFunction(const std::string &path);
+  explicit PluginFunction(const std::string &path);
 
   /**
    * Retrieves the number of required arguments.
@@ -105,4 +105,4 @@ private:
 
 }  // namespace primitiv
 
-#endif  // PRIMITIV_PRECOMPILED_FUNCTION_H_
+#endif  // PRIMITIV_PLUGIN_FUNCTION_H_

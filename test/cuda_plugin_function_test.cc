@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 #include <primitiv/error.h>
 #include <primitiv/functions.h>
-#include <primitiv/precompiled_function.h>
+#include <primitiv/plugin_function.h>
 #include <test_utils.h>
 
 #include <primitiv/cuda_device.h>
@@ -16,19 +16,19 @@ using test_utils::vector_match;
 
 namespace primitiv {
 
-class CUDAPrecompiledFunctionTest : public testing::Test {};
+class CUDAPluginFunctionTest : public testing::Test {};
 
-TEST_F(CUDAPrecompiledFunctionTest, CheckInitialize) {
+TEST_F(CUDAPluginFunctionTest, CheckInitialize) {
   const std::string dirname = DLLS_DIR;
-  PrecompiledFunction pf(dirname + "/precompiled_function.cudll");
+  PluginFunction pf(dirname + "/test_plugin_function.cudll");
 
   EXPECT_EQ(2u, pf.num_arguments());
   EXPECT_EQ(1u, pf.num_returns());
 }
 
-TEST_F(CUDAPrecompiledFunctionTest, CheckForwardShape) {
+TEST_F(CUDAPluginFunctionTest, CheckForwardShape) {
   const std::string dirname = DLLS_DIR;
-  PrecompiledFunction pf(dirname + "/precompiled_function.cudll");
+  PluginFunction pf(dirname + "/test_plugin_function.cudll");
 
   {
     Shape sa({3}, 2);
@@ -53,9 +53,9 @@ TEST_F(CUDAPrecompiledFunctionTest, CheckForwardShape) {
   }
 }
 
-TEST_F(CUDAPrecompiledFunctionTest, CheckForward) {
+TEST_F(CUDAPluginFunctionTest, CheckForward) {
   const std::string dirname = DLLS_DIR;
-  PrecompiledFunction pf(dirname + "/precompiled_function.cudll");
+  PluginFunction pf(dirname + "/test_plugin_function.cudll");
 
   devices::CUDA dev(0);
   Device::set_default(dev);
@@ -85,9 +85,9 @@ TEST_F(CUDAPrecompiledFunctionTest, CheckForward) {
   }
 }
 
-TEST_F(CUDAPrecompiledFunctionTest, CheckBackward) {
+TEST_F(CUDAPluginFunctionTest, CheckBackward) {
   const std::string dirname = DLLS_DIR;
-  PrecompiledFunction pf(dirname + "/precompiled_function.cudll");
+  PluginFunction pf(dirname + "/test_plugin_function.cudll");
 
   devices::CUDA dev(0);
   Device::set_default(dev);
@@ -127,14 +127,14 @@ TEST_F(CUDAPrecompiledFunctionTest, CheckBackward) {
   }
 }
 
-TEST_F(CUDAPrecompiledFunctionTest, CheckInvalidInitialize) {
+TEST_F(CUDAPluginFunctionTest, CheckInvalidInitialize) {
   const std::string dirname = DLLS_DIR;
-  EXPECT_THROW(PrecompiledFunction pf(dirname + "/foo"), Error);
+  EXPECT_THROW(PluginFunction pf(dirname + "/foo"), Error);
 }
 
-TEST_F(CUDAPrecompiledFunctionTest, CheckInvalidOperations) {
+TEST_F(CUDAPluginFunctionTest, CheckInvalidOperations) {
   const std::string dirname = DLLS_DIR;
-  PrecompiledFunction pf(dirname + "/precompiled_function.cudll");
+  PluginFunction pf(dirname + "/test_plugin_function.cudll");
 
   Shape sa {2};
   Shape sb {3};
