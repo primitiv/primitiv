@@ -104,22 +104,32 @@ void forward_shape(
 void forward(
     const primitiv::Tensor * const * const args,
     primitiv::Tensor * const * const rets) {
+  static_cast<void>(args);
+  static_cast<void>(rets);
+  ::set_device(args[0]->device());
+  ::check_device(args[1]->device());
+  const primitiv::Shape arg0_s = args[0]->shape();
+  const primitiv::Shape arg1_s = args[1]->shape();
+  primitiv::Shape ret0_s;
+  const primitiv::Shape * const args_sp[] {
+    &arg0_s,
+    &arg1_s,
+  };
+  primitiv::Shape * const rets_sp[] {
+    &ret0_s,
+  };
+  forward_shape(args_sp, rets_sp);
+  *rets[0] = ::device->new_raw_tensor(ret0_s);
   std::size_t batch = 0;
-  ::set_device(rets[0]->device());
-  for (std::size_t i = 0; i < ::num_arguments(); ++i) {
-    ::check_device(args[i]->device());
-  }
-  for (std::size_t i = 0; i < ::num_returns(); ++i) {
-    ::check_device(rets[i]->device());
-    batch = std::max<std::size_t>(batch, rets[i]->shape().batch());
-  }
-  const std::size_t volume = rets[0]->shape().volume();
+  batch = std::max<std::size_t>(batch, arg0_s.batch());
+  batch = std::max<std::size_t>(batch, arg1_s.batch());
+  const std::size_t volume = ret0_s.volume();
   const std::size_t grid_size = ::calc_grid_size(volume);
   CUDA_CALL(::cudaSetDevice(::device_id));
   ::forward_device<<<dim3(grid_size, batch), ::max_x_size>>>(
-      CDATA(args[0]), args[0]->shape().has_batch(),
-      CDATA(args[1]), args[1]->shape().has_batch(),
-      MDATA(rets[0]), rets[0]->shape().has_batch(),
+      CDATA(args[0]), arg0_s.has_batch(),
+      CDATA(args[1]), arg1_s.has_batch(),
+      MDATA(rets[0]), ret0_s.has_batch(),
       volume);
 }
 
@@ -128,24 +138,29 @@ void backward(
     const primitiv::Tensor * const * const rets_v,
     const primitiv::Tensor * const * const rets_g,
     primitiv::Tensor * const * const args_g) {
+  static_cast<void>(args_v);
+  static_cast<void>(rets_v);
+  static_cast<void>(rets_g);
+  static_cast<void>(args_g);
+  ::set_device(args_v[0]->device());
+  ::check_device(args_v[1]->device());
+  ::check_device(args_g[0]->device());
+  ::check_device(args_g[1]->device());
+  ::check_device(rets_v[0]->device());
+  ::check_device(rets_g[0]->device());
+  primitiv::Shape arg0_s = args_v[0]->shape();
+  primitiv::Shape arg1_s = args_v[1]->shape();
+  primitiv::Shape ret0_s = rets_v[0]->shape();
   std::size_t batch = 0;
-  ::set_device(rets_v[0]->device());
-  for (std::size_t i = 0; i < ::num_arguments(); ++i) {
-    ::check_device(args_v[i]->device());
-    ::check_device(args_g[i]->device());
-  }
-  for (std::size_t i = 0; i < ::num_returns(); ++i) {
-    ::check_device(rets_v[i]->device());
-    ::check_device(rets_g[i]->device());
-    batch = std::max<std::size_t>(batch, rets_v[i]->shape().batch());
-  }
-  const std::size_t volume= rets_v[0]->shape().volume();
+  batch = std::max<std::size_t>(batch, arg0_s.batch());
+  batch = std::max<std::size_t>(batch, arg1_s.batch());
+  const std::size_t volume = ret0_s.volume();
   const std::size_t grid_size = ::calc_grid_size(volume);
   CUDA_CALL(::cudaSetDevice(::device_id));
   ::backward_device<<<dim3(grid_size, batch), ::max_x_size>>>(
-      CDATA(args_v[0]), MDATA(args_g[0]), args_v[0]->shape().has_batch(),
-      CDATA(args_v[1]), MDATA(args_g[1]), args_v[1]->shape().has_batch(),
-      CDATA(rets_v[0]), CDATA(rets_g[0]), rets_v[0]->shape().has_batch(),
+      CDATA(args_v[0]), MDATA(args_g[0]), arg0_s.has_batch(),
+      CDATA(args_v[1]), MDATA(args_g[1]), arg1_s.has_batch(),
+      CDATA(rets_v[0]), CDATA(rets_g[0]), ret0_s.has_batch(),
       volume);
 }
 

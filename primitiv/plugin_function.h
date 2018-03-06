@@ -108,33 +108,29 @@ public:
           << argn << ", actual: " << (sizeof...(tail) + 1));
     }
 
-    const std::vector<const Tensor *> arg_ptrs { &head, &tail... };
+    const std::vector<const Tensor *> args_vp { &head, &tail... };
 
-    std::vector<Shape> arg_shapes(argn), ret_shapes(retn);
-    std::vector<const Shape *> arg_shape_ptrs(argn);
-    std::vector<Shape *> ret_shape_ptrs(retn);
+    std::vector<Shape> args_s(argn), rets_s(retn);
+    std::vector<const Shape *> args_sp(argn);
+    std::vector<Shape *> rets_sp(retn);
     for (std::uint32_t i = 0; i < argn; ++i) {
-      arg_shapes[i] = arg_ptrs[i]->shape();
-      arg_shape_ptrs[i] = &arg_shapes[i];
+      args_s[i] = args_vp[i]->shape();
+      args_sp[i] = &args_s[i];
     }
     for (std::uint32_t i = 0; i < retn; ++i) {
-      ret_shape_ptrs[i] = &ret_shapes[i];
+      rets_sp[i] = &rets_s[i];
     }
 
-    fwd_shp_fp_(arg_shape_ptrs.data(), ret_shape_ptrs.data());
+    fwd_shp_fp_(args_sp.data(), rets_sp.data());
 
-    Device &dev = head.device();
-    std::vector<Tensor> rets(retn);
-    std::vector<Tensor *> ret_ptrs(retn);
+    std::vector<Tensor> rets_v(retn);
+    std::vector<Tensor *> rets_vp(retn);
     for (std::uint32_t i = 0; i < retn; ++i) {
-      rets[i] = dev.new_raw_tensor(ret_shapes[i]);
-      ret_ptrs[i] = &rets[i];
+      rets_vp[i] = &rets_v[i];
     }
 
-    fwd_fp_(
-        std::vector<const Tensor *> { &head, &tail... }.data(),
-        ret_ptrs.data());
-    return rets;
+    fwd_fp_(args_vp.data(), rets_vp.data());
+    return rets_v;
   }
 
   class Operator : public primitiv::Operator {

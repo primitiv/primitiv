@@ -64,7 +64,7 @@ TEST_F(CUDAPluginFunctionTest, CheckForward) {
     const Tensor a = functions::input<Tensor>(
         Shape({3}, 2), {1, 2, 3, 4, 5, 6});
     const Tensor b = functions::ones<Tensor>(Shape({3}, 2));
-    Tensor y = dev.new_raw_tensor(Shape({3}, 2));
+    Tensor y;
     EXPECT_NO_THROW(pf.forward({ &a, &b }, { &y }));
     EXPECT_TRUE(vector_match(vector<float> {2, 3, 4, 5, 6, 7}, y.to_vector()));
   }
@@ -72,14 +72,14 @@ TEST_F(CUDAPluginFunctionTest, CheckForward) {
     const Tensor a = functions::input<Tensor>(
         Shape({3}, 2), {1, 2, 3, 4, 5, 6});
     const Tensor b = functions::ones<Tensor>({3});
-    Tensor y = dev.new_raw_tensor(Shape({3}, 2));
+    Tensor y;
     EXPECT_NO_THROW(pf.forward({ &a, &b }, { &y }));
     EXPECT_TRUE(vector_match(vector<float> {2, 3, 4, 5, 6, 7}, y.to_vector()));
   }
   {
     const Tensor a = functions::input<Tensor>({3}, {1, 2, 3});
     const Tensor b = functions::ones<Tensor>(Shape({3}, 2));
-    Tensor y = dev.new_raw_tensor(Shape({3}, 2));
+    Tensor y;
     EXPECT_NO_THROW(pf.forward({ &a, &b }, { &y }));
     EXPECT_TRUE(vector_match(vector<float> {2, 3, 4, 2, 3, 4}, y.to_vector()));
   }
