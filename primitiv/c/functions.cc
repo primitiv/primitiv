@@ -215,6 +215,7 @@ PRIMITIV_C_STATUS primitivApplyTensorSlice(
 PRIMITIV_C_STATUS primitivApplyNodeSplit(
     const primitivNode_t *x, uint32_t dim, uint32_t n, primitivNode_t **ys) try {
   PRIMITIV_C_CHECK_NOT_NULL(x);
+  PRIMITIV_C_CHECK_NOT_NULL(ys);
   std::vector<primitiv::Node> nodes =
       primitiv::functions::split(*to_cpp_ptr(x), dim, n);
   size_t size = n;
@@ -225,6 +226,7 @@ PRIMITIV_C_STATUS primitivApplyNodeSplit(
 PRIMITIV_C_STATUS primitivApplyTensorSplit(
     const primitivTensor_t *x, uint32_t dim, uint32_t n, primitivTensor_t **ys) try {
   PRIMITIV_C_CHECK_NOT_NULL(x);
+  PRIMITIV_C_CHECK_NOT_NULL(ys);
   std::vector<primitiv::Tensor> tensors =
       primitiv::functions::split(*to_cpp_ptr(x), dim, n);
   size_t size = n;
