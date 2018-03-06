@@ -10,6 +10,8 @@
 #include <primitiv/device.h>
 #include <primitiv/dynamic_library.h>
 #include <primitiv/mixins.h>
+#include <primitiv/operator.h>
+#include <primitiv/string_utils.h>
 
 namespace primitiv {
 
@@ -97,7 +99,7 @@ public:
    */
   template<typename... Args>
   std::vector<Tensor> operator()(
-      const Tensor &head, const Args &... tail) {
+      const Tensor &head, const Args &... tail) const {
     const std::uint32_t argn = num_arguments();
     const std::uint32_t retn = num_returns();
     if (sizeof...(tail) + 1 != argn) {
@@ -134,6 +136,51 @@ public:
         ret_ptrs.data());
     return rets;
   }
+
+  class Operator : public primitiv::Operator {
+  public:
+    explicit Operator(const PluginFunction &pf) : pf_(pf) {}
+    std::string name() const override {
+      return
+        "Plugin("
+        + string_utils::to_string(
+            reinterpret_cast<std::uintptr_t>(pf_.lib_.handle()))
+        + ')';
+    }
+
+    std::uint32_t num_arguments() const override {
+      return pf_.num_args_fp_();
+    }
+
+    std::uint32_t num_returns() const override {
+      return pf_.num_rets_fp_();
+    }
+
+    bool has_inner_values() const override { return false; }
+
+    void forward_shape(
+        const std::vector<const Shape *> &args,
+        const std::vector<Shape *> &rets) const override {
+      pf_.fwd_shp_fp_(args.data(), rets.data());
+    }
+
+    void forward(
+        const std::vector<const Tensor *> &args,
+        const std::vector<Tensor *> &rets) const override {
+      pf_.fwd_fp_(args.data(), rets.data());
+    }
+
+    void backward(
+        const std::vector<const Tensor *> &args_v,
+        const std::vector<const Tensor *> &rets_v,
+        const std::vector<const Tensor *> &rets_g,
+        const std::vector<Tensor *> &args_g) const override {
+      pf_.bwd_fp_(args_v.data(), rets_v.data(), rets_g.data(), args_g.data());
+    }
+
+  private:
+    const PluginFunction &pf_;
+  };
 
 private:
   DynamicLibrary lib_;
