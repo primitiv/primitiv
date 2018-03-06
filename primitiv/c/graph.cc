@@ -20,7 +20,7 @@ PRIMITIV_C_STATUS primitivCreateNode(primitivNode_t **newobj) try {
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
 PRIMITIV_C_STATUS primitivCloneNode(
-    primitivNode_t *src, primitivNode_t **newobj) try {
+    const primitivNode_t *src, primitivNode_t **newobj) try {
   PRIMITIV_C_CHECK_NOT_NULL(src);
   PRIMITIV_C_CHECK_NOT_NULL(newobj);
   *newobj = to_c_ptr(new Node(*to_cpp_ptr(src)));

@@ -27,6 +27,14 @@ PRIMITIV_C_STATUS primitivCreateShapeWithDims(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
+PRIMITIV_C_STATUS primitivCloneShape(
+    const primitivShape_t *src, primitivShape_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(src);
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr(new Shape(*to_cpp_ptr(src)));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
 PRIMITIV_C_STATUS primitivDeleteShape(primitivShape_t *shape) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
   delete to_cpp_ptr(shape);

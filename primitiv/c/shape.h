@@ -28,6 +28,15 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateShapeWithDims(
     const uint32_t *dims, size_t n, uint32_t batch, primitivShape_t **newobj);
 
 /**
+ * Creates a clone of existing Shape object.
+ * @param src Pointer to a source Shape.
+ * @param newobj Pointer to receive a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCloneShape(
+    const primitivShape_t *src, primitivShape_t **newobj);
+
+/**
  * Deletes the Shape object.
  * @param shape Pointer of a handler.
  * @return Status code.

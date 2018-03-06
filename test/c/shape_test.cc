@@ -213,6 +213,33 @@ TEST_F(CShapeTest, CheckNumElementsUnderRank) {
   EXPECT_EQ(2u * 3u * 5u * 7u * 11u, lower_volume);
   ::primitivGetShapeLowerVolume(src, 6, &lower_volume);
   EXPECT_EQ(2u * 3u * 5u * 7u * 11u * 13u, lower_volume);
+  ::primitivDeleteShape(src);
+}
+
+TEST_F(CShapeTest, CheckCopy) {
+  ::primitivShape_t *src1;
+  ::primitivShape_t *src2;
+  uint32_t dims1[] = {2, 3, 5};
+  uint32_t dims2[] = {1, 4};
+  EXPECT_EQ(PRIMITIV_C_OK, ::primitivCreateShapeWithDims(dims1, 3, 7, &src1));
+  EXPECT_EQ(PRIMITIV_C_OK, ::primitivCreateShapeWithDims(dims2, 2, 9, &src2));
+  PRIMITIV_C_BOOL valid;
+  ::primitivIsShapeEqualTo(src1, src2, &valid);
+  EXPECT_EQ(PRIMITIV_C_FALSE, valid);
+
+  ::primitivShape_t *copied;
+  ASSERT_EQ(PRIMITIV_C_OK, ::primitivCloneShape(src1, &copied));
+  ::primitivIsShapeEqualTo(src1, copied, &valid);
+  EXPECT_EQ(PRIMITIV_C_TRUE, valid);
+  ::primitivDeleteShape(copied);
+
+  ASSERT_EQ(PRIMITIV_C_OK, ::primitivCloneShape(src2, &copied));
+  ::primitivIsShapeEqualTo(src2, copied, &valid);
+  EXPECT_EQ(PRIMITIV_C_TRUE, valid);
+  ::primitivDeleteShape(copied);
+
+  ::primitivDeleteShape(src1);
+  ::primitivDeleteShape(src2);
 }
 
 }  // namespace c

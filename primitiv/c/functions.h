@@ -78,6 +78,11 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorSlice(
     const primitivTensor_t *x, uint32_t dim, uint32_t lower, uint32_t upper,
     primitivTensor_t **y);
 
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeSplit(
+    const primitivNode_t *x, uint32_t dim, uint32_t n, primitivNode_t **ys);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorSplit(
+    const primitivTensor_t *x, uint32_t dim, uint32_t n, primitivTensor_t **ys);
+
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeConcat(
     const primitivNode_t *const *xs, size_t n, uint32_t dim,
     primitivNode_t **y);
@@ -155,10 +160,12 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorSoftmaxCrossEntropy(
     const primitivTensor_t *x, const primitivTensor_t *t, uint32_t dim,
     primitivTensor_t **y);
 
-PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeSoftmaxCrossEntropyWithArray(
+PRIMITIV_C_API PRIMITIV_C_STATUS
+primitivApplyNodeSoftmaxCrossEntropyWithArray(
     const primitivNode_t *x, const uint32_t *ids, size_t n, uint32_t dim,
     primitivNode_t **y);
-PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorSoftmaxCrossEntropyWithArray(
+PRIMITIV_C_API PRIMITIV_C_STATUS
+primitivApplyTensorSoftmaxCrossEntropyWithArray(
     const primitivTensor_t *x, const uint32_t *ids, size_t n, uint32_t dim,
     primitivTensor_t **y);
 
