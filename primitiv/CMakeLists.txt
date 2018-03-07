@@ -24,6 +24,7 @@ install(
 set(primitiv_base_HDRS
   arithmetic.h
   basic_functions.h
+  compiler.h
   composite_functions.h
   device.h
   dynamic_library.h
@@ -53,6 +54,7 @@ set(primitiv_base_HDRS
   type_traits.h
 )
 set(primitiv_base_SRCS
+  compiler.cc
   device.cc
   dynamic_library.cc
   graph.cc
