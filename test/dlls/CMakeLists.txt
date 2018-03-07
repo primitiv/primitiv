@@ -42,5 +42,5 @@ endif()
 primitiv_dll(basic_test)
 
 if(PRIMITIV_USE_CUDA)
-  primitiv_cuda_dll(precompiled_function)
+  primitiv_cuda_dll(test_plugin_function)
 endif()

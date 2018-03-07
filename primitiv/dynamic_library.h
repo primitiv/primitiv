@@ -39,6 +39,18 @@ public:
     return reinterpret_cast<T *>(get_symbol(symbol));
   }
 
+  /**
+   * Retrieves the path of the library.
+   * @return Path of the library.
+   */
+  std::string path() const { return path_; }
+
+  /**
+   * Retrieves the inner handle of the library.
+   * @return Inner handle of the library.
+   */
+  void *handle() const { return handle_; }
+
 private:
   std::string path_;
   void *handle_;

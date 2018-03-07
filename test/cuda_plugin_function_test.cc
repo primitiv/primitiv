@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 #include <primitiv/error.h>
 #include <primitiv/functions.h>
-#include <primitiv/precompiled_function.h>
+#include <primitiv/plugin_function.h>
 #include <test_utils.h>
 
 #include <primitiv/cuda_device.h>
@@ -16,19 +16,19 @@ using test_utils::vector_match;
 
 namespace primitiv {
 
-class CUDAPrecompiledFunctionTest : public testing::Test {};
+class CUDAPluginFunctionTest : public testing::Test {};
 
-TEST_F(CUDAPrecompiledFunctionTest, CheckInitialize) {
+TEST_F(CUDAPluginFunctionTest, CheckInitialize) {
   const std::string dirname = DLLS_DIR;
-  PrecompiledFunction pf(dirname + "/precompiled_function.cudll");
+  PluginFunction pf(dirname + "/test_plugin_function.cudll");
 
   EXPECT_EQ(2u, pf.num_arguments());
   EXPECT_EQ(1u, pf.num_returns());
 }
 
-TEST_F(CUDAPrecompiledFunctionTest, CheckForwardShape) {
+TEST_F(CUDAPluginFunctionTest, CheckForwardShape) {
   const std::string dirname = DLLS_DIR;
-  PrecompiledFunction pf(dirname + "/precompiled_function.cudll");
+  PluginFunction pf(dirname + "/test_plugin_function.cudll");
 
   {
     Shape sa({3}, 2);
@@ -53,9 +53,9 @@ TEST_F(CUDAPrecompiledFunctionTest, CheckForwardShape) {
   }
 }
 
-TEST_F(CUDAPrecompiledFunctionTest, CheckForward) {
+TEST_F(CUDAPluginFunctionTest, CheckForward) {
   const std::string dirname = DLLS_DIR;
-  PrecompiledFunction pf(dirname + "/precompiled_function.cudll");
+  PluginFunction pf(dirname + "/test_plugin_function.cudll");
 
   devices::CUDA dev(0);
   Device::set_default(dev);
@@ -64,30 +64,33 @@ TEST_F(CUDAPrecompiledFunctionTest, CheckForward) {
     const Tensor a = functions::input<Tensor>(
         Shape({3}, 2), {1, 2, 3, 4, 5, 6});
     const Tensor b = functions::ones<Tensor>(Shape({3}, 2));
-    Tensor y = dev.new_raw_tensor(Shape({3}, 2));
+    Tensor y;
     EXPECT_NO_THROW(pf.forward({ &a, &b }, { &y }));
+    EXPECT_EQ(Shape({3}, 2), y.shape());
     EXPECT_TRUE(vector_match(vector<float> {2, 3, 4, 5, 6, 7}, y.to_vector()));
   }
   {
     const Tensor a = functions::input<Tensor>(
         Shape({3}, 2), {1, 2, 3, 4, 5, 6});
     const Tensor b = functions::ones<Tensor>({3});
-    Tensor y = dev.new_raw_tensor(Shape({3}, 2));
+    Tensor y;
     EXPECT_NO_THROW(pf.forward({ &a, &b }, { &y }));
+    EXPECT_EQ(Shape({3}, 2), y.shape());
     EXPECT_TRUE(vector_match(vector<float> {2, 3, 4, 5, 6, 7}, y.to_vector()));
   }
   {
     const Tensor a = functions::input<Tensor>({3}, {1, 2, 3});
     const Tensor b = functions::ones<Tensor>(Shape({3}, 2));
-    Tensor y = dev.new_raw_tensor(Shape({3}, 2));
+    Tensor y;
     EXPECT_NO_THROW(pf.forward({ &a, &b }, { &y }));
+    EXPECT_EQ(Shape({3}, 2), y.shape());
     EXPECT_TRUE(vector_match(vector<float> {2, 3, 4, 2, 3, 4}, y.to_vector()));
   }
 }
 
-TEST_F(CUDAPrecompiledFunctionTest, CheckBackward) {
+TEST_F(CUDAPluginFunctionTest, CheckBackward) {
   const std::string dirname = DLLS_DIR;
-  PrecompiledFunction pf(dirname + "/precompiled_function.cudll");
+  PluginFunction pf(dirname + "/test_plugin_function.cudll");
 
   devices::CUDA dev(0);
   Device::set_default(dev);
@@ -127,14 +130,112 @@ TEST_F(CUDAPrecompiledFunctionTest, CheckBackward) {
   }
 }
 
-TEST_F(CUDAPrecompiledFunctionTest, CheckInvalidInitialize) {
+TEST_F(CUDAPluginFunctionTest, CheckCallWithTensors) {
   const std::string dirname = DLLS_DIR;
-  EXPECT_THROW(PrecompiledFunction pf(dirname + "/foo"), Error);
+  PluginFunction pf(dirname + "/test_plugin_function.cudll");
+
+  devices::CUDA dev(0);
+  Device::set_default(dev);
+
+  {
+    const Tensor a = functions::input<Tensor>(
+        Shape({3}, 2), {1, 2, 3, 4, 5, 6});
+    const Tensor b = functions::ones<Tensor>(Shape({3}, 2));
+    vector<Tensor> ys = pf(a, b);
+    EXPECT_EQ(1u, ys.size());
+    EXPECT_EQ(Shape({3}, 2), ys[0].shape());
+    EXPECT_TRUE(vector_match(
+          vector<float> {2, 3, 4, 5, 6, 7}, ys[0].to_vector()));
+  }
+  {
+    const Tensor a = functions::input<Tensor>({3}, {1, 2, 3});
+    const Tensor b = functions::ones<Tensor>(Shape({3}, 2));
+    vector<Tensor> ys = pf(a, b);
+    EXPECT_EQ(1u, ys.size());
+    EXPECT_EQ(Shape({3}, 2), ys[0].shape());
+    EXPECT_TRUE(vector_match(
+          vector<float> {2, 3, 4, 2, 3, 4}, ys[0].to_vector()));
+  }
+  {
+    const Tensor a = functions::input<Tensor>(
+        Shape({3}, 2), {1, 2, 3, 4, 5, 6});
+    const Tensor b = functions::ones<Tensor>({3});
+    vector<Tensor> ys = pf(a, b);
+    EXPECT_EQ(1u, ys.size());
+    EXPECT_EQ(Shape({3}, 2), ys[0].shape());
+    EXPECT_TRUE(vector_match(
+          vector<float> {2, 3, 4, 5, 6, 7}, ys[0].to_vector()));
+  }
+  {
+    const Tensor a = functions::input<Tensor>(
+        Shape({3}, 2), {1, 2, 3, 4, 5, 6});
+    EXPECT_THROW(pf(a), Error);
+    EXPECT_THROW(pf(a, a, a), Error);
+  }
 }
 
-TEST_F(CUDAPrecompiledFunctionTest, CheckInvalidOperations) {
+TEST_F(CUDAPluginFunctionTest, CheckCallWithNodes) {
   const std::string dirname = DLLS_DIR;
-  PrecompiledFunction pf(dirname + "/precompiled_function.cudll");
+  PluginFunction pf(dirname + "/test_plugin_function.cudll");
+
+  devices::CUDA dev(0);
+  Device::set_default(dev);
+  Graph g;
+  Graph::set_default(g);
+
+  {
+    Parameter p({3}, {1, 2, 3});
+    const Node a = functions::parameter<Node>(p);
+    const Node b = functions::ones<Node>(Shape({3}, 2));
+    vector<Node> ys = pf(a, b);
+    p.reset_gradient();
+    ys[0].backward();
+    EXPECT_EQ(1u, ys.size());
+    EXPECT_EQ(Shape({3}, 2), ys[0].shape());
+    EXPECT_TRUE(vector_match(
+          vector<float> {2, 3, 4, 2, 3, 4}, ys[0].to_vector()));
+    EXPECT_TRUE(vector_match(vector<float>(3, 2), p.gradient().to_vector()));
+  }
+  {
+    Parameter p({3}, {1, 2, 3});
+    const Node a = functions::ones<Node>(Shape({3}, 2));
+    const Node b = functions::parameter<Node>(p);
+    vector<Node> ys = pf(a, b);
+    p.reset_gradient();
+    ys[0].backward();
+    EXPECT_EQ(1u, ys.size());
+    EXPECT_EQ(Shape({3}, 2), ys[0].shape());
+    EXPECT_TRUE(vector_match(
+          vector<float> {2, 3, 4, 2, 3, 4}, ys[0].to_vector()));
+    EXPECT_TRUE(vector_match(vector<float>(3, 2), p.gradient().to_vector()));
+  }
+  {
+    Parameter p({3}, {1, 2, 3});
+    const Node a = functions::parameter<Node>(p);
+    const Node b = functions::parameter<Node>(p);
+    vector<Node> ys = pf(a, b);
+    p.reset_gradient();
+    ys[0].backward();
+    EXPECT_EQ(1u, ys.size());
+    EXPECT_EQ(Shape {3}, ys[0].shape());
+    EXPECT_TRUE(vector_match(vector<float> {2, 4, 6}, ys[0].to_vector()));
+    EXPECT_TRUE(vector_match(vector<float>(3, 2), p.gradient().to_vector()));
+  }
+  {
+    const Node a = functions::zeros<Node>(Shape({3}, 2));
+    EXPECT_THROW(pf(a), Error);
+    EXPECT_THROW(pf(a, a, a), Error);
+  }
+}
+
+TEST_F(CUDAPluginFunctionTest, CheckInvalidInitialize) {
+  const std::string dirname = DLLS_DIR;
+  EXPECT_THROW(PluginFunction pf(dirname + "/foo"), Error);
+}
+
+TEST_F(CUDAPluginFunctionTest, CheckInvalidOperations) {
+  const std::string dirname = DLLS_DIR;
+  PluginFunction pf(dirname + "/test_plugin_function.cudll");
 
   Shape sa {2};
   Shape sb {3};
