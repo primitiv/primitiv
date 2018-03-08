@@ -12,6 +12,7 @@
 
 using std::vector;
 using test_utils::vector_match;
+using test_utils::vector_near;
 
 namespace primitiv {
 
@@ -166,7 +167,11 @@ TEST_F(EigenDeviceTest, CheckRandomNormalWithSeed) {
 #endif
   devices::Eigen dev(12345);
   const Tensor x = dev.random_normal(Shape({2, 2}, 2), 1, 3);
+#if defined(__x86_64__) || defined(__ppc64__)
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
+#else
+  EXPECT_TRUE(vector_near(expected, x.to_vector(), 1e-6));
+#endif
 }
 
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
@@ -211,7 +216,11 @@ TEST_F(EigenDeviceTest, CheckRandomLogNormalWithSeed) {
 #endif
   devices::Eigen dev(12345);
   const Tensor x = dev.random_log_normal(Shape({2, 2}, 2), 1, 3);
+#if defined(__x86_64__) || defined(__ppc64__)
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
+#else
+  EXPECT_TRUE(vector_near(expected, x.to_vector(), 1e-4));
+#endif
 }
 
 }  // namespace primitiv

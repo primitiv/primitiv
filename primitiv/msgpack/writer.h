@@ -26,6 +26,7 @@ class Writer : mixins::Nonmovable<Writer> {
 
 private:
   Writer &write_string(const char *x, std::size_t size) {
+#if defined(__x86_64__) || defined(__ppc64__)
     static_assert(sizeof(std::size_t) > sizeof(std::uint32_t), "");
     if (size < (1 << 5)) {
       const char buf[1] { PRIMITIV_UC(0xa0 | (size & 0x1f)) };
@@ -52,6 +53,30 @@ private:
     }
     os_.write(x, size);
     return *this;
+#else
+    static_assert(sizeof(std::size_t) == sizeof(std::uint32_t), "");
+    if (size < (1 << 5)) {
+      const char buf[1] { PRIMITIV_UC(0xa0 | (size & 0x1f)) };
+      os_.write(buf, 1);
+    } else if (size < (1ul << 8)) {
+      const char buf[2] { PRIMITIV_UC(0xd9), PRIMITIV_UC(size) };
+      os_.write(buf, 2);
+    } else if (size < (1ul << 16)) {
+      const char buf[3] {
+        PRIMITIV_UC(0xda), PRIMITIV_UC(size >> 8), PRIMITIV_UC(size)
+      };
+      os_.write(buf, 3);
+    } else {
+      const char buf[5] {
+        PRIMITIV_UC(0xdb),
+        PRIMITIV_UC(size >> 24), PRIMITIV_UC(size >> 16),
+        PRIMITIV_UC(size >> 8), PRIMITIV_UC(size),
+      };
+      os_.write(buf, 5);
+    }
+    os_.write(x, size);
+    return *this;
+#endif
   }
 
 public:
@@ -182,6 +207,7 @@ public:
   }
 
   Writer &operator<<(const objects::Binary &x) {
+#if defined(__x86_64__) || defined(__ppc64__)
     static_assert(sizeof(std::size_t) > sizeof(std::uint32_t), "");
     const std::size_t size = x.size();
     if (size < (1ull << 8)) {
@@ -206,9 +232,32 @@ public:
     }
     os_.write(reinterpret_cast<const char *>(x.data()), size);
     return *this;
+#else
+    static_assert(sizeof(std::size_t) == sizeof(std::uint32_t), "");
+    const std::size_t size = x.size();
+    if (size < (1ul << 8)) {
+      const char buf[2] { PRIMITIV_UC(0xc4), PRIMITIV_UC(size) };
+      os_.write(buf, 2);
+    } else if (size < (1ul << 16)) {
+      const char buf[3] {
+        PRIMITIV_UC(0xc5), PRIMITIV_UC(size >> 8), PRIMITIV_UC(size)
+      };
+      os_.write(buf, 3);
+    } else {
+      const char buf[5] {
+        PRIMITIV_UC(0xc6),
+        PRIMITIV_UC(size >> 24), PRIMITIV_UC(size >> 16),
+        PRIMITIV_UC(size >> 8), PRIMITIV_UC(size),
+      };
+      os_.write(buf, 5);
+    }
+    os_.write(reinterpret_cast<const char *>(x.data()), size);
+    return *this;
+#endif
   }
 
   Writer &operator<<(const objects::Extension &x) {
+#if defined(__x86_64__) || defined(__ppc64__)
     static_assert(sizeof(std::size_t) > sizeof(std::uint32_t), "");
     const std::int8_t type = x.type();
     const std::size_t size = x.size();
@@ -273,10 +322,73 @@ public:
     }
     os_.write(reinterpret_cast<const char *>(x.data()), size);
     return *this;
+#else
+    static_assert(sizeof(std::size_t) == sizeof(std::uint32_t), "");
+    const std::int8_t type = x.type();
+    const std::size_t size = x.size();
+    if (size < (1ul << 8)) {
+      switch (size) {
+        case 1:
+          {
+            const char buf[2] { PRIMITIV_UC(0xd4), PRIMITIV_UC(type) };
+            os_.write(buf, 2);
+            break;
+          }
+        case 2:
+          {
+            const char buf[2] { PRIMITIV_UC(0xd5), PRIMITIV_UC(type) };
+            os_.write(buf, 2);
+            break;
+          }
+        case 4:
+          {
+            const char buf[2] { PRIMITIV_UC(0xd6), PRIMITIV_UC(type) };
+            os_.write(buf, 2);
+            break;
+          }
+        case 8:
+          {
+            const char buf[2] { PRIMITIV_UC(0xd7), PRIMITIV_UC(type) };
+            os_.write(buf, 2);
+            break;
+          }
+        case 16:
+          {
+            const char buf[2] { PRIMITIV_UC(0xd8), PRIMITIV_UC(type) };
+            os_.write(buf, 2);
+            break;
+          }
+        default:
+          {
+            const char buf[3] {
+              PRIMITIV_UC(0xc7), PRIMITIV_UC(size), PRIMITIV_UC(type)
+            };
+            os_.write(buf, 3);
+          }
+      }
+    } else if (size < (1ul << 16)) {
+      const char buf[4] {
+        PRIMITIV_UC(0xc8), PRIMITIV_UC(size >> 8),
+        PRIMITIV_UC(size), PRIMITIV_UC(type)
+      };
+      os_.write(buf, 4);
+    } else {
+      const char buf[6] {
+        PRIMITIV_UC(0xc9),
+        PRIMITIV_UC(size >> 24), PRIMITIV_UC(size >> 16),
+        PRIMITIV_UC(size >> 8), PRIMITIV_UC(size),
+        PRIMITIV_UC(type),
+      };
+      os_.write(buf, 6);
+    }
+    os_.write(reinterpret_cast<const char *>(x.data()), size);
+    return *this;
+#endif
   }
 
   template<typename T>
   Writer &operator<<(const std::vector<T> &x) {
+#if defined(__x86_64__) || defined(__ppc64__)
     static_assert(sizeof(std::size_t) > sizeof(std::uint32_t), "");
     const std::size_t size = x.size();
     if (size < (1ull << 4)) {
@@ -297,10 +409,33 @@ public:
     }
     for (const T &elm : x) *this << elm;
     return *this;
+#else
+    static_assert(sizeof(std::size_t) == sizeof(std::uint32_t), "");
+    const std::size_t size = x.size();
+    if (size < (1ul << 4)) {
+      const char buf[1] { PRIMITIV_UC(0x90 | (size & 0x0f)) };
+      os_.write(buf, 1);
+    } else if (size < (1ul << 16)) {
+      const char buf[3] {
+        PRIMITIV_UC(0xdc), PRIMITIV_UC(size >> 8), PRIMITIV_UC(size)
+      };
+      os_.write(buf, 3);
+    } else {
+      const char buf[5] {
+        PRIMITIV_UC(0xdd),
+        PRIMITIV_UC(size >> 24), PRIMITIV_UC(size >> 16),
+        PRIMITIV_UC(size >> 8), PRIMITIV_UC(size),
+      };
+      os_.write(buf, 5);
+    }
+    for (const T &elm : x) *this << elm;
+    return *this;
+#endif
   }
 
   template<typename T, typename U>
   Writer &operator<<(const std::unordered_map<T, U> &x) {
+#if defined(__x86_64__) || defined(__ppc64__)
     static_assert(sizeof(std::size_t) > sizeof(std::uint32_t), "");
     const std::size_t size = x.size();
     if (size < (1ull << 4)) {
@@ -321,6 +456,28 @@ public:
     }
     for (const std::pair<T, U> &elm : x) *this << elm.first << elm.second;
     return *this;
+#else
+    static_assert(sizeof(std::size_t) == sizeof(std::uint32_t), "");
+    const std::size_t size = x.size();
+    if (size < (1ul << 4)) {
+      const char buf[1] { PRIMITIV_UC(0x80 | (size & 0x0f)) };
+      os_.write(buf, 1);
+    } else if (size < (1ul << 16)) {
+      const char buf[3] {
+        PRIMITIV_UC(0xde), PRIMITIV_UC(size >> 8), PRIMITIV_UC(size)
+      };
+      os_.write(buf, 3);
+    } else {
+      const char buf[5] {
+        PRIMITIV_UC(0xdf),
+        PRIMITIV_UC(size >> 24), PRIMITIV_UC(size >> 16),
+        PRIMITIV_UC(size >> 8), PRIMITIV_UC(size),
+      };
+      os_.write(buf, 5);
+    }
+    for (const std::pair<T, U> &elm : x) *this << elm.first << elm.second;
+    return *this;
+#endif
   }
 };
 
