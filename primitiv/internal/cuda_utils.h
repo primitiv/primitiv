@@ -9,7 +9,9 @@
 
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>
+#ifdef PRIMITIV_USE_CUDNN
 #include <cudnn.h>
+#endif  // PRIMITIV_USE_CUDNN
 #include <curand.h>
 
 #include <primitiv/memory_pool.h>
