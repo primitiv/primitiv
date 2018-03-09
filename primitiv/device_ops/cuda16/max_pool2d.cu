@@ -15,6 +15,9 @@ void CUDA16::max_pool2d_fw_impl(
     std::uint32_t padding0, std::uint32_t padding1,
     std::uint32_t stride0, std::uint32_t stride1,
     Tensor &y) {
+
+#ifdef PRIMITIV_USE_CUDNN
+
   const Shape x_shape = x.shape();
   const Shape y_shape = y.shape();
 
@@ -41,6 +44,20 @@ void CUDA16::max_pool2d_fw_impl(
         state_->cudnn.get(), pool_desc.get(),
         &alpha, x_desc.get(), x_ptr,
         &beta, y_desc.get(), y_ptr));
+
+#else  // PRIMITIV_USE_CUDNN
+
+  static_cast<void>(x);
+  static_cast<void>(window0);
+  static_cast<void>(window1);
+  static_cast<void>(padding0);
+  static_cast<void>(padding1);
+  static_cast<void>(stride0);
+  static_cast<void>(stride1);
+  static_cast<void>(y);
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
+
+#endif  // PRIMITIV_USE_CUDNN
 }
 
 void CUDA16::max_pool2d_bw_impl(
@@ -49,6 +66,9 @@ void CUDA16::max_pool2d_bw_impl(
     std::uint32_t padding0, std::uint32_t padding1,
     std::uint32_t stride0, std::uint32_t stride1,
     Tensor &gx) {
+
+#ifdef PRIMITIV_USE_CUDNN
+
   const Shape x_shape = x.shape();
   const Shape y_shape = y.shape();
 
@@ -77,6 +97,22 @@ void CUDA16::max_pool2d_bw_impl(
         state_->cudnn.get(), pool_desc.get(),
         &alpha, y_desc.get(), y_ptr, y_desc.get(), gy_ptr, x_desc.get(), x_ptr,
         &beta, x_desc.get(), gx_ptr));
+
+#else  // PRIMITIV_USE_CUDNN
+
+  static_cast<void>(x);
+  static_cast<void>(y);
+  static_cast<void>(gy);
+  static_cast<void>(window0);
+  static_cast<void>(window1);
+  static_cast<void>(padding0);
+  static_cast<void>(padding1);
+  static_cast<void>(stride0);
+  static_cast<void>(stride1);
+  static_cast<void>(gx);
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
+
+#endif  // PRIMITIV_USE_CUDNN
 }
 
 }  // namespace devices

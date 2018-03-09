@@ -15,6 +15,9 @@ void CUDA16::conv2d_fw_impl(
     std::uint32_t stride0, std::uint32_t stride1,
     std::uint32_t dilation0, std::uint32_t dilation1,
     Tensor &y) {
+
+#ifdef PRIMITIV_USE_CUDNN
+
   const Shape x_shape = x.shape();
   const Shape w_shape = w.shape();
   const Shape y_shape = y.shape();
@@ -72,6 +75,21 @@ void CUDA16::conv2d_fw_impl(
     w_ptr += w_shift;
     y_ptr += y_shift;
   }
+
+#else  // PRIMITIV_USE_CUDNN
+
+  static_cast<void>(x);
+  static_cast<void>(w);
+  static_cast<void>(padding0);
+  static_cast<void>(padding1);
+  static_cast<void>(stride0);
+  static_cast<void>(stride1);
+  static_cast<void>(dilation0);
+  static_cast<void>(dilation1);
+  static_cast<void>(y);
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
+
+#endif  // PRIMITIV_USE_CUDNN
 }
 
 void CUDA16::conv2d_bw_impl(
@@ -80,6 +98,9 @@ void CUDA16::conv2d_bw_impl(
     std::uint32_t stride0, std::uint32_t stride1,
     std::uint32_t dilation0, std::uint32_t dilation1,
     Tensor &gx, Tensor &gw) {
+
+#ifdef PRIMITIV_USE_CUDNN
+
   const Shape x_shape = x.shape();
   const Shape w_shape = w.shape();
   const Shape y_shape = gy.shape();
@@ -156,6 +177,23 @@ void CUDA16::conv2d_bw_impl(
     gx_ptr += x_shift;
     gw_ptr += w_shift;
   }
+
+#else  // PRIMITIV_USE_CUDNN
+
+  static_cast<void>(x);
+  static_cast<void>(w);
+  static_cast<void>(gy);
+  static_cast<void>(padding0);
+  static_cast<void>(padding1);
+  static_cast<void>(stride0);
+  static_cast<void>(stride1);
+  static_cast<void>(dilation0);
+  static_cast<void>(dilation1);
+  static_cast<void>(gx);
+  static_cast<void>(gw);
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
+
+#endif  // PRIMITIV_USE_CUDNN
 }
 
 }  // namespace devices
