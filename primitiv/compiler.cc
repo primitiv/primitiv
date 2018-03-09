@@ -97,6 +97,12 @@ std::vector<Compiler::Node> Compiler::add_operator(
 
 PluginFunction Compiler::compile(
     Device &device, const std::string &output_directory) const {
+  if (device.type() != Device::DeviceType::CUDA) {
+    PRIMITIV_THROW_ERROR(
+        "Unsupported device type: "
+        << static_cast<std::uint32_t>(device.type()));
+  }
+
   using std::cerr;
   using std::endl;
 
