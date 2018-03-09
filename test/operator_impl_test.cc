@@ -459,10 +459,10 @@ TEST_F(OperatorImplTest, CheckRandomNormal) {
         std::to_string(tc.sd) + ')', node.name());
     EXPECT_EQ(tc.shape, cur_shape);
     EXPECT_EQ(dev, node.get_device());
-#if defined(__x86_64__) || defined(__ppc64__)
-    EXPECT_TRUE(vector_match(tc.data, cur_value.to_vector()));
-#else
+#ifdef __i386
     EXPECT_TRUE(vector_near(tc.data, cur_value.to_vector(), 1e-6));
+#else
+    EXPECT_TRUE(vector_match(tc.data, cur_value.to_vector()));
 #endif
   }
 }
@@ -528,10 +528,10 @@ TEST_F(OperatorImplTest, CheckRandomLogNormal) {
         std::to_string(tc.sd) + ')', node.name());
     EXPECT_EQ(tc.shape, cur_shape);
     EXPECT_EQ(dev, node.get_device());
-#if defined(__x86_64__) || defined(__ppc64__)
-    EXPECT_TRUE(vector_match(tc.data, cur_value.to_vector()));
-#else
+#ifdef __i386
     EXPECT_TRUE(vector_near(tc.data, cur_value.to_vector(), 1e-5));
+#else
+    EXPECT_TRUE(vector_match(tc.data, cur_value.to_vector()));
 #endif
   }
 }

@@ -63,10 +63,10 @@ TEST_F(DefaultRandomizerTest, CheckFillNormal) {
   const std::size_t size = expected.size();
   vector<float> observed(size, -1e10);
   randomizer_.fill_normal(1, 3, size, observed.data());
-#if defined(__x86_64__) || defined(__ppc64__)
-  EXPECT_TRUE(vector_match(expected, observed));
-#else
+#ifdef __i386
   EXPECT_TRUE(vector_near(expected, observed, 1e-6));
+#else
+  EXPECT_TRUE(vector_match(expected, observed));
 #endif
 }
 
@@ -89,10 +89,10 @@ TEST_F(DefaultRandomizerTest, CheckFillLogNormal) {
   const std::size_t size = expected.size();
   vector<float> observed(size, -1e10);
   randomizer_.fill_log_normal(1, 3, size, observed.data());
-#if defined(__x86_64__) || defined(__ppc64__)
-  EXPECT_TRUE(vector_match(expected, observed));
-#else
+#ifdef __i386
   EXPECT_TRUE(vector_near(expected, observed, 1e-4));
+#else
+  EXPECT_TRUE(vector_match(expected, observed));
 #endif
 }
 
