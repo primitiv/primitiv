@@ -72,11 +72,17 @@ PRIMITIV_USE_CUDA
     Enables CUDA backend (``primitiv::devices::CUDA`` class).
     This option introduces a dependency to the
     `NVIDIA CUDA Toolkit <https://developer.nvidia.com/cuda-toolkit>`_
-    v8.0 or later and
+    v8.0 or later.
+    `FindCuda <https://cmake.org/cmake/help/v3.1/module/FindCUDA.html>`_
+    options can also be used.
+
+PRIMITIV_USE_CUDNN
+    Default value: ``OFF``
+
+    Enables cuDNN as the backend of few CUDA functions.
+    This option introduces a dependency to the
     `cuDNN library <https://developer.nvidia.com/cudnn>`_
     v5.0 or later.
-    `FindCuda <https://cmake.org/cmake/help/v3.1/module/FindCUDA.html>`_
-    and
     `FindCuDNN </cmake/FindCuDNN.cmake>`_
     options can also be used.
 

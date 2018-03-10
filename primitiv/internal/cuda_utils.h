@@ -1,13 +1,17 @@
 #ifndef PRIMITIV_CUDA_UTILS_H_
 #define PRIMITIV_CUDA_UTILS_H_
 
+#include <primitiv/config.h>
+
 #include <cstdlib>
 #include <iostream>
 #include <string>
 
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>
+#ifdef PRIMITIV_USE_CUDNN
 #include <cudnn.h>
+#endif  // PRIMITIV_USE_CUDNN
 #include <curand.h>
 
 #include <primitiv/memory_pool.h>
@@ -43,6 +47,8 @@
   } \
 }
 
+#ifdef PRIMITIV_USE_CUDNN
+
 #define CUDNN_CALL(f) { \
   ::cudnnStatus_t err = (f); \
   if (err != CUDNN_STATUS_SUCCESS) { \
@@ -52,6 +58,8 @@
         << ": " << ::cudnnGetErrorString(err)); \
   } \
 }
+
+#endif  // PRIMITIV_USE_CUDNN
 
 namespace primitiv {
 namespace cuda {
@@ -126,6 +134,8 @@ public:
 private:
   ::curandGenerator_t handle_ = NULL;
 };
+
+#ifdef PRIMITIV_USE_CUDNN
 
 /**
  * cuDNN initializer/finalizer.
@@ -302,6 +312,8 @@ private:
   ::cudnnPoolingDescriptor_t handle_ = NULL;
 };
 
+#endif  // PRIMITIV_USE_CUDNN
+
 /**
  * Hidden objects of CUDA devices.
  */
@@ -309,7 +321,9 @@ struct InternalState {
   InternalState(std::uint32_t dev_id, std::uint32_t rng_seed)
     : cublas(dev_id)
     , curand(dev_id, rng_seed)
+#ifdef PRIMITIV_USE_CUDNN
     , cudnn(dev_id)
+#endif  // PRIMITIV_USE_CUDNN
     , pool(
         [dev_id](std::size_t size) -> void * {  // allocator
           void *ptr;
@@ -322,7 +336,9 @@ struct InternalState {
         }) {}
   CuBLASHandle cublas;
   CuRANDHandle curand;
+#ifdef PRIMITIV_USE_CUDNN
   CuDNNHandle cudnn;
+#endif  // PRIMITIV_USE_CUDNN
   MemoryPool pool;
   ::cudaDeviceProp prop;
 };
