@@ -10,6 +10,10 @@
 
 #if defined(__x86_64__) || defined(__ppc64__)
 #define PRIMITIV_WORDSIZE_64
-#endif
+#endif  // defined(__x86_64__) || defined(__ppc64__)
+
+#ifdef __i386
+#define PRIMITIV_MAYBE_FPMATH_X87
+#endif // __i386
 
 #endif  // PRIMITIV_CONFIG_H_

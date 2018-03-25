@@ -1,5 +1,10 @@
 # test definitions
 
+# compiler settings
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  set(CMAKE_CXX_FLAGS "-ffloat-store ${CMAKE_CXX_FLAGS}")
+endif()
+
 if(PRIMITIV_GTEST_SOURCE_DIR)
   include(ExternalProject)
   ExternalProject_Add(
