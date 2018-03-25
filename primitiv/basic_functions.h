@@ -876,6 +876,48 @@ type_traits::Identity<Var> max_pool2d(
 
 namespace batch {
 
+template<typename Var>
+type_traits::Identity<Var> concat(const std::vector<Var> &xs);
+
+template<typename Var>
+type_traits::Identity<Var> concat(const std::vector<const Var *> &xs);
+
+template<typename Var>
+inline type_traits::Identity<Var> concat(const std::initializer_list<Var> xs) {
+  return concat(std::vector<Var>(xs));
+}
+
+template<typename Var>
+inline type_traits::Identity<Var> concat(
+        const std::initializer_list<const Var *> xs) {
+  return concat(std::vector<const Var *>(xs));
+}
+
+/**
+ * Concatenates multiple variables along batch axis.
+ * @param xs Iterable container of variables. `xs` must have both `begin()` and
+ *           `end()` functions that return the begin/end iterators.
+ * @return A new variable.
+ */
+template<typename Container>
+inline type_traits::Reduce<Container> concat(const Container &xs) {
+  using Var = type_traits::Reduce<Container>;
+  return concat(std::vector<Var>(xs.begin(), xs.end()));
+}
+
+/**
+ * Same as above, but `xs` has pointers of variables.
+ * @param xs Iterable container of pointers of variables. `xs` must have both
+ *           `begin()` and `end()` functions that return the begin/end
+ *           iterators.
+ * @return A new variable.
+ */
+template<typename Container>
+inline type_traits::ReducePtr<Container> concat(const Container &xs) {
+  using Var = type_traits::ReducePtr<Container>;
+  return concat(std::vector<const Var *>(xs.begin(), xs.end()));
+}
+
 /**
  * Applies summation along the minibatch.
  * Following example shows how this function work:

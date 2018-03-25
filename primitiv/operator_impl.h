@@ -299,6 +299,10 @@ PRIMITIV_DECL_UNARY(Tan);
 PRIMITIV_DECL_UNARY(ReLU);
 PRIMITIV_DECL_UNARY(LReLU);
 
+class BatchConcat : public Operator {
+  PRIMITIV_DECL_DEFAULTS_AND_FORWARD(Operator::NONZERO, 1);
+};
+
 PRIMITIV_DECL_UNARY(BatchSum);
 
 class Convolution2D : public Operator {

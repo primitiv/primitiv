@@ -1465,6 +1465,52 @@ TEST_F(OperatorImplTest, CheckBroadcast) {
   }
 }
 
+TEST_F(OperatorImplTest, CheckBatchConcat) {
+  // EXPECT_TRUE(false);
+  struct TestCase {
+    Shape ret_shape;
+    vector<float> cur_value_data;
+    vector<float> cur_grad_data;
+  };
+  const vector<TestCase> test_cases {
+    {Shape({4, 2}, 3),
+      {1, 2, 1, 1, 3, 4, 1, 1, 0, 0, 2, 2, 0, 0, 2, 2, -1, -2, 3, 3, -3, -4, 3, 3},
+      {1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2}},
+    /*
+    {0, Shape({4, 2}, 3),
+      {1, 2, 1, 1, 3, 4, 1, 1, 0, 0, 2, 2, 0, 0, 2, 2, -1, -2, 3, 3, -3, -4, 3, 3},
+      {1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2}},
+    {1, Shape({2, 4}, 3),
+      {1, 2, 3, 4, 1, 1, 1, 1, 0, 0, 0, 0, 2, 2, 2, 2, -1, -2, -3, -4, 3, 3, 3, 3},
+      {1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2}},
+    {2, Shape({2, 2, 2}, 3),
+      {1, 2, 3, 4, 1, 1, 1, 1, 0, 0, 0, 0, 2, 2, 2, 2, -1, -2, -3, -4, 3, 3, 3, 3},
+      {1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2}},
+    {3, Shape({2, 2, 1, 2}, 3),
+      {1, 2, 3, 4, 1, 1, 1, 1, 0, 0, 0, 0, 2, 2, 2, 2, -1, -2, -3, -4, 3, 3, 3, 3},
+      {1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2}},
+    */
+  };
+  setup_2args();
+  for (const TestCase &tc : test_cases) {
+    BatchConcat node;
+    Shape cur_shape;
+    Tensor cur_value;
+    node.forward_shape(arg_shapes, { &cur_shape });
+    node.forward(arg_values, { &cur_value });
+    const Tensor cur_grad = dev->new_tensor_by_vector(
+        tc.ret_shape, tc.cur_grad_data);
+    // reset_gradients();
+    // node.backward(arg_values, { &cur_value }, { &cur_grad }, arg_grads);
+    // EXPECT_EQ("Concat(" + std::to_string(tc.dim) + ')', node.name());
+    // EXPECT_EQ(tc.ret_shape, cur_shape);
+    // EXPECT_EQ(nullptr, node.get_device());
+    // EXPECT_TRUE(vector_match(tc.cur_value_data, cur_value.to_vector()));
+    // EXPECT_TRUE(vector_match(vector<float>(12, 1), arg_grads[0]->to_vector()));
+    // EXPECT_TRUE(vector_match(vector<float>(12, 2), arg_grads[1]->to_vector()));
+  }
+}
+
 TEST_F(OperatorImplTest, CheckBatchSum) {
   // y = sum_i x[i]
   // dy/dx = 1 for every minibatch.

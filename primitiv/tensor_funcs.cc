@@ -329,6 +329,17 @@ Tensor max_pool2d(
 namespace batch {
 
 template<>
+Tensor concat(const std::vector<const Tensor *> &xs) {
+  if (xs.empty()) PRIMITIV_THROW_ERROR("No tensors to be concatenated.");
+  return xs[0]->device().batch_concat_fw(xs);
+}
+
+template<>
+Tensor concat(const std::vector<Tensor> &xs) {
+  return concat(::obj_to_ptr(xs));
+}
+
+template<>
 Tensor sum(const Tensor &x) {
   return x.device().batch_sum_fw(x);
 }

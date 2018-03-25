@@ -322,6 +322,19 @@ Node max_pool2d(
 namespace batch {
 
 template<>
+Node concat(const std::vector<Node> &xs) {
+  if (xs.empty()) PRIMITIV_THROW_ERROR("No nodes to concat.");
+  return xs[0].graph().add_operator(
+      std::unique_ptr<Operator>(new operators::BatchConcat()), xs
+  )[0];
+}
+
+template<>
+Node concat(const std::vector<const Node *> &xs) {
+  return concat(::ptr_to_obj(xs));
+}
+
+template<>
 Node sum(const Node &x) {
   return REGX(x, BatchSum(), x)[0];
 }
