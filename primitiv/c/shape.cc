@@ -101,7 +101,6 @@ PRIMITIV_C_STATUS primitivGetShapeSize(
 PRIMITIV_C_STATUS primitivRepresentShapeAsString(
     const primitivShape_t *shape, char *retval, size_t *size) try {
   PRIMITIV_C_CHECK_NOT_NULL(shape);
-  PRIMITIV_C_CHECK_NOT_NULL(retval);
   PRIMITIV_C_CHECK_NOT_NULL(size);
   primitiv::c::internal::copy_string_to_array(
       to_cpp_ptr(shape)->to_string(), retval, size);
