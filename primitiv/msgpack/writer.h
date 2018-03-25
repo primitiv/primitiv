@@ -26,7 +26,7 @@ class Writer : mixins::Nonmovable<Writer> {
 
 private:
   Writer &write_string(const char *x, std::size_t size) {
-#if defined(__x86_64__) || defined(__ppc64__)
+#ifdef PRIMITIV_WORDSIZE_64
     static_assert(sizeof(std::size_t) > sizeof(std::uint32_t), "");
     if (size < (1 << 5)) {
       const char buf[1] { PRIMITIV_UC(0xa0 | (size & 0x1f)) };
@@ -207,7 +207,7 @@ public:
   }
 
   Writer &operator<<(const objects::Binary &x) {
-#if defined(__x86_64__) || defined(__ppc64__)
+#ifdef PRIMITIV_WORDSIZE_64
     static_assert(sizeof(std::size_t) > sizeof(std::uint32_t), "");
     const std::size_t size = x.size();
     if (size < (1ull << 8)) {
@@ -257,7 +257,7 @@ public:
   }
 
   Writer &operator<<(const objects::Extension &x) {
-#if defined(__x86_64__) || defined(__ppc64__)
+#ifdef PRIMITIV_WORDSIZE_64
     static_assert(sizeof(std::size_t) > sizeof(std::uint32_t), "");
     const std::int8_t type = x.type();
     const std::size_t size = x.size();
@@ -388,7 +388,7 @@ public:
 
   template<typename T>
   Writer &operator<<(const std::vector<T> &x) {
-#if defined(__x86_64__) || defined(__ppc64__)
+#ifdef PRIMITIV_WORDSIZE_64
     static_assert(sizeof(std::size_t) > sizeof(std::uint32_t), "");
     const std::size_t size = x.size();
     if (size < (1ull << 4)) {
@@ -435,7 +435,7 @@ public:
 
   template<typename T, typename U>
   Writer &operator<<(const std::unordered_map<T, U> &x) {
-#if defined(__x86_64__) || defined(__ppc64__)
+#ifdef PRIMITIV_WORDSIZE_64
     static_assert(sizeof(std::size_t) > sizeof(std::uint32_t), "");
     const std::size_t size = x.size();
     if (size < (1ull << 4)) {

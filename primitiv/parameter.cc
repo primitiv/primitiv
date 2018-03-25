@@ -161,12 +161,12 @@ void Parameter::save_inner(msgpack::Writer &writer, bool with_stats) const {
   ::write_tensor(value_, writer);
 
   if (with_stats) {
-#if defined(__x86_64__) || defined(__ppc64__)
+#ifdef PRIMITIV_WORDSIZE_64
     if (stats_.size() > 0xffffffffull) {
       PRIMITIV_THROW_ERROR(
           "Could not store more than 2^32 - 1 stats in one parameter file.");
     }
-#endif  // defined(__x86_64__) || defined(__ppc64__)
+#endif  // PRIMITIV_WORDSIZE_64
     writer << static_cast<std::uint32_t>(stats_.size());
     for (const auto &kv : stats_) {
       writer << kv.first;
