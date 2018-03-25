@@ -77,7 +77,7 @@ public:
   /**
    * Creates a new Parameter object.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @param init An Initializer object.
+   * @param initializer An Initializer object.
    * @param device The device object to manage internal memory.
    */
   Parameter(
@@ -86,7 +86,7 @@ public:
   /**
    * Creates a new Parameter object.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @param init An Initializer object.
+   * @param initializer An Initializer object.
    * @param device The device object to manage internal memory.
    */
   Parameter(
@@ -96,7 +96,7 @@ public:
   /**
    * Creates a new Parameter object.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @param init An Initializer object.
+   * @param initializer An Initializer object.
    */
   Parameter(const Shape &shape, const Initializer &initializer)
     : Parameter(shape, initializer, nullptr) {}
@@ -136,7 +136,7 @@ public:
   /**
    * Initializes the Parameter object.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @param init An Initializer object.
+   * @param initializer An Initializer object.
    * @param device The device object to manage internal memory.
    */
   void init(
@@ -145,7 +145,7 @@ public:
   /**
    * Initializes the Parameter object.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @param init An Initializer object.
+   * @param initializer An Initializer object.
    * @param device The device object to manage internal memory.
    */
   void init(
@@ -156,7 +156,7 @@ public:
   /**
    * Initializes the Parameter object.
    * @param shape The shape of the parameter. The batch size should be 1.
-   * @param init An Initializer object.
+   * @param initializer An Initializer object.
    */
   void init(
       const Shape &shape, const Initializer &initializer) {
@@ -242,7 +242,7 @@ public:
    * @return true if the entry exists, false otherwise.
    */
   bool has_stats(const std::string &name) const {
-    if (!valid()) THROW_ERROR("Invalid parameter.");
+    if (!valid()) PRIMITIV_THROW_ERROR("Invalid parameter.");
     return stats_.find(name) != stats_.end();
   }
 
@@ -251,7 +251,7 @@ public:
    * @return Shape object.
    */
   Shape shape() const {
-    if (!valid()) THROW_ERROR("Invalid parameter.");
+    if (!valid()) PRIMITIV_THROW_ERROR("Invalid parameter.");
     return shape_;
   }
 
@@ -260,7 +260,7 @@ public:
    * @return Pointer of the Device object.
    */
   Device &device() const {
-    if (!valid()) THROW_ERROR("Invalid parameter.");
+    if (!valid()) PRIMITIV_THROW_ERROR("Invalid parameter.");
     return *device_;
   }
 
@@ -269,7 +269,7 @@ public:
    * @return A tensor representing the parameter tensor.
    */
   const Tensor &value() const {
-    if (!valid()) THROW_ERROR("Invalid parameter.");
+    if (!valid()) PRIMITIV_THROW_ERROR("Invalid parameter.");
     return value_;
   }
 
@@ -278,7 +278,7 @@ public:
    * @return A tensor representing the parameter tensor.
    */
   Tensor &value() {
-    if (!valid()) THROW_ERROR("Invalid parameter.");
+    if (!valid()) PRIMITIV_THROW_ERROR("Invalid parameter.");
     return value_;
   }
 
@@ -287,7 +287,7 @@ public:
    * @return A tensor representing the gradient of the value.
    */
   const Tensor &gradient() const {
-    if (!valid()) THROW_ERROR("Invalid parameter.");
+    if (!valid()) PRIMITIV_THROW_ERROR("Invalid parameter.");
     return grad_;
   }
 
@@ -296,7 +296,7 @@ public:
    * @return A tensor representing the gradient of the value.
    */
   Tensor &gradient() {
-    if (!valid()) THROW_ERROR("Invalid parameter.");
+    if (!valid()) PRIMITIV_THROW_ERROR("Invalid parameter.");
     return grad_; }
 
   /**
@@ -305,7 +305,7 @@ public:
    * @return A tensor.
    */
   const Tensor &stats(const std::string &name) const {
-    if (!valid()) THROW_ERROR("Invalid parameter.");
+    if (!valid()) PRIMITIV_THROW_ERROR("Invalid parameter.");
     return stats_.at(name);
   }
 
@@ -315,7 +315,7 @@ public:
    * @return A tensor.
    */
   Tensor &stats(const std::string &name) {
-    if (!valid()) THROW_ERROR("Invalid parameter.");
+    if (!valid()) PRIMITIV_THROW_ERROR("Invalid parameter.");
     return stats_.at(name);
   }
 

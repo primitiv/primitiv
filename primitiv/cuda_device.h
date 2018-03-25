@@ -6,9 +6,13 @@
 #include <primitiv/device.h>
 
 namespace primitiv {
-namespace devices {
+namespace cuda {
+  struct InternalState;
+}  // namespace cuda
+}  // namespace primitiv
 
-struct CUDAInternalState;
+namespace primitiv {
+namespace devices {
 
 /**
  * Device class for CUDA.
@@ -221,7 +225,7 @@ private:
   std::uint32_t dim2_x_;
   std::uint32_t dim2_y_;
   std::uint32_t max_batch_;
-  std::unique_ptr<CUDAInternalState> state_;
+  std::unique_ptr<cuda::InternalState> state_;
 
   // Reserved pointer to store temporary integers given from indexing functions
   // such as operators::input().

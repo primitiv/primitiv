@@ -42,7 +42,7 @@ private:
     configured_.emplace(&param);
   }
 
-  void update_parameter(float scale, Parameter &param) override {
+  void update_parameter(float, Parameter &param) override {
     // This function should be called only once for each parameter.
     if (updated_.find(&param) != updated_.end()) ok_ = false;
     updated_.emplace(&param);

@@ -56,7 +56,7 @@ public:
 
   /**
    * Returns the dimension array.
-   * @reutrn Copy of the dimension array.
+   * @return Copy of the dimension array.
    */
   const std::vector<std::uint32_t> dims() const {
     return std::vector<std::uint32_t>(&dims_[0], &dims_[depth_]);

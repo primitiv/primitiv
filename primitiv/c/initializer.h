@@ -1,19 +1,29 @@
-/* Copyright 2017 The primitiv Authors. All Rights Reserved. */
-
 #ifndef PRIMITIV_C_INITIALIZER_H_
 #define PRIMITIV_C_INITIALIZER_H_
 
 #include <primitiv/c/define.h>
-#include <primitiv/c/status.h>
+#include <primitiv/c/tensor.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+/**
+ * Opaque type of Initializer.
+ */
+typedef struct primitivInitializer primitivInitializer_t;
 
-typedef struct primitiv_Initializer primitiv_Initializer;
+/**
+ * Deletes the Initializer object.
+ * @param initializer Pointer of a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivDeleteInitializer(
+    primitivInitializer_t *initializer);
 
-#ifdef __cplusplus
-}  // end extern "C"
-#endif
+/**
+ * Provides an initialized tensor.
+ * @param initializer Pointer of a handler.
+ * @param x Tensor object to be initialized.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyInitializer(
+    const primitivInitializer_t *initializer, primitivTensor_t *x);
 
 #endif  // PRIMITIV_C_INITIALIZER_H_

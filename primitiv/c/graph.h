@@ -1,139 +1,268 @@
-/* Copyright 2017 The primitiv Authors. All Rights Reserved. */
-
 #ifndef PRIMITIV_C_GRAPH_H_
 #define PRIMITIV_C_GRAPH_H_
 
 #include <primitiv/c/define.h>
 #include <primitiv/c/device.h>
 #include <primitiv/c/shape.h>
-#include <primitiv/c/status.h>
 #include <primitiv/c/tensor.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+/**
+ * Opaque type of Node.
+ */
+typedef struct primitivNode primitivNode_t;
 
-typedef struct primitiv_Node primitiv_Node;
+/**
+ * Opaque type of Graph.
+ */
+typedef struct primitivGraph primitivGraph_t;
 
-typedef struct primitiv_Graph primitiv_Graph;
+/**
+ * Creates a new Node object.
+ * @param newobj Pointer to receive a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateNode(primitivNode_t **newobj);
 
-CAPI extern primitiv_Node *primitiv_Node_new();
-CAPI extern primitiv_Node *safe_primitiv_Node_new(primitiv_Status *status);
+/**
+ * Creates a clone of existing Node object.
+ * @param src Pointer to a source Node.
+ * @param newobj Pointer to receive a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCloneNode(
+    const primitivNode_t *src, primitivNode_t **newobj);
 
-CAPI extern primitiv_Node *primitiv_Node_new_with_movement(primitiv_Node *node);
-CAPI extern primitiv_Node *safe_primitiv_Node_new_with_movement(
-    primitiv_Node *node, primitiv_Status *status);
+/**
+ * Deletes the Node object.
+ * @param node Pointer of a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivDeleteNode(primitivNode_t *node);
 
-CAPI extern void primitiv_Node_delete(primitiv_Node *node);
-CAPI extern void safe_primitiv_Node_delete(primitiv_Node *node,
-                                           primitiv_Status *status);
+/**
+ * Returns whether the node is valid or not.
+ * @param node Pointer of a handler.
+ * @param retval Pointer to receive a result: true or false w.r.t. the node is
+ *              valid or not.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivIsValidNode(
+    const primitivNode_t *node, PRIMITIV_C_BOOL *retval);
 
-CAPI extern bool primitiv_Node_valid(const primitiv_Node *node);
-CAPI extern bool safe_primitiv_Node_valid(const primitiv_Node *node,
-                                          primitiv_Status *status);
+/**
+ * Returns corresponding Graph object.
+ * @param node Pointer of a handler.
+ * @param retval Pointer to receive the Graph object.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetGraphFromNode(
+    const primitivNode_t *node, primitivGraph_t **retval);
 
-CAPI extern primitiv_Graph *primitiv_Node_graph(const primitiv_Node *node);
-CAPI extern primitiv_Graph *safe_primitiv_Node_graph(const primitiv_Node *node,
-                                                     primitiv_Status *status);
+/**
+ * Returns the operator ID.
+ * @param node Pointer of a handler.
+ * @param retval Pointer to receive the operator ID.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetNodeOperatorId(
+    const primitivNode_t *node, uint32_t *retval);
 
-CAPI extern uint32_t primitiv_Node_operator_id(const primitiv_Node *node);
-CAPI extern uint32_t safe_primitiv_Node_operator_id(const primitiv_Node *node,
-                                                    primitiv_Status *status);
+/**
+ * Returns the value ID of the operator.
+ * @param node Pointer of a handler.
+ * @param retval Pointer to receive the value ID.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetNodeValueId(
+    const primitivNode_t *node, uint32_t *retval);
 
-CAPI extern uint32_t primitiv_Node_value_id(const primitiv_Node *node);
-CAPI extern uint32_t safe_primitiv_Node_value_id(const primitiv_Node *node,
-                                                 primitiv_Status *status);
+/**
+ * Returns shape of the node.
+ * @param node Pointer of a handler.
+ * @param newobj Pointer to receive a Shape object.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetNodeShape(
+    const primitivNode_t *node, primitivShape_t **newobj);
 
-CAPI extern primitiv_Shape *primitiv_Node_shape(const primitiv_Node *node);
-CAPI extern primitiv_Shape *safe_primitiv_Node_shape(const primitiv_Node *node,
-                                                     primitiv_Status *status);
+/**
+ * Returns device of the node.
+ * @param node Pointer of a handler.
+ * @param retval Pointer to receive the Device object.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetDeviceFromNode(
+    const primitivNode_t *node, primitivDevice_t **retval);
 
-CAPI extern primitiv_Device *primitiv_Node_device(const primitiv_Node *node);
-CAPI extern primitiv_Device *safe_primitiv_Node_device(
-    const primitiv_Node *node, primitiv_Status *status);
+/**
+ * Calculates the value of this node and returns a float.
+ * @param node Pointer of a handler.
+ * @param retval Pointer to receive a calculated float value.
+ * @return Status code.
+ * @remarks This function calls Graph::forward() internally.
+ *          This function can be used only when the Node has a scalar and
+ *          non-minibatched shape (i.e., shape() == Shape())
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivEvaluateNodeAsFloat(
+    const primitivNode_t *node, float *retval);
 
-CAPI extern float primitiv_Node_to_float(const primitiv_Node *node);
-CAPI extern float safe_primitiv_Node_to_float(const primitiv_Node *node,
-                                              primitiv_Status *status);
+/**
+ * Calculates the value of this node and returns a list of float.
+ * @param node Pointer of a handler.
+ * @param retval Pointer to receive a list of calculated values.
+ * @param size Pointer to receive the length of the array.
+ * @return Status code.
+ * @remarks This function calls Graph::forward() internally.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivEvaluateNodeAsArray(
+    const primitivNode_t *node, float *retval, size_t *size);
 
-CAPI extern void primitiv_Node_to_array(const primitiv_Node *node,
-                                        float *array);
-CAPI extern void safe_primitiv_Node_to_array(const primitiv_Node *node,
-                                             float *array,
-                                             primitiv_Status *status);
+/**
+ * Returns argmax indices along an axis of this node.
+ * @param node Pointer of a handler.
+ * @param dim A specified axis.
+ * @param retval Pointer to receive a list of integers that indicates positions
+ *               of the maximum values.
+ * @param size Pointer to receive the number of the received indices.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetNodeArgmax(
+    const primitivNode_t *node, uint32_t dim, uint32_t *retval,
+    size_t *size);
 
-CAPI extern uint32_t *primitiv_Node_argmax(const primitiv_Node *node,
-                                           uint32_t dim);
-CAPI extern uint32_t *safe_primitiv_Node_argmax(const primitiv_Node *node,
-                                                uint32_t dim,
-                                                primitiv_Status *status);
+/**
+ * Returns argmin indices along an axis of this node.
+ * @param node Pointer of a handler.
+ * @param dim A specified axis.
+ * @param retval Pointer to receive a list of integers that indicates positions
+ *               of the minimum values.
+ * @param size Pointer to receive the number of the received indices.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetNodeArgmin(
+    const primitivNode_t *node, uint32_t dim, uint32_t *retval,
+    size_t *size);
 
-CAPI extern uint32_t *primitiv_Node_argmin(const primitiv_Node *node,
-                                           uint32_t dim);
-CAPI extern uint32_t *safe_primitiv_Node_argmin(const primitiv_Node *node,
-                                                uint32_t dim,
-                                                primitiv_Status *status);
+/**
+ * Executes the backward operation from this node.
+ * @param node Pointer of a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivExecuteNodeBackward(
+    const primitivNode_t *node);
 
-CAPI extern void primitiv_Node_backward(const primitiv_Node *node);
-CAPI extern void safe_primitiv_Node_backward(const primitiv_Node *node,
-                                             primitiv_Status *status);
+/**
+ * Creates a new Graph object.
+ * @param newobj Pointer to receive a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateGraph(
+    primitivGraph_t **newobj);
 
-CAPI extern primitiv_Graph *primitiv_Graph_new();
-CAPI extern primitiv_Graph *safe_primitiv_Graph_new(primitiv_Status *status);
+/**
+ * Deletes the Graph object.
+ * @param graph Pointer of a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivDeleteGraph(
+    primitivGraph_t *graph);
 
-CAPI extern void primitiv_Graph_delete(primitiv_Graph *graph);
-CAPI extern void safe_primitiv_Graph_delete(primitiv_Graph *graph,
-                                            primitiv_Status *status);
+/**
+ * Retrieves the current default graph.
+ * @param retval Pointer to receive the current default graph.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetDefaultGraph(
+    primitivGraph_t **retval);
 
-CAPI extern primitiv_Graph *primitiv_Graph_get_default();
-CAPI extern primitiv_Graph *safe_primitiv_Graph_get_default(
-    primitiv_Status *status);
+/**
+ * Specifies a new default graph.
+ * @param graph Pointer of the new default graph.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivSetDefaultGraph(
+    primitivGraph_t *graph);
 
-CAPI extern void primitiv_Graph_set_default(primitiv_Graph *graph);
-CAPI extern void safe_primitiv_Graph_set_default(primitiv_Graph *graph,
-                                                 primitiv_Status *status);
+/**
+ * Clear all operators in the graph.
+ * @param graph Pointer of a handler.
+ * @remarks After calling this method, all Node objects supplied by the graph
+ *          itself is invalidated.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivClearGraph(
+    primitivGraph_t *graph);
 
-CAPI extern void primitiv_Graph_clear(primitiv_Graph *graph);
-CAPI extern void safe_primitiv_Graph_clear(primitiv_Graph *graph,
-                                           primitiv_Status *status);
+/**
+ * Calculates the value of given node.
+ * @param graph Pointer of a handler.
+ * @param node Node object specifying the target node.
+ * @param retval Pointer to receive a calculated value.
+ * @return Status code.
+ * @remarks This function calculates only the subgraph which is required to
+ *          calculate the target node. Each intermediate result is stored to
+ *          the corresponding node in the subgraph and they are re-used for
+ *          future calculation. I.e., each node is calculated only once while
+ *          the lifetime of the Graph object.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivExecuteGraphForward(
+    primitivGraph_t *graph, const primitivNode_t *node,
+    const primitivTensor_t **retval);
 
-CAPI extern const primitiv_Tensor *primitiv_Graph_forward(
-    primitiv_Graph *graph, const primitiv_Node *node);
-CAPI extern const primitiv_Tensor *safe_primitiv_Graph_forward(
-    primitiv_Graph *graph, const primitiv_Node *node, primitiv_Status *status);
+/**
+ * Calculates the backpropagation.
+ * @param graph Pointer of a handler.
+ * @param node Node object specifying the output node.
+ * @return Status code.
+ * @remarks If `node` is not yet forwarded, this function implicitly calls
+ *          `forward(node)`.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivExecuteGraphBackward(
+    primitivGraph_t *graph, const primitivNode_t *node);
 
-CAPI extern void primitiv_Graph_backward(primitiv_Graph *graph,
-                                         const primitiv_Node *node);
-CAPI extern void safe_primitiv_Graph_backward(primitiv_Graph *graph,
-                                              const primitiv_Node *node,
-                                              primitiv_Status *status);
+/**
+ * Retrieves the shape of the node.
+ * @param graph Pointer of a handler.
+ * @param node Node object specifying the target node.
+ * @param newobj Pointer to receive the shape of the node.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetGraphShape(
+    const primitivGraph_t *graph, const primitivNode_t *node,
+    primitivShape_t **newobj);
 
-CAPI extern primitiv_Shape *primitiv_Graph_get_shape(
-    const primitiv_Graph *graph, const primitiv_Node *node);
-CAPI extern primitiv_Shape *safe_primitiv_Graph_get_shape(
-    const primitiv_Graph *graph,
-    const primitiv_Node *node,
-    primitiv_Status *status);
+/**
+ * Retrieves the device of the node.
+ * @param graph Pointer of a handler.
+ * @param node Node object specifying the target node.
+ * @param retval Pointer to receive the device of the node.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetDeviceFromGraph(
+    const primitivGraph_t *graph, const primitivNode_t *node,
+    primitivDevice_t **retval);
 
-CAPI extern primitiv_Device *primitiv_Graph_get_device(
-    const primitiv_Graph *graph, const primitiv_Node *node);
-CAPI extern primitiv_Device *safe_primitiv_Graph_get_device(
-    const primitiv_Graph *graph,
-    const primitiv_Node *node,
-    primitiv_Status *status);
+/**
+ * Dump internal graph structure.
+ * @param graph Pointer of a handler.
+ * @param format Name of the format. Available options:
+ *                 "dot" ... Graphviz's dot format.
+ * @param retval Pointer to receive a string that represents the internal graph
+ *               using given format.
+ * @param size Pointer to receive a length of the string.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivDumpGraph(
+    const primitivGraph_t *graph, const char *format, char *retval,
+    size_t *size);
 
-CAPI extern char *primitiv_Graph_dump(const primitiv_Graph *graph,
-                                      const char *format);
-CAPI extern char *safe_primitiv_Graph_dump(const primitiv_Graph *graph,
-                                           const char *format,
-                                           primitiv_Status *status);
-
-CAPI extern uint32_t primitiv_Graph_num_operators(const primitiv_Graph *graph);
-CAPI extern uint32_t safe_primitiv_Graph_num_operators(
-    const primitiv_Graph *graph, primitiv_Status *status);
-
-#ifdef __cplusplus
-}  // end extern "C"
-#endif
+/**
+ * Returns the number of operators in the computation graph.
+ * @param graph Pointer of a handler.
+ * @param retval Pointer to receive the number of nodes.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivGetGraphNumOperators(
+    const primitivGraph_t *graph, uint32_t *retval);
 
 #endif  // PRIMITIV_C_GRAPH_H_

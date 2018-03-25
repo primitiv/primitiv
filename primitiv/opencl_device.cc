@@ -9,7 +9,7 @@
 #define CL_HPP_TARGET_OPENCL_VERSION 120
 #define CL_HPP_CL_1_2_DEFAULT_BUILD
 #include <CL/cl2.hpp>
-#include <clBLAS.h>
+#include <clblast.h>
 
 #include <primitiv/error.h>
 #include <primitiv/memory_pool.h>
@@ -105,7 +105,7 @@ std::vector<cl::Platform> get_all_platforms() {
 std::vector<cl::Device> get_all_devices(std::uint32_t platform_id) {
   const auto all_pfs = ::get_all_platforms();
   if (platform_id >= all_pfs.size()) {
-    THROW_ERROR("Invalid platform ID: " << platform_id);
+    PRIMITIV_THROW_ERROR("Invalid platform ID: " << platform_id);
   }
   std::vector<cl::Device> ret;
   all_pfs[platform_id].getDevices(CL_DEVICE_TYPE_ALL, &ret);
@@ -121,7 +121,7 @@ std::vector<cl::Device> get_all_devices(std::uint32_t platform_id) {
 cl::Device get_device(std::uint32_t platform_id, std::uint32_t device_id) {
   const auto all_devs = ::get_all_devices(platform_id);
   if (device_id >= all_devs.size()) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Invalid device ID: " << device_id
         << " (on the platform " << platform_id << ")");
   }
@@ -188,7 +188,7 @@ public:
                 context,
                 CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
                 size,
-                NULL));
+                nullptr));
         },
         [this](void *ptr) -> void {  // deleter
           // NOTE(odashi):
@@ -204,7 +204,7 @@ public:
       try {
         program.build({device});
       } catch (...) {
-        THROW_ERROR("OpenCL kernel compile error:" << std::endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
+        PRIMITIV_THROW_ERROR("OpenCL kernel compile error:" << std::endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
       }
 
 #define CONFIGURE_KERNEL(name) \
@@ -460,7 +460,7 @@ void OpenCL::assert_support(
 
   // Checks whether the device is globally available.
   if (!dev.getInfo<CL_DEVICE_AVAILABLE>()) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "OpenCL Device " << device_id << " on the platform " << platform_id
         << " is not available (CL_DEVICE_AVAILABLE == false).");
   }
@@ -470,7 +470,7 @@ void OpenCL::assert_support(
   { \
     const auto actual = dev.getInfo<name>(); \
     if (actual < (value)) { \
-      THROW_ERROR( \
+      PRIMITIV_THROW_ERROR( \
           "OpenCL Device " << device_id << " on the platform " << platform_id \
           << " does not satisfy the minimum requirement by primitiv. " \
           << "property: " << #name << ", " \
@@ -482,7 +482,7 @@ void OpenCL::assert_support(
   { \
     const auto actual = dev.getInfo<name>()[index]; \
     if (actual < (value)) { \
-      THROW_ERROR( \
+      PRIMITIV_THROW_ERROR( \
           "OpenCL Device " << device_id << " on the platform " << platform_id \
           << " does not satisfy the minimum requirement by primitiv. " \
           << "property: " << #name << "[" << #index << "], " \
@@ -800,7 +800,7 @@ void OpenCL::concat_fw_impl(
     state_->queue.enqueueNDRangeKernel(
         state_->concat_fw_kernel, cl::NullRange,
         cl::NDRange(num_blocks * state_->concat_fw_group_size),
-        cl::NDRange(state_->concat_fw_group_size), NULL, NULL);
+        cl::NDRange(state_->concat_fw_group_size), nullptr, nullptr);
     offset += span;
   }
 }
@@ -1126,27 +1126,29 @@ void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
     const std::uint32_t y_skip = di * dk;
     const std::uint32_t bs = a.shape().batch();
     for (std::uint32_t n = 0; n < bs; ++n) {
-      clblasSgemm(
-          clblasColumnMajor, clblasNoTrans, clblasNoTrans,
-          di, dk, dj,
-          alpha,
-          CDATA(a)(), n * a_skip, di,
-          CDATA(b)(), n * b_skip, dj,
-          beta,
-          MDATA(y)(), n * y_skip, di,
-          1, &state_->queue(), 0, NULL, NULL);
+      clblast::Gemm(
+        clblast::Layout::kColMajor,
+        clblast::Transpose::kNo, clblast::Transpose::kNo,
+        di, dk, dj,
+        alpha,
+        CDATA(a)(), n * a_skip, di,
+        CDATA(b)(), n * b_skip, dj,
+        beta,
+        MDATA(y)(), n * y_skip, di,
+        &state_->queue(), nullptr);
     }
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
-    clblasSgemm(
-        clblasColumnMajor, clblasNoTrans, clblasNoTrans,
-        di, dk * b.shape().batch(), dj,
-        alpha,
-        CDATA(a)(), 0, di,
-        CDATA(b)(), 0, dj,
-        beta,
-        MDATA(y)(), 0, di,
-        1, &state_->queue(), 0, NULL, NULL);
+    clblast::Gemm(
+      clblast::Layout::kColMajor,
+      clblast::Transpose::kNo, clblast::Transpose::kNo,
+      di, dk * b.shape().batch(), dj,
+      alpha,
+      CDATA(a)(), 0, di,
+      CDATA(b)(), 0, dj,
+      beta,
+      MDATA(y)(), 0, di,
+      &state_->queue(), nullptr);
   }
 }
 
@@ -1190,45 +1192,49 @@ void OpenCL::matmul_bw_impl(
     const std::uint32_t y_skip = di * dk;
     const std::uint32_t bs = a.shape().batch();
     for (std::uint32_t n = 0; n < bs; ++n) {
-      clblasSgemm(
-          clblasColumnMajor, clblasNoTrans, clblasTrans,
-          di, dj, dk,
-          alpha,
-          CDATA(gy)(), n * y_skip, di,
-          CDATA(b)(), n * b_skip, dj,
-          beta,
-          MDATA(ga)(), n * a_skip, di,
-          1, &state_->queue(), 0, NULL, NULL);
-      clblasSgemm(
-          clblasColumnMajor, clblasTrans, clblasNoTrans,
-          dj, dk, di,
-          alpha,
-          CDATA(a)(), n * a_skip, di,
-          CDATA(gy)(), n * y_skip, di,
-          beta,
-          MDATA(gb)(), n * b_skip, dj,
-          1, &state_->queue(), 0, NULL, NULL);
+      clblast::Gemm(
+        clblast::Layout::kColMajor,
+        clblast::Transpose::kNo, clblast::Transpose::kYes,
+        di, dj, dk,
+        alpha,
+        CDATA(gy)(), n * y_skip, di,
+        CDATA(b)(), n * b_skip, dj,
+        beta,
+        MDATA(ga)(), n * a_skip, di,
+        &state_->queue(), nullptr);
+      clblast::Gemm(
+        clblast::Layout::kColMajor,
+        clblast::Transpose::kYes, clblast::Transpose::kNo,
+        dj, dk, di,
+        alpha,
+        CDATA(a)(), n * a_skip, di,
+        CDATA(gy)(), n * y_skip, di,
+        beta,
+        MDATA(gb)(), n * b_skip, dj,
+        &state_->queue(), nullptr);
     }
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
-    clblasSgemm(
-        clblasColumnMajor, clblasNoTrans, clblasTrans,
-        di, dj, dk * b.shape().batch(),
-        alpha,
-        CDATA(gy)(), 0, di,
-        CDATA(b)(), 0, dj,
-        beta,
-        MDATA(ga)(), 0, di,
-        1, &state_->queue(), 0, NULL, NULL);
-    clblasSgemm(
-        clblasColumnMajor, clblasTrans, clblasNoTrans,
-        dj, dk * b.shape().batch(), di,
-        alpha,
-        CDATA(a)(), 0, di,
-        CDATA(gy)(), 0, di,
-        beta,
-        MDATA(gb)(), 0, dj,
-        1, &state_->queue(), 0, NULL, NULL);
+    clblast::Gemm(
+      clblast::Layout::kColMajor,
+      clblast::Transpose::kNo, clblast::Transpose::kYes,
+      di, dj, dk * b.shape().batch(),
+      alpha,
+      CDATA(gy)(), 0, di,
+      CDATA(b)(), 0, dj,
+      beta,
+      MDATA(ga)(), 0, di,
+      &state_->queue(), nullptr);
+    clblast::Gemm(
+      clblast::Layout::kColMajor,
+      clblast::Transpose::kYes, clblast::Transpose::kNo,
+      dj, dk * b.shape().batch(), di,
+      alpha,
+      CDATA(a)(), 0, di,
+      CDATA(gy)(), 0, di,
+      beta,
+      MDATA(gb)(), 0, dj,
+      &state_->queue(), nullptr);
   }
 }
 
@@ -1316,13 +1322,13 @@ void OpenCL::broadcast_fw_impl(
 
 void OpenCL::batch_concat_fw_impl(
     const std::vector<const Tensor *> &xs, Tensor &y) {
-  THROW_NOT_IMPLEMENTED;
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
 }
 
 void OpenCL::batch_concat_bw_impl(
     const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
     const std::vector<Tensor *> &gxs) {
-  THROW_NOT_IMPLEMENTED;
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
 }
 
 void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
@@ -1338,6 +1344,41 @@ void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
       state_->batch_sum_fw_kernel, cl::NullRange,
       cl::NDRange(g1 * state_->batch_sum_fw_group_size),
       cl::NDRange(state_->batch_sum_fw_group_size));
+}
+
+void OpenCL::conv2d_fw_impl(const Tensor &, const Tensor &,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    Tensor &) {
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
+}
+
+void OpenCL::conv2d_bw_impl(
+    const Tensor &, const Tensor &, const Tensor &, const Tensor &,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    Tensor &, Tensor &) {
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
+}
+
+void OpenCL::max_pool2d_fw_impl(
+    const Tensor &,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    Tensor &) {
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
+}
+
+void OpenCL::max_pool2d_bw_impl(
+    const Tensor &, const Tensor &, const Tensor &,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    std::uint32_t, std::uint32_t,
+    Tensor &) {
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
 }
 
 void OpenCL::inplace_multiply_const_impl(float k, Tensor &x) {

@@ -24,7 +24,7 @@ void Normal::apply(Tensor &x) const {
 void Identity::apply(Tensor &x) const {
   const Shape s = x.shape();
   if (!s.is_matrix() || s[0] != s[1]) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "Identity initializer can be used to only square matrices.");
   }
   x = x.device().identity(s[0]);
@@ -33,7 +33,7 @@ void Identity::apply(Tensor &x) const {
 void XavierUniform::apply(Tensor &x) const {
   const Shape s = x.shape();
   if (!s.is_matrix()) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "XavierUniform initializer can be used to only matrices or vectors.");
   }
   const float bound = scale_ * std::sqrt(6. / (s[0] + s[1]));
@@ -43,7 +43,7 @@ void XavierUniform::apply(Tensor &x) const {
 void XavierNormal::apply(Tensor &x) const {
   const Shape s = x.shape();
   if (!s.is_matrix()) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "XavierNormal initializer can be used to only matrices or vectors.");
   }
   const float sd = scale_ * std::sqrt(2. / (s[0] + s[1]));
@@ -53,7 +53,7 @@ void XavierNormal::apply(Tensor &x) const {
 void XavierUniformConv2D::apply(Tensor &x) const {
   const Shape s = x.shape();
   if (s.depth() > 4) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "XavierUniformConv2D initializer can be used to only tensors with "
         "up to 4 dimensions.");
   }
@@ -66,7 +66,7 @@ void XavierUniformConv2D::apply(Tensor &x) const {
 void XavierNormalConv2D::apply(Tensor &x) const {
   const Shape s = x.shape();
   if (s.depth() > 4) {
-    THROW_ERROR(
+    PRIMITIV_THROW_ERROR(
         "XavierNormalConv2D initializer can be used to only tensors with "
         "up to 4 dimensions.");
   }

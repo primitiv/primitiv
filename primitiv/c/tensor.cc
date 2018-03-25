@@ -1,167 +1,149 @@
-/* Copyright 2017 The primitiv Authors. All Rights Reserved. */
 #include <primitiv/config.h>
 
-#include <algorithm>
 #include <vector>
 
 #include <primitiv/tensor.h>
-
 #include <primitiv/c/internal.h>
 #include <primitiv/c/tensor.h>
 
 using primitiv::Tensor;
+using primitiv::c::internal::to_c_ptr;
+using primitiv::c::internal::to_cpp_ptr;
+using primitiv::c::internal::to_c_ptr_from_value;
 
-extern "C" {
+PRIMITIV_C_STATUS primitivCreateTensor(primitivTensor_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr(new Tensor());
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Tensor *primitiv_Tensor_new() {
-  return to_c(new Tensor());
-}
-primitiv_Tensor *safe_primitiv_Tensor_new(primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Tensor_new(), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivCloneTensor(
+    const primitivTensor_t *src, primitivTensor_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(src);
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr(new Tensor(*to_cpp_ptr(src)));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Tensor *primitiv_Tensor_new_from_tensor(primitiv_Tensor *tensor) {
-  return to_c(new Tensor(*to_cc(tensor)));
-}
-primitiv_Tensor *safe_primitiv_Tensor_new_from_tensor(primitiv_Tensor *tensor,
-                                                      primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Tensor_new_from_tensor(tensor), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivDeleteTensor(primitivTensor_t *tensor) try {
+  PRIMITIV_C_CHECK_NOT_NULL(tensor);
+  delete to_cpp_ptr(tensor);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Tensor_delete(primitiv_Tensor *tensor) {
-  delete to_cc(tensor);
-}
-void safe_primitiv_Tensor_delete(primitiv_Tensor *tensor,
-                                 primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Tensor_delete(tensor), status);
-}
+PRIMITIV_C_STATUS primitivIsValidTensor(
+    const primitivTensor_t *tensor, PRIMITIV_C_BOOL *retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(tensor);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_cpp_ptr(tensor)->valid();
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-bool primitiv_Tensor_valid(const primitiv_Tensor *tensor) {
-  return to_cc(tensor)->valid();
-}
-bool safe_primitiv_Tensor_valid(const primitiv_Tensor *tensor,
-                                primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Tensor_valid(tensor), status, false);
-}
+PRIMITIV_C_STATUS primitivGetTensorShape(
+    const primitivTensor_t *tensor, primitivShape_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(tensor);
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(to_cpp_ptr(tensor)->shape());
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Shape *primitiv_Tensor_shape(const primitiv_Tensor *tensor) {
-  return to_c_from_value(to_cc(tensor)->shape());
-}
-primitiv_Shape *safe_primitiv_Tensor_shape(const primitiv_Tensor *tensor,
-                                           primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Tensor_shape(tensor), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivGetDeviceFromTensor(
+    const primitivTensor_t *tensor, primitivDevice_t **retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(tensor);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_c_ptr(&to_cpp_ptr(tensor)->device());
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Device *primitiv_Tensor_device(const primitiv_Tensor *tensor) {
-  return to_c(&to_cc(tensor)->device());
-}
-primitiv_Device *safe_primitiv_Tensor_device(const primitiv_Tensor *tensor,
-                                             primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Tensor_device(tensor), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivEvaluateTensorAsFloat(
+    const primitivTensor_t *tensor, float *retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(tensor);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_cpp_ptr(tensor)->to_float();
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-float primitiv_Tensor_to_float(const primitiv_Tensor *tensor) {
-  return to_cc(tensor)->to_float();
-}
-float safe_primitiv_Tensor_to_float(const primitiv_Tensor *tensor,
-                                    primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Tensor_to_float(tensor), status, 0.0);
-}
+PRIMITIV_C_STATUS primitivEvaluateTensorAsArray(
+    const primitivTensor_t *tensor, float *retval, size_t *size) try {
+  PRIMITIV_C_CHECK_NOT_NULL(tensor);
+  PRIMITIV_C_CHECK_NOT_NULL(size);
+  primitiv::c::internal::copy_vector_to_array(
+      to_cpp_ptr(tensor)->to_vector(), retval, size);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Tensor_to_array(const primitiv_Tensor *tensor, float *array) {
-  std::vector<float> v = to_cc(tensor)->to_vector();
-  std::copy(v.begin(), v.end(), array);
-}
-void safe_primitiv_Tensor_to_array(const primitiv_Tensor *tensor,
-                                   float *array,
-                                   primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Tensor_to_array(tensor, array), status);
-}
+PRIMITIV_C_STATUS primitivGetTensorArgmax(
+    const primitivTensor_t *tensor, uint32_t dim, uint32_t *retval,
+    size_t *size) try {
+  PRIMITIV_C_CHECK_NOT_NULL(tensor);
+  PRIMITIV_C_CHECK_NOT_NULL(size);
+  primitiv::c::internal::copy_vector_to_array(
+      to_cpp_ptr(tensor)->argmax(dim), retval, size);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-uint32_t *primitiv_Tensor_argmax(const primitiv_Tensor *tensor, uint32_t dim) {
-  return &(to_cc(tensor)->argmax(dim))[0];
-}
-uint32_t *safe_primitiv_Tensor_argmax(const primitiv_Tensor *tensor,
-                                      uint32_t dim,
-                                      primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Tensor_argmax(tensor, dim), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivGetTensorArgmin(
+    const primitivTensor_t *tensor, uint32_t dim, uint32_t *retval,
+    size_t *size) try {
+  PRIMITIV_C_CHECK_NOT_NULL(tensor);
+  PRIMITIV_C_CHECK_NOT_NULL(size);
+  primitiv::c::internal::copy_vector_to_array(
+      to_cpp_ptr(tensor)->argmin(dim), retval, size);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-uint32_t *primitiv_Tensor_argmin(const primitiv_Tensor *tensor, uint32_t dim) {
-  return &(to_cc(tensor)->argmin(dim))[0];
-}
-uint32_t *safe_primitiv_Tensor_argmin(const primitiv_Tensor *tensor,
-                                      uint32_t dim,
-                                      primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Tensor_argmin(tensor, dim), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivResetTensor(primitivTensor_t *tensor, float k) try {
+  PRIMITIV_C_CHECK_NOT_NULL(tensor);
+  to_cpp_ptr(tensor)->reset(k);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Tensor_reset(primitiv_Tensor *tensor, float k) {
-  to_cc(tensor)->reset(k);
-}
-void safe_primitiv_Tensor_reset(primitiv_Tensor *tensor,
-                                float k,
-                                primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Tensor_reset(tensor, k), status);
-}
+PRIMITIV_C_STATUS primitivResetTensorByArray(
+    primitivTensor_t *tensor, const float *values) try {
+  PRIMITIV_C_CHECK_NOT_NULL(tensor);
+  PRIMITIV_C_CHECK_NOT_NULL(values);
+  to_cpp_ptr(tensor)->reset_by_array(values);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Tensor_reset_by_array(primitiv_Tensor *tensor,
-                                    const float *values) {
-  to_cc(tensor)->reset_by_array(values);
-}
-void safe_primitiv_Tensor_reset_by_array(primitiv_Tensor *tensor,
-                                         const float *values,
-                                         primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Tensor_reset_by_array(tensor, values), status);
-}
+PRIMITIV_C_STATUS primitivReshapeTensor(
+    const primitivTensor_t *tensor, const primitivShape_t *new_shape,
+    primitivTensor_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(tensor);
+  PRIMITIV_C_CHECK_NOT_NULL(new_shape);
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(
+      to_cpp_ptr(tensor)->reshape(*to_cpp_ptr(new_shape)));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Tensor *primitiv_Tensor_reshape(const primitiv_Tensor *tensor,
-                                         const primitiv_Shape *new_shape) {
-  return to_c_from_value(to_cc(tensor)->reshape(*to_cc(new_shape)));
-}
-primitiv_Tensor *safe_primitiv_Tensor_reshape(const primitiv_Tensor *tensor,
-                                              const primitiv_Shape *new_shape,
-                                              primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Tensor_reshape(tensor, new_shape), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivFlattenTensor(
+    const primitivTensor_t *tensor, primitivTensor_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(tensor);
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(to_cpp_ptr(tensor)->flatten());
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Tensor *primitiv_Tensor_flatten(const primitiv_Tensor *tensor) {
-  return to_c_from_value(to_cc(tensor)->flatten());
-}
-primitiv_Tensor *safe_primitiv_Tensor_flatten(const primitiv_Tensor *tensor,
-                                              primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Tensor_flatten(tensor), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivMultiplyTensorByConstantInplace(
+    primitivTensor_t *tensor, float k) try {
+  PRIMITIV_C_CHECK_NOT_NULL(tensor);
+  to_c_ptr(&(to_cpp_ptr(tensor)->inplace_multiply_const(k)));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Tensor *primitiv_Tensor_inplace_multiply_const(primitiv_Tensor *tensor,
-                                                        float k) {
-  return to_c(&(to_cc(tensor)->inplace_multiply_const(k)));
-}
-primitiv_Tensor *safe_primitiv_Tensor_inplace_multiply_const(
-    primitiv_Tensor *tensor, float k, primitiv_Status *status) {
-  SAFE_RETURN(
-      primitiv_Tensor_inplace_multiply_const(tensor, k), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivAddTensorInplace(
+    primitivTensor_t *tensor, const primitivTensor_t *x) try {
+  PRIMITIV_C_CHECK_NOT_NULL(tensor);
+  PRIMITIV_C_CHECK_NOT_NULL(x);
+  to_c_ptr(&(to_cpp_ptr(tensor)->inplace_add(*to_cpp_ptr(x))));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Tensor *primitiv_Tensor_inplace_add(primitiv_Tensor *tensor,
-                                             const primitiv_Tensor *x) {
-  return to_c(&(to_cc(tensor)->inplace_add(*to_cc(x))));
-}
-primitiv_Tensor *safe_primitiv_Tensor_inplace_add(primitiv_Tensor *tensor,
-                                                  const primitiv_Tensor *x,
-                                                  primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Tensor_inplace_add(tensor, x), status, nullptr);
-}
-
-primitiv_Tensor *primitiv_Tensor_inplace_subtract(primitiv_Tensor *tensor,
-                                                  const primitiv_Tensor *x) {
-  return to_c(&(to_cc(tensor)->inplace_subtract(*to_cc(x))));
-}
-primitiv_Tensor *safe_primitiv_Tensor_inplace_subtract(
-    primitiv_Tensor *tensor,
-    const primitiv_Tensor *x,
-    primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Tensor_inplace_subtract(tensor, x), status, nullptr);
-}
-
-}  // end extern "C"
+PRIMITIV_C_STATUS primitivSubtractTensorInplace(
+    primitivTensor_t *tensor, const primitivTensor_t *x) try {
+  PRIMITIV_C_CHECK_NOT_NULL(tensor);
+  PRIMITIV_C_CHECK_NOT_NULL(x);
+  to_c_ptr(&(to_cpp_ptr(tensor)->inplace_subtract(*to_cpp_ptr(x))));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS

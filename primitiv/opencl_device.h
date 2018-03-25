@@ -198,32 +198,28 @@ private:
       std::uint32_t padding0, std::uint32_t padding1,
       std::uint32_t stride0, std::uint32_t stride1,
       std::uint32_t dilation0, std::uint32_t dilation1,
-      Tensor &y) override
-  { THROW_NOT_IMPLEMENTED; }
+      Tensor &y) override;
 
   void conv2d_bw_impl(
       const Tensor &x, const Tensor &w, const Tensor &y, const Tensor &gy,
       std::uint32_t padding0, std::uint32_t padding1,
       std::uint32_t stride0, std::uint32_t stride1,
       std::uint32_t dilation0, std::uint32_t dilation1,
-      Tensor &gx, Tensor &gw) override
-  { THROW_NOT_IMPLEMENTED; }
+      Tensor &gx, Tensor &gw) override;
 
   void max_pool2d_fw_impl(
       const Tensor &x,
       std::uint32_t window0, std::uint32_t window1,
       std::uint32_t padding0, std::uint32_t padding1,
       std::uint32_t stride0, std::uint32_t stride1,
-      Tensor &y) override
-  { THROW_NOT_IMPLEMENTED; }
+      Tensor &y) override;
 
   void max_pool2d_bw_impl(
       const Tensor &x, const Tensor &y, const Tensor &gy,
       std::uint32_t window0, std::uint32_t window1,
       std::uint32_t padding0, std::uint32_t padding1,
       std::uint32_t stride0, std::uint32_t stride1,
-      Tensor &gx) override
-  { THROW_NOT_IMPLEMENTED; }
+      Tensor &gx) override;
 
   void inplace_multiply_const_impl(float k, Tensor &x) override;
 

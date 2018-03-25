@@ -7,26 +7,14 @@ docker run --name travis-ci -v $TRAVIS_BUILD_DIR:/primitiv -td ubuntu:rolling /b
 
 # install
 docker exec travis-ci bash -c "apt update"
-docker exec travis-ci bash -c "apt install -y build-essential cmake googletest"
-
-# install Eigen
-#
-# NOTE(vbkaisetsu):
-# Ubuntu 17.04  contains Eigen 3.3.4 and gcc 7.2.0.
-# gcc/g++ 7 detects int-in-bool-context error in the latest released version of Eigen
-# by default, and it will be fixed in 3.3.5. For now, this script downloads the latest
-# development version to solve this problem.
-#
-# For more details, see: http://eigen.tuxfamily.org/bz/show_bug.cgi?id=1402
-#
-docker exec travis-ci bash -c "apt install -y mercurial"
-docker exec travis-ci bash -c "hg clone https://bitbucket.org/eigen/eigen"
-docker exec travis-ci bash -c "mkdir ./eigen/build"
-docker exec travis-ci bash -c "cd ./eigen/build && cmake .."
-docker exec travis-ci bash -c "cd ./eigen/build && make && make install"
+docker exec travis-ci bash -c "apt install -y build-essential cmake googletest libeigen3-dev"
 
 # install OpenCL environment
-docker exec travis-ci bash -c "apt install -y opencl-headers libclblas-dev git pkg-config libhwloc-dev libltdl-dev ocl-icd-dev ocl-icd-opencl-dev clang-3.8 llvm-3.8-dev libclang-3.8-dev libz-dev"
+docker exec travis-ci bash -c "apt install -y opencl-headers git wget pkg-config libhwloc-dev libltdl-dev ocl-icd-dev ocl-icd-opencl-dev clang-3.8 llvm-3.8-dev libclang-3.8-dev libz-dev"
+docker exec travis-ci bash -c "wget https://github.com/CNugteren/CLBlast/archive/1.2.0.tar.gz -O ./clblast.tar.gz"
+docker exec travis-ci bash -c "mkdir ./clblast"
+docker exec travis-ci bash -c "tar xf ./clblast.tar.gz -C ./clblast --strip-components 1"
+docker exec travis-ci bash -c "cd ./clblast && cmake . && make && make install"
 # pocl 0.13 does not contain mem_fence() function that is used by primitiv.
 # We build the latest pocl instead of using distribution's package.
 # See: https://github.com/pocl/pocl/issues/294

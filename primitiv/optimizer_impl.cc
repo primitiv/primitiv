@@ -16,7 +16,7 @@ namespace optimizers {
   } \
 }
 
-void SGD::configure_parameter(Parameter &param) {}
+void SGD::configure_parameter(Parameter &) {}
 
 void SGD::update_parameter(float scale, Parameter &param) {
   param.value() -= (scale * eta_) * param.gradient();
