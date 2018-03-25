@@ -62,7 +62,9 @@ void Model::save(const std::string &path, bool with_stats) const {
     PRIMITIV_THROW_ERROR(
         "Could not store more than 2^32 - 1 parameters in one model file.");
   }
-#endif  // PRIMITIV_WORDSIZE_64
+#else
+  static_assert(sizeof(std::size_t) == sizeof(std::uint32_t), "");
+#endif
   writer << static_cast<std::uint32_t>(params.size());
 
   for (const auto &kv : params) {

@@ -166,7 +166,9 @@ void Parameter::save_inner(msgpack::Writer &writer, bool with_stats) const {
       PRIMITIV_THROW_ERROR(
           "Could not store more than 2^32 - 1 stats in one parameter file.");
     }
-#endif  // PRIMITIV_WORDSIZE_64
+#else
+  static_assert(sizeof(std::size_t) == sizeof(std::uint32_t), "");
+#endif
     writer << static_cast<std::uint32_t>(stats_.size());
     for (const auto &kv : stats_) {
       writer << kv.first;
