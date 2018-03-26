@@ -1,6 +1,11 @@
 # test definitions
 
 # compiler settings
+
+# NOTE(vbkaisetsu):
+# x87 machines keep excess precision of floating-point variables
+# in registers. -ffloat-store option prevents this behavior and
+# suppresses errors between test cases and actual results.
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   set(CMAKE_CXX_FLAGS "-ffloat-store ${CMAKE_CXX_FLAGS}")
 endif()
