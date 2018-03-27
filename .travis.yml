@@ -14,6 +14,9 @@ matrix:
       services: docker
     - os: osx
       env: SCRIPT=osx
+    - os: linux
+      env: SCRIPT=debian-x86
+      services: docker
 
 script:
   - $TRAVIS_BUILD_DIR/.travis/${SCRIPT}.sh
