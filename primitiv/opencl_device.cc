@@ -1320,6 +1320,10 @@ void OpenCL::broadcast_fw_impl(
       cl::NDRange(state_->broadcast_fw_group_size));
 }
 
+void OpenCL::batch_pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids, Tensor &y) {
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
+}
+
 void OpenCL::batch_slice_fw_impl(
     const Tensor &x, std::uint32_t offset, Tensor &y) {
   PRIMITIV_THROW_NOT_IMPLEMENTED;
@@ -1343,6 +1347,10 @@ void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
       state_->batch_sum_fw_kernel, cl::NullRange,
       cl::NDRange(g1 * state_->batch_sum_fw_group_size),
       cl::NDRange(state_->batch_sum_fw_group_size));
+}
+
+void OpenCL::batch_pick_bw_impl(const Tensor &gy, const std::vector<std::uint32_t> &ids, Tensor &gx) {
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
 }
 
 void OpenCL::batch_slice_bw_impl(const Tensor &gy, std::uint32_t offset, Tensor &gx) {

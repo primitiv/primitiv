@@ -322,8 +322,18 @@ Node max_pool2d(
 namespace batch {
 
 template<>
+Node pick(const Node &x, const std::vector<std::uint32_t> &ids) {
+  return REGX(x, BatchPick(ids), x)[0];
+}
+
+template<>
 Node slice(const Node &x, std::uint32_t lower, std::uint32_t upper) {
   return REGX(x, BatchSlice(lower, upper), x)[0];
+}
+
+template<>
+std::vector<Node> split(const Node &x, std::uint32_t n) {
+  return REGX(x, BatchSplit(n), x);
 }
 
 template<>

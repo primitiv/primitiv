@@ -299,6 +299,14 @@ PRIMITIV_DECL_UNARY(Tan);
 PRIMITIV_DECL_UNARY(ReLU);
 PRIMITIV_DECL_UNARY(LReLU);
 
+class BatchPick : public Operator {
+  PRIMITIV_DECL_DEFAULTS_AND_FORWARD(1, 1);
+public:
+  explicit BatchPick(const std::vector<std::uint32_t> &ids) : ids_(ids) {}
+private:
+  std::vector<std::uint32_t> ids_;
+};
+
 class BatchSlice : public Operator {
   PRIMITIV_DECL_DEFAULTS_AND_FORWARD(1, 1);
 public:

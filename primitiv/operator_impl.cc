@@ -127,6 +127,7 @@ IMPL_NAME_0(Tan);
 IMPL_NAME_0(ReLU);
 IMPL_NAME_0(LReLU);
 
+IMPL_NAME_0(BatchPick);
 std::string BatchSlice::name() const {
   return "BatchSlice("
     + string_utils::to_string(lower_) + ':'
@@ -251,6 +252,7 @@ FWD_SHAPE(MatrixMultiply) { *y[0] = shape_ops::matmul(*x[0], *x[1]); }
 FWD_SHAPE(Sum) { *y[0] = x[0]->resize_dim(dim_, 1); }
 FWD_SHAPE(LogSumExp) { *y[0] = x[0]->resize_dim(dim_, 1); }
 FWD_SHAPE(Broadcast) { *y[0] = shape_ops::broadcast(*x[0], dim_, size_); }
+FWD_SHAPE(BatchPick) { *y[0] = shape_ops::batch_pick(*x[0], ids_); }
 FWD_SHAPE(BatchSlice) { *y[0] = shape_ops::batch_slice(*x[0], lower_, upper_); }
 FWD_SHAPE(BatchSplit) {
   if (n_ == 0) {
@@ -408,6 +410,7 @@ FORWARD(Sum) { *y[0] = functions::sum(*x[0], dim_); }
 FORWARD(LogSumExp) { *y[0] = functions::logsumexp(*x[0], dim_); }
 FORWARD(Broadcast) { *y[0] = functions::broadcast(*x[0], dim_, size_); }
 
+FORWARD(BatchPick) { *y[0] = functions::batch::pick(*x[0], ids_); }
 FORWARD(BatchSlice) { *y[0] = functions::batch::slice(*x[0], lower_, upper_); }
 FORWARD(BatchSplit) {
   const std::uint32_t total = x[0]->shape().batch();
@@ -721,6 +724,12 @@ BACKWARD(Broadcast) {
   UNUSED(x);
   UNUSED(y);
   *gx[0] += functions::sum(*gy[0], dim_);
+}
+
+BACKWARD(BatchPick) {
+  UNUSED(x);
+  UNUSED(y);
+  gy[0]->device().batch_pick_bw(*gy[0], ids_, *gx[0]);
 }
 
 BACKWARD(BatchSlice) {

@@ -877,6 +877,17 @@ type_traits::Identity<Var> max_pool2d(
 namespace batch {
 
 /**
+ * Lookups subplanes according to the batch and addresses.
+ * @param x A variable representing an original data.
+ * @param ids List of subplane IDs according to the batch. Each value must
+ *            be lower than `x.shape().batch()`.
+ * @return A new variable.
+ */
+template<typename Var>
+type_traits::Identity<Var> pick(
+    const Var &x, const std::vector<std::uint32_t> &ids);
+
+/**
  * Extracts a specific range \f$ [L, U) \f$ of subplanes along the batch axis.
  * @param x A variable representing an original data.
  * @param lower Lower bound \f$ L \f$ of the batch.

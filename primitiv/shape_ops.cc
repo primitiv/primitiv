@@ -183,6 +183,25 @@ Shape pool2d(
       x.batch());
 }
 
+Shape batch_pick(const Shape &x, const std::vector<std::uint32_t> &ids) {
+  const std::uint32_t n = x.batch();
+  const std::uint32_t bi = ids.size();
+  if (bi == 0) {
+    PRIMITIV_THROW_ERROR(
+        "Invalid IDs to pick. shape: " << x.to_string()
+        << ", ids.size(): " << ids.size());
+  }
+  for (std::uint32_t i = 0; i < bi; ++i) {
+    if (ids[i] >= n) {
+      PRIMITIV_THROW_ERROR(
+          "Invalid IDs to pick. shape: " << x.to_string()
+          << ", ids[" << i << "]: " << ids[i]);
+    }
+  }
+
+  return x.resize_batch(bi);
+}
+
 Shape batch_slice(const Shape &x, std::uint32_t lower, std::uint32_t upper) {
   if (lower >= upper || upper > x.batch()) {
     PRIMITIV_THROW_ERROR(

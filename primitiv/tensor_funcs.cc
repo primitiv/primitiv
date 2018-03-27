@@ -329,6 +329,11 @@ Tensor max_pool2d(
 namespace batch {
 
 template<>
+Tensor pick(const Tensor &x, const std::vector<std::uint32_t> &ids) {
+  return x.device().batch_pick_fw(x, ids);
+}
+
+template<>
 Tensor slice(const Tensor &x, std::uint32_t lower, std::uint32_t upper) {
   return x.device().batch_slice_fw(x, lower, upper);
 }

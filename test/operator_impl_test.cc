@@ -1465,6 +1465,48 @@ TEST_F(OperatorImplTest, CheckBroadcast) {
   }
 }
 
+TEST_F(OperatorImplTest, CheckBatchPick) {
+  struct TestCase {
+    vector<std::uint32_t> ids;
+    Shape ret_shape;
+    vector<float> ret_data;
+    vector<float> bw_grad;
+  };
+  const vector<TestCase> test_cases {
+    {{0}, Shape({2, 2}, 1),
+      {1, 2, 3, 4},
+      {1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0}},
+    {{1, 2}, Shape({2, 2}, 2),
+      {0, 0, 0, 0, -1, -2, -3, -4},
+      {0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1}},
+    {{0, 0, 0}, Shape({2, 2}, 3),
+      {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4},
+      {3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0}},
+    {{1, 0, 1, 2}, Shape({2, 2}, 4),
+      {0, 0, 0, 0, 1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4},
+      {1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1}},
+    {{2, 1, 0}, Shape({2, 2}, 3),
+      {-1, -2, -3, -4, 0, 0, 0, 0, 1, 2, 3, 4},
+      {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
+  };
+  setup_1arg();
+  for (const TestCase &tc : test_cases) {
+    BatchPick node(tc.ids);
+    Shape cur_shape;
+    Tensor cur_value;
+    node.forward_shape(arg_shapes, { &cur_shape });
+    node.forward(arg_values, { &cur_value });
+    const Tensor cur_grad = functions::ones<Tensor>(tc.ret_shape, *dev);
+    reset_gradients();
+    node.backward(arg_values, { &cur_value }, { &cur_grad }, arg_grads);
+    EXPECT_EQ("BatchPick", node.name());
+    EXPECT_EQ(tc.ret_shape, cur_shape);
+    EXPECT_EQ(nullptr, node.get_device());
+    EXPECT_TRUE(vector_match(tc.ret_data, cur_value.to_vector()));
+    EXPECT_TRUE(vector_match(tc.bw_grad, arg_grads[0]->to_vector()));
+  }
+}
+
 TEST_F(OperatorImplTest, CheckBatchSlice) {
   struct TestCase {
     std::uint32_t lower, upper;

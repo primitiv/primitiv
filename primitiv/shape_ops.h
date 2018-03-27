@@ -134,6 +134,14 @@ Shape pool2d(
     std::uint32_t stride0, std::uint32_t stride1);
 
 /**
+ * Calculates a picked shape.
+ * @param x A shape.
+ * @param ids Label IDs to be picked from the batch.
+ * @return Calculated shape.
+ */
+Shape batch_pick(const Shape &x, const std::vector<std::uint32_t> &ids);
+
+/**
  * Calculates a shape of the slice.
  * @param x A shape.
  * @param lower Lower bound of the batch.
