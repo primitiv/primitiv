@@ -186,9 +186,6 @@ private:
 
   void batch_slice_bw_impl(const Tensor &gy, std::uint32_t offset, Tensor &gx) override;
       const std::vector<const Tensor *> &xs, Tensor &y) override;
-  void batch_concat_bw_impl(
-      const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
-      const std::vector<Tensor *> &gxs) override;
 
   void conv2d_fw_impl(const Tensor &x, const Tensor &w,
       std::uint32_t padding0, std::uint32_t padding1,

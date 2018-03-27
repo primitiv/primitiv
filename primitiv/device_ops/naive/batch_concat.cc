@@ -8,13 +8,14 @@ namespace devices {
 
 void Naive::batch_concat_fw_impl(
     const std::vector<const Tensor *> &xs, Tensor &y) {
-  PRIMITIV_THROW_NOT_IMPLEMENTED;
-}
-
-void Naive::batch_concat_bw_impl(
-    const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
-    const std::vector<Tensor *> &gxs) {
-  PRIMITIV_THROW_NOT_IMPLEMENTED;
+  std::uint32_t offset = 0;
+  for (const Tensor *x : xs) {
+    const std::uint32_t span = x->shape().size();
+    float *dest = MDATA(y) + offset;
+    const float *src = CDATA(*x);
+    std::copy(src, src + span, dest);
+    offset += span;
+  }
 }
 
 }  // namespace devices

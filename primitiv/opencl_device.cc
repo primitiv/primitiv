@@ -1349,12 +1349,6 @@ void OpenCL::batch_slice_bw_impl(const Tensor &gy, std::uint32_t offset, Tensor 
   PRIMITIV_THROW_NOT_IMPLEMENTED;
 }
 
-void OpenCL::batch_concat_bw_impl(
-    const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
-    const std::vector<Tensor *> &gxs) {
-  PRIMITIV_THROW_NOT_IMPLEMENTED;
-}
-
 void OpenCL::conv2d_fw_impl(const Tensor &, const Tensor &,
     std::uint32_t, std::uint32_t,
     std::uint32_t, std::uint32_t,

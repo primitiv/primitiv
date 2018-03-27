@@ -12,11 +12,5 @@ void CUDA::batch_concat_fw_impl(
   PRIMITIV_THROW_NOT_IMPLEMENTED;
 }
 
-void CUDA::batch_concat_bw_impl(
-    const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
-    const std::vector<Tensor *> &gxs) {
-  PRIMITIV_THROW_NOT_IMPLEMENTED;
-}
-
 }  // namespace devices
 }  // namespace primitiv

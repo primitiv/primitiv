@@ -1514,34 +1514,44 @@ TEST_F(OperatorImplTest, CheckBatchSlice) {
 }
 
 TEST_F(OperatorImplTest, CheckBatchConcat) {
-  EXPECT_TRUE(true);
-  // setup_2args();
-  // const Shape ret_shape({2, 2}, 6);
-  // const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, -1, -2, -3, -4, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
-  // const vector<vector<float>> bw_grads {
-  //   vector<float>(arg_shapes[0]->size(), 1),
-  //   vector<float>(arg_shapes[1]->size(), 1),
-  // };
-  // TEST_2ARGS(Add);
-  /*
-  for (const TestCase &tc : test_cases) {
-    BatchConcat node;
-    Shape cur_shape;
-    Tensor cur_value;
-    node.forward_shape(arg_shapes, { &cur_shape });
-    node.forward(arg_values, { &cur_value });
-    const Tensor cur_grad = dev->new_tensor_by_vector(
-        tc.ret_shape, tc.cur_grad_data);
-    // reset_gradients();
-    // node.backward(arg_values, { &cur_value }, { &cur_grad }, arg_grads);
-    // EXPECT_EQ("Concat(" + std::to_string(tc.dim) + ')', node.name());
-    // EXPECT_EQ(tc.ret_shape, cur_shape);
-    // EXPECT_EQ(nullptr, node.get_device());
-    // EXPECT_TRUE(vector_match(tc.cur_value_data, cur_value.to_vector()));
-    // EXPECT_TRUE(vector_match(vector<float>(12, 1), arg_grads[0]->to_vector()));
-    // EXPECT_TRUE(vector_match(vector<float>(12, 2), arg_grads[1]->to_vector()));
-  }
-  */
+  setup_2args();
+  arg_shapes.emplace_back(new Shape({2, 2}, 2));
+  arg_values.emplace_back(new Tensor(dev->new_tensor_by_vector(
+      *arg_shapes[2], {-2, -2, -2, -2, 5, 6, 7, 8})));
+  arg_grads.emplace_back(
+      new Tensor(functions::zeros<Tensor>(*arg_shapes[2], *dev)));
+  const Shape ret_shape({2, 2}, 8);
+  const vector<float> ret_data {
+     1,  2,  3,  4,  0,  0,  0,  0, -1, -2, -3, -4,
+     1,  1,  1,  1,  2,  2,  2,  2,  3,  3,  3,  3,
+    -2, -2, -2, -2,  5,  6,  7,  8,
+  };
+  const vector<float> grad_data {
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    3, 3, 3, 3, 3, 3, 3, 3,
+  };
+  const vector<vector<float>> bw_grads {
+    vector<float>(arg_shapes[0]->size(), 1),
+    vector<float>(arg_shapes[1]->size(), 2),
+    vector<float>(arg_shapes[2]->size(), 3),
+  };
+
+  BatchConcat node;
+  Shape cur_shape;
+  Tensor cur_value;
+  node.forward_shape(arg_shapes, { &cur_shape });
+  node.forward(arg_values, { &cur_value });
+  const Tensor cur_grad = dev->new_tensor_by_vector(ret_shape, grad_data);
+  reset_gradients();
+  node.backward(arg_values, { &cur_value }, { &cur_grad }, arg_grads);
+  EXPECT_EQ("BatchConcat", node.name());
+  EXPECT_EQ(ret_shape, cur_shape);
+  EXPECT_EQ(nullptr, node.get_device());
+  EXPECT_TRUE(vector_match(ret_data, cur_value.to_vector()));
+  EXPECT_TRUE(vector_match(bw_grads[0], arg_grads[0]->to_vector()));
+  EXPECT_TRUE(vector_match(bw_grads[1], arg_grads[1]->to_vector()));
+  EXPECT_TRUE(vector_match(bw_grads[2], arg_grads[2]->to_vector()));
 }
 
 TEST_F(OperatorImplTest, CheckBatchSum) {

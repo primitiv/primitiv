@@ -215,9 +215,6 @@ public:
   Tensor batch_sum_fw(const Tensor &x);
 
   void batch_slice_bw(const Tensor &gy, std::uint32_t offset, Tensor &gx);
-  void batch_concat_bw(
-      const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
-      const std::vector<Tensor *> &gxs);
 
   // Convolution.
   Tensor conv2d_fw(
@@ -470,9 +467,6 @@ private:
   virtual void batch_sum_fw_impl(const Tensor &x, Tensor &y) = 0;
 
   virtual void batch_slice_bw_impl(const Tensor &gy, std::uint32_t offset, Tensor &gx) = 0;
-  virtual void batch_concat_bw_impl(
-      const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
-      const std::vector<Tensor *> &gxs) = 0;
 
   virtual void conv2d_fw_impl(
       const Tensor &x, const Tensor &w,

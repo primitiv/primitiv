@@ -705,7 +705,14 @@ BACKWARD(BatchSlice) {
 }
 
 BACKWARD(BatchConcat) {
-  gy[0]->device().batch_concat_bw(x, *y[0], *gy[0], gx);
+  UNUSED(x);
+  UNUSED(y);
+  std::uint32_t offset = 0;
+  for (Tensor *gxi : gx) {
+    const std::uint32_t span = gxi->shape().batch();
+    *gxi += functions::batch::slice(*gy[0], offset, offset + span);
+    offset += span;
+  }
 }
 
 BACKWARD(BatchSum) {
