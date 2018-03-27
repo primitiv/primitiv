@@ -442,7 +442,7 @@ type_traits::Identity<Var> slice(
  *         ``split(x, dim, n)[i] == slice(x, dim, L(i), U(i))``,
  *         where ``L(i) := i * x.shape()[dim] / n``
  *         and ``U(i) := (i + 1) * x.shape()[dim] / n``.
- * @throw primitiv::Error ``n`` can not divide ``s.shape()[dim]`` wiout residue.
+ * @throw primitiv::Error ``n`` can not divide ``s.shape()[dim]`` without residue.
  */
 template<typename Var>
 std::vector<type_traits::Identity<Var>> split(
@@ -886,6 +886,22 @@ namespace batch {
 template<typename Var>
 type_traits::Identity<Var> slice(
     const Var &x, std::uint32_t lower, std::uint32_t upper);
+
+/**
+ * Splits a given variable into specified number of partitions along the batch.
+ * @param x A variable representing an original data.
+ * @param n The number of resulting partitions.
+ *          ``n`` should be able to divide ``x.shape().batch()`` without
+ *          residue.
+ * @return A list of `n` variables. Each variable is identical with:
+ *         ``batch::split(x, n)[i] == batch::slice(x, L(i), U(i))``,
+ *         where ``L(i) := i * x.shape().batch() / n``
+ *         and ``U(i) := (i + 1) * x.shape().batch() / n``.
+ * @throw primitiv::Error ``n`` can not divide ``s.shape().batch()`` without
+ *                        residue.
+ */
+template<typename Var>
+std::vector<type_traits::Identity<Var>> split(const Var &x, std::uint32_t n);
 
 template<typename Var>
 type_traits::Identity<Var> concat(const std::vector<Var> &xs);

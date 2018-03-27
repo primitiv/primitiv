@@ -309,6 +309,14 @@ private:
   std::uint32_t upper_;
 };
 
+class BatchSplit : public Operator {
+  PRIMITIV_DECL_DEFAULTS_AND_FORWARD(1, n_);
+public:
+  explicit BatchSplit(std::uint32_t n) : n_(n) {}
+private:
+  std::uint32_t n_;
+};
+
 class BatchConcat : public Operator {
   PRIMITIV_DECL_DEFAULTS_AND_FORWARD(Operator::NONZERO, 1);
 };

@@ -2370,6 +2370,50 @@ TEST_F(TensorForwardTest, CheckInvalidBroadcast) {
   }
 }
 
+TEST_F(TensorForwardTest, CheckBatchSplit) {
+  vector<float> x_data = make_iota_vector(3 * 3 * 4, 0);
+  struct TestCase {
+    std::uint32_t n;
+    Shape shape;
+    vector<vector<float>> values;
+  };
+  const vector<TestCase> test_cases {
+    {1, Shape({3, 3}, 4),
+      {make_iota_vector(3 * 3 * 4, 0)}},
+    {2, Shape({3, 3}, 2),
+      {{ 0,  1,  2,  3,  4,  5,  6,  7,  8,
+         9, 10, 11, 12, 13, 14, 15, 16, 17},
+       {18, 19, 20, 21, 22, 23, 24, 25, 26,
+        27, 28, 29, 30, 31, 32, 33, 34, 35}}},
+    {4, {3, 3},
+      {{ 0,  1,  2,  3,  4,  5,  6,  7,  8},
+       { 9, 10, 11, 12, 13, 14, 15, 16, 17},
+       {18, 19, 20, 21, 22, 23, 24, 25, 26},
+       {27, 28, 29, 30, 31, 32, 33, 34, 35}}},
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector(Shape({3, 3}, 4), x_data);
+    for (const TestCase &tc : test_cases) {
+      std::cerr << "device=" << dev << ", n=" << tc.n << std::endl;
+      const vector<Tensor> ys = batch::split(x, tc.n);
+      EXPECT_EQ(tc.n, ys.size());
+      for (std::uint32_t i = 0; i < tc.n; ++i) {
+        EXPECT_EQ(tc.shape, ys[i].shape());
+        EXPECT_TRUE(vector_match(tc.values[i], ys[i].to_vector()));
+      }
+    }
+  }
+}
+
+TEST_F(TensorForwardTest, CheckInvalidBatchSplit) {
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_constant(Shape({3, 3}, 4), .5);
+    EXPECT_THROW(batch::split(x, 0), Error);
+    EXPECT_THROW(batch::split(x, 3), Error);
+    EXPECT_THROW(batch::split(x, 5), Error);
+  }
+}
+
 TEST_F(TensorForwardTest, CheckBatchSum) {
   const vector<float> x_data {
     1, 2, 3, 4, 5, 6, 7, 8,
