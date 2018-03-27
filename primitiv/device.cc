@@ -514,13 +514,10 @@ Tensor Device::broadcast_fw(
 
 Tensor Device::batch_slice_fw(
     const Tensor &x, std::uint32_t lower, std::uint32_t upper) {
-  PRIMITIV_THROW_NOT_IMPLEMENTED;
-  /*
   CHECK_DEVICE(x);
-  Tensor y = new_raw_tensor(shape_ops::slice(x.shape(), dim, lower, upper));
-  slice_fw_impl(x, dim, lower, y);
+  Tensor y = new_raw_tensor(shape_ops::batch_slice(x.shape(), lower, upper));
+  batch_slice_fw_impl(x, lower, y);
   return y;
-  */
 }
 
 Tensor Device::batch_concat_fw(const std::vector<const Tensor *> &xs) {
@@ -547,22 +544,17 @@ Tensor Device::batch_sum_fw(const Tensor &x) {
 
 void Device::batch_slice_bw(
     const Tensor &gy, std::uint32_t offset, Tensor &gx) {
-  PRIMITIV_THROW_NOT_IMPLEMENTED;
-  /*
   CHECK_DEVICE(gy);
   CHECK_DEVICE(gx);
   const Shape &sy = gy.shape();
   const Shape &sx = gx.shape();
-  if (!sy.has_same_loo_dims(sx, dim) || !sy.has_compatible_batch(sx) ||
-      offset + sy[dim] > sx[dim]) {
+  if (!sy.has_same_dims(sx) || offset + sy.batch() > sx.batch()) {
     PRIMITIV_THROW_ERROR(
         "Attempted to add gradients with shape "
-        << sy.to_string() << ", dim " << dim << ", offset " << offset
+        << sy.to_string() << ", batch offset " << offset
         << " to shape" << sx.to_string() << '.');
   }
-  if (dim >= sx.depth()) inplace_add_impl(gy, gx);
-  else batch_slice_bw_impl(gy, dim, offset, gx);
-  */
+  batch_slice_bw_impl(gy, offset, gx);
 }
 
 void Device::batch_concat_bw(

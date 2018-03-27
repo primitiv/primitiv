@@ -561,6 +561,45 @@ TEST_F(ShapeOpsTest, CheckInvalidPool2D) {
   }
 }
 
+TEST_F(ShapeOpsTest, CheckBatchSlice) {
+  struct TestCase {
+    std::uint32_t lower, upper;
+    Shape input, expected;
+  };
+  const vector<TestCase> test_cases {
+    {0, 1, {}, {}}, {0, 1, Shape({}, 2), {}},
+    {1, 2, Shape({}, 2), {}}, {0, 2, Shape({}, 2), Shape({}, 2)},
+    {0, 1, Shape({3}, 3), Shape({3}, 1)}, {1, 2, Shape({3}, 3), Shape({3}, 1)},
+    {2, 3, Shape({3}, 3), Shape({3}, 1)}, {0, 2, Shape({3}, 3), Shape({3}, 2)},
+    {1, 3, Shape({3}, 3), Shape({3}, 2)}, {0, 3, Shape({3}, 3), Shape({3}, 3)},
+    {0, 1, Shape({2, 4}, 2), Shape({2, 4}, 1)},
+    {1, 2, Shape({2, 4}, 2), Shape({2, 4}, 1)},
+    {0, 2, Shape({2, 4}, 2), Shape({2, 4}, 2)},
+  };
+  for (const TestCase &tc : test_cases) {
+    const Shape observed = batch_slice(tc.input, tc.lower, tc.upper);
+    EXPECT_EQ(tc.expected, observed);
+  }
+}
+
+TEST_F(ShapeOpsTest, CheckInvalidBatchSlice) {
+  struct TestCase {
+    std::uint32_t lower, upper;
+    Shape input;
+  };
+  const vector<TestCase> test_cases {
+    {0, 0, {}}, {1, 0, {}}, {0, 2, {}}, {1, 2, {}},
+    {0, 0, Shape({}, 2)}, {1, 0, Shape({}, 2)}, {0, 3, Shape({}, 2)},
+    {3, 1, Shape({}, 2)}, {2, 2, Shape({}, 2)}, {4, 3, Shape({}, 2)},
+    {0, 0, {2}}, {0, 3, {2}}, {2, 1, {2}}, {0, 2, {2}},
+    {1, 1, Shape({2, 2}, 3)}, {2, 1, Shape({2, 2}, 3)},
+    {0, 4, Shape({2, 2}, 3)}, {3, 3, Shape({2, 3}, 3)}
+  };
+  for (const TestCase &tc : test_cases) {
+    EXPECT_THROW(batch_slice(tc.input, tc.lower, tc.upper), Error);
+  }
+}
+
 TEST_F(ShapeOpsTest, CheckBatchConcat) {
   struct TestCase {
     vector<Shape> inputs;
