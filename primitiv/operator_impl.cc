@@ -127,6 +127,11 @@ IMPL_NAME_0(Tan);
 IMPL_NAME_0(ReLU);
 IMPL_NAME_0(LReLU);
 
+std::string BatchSlice::name() const {
+  return "BatchSlice("
+    + string_utils::to_string(lower_) + ':'
+    + string_utils::to_string(upper_) + ')';
+}
 IMPL_NAME_0(BatchConcat);
 IMPL_NAME_0(BatchSum);
 
@@ -245,6 +250,7 @@ FWD_SHAPE(MatrixMultiply) { *y[0] = shape_ops::matmul(*x[0], *x[1]); }
 FWD_SHAPE(Sum) { *y[0] = x[0]->resize_dim(dim_, 1); }
 FWD_SHAPE(LogSumExp) { *y[0] = x[0]->resize_dim(dim_, 1); }
 FWD_SHAPE(Broadcast) { *y[0] = shape_ops::broadcast(*x[0], dim_, size_); }
+FWD_SHAPE(BatchSlice) { *y[0] = shape_ops::batch_slice(*x[0], lower_, upper_); }
 FWD_SHAPE(BatchConcat) { *y[0] = shape_ops::batch_concat(x); }
 FWD_SHAPE(BatchSum) { *y[0] = x[0]->resize_batch(1); }
 FWD_SHAPE(Convolution2D) {
@@ -384,6 +390,7 @@ FORWARD(Sum) { *y[0] = functions::sum(*x[0], dim_); }
 FORWARD(LogSumExp) { *y[0] = functions::logsumexp(*x[0], dim_); }
 FORWARD(Broadcast) { *y[0] = functions::broadcast(*x[0], dim_, size_); }
 
+FORWARD(BatchSlice) { *y[0] = functions::batch::slice(*x[0], lower_, upper_); }
 FORWARD(BatchConcat) { *y[0] = functions::batch::concat(x); }
 FORWARD(BatchSum) { *y[0] = functions::batch::sum(*x[0]); }
 
@@ -689,6 +696,12 @@ BACKWARD(Broadcast) {
   UNUSED(x);
   UNUSED(y);
   *gx[0] += functions::sum(*gy[0], dim_);
+}
+
+BACKWARD(BatchSlice) {
+  UNUSED(x);
+  UNUSED(y);
+  gy[0]->device().batch_slice_bw(*gy[0], lower_, *gx[0]);
 }
 
 BACKWARD(BatchConcat) {

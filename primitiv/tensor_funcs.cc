@@ -329,6 +329,11 @@ Tensor max_pool2d(
 namespace batch {
 
 template<>
+Tensor slice(const Tensor &x, std::uint32_t lower, std::uint32_t upper) {
+  return x.device().batch_slice_fw(x, lower, upper);
+}
+
+template<>
 Tensor concat(const std::vector<const Tensor *> &xs) {
   if (xs.empty()) PRIMITIV_THROW_ERROR("No tensors to be concatenated.");
   return xs[0]->device().batch_concat_fw(xs);

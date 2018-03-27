@@ -183,6 +183,16 @@ Shape pool2d(
       x.batch());
 }
 
+Shape batch_slice(const Shape &x, std::uint32_t lower, std::uint32_t upper) {
+  if (lower >= upper || upper > x.batch()) {
+    PRIMITIV_THROW_ERROR(
+        "Invalid batch_slice operation. shape: " << x.to_string()
+        << ", lower: " << lower << ", upper: " << upper);
+  }
+
+  return x.resize_batch(upper - lower);
+}
+
 Shape batch_concat(const std::vector<Shape> &xs) {
   std::vector<const Shape *> ptrs;
   ptrs.reserve(xs.size());

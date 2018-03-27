@@ -876,6 +876,17 @@ type_traits::Identity<Var> max_pool2d(
 
 namespace batch {
 
+/**
+ * Extracts a specific range \f$ [L, U) \f$ of subplanes along the batch axis.
+ * @param x A variable representing an original data.
+ * @param lower Lower bound \f$ L \f$ of the batch.
+ * @param upper Upper bound \f$ U \f$ of the batch.
+ * @return A new variable.
+ */
+template<typename Var>
+type_traits::Identity<Var> slice(
+    const Var &x, std::uint32_t lower, std::uint32_t upper);
+
 template<typename Var>
 type_traits::Identity<Var> concat(const std::vector<Var> &xs);
 
@@ -894,7 +905,7 @@ inline type_traits::Identity<Var> concat(
 }
 
 /**
- * Concatenates multiple variables along batch axis.
+ * Concatenates multiple variables along the batch axis.
  * @param xs Iterable container of variables. `xs` must have both `begin()` and
  *           `end()` functions that return the begin/end iterators.
  * @return A new variable.

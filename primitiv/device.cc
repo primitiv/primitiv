@@ -512,6 +512,17 @@ Tensor Device::broadcast_fw(
   return y;
 }
 
+Tensor Device::batch_slice_fw(
+    const Tensor &x, std::uint32_t lower, std::uint32_t upper) {
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
+  /*
+  CHECK_DEVICE(x);
+  Tensor y = new_raw_tensor(shape_ops::slice(x.shape(), dim, lower, upper));
+  slice_fw_impl(x, dim, lower, y);
+  return y;
+  */
+}
+
 Tensor Device::batch_concat_fw(const std::vector<const Tensor *> &xs) {
   if (xs.empty()) PRIMITIV_THROW_ERROR("No tensors to concat.");
   vector<Shape> shapes;
@@ -525,6 +536,33 @@ Tensor Device::batch_concat_fw(const std::vector<const Tensor *> &xs) {
   Tensor y = new_raw_tensor(shape_ops::batch_concat(shapes));
   batch_concat_fw_impl(xs, y);
   return y;
+}
+
+Tensor Device::batch_sum_fw(const Tensor &x) {
+  CHECK_DEVICE(x);
+  Tensor y = new_raw_tensor(x.shape().resize_batch(1));
+  batch_sum_fw_impl(x, y);
+  return y;
+}
+
+void Device::batch_slice_bw(
+    const Tensor &gy, std::uint32_t offset, Tensor &gx) {
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
+  /*
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(gx);
+  const Shape &sy = gy.shape();
+  const Shape &sx = gx.shape();
+  if (!sy.has_same_loo_dims(sx, dim) || !sy.has_compatible_batch(sx) ||
+      offset + sy[dim] > sx[dim]) {
+    PRIMITIV_THROW_ERROR(
+        "Attempted to add gradients with shape "
+        << sy.to_string() << ", dim " << dim << ", offset " << offset
+        << " to shape" << sx.to_string() << '.');
+  }
+  if (dim >= sx.depth()) inplace_add_impl(gy, gx);
+  else batch_slice_bw_impl(gy, dim, offset, gx);
+  */
 }
 
 void Device::batch_concat_bw(
@@ -572,13 +610,6 @@ void Device::batch_concat_bw(
   }
 
   batch_concat_bw_impl(xs, y, gy, gxs);
-}
-
-Tensor Device::batch_sum_fw(const Tensor &x) {
-  CHECK_DEVICE(x);
-  Tensor y = new_raw_tensor(x.shape().resize_batch(1));
-  batch_sum_fw_impl(x, y);
-  return y;
 }
 
 void Device::inplace_multiply_const(float k, Tensor &x) {

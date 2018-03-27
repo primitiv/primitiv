@@ -1320,14 +1320,13 @@ void OpenCL::broadcast_fw_impl(
       cl::NDRange(state_->broadcast_fw_group_size));
 }
 
-void OpenCL::batch_concat_fw_impl(
-    const std::vector<const Tensor *> &xs, Tensor &y) {
+void OpenCL::batch_slice_fw_impl(
+    const Tensor &x, std::uint32_t offset, Tensor &y) {
   PRIMITIV_THROW_NOT_IMPLEMENTED;
 }
 
-void OpenCL::batch_concat_bw_impl(
-    const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
-    const std::vector<Tensor *> &gxs) {
+void OpenCL::batch_concat_fw_impl(
+    const std::vector<const Tensor *> &xs, Tensor &y) {
   PRIMITIV_THROW_NOT_IMPLEMENTED;
 }
 
@@ -1344,6 +1343,16 @@ void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
       state_->batch_sum_fw_kernel, cl::NullRange,
       cl::NDRange(g1 * state_->batch_sum_fw_group_size),
       cl::NDRange(state_->batch_sum_fw_group_size));
+}
+
+void OpenCL::batch_slice_bw_impl(const Tensor &gy, std::uint32_t offset, Tensor &gx) {
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
+}
+
+void OpenCL::batch_concat_bw_impl(
+    const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
+    const std::vector<Tensor *> &gxs) {
+  PRIMITIV_THROW_NOT_IMPLEMENTED;
 }
 
 void OpenCL::conv2d_fw_impl(const Tensor &, const Tensor &,

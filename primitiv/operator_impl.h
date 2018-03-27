@@ -299,6 +299,16 @@ PRIMITIV_DECL_UNARY(Tan);
 PRIMITIV_DECL_UNARY(ReLU);
 PRIMITIV_DECL_UNARY(LReLU);
 
+class BatchSlice : public Operator {
+  PRIMITIV_DECL_DEFAULTS_AND_FORWARD(1, 1);
+public:
+  BatchSlice(std::uint32_t lower, std::uint32_t upper)
+    : lower_(lower), upper_(upper) {}
+private:
+  std::uint32_t lower_;
+  std::uint32_t upper_;
+};
+
 class BatchConcat : public Operator {
   PRIMITIV_DECL_DEFAULTS_AND_FORWARD(Operator::NONZERO, 1);
 };

@@ -210,12 +210,14 @@ public:
   Tensor broadcast_fw(const Tensor &x, std::uint32_t dim, std::uint32_t size);
 
   // Minibatch operations.
+  Tensor batch_slice_fw(const Tensor &x, std::uint32_t lower, std::uint32_t upper);
   Tensor batch_concat_fw(const std::vector<const Tensor *> &xs);
+  Tensor batch_sum_fw(const Tensor &x);
+
+  void batch_slice_bw(const Tensor &gy, std::uint32_t offset, Tensor &gx);
   void batch_concat_bw(
       const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
       const std::vector<Tensor *> &gxs);
-
-  Tensor batch_sum_fw(const Tensor &x);
 
   // Convolution.
   Tensor conv2d_fw(
@@ -462,10 +464,12 @@ private:
   virtual void logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
   virtual void broadcast_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) = 0;
 
-  virtual void batch_sum_fw_impl(const Tensor &x, Tensor &y) = 0;
-
+  virtual void batch_slice_fw_impl(const Tensor &x, std::uint32_t offset, Tensor &y) = 0;
   virtual void batch_concat_fw_impl(
       const std::vector<const Tensor *> &xs, Tensor &y) = 0;
+  virtual void batch_sum_fw_impl(const Tensor &x, Tensor &y) = 0;
+
+  virtual void batch_slice_bw_impl(const Tensor &gy, std::uint32_t offset, Tensor &gx) = 0;
   virtual void batch_concat_bw_impl(
       const std::vector<const Tensor *> &xs, const Tensor &y, const Tensor &gy,
       const std::vector<Tensor *> &gxs) = 0;
