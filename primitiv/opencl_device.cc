@@ -1232,6 +1232,9 @@ void OpenCL::matmul_bw_impl(
         bs,
         &state_->queue(), nullptr);
     } else {
+      // NOTE(vbkaisetsu):
+      // `clblast::GemmBatched` can not be used due to a data race against
+      // shared values in `b` by multiple GEMM operations.
       const float alpha = 1.;
       const float beta = 1.;
       for (std::uint32_t n = 0; n < bs; ++n) {
