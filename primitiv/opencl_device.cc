@@ -1117,28 +1117,37 @@ void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   const std::uint32_t di = a.shape()[0];
   const std::uint32_t dj = a.shape()[1];
   const std::uint32_t dk = b.shape()[1];
-  float alpha = 1.;
-  float beta = 0.;
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
     const std::uint32_t a_skip = di * dj;
     const std::uint32_t b_skip = b.shape().has_batch() * dj * dk;
     const std::uint32_t y_skip = di * dk;
     const std::uint32_t bs = a.shape().batch();
+    const std::vector<float> alphas(bs, 1.);
+    const std::vector<float> betas(bs, 0.);
+    std::vector<std::size_t> a_offsets(bs);
+    std::vector<std::size_t> b_offsets(bs);
+    std::vector<std::size_t> y_offsets(bs);
     for (std::uint32_t n = 0; n < bs; ++n) {
-      clblast::Gemm(
-        clblast::Layout::kColMajor,
-        clblast::Transpose::kNo, clblast::Transpose::kNo,
-        di, dk, dj,
-        alpha,
-        CDATA(a)(), n * a_skip, di,
-        CDATA(b)(), n * b_skip, dj,
-        beta,
-        MDATA(y)(), n * y_skip, di,
-        &state_->queue(), nullptr);
+      a_offsets[n] = n * a_skip;
+      b_offsets[n] = n * b_skip;
+      y_offsets[n] = n * y_skip;
     }
+    clblast::GemmBatched(
+      clblast::Layout::kColMajor,
+      clblast::Transpose::kNo, clblast::Transpose::kNo,
+      di, dk, dj,
+      alphas.data(),
+      CDATA(a)(), a_offsets.data(), di,
+      CDATA(b)(), b_offsets.data(), dj,
+      betas.data(),
+      MDATA(y)(), y_offsets.data(), di,
+      bs,
+      &state_->queue(), nullptr);
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
+    const float alpha = 1.;
+    const float beta = 0.;
     clblast::Gemm(
       clblast::Layout::kColMajor,
       clblast::Transpose::kNo, clblast::Transpose::kNo,
@@ -1183,38 +1192,65 @@ void OpenCL::matmul_bw_impl(
   const std::uint32_t di = a.shape()[0];
   const std::uint32_t dj = a.shape()[1];
   const std::uint32_t dk = b.shape()[1];
-  float alpha = 1.;
-  float beta = 1.;
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
     const std::uint32_t a_skip = di * dj;
     const std::uint32_t b_skip = b.shape().has_batch() * dj * dk;
     const std::uint32_t y_skip = di * dk;
     const std::uint32_t bs = a.shape().batch();
+    const std::vector<float> alphas(bs, 1.);
+    const std::vector<float> betas(bs, 1.);
+    std::vector<std::size_t> a_offsets(bs);
+    std::vector<std::size_t> b_offsets(bs);
+    std::vector<std::size_t> y_offsets(bs);
     for (std::uint32_t n = 0; n < bs; ++n) {
-      clblast::Gemm(
-        clblast::Layout::kColMajor,
-        clblast::Transpose::kNo, clblast::Transpose::kYes,
-        di, dj, dk,
-        alpha,
-        CDATA(gy)(), n * y_skip, di,
-        CDATA(b)(), n * b_skip, dj,
-        beta,
-        MDATA(ga)(), n * a_skip, di,
-        &state_->queue(), nullptr);
-      clblast::Gemm(
+      a_offsets[n] = n * a_skip;
+      b_offsets[n] = n * b_skip;
+      y_offsets[n] = n * y_skip;
+    }
+    clblast::GemmBatched(
+      clblast::Layout::kColMajor,
+      clblast::Transpose::kNo, clblast::Transpose::kYes,
+      di, dj, dk,
+      alphas.data(),
+      CDATA(gy)(), y_offsets.data(), di,
+      CDATA(b)(), b_offsets.data(), dj,
+      betas.data(),
+      MDATA(ga)(), a_offsets.data(), di,
+      bs,
+      &state_->queue(), nullptr);
+    if (b_skip > 0) {
+      clblast::GemmBatched(
         clblast::Layout::kColMajor,
         clblast::Transpose::kYes, clblast::Transpose::kNo,
         dj, dk, di,
-        alpha,
-        CDATA(a)(), n * a_skip, di,
-        CDATA(gy)(), n * y_skip, di,
-        beta,
-        MDATA(gb)(), n * b_skip, dj,
+        alphas.data(),
+        CDATA(a)(), a_offsets.data(), di,
+        CDATA(gy)(), y_offsets.data(), di,
+        betas.data(),
+        MDATA(gb)(), b_offsets.data(), dj,
+        bs,
         &state_->queue(), nullptr);
+    } else {
+      const float alpha = 1.;
+      const float beta = 1.;
+      for (std::uint32_t n = 0; n < bs; ++n) {
+        clblast::Gemm(
+          clblast::Layout::kColMajor,
+          clblast::Transpose::kYes, clblast::Transpose::kNo,
+          dj, dk, di,
+          alpha,
+          CDATA(a)(), n * a_skip, di,
+          CDATA(gy)(), n * y_skip, di,
+          beta,
+          MDATA(gb)(), n * b_skip, dj,
+          &state_->queue(), nullptr);
+      }
     }
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
+    const float alpha = 1.;
+    const float beta = 1.;
     clblast::Gemm(
       clblast::Layout::kColMajor,
       clblast::Transpose::kNo, clblast::Transpose::kYes,
