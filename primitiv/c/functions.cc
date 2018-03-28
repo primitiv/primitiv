@@ -540,6 +540,92 @@ PRIMITIV_C_STATUS primitivApplyTensorMaxPool2d(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
+PRIMITIV_C_STATUS primitivApplyNodeBatchPick(
+    const primitivNode_t *x, const uint32_t *ids, size_t n,
+    primitivNode_t **y) try {
+  PRIMITIV_C_CHECK_NOT_NULL(x);
+  PRIMITIV_C_CHECK_NOT_NULL(ids);
+  PRIMITIV_C_CHECK_NOT_NULL(y);
+  *y = to_c_ptr_from_value(primitiv::functions::batch::pick(
+     *to_cpp_ptr(x), std::vector<uint32_t>(ids, ids + n)));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitivApplyTensorBatchPick(
+    const primitivTensor_t *x, const uint32_t *ids, size_t n,
+    primitivTensor_t **y) try {
+  PRIMITIV_C_CHECK_NOT_NULL(x);
+  PRIMITIV_C_CHECK_NOT_NULL(ids);
+  PRIMITIV_C_CHECK_NOT_NULL(y);
+  *y = to_c_ptr_from_value(primitiv::functions::batch::pick(
+     *to_cpp_ptr(x), std::vector<uint32_t>(ids, ids + n)));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitivApplyNodeBatchSlice(
+    const primitivNode_t *x, uint32_t lower, uint32_t upper,
+    primitivNode_t **y) try {
+  PRIMITIV_C_CHECK_NOT_NULL(x);
+  PRIMITIV_C_CHECK_NOT_NULL(y);
+  *y = to_c_ptr_from_value(
+      primitiv::functions::batch::slice(*to_cpp_ptr(x), lower, upper));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitivApplyTensorBatchSlice(
+    const primitivTensor_t *x, uint32_t lower, uint32_t upper,
+    primitivTensor_t **y) try {
+  PRIMITIV_C_CHECK_NOT_NULL(x);
+  PRIMITIV_C_CHECK_NOT_NULL(y);
+  *y = to_c_ptr_from_value(
+      primitiv::functions::batch::slice(*to_cpp_ptr(x), lower, upper));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitivApplyNodeBatchSplit(
+    const primitivNode_t *x, uint32_t n, primitivNode_t **ys) try {
+  PRIMITIV_C_CHECK_NOT_NULL(x);
+  PRIMITIV_C_CHECK_NOT_NULL(ys);
+  std::vector<primitiv::Node> nodes =
+      primitiv::functions::batch::split(*to_cpp_ptr(x), n);
+  size_t size = n;
+  primitiv::c::internal::move_vector_to_array_of_c_ptrs(&nodes, ys, &size);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitivApplyTensorBatchSplit(
+    const primitivTensor_t *x, uint32_t n, primitivTensor_t **ys) try {
+  PRIMITIV_C_CHECK_NOT_NULL(x);
+  PRIMITIV_C_CHECK_NOT_NULL(ys);
+  std::vector<primitiv::Tensor> nodes =
+      primitiv::functions::batch::split(*to_cpp_ptr(x), n);
+  size_t size = n;
+  primitiv::c::internal::move_vector_to_array_of_c_ptrs(&nodes, ys, &size);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitivApplyNodeConcat(
+    const primitivNode_t *const *xs, size_t n,
+    primitivNode_t **y) try {
+  PRIMITIV_C_CHECK_NOT_NULL(xs);
+  PRIMITIV_C_CHECK_NOT_NULL(y);
+  const Node *const *_xs = reinterpret_cast<const Node *const *>(xs);
+  *y = to_c_ptr_from_value(primitiv::functions::batch::concat(
+      std::vector<const Node*>(_xs, _xs + n)));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitivApplyTensorConcat(
+    const primitivTensor_t *const *xs, size_t n,
+    primitivTensor_t **y) try {
+  PRIMITIV_C_CHECK_NOT_NULL(xs);
+  PRIMITIV_C_CHECK_NOT_NULL(y);
+  const Tensor *const *_xs = reinterpret_cast<const Tensor *const *>(xs);
+  *y = to_c_ptr_from_value(primitiv::functions::batch::concat(
+      std::vector<const Tensor*>(_xs, _xs + n)));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
 PRIMITIV_C_STATUS primitivApplyNodeBatchSum(
     const primitivNode_t *x, primitivNode_t **y) try {
   PRIMITIV_C_CHECK_NOT_NULL(x);
