@@ -561,6 +561,43 @@ TEST_F(ShapeOpsTest, CheckInvalidPool2D) {
   }
 }
 
+TEST_F(ShapeOpsTest, CheckBatchPick) {
+  struct TestCase {
+    Shape input;
+    vector<std::uint32_t> ids;
+    Shape expected;
+  };
+  const vector<TestCase> test_cases {
+    {Shape({2, 2, 2}, 3), {0, 0, 0}, Shape({2, 2, 2}, 3)},
+    {Shape({2, 2, 2}, 3), {1, 0, 1}, Shape({2, 2, 2}, 3)},
+    {Shape({2, 2, 2}, 3), {0}, Shape({2, 2, 2}, 1)},
+    {Shape({2, 2, 2}, 3), {2, 1, 1}, Shape({2, 2, 2}, 3)},
+    {Shape({2, 2, 2}, 3), {0, 1, 2, 1}, Shape({2, 2, 2}, 4)},
+    {{}, {0}, {}},
+  };
+  for (const TestCase &tc : test_cases) {
+    const Shape observed = batch_pick(tc.input, tc.ids);
+    EXPECT_EQ(tc.expected, observed);
+  }
+}
+
+TEST_F(ShapeOpsTest, CheckInvalidBatchPick) {
+  struct TestCase {
+    Shape input;
+    vector<std::uint32_t> ids;
+  };
+  const vector<TestCase> test_cases {
+    {Shape({2, 2, 2}, 3), {}},
+    {Shape({2, 2, 2}, 3), {3}},
+    {Shape({2, 2, 2}, 3), {0, 1, 3}},
+    {{}, {}},
+    {{}, {1}},
+  };
+  for (const TestCase &tc : test_cases) {
+    EXPECT_THROW(batch_pick(tc.input, tc.ids), Error);
+  }
+}
+
 TEST_F(ShapeOpsTest, CheckBatchSlice) {
   struct TestCase {
     std::uint32_t lower, upper;

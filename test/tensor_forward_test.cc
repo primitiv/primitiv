@@ -2370,6 +2370,106 @@ TEST_F(TensorForwardTest, CheckInvalidBroadcast) {
   }
 }
 
+TEST_F(TensorForwardTest, CheckBatchPickNN) {
+  struct TestCase {
+    Shape x_shape;
+    vector<std::uint32_t> ids;
+    Shape y_shape;
+    vector<float> values;
+  };
+  const vector<TestCase> test_cases {
+    {Shape({2, 2}, 3), {0, 0, 0}, Shape({2, 2}, 3),
+      {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3}},
+    {Shape({2, 2}, 3), {1, 0, 1}, Shape({2, 2}, 3),
+      {4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7}},
+    {Shape({2, 2}, 3), {2}, {2, 2},
+      {8, 9, 10, 11}},
+    {Shape({2, 2}, 3), {2, 1}, Shape({2, 2}, 2),
+      {8, 9, 10, 11, 4, 5, 6, 7}},
+    {Shape({2, 2}, 3), {2, 0, 1, 1}, Shape({2, 2}, 4),
+      {8, 9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 4, 5, 6, 7}},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      std::cerr
+        << "device=" << dev
+        << ", x_shape=" << tc.x_shape.to_string()
+        << ", ids=[";
+      for (std::uint32_t i = 0; i < tc.ids.size(); ++i) {
+        if (i > 0) std::cerr << ',';
+        std::cerr << tc.ids[i];
+      }
+      std::cerr << ']' << std::endl;
+      vector<float> x_data(tc.x_shape.size());
+      iota(x_data.begin(), x_data.end(), 0);
+      const Tensor x = dev->new_tensor_by_vector(tc.x_shape, x_data);
+      const Tensor y = batch::pick(x, tc.ids);
+      EXPECT_EQ(tc.y_shape, y.shape());
+      EXPECT_TRUE(vector_match(tc.values, y.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorForwardTest, CheckInvalidBatchPick) {
+  struct TestCase {
+    vector<std::uint32_t> ids;
+  };
+  const vector<TestCase> test_cases {
+     {{}},
+     {{3}},
+     {{0, 1, 3}},
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_constant(Shape({2, 2}, 3), 0);
+    for (const TestCase &tc : test_cases) {
+      EXPECT_THROW(batch::pick(x, tc.ids), Error);
+    }
+  }
+}
+
+TEST_F(TensorForwardTest, CheckBatchSlice) {
+  vector<float> x_data = make_iota_vector(3 * 2 * 3, 0);
+  struct TestCase {
+    std::uint32_t lower, upper;
+    Shape shape;
+    vector<float> values;
+  };
+  const vector<TestCase> test_cases {
+    {0, 1, Shape({3, 2}, 1), {0, 1, 2, 3, 4, 5}},
+    {1, 2, Shape({3, 2}, 1), {6, 7, 8, 9, 10, 11}},
+    {2, 3, Shape({3, 2}, 1), {12, 13, 14, 15, 16, 17}},
+    {0, 2, Shape({3, 2}, 2), {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}},
+    {1, 3, Shape({3, 2}, 2), {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17}},
+    {0, 3, Shape({3, 2}, 3), x_data},
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector(Shape({3, 2}, 3), x_data);
+    for (const TestCase &tc : test_cases) {
+      std::cerr
+        << "device=" << dev
+        << ", lower=" << tc.lower
+        << ", upper=" << tc.upper
+        << std::endl;
+      const Tensor y = batch::slice(x, tc.lower, tc.upper);
+      EXPECT_EQ(tc.shape, y.shape());
+      EXPECT_TRUE(vector_match(tc.values, y.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorForwardTest, CheckInvalidBatchSlice) {
+  struct TestCase { std::uint32_t lower, upper; };
+  const vector<TestCase> test_cases {
+    {0, 0}, {1, 0}, {2, 4}, {3, 3},
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_constant(Shape({2, 2}, 3), 1);
+    for (const TestCase &tc : test_cases) {
+      EXPECT_THROW(batch::slice(x, tc.lower, tc.upper), Error);
+    }
+  }
+}
+
 TEST_F(TensorForwardTest, CheckBatchSplit) {
   vector<float> x_data = make_iota_vector(3 * 3 * 4, 0);
   struct TestCase {

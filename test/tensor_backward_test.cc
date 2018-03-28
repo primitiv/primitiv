@@ -1241,6 +1241,256 @@ TEST_F(TensorBackwardTest, CheckMatMulN1) {
   }
 }
 
+TEST_F(TensorBackwardTest, CheckBatchPickNN) {
+  const vector<float> a_data {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+  struct TestCase {
+    Shape b_shape;
+    vector<float> b_data;
+    vector<std::uint32_t> ids;
+    vector<float> y_data;
+  };
+  const vector<TestCase> test_cases {
+    {Shape({2, 2}, 3), {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}, {0, 0, 0},
+      {6, 7, 8, 9, 4, 5, 6, 7, 8, 9, 10, 11}},
+    {Shape({2, 2}, 3), {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}, {1, 1, 2},
+      {0, 1, 2, 3, 7, 8, 9, 10, 11, 12, 13, 14}},
+    {Shape({2, 2}, 3), {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}, {0, 1, 0},
+      {4, 5, 6, 7, 6, 7, 8, 9, 8, 9, 10, 11}},
+    {Shape({2, 2}, 3), {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}, {1, 0, 1},
+      {2, 3, 4, 5, 8, 9, 10, 11, 8, 9, 10, 11}},
+    {Shape({2, 2}, 2), {1, 1, 1, 1, 2, 2, 2, 2}, {2, 1},
+      {0, 1, 2, 3, 6, 7, 8, 9, 9, 10, 11, 12}},
+    {Shape({2, 2}, 4), {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4},
+      {1, 2, 0, 1}, {3, 4, 5, 6, 9, 10, 11, 12, 10, 11, 12, 13}},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector(tc.b_shape, tc.b_data);
+      dev->batch_pick_bw(b, tc.ids, a);
+      EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckBatchPickN1) {
+  const vector<float> a_data {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+  struct TestCase {
+    Shape b_shape;
+    vector<float> b_data;
+    vector<std::uint32_t> ids;
+    vector<float> y_data;
+  };
+  const vector<TestCase> test_cases {
+    {Shape({2, 2}, 1), {1, 1, 2, 2}, {0},
+      {1, 2, 4, 5, 0, 1, 2, 3, 0, 1, 2, 3}},
+    {Shape({2, 2}, 1), {1, 1, 2, 2}, {1},
+      {0, 1, 2, 3, 1, 2, 4, 5, 0, 1, 2, 3}},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector(tc.b_shape, tc.b_data);
+      dev->batch_pick_bw(b, tc.ids, a);
+      EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckBatchPick1N) {
+  const vector<float> a_data {0, 1, 2, 3};
+  struct TestCase {
+    Shape b_shape;
+    vector<float> b_data;
+    vector<std::uint32_t> ids;
+    vector<float> y_data;
+  };
+  const vector<TestCase> test_cases {
+    {Shape({2, 2}, 3), {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}, {0, 0, 0},
+      {6, 7, 8, 9}},
+    {Shape({2, 2}, 2), {1, 1, 1, 1, 2, 2, 2, 2}, {0, 0},
+      {3, 4, 5, 6}},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      Tensor a = dev->new_tensor_by_vector({2, 2}, a_data);
+      const Tensor b = dev->new_tensor_by_vector(tc.b_shape, tc.b_data);
+      dev->batch_pick_bw(b, tc.ids, a);
+      EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckInvalidBatchPick) {
+  struct TestCase {
+    Shape a_shape, b_shape;
+    vector<std::uint32_t> ids;
+  };
+  vector<TestCase> test_cases {
+    // Out-of-range IDs.
+    {Shape({2, 2}, 3), {}, {}},
+    {{}, {}, {1}},
+    {{}, Shape({}, 3), {0, 0, 1}},
+    {Shape({}, 3), {}, {3}},
+    {Shape({}, 3), Shape({}, 3), {1, 0, 3}},
+    // // Dims mismatched.
+    {{}, {2}, {0}},
+    {{}, Shape({2}, 3), {0, 0, 0}},
+    {Shape({2}, 3), {}, {0}},
+    {Shape({2}, 3), Shape({}, 3), {0, 0, 0}},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      Tensor a = dev->new_tensor_by_constant(tc.a_shape, 0);
+      const Tensor b = dev->new_tensor_by_constant(tc.b_shape, 0);
+      EXPECT_THROW(dev->batch_pick_bw(b, tc.ids, a), Error);
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckCopyAndBatchPick) {
+  const vector<float> a_data {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+  const vector<float> b_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
+  const vector<float> y_data {6, 7, 8, 9, 0, 1, 2, 3, 0, 1, 2, 3};
+  for (Device *dev : devices) {
+    Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+
+    const Tensor copied = a;
+
+    dev->batch_pick_bw(b, {0, 0, 0}, a);
+    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckBatchSliceNN_1) {
+  const vector<float> a_data {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+  const vector<float> b_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
+  const vector<float> y_data {1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6};
+  for (Device *dev : devices) {
+    Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+    dev->batch_slice_bw(b, 0, a);
+    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckBatchSliceNN_2) {
+  const vector<float> a_data {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+  const vector<float> b_data {1, 1, 2, 2, 3, 3, 4, 4};
+  struct TestCase {
+    Shape shape;
+    std::uint32_t offset;
+    vector<float> y_data;
+  };
+  vector<TestCase> test_cases {
+    {Shape({2, 2}, 2), 0, {1, 2, 4, 5, 3, 4, 6, 7, 0, 1, 2, 3}},
+    {Shape({2, 2}, 2), 1, {0, 1, 2, 3, 1, 2, 4, 5, 3, 4, 6, 7}},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector(tc.shape, b_data);
+      dev->batch_slice_bw(b, tc.offset, a);
+      EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckBatchSliceN1_1) {
+  const vector<float> a_data {1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6};
+  const vector<float> b_data {-1, -2, -3, -4};
+  const vector<float> y_data {0, 0, 0, 0, 2, 3, 4, 5, 3, 4, 5, 6};
+  for (Device *dev : devices) {
+    Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+    const Tensor b = dev->new_tensor_by_vector({2, 2}, b_data);
+    dev->batch_slice_bw(b, 0, a);
+    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckBatchSliceN1_2) {
+  const vector<float> a_data {1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6};
+  const vector<float> b_data {-1, -2, -3, -4};
+  struct TestCase {
+    Shape shape;
+    std::uint32_t offset;
+    vector<float> y_data;
+  };
+  vector<TestCase> test_cases {
+    {{2, 2}, 0, {0, 0, 0, 0, 2, 3, 4, 5, 3, 4, 5, 6}},
+    {{2, 2}, 1, {1, 2, 3, 4, 1, 1, 1, 1, 3, 4, 5, 6}},
+    {{2, 2}, 2, {1, 2, 3, 4, 2, 3, 4, 5, 2, 2, 2, 2}},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+      const Tensor b = dev->new_tensor_by_vector(tc.shape, b_data);
+      dev->batch_slice_bw(b, tc.offset, a);
+      EXPECT_TRUE(vector_match(tc.y_data, a.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckInvalidBatchSlice) {
+  struct TestCase {
+    Shape a_shape, b_shape;
+    std::uint32_t offset;
+    bool ok;
+  };
+  vector<TestCase> test_cases {
+    {Shape({}, 3), Shape({}, 2), 0, true},
+    {Shape({}, 2), Shape({}, 3), 0, false},
+    {Shape({42}, 3), Shape({42}, 2), 0, true},
+    {Shape({42}, 3), Shape({41}, 2), 0, false},
+    {{}, {}, 0, true},
+    {{}, {}, 1, false},
+    {{42}, {}, 0, false},
+    {{42}, {}, 1, false},
+    {{42}, {42}, 0, true},
+    {{42}, {42}, 1, false},
+    {{42}, {43}, 0, false},
+    {{42}, {4, 42}, 0, false},
+    {{42}, {4, 2, 42}, 0, false},
+    {Shape({4, 4}, 3), Shape({4, 4}, 2), 0, true},
+    {Shape({4, 4}, 3), Shape({4, 4}, 2), 1, true},
+    {Shape({4, 4}, 3), Shape({4, 4}, 2), 2, false},
+    {Shape({4, 4}, 3), Shape({4, 4}, 2), 3, false},
+    {Shape({4, 4}, 3), Shape({4, 4}, 1), 0, true},
+    {Shape({4, 4}, 3), Shape({4, 4}, 1), 1, true},
+    {Shape({4, 4}, 3), Shape({4, 4}, 1), 2, true},
+    {Shape({4, 4}, 3), Shape({4, 4}, 1), 3, false},
+  };
+  for (Device *dev : devices) {
+    for (const TestCase &tc : test_cases) {
+      Tensor a = dev->new_tensor_by_constant(tc.a_shape, 0);
+      const Tensor b = dev->new_tensor_by_constant(tc.b_shape, 0);
+      if (tc.ok) {
+        EXPECT_NO_THROW(dev->batch_slice_bw(b, tc.offset, a));
+      } else {
+        EXPECT_THROW(dev->batch_slice_bw(b, tc.offset, a), Error);
+      }
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckCopyAndBatchSlice) {
+  const vector<float> a_data {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+  const vector<float> b_data {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
+  const vector<float> y_data {1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6};
+  for (Device *dev : devices) {
+    Tensor a = dev->new_tensor_by_vector(Shape({2, 2}, 3), a_data);
+    const Tensor b = dev->new_tensor_by_vector(Shape({2, 2}, 3), b_data);
+
+    const Tensor copied = a;
+
+    dev->batch_slice_bw(b, 0, a);
+    EXPECT_TRUE(vector_match(y_data, a.to_vector()));
+    EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
+  }
+}
+
 #define TEST_CONV2D(pad0, pad1, str0, str1, dil0, dil1) { \
   const vector<float> x_data = make_iota_vector(x_shape.size(), 1); \
   const vector<float> w_data = make_iota_vector(w_shape.size(), 1); \

@@ -23,7 +23,7 @@ void Naive::batch_slice_bw_impl(
 
   float *dest = MDATA(gx) + volume * offset;
   const float *src = CDATA(gy);
-  std::copy(src, src + volume * repeat, dest);
+  REPEAT_OP(i, volume * repeat, *dest++ += *src++);
 }
 
 }  // namespace devices
