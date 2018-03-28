@@ -183,11 +183,11 @@ private:
   void batch_pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids, Tensor &y) override;
   void batch_slice_fw_impl(const Tensor &x, std::uint32_t offset, Tensor &y) override;
   void batch_concat_fw_impl(
+      const std::vector<const Tensor *> &xs, Tensor &y) override;
   void batch_sum_fw_impl(const Tensor &x, Tensor &y) override;
 
   void batch_pick_bw_impl(const Tensor &gy, const std::vector<std::uint32_t> &ids, Tensor &gx) override;
   void batch_slice_bw_impl(const Tensor &gy, std::uint32_t offset, Tensor &gx) override;
-      const std::vector<const Tensor *> &xs, Tensor &y) override;
 
   void conv2d_fw_impl(const Tensor &x, const Tensor &w,
       std::uint32_t padding0, std::uint32_t padding1,
