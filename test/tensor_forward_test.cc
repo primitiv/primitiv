@@ -2414,6 +2414,73 @@ TEST_F(TensorForwardTest, CheckInvalidBatchSplit) {
   }
 }
 
+TEST_F(TensorForwardTest, CheckBatchConcat_2x3) {
+  const vector<float> y_data {
+     1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+    19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36,
+  };
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector(
+      Shape({2, 3}, 1), { 1,  2,  3,  4,  5,  6});
+    const Tensor b = dev->new_tensor_by_vector(
+      Shape({2, 3}, 2), { 7,  8,  9, 10, 11, 12,
+                         13, 14, 15, 16, 17, 18});
+    const Tensor c = dev->new_tensor_by_vector(
+      Shape({2, 3}, 3), {19, 20, 21, 22, 23, 24,
+                         25, 26, 27, 28, 29, 30,
+                         31, 32, 33, 34, 35, 36});
+    const Tensor y1 = batch::concat({a, b, c});
+    const Tensor y2 = batch::concat({&a, &b, &c});
+    EXPECT_EQ(Shape({2, 3}, 6), y1.shape());
+    EXPECT_EQ(Shape({2, 3}, 6), y2.shape());
+    EXPECT_TRUE(vector_match(y_data, y1.to_vector()));
+    EXPECT_TRUE(vector_match(y_data, y2.to_vector()));
+  }
+}
+
+TEST_F(TensorForwardTest, CheckInvalidBatchConcat) {
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_constant(Shape({1, 42}, 2), 0);
+    const Tensor b = dev->new_tensor_by_constant(Shape({2, 42}, 2), 0);
+    const Tensor c = dev->new_tensor_by_constant(Shape({1, 42}, 3), 0);
+    const Tensor d = dev->new_tensor_by_constant({2, 42}, 0);
+
+    EXPECT_NO_THROW(batch::concat({a, a}));
+    EXPECT_THROW(batch::concat({a, b}), Error);
+    EXPECT_NO_THROW(batch::concat({a, c}));
+    EXPECT_THROW(batch::concat({a, d}), Error);
+    EXPECT_THROW(batch::concat({b, a}), Error);
+    EXPECT_NO_THROW(batch::concat({b, b}));
+    EXPECT_THROW(batch::concat({b, c}), Error);
+    EXPECT_NO_THROW(batch::concat({b, d}));
+    EXPECT_NO_THROW(batch::concat({c, a}));
+    EXPECT_THROW(batch::concat({c, b}), Error);
+    EXPECT_NO_THROW(batch::concat({c, c}));
+    EXPECT_THROW(batch::concat({c, d}), Error);
+    EXPECT_THROW(batch::concat({d, a}), Error);
+    EXPECT_NO_THROW(batch::concat({d, b}));
+    EXPECT_THROW(batch::concat({d, c}), Error);
+    EXPECT_NO_THROW(batch::concat({d, d}));
+
+    EXPECT_NO_THROW(batch::concat({&a, &a}));
+    EXPECT_THROW(batch::concat({&a, &b}), Error);
+    EXPECT_NO_THROW(batch::concat({&a, &c}));
+    EXPECT_THROW(batch::concat({&a, &d}), Error);
+    EXPECT_THROW(batch::concat({&b, &a}), Error);
+    EXPECT_NO_THROW(batch::concat({&b, &b}));
+    EXPECT_THROW(batch::concat({&b, &c}), Error);
+    EXPECT_NO_THROW(batch::concat({&b, &d}));
+    EXPECT_NO_THROW(batch::concat({&c, &a}));
+    EXPECT_THROW(batch::concat({&c, &b}), Error);
+    EXPECT_NO_THROW(batch::concat({&c, &c}));
+    EXPECT_THROW(batch::concat({&c, &d}), Error);
+    EXPECT_THROW(batch::concat({&d, &a}), Error);
+    EXPECT_NO_THROW(batch::concat({&d, &b}));
+    EXPECT_THROW(batch::concat({&d, &c}), Error);
+    EXPECT_NO_THROW(batch::concat({&d, &d}));
+  }
+}
+
 TEST_F(TensorForwardTest, CheckBatchSum) {
   const vector<float> x_data {
     1, 2, 3, 4, 5, 6, 7, 8,

@@ -8,7 +8,16 @@ namespace devices {
 
 void Eigen::batch_concat_fw_impl(
     const std::vector<const Tensor *> &xs, Tensor &y) {
-  PRIMITIV_THROW_NOT_IMPLEMENTED;
+  // TODO(chantera): Optimize this functions using Eigen operations.
+
+  std::uint32_t offset = 0;
+  for (const Tensor *x : xs) {
+    const std::uint32_t span = x->shape().size();
+    float *dest = MDATA(y) + offset;
+    const float *src = CDATA(*x);
+    std::copy(src, src + span, dest);
+    offset += span;
+  }
 }
 
 }  // namespace devices
