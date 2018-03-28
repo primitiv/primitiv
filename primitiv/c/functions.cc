@@ -604,7 +604,7 @@ PRIMITIV_C_STATUS primitivApplyTensorBatchSplit(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitivApplyNodeConcat(
+PRIMITIV_C_STATUS primitivApplyNodeBatchConcat(
     const primitivNode_t *const *xs, size_t n,
     primitivNode_t **y) try {
   PRIMITIV_C_CHECK_NOT_NULL(xs);
@@ -615,7 +615,7 @@ PRIMITIV_C_STATUS primitivApplyNodeConcat(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitivApplyTensorConcat(
+PRIMITIV_C_STATUS primitivApplyTensorBatchConcat(
     const primitivTensor_t *const *xs, size_t n,
     primitivTensor_t **y) try {
   PRIMITIV_C_CHECK_NOT_NULL(xs);
