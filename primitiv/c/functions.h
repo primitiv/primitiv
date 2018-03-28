@@ -197,6 +197,30 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorMaxPool2d(
     uint32_t stride0, uint32_t stride1,
     primitivTensor_t **y);
 
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeBatchPick(
+    const primitivNode_t *x, const uint32_t *ids, size_t n,
+    primitivNode_t **y);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorBatchPick(
+    const primitivTensor_t *x, const uint32_t *ids, size_t n,
+    primitivTensor_t **y);
+
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeBatchSlice(
+    const primitivNode_t *x, uint32_t lower, uint32_t upper,
+    primitivNode_t **y);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorBatchSlice(
+    const primitivTensor_t *x, uint32_t lower, uint32_t upper,
+    primitivTensor_t **y);
+
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeBatchSplit(
+    const primitivNode_t *x, uint32_t n, primitivNode_t **ys);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorBatchSplit(
+    const primitivTensor_t *x, uint32_t n, primitivTensor_t **ys);
+
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeBatchConcat(
+    const primitivNode_t *const *xs, size_t n, primitivNode_t **y);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorBatchConcat(
+    const primitivTensor_t *const *xs, size_t n, primitivTensor_t **y);
+
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeBatchSum(
     const primitivNode_t *x, primitivNode_t **y);
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorBatchSum(
