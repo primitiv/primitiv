@@ -15,6 +15,7 @@
 #include <primitiv/memory_pool.h>
 #include <primitiv/opencl_device.h>
 #include <primitiv/random.h>
+#include <primitiv/functions.h>
 
 namespace {
 
@@ -1374,21 +1375,207 @@ void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
       cl::NDRange(state_->batch_sum_fw_group_size));
 }
 
-void OpenCL::conv2d_fw_impl(const Tensor &, const Tensor &,
-    std::uint32_t, std::uint32_t,
-    std::uint32_t, std::uint32_t,
-    std::uint32_t, std::uint32_t,
-    Tensor &) {
-  PRIMITIV_THROW_NOT_IMPLEMENTED;
+void OpenCL::conv2d_fw_impl(
+    const Tensor &x, const Tensor &w,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    std::uint32_t dilation0, std::uint32_t dilation1,
+    Tensor &y) {
+
+  const Shape x_shape = x.shape();
+  const Shape w_shape = w.shape();
+  const Shape y_shape = y.shape();
+
+  const std::uint32_t x_height = x_shape[0];
+  const std::uint32_t x_width = x_shape[1];
+  const std::uint32_t x_channels = x_shape[2];
+  const std::uint32_t w_height = w_shape[0];
+  const std::uint32_t w_width = w_shape[1];
+  const std::uint32_t y_height = y_shape[0];
+  const std::uint32_t y_width = y_shape[1];
+  const std::uint32_t y_channels = y_shape[2];
+
+  const std::uint32_t batch_size = y_shape.batch();
+
+  const std::uint32_t col_size = y_height * y_width * w_height * w_width * x_channels * batch_size;
+  std::shared_ptr<void> col = state_->pool.allocate(sizeof(float) * col_size);
+
+  std::vector<float> trans_data(w_height * w_width * x_channels * w_height * w_width * x_channels, 0.);
+  for (std::uint32_t c = 0; c < x_channels; ++c) {
+    for (std::uint32_t i = 0, j = w_height * w_width - 1; i < w_height * w_width; ++i, --j) {
+      trans_data[(c * w_height * w_width + j) * (w_height * w_width * x_channels) + (c * w_height * w_width + i)] = 1.;
+    }
+  }
+  Tensor trans = functions::input<Tensor>({w_height * w_width * x_channels, w_height * w_width * x_channels}, trans_data, this);
+  Tensor tw = functions::matmul(trans, w);
+
+  for (std::uint32_t n = 0; n < x_shape.batch(); ++n) {
+    const std::uint32_t x_offset = n * x_channels * x_width * x_height;
+    const std::uint32_t col_offset = n * x_channels * w_width * w_height * y_width * y_height;
+    clblast::Im2col<float>(
+      x_channels, x_width, x_height, w_width, w_height,
+      padding1, padding0, stride1, stride0, dilation1, dilation0,
+      CDATA(x)(), x_offset,
+      ::get_buffer(col)(), col_offset,
+      &state_->queue(), nullptr);
+  }
+
+  // w @ col
+  const std::vector<float> alphas(batch_size, 1.0f);
+  const std::vector<float> betas(batch_size, 0.0f);
+
+  const std::size_t w_skip = w_shape.has_batch() * w_height * w_width * x_channels * y_channels;
+  const std::size_t col_skip = x_shape.has_batch() * x_channels * w_width * w_height * y_width * y_height;
+  const std::size_t y_skip = y_channels * y_width * y_height;
+
+  std::vector<std::size_t> w_offsets(batch_size);
+  std::vector<std::size_t> col_offsets(batch_size);
+  std::vector<std::size_t> y_offsets(batch_size);
+
+  for (std::size_t n = 0; n < batch_size; ++n) {
+    w_offsets[n] = n * w_skip;
+    col_offsets[n] = n * col_skip;
+    y_offsets[n] = n * y_skip;
+  }
+
+  clblast::GemmBatched<float>(
+    clblast::Layout::kRowMajor,
+    clblast::Transpose::kNo, clblast::Transpose::kNo,
+    y_channels, y_width * y_height, w_height * w_width * x_channels,
+    alphas.data(),
+    CDATA(tw)(), w_offsets.data(), w_height * w_width * x_channels,
+    ::get_buffer(col)(), col_offsets.data(), y_width * y_height,
+    betas.data(),
+    MDATA(y)(), y_offsets.data(), y_width * y_height,
+    batch_size,
+    &state_->queue(), nullptr);
 }
 
 void OpenCL::conv2d_bw_impl(
-    const Tensor &, const Tensor &, const Tensor &, const Tensor &,
-    std::uint32_t, std::uint32_t,
-    std::uint32_t, std::uint32_t,
-    std::uint32_t, std::uint32_t,
-    Tensor &, Tensor &) {
-  PRIMITIV_THROW_NOT_IMPLEMENTED;
+    const Tensor &x, const Tensor &w, const Tensor &, const Tensor &gy,
+    std::uint32_t padding0, std::uint32_t padding1,
+    std::uint32_t stride0, std::uint32_t stride1,
+    std::uint32_t dilation0, std::uint32_t dilation1,
+    Tensor &gx, Tensor &gw) {
+  const Shape x_shape = x.shape();
+  const Shape w_shape = w.shape();
+  const Shape y_shape = gy.shape();
+
+  const std::uint32_t x_height = x_shape[0];
+  const std::uint32_t x_width = x_shape[1];
+  const std::uint32_t x_channels = x_shape[2];
+  const std::uint32_t w_height = w_shape[0];
+  const std::uint32_t w_width = w_shape[1];
+  const std::uint32_t y_height = y_shape[0];
+  const std::uint32_t y_width = y_shape[1];
+  const std::uint32_t y_channels = y_shape[2];
+
+  const std::uint32_t batch_size = y_shape.batch();
+
+  const std::uint32_t col_size = y_height * y_width * w_height * w_width * x_channels * batch_size;
+  std::shared_ptr<void> col = state_->pool.allocate(sizeof(float) * col_size);
+
+  std::vector<float> trans_data(y_height * y_width * y_channels * y_height * y_width * y_channels, 0.);
+  for (std::uint32_t c = 0; c < y_channels; ++c) {
+    for (std::uint32_t i = 0, j = y_height * y_width - 1; i < y_height * y_width; ++i, --j) {
+      trans_data[(c * y_height * y_width + j) * (y_height * y_width * y_channels) + (c * y_height * y_width + i)] = 1.;
+    }
+  }
+  Tensor trans = functions::input<Tensor>({y_height * y_width * y_channels, y_height * y_width * y_channels}, trans_data, this);
+
+  Tensor tgy = functions::matmul(trans, gy);
+
+  // w @ gy
+  const std::vector<float> alphas(batch_size, 1.0f);
+  const std::vector<float> betas(batch_size, 0.0f);
+
+  const std::size_t w_skip = w_shape.has_batch() * w_height * w_width * x_channels * y_channels;
+  const std::size_t col_skip = x_shape.has_batch() * x_channels * w_width * w_height * y_width * y_height;
+  const std::size_t y_skip = y_channels * y_width * y_height;
+
+  std::vector<std::size_t> w_offsets(batch_size);
+  std::vector<std::size_t> col_offsets(batch_size);
+  std::vector<std::size_t> y_offsets(batch_size);
+
+  for (std::size_t n = 0; n < batch_size; ++n) {
+    w_offsets[n] = n * w_skip;
+    col_offsets[n] = n * col_skip;
+    y_offsets[n] = n * y_skip;
+  }
+
+  clblast::GemmBatched<float>(
+    clblast::Layout::kRowMajor,
+    clblast::Transpose::kYes, clblast::Transpose::kNo,
+    y_channels, y_width * y_height, w_height * w_width * x_channels,
+    alphas.data(),
+    CDATA(w)(), w_offsets.data(), w_height * w_width * x_channels,
+    CDATA(tgy)(), col_offsets.data(), y_width * y_height,
+    betas.data(),
+    ::get_buffer(col)(), y_offsets.data(), y_width * y_height,
+    batch_size,
+    &state_->queue(), nullptr);
+
+  float *col_data = static_cast<float *>(state_->queue.enqueueMapBuffer(::get_buffer(col), CL_TRUE, CL_MAP_READ, 0, sizeof(float) * col_size, 0));
+  float *gx_data = static_cast<float *>(state_->queue.enqueueMapBuffer(MDATA(gx), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * x_shape.size(), 0));
+
+  // col2im
+  for (std::uint32_t n = 0; n < x_shape.batch(); ++n) {
+    const std::uint32_t col_batch_shift = n * x_channels * w_width * w_height * y_width * y_height;
+    const std::uint32_t x_batch_shift = n * x_channels * x_width * x_height;
+    for (std::uint32_t c = 0; c < x_channels; ++c) {
+      const std::uint32_t col_channel_shift = c * w_width * w_height * y_width * y_height + col_batch_shift;
+      const std::uint32_t x_channel_shift = c * x_width * x_height + x_batch_shift;
+      for (std::uint32_t w_x = 0; w_x < w_width; ++w_x) {
+        const std::uint32_t col_x_shift = w_x * w_height * y_width * y_height + col_channel_shift;
+        for (std::uint32_t w_y = 0; w_y < w_height; ++w_y) {
+          const std::uint32_t col_y_shift = w_y * y_width * y_height + col_x_shift;
+          for (std::uint32_t y_x = 0; y_x < y_width; ++y_x) {
+            const std::uint32_t p_x = w_x * dilation1 + y_x * stride1;
+            if (!(padding1 <= p_x && p_x < x_width + padding1)) {
+              continue;
+            }
+            for (std::uint32_t y_y = 0; y_y < y_height; ++y_y) {
+              const std::uint32_t p_y = w_y * dilation0 + y_y * stride0;
+              if (!(padding0 <= p_y && p_y < x_height + padding0)) {
+                continue;
+              }
+              gx_data[x_channel_shift + (p_x - padding1) * x_height + p_y - padding0] += col_data[col_y_shift + y_x * y_height + y_y];
+            }
+          }
+        }
+      }
+    }
+  }
+
+  state_->queue.enqueueUnmapMemObject(CDATA(gx), gx_data);
+  state_->queue.enqueueUnmapMemObject(::get_buffer(col), col_data);
+
+  for (std::uint32_t n = 0; n < x_shape.batch(); ++n) {
+    const std::uint32_t x_offset = n * x_channels * x_width * x_height;
+    const std::uint32_t col_offset = n * x_channels * w_width * w_height * y_width * y_height;
+    clblast::Im2col<float>(
+      x_channels, x_width, x_height, w_width, w_height,
+      padding1, padding0, stride1, stride0, dilation1, dilation0,
+      CDATA(x)(), x_offset,
+      ::get_buffer(col)(), col_offset,
+      &state_->queue(), nullptr);
+  }
+
+  const std::vector<float> betas1(batch_size, 1.0f);
+
+  clblast::GemmBatched<float>(
+    clblast::Layout::kRowMajor,
+    clblast::Transpose::kNo, clblast::Transpose::kYes,
+    y_channels, w_width * w_height * x_channels, y_height * y_width,
+    alphas.data(),
+    CDATA(gy)(), y_offsets.data(), y_height * y_width,
+    ::get_buffer(col)(), col_offsets.data(), y_width * y_height,
+    betas1.data(),
+    MDATA(gw)(), w_offsets.data(), w_width * w_height * x_channels,
+    batch_size,
+    &state_->queue(), nullptr);
+
+  gw = functions::matmul(trans, gw);
 }
 
 void OpenCL::max_pool2d_fw_impl(
