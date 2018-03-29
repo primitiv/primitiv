@@ -216,6 +216,66 @@ TEST_F(CShapeTest, CheckNumElementsUnderRank) {
   ::primitivDeleteShape(src);
 }
 
+TEST_F(CShapeTest, CheckString) {
+  struct TestCase {
+    vector<std::uint32_t> dims;
+    std::uint32_t batch;
+    std::string expected;
+  };
+  const vector<TestCase> test_cases {
+    {{1}, 1, "[]x1"},
+    {{1, 1}, 1, "[]x1"},
+    {{}, 1, "[]x1"},
+    {{1}, 1, "[]x1"},
+    {{1, 1}, 1, "[]x1"},
+    {{}, 2, "[]x2"},
+    {{1}, 2, "[]x2"},
+    {{1, 1}, 2, "[]x2"},
+    {{2}, 1, "[2]x1"},
+    {{2, 1}, 1, "[2]x1"},
+    {{2, 3}, 1, "[2,3]x1"},
+    {{2, 3, 1}, 1, "[2,3]x1"},
+    {{2, 3, 5}, 1, "[2,3,5]x1"},
+    {{2, 3, 5, 1}, 1, "[2,3,5]x1"},
+    {{2}, 3, "[2]x3"},
+    {{2, 1}, 3, "[2]x3"},
+    {{2, 3}, 5, "[2,3]x5"},
+    {{2, 3, 1}, 5, "[2,3]x5"},
+    {{2, 3, 5}, 7, "[2,3,5]x7"},
+    {{2, 3, 5, 1}, 7, "[2,3,5]x7"},
+  };
+  for (const TestCase &tc : test_cases) {
+    ::primitivShape_t *shape;
+    if (tc.dims.size() > 0) {
+      ASSERT_EQ(PRIMITIV_C_OK,
+                ::primitivCreateShapeWithDims(
+                    &tc.dims[0], tc.dims.size(), tc.batch, &shape));
+    } else {
+      uint32_t dims[] = {};
+      ASSERT_EQ(PRIMITIV_C_OK,
+                ::primitivCreateShapeWithDims(dims, 0, tc.batch, &shape));
+    }
+    std::size_t length = 0u;
+    ::primitivRepresentShapeAsString(shape, nullptr, &length);
+    EXPECT_GT(length, 0u);
+    char buffer[length];
+    ::primitivRepresentShapeAsString(shape, buffer, &length);
+    EXPECT_EQ(tc.expected, (std::string) buffer);
+    ::primitivDeleteShape(shape);
+  }
+  {
+    ::primitivShape_t* shape;
+    ::primitivCreateShape(&shape);
+    std::size_t length = 0u;
+    ::primitivRepresentShapeAsString(shape, nullptr, &length);
+    EXPECT_GT(length, 0u);
+    char buffer[length];
+    ::primitivRepresentShapeAsString(shape, buffer, &length);
+    EXPECT_EQ("[]x1", (std::string) buffer);
+    ::primitivDeleteShape(shape);
+  }
+}
+
 TEST_F(CShapeTest, CheckCopy) {
   ::primitivShape_t *src1;
   ::primitivShape_t *src2;
