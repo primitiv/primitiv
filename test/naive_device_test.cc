@@ -12,6 +12,7 @@
 
 using std::vector;
 using test_utils::vector_match;
+using test_utils::vector_match_ulps;
 using test_utils::vector_near;
 
 namespace primitiv {
@@ -117,12 +118,12 @@ TEST_F(NaiveDeviceTest, CheckRandomUniform) {
 
 TEST_F(NaiveDeviceTest, CheckRandomUniformWithSeed) {
   const vector<float> expected {
-    7.7330894e+00, 7.0227852e+00, -3.3052402e+00, -6.6472688e+00,
-    -5.6894612e+00, -8.2843294e+00, -5.3179150e+00, 5.8758497e+00,
+    -4.1439754e+00, 8.5610973e+00, 4.6767479e+00, -5.9135939e+00,
+    -2.8857790e+00, 8.3672165e+00, 9.8776853e-01, 8.9105119e+00,
   };
   devices::Naive dev(12345);
   const Tensor x = dev.random_uniform(Shape({2, 2}, 2), -9, 9);
-  EXPECT_TRUE(vector_match(expected, x.to_vector()));
+  EXPECT_TRUE(vector_match_ulps(expected, x.to_vector(), 6));
 }
 
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
