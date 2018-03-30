@@ -43,6 +43,19 @@ inline bool float_near(float a, float b, float err) {
   return (a > b ? a - b : b - a) <= err;
 }
 
+inline float padding_ulps(float x, std::int32_t ulps) {
+  static_assert(sizeof(std::int32_t) == sizeof(float), "");
+  std::int32_t xi;
+  std::memcpy(&xi, &x, sizeof(std::int32_t));
+  std::int32_t di = (xi & 0x7f800000) | (ulps & 0x807fffff);
+  std::int32_t si = di & 0xff800000;
+  float d;
+  float s;
+  std::memcpy(&d, &di, sizeof(std::int32_t));
+  std::memcpy(&s, &si, sizeof(std::int32_t));
+  return x + d - s;
+}
+
 // helper to check float vector equality under specified ULPs.
 inline testing::AssertionResult vector_match_ulps(
     const std::vector<float> &expected,

@@ -125,8 +125,11 @@ TEST_F(InitializerImplTest, CheckXavierUniform) {
   Tensor x = dev.new_tensor_by_constant({H, W}, 0);
 
   for (float scale : {.5f, 1.f, 2.f}) {
+#ifdef PRIMITIV_MAYBE_FPMATH_X87
+    const float bound = padding_ulps(scale * std::sqrt(6. / (fan_in + fan_out)), 4);
+#else
     const float bound = scale * std::sqrt(6. / (fan_in + fan_out));
-
+#endif
     const XavierUniform init(scale);
     init.apply(x);
 
@@ -210,8 +213,11 @@ TEST_F(InitializerImplTest, CheckXavierUniformConv2D) {
   Tensor x = dev.new_tensor_by_constant({H, W, C, K}, 0);
 
   for (float scale : {.5f, 1.f, 2.f}) {
+#ifdef PRIMITIV_MAYBE_FPMATH_X87
+    const float bound = padding_ulps(scale * std::sqrt(6. / (fan_in + fan_out)), 4) ;
+#else
     const float bound = scale * std::sqrt(6. / (fan_in + fan_out));
-
+#endif
     const XavierUniformConv2D init(scale);
     init.apply(x);
 
