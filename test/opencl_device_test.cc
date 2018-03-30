@@ -158,8 +158,8 @@ TEST_F(OpenCLDeviceTest, CheckRandomUniform) {
 
 TEST_F(OpenCLDeviceTest, CheckRandomUniformWithSeed) {
   const vector<float> expected {
-    7.7330894e+00, 7.0227852e+00, -3.3052402e+00, -6.6472688e+00,
-    -5.6894612e+00, -8.2843294e+00, -5.3179150e+00, 5.8758497e+00,
+    -4.6394384e+00, 8.4377908e+00, 4.7966748e+00, -6.6566387e+00,
+    -6.3040345e+00, 8.0683680e+00, 1.5853583e+00, 8.8913362e+00,
   };
   for (const Config &cfg : configs) {
     devices::OpenCL dev(cfg.pf_id, cfg.dev_id, 12345);

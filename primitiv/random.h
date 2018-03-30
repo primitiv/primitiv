@@ -2,6 +2,7 @@
 #define PRIMITIV_RANDOM_H_
 
 #include <cstddef>
+#include <limits>
 #include <random>
 #include <primitiv/mixins.h>
 
@@ -47,10 +48,21 @@ public:
    * @remarks Range of the resulting sequence is (lower, upper].
    */
   void fill_uniform(float lower, float upper, std::size_t size, float *data) {
-    std::uniform_real_distribution<float> dist(lower, upper);
-    for (std::size_t i = 0; i < size; ++i) {
-      const float x = dist(rng_);
-      data[i] = x == lower ? upper : x;
+    // NOTE(vbkaisetsu):
+    // std::uniform_real_distribution generates compiler dependent results.
+    // Our implementation guarantees results of the uniform distribution.
+    static_assert(std::numeric_limits<float>::digits == 24, "");
+    const std::uint32_t h = (rng_.max() - rng_.min()) / 2 + rng_.min();
+    for (std::size_t j = 0; j < size; ++j) {
+      float r = 0.f;
+      float s = 1.f;
+      for (std::uint32_t e = 0; e < std::numeric_limits<float>::digits; ++e) {
+        s *= .5f;
+        if (rng_() > h) {
+          r += s;
+        }
+      }
+      data[j] = -(r * (upper - lower) - upper);
     }
   }
 
