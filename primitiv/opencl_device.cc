@@ -328,9 +328,58 @@ public:
       CONFIGURE_KERNEL(inplace_add);
       CONFIGURE_KERNEL(inplace_subtract);
 
+      CONFIGURE_KERNEL(col2im);
+      calc_dim2_sizes(
+          col2im_group_size,
+          col2im_group_size_x, col2im_group_size_y);
+
 #undef CONFIGURE_KERNEL
 #undef CONFIGURE_KERNEL_LIST
     }
+
+  void col2im_internal(
+      const std::uint32_t channels, const std::uint32_t height, const std::uint32_t width,
+      const std::uint32_t kernel_h, const std::uint32_t kernel_w, const std::uint32_t pad_h,
+      const std::uint32_t pad_w, const std::uint32_t stride_h, const std::uint32_t stride_w,
+      const std::uint32_t dilation_h, const std::uint32_t dilation_w,
+      const cl::Buffer &col_buffer, const std::uint32_t col_offset,
+      cl::Buffer &im_buffer, const std::uint32_t im_offset) {
+
+    const std::uint32_t size_h = height + 2 * pad_h;
+    const std::uint32_t padding_h = dilation_h * (kernel_h - 1) + 1;
+    const std::uint32_t output_h = (size_h >= padding_h) ? (size_h - padding_h) / stride_h + 1 : 1;
+    const std::uint32_t size_w = width + 2 * pad_w;
+    const std::uint32_t padding_w = dilation_w * (kernel_w - 1) + 1;
+    const std::uint32_t output_w = (size_w >= padding_w) ? (size_w - padding_w) / stride_w + 1 : 1;
+
+    const std::uint32_t g1 = ::calc_num_blocks(
+        output_w, col2im_group_size_x);
+    const std::uint32_t g2 = ::calc_num_blocks(
+        output_h, col2im_group_size_y);
+
+    col2im_kernel.setArg(0, height);
+    col2im_kernel.setArg(1, width);
+    col2im_kernel.setArg(2, channels);
+    col2im_kernel.setArg(3, output_h);
+    col2im_kernel.setArg(4, output_w);
+    col2im_kernel.setArg(5, kernel_h);
+    col2im_kernel.setArg(6, kernel_w);
+    col2im_kernel.setArg(7, pad_h);
+    col2im_kernel.setArg(8, pad_w);
+    col2im_kernel.setArg(9, stride_h);
+    col2im_kernel.setArg(10, stride_w);
+    col2im_kernel.setArg(11, dilation_h);
+    col2im_kernel.setArg(12, dilation_w);
+    col2im_kernel.setArg(13, col_buffer);
+    col2im_kernel.setArg(14, col_offset);
+    col2im_kernel.setArg(15, im_buffer);
+    col2im_kernel.setArg(16, im_offset);
+
+    queue.enqueueNDRangeKernel(
+        col2im_kernel, cl::NullRange,
+        cl::NDRange(g1 * col2im_group_size_x, g2 * col2im_group_size_y, 1),
+        cl::NDRange(col2im_group_size_x, col2im_group_size_y, 1));
+  }
 
   DefaultRandomizer randomizer_;
   cl::Device device;
@@ -442,6 +491,10 @@ public:
   DECL_KERNEL(inplace_multiply_const);
   DECL_KERNEL(inplace_add);
   DECL_KERNEL(inplace_subtract);
+
+  DECL_KERNEL(col2im);
+  std::uint32_t col2im_group_size_x;
+  std::uint32_t col2im_group_size_y;
 
 #undef DECL_KERNEL
 #undef DECL_KERNEL_LIST
@@ -1515,40 +1568,15 @@ void OpenCL::conv2d_bw_impl(
     batch_size,
     &state_->queue(), nullptr);
 
-  float *col_data = static_cast<float *>(state_->queue.enqueueMapBuffer(::get_buffer(col), CL_TRUE, CL_MAP_READ, 0, sizeof(float) * col_size, 0));
-  float *gx_data = static_cast<float *>(state_->queue.enqueueMapBuffer(MDATA(gx), CL_TRUE, CL_MAP_WRITE, 0, sizeof(float) * x_shape.size(), 0));
-
-  // col2im
   for (std::uint32_t n = 0; n < x_shape.batch(); ++n) {
-    const std::uint32_t col_batch_shift = n * x_channels * w_width * w_height * y_width * y_height;
-    const std::uint32_t x_batch_shift = n * x_channels * x_width * x_height;
-    for (std::uint32_t c = 0; c < x_channels; ++c) {
-      const std::uint32_t col_channel_shift = c * w_width * w_height * y_width * y_height + col_batch_shift;
-      const std::uint32_t x_channel_shift = c * x_width * x_height + x_batch_shift;
-      for (std::uint32_t w_x = 0; w_x < w_width; ++w_x) {
-        const std::uint32_t col_x_shift = w_x * w_height * y_width * y_height + col_channel_shift;
-        for (std::uint32_t w_y = 0; w_y < w_height; ++w_y) {
-          const std::uint32_t col_y_shift = w_y * y_width * y_height + col_x_shift;
-          for (std::uint32_t y_x = 0; y_x < y_width; ++y_x) {
-            const std::uint32_t p_x = w_x * dilation1 + y_x * stride1;
-            if (!(padding1 <= p_x && p_x < x_width + padding1)) {
-              continue;
-            }
-            for (std::uint32_t y_y = 0; y_y < y_height; ++y_y) {
-              const std::uint32_t p_y = w_y * dilation0 + y_y * stride0;
-              if (!(padding0 <= p_y && p_y < x_height + padding0)) {
-                continue;
-              }
-              gx_data[x_channel_shift + (p_x - padding1) * x_height + p_y - padding0] += col_data[col_y_shift + y_x * y_height + y_y];
-            }
-          }
-        }
-      }
-    }
+    const std::uint32_t x_offset = n * x_channels * x_width * x_height;
+    const std::uint32_t col_offset = n * x_channels * w_width * w_height * y_width * y_height;
+    state_->col2im_internal(
+      x_channels, x_width, x_height, w_width, w_height,
+      padding1, padding0, stride1, stride0, dilation1, dilation0,
+      ::get_buffer(col), col_offset,
+      MDATA(gx), x_offset);
   }
-
-  state_->queue.enqueueUnmapMemObject(CDATA(gx), gx_data);
-  state_->queue.enqueueUnmapMemObject(::get_buffer(col), col_data);
 
   for (std::uint32_t n = 0; n < x_shape.batch(); ++n) {
     const std::uint32_t x_offset = n * x_channels * x_width * x_height;
