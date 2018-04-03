@@ -352,10 +352,8 @@ public:
     const std::uint32_t padding_w = dilation_w * (kernel_w - 1) + 1;
     const std::uint32_t output_w = (size_w >= padding_w) ? (size_w - padding_w) / stride_w + 1 : 1;
 
-    const std::uint32_t g1 = ::calc_num_blocks(
-        output_w, col2im_group_size_x);
-    const std::uint32_t g2 = ::calc_num_blocks(
-        output_h, col2im_group_size_y);
+    const std::uint32_t g1 = ::calc_num_blocks(width, col2im_group_size_x);
+    const std::uint32_t g2 = ::calc_num_blocks(height * channels, col2im_group_size_y);
 
     col2im_kernel.setArg(0, height);
     col2im_kernel.setArg(1, width);

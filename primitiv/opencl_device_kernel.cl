@@ -591,28 +591,27 @@ kernel void col2im_kernel(
     const global float *col_buffer, const int col_offset,
     __global float *im_buffer, const int im_offset) {
 
-  const int w_id = get_global_id(0); // image width, max 'output_w'
-  const int h_id = ((int)get_global_id(1)) % output_h; // image height, max 'output_h'
-  const int c_id = ((int)get_global_id(1)) / output_h; // input channels
-  if (h_id < output_h && w_id < output_w && c_id < channels) {
-    for (int kh_id = 0; kh_id < kernel_h; ++kh_id) { // kernel height
-      for (int kw_id = 0; kw_id < kernel_w; ++kw_id) { // kernel width
-        // Retrieves the input value
-        const int kernel_index = kw_id + kernel_w * kh_id;
-        const int patch_index = w_id + output_w * h_id;
-        const int output_index = patch_index + kernel_index * output_w * output_h +
-                                  c_id * output_w * output_h * kernel_h * kernel_w;
-        float val = col_buffer[output_index + col_offset];
+  const int x_x = get_global_id(0);
+  const int x_y = ((int) get_global_id(1)) % input_h;
+  const int channel = ((int) get_global_id(1)) / input_h;
+  const int col_channel_shift = channel * kernel_w * kernel_h * output_h * output_w + col_offset;
+  const int x_channel_shift = channel * input_h * input_w + im_offset;
 
-        // Sets the output value
-        const int h_index = -pad_h + kh_id * dilation_h + stride_h * h_id;
-        const int w_index = -pad_w + kw_id * dilation_w + stride_w * w_id;
-        if (h_index >= 0 && h_index < input_h &&
-            w_index >= 0 && w_index < input_w) {
-          const int input_index = w_index + input_w * (h_index + input_h * c_id);
-          atomic_add_float(im_buffer + input_index + im_offset, val);
+  if (x_x < input_w && channel < channels) {
+    float val = 0;
+    for (int w_y = 0; w_y < kernel_h; ++w_y) {
+      for (int w_x = 0; w_x < kernel_w; ++w_x) {
+        const int y_y_raw = x_y - w_y * dilation_h + pad_h;
+        const int y_x_raw = x_x - w_x * dilation_w + pad_w;
+        if (y_y_raw % stride_h == 0 && y_x_raw % stride_w == 0) {
+          const int y_y = y_y_raw / stride_h;
+          const int y_x = y_x_raw / stride_w;
+          if (0 <= y_x && y_x < output_w && 0 <= y_y && y_y < output_h) {
+            val += col_buffer[col_channel_shift + (w_x + w_y * kernel_w) * output_h * output_w + y_y * output_w + y_x];
+          }
         }
       }
     }
+    im_buffer[x_channel_shift + x_y * input_w + x_x] += val;
   }
 }
