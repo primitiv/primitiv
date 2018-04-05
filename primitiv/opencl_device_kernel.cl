@@ -6,7 +6,9 @@ inline float inline_div(const float a, const float b) { return a / b; }
 #define REDUCE(k, GROUP_SIZE) \
   if (GROUP_SIZE >= k << 1) { \
     if (tid < k) { \
-      if (max_val[tid + k] > max_val[tid]) { \
+      if (max_val[tid + k] > max_val[tid] \
+          || (max_val[tid + k] == max_val[tid] \
+              && argmax_val[tid + k] < argmax_val[tid])) { \
         max_val[tid] = max_val[tid + k]; \
         argmax_val[tid] = argmax_val[tid + k]; \
       } \
@@ -62,7 +64,9 @@ ARGMAX_KERNEL(1)
 #define REDUCE(k, GROUP_SIZE) \
   if (GROUP_SIZE >= k << 1) { \
     if (tid < k) { \
-      if (min_val[tid + k] < min_val[tid]) { \
+      if (min_val[tid + k] < min_val[tid] \
+          || (min_val[tid + k] == min_val[tid] \
+              && argmin_val[tid + k] < argmin_val[tid])) { \
         min_val[tid] = min_val[tid + k]; \
         argmin_val[tid] = argmin_val[tid + k]; \
       } \
