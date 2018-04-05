@@ -268,6 +268,16 @@ Tensor elu(const Tensor &x, float a) {
 }
 
 template<>
+Tensor max(const Tensor &x, std::uint32_t dim) {
+  return x.device().max_fw(x, dim);
+}
+
+template<>
+Tensor min(const Tensor &x, std::uint32_t dim) {
+  return x.device().min_fw(x, dim);
+}
+
+template<>
 Tensor sum(const Tensor &x, std::uint32_t dim) {
   return x.device().sum_fw(x, dim);
 }

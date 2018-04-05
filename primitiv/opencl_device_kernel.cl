@@ -442,6 +442,232 @@ kernel void transpose_bw_kernel(
 
 #define REDUCE(k, GROUP_SIZE) \
   if (GROUP_SIZE >= k << 1) { \
+    if (tid < k) { \
+      if (temp[tid + k] > temp[tid]) { \
+        temp[tid] = temp[tid + k]; \
+      } \
+    } \
+    barrier(CLK_LOCAL_MEM_FENCE); \
+  }
+
+#define MAX_FW_KERNEL(GROUP_SIZE) \
+kernel void max_fw_kernel_##GROUP_SIZE( \
+    const global float *px, const unsigned skip, \
+    const unsigned n, global float *py) { \
+  const unsigned bid = get_group_id(0); \
+  const unsigned tid = get_local_id(0); \
+  local float temp[GROUP_SIZE]; \
+  px += bid % skip + (bid / skip) * skip * n; \
+  temp[tid] = -INFINITY; \
+  for (unsigned i = tid; i < n; i += GROUP_SIZE) { \
+    const float val = px[i * skip]; \
+    if (val > temp[tid]) { \
+      temp[tid] = val; \
+    } \
+  } \
+  barrier(CLK_LOCAL_MEM_FENCE); \
+  REDUCE(512, GROUP_SIZE) \
+  REDUCE(256, GROUP_SIZE) \
+  REDUCE(128, GROUP_SIZE) \
+  REDUCE(64, GROUP_SIZE) \
+  REDUCE(32, GROUP_SIZE) \
+  REDUCE(16, GROUP_SIZE) \
+  REDUCE(8, GROUP_SIZE) \
+  REDUCE(4, GROUP_SIZE) \
+  REDUCE(2, GROUP_SIZE) \
+  REDUCE(1, GROUP_SIZE) \
+  if (tid == 0) py[bid] = temp[0]; \
+}
+
+MAX_FW_KERNEL(1024)
+MAX_FW_KERNEL(512)
+MAX_FW_KERNEL(256)
+MAX_FW_KERNEL(128)
+MAX_FW_KERNEL(64)
+MAX_FW_KERNEL(32)
+MAX_FW_KERNEL(16)
+MAX_FW_KERNEL(8)
+MAX_FW_KERNEL(4)
+MAX_FW_KERNEL(2)
+MAX_FW_KERNEL(1)
+
+#undef REDUCE
+
+#define REDUCE(k, GROUP_SIZE) \
+  if (GROUP_SIZE >= k << 1) { \
+    if (tid < k) { \
+      if (max_val[tid + k] > max_val[tid] \
+          || (max_val[tid + k] == max_val[tid] \
+              && argmax_val[tid] > argmax_val[tid + k])) { \
+        max_val[tid] = max_val[tid + k]; \
+        argmax_val[tid] = argmax_val[tid + k]; \
+      } \
+    } \
+    barrier(CLK_LOCAL_MEM_FENCE); \
+  }
+
+#define MAX_BW_KERNEL(GROUP_SIZE) \
+kernel void max_bw_kernel_##GROUP_SIZE( \
+    const global float *px, const global float *py, \
+    const global float *pgy, const unsigned skip, \
+    const unsigned n, global float *pgx) { \
+  const unsigned bid = get_group_id(0); \
+  const unsigned tid = get_local_id(0); \
+  local float max_val[GROUP_SIZE]; \
+  local unsigned argmax_val[GROUP_SIZE]; \
+  px += bid % skip + (bid / skip) * skip * n; \
+  pgx += bid % skip + (bid / skip) * skip * n; \
+  max_val[tid] = -INFINITY; \
+  for (unsigned i = tid; i < n; i += GROUP_SIZE) { \
+    const float val = px[i * skip]; \
+    if (val > max_val[tid]) { \
+      max_val[tid] = val; \
+      argmax_val[tid] = i; \
+    } \
+  } \
+  barrier(CLK_LOCAL_MEM_FENCE); \
+  REDUCE(512, GROUP_SIZE) \
+  REDUCE(256, GROUP_SIZE) \
+  REDUCE(128, GROUP_SIZE) \
+  REDUCE(64, GROUP_SIZE) \
+  REDUCE(32, GROUP_SIZE) \
+  REDUCE(16, GROUP_SIZE) \
+  REDUCE(8, GROUP_SIZE) \
+  REDUCE(4, GROUP_SIZE) \
+  REDUCE(2, GROUP_SIZE) \
+  REDUCE(1, GROUP_SIZE) \
+  if (tid == 0) pgx[argmax_val[0] * skip] += pgy[bid]; \
+}
+
+MAX_BW_KERNEL(1024)
+MAX_BW_KERNEL(512)
+MAX_BW_KERNEL(256)
+MAX_BW_KERNEL(128)
+MAX_BW_KERNEL(64)
+MAX_BW_KERNEL(32)
+MAX_BW_KERNEL(16)
+MAX_BW_KERNEL(8)
+MAX_BW_KERNEL(4)
+MAX_BW_KERNEL(2)
+MAX_BW_KERNEL(1)
+
+#undef REDUCE
+
+#define REDUCE(k, GROUP_SIZE) \
+  if (GROUP_SIZE >= k << 1) { \
+    if (tid < k) { \
+      if (temp[tid + k] < temp[tid]) { \
+        temp[tid] = temp[tid + k]; \
+      } \
+    } \
+    barrier(CLK_LOCAL_MEM_FENCE); \
+  }
+
+#define MIN_FW_KERNEL(GROUP_SIZE) \
+kernel void min_fw_kernel_##GROUP_SIZE( \
+    const global float *px, const unsigned skip, \
+    const unsigned n, global float *py) { \
+  const unsigned bid = get_group_id(0); \
+  const unsigned tid = get_local_id(0); \
+  local float temp[GROUP_SIZE]; \
+  px += bid % skip + (bid / skip) * skip * n; \
+  temp[tid] = INFINITY; \
+  for (unsigned i = tid; i < n; i += GROUP_SIZE) { \
+    const float val = px[i * skip]; \
+    if (val < temp[tid]) { \
+      temp[tid] = val; \
+    } \
+  } \
+  barrier(CLK_LOCAL_MEM_FENCE); \
+  REDUCE(512, GROUP_SIZE) \
+  REDUCE(256, GROUP_SIZE) \
+  REDUCE(128, GROUP_SIZE) \
+  REDUCE(64, GROUP_SIZE) \
+  REDUCE(32, GROUP_SIZE) \
+  REDUCE(16, GROUP_SIZE) \
+  REDUCE(8, GROUP_SIZE) \
+  REDUCE(4, GROUP_SIZE) \
+  REDUCE(2, GROUP_SIZE) \
+  REDUCE(1, GROUP_SIZE) \
+  if (tid == 0) py[bid] = temp[0]; \
+}
+
+MIN_FW_KERNEL(1024)
+MIN_FW_KERNEL(512)
+MIN_FW_KERNEL(256)
+MIN_FW_KERNEL(128)
+MIN_FW_KERNEL(64)
+MIN_FW_KERNEL(32)
+MIN_FW_KERNEL(16)
+MIN_FW_KERNEL(8)
+MIN_FW_KERNEL(4)
+MIN_FW_KERNEL(2)
+MIN_FW_KERNEL(1)
+
+#undef REDUCE
+
+#define REDUCE(k, GROUP_SIZE) \
+  if (GROUP_SIZE >= k << 1) { \
+    if (tid < k) { \
+      if (min_val[tid + k] < min_val[tid] \
+          || (min_val[tid + k] == min_val[tid] \
+              && argmin_val[tid] > argmin_val[tid + k])) { \
+        min_val[tid] = min_val[tid + k]; \
+        argmin_val[tid] = argmin_val[tid + k]; \
+      } \
+    } \
+    barrier(CLK_LOCAL_MEM_FENCE); \
+  }
+
+#define MIN_BW_KERNEL(GROUP_SIZE) \
+kernel void min_bw_kernel_##GROUP_SIZE( \
+    const global float *px, const global float *py, \
+    const global float *pgy, const unsigned skip, \
+    const unsigned n, global float *pgx) { \
+  const unsigned bid = get_group_id(0); \
+  const unsigned tid = get_local_id(0); \
+  local float min_val[GROUP_SIZE]; \
+  local unsigned argmin_val[GROUP_SIZE]; \
+  px += bid % skip + (bid / skip) * skip * n; \
+  pgx += bid % skip + (bid / skip) * skip * n; \
+  min_val[tid] = INFINITY; \
+  for (unsigned i = tid; i < n; i += GROUP_SIZE) { \
+    const float val = px[i * skip]; \
+    if (val < min_val[tid]) { \
+      min_val[tid] = val; \
+      argmin_val[tid] = i; \
+    } \
+  } \
+  barrier(CLK_LOCAL_MEM_FENCE); \
+  REDUCE(512, GROUP_SIZE) \
+  REDUCE(256, GROUP_SIZE) \
+  REDUCE(128, GROUP_SIZE) \
+  REDUCE(64, GROUP_SIZE) \
+  REDUCE(32, GROUP_SIZE) \
+  REDUCE(16, GROUP_SIZE) \
+  REDUCE(8, GROUP_SIZE) \
+  REDUCE(4, GROUP_SIZE) \
+  REDUCE(2, GROUP_SIZE) \
+  REDUCE(1, GROUP_SIZE) \
+  if (tid == 0) pgx[argmin_val[0] * skip] += pgy[bid]; \
+}
+
+MIN_BW_KERNEL(1024)
+MIN_BW_KERNEL(512)
+MIN_BW_KERNEL(256)
+MIN_BW_KERNEL(128)
+MIN_BW_KERNEL(64)
+MIN_BW_KERNEL(32)
+MIN_BW_KERNEL(16)
+MIN_BW_KERNEL(8)
+MIN_BW_KERNEL(4)
+MIN_BW_KERNEL(2)
+MIN_BW_KERNEL(1)
+
+#undef REDUCE
+
+#define REDUCE(k, GROUP_SIZE) \
+  if (GROUP_SIZE >= k << 1) { \
     if (tid < k) temp[tid] += temp[tid + k]; \
     barrier(CLK_LOCAL_MEM_FENCE); \
   }

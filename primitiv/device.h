@@ -205,6 +205,11 @@ public:
       Tensor &ga, Tensor &gb);
 
   // Dimension operations.
+  Tensor max_fw(const Tensor &x, std::uint32_t dim);
+  Tensor min_fw(const Tensor &x, std::uint32_t dim);
+  void max_bw(const Tensor &x, const Tensor &y, const Tensor &gy, std::uint32_t dim, Tensor &gx);
+  void min_bw(const Tensor &x, const Tensor &y, const Tensor &gy, std::uint32_t dim, Tensor &gx);
+
   Tensor sum_fw(const Tensor &x, std::uint32_t dim);
   Tensor logsumexp_fw(const Tensor &x, std::uint32_t dim);
   Tensor broadcast_fw(const Tensor &x, std::uint32_t dim, std::uint32_t size);
@@ -450,6 +455,11 @@ private:
   virtual void matmul_bw_impl(
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
       Tensor &ga, Tensor &gb) = 0;
+
+  virtual void max_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
+  virtual void min_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
+  virtual void max_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, std::uint32_t dim, Tensor &gx) = 0;
+  virtual void min_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, std::uint32_t dim, Tensor &gx) = 0;
 
   virtual void sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
   virtual void logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;

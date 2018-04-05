@@ -2076,6 +2076,88 @@ TEST_F(TensorForwardTest, CheckELU) {
   }
 }
 
+TEST_F(TensorForwardTest, CheckMaxDims) {
+  const vector<float> data = {
+    0, 1, 2, 6, 7, 8, 3, 4, 5, -3, -4, -5, 0, -1, -2, -6, -7, -8,
+  };
+  const vector<vector<float>> expected = {
+    {2, 8, 5, -3, 0, -6},
+    {6, 7, 8, 0, -1, -2},
+    {0, 1, 2, 6, 7, 8, 3, 4, 5, -3, -4, -5, 0, -1, -2, -6, -7, -8},
+  };
+
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector(Shape({3, 3}, 2), data);
+    for (const std::uint32_t i : {0u, 1u, 2u}) {
+      EXPECT_TRUE(vector_match(expected[i], max(a, i).to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorForwardTest, CheckMaxLarge) {
+  std::mt19937 rng;
+  const vector<std::uint32_t> ns {
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024,
+    1025, 2047, 2048, 2049, 65535, 65536, 65537,
+  };
+
+  for (Device *dev : devices) {
+    for (const std::uint32_t n : ns) {
+      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+        // NOTE(vbkaisetsu):
+        // Half-precision types have only (10+1) bits resolution.
+        continue;
+      }
+      vector<float> data(n);
+      std::iota(begin(data), end(data), 0);
+      std::shuffle(begin(data), end(data), rng);
+      const Tensor a = dev->new_tensor_by_vector({n}, data);
+      EXPECT_EQ(n - 1, max(a, 0).to_vector()[0]);
+    }
+  }
+}
+
+TEST_F(TensorForwardTest, CheckMinDims) {
+  const vector<float> data = {
+    3, 4, 5, 0, 1, 2, 6, 7, 8, 0, -1, -2, -6, -7, -8, -3, -4, -5,
+  };
+  const vector<vector<float>> expected = {
+    {3, 0, 6, -2, -8, -5},
+    {0, 1, 2, -6, -7, -8},
+    {3, 4, 5, 0, 1, 2, 6, 7, 8, 0, -1, -2, -6, -7, -8, -3, -4, -5},
+  };
+
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector(Shape({3, 3}, 2), data);
+    for (const std::uint32_t i : {0u, 1u, 2u}) {
+      EXPECT_TRUE(vector_match(expected[i], min(a, i).to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorForwardTest, CheckMinLarge) {
+  std::mt19937 rng;
+  const vector<std::uint32_t> ns {
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024,
+    1025, 2047, 2048, 2049, 65535, 65536, 65537,
+  };
+
+  for (Device *dev : devices) {
+    for (const std::uint32_t n : ns) {
+      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+        // NOTE(vbkaisetsu):
+        // Half-precision types have only (10+1) bits resolution.
+        continue;
+      }
+      vector<float> data(n);
+      std::iota(begin(data), end(data), 0);
+      std::shuffle(begin(data), end(data), rng);
+      const Tensor a = dev->new_tensor_by_vector({n}, data);
+      EXPECT_EQ(0, min(a, 0).to_vector()[0]);
+    }
+  }
+}
+
 TEST_F(TensorForwardTest, CheckSum) {
   const vector<float> x_data {
     1, 2, 3, 4, 5, 6, 7, 8, -1, -2, -3, -4, -5, -6, -7, -8,

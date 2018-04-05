@@ -697,6 +697,66 @@ template<typename Var>
 type_traits::Identity<Var> elu(const Var &x, float a);
 
 /**
+ * Retrieves maximum values along an axis.
+ * Following examples show how this function work:
+ * @f[
+ *  \begin{array}{lcl}
+ *    x & := &
+ *      \left( \begin{array}{ccc}
+ *        1 & 6 & 7 \\ 2 & 5 & 9 \\ 3 & 4 & 8
+ *      \end{array} \right), \\
+ *    \mathrm{max}(x, 0) & = &
+ *      \left( \begin{array}{ccc}
+ *        3 & 6 & 9
+ *      \end{array} \right), \\
+ *    \mathrm{max}(x, 1) & = &
+ *      \left( \begin{array}{c}
+ *        7 \\ 9 \\ 8
+ *      \end{array} \right), \\
+ *    \mathrm{max}(x, 2) & = &
+ *      \left( \begin{array}{ccc}
+ *        1 & 6 & 7 \\ 2 & 5 & 9 \\ 3 & 4 & 8
+ *      \end{array} \right).
+ *  \end{array}
+ * @f]
+ * @param x A variable representing values before reduction.
+ * @param dim Axis to be processed.
+ * @return A new variable.
+ */
+template<typename Var>
+type_traits::Identity<Var> max(const Var &x, std::uint32_t dim);
+
+/**
+ * Retrieves minimum values along an axis.
+ * Following examples show how this function work:
+ * @f[
+ *  \begin{array}{lcl}
+ *    x & := &
+ *      \left( \begin{array}{ccc}
+ *        1 & 6 & 7 \\ 2 & 5 & 9 \\ 3 & 4 & 8
+ *      \end{array} \right), \\
+ *    \mathrm{min}(x, 0) & = &
+ *      \left( \begin{array}{ccc}
+ *        1 & 4 & 7
+ *      \end{array} \right), \\
+ *    \mathrm{min}(x, 1) & = &
+ *      \left( \begin{array}{c}
+ *        1 \\ 2 \\ 3
+ *      \end{array} \right), \\
+ *    \mathrm{min}(x, 2) & = &
+ *      \left( \begin{array}{ccc}
+ *        1 & 6 & 7 \\ 2 & 5 & 9 \\ 3 & 4 & 8
+ *      \end{array} \right).
+ *  \end{array}
+ * @f]
+ * @param x A variable representing values before reduction.
+ * @param dim Axis to be processed.
+ * @return A new variable.
+ */
+template<typename Var>
+type_traits::Identity<Var> min(const Var &x, std::uint32_t dim);
+
+/**
  * Applies summation along an axis.
  * Following examples show how this function work:
  * @f[
