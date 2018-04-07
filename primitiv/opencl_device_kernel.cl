@@ -581,6 +581,10 @@ kernel void inplace_subtract_kernel(
   if (i < size) atomic_add_float(py + i + mby * shift, -px[i + mbx * shift]);
 }
 
+inline int grid_ceil(const int x, const int step) {
+  return x > 0 ? ((x - 1) / step + 1) * step : x / step * step;
+}
+
 kernel void col2im_kernel(
     const int input_h, const int input_w, const int channels,
     const int output_h, const int output_w,
@@ -588,6 +592,9 @@ kernel void col2im_kernel(
     const int pad_h, const int pad_w,
     const int stride_h, const int stride_w,
     const int dilation_h, const int dilation_w,
+    const int stride_bez_h, const int stride_bez_w,
+    const int dilation_bez_h, const int dilation_bez_w,
+    const int gcd_h, const int gcd_w,
     const global float *col_buffer, const int col_offset,
     __global float *im_buffer, const int im_offset) {
 
@@ -597,19 +604,34 @@ kernel void col2im_kernel(
   const int col_channel_shift = channel * kernel_w * kernel_h * output_h * output_w + col_offset;
   const int x_channel_shift = channel * input_h * input_w + im_offset;
 
+  const int gcd_scale_h = (x_y + pad_h) / gcd_h;
+  const int t_y_step = stride_h * dilation_h / gcd_h;
+  const int t_y_begin = grid_ceil(max(-stride_bez_h * gcd_scale_h * stride_h,
+                                      (dilation_bez_h * gcd_scale_h - kernel_h + 1) * dilation_h),
+                                  t_y_step);
+  const int t_y_end = min((output_h - stride_bez_h * gcd_scale_h) * stride_h,
+                          (dilation_bez_h * gcd_scale_h + 1) * dilation_h);
+
+  const int gcd_scale_w = (x_x + pad_w) / gcd_w;
+  const int t_x_step = stride_w * dilation_w / gcd_w;
+  const int t_x_begin = grid_ceil(max(-stride_bez_w * gcd_scale_w * stride_w,
+                                      (dilation_bez_w * gcd_scale_w - kernel_w + 1) * dilation_w),
+                                  t_x_step);
+  const int t_x_end = min((output_w - stride_bez_w * gcd_scale_w) * stride_w,
+                          (dilation_bez_w * gcd_scale_w + 1) * dilation_w);
+
   if (x_x < input_w && channel < channels) {
     float val = 0;
-    for (int w_y = 0; w_y < kernel_h; ++w_y) {
-      for (int w_x = 0; w_x < kernel_w; ++w_x) {
-        const int y_y_raw = x_y - w_y * dilation_h + pad_h;
-        const int y_x_raw = x_x - w_x * dilation_w + pad_w;
-        if (y_y_raw % stride_h == 0 && y_x_raw % stride_w == 0) {
-          const int y_y = y_y_raw / stride_h;
-          const int y_x = y_x_raw / stride_w;
-          if (0 <= y_x && y_x < output_w && 0 <= y_y && y_y < output_h) {
-            val += col_buffer[col_channel_shift + (w_x + w_y * kernel_w) * output_h * output_w + y_y * output_w + y_x];
-          }
-        }
+    for (int t_y = t_y_begin; t_y < t_y_end; t_y += t_y_step) {
+      for (int t_x = t_x_begin; t_x < t_x_end; t_x += t_x_step) {
+        const int w_y = -t_y / dilation_h + dilation_bez_h * gcd_scale_h;
+        const int y_y = t_y / stride_h + stride_bez_h * gcd_scale_h;
+        const int w_x = -t_x / dilation_w + dilation_bez_w * gcd_scale_w;
+        const int y_x = t_x / stride_w + stride_bez_w * gcd_scale_w;
+        val += col_buffer[col_channel_shift
+                            + (w_x + w_y * kernel_w) * output_h * output_w
+                            + y_y * output_w
+                            + y_x];
       }
     }
     im_buffer[x_channel_shift + x_y * input_w + x_x] += val;

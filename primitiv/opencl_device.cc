@@ -137,6 +137,28 @@ cl::Device get_device(std::uint32_t platform_id, std::uint32_t device_id) {
 namespace primitiv {
 namespace devices {
 
+void euclid_gcd(std::int32_t a, std::int32_t b, std::int32_t &p, std::int32_t &q, std::int32_t &r) {
+  p = 0;
+  q = 1;
+  std::int32_t p_1 = 1;
+  std::int32_t q_1 = 0;
+  for (;;) {
+    const std::int32_t c = a % b;
+    if (c == 0) {
+      break;
+    }
+    const std::int32_t p_2 = p_1;
+    const std::int32_t q_2 = q_1;
+    p_1 = p;
+    q_1 = q;
+    p = p_2 - p_1 * (a / b);
+    q = q_2 - q_1 * (a / b);
+    a = b;
+    b = c;
+  }
+  r = b;
+}
+
 /**
  * Hidden objects of OpenCL devices.
  */
@@ -355,6 +377,16 @@ public:
     const std::uint32_t g1 = ::calc_num_blocks(width, col2im_group_size_x);
     const std::uint32_t g2 = ::calc_num_blocks(height * channels, col2im_group_size_y);
 
+    std::int32_t stride_bez_h = 0;
+    std::int32_t dilation_bez_h = 0;
+    std::int32_t gcd_h = 0;
+    std::int32_t stride_bez_w = 0;
+    std::int32_t dilation_bez_w = 0;
+    std::int32_t gcd_w = 0;
+
+    euclid_gcd(stride_h, dilation_h, stride_bez_h, dilation_bez_h, gcd_h);
+    euclid_gcd(stride_w, dilation_w, stride_bez_w, dilation_bez_w, gcd_w);
+
     col2im_kernel.setArg(0, height);
     col2im_kernel.setArg(1, width);
     col2im_kernel.setArg(2, channels);
@@ -368,10 +400,16 @@ public:
     col2im_kernel.setArg(10, stride_w);
     col2im_kernel.setArg(11, dilation_h);
     col2im_kernel.setArg(12, dilation_w);
-    col2im_kernel.setArg(13, col_buffer);
-    col2im_kernel.setArg(14, col_offset);
-    col2im_kernel.setArg(15, im_buffer);
-    col2im_kernel.setArg(16, im_offset);
+    col2im_kernel.setArg(13, stride_bez_h);
+    col2im_kernel.setArg(14, stride_bez_w);
+    col2im_kernel.setArg(15, dilation_bez_h);
+    col2im_kernel.setArg(16, dilation_bez_w);
+    col2im_kernel.setArg(17, gcd_h);
+    col2im_kernel.setArg(18, gcd_w);
+    col2im_kernel.setArg(19, col_buffer);
+    col2im_kernel.setArg(20, col_offset);
+    col2im_kernel.setArg(21, im_buffer);
+    col2im_kernel.setArg(22, im_offset);
 
     queue.enqueueNDRangeKernel(
         col2im_kernel, cl::NullRange,
