@@ -86,9 +86,7 @@ __global__ void min_bw_dev(
   REDUCE(2)
   REDUCE(1)
 #undef REDUCE
-  const float pgxf = ::__half2float(pgx[argmin_val[0] * skip]);
-  const float pgyf = ::__half2float(pgy[bid]);
-  if (tid == 0) pgx[argmin_val[0] * skip] = ::__float2half(pgxf + pgyf);
+  if (tid == 0) INPLACE_ADD(pgx + argmin_val[0] * skip, ::__half2float(pgy[bid]));
 }
 
 }  // namespace
