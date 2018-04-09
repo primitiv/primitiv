@@ -127,6 +127,16 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeElu(
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorElu(
     const primitivTensor_t *x, float a, primitivTensor_t **y);
 
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeMax(
+    const primitivNode_t *x, uint32_t dim, primitivNode_t **y);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorMax(
+    const primitivTensor_t *x, uint32_t dim, primitivTensor_t **y);
+
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeMin(
+    const primitivNode_t *x, uint32_t dim, primitivNode_t **y);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorMin(
+    const primitivTensor_t *x, uint32_t dim, primitivTensor_t **y);
+
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeSum(
     const primitivNode_t *x, uint32_t dim, primitivNode_t **y);
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorSum(

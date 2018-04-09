@@ -346,6 +346,38 @@ PRIMITIV_C_STATUS primitivTensoRelu(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
+PRIMITIV_C_STATUS primitivApplyNodeMax(
+    const primitivNode_t *x, uint32_t dim, primitivNode_t **y) try {
+  PRIMITIV_C_CHECK_NOT_NULL(x);
+  PRIMITIV_C_CHECK_NOT_NULL(y);
+  *y = to_c_ptr_from_value(primitiv::functions::max(*to_cpp_ptr(x), dim));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitivApplyTensorMax(
+    const primitivTensor_t *x, uint32_t dim, primitivTensor_t **y) try {
+  PRIMITIV_C_CHECK_NOT_NULL(x);
+  PRIMITIV_C_CHECK_NOT_NULL(y);
+  *y = to_c_ptr_from_value(primitiv::functions::max(*to_cpp_ptr(x), dim));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitivApplyNodeMin(
+    const primitivNode_t *x, uint32_t dim, primitivNode_t **y) try {
+  PRIMITIV_C_CHECK_NOT_NULL(x);
+  PRIMITIV_C_CHECK_NOT_NULL(y);
+  *y = to_c_ptr_from_value(primitiv::functions::min(*to_cpp_ptr(x), dim));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitivApplyTensorMin(
+    const primitivTensor_t *x, uint32_t dim, primitivTensor_t **y) try {
+  PRIMITIV_C_CHECK_NOT_NULL(x);
+  PRIMITIV_C_CHECK_NOT_NULL(y);
+  *y = to_c_ptr_from_value(primitiv::functions::min(*to_cpp_ptr(x), dim));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
 PRIMITIV_C_STATUS primitivApplyNodeSum(
     const primitivNode_t *x, uint32_t dim, primitivNode_t **y) try {
   PRIMITIV_C_CHECK_NOT_NULL(x);
