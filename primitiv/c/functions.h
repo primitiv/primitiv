@@ -100,6 +100,11 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorReshape(
 PRIMITIV_C_DECL_UNARY_FUNC(Flatten);
 PRIMITIV_C_DECL_UNARY_FUNC(Transpose);
 
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeReverse(
+    const primitivNode_t *x, uint32_t dim, primitivNode_t **y);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorReverse(
+    const primitivTensor_t *x, uint32_t dim, primitivTensor_t **y);
+
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeMatmul(
     const primitivNode_t *a, const primitivNode_t *b, primitivNode_t **y);
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorMatmul(
