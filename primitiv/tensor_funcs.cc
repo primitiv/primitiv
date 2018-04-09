@@ -198,6 +198,11 @@ Tensor transpose(const Tensor &x) {
 }
 
 template<>
+Tensor reverse(const Tensor &x, std::uint32_t dim) {
+  return x.device().reverse_fw(x, dim);
+}
+
+template<>
 Tensor matmul(const Tensor &a, const Tensor &b) {
   return a.device().matmul_fw(a, b);
 }

@@ -772,6 +772,39 @@ TEST_F(TensorBackwardTest, CheckTranspose) {
   }
 }
 
+TEST_F(TensorBackwardTest, CheckReverse) {
+  for (Device *dev : devices) {
+    const vector<float> gy_data {
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+      12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+    };
+    const vector<vector<float>> gx_data {
+      {
+        3, 2, 1, 6, 5, 4, 9, 8, 7, 12, 11, 10,
+        15, 14, 13, 18, 17, 16, 21, 20, 19, 24, 23, 22,
+      },
+      {
+        4, 5, 6, 1, 2, 3, 10, 11, 12, 7, 8, 9,
+        16, 17, 18, 13, 14, 15, 22, 23, 24, 19, 20, 21,
+      },
+      {
+        7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6,
+        19, 20, 21, 22, 23, 24, 13, 14, 15, 16, 17, 18,
+      },
+      {
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+        13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+      },
+    };
+    const Tensor gy = dev->new_tensor_by_vector(Shape({3, 2, 2}, 2), gy_data);
+    for (std::uint32_t i = 0; i < 4; ++i) {
+      Tensor gx = dev->new_tensor_by_constant(Shape({3, 2, 2}, 2), 1);
+      dev->reverse_bw(gy, i, gx);
+      EXPECT_TRUE(vector_match(gx_data[i], gx.to_vector()));
+    }
+  }
+}
+
 TEST_F(TensorBackwardTest, CheckAdd11) {
   for (Device *dev : devices) {
     const Tensor a = dev->new_tensor_by_constant({2}, 0);

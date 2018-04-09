@@ -563,6 +563,36 @@ template<typename Var>
 type_traits::Identity<Var> transpose(const Var &x);
 
 /**
+ * Reverses elements along an axis.
+ * Following examples show how this function work:
+ * @f[
+ *  \begin{array}{lcl}
+ *    x & := &
+ *      \left( \begin{array}{ccc}
+ *        1 & 4 & 7 \\ 2 & 5 & 8 \\ 3 & 6 & 9
+ *      \end{array} \right), \\
+ *    \mathrm{reverse}(x, 0) & = &
+ *      \left( \begin{array}{ccc}
+ *        3 & 6 & 9 \\ 2 & 5 & 8 \\ 1 & 4 & 7
+ *      \end{array} \right), \\
+ *    \mathrm{reverse}(x, 1) & = &
+ *      \left( \begin{array}{c}
+ *        7 & 4 & 1 \\ 8 & 5 & 2 \\ 9 & 6 & 3
+ *      \end{array} \right), \\
+ *    \mathrm{reverse}(x, 2) & = &
+ *      \left( \begin{array}{ccc}
+ *        1 & 4 & 7 \\ 2 & 5 & 8 \\ 3 & 6 & 9
+ *      \end{array} \right).
+ *  \end{array}
+ * @f]
+ * @param x A variable representing an argument \f$ x \f$. The shape of `x`
+ *          must be either a scalar, a column vector or a matrix.
+ * @return A new variable representing \f$ \mathrm{reverse} (x) \f$.
+ */
+template<typename Var>
+type_traits::Identity<Var> reverse(const Var &x, std::uint32_t dim);
+
+/**
  * Applies a matrix multiplication between two matrices.
  * @param a A variable representing an argument \f$ A \f$. The shape of `a`
  *          must be either a scalar, a column vector or a matrix.

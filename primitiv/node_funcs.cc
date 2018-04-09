@@ -183,6 +183,11 @@ Node transpose(const Node &x) {
 }
 
 template<>
+Node reverse(const Node &x, std::uint32_t dim) {
+  return REGX(x, Reverse(dim), x)[0];
+}
+
+template<>
 Node matmul(const Node &a, const Node &b) {
   return REGX(a, MatrixMultiply(), a, b)[0];
 }

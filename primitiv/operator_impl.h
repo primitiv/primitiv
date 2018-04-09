@@ -183,6 +183,14 @@ private:
   Shape shape_;
 };
 
+class Reverse : public Operator {
+  PRIMITIV_DECL_DEFAULTS_AND_FORWARD(1, 1);
+public:
+  explicit Reverse(std::uint32_t dim) : dim_(dim) {}
+private:
+  std::uint32_t dim_;
+};
+
 class Sum : public Operator {
   PRIMITIV_DECL_DEFAULTS_AND_FORWARD(1, 1);
 public:

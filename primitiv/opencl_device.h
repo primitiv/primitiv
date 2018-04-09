@@ -110,6 +110,8 @@ private:
   void tan_fw_impl(const Tensor &x, Tensor &y) override;
   void transpose_fw_impl(const Tensor &x, Tensor &y) override;
 
+  void reverse_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) override;
+
   void sqrt_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void exp_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void log_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
@@ -120,6 +122,8 @@ private:
   void cos_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void tan_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void transpose_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
+
+  void reverse_bw_impl(const Tensor &gy, std::uint32_t dim, Tensor &gx) override;
 
   void add_const_fw_impl(const Tensor &x, float k, Tensor &y) override;
   void subtract_const_r_fw_impl(const Tensor &x, float k, Tensor &y) override;

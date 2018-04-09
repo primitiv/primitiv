@@ -268,6 +268,16 @@ public:
           transpose_bw_group_size,
           transpose_bw_group_size_x, transpose_bw_group_size_y);
 
+      CONFIGURE_KERNEL(reverse_fw);
+      CONFIGURE_KERNEL(reverse_bw);
+
+      calc_dim2_sizes(
+          reverse_fw_group_size,
+          reverse_fw_group_size_x, reverse_fw_group_size_y);
+      calc_dim2_sizes(
+          reverse_bw_group_size,
+          reverse_bw_group_size_x, reverse_bw_group_size_y);
+
       CONFIGURE_KERNEL(add_const_fw);
       CONFIGURE_KERNEL(subtract_const_r_fw);
       CONFIGURE_KERNEL(subtract_const_l_fw);
@@ -371,6 +381,10 @@ public:
   std::uint32_t transpose_fw_group_size_x;
   std::uint32_t transpose_fw_group_size_y;
 
+  DECL_KERNEL(reverse_fw);
+  std::uint32_t reverse_fw_group_size_x;
+  std::uint32_t reverse_fw_group_size_y;
+
   DECL_KERNEL(sqrt_bw);
   DECL_KERNEL(exp_bw);
   DECL_KERNEL(log_bw);
@@ -384,6 +398,10 @@ public:
   DECL_KERNEL(transpose_bw);
   std::uint32_t transpose_bw_group_size_x;
   std::uint32_t transpose_bw_group_size_y;
+
+  DECL_KERNEL(reverse_bw);
+  std::uint32_t reverse_bw_group_size_x;
+  std::uint32_t reverse_bw_group_size_y;
 
   DECL_KERNEL(add_const_fw);
   DECL_KERNEL(subtract_const_r_fw);
@@ -1113,6 +1131,30 @@ void OpenCL::transpose_fw_impl(const Tensor &x, Tensor &y) {
         state_->transpose_fw_group_size_y, 1));
 }
 
+void OpenCL::reverse_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
+  const Shape &s = x.shape();
+  const std::uint32_t n = s[dim];
+  const std::uint32_t skip = s.lower_volume(dim);
+  const std::uint32_t r = s.size() / n;
+  const std::uint32_t g1 = ::calc_num_blocks(
+      n, state_->reverse_fw_group_size_x);
+  const std::uint32_t g2 = ::calc_num_blocks(
+      r, state_->reverse_fw_group_size_y);
+  state_->reverse_fw_kernel.setArg(0, CDATA(x));
+  state_->reverse_fw_kernel.setArg(1, skip);
+  state_->reverse_fw_kernel.setArg(2, n);
+  state_->reverse_fw_kernel.setArg(3, r);
+  state_->reverse_fw_kernel.setArg(4, MDATA(y));
+  state_->queue.enqueueNDRangeKernel(
+      state_->reverse_fw_kernel, cl::NullRange,
+      cl::NDRange(
+          g1 * state_->reverse_fw_group_size_x,
+          g2 * state_->reverse_fw_group_size_y),
+      cl::NDRange(
+          state_->reverse_fw_group_size_x,
+          state_->reverse_fw_group_size_y));
+}
+
 void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   const std::uint32_t di = a.shape()[0];
   const std::uint32_t dj = a.shape()[1];
@@ -1182,6 +1224,30 @@ void OpenCL::transpose_bw_impl(
       cl::NDRange(
         state_->transpose_bw_group_size_x,
         state_->transpose_bw_group_size_y, 1));
+}
+
+void OpenCL::reverse_bw_impl(const Tensor &gy, std::uint32_t dim, Tensor &gx) {
+  const Shape &s = gy.shape();
+  const std::uint32_t n = s[dim];
+  const std::uint32_t skip = s.lower_volume(dim);
+  const std::uint32_t r = s.size() / n;
+  const std::uint32_t g1 = ::calc_num_blocks(
+      n, state_->reverse_bw_group_size_x);
+  const std::uint32_t g2 = ::calc_num_blocks(
+      r, state_->reverse_bw_group_size_y);
+  state_->reverse_bw_kernel.setArg(0, CDATA(gy));
+  state_->reverse_bw_kernel.setArg(1, skip);
+  state_->reverse_bw_kernel.setArg(2, n);
+  state_->reverse_bw_kernel.setArg(3, r);
+  state_->reverse_bw_kernel.setArg(4, MDATA(gx));
+  state_->queue.enqueueNDRangeKernel(
+      state_->reverse_bw_kernel, cl::NullRange,
+      cl::NDRange(
+          g1 * state_->reverse_bw_group_size_x,
+          g2 * state_->reverse_bw_group_size_y),
+      cl::NDRange(
+          state_->reverse_bw_group_size_x,
+          state_->reverse_bw_group_size_y));
 }
 
 void OpenCL::matmul_bw_impl(
