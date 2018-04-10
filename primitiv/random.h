@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_RANDOM_H_
 #define PRIMITIV_RANDOM_H_
 
+#include <cmath>
 #include <cstddef>
 #include <random>
 #include <primitiv/mixins.h>
@@ -50,7 +51,19 @@ public:
     std::uniform_real_distribution<float> dist(lower, upper);
     for (std::size_t i = 0; i < size; ++i) {
       const float x = dist(rng_);
+#ifdef PRIMITIV_MAYBE_FPMATH_X87
+      /**
+       * NOTE(vbkaisetsu):
+       * In x87 environments, a random variable `x` is stored in
+       * the 80 bit register. Almost values are not matched to the lower
+       * bound, but some of these values will be rounded to the lower
+       * bound after the data is returned from this function.
+       * This code cares for the internal representation of 80 bit floats.
+       */
+      data[i] = x < std::nextafter(lower, upper) ? upper : x;
+#else
       data[i] = x == lower ? upper : x;
+#endif
     }
   }
 
