@@ -595,7 +595,7 @@ kernel void batch_slice_bw_kernel(
     const global float *pgy, const unsigned size,
     global float *pgx, const unsigned shift) {
   const unsigned i = get_global_id(0);
-  if (i < size) atomic_add_float(pgx + i + shift, pgy[i]);
+  if (i < size) pgx[i + shift] += pgy[i];
 }
 
 kernel void inplace_multiply_const_kernel(
