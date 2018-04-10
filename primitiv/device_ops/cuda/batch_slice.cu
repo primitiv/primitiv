@@ -16,7 +16,7 @@ __global__ void batch_slice_bw_dev(
     const float *pgy, std::uint32_t size, float *pgx) {
   const std::uint32_t i = IDX;
   if (i < size) {
-    ::atomicAdd(pgx + i, pgy[i]);
+    pgx[i] += pgy[i];
   }
 }
 

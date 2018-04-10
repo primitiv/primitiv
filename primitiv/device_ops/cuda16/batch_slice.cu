@@ -12,13 +12,11 @@ __global__ void batch_slice_fw_dev(
   if (i < size) py[i] = px[i];
 }
 
-DECL_ATOMIC_OP(atomicHAdd, ::__fadd_rn);
-
 __global__ void batch_slice_bw_dev(
     const half *pgy, std::uint32_t size, half *pgx) {
   const std::uint32_t i = IDX;
   if (i < size) {
-    ::atomicHAdd(pgx, i, ::__half2float(pgy[i]));
+    INPLACE_ADD(pgx + i, ::__half2float(pgy[i]));
   }
 }
 
