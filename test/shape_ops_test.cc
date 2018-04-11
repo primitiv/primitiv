@@ -274,7 +274,7 @@ TEST_F(ShapeOpsTest, CheckInvalidPick) {
      {Shape({2, 2, 2}, 3), 0, {0, 1, 2}},
      {Shape({2, 2, 2}, 3), 1, {2}},
      {Shape({2, 2, 2}, 3), 2, {2}},
-     {Shape({2, 2, 2}, 3), 3, {}},
+     {Shape({2, 2, 2}, 3), 3, {1}},
   };
   for (const TestCase &tc : test_cases) {
     EXPECT_THROW(pick(tc.input, tc.ids, tc.dim), Error);
