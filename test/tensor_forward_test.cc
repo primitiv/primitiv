@@ -2428,7 +2428,7 @@ TEST_F(TensorForwardTest, CheckInvalidBatchPick) {
 }
 
 TEST_F(TensorForwardTest, CheckBatchSlice) {
-  vector<float> x_data = make_iota_vector(3 * 2 * 3, 0);
+  const vector<float> x_data = make_iota_vector(3 * 2 * 3, 0);
   struct TestCase {
     std::uint32_t lower, upper;
     Shape shape;
@@ -2471,7 +2471,7 @@ TEST_F(TensorForwardTest, CheckInvalidBatchSlice) {
 }
 
 TEST_F(TensorForwardTest, CheckBatchSplit) {
-  vector<float> x_data = make_iota_vector(3 * 3 * 4, 0);
+  const vector<float> x_data = make_iota_vector(3 * 3 * 4, 0);
   struct TestCase {
     std::uint32_t n;
     Shape shape;

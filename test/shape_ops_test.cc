@@ -568,12 +568,12 @@ TEST_F(ShapeOpsTest, CheckBatchPick) {
     Shape expected;
   };
   const vector<TestCase> test_cases {
+    {{}, {0}, {}},
+    {Shape({2, 2, 2}, 3), {0}, {2, 2, 2}},
     {Shape({2, 2, 2}, 3), {0, 0, 0}, Shape({2, 2, 2}, 3)},
     {Shape({2, 2, 2}, 3), {1, 0, 1}, Shape({2, 2, 2}, 3)},
-    {Shape({2, 2, 2}, 3), {0}, Shape({2, 2, 2}, 1)},
     {Shape({2, 2, 2}, 3), {2, 1, 1}, Shape({2, 2, 2}, 3)},
     {Shape({2, 2, 2}, 3), {0, 1, 2, 1}, Shape({2, 2, 2}, 4)},
-    {{}, {0}, {}},
   };
   for (const TestCase &tc : test_cases) {
     const Shape observed = batch_pick(tc.input, tc.ids);
@@ -694,7 +694,7 @@ TEST_F(ShapeOpsTest, CheckInvalidBatchConcat) {
     {{{2}, {1, 2}}, false},
     {{{2}, {1, 1, 2}}, false},
     {{{2}, {1, 1, 1, 2}}, false},
-    // only a shape is invalid
+    // only an axis is invalid
     {{{2, 3, 4}, {2, 3, 4}, {2, 3, 4}}, true},
     {{{3, 3, 4}, {2, 3, 4}, {2, 3, 4}}, false},
     {{{2, 4, 4}, {2, 3, 4}, {2, 3, 4}}, false},
