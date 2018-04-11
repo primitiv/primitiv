@@ -914,6 +914,8 @@ type_traits::Identity<Var> slice(
 template<typename Var>
 std::vector<type_traits::Identity<Var>> split(const Var &x, std::uint32_t n);
 
+/// @cond
+
 template<typename Var>
 type_traits::Identity<Var> concat(const std::vector<Var> &xs);
 
@@ -930,6 +932,8 @@ inline type_traits::Identity<Var> concat(
         const std::initializer_list<const Var *> xs) {
   return concat(std::vector<const Var *>(xs));
 }
+
+/// @endcond
 
 /**
  * Concatenates multiple variables along the batch axis.
