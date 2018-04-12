@@ -26,7 +26,9 @@ __global__ void argmax_dev(
 #define REDUCE(k) \
   if (BLOCK_SIZE >= k << 1) { \
     if (tid < k) { \
-      if (max_val[tid + k] > max_val[tid]) { \
+      if (max_val[tid + k] > max_val[tid] \
+          || (max_val[tid + k] == max_val[tid] \
+              && argmax_val[tid + k] < argmax_val[tid])) { \
         max_val[tid] = max_val[tid + k]; \
         argmax_val[tid] = argmax_val[tid + k]; \
       } \
