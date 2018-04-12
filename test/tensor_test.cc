@@ -688,7 +688,8 @@ TEST_F(TensorTest, CheckArgMaxLarge) {
       const auto it = std::find(begin(data), end(data), n - 1);
       const std::uint32_t pos = std::distance(begin(data), it);
       const Tensor a = dev->new_tensor_by_vector({n}, data);
-      EXPECT_EQ(pos, a.argmax(0)[0]);
+      const vector<std::uint32_t> expected {pos};
+      EXPECT_TRUE(vector_match(expected, a.argmax(0)));
     }
   }
 }
@@ -717,7 +718,8 @@ TEST_F(TensorTest, CheckArgMaxMultipleLarge) {
       const auto it = std::find(begin(data), end(data), n - 1);
       const std::uint32_t pos = std::distance(begin(data), it);
       const Tensor a = dev->new_tensor_by_vector({n}, data);
-      EXPECT_EQ(pos, a.argmax(0)[0]);
+      const vector<std::uint32_t> expected {pos};
+      EXPECT_TRUE(vector_match(expected, a.argmax(0)));
     }
   }
 }
@@ -760,7 +762,8 @@ TEST_F(TensorTest, CheckArgMinLarge) {
       const auto it = std::find(begin(data), end(data), 0);
       const std::uint32_t pos = std::distance(begin(data), it);
       const Tensor a = dev->new_tensor_by_vector({n}, data);
-      EXPECT_EQ(pos, a.argmin(0)[0]);
+      const vector<std::uint32_t> expected {pos};
+      EXPECT_TRUE(vector_match(expected, a.argmin(0)));
     }
   }
 }
@@ -788,7 +791,8 @@ TEST_F(TensorTest, CheckArgMinMultipleLarge) {
       const auto it = std::find(begin(data), end(data), 0);
       const std::uint32_t pos = std::distance(begin(data), it);
       const Tensor a = dev->new_tensor_by_vector({n}, data);
-      EXPECT_EQ(pos, a.argmin(0)[0]);
+      const vector<std::uint32_t> expected {pos};
+      EXPECT_TRUE(vector_match(expected, a.argmin(0)));
     }
   }
 }

@@ -2077,19 +2077,26 @@ TEST_F(TensorForwardTest, CheckELU) {
 }
 
 TEST_F(TensorForwardTest, CheckMaxDims) {
+  struct TestCase {
+    std::uint32_t dim;
+    const Shape shape;
+    const vector<float> expected;
+  };
+  const vector<TestCase> test_cases {
+    {0, Shape({1, 3}, 2), {2, 8, 5, -3, 0, -6}},
+    {1, Shape({3, 1}, 2), {6, 7, 8, 0, -1, -2}},
+    {2, Shape({3, 3}, 2), {0, 1, 2, 6, 7, 8, 3, 4, 5, -3, -4, -5, 0, -1, -2, -6, -7, -8}},
+  };
   const vector<float> data = {
     0, 1, 2, 6, 7, 8, 3, 4, 5, -3, -4, -5, 0, -1, -2, -6, -7, -8,
-  };
-  const vector<vector<float>> expected = {
-    {2, 8, 5, -3, 0, -6},
-    {6, 7, 8, 0, -1, -2},
-    {0, 1, 2, 6, 7, 8, 3, 4, 5, -3, -4, -5, 0, -1, -2, -6, -7, -8},
   };
 
   for (Device *dev : devices) {
     const Tensor a = dev->new_tensor_by_vector(Shape({3, 3}, 2), data);
-    for (const std::uint32_t i : {0u, 1u, 2u}) {
-      EXPECT_TRUE(vector_match(expected[i], max(a, i).to_vector()));
+    for (const TestCase &tc : test_cases) {
+      const Tensor result = max(a, tc.dim);
+      EXPECT_TRUE(vector_match(tc.expected, result.to_vector()));
+      EXPECT_EQ(tc.shape, result.shape());
     }
   }
 }
@@ -2112,25 +2119,35 @@ TEST_F(TensorForwardTest, CheckMaxLarge) {
       std::iota(begin(data), end(data), 0);
       std::shuffle(begin(data), end(data), rng);
       const Tensor a = dev->new_tensor_by_vector({n}, data);
-      EXPECT_EQ(n - 1, max(a, 0).to_vector()[0]);
+      const Tensor result = max(a, 0);
+      const vector<float> expected {static_cast<float>(n - 1)};
+      EXPECT_TRUE(vector_match(expected, result.to_vector()));
+      EXPECT_EQ(Shape({}), result.shape());
     }
   }
 }
 
 TEST_F(TensorForwardTest, CheckMinDims) {
+  struct TestCase {
+    std::uint32_t dim;
+    const Shape shape;
+    const vector<float> expected;
+  };
+  const vector<TestCase> test_cases {
+    {0, Shape({1, 3}, 2), {3, 0, 6, -2, -8, -5}},
+    {1, Shape({3, 1}, 2), {0, 1, 2, -6, -7, -8}},
+    {2, Shape({3, 3}, 2), {3, 4, 5, 0, 1, 2, 6, 7, 8, 0, -1, -2, -6, -7, -8, -3, -4, -5}},
+  };
   const vector<float> data = {
     3, 4, 5, 0, 1, 2, 6, 7, 8, 0, -1, -2, -6, -7, -8, -3, -4, -5,
-  };
-  const vector<vector<float>> expected = {
-    {3, 0, 6, -2, -8, -5},
-    {0, 1, 2, -6, -7, -8},
-    {3, 4, 5, 0, 1, 2, 6, 7, 8, 0, -1, -2, -6, -7, -8, -3, -4, -5},
   };
 
   for (Device *dev : devices) {
     const Tensor a = dev->new_tensor_by_vector(Shape({3, 3}, 2), data);
-    for (const std::uint32_t i : {0u, 1u, 2u}) {
-      EXPECT_TRUE(vector_match(expected[i], min(a, i).to_vector()));
+    for (const TestCase &tc : test_cases) {
+      const Tensor result = min(a, tc.dim);
+      EXPECT_TRUE(vector_match(tc.expected, result.to_vector()));
+      EXPECT_EQ(tc.shape, result.shape());
     }
   }
 }
@@ -2153,7 +2170,10 @@ TEST_F(TensorForwardTest, CheckMinLarge) {
       std::iota(begin(data), end(data), 0);
       std::shuffle(begin(data), end(data), rng);
       const Tensor a = dev->new_tensor_by_vector({n}, data);
-      EXPECT_EQ(0, min(a, 0).to_vector()[0]);
+      const Tensor result = min(a, 0);
+      const vector<float> expected {0};
+      EXPECT_TRUE(vector_match(expected, result.to_vector()));
+      EXPECT_EQ(Shape({}), result.shape());
     }
   }
 }

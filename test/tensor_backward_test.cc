@@ -769,9 +769,9 @@ TEST_F(TensorBackwardTest, CheckMaxDims) {
     {0, 1, 0, -1, 0, 1, 0, -1, 2, 1, 0, -1, 0, 1, 2, 3, 4, 6},
   };
   const vector<vector<float>> expected = {
-    {0, 0, 1, 0, 0, 2, 0, 0, 6, 5, 0, 0, 3, 0, 0, -6, 0, 0},
-    {0, 0, 0, -1, 1, -2, 0, 0, 0, 0, 0, 0, 2, -3, 3, 0, 0, 0},
-    {0, 1, 0, -1, 0, 1, 0, -1, 2, 1, 0, -1, 0, 1, 2, 3, 4, 6},
+    {1, 1, 2, 1, 1, 3, 1, 1, 7, 6, 1, 1, 4, 1, 1, -5, 1, 1},
+    {1, 1, 1, 0, 2, -1, 1, 1, 1, 1, 1, 1, 3, -2, 4, 1, 1, 1},
+    {1, 2, 1, 0, 1, 2, 1, 0, 3, 2, 1, 0, 1, 2, 3, 4, 5, 7},
   };
 
   for (Device *dev : devices) {
@@ -782,7 +782,7 @@ TEST_F(TensorBackwardTest, CheckMaxDims) {
         const Tensor x = dev->new_tensor_by_vector(r, x_data);
         const Tensor y = dev->new_tensor_by_vector(s, y_data[i]);
         const Tensor gy = dev->new_tensor_by_vector(s, gy_data[i]);
-        Tensor gx = dev->new_tensor_by_constant(r, 0);
+        Tensor gx = dev->new_tensor_by_constant(r, 1);
         dev->max_bw(x, y, gy, i, gx);
         EXPECT_TRUE(vector_match(expected[i], gx.to_vector()));
       } IGNORE_NOT_IMPLEMENTED
@@ -812,12 +812,14 @@ TEST_F(TensorBackwardTest, CheckMaxLarge) {
       std::shuffle(begin(x_data), end(x_data), rng);
       const auto it = std::find(begin(x_data), end(x_data), n - 1);
       const std::uint32_t pos = std::distance(begin(x_data), it);
+      vector<float> expected(n, 1);
+      expected[pos] = 2;
       const Tensor x = dev->new_tensor_by_vector({n}, x_data);
       const Tensor y = dev->new_tensor_by_vector({1}, y_data);
       const Tensor gy = dev->new_tensor_by_vector({1}, gy_data);
-      Tensor gx = dev->new_tensor_by_constant({n}, 0);
+      Tensor gx = dev->new_tensor_by_constant({n}, 1);
       dev->max_bw(x, y, gy, 0, gx);
-      EXPECT_EQ(1, gx.to_vector()[pos]);
+      EXPECT_TRUE(vector_match(expected, gx.to_vector()));
     }
   }
 }
@@ -847,12 +849,14 @@ TEST_F(TensorBackwardTest, CheckMaxMultipleLarge) {
       std::shuffle(begin(x_data), end(x_data), rng);
       const auto it = std::find(begin(x_data), end(x_data), n - 1);
       const std::uint32_t pos = std::distance(begin(x_data), it);
+      vector<float> expected(n, 1);
+      expected[pos] = 2;
       const Tensor x = dev->new_tensor_by_vector({n}, x_data);
       const Tensor y = dev->new_tensor_by_vector({1}, y_data);
       const Tensor gy = dev->new_tensor_by_vector({1}, gy_data);
-      Tensor gx = dev->new_tensor_by_constant({n}, 0);
+      Tensor gx = dev->new_tensor_by_constant({n}, 1);
       dev->max_bw(x, y, gy, 0, gx);
-      EXPECT_EQ(1, gx.to_vector()[pos]);
+      EXPECT_TRUE(vector_match(expected, gx.to_vector()));
     }
   }
 }
@@ -872,9 +876,9 @@ TEST_F(TensorBackwardTest, CheckMinDims) {
     {0, 1, 0, -1, 0, 1, 0, -1, 2, 1, 0, -1, 0, 1, 2, 3, 4, 6},
   };
   const vector<vector<float>> expected = {
-    {1, 0, 0, 2, 0, 0, 6, 0, 0, 0, 0, 5, 0, 0, 3, 0, 0, 4},
-    {0, 0, 0, -1, 1, -2, 0, 0, 0, 0, 0, 0, 2, -3, -8, 0, 0, 0},
-    {0, 1, 0, -1, 0, 1, 0, -1, 2, 1, 0, -1, 0, 1, 2, 3, 4, 6},
+    {2, 1, 1, 3, 1, 1, 7, 1, 1, 1, 1, 6, 1, 1, 4, 1, 1, 5},
+    {1, 1, 1, 0, 2, -1, 1, 1, 1, 1, 1, 1, 3, -2, -7, 1, 1, 1},
+    {1, 2, 1, 0, 1, 2, 1, 0, 3, 2, 1, 0, 1, 2, 3, 4, 5, 7},
   };
 
   for (Device *dev : devices) {
@@ -885,7 +889,7 @@ TEST_F(TensorBackwardTest, CheckMinDims) {
         const Tensor x = dev->new_tensor_by_vector(r, x_data);
         const Tensor y = dev->new_tensor_by_vector(s, y_data[i]);
         const Tensor gy = dev->new_tensor_by_vector(s, gy_data[i]);
-        Tensor gx = dev->new_tensor_by_constant(r, 0);
+        Tensor gx = dev->new_tensor_by_constant(r, 1);
         dev->min_bw(x, y, gy, i, gx);
         EXPECT_TRUE(vector_match(expected[i], gx.to_vector()));
       } IGNORE_NOT_IMPLEMENTED
@@ -915,12 +919,14 @@ TEST_F(TensorBackwardTest, CheckMinLarge) {
       std::shuffle(begin(x_data), end(x_data), rng);
       const auto it = std::find(begin(x_data), end(x_data), 0);
       const std::uint32_t pos = std::distance(begin(x_data), it);
+      vector<float> expected(n, 1);
+      expected[pos] = 2;
       const Tensor x = dev->new_tensor_by_vector({n}, x_data);
       const Tensor y = dev->new_tensor_by_vector({1}, y_data);
       const Tensor gy = dev->new_tensor_by_vector({1}, gy_data);
-      Tensor gx = dev->new_tensor_by_constant({n}, 0);
+      Tensor gx = dev->new_tensor_by_constant({n}, 1);
       dev->min_bw(x, y, gy, 0, gx);
-      EXPECT_EQ(1, gx.to_vector()[pos]);
+      EXPECT_TRUE(vector_match(expected, gx.to_vector()));
     }
   }
 }
@@ -950,12 +956,14 @@ TEST_F(TensorBackwardTest, CheckMinMultipleLarge) {
       std::shuffle(begin(x_data), end(x_data), rng);
       const auto it = std::find(begin(x_data), end(x_data), 0);
       const std::uint32_t pos = std::distance(begin(x_data), it);
+      vector<float> expected(n, 1);
+      expected[pos] = 2;
       const Tensor x = dev->new_tensor_by_vector({n}, x_data);
       const Tensor y = dev->new_tensor_by_vector({1}, y_data);
       const Tensor gy = dev->new_tensor_by_vector({1}, gy_data);
-      Tensor gx = dev->new_tensor_by_constant({n}, 0);
+      Tensor gx = dev->new_tensor_by_constant({n}, 1);
       dev->min_bw(x, y, gy, 0, gx);
-      EXPECT_EQ(1, gx.to_vector()[pos]);
+      EXPECT_TRUE(vector_match(expected, gx.to_vector()));
     }
   }
 }
