@@ -708,10 +708,11 @@ TEST_F(TensorTest, CheckArgMaxMultipleLarge) {
         // Half-precision types have only (10+1) bits resolution.
         continue;
       }
-
       vector<float> data(n);
       std::iota(begin(data), end(data), 0);
-      for (std::uint32_t i = 0; i < 16 && i < n; ++i) {
+      // NOTE(vbkaisetsu):
+      // Generates a tensor that has some duplicated maximum values.
+      for (std::uint32_t i = 0; i < 10 && i < n; ++i) {
         data[i] = n - 1;
       }
       std::shuffle(begin(data), end(data), rng);
@@ -784,7 +785,9 @@ TEST_F(TensorTest, CheckArgMinMultipleLarge) {
       }
       vector<float> data(n);
       std::iota(begin(data), end(data), 0);
-      for (std::uint32_t i = 0; i < 16 && i < n; ++i) {
+      // NOTE(vbkaisetsu):
+      // Generates a tensor that has some duplicated minimum values.
+      for (std::uint32_t i = 0; i < 10 && i < n; ++i) {
         data[i] = 0;
       }
       std::shuffle(begin(data), end(data), rng);

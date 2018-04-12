@@ -843,7 +843,9 @@ TEST_F(TensorBackwardTest, CheckMaxMultipleLarge) {
       vector<float> y_data = {static_cast<float>(n - 1)};
       vector<float> gy_data = {1};
       std::iota(begin(x_data), end(x_data), 0);
-      for (std::uint32_t i = 0; i < 16 && i < n; ++i) {
+      // NOTE(vbkaisetsu):
+      // Generates a tensor that has some duplicated maximum values.
+      for (std::uint32_t i = 0; i < 10 && i < n; ++i) {
         x_data[i] = n - 1;
       }
       std::shuffle(begin(x_data), end(x_data), rng);
@@ -950,7 +952,9 @@ TEST_F(TensorBackwardTest, CheckMinMultipleLarge) {
       vector<float> y_data = {0};
       vector<float> gy_data = {1};
       std::iota(begin(x_data), end(x_data), 0);
-      for (std::uint32_t i = 0; i < 16 && i < n; ++i) {
+      // NOTE(vbkaisetsu):
+      // Generates a tensor that has some duplicated minimum values.
+      for (std::uint32_t i = 0; i < 10 && i < n; ++i) {
         x_data[i] = 0;
       }
       std::shuffle(begin(x_data), end(x_data), rng);
