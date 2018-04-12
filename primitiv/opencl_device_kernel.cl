@@ -500,10 +500,7 @@ MAX_FW_KERNEL(1)
 #define REDUCE(k, GROUP_SIZE) \
   if (GROUP_SIZE >= k << 1) { \
     if (tid < k) { \
-      if (max_val[tid + k] > max_val[tid] \
-          || (max_val[tid + k] == max_val[tid] \
-              && argmax_val[tid] > argmax_val[tid + k])) { \
-        max_val[tid] = max_val[tid + k]; \
+      if (argmax_val[tid] > argmax_val[tid + k]) { \
         argmax_val[tid] = argmax_val[tid + k]; \
       } \
     } \
@@ -517,16 +514,14 @@ kernel void max_bw_kernel_##GROUP_SIZE( \
     const unsigned n, global float *pgx) { \
   const unsigned bid = get_group_id(0); \
   const unsigned tid = get_local_id(0); \
-  local float max_val[GROUP_SIZE]; \
   local unsigned argmax_val[GROUP_SIZE]; \
   px += bid % skip + (bid / skip) * skip * n; \
   pgx += bid % skip + (bid / skip) * skip * n; \
-  max_val[tid] = -INFINITY; \
+  argmax_val[tid] = n; \
   for (unsigned i = tid; i < n; i += GROUP_SIZE) { \
-    const float val = px[i * skip]; \
-    if (val > max_val[tid]) { \
-      max_val[tid] = val; \
+    if (px[i * skip] == py[bid]) { \
       argmax_val[tid] = i; \
+      break; \
     } \
   } \
   barrier(CLK_LOCAL_MEM_FENCE); \
@@ -613,10 +608,7 @@ MIN_FW_KERNEL(1)
 #define REDUCE(k, GROUP_SIZE) \
   if (GROUP_SIZE >= k << 1) { \
     if (tid < k) { \
-      if (min_val[tid + k] < min_val[tid] \
-          || (min_val[tid + k] == min_val[tid] \
-              && argmin_val[tid] > argmin_val[tid + k])) { \
-        min_val[tid] = min_val[tid + k]; \
+      if (argmin_val[tid] > argmin_val[tid + k]) { \
         argmin_val[tid] = argmin_val[tid + k]; \
       } \
     } \
@@ -630,16 +622,14 @@ kernel void min_bw_kernel_##GROUP_SIZE( \
     const unsigned n, global float *pgx) { \
   const unsigned bid = get_group_id(0); \
   const unsigned tid = get_local_id(0); \
-  local float min_val[GROUP_SIZE]; \
   local unsigned argmin_val[GROUP_SIZE]; \
   px += bid % skip + (bid / skip) * skip * n; \
   pgx += bid % skip + (bid / skip) * skip * n; \
-  min_val[tid] = INFINITY; \
+  argmin_val[tid] = n; \
   for (unsigned i = tid; i < n; i += GROUP_SIZE) { \
-    const float val = px[i * skip]; \
-    if (val < min_val[tid]) { \
-      min_val[tid] = val; \
+    if (px[i * skip] == py[bid]) { \
       argmin_val[tid] = i; \
+      break; \
     } \
   } \
   barrier(CLK_LOCAL_MEM_FENCE); \

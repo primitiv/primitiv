@@ -48,28 +48,23 @@ template<std::uint32_t BLOCK_SIZE>
 __global__ void max_bw_dev(
     const float *px, const float *py, const float *pgy,
     std::uint32_t skip, std::uint32_t n, float *pgx) {
-  __shared__ float max_val[BLOCK_SIZE];
   __shared__ std::uint32_t argmax_val[BLOCK_SIZE];
   const std::uint32_t bid = blockIdx.x;
   const std::uint32_t tid = threadIdx.x;
   px += bid % skip + (bid / skip) * skip * n;
   pgx += bid % skip + (bid / skip) * skip * n;
-  max_val[tid] = FLOAT_NEGATIVE_INFINITY;
+  argmax_val[tid] = n;
   for (std::uint32_t i = tid; i < n; i += BLOCK_SIZE) {
-    const float val = px[i * skip];
-    if (val > max_val[tid]) {
-      max_val[tid] = val;
+    if (px[i * skip] == py[bid]) {
       argmax_val[tid] = i;
+      break;
     }
   }
   ::__syncthreads();
 #define REDUCE(k) \
   if (BLOCK_SIZE >= k << 1) { \
     if (tid < k) { \
-      if (max_val[tid + k] > max_val[tid] \
-          || (max_val[tid + k] == max_val[tid] \
-              && argmax_val[tid + k] < argmax_val[tid])) { \
-        max_val[tid] = max_val[tid + k]; \
+      if (argmax_val[tid + k] < argmax_val[tid]) { \
         argmax_val[tid] = argmax_val[tid + k]; \
       } \
     } \

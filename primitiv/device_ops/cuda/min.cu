@@ -48,28 +48,23 @@ template<std::uint32_t BLOCK_SIZE>
 __global__ void min_bw_dev(
     const float *px, const float *py, const float *pgy,
     std::uint32_t skip, std::uint32_t n, float *pgx) {
-  __shared__ float min_val[BLOCK_SIZE];
   __shared__ std::uint32_t argmin_val[BLOCK_SIZE];
   const std::uint32_t bid = blockIdx.x;
   const std::uint32_t tid = threadIdx.x;
   px += bid % skip + (bid / skip) * skip * n;
   pgx += bid % skip + (bid / skip) * skip * n;
-  min_val[tid] = FLOAT_POSITIVE_INFINITY;
+  argmin_val[tid] = n;
   for (std::uint32_t i = tid; i < n; i += BLOCK_SIZE) {
-    const float val = px[i * skip];
-    if (val < min_val[tid]) {
-      min_val[tid] = val;
+    if (px[i * skip] == py[bid]) {
       argmin_val[tid] = i;
+      break;
     }
   }
   ::__syncthreads();
 #define REDUCE(k) \
   if (BLOCK_SIZE >= k << 1) { \
     if (tid < k) { \
-      if (min_val[tid + k] < min_val[tid] \
-          || (min_val[tid + k] == min_val[tid] \
-              && argmin_val[tid + k] < argmin_val[tid])) { \
-        min_val[tid] = min_val[tid + k]; \
+      if (argmin_val[tid + k] < argmin_val[tid]) { \
         argmin_val[tid] = argmin_val[tid + k]; \
       } \
     } \
