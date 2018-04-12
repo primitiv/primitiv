@@ -15,15 +15,14 @@ docker exec travis-ci bash -c "apt install -y build-essential cmake googletest"
 #
 # For more details, see: http://eigen.tuxfamily.org/bz/show_bug.cgi?id=1392
 
-# install Eigen
-docker exec travis-ci bash -c "apt install -y mercurial"
-docker exec travis-ci bash -c "hg clone https://bitbucket.org/eigen/eigen"
-docker exec travis-ci bash -c "mkdir ./eigen/build"
-docker exec travis-ci bash -c "cd ./eigen/build && cmake .."
-docker exec travis-ci bash -c "cd ./eigen/build && make && make install"
+# download Eigen
+docker exec travis-ci bash -c "apt install -y wget"
+docker exec travis-ci bash -c "wget http://bitbucket.org/eigen/eigen/get/3.3.4.tar.bz2 -O ./eigen.tar.bz2"
+docker exec travis-ci bash -c "mkdir /primitiv/eigen"
+docker exec travis-ci bash -c "tar xf ./eigen.tar.bz2 -C /primitiv/eigen --strip-components 1"
 
 # install OpenCL environment
-docker exec travis-ci bash -c "apt install -y opencl-headers git wget pkg-config libhwloc-dev libltdl-dev ocl-icd-dev ocl-icd-opencl-dev clang-3.8 llvm-3.8-dev libclang-3.8-dev libz-dev"
+docker exec travis-ci bash -c "apt install -y opencl-headers git pkg-config libhwloc-dev libltdl-dev ocl-icd-dev ocl-icd-opencl-dev clang-3.8 llvm-3.8-dev libclang-3.8-dev libz-dev"
 docker exec travis-ci bash -c "wget https://github.com/CNugteren/CLBlast/archive/1.2.0.tar.gz -O ./clblast.tar.gz"
 docker exec travis-ci bash -c "mkdir ./clblast"
 docker exec travis-ci bash -c "tar xf ./clblast.tar.gz -C ./clblast --strip-components 1"
@@ -36,7 +35,7 @@ docker exec travis-ci bash -c "cd ./pocl && cmake . -DCMAKE_INSTALL_PREFIX=/usr"
 docker exec travis-ci bash -c "cd ./pocl && make && make install"
 
 # script
-docker exec travis-ci bash -c "cd /primitiv && cmake . -DPRIMITIV_USE_EIGEN=ON -DPRIMITIV_USE_OPENCL=ON -DPRIMITIV_BUILD_C_API=ON -DPRIMITIV_BUILD_TESTS=ON -DPRIMITIV_GTEST_SOURCE_DIR=/usr/src/googletest/googletest"
+docker exec travis-ci bash -c "cd /primitiv && cmake . -DPRIMITIV_USE_EIGEN=ON -DPRIMITIV_USE_OPENCL=ON -DPRIMITIV_BUILD_C_API=ON -DPRIMITIV_BUILD_TESTS=ON -DEIGEN3_INCLUDE_DIR=/primitiv/eigen -DPRIMITIV_GTEST_SOURCE_DIR=/usr/src/googletest/googletest"
 docker exec travis-ci bash -c "cd /primitiv && make VERBOSE=1"
 docker exec travis-ci bash -c "cd /primitiv && make test ARGS='-V'"
 docker exec travis-ci bash -c "cd /primitiv && make install"
