@@ -15,19 +15,12 @@ __global__ void min_fw_dev(
   px += bid % skip + (bid / skip) * skip * n;
   temp[tid] = FLOAT_POSITIVE_INFINITY;
   for (std::uint32_t i = tid; i < n; i += BLOCK_SIZE) {
-    const float val = ::__half2float(px[i * skip]);
-    if (val < temp[tid]) {
-      temp[tid] = val;
-    }
+    temp[tid] = fminf(::__half2float(px[i * skip]), temp[tid]);
   }
   ::__syncthreads();
 #define REDUCE(k) \
   if (BLOCK_SIZE >= k << 1) { \
-    if (tid < k) { \
-      if (temp[tid + k] < temp[tid]) { \
-        temp[tid] = temp[tid + k]; \
-      } \
-    } \
+    if (tid < k) temp[tid] = fminf(temp[tid + k], temp[tid]); \
     ::__syncthreads(); \
   }
   REDUCE(512)
@@ -51,10 +44,10 @@ __global__ void min_bw_dev(
   __shared__ std::uint32_t argmin_val[BLOCK_SIZE];
   const std::uint32_t bid = blockIdx.x;
   const std::uint32_t tid = threadIdx.x;
+  const float min_val = ::__half2float(py[bid]);
   px += bid % skip + (bid / skip) * skip * n;
   pgx += bid % skip + (bid / skip) * skip * n;
   argmin_val[tid] = n;
-  const float min_val = ::__half2float(py[bid]);
   for (std::uint32_t i = tid; i < n; i += BLOCK_SIZE) {
     if (::__half2float(px[i * skip]) == min_val) {
       argmin_val[tid] = i;
@@ -64,11 +57,7 @@ __global__ void min_bw_dev(
   ::__syncthreads();
 #define REDUCE(k) \
   if (BLOCK_SIZE >= k << 1) { \
-    if (tid < k) { \
-      if (argmin_val[tid + k] < argmin_val[tid]) { \
-        argmin_val[tid] = argmin_val[tid + k]; \
-      } \
-    } \
+    if (tid < k) argmin_val[tid] = min(argmin_val[tid + k], argmin_val[tid]); \
     ::__syncthreads(); \
   }
   REDUCE(512)

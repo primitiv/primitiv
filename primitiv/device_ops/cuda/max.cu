@@ -15,19 +15,12 @@ __global__ void max_fw_dev(
   px += bid % skip + (bid / skip) * skip * n;
   temp[tid] = FLOAT_NEGATIVE_INFINITY;
   for (std::uint32_t i = tid; i < n; i += BLOCK_SIZE) {
-    const float val = px[i * skip];
-    if (val > temp[tid]) {
-      temp[tid] = val;
-    }
+    temp[tid] = fmaxf(px[i * skip], temp[tid]);
   }
   ::__syncthreads();
 #define REDUCE(k) \
   if (BLOCK_SIZE >= k << 1) { \
-    if (tid < k) { \
-      if (temp[tid + k] > temp[tid]) { \
-        temp[tid] = temp[tid + k]; \
-      } \
-    } \
+    if (tid < k) temp[tid] = fmaxf(temp[tid + k], temp[tid]); \
     ::__syncthreads(); \
   }
   REDUCE(512)
@@ -51,6 +44,7 @@ __global__ void max_bw_dev(
   __shared__ std::uint32_t argmax_val[BLOCK_SIZE];
   const std::uint32_t bid = blockIdx.x;
   const std::uint32_t tid = threadIdx.x;
+  const float max_val = py[bid];
   px += bid % skip + (bid / skip) * skip * n;
   pgx += bid % skip + (bid / skip) * skip * n;
   argmax_val[tid] = n;
@@ -63,11 +57,7 @@ __global__ void max_bw_dev(
   ::__syncthreads();
 #define REDUCE(k) \
   if (BLOCK_SIZE >= k << 1) { \
-    if (tid < k) { \
-      if (argmax_val[tid + k] < argmax_val[tid]) { \
-        argmax_val[tid] = argmax_val[tid + k]; \
-      } \
-    } \
+    if (tid < k) argmax_val[tid] = min(argmax_val[tid + k], argmax_val[tid]); \
     ::__syncthreads(); \
   }
   REDUCE(512)
