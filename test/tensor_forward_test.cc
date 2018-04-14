@@ -1907,10 +1907,17 @@ TEST_F(TensorForwardTest, CheckSigmoid) {
     EXPECT_EQ(Shape({2, 3}, 2), y.shape());
 
     const auto dev_type = dev->type();
+#ifdef PRIMITIV_MAYBE_FPMATH_X87
+    const std::uint32_t ulps
+      = dev_type == Device::DeviceType::EIGEN ? 7
+      : dev_type == Device::DeviceType::OPENCL ? 6
+      : get_default_ulps(*dev);
+#else
     const std::uint32_t ulps
       = dev_type == Device::DeviceType::EIGEN ? 6
       : dev_type == Device::DeviceType::OPENCL ? 6
       : get_default_ulps(*dev);
+#endif
     EXPECT_TRUE(vector_match_ulps(y_data, y.to_vector(), ulps));
   }
 }

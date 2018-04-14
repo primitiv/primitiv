@@ -1,6 +1,7 @@
 #ifndef PRIMITIV_RANDOM_H_
 #define PRIMITIV_RANDOM_H_
 
+#include <cmath>
 #include <cstddef>
 #include <random>
 #include <primitiv/mixins.h>
@@ -48,9 +49,10 @@ public:
    */
   void fill_uniform(float lower, float upper, std::size_t size, float *data) {
     std::uniform_real_distribution<float> dist(lower, upper);
+    const float lower_eps = std::nextafter(lower, upper);
     for (std::size_t i = 0; i < size; ++i) {
       const float x = dist(rng_);
-      data[i] = x == lower ? upper : x;
+      data[i] = x < lower_eps ? upper : x;
     }
   }
 
