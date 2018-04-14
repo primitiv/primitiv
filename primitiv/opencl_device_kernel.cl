@@ -25,7 +25,7 @@ kernel void argmax_kernel_##GROUP_SIZE( \
   local float max_val[GROUP_SIZE]; \
   local unsigned argmax_val[GROUP_SIZE]; \
   px += bid % skip + (bid / skip) * skip * n; \
-  max_val[tid] = -1e38; \
+  max_val[tid] = -INFINITY; \
   for (unsigned i = tid; i < n; i += GROUP_SIZE) { \
     const float val = px[i * skip]; \
     if (val > max_val[tid]) { \
@@ -83,7 +83,7 @@ kernel void argmin_kernel_##GROUP_SIZE( \
   local float min_val[GROUP_SIZE]; \
   local unsigned argmin_val[GROUP_SIZE]; \
   px += bid % skip + (bid / skip) * skip * n; \
-  min_val[tid] = 1e38; \
+  min_val[tid] = INFINITY; \
   for (unsigned i = tid; i < n; i += GROUP_SIZE) { \
     const float val = px[i * skip]; \
     if (val < min_val[tid]) { \
