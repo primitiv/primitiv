@@ -49,10 +49,10 @@ __global__ void max_bw_dev(
   pgx += bid % skip + (bid / skip) * skip * n;
   argmax_val[tid] = n;
   for (std::uint32_t i = tid; i < n; i += BLOCK_SIZE) {
-    if (px[i * skip] == py[bid]) {
-      argmax_val[tid] = i;
-      break;
-    }
+    argmax_val[tid]
+        = px[i * skip] == max_val
+        ? min(i, argmax_val[tid])
+        : argmax_val[tid];
   }
   ::__syncthreads();
 #define REDUCE(k) \

@@ -49,10 +49,10 @@ __global__ void min_bw_dev(
   pgx += bid % skip + (bid / skip) * skip * n;
   argmin_val[tid] = n;
   for (std::uint32_t i = tid; i < n; i += BLOCK_SIZE) {
-    if (px[i * skip] == py[bid]) {
-      argmin_val[tid] = i;
-      break;
-    }
+    argmin_val[tid]
+        = px[i * skip] == min_val
+        ? min(i, argmin_val[tid])
+        : argmin_val[tid];
   }
   ::__syncthreads();
 #define REDUCE(k) \

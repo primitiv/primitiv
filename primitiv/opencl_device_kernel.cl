@@ -509,10 +509,10 @@ kernel void max_bw_kernel_##GROUP_SIZE( \
   pgx += bid % skip + (bid / skip) * skip * n; \
   argmax_val[tid] = n; \
   for (unsigned i = tid; i < n; i += GROUP_SIZE) { \
-    if (px[i * skip] == py[bid]) { \
-      argmax_val[tid] = i; \
-      break; \
-    } \
+    argmax_val[tid] \
+        = px[i * skip] == max_val \
+        ? min(i, argmax_val[tid]) \
+        : argmax_val[tid]; \
   } \
   barrier(CLK_LOCAL_MEM_FENCE); \
   REDUCE(512, GROUP_SIZE) \
@@ -607,10 +607,10 @@ kernel void min_bw_kernel_##GROUP_SIZE( \
   pgx += bid % skip + (bid / skip) * skip * n; \
   argmin_val[tid] = n; \
   for (unsigned i = tid; i < n; i += GROUP_SIZE) { \
-    if (px[i * skip] == py[bid]) { \
-      argmin_val[tid] = i; \
-      break; \
-    } \
+    argmin_val[tid] \
+        = px[i * skip] == min_val \
+        ? min(i, argmin_val[tid]) \
+        : argmin_val[tid]; \
   } \
   barrier(CLK_LOCAL_MEM_FENCE); \
   REDUCE(512, GROUP_SIZE) \
