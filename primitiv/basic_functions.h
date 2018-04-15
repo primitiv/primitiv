@@ -877,7 +877,7 @@ type_traits::Identity<Var> max_pool2d(
 namespace batch {
 
 /**
- * Extracts elements according to the batch and addresses.
+ * Selects items from the batch by IDs.
  * @param x A variable representing an original data.
  * @param ids List of batch IDs. Each value must be lower than
  *            `x.shape().batch()`.
@@ -888,7 +888,7 @@ type_traits::Identity<Var> pick(
     const Var &x, const std::vector<std::uint32_t> &ids);
 
 /**
- * Extracts a specific range \f$ [L, U) \f$ of elements along the batch axis.
+ * Extracts a specific range \f$ [L, U) \f$ of items along the batch axis.
  * @param x A variable representing an original data.
  * @param lower Lower bound \f$ L \f$ of the batch.
  * @param upper Upper bound \f$ U \f$ of the batch.
