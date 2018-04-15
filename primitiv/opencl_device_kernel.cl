@@ -458,10 +458,11 @@ kernel void max_fw_kernel_##GROUP_SIZE( \
   const unsigned tid = get_local_id(0); \
   local float temp[GROUP_SIZE]; \
   px += bid % skip + (bid / skip) * skip * n; \
-  temp[tid] = -INFINITY; \
+  float thread_max = -INFINITY; \
   for (unsigned i = tid; i < n; i += GROUP_SIZE) { \
-    temp[tid] = max(px[i * skip], temp[tid]); \
+    thread_max = max(px[i * skip], thread_max); \
   } \
+  temp[tid] = thread_max; \
   barrier(CLK_LOCAL_MEM_FENCE); \
   REDUCE(512, GROUP_SIZE) \
   REDUCE(256, GROUP_SIZE) \
@@ -507,13 +508,13 @@ kernel void max_bw_kernel_##GROUP_SIZE( \
   local unsigned argmax_val[GROUP_SIZE]; \
   px += bid % skip + (bid / skip) * skip * n; \
   pgx += bid % skip + (bid / skip) * skip * n; \
-  argmax_val[tid] = n; \
+  unsigned thread_argmax = n; \
   for (unsigned i = tid; i < n; i += GROUP_SIZE) { \
-    argmax_val[tid] \
-        = px[i * skip] == max_val \
-        ? min(i, argmax_val[tid]) \
-        : argmax_val[tid]; \
+    if (px[i * skip] == max_val) { \
+      thread_argmax = min(i, thread_argmax); \
+    } \
   } \
+  argmax_val[tid] = thread_argmax; \
   barrier(CLK_LOCAL_MEM_FENCE); \
   REDUCE(512, GROUP_SIZE) \
   REDUCE(256, GROUP_SIZE) \
@@ -556,10 +557,11 @@ kernel void min_fw_kernel_##GROUP_SIZE( \
   const unsigned tid = get_local_id(0); \
   local float temp[GROUP_SIZE]; \
   px += bid % skip + (bid / skip) * skip * n; \
-  temp[tid] = INFINITY; \
+  float thread_max = INFINITY; \
   for (unsigned i = tid; i < n; i += GROUP_SIZE) { \
-    temp[tid] = min(px[i * skip], temp[tid]); \
+    thread_max = min(px[i * skip], thread_max); \
   } \
+  temp[tid] = thread_max; \
   barrier(CLK_LOCAL_MEM_FENCE); \
   REDUCE(512, GROUP_SIZE) \
   REDUCE(256, GROUP_SIZE) \
@@ -605,13 +607,13 @@ kernel void min_bw_kernel_##GROUP_SIZE( \
   local unsigned argmin_val[GROUP_SIZE]; \
   px += bid % skip + (bid / skip) * skip * n; \
   pgx += bid % skip + (bid / skip) * skip * n; \
-  argmin_val[tid] = n; \
+  unsigned thread_argmin = n; \
   for (unsigned i = tid; i < n; i += GROUP_SIZE) { \
-    argmin_val[tid] \
-        = px[i * skip] == min_val \
-        ? min(i, argmin_val[tid]) \
-        : argmin_val[tid]; \
+    if (px[i * skip] == min_val) { \
+      thread_argmin = min(i, thread_argmin); \
+    } \
   } \
+  argmin_val[tid] = thread_argmin; \
   barrier(CLK_LOCAL_MEM_FENCE); \
   REDUCE(512, GROUP_SIZE) \
   REDUCE(256, GROUP_SIZE) \
