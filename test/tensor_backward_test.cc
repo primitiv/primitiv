@@ -1,5 +1,6 @@
 #include <primitiv/config.h>
 
+#include <algorithm>
 #include <cmath>
 #include <vector>
 #include <gtest/gtest.h>
@@ -749,6 +750,224 @@ TEST_F(TensorBackwardTest, CheckELU) {
         = dev_type == Device::DeviceType::CUDA16 ? 75000
         : 12;
       EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckMaxDims) {
+  const vector<float> x_data = {
+    0, 1, 2, 6, 7, 8, 3, 4, 5, -3, -4, -5, 0, -1, -2, -6, -7, -8,
+  };
+  const vector<vector<float>> y_data = {
+    {2, 8, 5, -3, 0, -6},
+    {6, 7, 8, 0, -1, -2},
+    {0, 1, 2, 6, 7, 8, 3, 4, 5, -3, -4, -5, 0, -1, -2, -6, -7, -8},
+  };
+  const vector<vector<float>> gy_data = {
+    {1, 2, 6, 5, 3, 4},
+    {-1, 1, -2, 2, -3, 3},
+    {0, 1, 0, -1, 0, 1, 0, -1, 2, 1, 0, -1, 0, 1, 2, 3, 4, 6},
+  };
+  const vector<vector<float>> expected = {
+    {1, 1, 2, 1, 1, 3, 1, 1, 7, 6, 1, 1, 4, 1, 1, -5, 1, 1},
+    {1, 1, 1, 0, 2, -1, 1, 1, 1, 1, 1, 1, 3, -2, 4, 1, 1, 1},
+    {1, 2, 1, 0, 1, 2, 1, 0, 3, 2, 1, 0, 1, 2, 3, 4, 5, 7},
+  };
+
+  for (Device *dev : devices) {
+    for (const std::uint32_t i : {0u, 1u, 2u}) {
+      try {
+        const Shape r({3, 3}, 2);
+        const Shape s = r.resize_dim(i, 1);
+        const Tensor x = dev->new_tensor_by_vector(r, x_data);
+        const Tensor y = dev->new_tensor_by_vector(s, y_data[i]);
+        const Tensor gy = dev->new_tensor_by_vector(s, gy_data[i]);
+        Tensor gx = dev->new_tensor_by_constant(r, 1);
+        dev->max_bw(x, y, gy, i, gx);
+        EXPECT_TRUE(vector_match(expected[i], gx.to_vector()));
+      } IGNORE_NOT_IMPLEMENTED
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckMaxLarge) {
+  std::mt19937 rng;
+  const vector<std::uint32_t> ns {
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024,
+    1025, 2047, 2048, 2049, 65535, 65536, 65537,
+  };
+
+  for (Device *dev : devices) {
+    for (const std::uint32_t n : ns) {
+      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+        // NOTE(vbkaisetsu):
+        // Half-precision types have only (10+1) bits resolution.
+        continue;
+      }
+
+      vector<float> x_data(n);
+      vector<float> y_data = {static_cast<float>(n - 1)};
+      vector<float> gy_data = {1};
+      std::iota(begin(x_data), end(x_data), 0);
+      std::shuffle(begin(x_data), end(x_data), rng);
+      const auto it = std::find(begin(x_data), end(x_data), n - 1);
+      const std::uint32_t pos = std::distance(begin(x_data), it);
+      vector<float> expected(n, 1);
+      expected[pos] = 2;
+      const Tensor x = dev->new_tensor_by_vector({n}, x_data);
+      const Tensor y = dev->new_tensor_by_vector({1}, y_data);
+      const Tensor gy = dev->new_tensor_by_vector({1}, gy_data);
+      Tensor gx = dev->new_tensor_by_constant({n}, 1);
+      dev->max_bw(x, y, gy, 0, gx);
+      EXPECT_TRUE(vector_match(expected, gx.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckMaxMultipleLarge) {
+  std::mt19937 rng;
+  const vector<std::uint32_t> ns {
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024,
+    1025, 2047, 2048, 2049, 65535, 65536, 65537,
+  };
+
+  for (Device *dev : devices) {
+    for (const std::uint32_t n : ns) {
+      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+        // NOTE(vbkaisetsu):
+        // Half-precision types have only (10+1) bits resolution.
+        continue;
+      }
+
+      vector<float> x_data(n);
+      vector<float> y_data = {static_cast<float>(n - 1)};
+      vector<float> gy_data = {1};
+      std::iota(begin(x_data), end(x_data), 0);
+      // NOTE(vbkaisetsu):
+      // Generates a tensor that has some duplicated maximum values.
+      for (std::uint32_t i = 0; i < 10 && i < n; ++i) {
+        x_data[i] = n - 1;
+      }
+      std::shuffle(begin(x_data), end(x_data), rng);
+      const auto it = std::find(begin(x_data), end(x_data), n - 1);
+      const std::uint32_t pos = std::distance(begin(x_data), it);
+      vector<float> expected(n, 1);
+      expected[pos] = 2;
+      const Tensor x = dev->new_tensor_by_vector({n}, x_data);
+      const Tensor y = dev->new_tensor_by_vector({1}, y_data);
+      const Tensor gy = dev->new_tensor_by_vector({1}, gy_data);
+      Tensor gx = dev->new_tensor_by_constant({n}, 1);
+      dev->max_bw(x, y, gy, 0, gx);
+      EXPECT_TRUE(vector_match(expected, gx.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckMinDims) {
+  const vector<float> x_data = {
+    3, 4, 5, 0, 1, 2, 6, 7, 8, 0, -1, -2, -6, -7, -8, -3, -4, -5,
+  };
+  const vector<vector<float>> y_data = {
+    {3, 0, 6, -2, -8, -5},
+    {0, 1, 2, -6, -7, -8},
+    {3, 4, 5, 0, 1, 2, 6, 7, 8, 0, -1, -2, -6, -7, -8, -3, -4, -5},
+  };
+  const vector<vector<float>> gy_data = {
+    {1, 2, 6, 5, 3, 4},
+    {-1, 1, -2, 2, -3, 3},
+    {0, 1, 0, -1, 0, 1, 0, -1, 2, 1, 0, -1, 0, 1, 2, 3, 4, 6},
+  };
+  const vector<vector<float>> expected = {
+    {2, 1, 1, 3, 1, 1, 7, 1, 1, 1, 1, 6, 1, 1, 4, 1, 1, 5},
+    {1, 1, 1, 0, 2, -1, 1, 1, 1, 1, 1, 1, 3, -2, -7, 1, 1, 1},
+    {1, 2, 1, 0, 1, 2, 1, 0, 3, 2, 1, 0, 1, 2, 3, 4, 5, 7},
+  };
+
+  for (Device *dev : devices) {
+    for (const std::uint32_t i : {0u, 1u, 2u}) {
+      try {
+        const Shape r({3, 3}, 2);
+        const Shape s = r.resize_dim(i, 1);
+        const Tensor x = dev->new_tensor_by_vector(r, x_data);
+        const Tensor y = dev->new_tensor_by_vector(s, y_data[i]);
+        const Tensor gy = dev->new_tensor_by_vector(s, gy_data[i]);
+        Tensor gx = dev->new_tensor_by_constant(r, 1);
+        dev->min_bw(x, y, gy, i, gx);
+        EXPECT_TRUE(vector_match(expected[i], gx.to_vector()));
+      } IGNORE_NOT_IMPLEMENTED
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckMinLarge) {
+  std::mt19937 rng;
+  const vector<std::uint32_t> ns {
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024,
+    1025, 2047, 2048, 2049, 65535, 65536, 65537,
+  };
+
+  for (Device *dev : devices) {
+    for (const std::uint32_t n : ns) {
+      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+        // NOTE(vbkaisetsu):
+        // Half-precision types have only (10+1) bits resolution.
+        continue;
+      }
+
+      vector<float> x_data(n);
+      vector<float> y_data = {0};
+      vector<float> gy_data = {1};
+      std::iota(begin(x_data), end(x_data), 0);
+      std::shuffle(begin(x_data), end(x_data), rng);
+      const auto it = std::find(begin(x_data), end(x_data), 0);
+      const std::uint32_t pos = std::distance(begin(x_data), it);
+      vector<float> expected(n, 1);
+      expected[pos] = 2;
+      const Tensor x = dev->new_tensor_by_vector({n}, x_data);
+      const Tensor y = dev->new_tensor_by_vector({1}, y_data);
+      const Tensor gy = dev->new_tensor_by_vector({1}, gy_data);
+      Tensor gx = dev->new_tensor_by_constant({n}, 1);
+      dev->min_bw(x, y, gy, 0, gx);
+      EXPECT_TRUE(vector_match(expected, gx.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckMinMultipleLarge) {
+  std::mt19937 rng;
+  const vector<std::uint32_t> ns {
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024,
+    1025, 2047, 2048, 2049, 65535, 65536, 65537,
+  };
+
+  for (Device *dev : devices) {
+    for (const std::uint32_t n : ns) {
+      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+        // NOTE(vbkaisetsu):
+        // Half-precision types have only (10+1) bits resolution.
+        continue;
+      }
+
+      vector<float> x_data(n);
+      vector<float> y_data = {0};
+      vector<float> gy_data = {1};
+      std::iota(begin(x_data), end(x_data), 0);
+      // NOTE(vbkaisetsu):
+      // Generates a tensor that has some duplicated minimum values.
+      for (std::uint32_t i = 0; i < 10 && i < n; ++i) {
+        x_data[i] = 0;
+      }
+      std::shuffle(begin(x_data), end(x_data), rng);
+      const auto it = std::find(begin(x_data), end(x_data), 0);
+      const std::uint32_t pos = std::distance(begin(x_data), it);
+      vector<float> expected(n, 1);
+      expected[pos] = 2;
+      const Tensor x = dev->new_tensor_by_vector({n}, x_data);
+      const Tensor y = dev->new_tensor_by_vector({1}, y_data);
+      const Tensor gy = dev->new_tensor_by_vector({1}, gy_data);
+      Tensor gx = dev->new_tensor_by_constant({n}, 1);
+      dev->min_bw(x, y, gy, 0, gx);
+      EXPECT_TRUE(vector_match(expected, gx.to_vector()));
     }
   }
 }

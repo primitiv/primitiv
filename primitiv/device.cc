@@ -490,6 +490,56 @@ void Device::max_pool2d_bw(
 #undef DEV_FW_AB
 #undef DEV_BW_AB
 
+Tensor Device::max_fw(const Tensor &x, std::uint32_t dim) {
+  CHECK_DEVICE(x);
+  Tensor y = new_raw_tensor(x.shape().resize_dim(dim, 1));
+  max_fw_impl(x, dim, y);
+  return y;
+}
+
+Tensor Device::min_fw(const Tensor &x, std::uint32_t dim) {
+  CHECK_DEVICE(x);
+  Tensor y = new_raw_tensor(x.shape().resize_dim(dim, 1));
+  min_fw_impl(x, dim, y);
+  return y;
+}
+
+void Device::max_bw(const Tensor &x, const Tensor &y, const Tensor &gy, std::uint32_t dim, Tensor &gx) {
+  CHECK_DEVICE(x);
+  CHECK_DEVICE(y);
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(gx);
+  const Shape &r = x.shape();
+  const Shape s = r.resize_dim(dim, 1);
+  if (gx.shape() != r || y.shape() != s || gy.shape() != s) {
+    PRIMITIV_THROW_ERROR(
+        "Shape mismatched at max_bw(dim=" << dim << ")"
+        << ". x.shape: " << r.to_string()
+        << ", y.shape: " << y.shape().to_string()
+        << ", gy.shape: " << gy.shape().to_string()
+        << ", gx.shape: " << gx.shape().to_string());
+  }
+  max_bw_impl(x, y, gy, dim, gx);
+}
+
+void Device::min_bw(const Tensor &x, const Tensor &y, const Tensor &gy, std::uint32_t dim, Tensor &gx) {
+  CHECK_DEVICE(x);
+  CHECK_DEVICE(y);
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(gx);
+  const Shape &r = x.shape();
+  const Shape s = r.resize_dim(dim, 1);
+  if (gx.shape() != r || y.shape() != s || gy.shape() != s) {
+    PRIMITIV_THROW_ERROR(
+        "Shape mismatched at min_bw(dim=" << dim << ")"
+        << ". x.shape: " << r.to_string()
+        << ", y.shape: " << y.shape().to_string()
+        << ", gy.shape: " << gy.shape().to_string()
+        << ", gx.shape: " << gx.shape().to_string());
+  }
+  min_bw_impl(x, y, gy, dim, gx);
+}
+
 Tensor Device::sum_fw(const Tensor &x, std::uint32_t dim) {
   CHECK_DEVICE(x);
   Tensor y = new_raw_tensor(x.shape().resize_dim(dim, 1));

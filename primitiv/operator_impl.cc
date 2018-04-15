@@ -74,6 +74,8 @@ std::string Reshape::name() const {
   return "Reshape(" + shape_.to_string() + ')';
 }
 
+IMPL_NAME_1(Max, dim_);
+IMPL_NAME_1(Min, dim_);
 IMPL_NAME_1(Sum, dim_);
 IMPL_NAME_1(LogSumExp, dim_);
 IMPL_NAME_2(Broadcast, dim_, size_);
@@ -241,6 +243,8 @@ FWD_SHAPE_ELEMENTWISE(Divide);
 FWD_SHAPE_ELEMENTWISE(Pow);
 FWD_SHAPE(Transpose) { *y[0] = shape_ops::transpose(*x[0]); }
 FWD_SHAPE(MatrixMultiply) { *y[0] = shape_ops::matmul(*x[0], *x[1]); }
+FWD_SHAPE(Max) { *y[0] = x[0]->resize_dim(dim_, 1); }
+FWD_SHAPE(Min) { *y[0] = x[0]->resize_dim(dim_, 1); }
 FWD_SHAPE(Sum) { *y[0] = x[0]->resize_dim(dim_, 1); }
 FWD_SHAPE(LogSumExp) { *y[0] = x[0]->resize_dim(dim_, 1); }
 FWD_SHAPE(Broadcast) { *y[0] = shape_ops::broadcast(*x[0], dim_, size_); }
@@ -381,6 +385,9 @@ FORWARD(MatrixMultiply) { *y[0] = functions::matmul(*x[0], *x[1]); }
 FORWARD(Sum) { *y[0] = functions::sum(*x[0], dim_); }
 FORWARD(LogSumExp) { *y[0] = functions::logsumexp(*x[0], dim_); }
 FORWARD(Broadcast) { *y[0] = functions::broadcast(*x[0], dim_, size_); }
+
+FORWARD(Max) { *y[0] = functions::max(*x[0], dim_); }
+FORWARD(Min) { *y[0] = functions::min(*x[0], dim_); }
 
 FORWARD(BatchSum) { *y[0] = functions::batch::sum(*x[0]); }
 
@@ -667,6 +674,14 @@ BACKWARD(Pow) {
 
 BACKWARD(MatrixMultiply) {
   gy[0]->device().matmul_bw(*x[0], *x[1], *y[0], *gy[0], *gx[0], *gx[1]);
+}
+
+BACKWARD(Max) {
+  gy[0]->device().max_bw(*x[0], *y[0], *gy[0], dim_, *gx[0]);
+}
+
+BACKWARD(Min) {
+  gy[0]->device().min_bw(*x[0], *y[0], *gy[0], dim_, *gx[0]);
 }
 
 BACKWARD(Sum) {
