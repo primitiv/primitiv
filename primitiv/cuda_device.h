@@ -174,6 +174,11 @@ private:
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
       Tensor &ga, Tensor &gb) override;
 
+  void max_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) override;
+  void min_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) override;
+  void max_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, std::uint32_t dim, Tensor &gx) override;
+  void min_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, std::uint32_t dim, Tensor &gx) override;
+
   void sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) override;
   void logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) override;
   void broadcast_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) override;

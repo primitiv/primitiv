@@ -253,6 +253,16 @@ Node elu(const Node &x, float a) {
 }
 
 template<>
+Node max(const Node &x, std::uint32_t dim) {
+  return REGX(x, Max(dim), x)[0];
+}
+
+template<>
+Node min(const Node &x, std::uint32_t dim) {
+  return REGX(x, Min(dim), x)[0];
+}
+
+template<>
 Node sum(const Node &x, std::uint32_t dim) {
   return REGX(x, Sum(dim), x)[0];
 }

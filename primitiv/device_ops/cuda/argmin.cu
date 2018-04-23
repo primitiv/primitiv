@@ -26,7 +26,9 @@ __global__ void argmin_dev(
 #define REDUCE(k) \
   if (BLOCK_SIZE >= k << 1) { \
     if (tid < k) { \
-      if (min_val[tid + k] < min_val[tid]) { \
+      if (min_val[tid + k] < min_val[tid] \
+          || (min_val[tid + k] == min_val[tid] \
+              && argmin_val[tid + k] < argmin_val[tid])) { \
         min_val[tid] = min_val[tid + k]; \
         argmin_val[tid] = argmin_val[tid + k]; \
       } \

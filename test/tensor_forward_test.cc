@@ -2076,6 +2076,108 @@ TEST_F(TensorForwardTest, CheckELU) {
   }
 }
 
+TEST_F(TensorForwardTest, CheckMaxDims) {
+  struct TestCase {
+    std::uint32_t dim;
+    const Shape shape;
+    const vector<float> expected;
+  };
+  const vector<TestCase> test_cases {
+    {0, Shape({1, 3}, 2), {2, 8, 5, -3, 0, -6}},
+    {1, Shape({3, 1}, 2), {6, 7, 8, 0, -1, -2}},
+    {2, Shape({3, 3}, 2), {0, 1, 2, 6, 7, 8, 3, 4, 5, -3, -4, -5, 0, -1, -2, -6, -7, -8}},
+  };
+  const vector<float> data = {
+    0, 1, 2, 6, 7, 8, 3, 4, 5, -3, -4, -5, 0, -1, -2, -6, -7, -8,
+  };
+
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector(Shape({3, 3}, 2), data);
+    for (const TestCase &tc : test_cases) {
+      const Tensor result = max(a, tc.dim);
+      EXPECT_TRUE(vector_match(tc.expected, result.to_vector()));
+      EXPECT_EQ(tc.shape, result.shape());
+    }
+  }
+}
+
+TEST_F(TensorForwardTest, CheckMaxLarge) {
+  std::mt19937 rng;
+  const vector<std::uint32_t> ns {
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024,
+    1025, 2047, 2048, 2049, 65535, 65536, 65537,
+  };
+
+  for (Device *dev : devices) {
+    for (const std::uint32_t n : ns) {
+      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+        // NOTE(vbkaisetsu):
+        // Half-precision types have only (10+1) bits resolution.
+        continue;
+      }
+      vector<float> data(n);
+      std::iota(begin(data), end(data), 0);
+      std::shuffle(begin(data), end(data), rng);
+      const Tensor a = dev->new_tensor_by_vector({n}, data);
+      const Tensor result = max(a, 0);
+      const vector<float> expected {static_cast<float>(n - 1)};
+      EXPECT_TRUE(vector_match(expected, result.to_vector()));
+      EXPECT_EQ(Shape({}), result.shape());
+    }
+  }
+}
+
+TEST_F(TensorForwardTest, CheckMinDims) {
+  struct TestCase {
+    std::uint32_t dim;
+    const Shape shape;
+    const vector<float> expected;
+  };
+  const vector<TestCase> test_cases {
+    {0, Shape({1, 3}, 2), {3, 0, 6, -2, -8, -5}},
+    {1, Shape({3, 1}, 2), {0, 1, 2, -6, -7, -8}},
+    {2, Shape({3, 3}, 2), {3, 4, 5, 0, 1, 2, 6, 7, 8, 0, -1, -2, -6, -7, -8, -3, -4, -5}},
+  };
+  const vector<float> data = {
+    3, 4, 5, 0, 1, 2, 6, 7, 8, 0, -1, -2, -6, -7, -8, -3, -4, -5,
+  };
+
+  for (Device *dev : devices) {
+    const Tensor a = dev->new_tensor_by_vector(Shape({3, 3}, 2), data);
+    for (const TestCase &tc : test_cases) {
+      const Tensor result = min(a, tc.dim);
+      EXPECT_TRUE(vector_match(tc.expected, result.to_vector()));
+      EXPECT_EQ(tc.shape, result.shape());
+    }
+  }
+}
+
+TEST_F(TensorForwardTest, CheckMinLarge) {
+  std::mt19937 rng;
+  const vector<std::uint32_t> ns {
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024,
+    1025, 2047, 2048, 2049, 65535, 65536, 65537,
+  };
+
+  for (Device *dev : devices) {
+    for (const std::uint32_t n : ns) {
+      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+        // NOTE(vbkaisetsu):
+        // Half-precision types have only (10+1) bits resolution.
+        continue;
+      }
+      vector<float> data(n);
+      std::iota(begin(data), end(data), 0);
+      std::shuffle(begin(data), end(data), rng);
+      const Tensor a = dev->new_tensor_by_vector({n}, data);
+      const Tensor result = min(a, 0);
+      const vector<float> expected {0};
+      EXPECT_TRUE(vector_match(expected, result.to_vector()));
+      EXPECT_EQ(Shape({}), result.shape());
+    }
+  }
+}
+
 TEST_F(TensorForwardTest, CheckSum) {
   const vector<float> x_data {
     1, 2, 3, 4, 5, 6, 7, 8, -1, -2, -3, -4, -5, -6, -7, -8,

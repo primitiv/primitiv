@@ -315,6 +315,15 @@ public:
       CONFIGURE_KERNEL(divide_bw);
       CONFIGURE_KERNEL(pow_bw);
 
+      CONFIGURE_KERNEL_LIST(max_fw);
+      CONFIGURE_KERNEL_LIST(min_fw);
+      CONFIGURE_KERNEL_LIST(max_bw);
+      CONFIGURE_KERNEL_LIST(min_bw);
+      max_fw_group_size = calc_dim1_size(max_fw_group_size);
+      min_fw_group_size = calc_dim1_size(min_fw_group_size);
+      max_bw_group_size = calc_dim1_size(max_bw_group_size);
+      min_bw_group_size = calc_dim1_size(min_bw_group_size);
+
       CONFIGURE_KERNEL_LIST(sum_fw);
       CONFIGURE_KERNEL_LIST(logsumexp_fw);
       sum_fw_group_size = calc_dim1_size(sum_fw_group_size);
@@ -437,6 +446,11 @@ public:
   DECL_KERNEL(multiply_bw);
   DECL_KERNEL(divide_bw);
   DECL_KERNEL(pow_bw);
+
+  DECL_KERNEL_LIST(max_fw, 11);
+  DECL_KERNEL_LIST(min_fw, 11);
+  DECL_KERNEL_LIST(max_bw, 11);
+  DECL_KERNEL_LIST(min_bw, 11);
 
   DECL_KERNEL_LIST(sum_fw, 11);
   DECL_KERNEL_LIST(logsumexp_fw, 11);
@@ -1286,6 +1300,142 @@ void OpenCL::matmul_bw_impl(
       beta,
       MDATA(gb)(), 0, dj,
       &state_->queue(), nullptr);
+  }
+}
+
+void OpenCL::max_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
+  const std::uint32_t n = x.shape()[dim];
+  const std::uint32_t r = y.shape().size();
+  const std::uint32_t s = y.shape().lower_volume(dim);
+  std::uint32_t group_size = std::min(state_->max_fw_group_size, 1024u);
+  while (group_size >> 1 >= n) group_size >>= 1;
+  switch (group_size) {
+#define CASE(k, m) \
+    case k: \
+      state_->max_fw_kernel[m].setArg(0, CDATA(x)); \
+      state_->max_fw_kernel[m].setArg(1, s); \
+      state_->max_fw_kernel[m].setArg(2, n); \
+      state_->max_fw_kernel[m].setArg(3, MDATA(y)); \
+      state_->queue.enqueueNDRangeKernel( \
+          state_->max_fw_kernel[m], \
+          cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
+      break;
+    CASE(1024, 10);
+    CASE(512, 9);
+    CASE(256, 8);
+    CASE(128, 7);
+    CASE(64, 6);
+    CASE(32, 5);
+    CASE(16, 4);
+    CASE(8, 3);
+    CASE(4, 2);
+    CASE(2, 1);
+    CASE(1, 0);
+#undef CASE
+  }
+}
+
+void OpenCL::max_bw_impl(
+    const Tensor &x, const Tensor &y, const Tensor &gy,
+    std::uint32_t dim, Tensor &gx) {
+  const std::uint32_t n = x.shape()[dim];
+  const std::uint32_t r = y.shape().size();
+  const std::uint32_t s = y.shape().lower_volume(dim);
+  std::uint32_t group_size = std::min(state_->max_bw_group_size, 1024u);
+  while (group_size >> 1 >= n) group_size >>= 1;
+  switch (group_size) {
+#define CASE(k, m) \
+    case k: \
+      state_->max_bw_kernel[m].setArg(0, CDATA(x)); \
+      state_->max_bw_kernel[m].setArg(1, CDATA(y)); \
+      state_->max_bw_kernel[m].setArg(2, CDATA(gy)); \
+      state_->max_bw_kernel[m].setArg(3, s); \
+      state_->max_bw_kernel[m].setArg(4, n); \
+      state_->max_bw_kernel[m].setArg(5, MDATA(gx)); \
+      state_->queue.enqueueNDRangeKernel( \
+          state_->max_bw_kernel[m], \
+          cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
+      break;
+    CASE(1024, 10);
+    CASE(512, 9);
+    CASE(256, 8);
+    CASE(128, 7);
+    CASE(64, 6);
+    CASE(32, 5);
+    CASE(16, 4);
+    CASE(8, 3);
+    CASE(4, 2);
+    CASE(2, 1);
+    CASE(1, 0);
+#undef CASE
+  }
+}
+
+void OpenCL::min_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
+  const std::uint32_t n = x.shape()[dim];
+  const std::uint32_t r = y.shape().size();
+  const std::uint32_t s = y.shape().lower_volume(dim);
+  std::uint32_t group_size = std::min(state_->min_fw_group_size, 1024u);
+  while (group_size >> 1 >= n) group_size >>= 1;
+  switch (group_size) {
+#define CASE(k, m) \
+    case k: \
+      state_->min_fw_kernel[m].setArg(0, CDATA(x)); \
+      state_->min_fw_kernel[m].setArg(1, s); \
+      state_->min_fw_kernel[m].setArg(2, n); \
+      state_->min_fw_kernel[m].setArg(3, MDATA(y)); \
+      state_->queue.enqueueNDRangeKernel( \
+          state_->min_fw_kernel[m], \
+          cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
+      break;
+    CASE(1024, 10);
+    CASE(512, 9);
+    CASE(256, 8);
+    CASE(128, 7);
+    CASE(64, 6);
+    CASE(32, 5);
+    CASE(16, 4);
+    CASE(8, 3);
+    CASE(4, 2);
+    CASE(2, 1);
+    CASE(1, 0);
+#undef CASE
+  }
+}
+
+void OpenCL::min_bw_impl(
+    const Tensor &x, const Tensor &y, const Tensor &gy,
+    std::uint32_t dim, Tensor &gx) {
+  const std::uint32_t n = x.shape()[dim];
+  const std::uint32_t r = y.shape().size();
+  const std::uint32_t s = y.shape().lower_volume(dim);
+  std::uint32_t group_size = std::min(state_->min_bw_group_size, 1024u);
+  while (group_size >> 1 >= n) group_size >>= 1;
+  switch (group_size) {
+#define CASE(k, m) \
+    case k: \
+      state_->min_bw_kernel[m].setArg(0, CDATA(x)); \
+      state_->min_bw_kernel[m].setArg(1, CDATA(y)); \
+      state_->min_bw_kernel[m].setArg(2, CDATA(gy)); \
+      state_->min_bw_kernel[m].setArg(3, s); \
+      state_->min_bw_kernel[m].setArg(4, n); \
+      state_->min_bw_kernel[m].setArg(5, MDATA(gx)); \
+      state_->queue.enqueueNDRangeKernel( \
+          state_->min_bw_kernel[m], \
+          cl::NullRange, cl::NDRange(r * k), cl::NDRange(k)); \
+      break;
+    CASE(1024, 10);
+    CASE(512, 9);
+    CASE(256, 8);
+    CASE(128, 7);
+    CASE(64, 6);
+    CASE(32, 5);
+    CASE(16, 4);
+    CASE(8, 3);
+    CASE(4, 2);
+    CASE(2, 1);
+    CASE(1, 0);
+#undef CASE
   }
 }
 
