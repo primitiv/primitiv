@@ -204,9 +204,7 @@ TEST_F(ShapeOpsTest, CheckConcat) {
   for (const TestCase &tc : test_cases) {
     {
       // Using objects
-      vector<Shape> xs;
-      for (const Shape &x : tc.inputs) xs.emplace_back(x);
-      const Shape observed = concat(xs, tc.dim);
+      const Shape observed = concat(tc.inputs, tc.dim);
       EXPECT_EQ(tc.expected, observed);
     }
     {
@@ -226,13 +224,16 @@ TEST_F(ShapeOpsTest, CheckInvalidConcat) {
   };
   const vector<TestCase> test_cases {
     {{}, 0},
-    {{{1}, {2}}, 1},
+    {{{}, {2}}, 1},
     {{{1, 2}, {1, 3}}, 0},
     {{{1, 2}, {1, 3}}, 2},
     {{Shape({}, 2), Shape({}, 3)}, 0},
     {{Shape({1, 2}, 2), Shape({1, 3}, 3)}, 0},
   };
   for (const TestCase &tc : test_cases) {
+    // Using objects
+    EXPECT_THROW(concat(tc.inputs, tc.dim), Error);
+    // Using pointers
     vector<const Shape *>xs;
     for (const Shape &x : tc.inputs) xs.emplace_back(&x);
     EXPECT_THROW(concat(xs, tc.dim), Error);
@@ -556,6 +557,169 @@ TEST_F(ShapeOpsTest, CheckInvalidPool2D) {
       EXPECT_THROW(
           pool2d(tc.x, tc.win0, tc.win1, tc.pad0, tc.pad1, tc.str0, tc.str1),
           Error);
+    }
+  }
+}
+
+TEST_F(ShapeOpsTest, CheckBatchPick) {
+  struct TestCase {
+    Shape input;
+    vector<std::uint32_t> ids;
+    Shape expected;
+  };
+  const vector<TestCase> test_cases {
+    {{}, {0}, {}},
+    {Shape({2, 2, 2}, 3), {0}, {2, 2, 2}},
+    {Shape({2, 2, 2}, 3), {0, 0, 0}, Shape({2, 2, 2}, 3)},
+    {Shape({2, 2, 2}, 3), {1, 0, 1}, Shape({2, 2, 2}, 3)},
+    {Shape({2, 2, 2}, 3), {2, 1, 1}, Shape({2, 2, 2}, 3)},
+    {Shape({2, 2, 2}, 3), {0, 1, 2, 1}, Shape({2, 2, 2}, 4)},
+  };
+  for (const TestCase &tc : test_cases) {
+    const Shape observed = batch_pick(tc.input, tc.ids);
+    EXPECT_EQ(tc.expected, observed);
+  }
+}
+
+TEST_F(ShapeOpsTest, CheckInvalidBatchPick) {
+  struct TestCase {
+    Shape input;
+    vector<std::uint32_t> ids;
+  };
+  const vector<TestCase> test_cases {
+    {Shape({2, 2, 2}, 3), {}},
+    {Shape({2, 2, 2}, 3), {3}},
+    {Shape({2, 2, 2}, 3), {0, 1, 3}},
+    {{}, {}},
+    {{}, {1}},
+  };
+  for (const TestCase &tc : test_cases) {
+    EXPECT_THROW(batch_pick(tc.input, tc.ids), Error);
+  }
+}
+
+TEST_F(ShapeOpsTest, CheckBatchSlice) {
+  struct TestCase {
+    std::uint32_t lower, upper;
+    Shape input, expected;
+  };
+  const vector<TestCase> test_cases {
+    {0, 1, {}, {}}, {0, 1, Shape({}, 2), {}},
+    {1, 2, Shape({}, 2), {}}, {0, 2, Shape({}, 2), Shape({}, 2)},
+    {0, 1, Shape({3}, 3), Shape({3}, 1)}, {1, 2, Shape({3}, 3), Shape({3}, 1)},
+    {2, 3, Shape({3}, 3), Shape({3}, 1)}, {0, 2, Shape({3}, 3), Shape({3}, 2)},
+    {1, 3, Shape({3}, 3), Shape({3}, 2)}, {0, 3, Shape({3}, 3), Shape({3}, 3)},
+    {0, 1, Shape({2, 4}, 2), Shape({2, 4}, 1)},
+    {1, 2, Shape({2, 4}, 2), Shape({2, 4}, 1)},
+    {0, 2, Shape({2, 4}, 2), Shape({2, 4}, 2)},
+  };
+  for (const TestCase &tc : test_cases) {
+    const Shape observed = batch_slice(tc.input, tc.lower, tc.upper);
+    EXPECT_EQ(tc.expected, observed);
+  }
+}
+
+TEST_F(ShapeOpsTest, CheckInvalidBatchSlice) {
+  struct TestCase {
+    std::uint32_t lower, upper;
+    Shape input;
+  };
+  const vector<TestCase> test_cases {
+    {0, 0, {}}, {1, 0, {}}, {0, 2, {}}, {1, 2, {}},
+    {0, 0, Shape({}, 2)}, {1, 0, Shape({}, 2)}, {0, 3, Shape({}, 2)},
+    {3, 1, Shape({}, 2)}, {2, 2, Shape({}, 2)}, {4, 3, Shape({}, 2)},
+    {0, 0, {2}}, {0, 3, {2}}, {2, 1, {2}}, {0, 2, {2}},
+    {1, 1, Shape({2, 2}, 3)}, {2, 1, Shape({2, 2}, 3)},
+    {0, 4, Shape({2, 2}, 3)}, {3, 3, Shape({2, 3}, 3)}
+  };
+  for (const TestCase &tc : test_cases) {
+    EXPECT_THROW(batch_slice(tc.input, tc.lower, tc.upper), Error);
+  }
+}
+
+TEST_F(ShapeOpsTest, CheckBatchConcat) {
+  struct TestCase {
+    vector<Shape> inputs;
+    Shape expected;
+  };
+  const vector<TestCase> test_cases {
+    {{{}}, {}},
+    {{{}, {}}, Shape({}, 2)},
+    {{{}, {}, {}}, Shape({}, 3)},
+    {{Shape({}, 2), {}, {}}, Shape({}, 4)},
+    {{{}, Shape({}, 2), {}}, Shape({}, 4)},
+    {{{}, {}, Shape({}, 2)}, Shape({}, 4)},
+    {{Shape({}, 2), Shape({}, 3), Shape({}, 4)}, Shape({}, 9)},
+    {{{5, 6, 7}}, {5, 6, 7}},
+    {{{5, 6, 7}, {5, 6, 7}}, Shape({5, 6, 7}, 2)},
+    {{{5, 6, 7}, {5, 6, 7}, {5, 6, 7}}, Shape({5, 6, 7}, 3)},
+    {{Shape({5, 6, 7}, 2), {5, 6, 7}, {5, 6, 7}}, Shape({5, 6, 7}, 4)},
+    {{{5, 6, 7}, Shape({5, 6, 7}, 2), {5, 6, 7}}, Shape({5, 6, 7}, 4)},
+    {{{5, 6, 7}, {5, 6, 7}, Shape({5, 6, 7}, 2)}, Shape({5, 6, 7}, 4)},
+    {{Shape({5, 6, 7}, 2), Shape({5, 6, 7}, 3), Shape({5, 6, 7}, 4)},
+      Shape({5, 6, 7}, 9)},
+  };
+  for (const TestCase &tc : test_cases) {
+    {
+      // Using objects
+      const Shape observed = batch_concat(tc.inputs);
+      EXPECT_EQ(tc.expected, observed);
+    }
+    {
+      // Using pointers
+      vector<const Shape *> xs;
+      for (const Shape &x : tc.inputs) xs.emplace_back(&x);
+      const Shape observed = batch_concat(xs);
+      EXPECT_EQ(tc.expected, observed);
+    }
+  }
+}
+
+TEST_F(ShapeOpsTest, CheckInvalidBatchConcat) {
+  struct TestCase {
+    vector<Shape> inputs;
+    bool ok;
+  };
+  const vector<TestCase> test_cases {
+    // empty
+    {{}, false},
+    // the last dim is invalid
+    {{{}, {}}, true},
+    {{{}, {2}}, false},
+    {{{}, {1, 2}}, false},
+    {{{}, {1, 1, 2}}, false},
+    {{{}, {1, 1, 1, 2}}, false},
+    // volume is correct but dims is invalid
+    {{{2}, {2}}, true},
+    {{{2}, {1, 2}}, false},
+    {{{2}, {1, 1, 2}}, false},
+    {{{2}, {1, 1, 1, 2}}, false},
+    // only an axis is invalid
+    {{{2, 3, 4}, {2, 3, 4}, {2, 3, 4}}, true},
+    {{{3, 3, 4}, {2, 3, 4}, {2, 3, 4}}, false},
+    {{{2, 4, 4}, {2, 3, 4}, {2, 3, 4}}, false},
+    {{{2, 3, 5}, {2, 3, 4}, {2, 3, 4}}, false},
+    {{{2, 3, 4}, {3, 3, 4}, {2, 3, 4}}, false},
+    {{{2, 3, 4}, {2, 4, 4}, {2, 3, 4}}, false},
+    {{{2, 3, 4}, {2, 3, 5}, {2, 3, 4}}, false},
+    {{{2, 3, 4}, {2, 3, 4}, {3, 3, 4}}, false},
+    {{{2, 3, 4}, {2, 3, 4}, {2, 4, 4}}, false},
+    {{{2, 3, 4}, {2, 3, 4}, {2, 3, 5}}, false},
+  };
+  for (const TestCase &tc : test_cases) {
+    // Using objects
+    if (tc.ok) {
+      EXPECT_NO_THROW(batch_concat(tc.inputs));
+    } else {
+      EXPECT_THROW(batch_concat(tc.inputs), Error);
+    }
+    // Using pointers
+    vector<const Shape *>xs;
+    for (const Shape &x : tc.inputs) xs.emplace_back(&x);
+    if (tc.ok) {
+      EXPECT_NO_THROW(batch_concat(xs));
+    } else {
+      EXPECT_THROW(batch_concat(xs), Error);
     }
   }
 }

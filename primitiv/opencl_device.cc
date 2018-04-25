@@ -330,7 +330,13 @@ public:
       logsumexp_fw_group_size = calc_dim1_size(logsumexp_fw_group_size);
 
       CONFIGURE_KERNEL(broadcast_fw);
+      CONFIGURE_KERNEL(batch_pick_fw);
+      CONFIGURE_KERNEL(batch_slice_fw);
+      CONFIGURE_KERNEL(batch_concat_fw);
       CONFIGURE_KERNEL(batch_sum_fw);
+
+      CONFIGURE_KERNEL(batch_pick_bw);
+      CONFIGURE_KERNEL(batch_slice_bw);
 
       CONFIGURE_KERNEL(inplace_multiply_const);
       CONFIGURE_KERNEL(inplace_add);
@@ -450,7 +456,13 @@ public:
   DECL_KERNEL_LIST(logsumexp_fw, 11);
 
   DECL_KERNEL(broadcast_fw);
+  DECL_KERNEL(batch_pick_fw);
+  DECL_KERNEL(batch_slice_fw);
+  DECL_KERNEL(batch_concat_fw);
   DECL_KERNEL(batch_sum_fw);
+
+  DECL_KERNEL(batch_pick_bw);
+  DECL_KERNEL(batch_slice_bw);
 
   DECL_KERNEL(inplace_multiply_const);
   DECL_KERNEL(inplace_add);
@@ -1509,6 +1521,61 @@ void OpenCL::broadcast_fw_impl(
       cl::NDRange(state_->broadcast_fw_group_size));
 }
 
+void OpenCL::batch_pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids, Tensor &y) {
+  const std::uint32_t si = ids.size() > 1;
+  const std::uint32_t sy = y.shape().volume();
+  const std::uint32_t g1 = ::calc_num_blocks(sy, state_->batch_pick_fw_group_size);
+  const std::uint32_t bs = y.shape().batch();
+  std::shared_ptr<void> ids_buf = state_->pool.allocate(
+      sizeof(std::uint32_t) * ids.size());
+  ::write_buffer(state_->queue, ::get_buffer(ids_buf), ids.data(), ids.size());
+  state_->batch_pick_fw_kernel.setArg(0, CDATA(x));
+  state_->batch_pick_fw_kernel.setArg(1, ::get_buffer(ids_buf));
+  state_->batch_pick_fw_kernel.setArg(2, si);
+  state_->batch_pick_fw_kernel.setArg(3, sy);
+  state_->batch_pick_fw_kernel.setArg(4, MDATA(y));
+  state_->queue.enqueueNDRangeKernel(
+      state_->batch_pick_fw_kernel, cl::NullRange,
+      cl::NDRange(g1 * state_->batch_pick_fw_group_size, bs),
+      cl::NDRange(state_->batch_pick_fw_group_size, 1));
+}
+
+void OpenCL::batch_slice_fw_impl(
+    const Tensor &x, std::uint32_t offset, Tensor &y) {
+  const std::uint32_t volume = y.shape().volume();
+  const std::uint32_t shift = volume * offset;
+  const std::uint32_t size = y.shape().size();
+  const std::uint32_t num_blocks = ::calc_num_blocks(
+      size, state_->batch_slice_fw_group_size);
+  state_->batch_slice_fw_kernel.setArg(0, CDATA(x));
+  state_->batch_slice_fw_kernel.setArg(1, shift);
+  state_->batch_slice_fw_kernel.setArg(2, size);
+  state_->batch_slice_fw_kernel.setArg(3, MDATA(y));
+  state_->queue.enqueueNDRangeKernel(
+      state_->batch_slice_fw_kernel, cl::NullRange,
+      cl::NDRange(num_blocks * state_->batch_slice_fw_group_size),
+      cl::NDRange(state_->batch_slice_fw_group_size));
+}
+
+void OpenCL::batch_concat_fw_impl(
+    const std::vector<const Tensor *> &xs, Tensor &y) {
+  std::uint32_t offset = 0;
+  for (const Tensor *x : xs) {
+    const std::uint32_t span = x->shape().size();
+    const std::uint32_t num_blocks = ::calc_num_blocks(
+        span, state_->batch_concat_fw_group_size);
+    state_->batch_concat_fw_kernel.setArg(0, CDATA(*x));
+    state_->batch_concat_fw_kernel.setArg(1, span);
+    state_->batch_concat_fw_kernel.setArg(2, MDATA(y));
+    state_->batch_concat_fw_kernel.setArg(3, offset);
+    state_->queue.enqueueNDRangeKernel(
+        state_->batch_concat_fw_kernel, cl::NullRange,
+        cl::NDRange(num_blocks * state_->batch_concat_fw_group_size),
+        cl::NDRange(state_->batch_concat_fw_group_size), nullptr, nullptr);
+    offset += span;
+  }
+}
+
 void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
   const std::uint32_t size = y.shape().size();
   const std::uint32_t batch = x.shape().batch();
@@ -1522,6 +1589,41 @@ void OpenCL::batch_sum_fw_impl(const Tensor &x, Tensor &y) {
       state_->batch_sum_fw_kernel, cl::NullRange,
       cl::NDRange(g1 * state_->batch_sum_fw_group_size),
       cl::NDRange(state_->batch_sum_fw_group_size));
+}
+
+void OpenCL::batch_pick_bw_impl(const Tensor &gy, const std::vector<std::uint32_t> &ids, Tensor &gx) {
+  const std::uint32_t si = ids.size() > 1;
+  const std::uint32_t sy = gy.shape().volume();
+  const std::uint32_t g1 = ::calc_num_blocks(sy, state_->batch_pick_bw_group_size);
+  const std::uint32_t bs = gy.shape().batch();
+  std::shared_ptr<void> ids_buf = state_->pool.allocate(
+      sizeof(std::uint32_t) * ids.size());
+  ::write_buffer(state_->queue, ::get_buffer(ids_buf), ids.data(), ids.size());
+  state_->batch_pick_bw_kernel.setArg(0, CDATA(gy));
+  state_->batch_pick_bw_kernel.setArg(1, ::get_buffer(ids_buf));
+  state_->batch_pick_bw_kernel.setArg(2, si);
+  state_->batch_pick_bw_kernel.setArg(3, sy);
+  state_->batch_pick_bw_kernel.setArg(4, MDATA(gx));
+  state_->queue.enqueueNDRangeKernel(
+      state_->batch_pick_bw_kernel, cl::NullRange,
+      cl::NDRange(g1 * state_->batch_pick_bw_group_size, bs),
+      cl::NDRange(state_->batch_pick_bw_group_size, 1));
+}
+
+void OpenCL::batch_slice_bw_impl(const Tensor &gy, std::uint32_t offset, Tensor &gx) {
+  const std::uint32_t volume = gy.shape().volume();
+  const std::uint32_t shift = volume * offset;
+  const std::uint32_t size = gy.shape().size();
+  const std::uint32_t g1 = ::calc_num_blocks(
+      size, state_->batch_slice_bw_group_size);
+  state_->batch_slice_bw_kernel.setArg(0, CDATA(gy));
+  state_->batch_slice_bw_kernel.setArg(1, size);
+  state_->batch_slice_bw_kernel.setArg(2, MDATA(gx));
+  state_->batch_slice_bw_kernel.setArg(3, shift);
+  state_->queue.enqueueNDRangeKernel(
+      state_->batch_slice_bw_kernel, cl::NullRange,
+      cl::NDRange(g1 * state_->batch_slice_bw_group_size),
+      cl::NDRange(state_->batch_slice_bw_group_size));
 }
 
 void OpenCL::conv2d_fw_impl(const Tensor &, const Tensor &,

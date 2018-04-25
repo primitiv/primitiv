@@ -745,6 +745,30 @@ kernel void broadcast_fw_kernel(
   if (i < size) py[i] = px[i % skip1 + (i / skip2) * skip1];
 }
 
+kernel void batch_pick_fw_kernel(
+    const global float *px, const global unsigned *pi,
+    const unsigned si, const unsigned sy, global float *py) {
+  const unsigned t = get_global_id(0);
+  const unsigned bid_y = get_group_id(1);
+  const unsigned ox = pi[bid_y * si] * sy;
+  const unsigned oy = bid_y * sy;
+  if (t < sy) py[oy + t] = px[ox + t];
+}
+
+kernel void batch_slice_fw_kernel(
+    const global float *px, const unsigned shift, const unsigned size,
+    global float *py) {
+  const unsigned i = get_global_id(0);
+  if (i < size) py[i] = px[i + shift];
+}
+
+kernel void batch_concat_fw_kernel(
+    const global float *px, const unsigned y_size,
+    global float *py, const unsigned shift) {
+  const unsigned i = get_global_id(0);
+  if (i < y_size) py[i + shift] = px[i];
+}
+
 kernel void batch_sum_fw_kernel(
     const global float *px, const unsigned size,
     const unsigned batch, global float *py) {
@@ -757,6 +781,23 @@ kernel void batch_sum_fw_kernel(
     }
     py[i] = temp;
   }
+}
+
+kernel void batch_pick_bw_kernel(
+    const global float *pgy, const global unsigned *pi,
+    const unsigned si, const unsigned sy, global float *pgx) {
+  const unsigned t = get_global_id(0);
+  const unsigned bid_y = get_group_id(1);
+  const unsigned ox = pi[bid_y * si] * sy;
+  const unsigned oy = bid_y * sy;
+  if (t < sy) atomic_add_float(pgx + ox + t, pgy[oy + t]);
+}
+
+kernel void batch_slice_bw_kernel(
+    const global float *pgy, const unsigned size,
+    global float *pgx, const unsigned shift) {
+  const unsigned i = get_global_id(0);
+  if (i < size) pgx[i + shift] += pgy[i];
 }
 
 kernel void inplace_multiply_const_kernel(

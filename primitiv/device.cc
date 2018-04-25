@@ -562,11 +562,70 @@ Tensor Device::broadcast_fw(
   return y;
 }
 
+Tensor Device::batch_pick_fw(
+    const Tensor &x, const vector<std::uint32_t> &ids) {
+  CHECK_DEVICE(x);
+  Tensor y = new_raw_tensor(shape_ops::batch_pick(x.shape(), ids));
+  batch_pick_fw_impl(x, ids, y);
+  return y;
+}
+
+Tensor Device::batch_slice_fw(
+    const Tensor &x, std::uint32_t lower, std::uint32_t upper) {
+  CHECK_DEVICE(x);
+  Tensor y = new_raw_tensor(shape_ops::batch_slice(x.shape(), lower, upper));
+  batch_slice_fw_impl(x, lower, y);
+  return y;
+}
+
+Tensor Device::batch_concat_fw(const std::vector<const Tensor *> &xs) {
+  if (xs.empty()) PRIMITIV_THROW_ERROR("No tensors to concat.");
+  vector<Shape> shapes;
+  shapes.reserve(xs.size());
+
+  for (std::uint32_t i = 0; i < xs.size(); ++i) {
+    CHECK_DEVICE(*xs[i]);
+    shapes.emplace_back(xs[i]->shape());
+  }
+
+  Tensor y = new_raw_tensor(shape_ops::batch_concat(shapes));
+  batch_concat_fw_impl(xs, y);
+  return y;
+}
+
 Tensor Device::batch_sum_fw(const Tensor &x) {
   CHECK_DEVICE(x);
   Tensor y = new_raw_tensor(x.shape().resize_batch(1));
   batch_sum_fw_impl(x, y);
   return y;
+}
+
+void Device::batch_pick_bw(
+    const Tensor &gy, const std::vector<std::uint32_t> &ids, Tensor &gx) {
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(gx);
+  const Shape sy = shape_ops::batch_pick(gx.shape(), ids);
+  if (gy.shape() != sy) {
+    PRIMITIV_THROW_ERROR(
+        "Shape mismatched. gy.shape(): " << gy.shape().to_string()
+        << " != expected shape: " << sy.to_string());
+  }
+  batch_pick_bw_impl(gy, ids, gx);
+}
+
+void Device::batch_slice_bw(
+    const Tensor &gy, std::uint32_t offset, Tensor &gx) {
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(gx);
+  const Shape &sy = gy.shape();
+  const Shape &sx = gx.shape();
+  if (!sy.has_same_dims(sx) || offset + sy.batch() > sx.batch()) {
+    PRIMITIV_THROW_ERROR(
+        "Attempted to add gradients with shape "
+        << sy.to_string() << ", batch offset " << offset
+        << " to shape" << sx.to_string() << '.');
+  }
+  batch_slice_bw_impl(gy, offset, gx);
 }
 
 void Device::inplace_multiply_const(float k, Tensor &x) {

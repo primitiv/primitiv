@@ -133,6 +133,37 @@ Shape pool2d(
     std::uint32_t padding0, std::uint32_t padding1,
     std::uint32_t stride0, std::uint32_t stride1);
 
+/**
+ * Calculates a picked shape with the batch addresses.
+ * @param x A shape.
+ * @param ids Label IDs to be picked from the batch.
+ * @return Calculated shape.
+ */
+Shape batch_pick(const Shape &x, const std::vector<std::uint32_t> &ids);
+
+/**
+ * Calculates a shape of the slice along the batch axis.
+ * @param x A shape.
+ * @param lower Lower bound of the batch.
+ * @param upper Lower bound of the batch.
+ * @return Calculated shape.
+ */
+Shape batch_slice(const Shape &x, std::uint32_t lower, std::uint32_t upper);
+
+/**
+ * Calculates a shape by concatenating minibatches.
+ * @param xs A list of shapes.
+ * @return Calculated shape.
+ */
+Shape batch_concat(const std::vector<Shape> &xs);
+
+/**
+ * Calculates a shape by concatenating minibatches.
+ * @param xs A list of shapes.
+ * @return Calculated shape.
+ */
+Shape batch_concat(const std::vector<const Shape *> &xs);
+
 }  // namespace shape_ops
 }  // namespace primitiv
 

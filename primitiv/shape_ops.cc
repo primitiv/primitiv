@@ -183,5 +183,65 @@ Shape pool2d(
       x.batch());
 }
 
+Shape batch_pick(const Shape &x, const std::vector<std::uint32_t> &ids) {
+  const std::uint32_t n = x.batch();
+  const std::uint32_t bi = ids.size();
+  if (bi == 0) {
+    PRIMITIV_THROW_ERROR(
+        "Invalid IDs to pick. shape: " << x.to_string()
+        << ", ids.size(): " << ids.size());
+  }
+  for (std::uint32_t i = 0; i < bi; ++i) {
+    if (ids[i] >= n) {
+      PRIMITIV_THROW_ERROR(
+          "Invalid IDs to pick. shape: " << x.to_string()
+          << ", ids[" << i << "]: " << ids[i]);
+    }
+  }
+
+  return x.resize_batch(bi);
+}
+
+Shape batch_slice(const Shape &x, std::uint32_t lower, std::uint32_t upper) {
+  if (lower >= upper || upper > x.batch()) {
+    PRIMITIV_THROW_ERROR(
+        "Invalid batch_slice operation. shape: " << x.to_string()
+        << ", lower: " << lower << ", upper: " << upper);
+  }
+
+  return x.resize_batch(upper - lower);
+}
+
+Shape batch_concat(const std::vector<Shape> &xs) {
+  std::vector<const Shape *> ptrs;
+  ptrs.reserve(xs.size());
+  for (const Shape &x : xs) ptrs.emplace_back(&x);
+  return batch_concat(ptrs);
+}
+
+Shape batch_concat(const std::vector<const Shape *> &xs) {
+  if (xs.empty()) {
+    PRIMITIV_THROW_ERROR("No tensors to be concatenated.");
+  }
+
+  Shape s0 = *xs[0];
+  std::uint32_t sum = s0.batch();
+
+  for (std::uint32_t i = 1; i < xs.size(); ++i) {
+    const Shape &s = *xs[i];
+    if (!s0.has_same_dims(s)) {
+      std::string shapes_str = xs[0]->to_string();
+      for (std::uint32_t i = 1; i < xs.size(); ++i) {
+        shapes_str += ", " + xs[i]->to_string();
+      }
+      PRIMITIV_THROW_ERROR("Invalid shapes to concatenate minibatches: " << shapes_str);
+    }
+    sum += s.batch();
+  }
+
+  s0.update_batch(sum);
+  return s0;
+}
+
 }  // namespace shape_ops
 }  // namespace primitiv

@@ -129,6 +129,14 @@ IMPL_NAME_0(Tan);
 IMPL_NAME_0(ReLU);
 IMPL_NAME_0(LReLU);
 
+IMPL_NAME_0(BatchPick);
+std::string BatchSlice::name() const {
+  return "BatchSlice("
+    + string_utils::to_string(lower_) + ':'
+    + string_utils::to_string(upper_) + ')';
+}
+IMPL_NAME_1(BatchSplit, n_);
+IMPL_NAME_0(BatchConcat);
 IMPL_NAME_0(BatchSum);
 
 std::string Convolution2D::name() const {
@@ -248,6 +256,26 @@ FWD_SHAPE(Min) { *y[0] = x[0]->resize_dim(dim_, 1); }
 FWD_SHAPE(Sum) { *y[0] = x[0]->resize_dim(dim_, 1); }
 FWD_SHAPE(LogSumExp) { *y[0] = x[0]->resize_dim(dim_, 1); }
 FWD_SHAPE(Broadcast) { *y[0] = shape_ops::broadcast(*x[0], dim_, size_); }
+FWD_SHAPE(BatchPick) { *y[0] = shape_ops::batch_pick(*x[0], ids_); }
+FWD_SHAPE(BatchSlice) { *y[0] = shape_ops::batch_slice(*x[0], lower_, upper_); }
+FWD_SHAPE(BatchSplit) {
+  if (n_ == 0) {
+    PRIMITIV_THROW_ERROR("Invalid number of partitions: " << n_);
+  }
+  Shape xs = *x[0];
+  const std::uint32_t total = xs.batch();
+  const std::uint32_t span = total / n_;
+  if (span * n_ != total) {
+    PRIMITIV_THROW_ERROR(
+        "Could not split the batch with size "
+        << total << " into " << n_ << " partitions.");
+  }
+  xs.update_batch(span);
+  for (std::uint32_t i = 0; i < n_; ++i) {
+    *y[i] = xs;
+  }
+}
+FWD_SHAPE(BatchConcat) { *y[0] = shape_ops::batch_concat(x); }
 FWD_SHAPE(BatchSum) { *y[0] = x[0]->resize_batch(1); }
 FWD_SHAPE(Convolution2D) {
   *y[0] = shape_ops::conv2d(
@@ -385,9 +413,20 @@ FORWARD(MatrixMultiply) { *y[0] = functions::matmul(*x[0], *x[1]); }
 FORWARD(Sum) { *y[0] = functions::sum(*x[0], dim_); }
 FORWARD(LogSumExp) { *y[0] = functions::logsumexp(*x[0], dim_); }
 FORWARD(Broadcast) { *y[0] = functions::broadcast(*x[0], dim_, size_); }
-
+  
 FORWARD(Max) { *y[0] = functions::max(*x[0], dim_); }
 FORWARD(Min) { *y[0] = functions::min(*x[0], dim_); }
+
+FORWARD(BatchPick) { *y[0] = functions::batch::pick(*x[0], ids_); }
+FORWARD(BatchSlice) { *y[0] = functions::batch::slice(*x[0], lower_, upper_); }
+FORWARD(BatchSplit) {
+  const std::uint32_t total = x[0]->shape().batch();
+  const std::uint32_t span = total / n_;
+  for (std::uint32_t i = 0; i < n_; ++i) {
+    *y[i] = functions::batch::slice(*x[0], i * span, (i + 1) * span);
+  }
+}
+FORWARD(BatchConcat) { *y[0] = functions::batch::concat(x); }
 
 FORWARD(BatchSum) { *y[0] = functions::batch::sum(*x[0]); }
 
@@ -701,6 +740,39 @@ BACKWARD(Broadcast) {
   UNUSED(x);
   UNUSED(y);
   *gx[0] += functions::sum(*gy[0], dim_);
+}
+
+BACKWARD(BatchPick) {
+  UNUSED(x);
+  UNUSED(y);
+  gy[0]->device().batch_pick_bw(*gy[0], ids_, *gx[0]);
+}
+
+BACKWARD(BatchSlice) {
+  UNUSED(x);
+  UNUSED(y);
+  gy[0]->device().batch_slice_bw(*gy[0], lower_, *gx[0]);
+}
+
+BACKWARD(BatchSplit) {
+  UNUSED(x);
+  UNUSED(y);
+  Device &dev = gy[0]->device();
+  const std::uint32_t span = gy[0]->shape().batch();
+  for (std::uint32_t i = 0; i < n_; ++i) {
+    dev.batch_slice_bw(*gy[i], i * span, *gx[0]);
+  }
+}
+
+BACKWARD(BatchConcat) {
+  UNUSED(x);
+  UNUSED(y);
+  std::uint32_t offset = 0;
+  for (Tensor *gxi : gx) {
+    const std::uint32_t span = gxi->shape().batch();
+    *gxi += functions::batch::slice(*gy[0], offset, offset + span);
+    offset += span;
+  }
 }
 
 BACKWARD(BatchSum) {

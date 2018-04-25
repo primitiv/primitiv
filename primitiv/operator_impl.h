@@ -315,6 +315,36 @@ PRIMITIV_DECL_UNARY(Tan);
 PRIMITIV_DECL_UNARY(ReLU);
 PRIMITIV_DECL_UNARY(LReLU);
 
+class BatchPick : public Operator {
+  PRIMITIV_DECL_DEFAULTS_AND_FORWARD(1, 1);
+public:
+  explicit BatchPick(const std::vector<std::uint32_t> &ids) : ids_(ids) {}
+private:
+  std::vector<std::uint32_t> ids_;
+};
+
+class BatchSlice : public Operator {
+  PRIMITIV_DECL_DEFAULTS_AND_FORWARD(1, 1);
+public:
+  BatchSlice(std::uint32_t lower, std::uint32_t upper)
+    : lower_(lower), upper_(upper) {}
+private:
+  std::uint32_t lower_;
+  std::uint32_t upper_;
+};
+
+class BatchSplit : public Operator {
+  PRIMITIV_DECL_DEFAULTS_AND_FORWARD(1, n_);
+public:
+  explicit BatchSplit(std::uint32_t n) : n_(n) {}
+private:
+  std::uint32_t n_;
+};
+
+class BatchConcat : public Operator {
+  PRIMITIV_DECL_DEFAULTS_AND_FORWARD(Operator::NONZERO, 1);
+};
+
 PRIMITIV_DECL_UNARY(BatchSum);
 
 class Convolution2D : public Operator {
