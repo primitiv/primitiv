@@ -1127,6 +1127,16 @@ TEST_F(OperatorImplTest, CheckMatrixMultiply) {
   TEST_2ARGS(MatrixMultiply);
 }
 
+TEST_F(OperatorImplTest, CheckAbs) {
+  // y = abs(x)
+  // dy/dx = sign(x)
+  setup_1arg();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, 1, 2, 3, 4};
+  const vector<float> bw_grad = {1, 1, 1, 1, 0, 0, 0, 0, -1, -1, -1, -1};
+  TEST_1ARG(Abs);
+}
+
 TEST_F(OperatorImplTest, CheckSqrt) {
   // y = sqrt(x)
   // dy/dx = 1/(2y)
