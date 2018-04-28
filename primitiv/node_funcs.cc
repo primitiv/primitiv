@@ -188,6 +188,11 @@ Node matmul(const Node &a, const Node &b) {
 }
 
 template<>
+Node abs(const Node &x) {
+  return REGX(x, Abs(), x)[0];
+}
+
+template<>
 Node sqrt(const Node &x) {
   return REGX(x, Sqrt(), x)[0];
 }

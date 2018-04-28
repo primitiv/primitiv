@@ -293,6 +293,7 @@ void Device::name##_bw( \
 }
 
 DEV_FW_X(negate, static_cast<const Shape &>);
+DEV_FW_X(abs, static_cast<const Shape &>);
 DEV_FW_X(sqrt, static_cast<const Shape &>);
 DEV_FW_X(exp, static_cast<const Shape &>);
 DEV_FW_X(log, static_cast<const Shape &>);
@@ -304,6 +305,7 @@ DEV_FW_X(cos, static_cast<const Shape &>);
 DEV_FW_X(tan, static_cast<const Shape &>);
 DEV_FW_X(transpose, shape_ops::transpose);
 
+DEV_BW_X(abs, static_cast<const Shape &>);
 DEV_BW_X(sqrt, static_cast<const Shape &>);
 DEV_BW_X(exp, static_cast<const Shape &>);
 DEV_BW_X(log, static_cast<const Shape &>);

@@ -118,6 +118,7 @@ public:
 
   // Unary operations.
   Tensor negate_fw(const Tensor &x);
+  Tensor abs_fw(const Tensor &x);
   Tensor sqrt_fw(const Tensor &x);
   Tensor exp_fw(const Tensor &x);
   Tensor log_fw(const Tensor &x);
@@ -129,6 +130,7 @@ public:
   Tensor tan_fw(const Tensor &x);
   Tensor transpose_fw(const Tensor &x);
 
+  void abs_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void sqrt_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void exp_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void log_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
@@ -381,6 +383,7 @@ private:
   virtual void slice_bw_impl(const Tensor &gy, std::uint32_t dim, std::uint32_t offset, Tensor &gx) = 0;
 
   virtual void negate_fw_impl(const Tensor &x, Tensor &y) = 0;
+  virtual void abs_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void sqrt_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void exp_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void log_fw_impl(const Tensor &x, Tensor &y) = 0;
@@ -392,6 +395,7 @@ private:
   virtual void tan_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void transpose_fw_impl(const Tensor &x, Tensor &y) = 0;
 
+  virtual void abs_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void sqrt_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void exp_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void log_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;

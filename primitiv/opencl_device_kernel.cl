@@ -260,6 +260,7 @@ kernel void name##_fw_kernel( \
 }
 
 OPENCLDEV_KERNEL_FW_X(negate, -px[i])
+OPENCLDEV_KERNEL_FW_X(abs, fabs(px[i]))
 OPENCLDEV_KERNEL_FW_X(sqrt, sqrt(px[i]))
 OPENCLDEV_KERNEL_FW_X(exp, exp(px[i]))
 OPENCLDEV_KERNEL_FW_X(log, log(px[i]))
@@ -271,6 +272,7 @@ OPENCLDEV_KERNEL_FW_X(sin, sin(px[i]))
 OPENCLDEV_KERNEL_FW_X(cos, cos(px[i]))
 OPENCLDEV_KERNEL_FW_X(tan, tan(px[i]))
 
+OPENCLDEV_KERNEL_BW_X(abs, sign(px[i]) * pgy[i])
 OPENCLDEV_KERNEL_BW_X(sqrt, .5f * pgy[i] / py[i])
 OPENCLDEV_KERNEL_BW_X(exp, py[i] * pgy[i])
 OPENCLDEV_KERNEL_BW_X(log, pgy[i] / px[i])

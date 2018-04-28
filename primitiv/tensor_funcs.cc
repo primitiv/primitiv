@@ -203,6 +203,11 @@ Tensor matmul(const Tensor &a, const Tensor &b) {
 }
 
 template<>
+Tensor abs(const Tensor &x) {
+  return x.device().abs_fw(x);
+}
+
+template<>
 Tensor sqrt(const Tensor &x) {
   return x.device().sqrt_fw(x);
 }
