@@ -24,7 +24,7 @@ using EMatrixXf = ::Eigen::MatrixXf;
 #define MAYBE_USED(x) static_cast<void>(x)
 
 #define REPEAT_OP(i, n, op) \
-  for (std::uint32_t (i) = 0; (i) < (n); ++(i)) { (op); }
+  for (std::uint32_t i = 0; i < (n); ++i) { (op); }
 
 #define EIGEN_DEV_FW_X(name, op) \
 void Eigen::name##_fw_impl(const Tensor &x_, Tensor &y_) { \
