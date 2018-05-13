@@ -117,6 +117,7 @@ IMPL_NAME_0(Pow);
 IMPL_NAME_0(Transpose);
 IMPL_NAME_0(MatrixMultiply);
 
+IMPL_NAME_0(Abs);
 IMPL_NAME_0(Sqrt);
 IMPL_NAME_0(Exp);
 IMPL_NAME_0(Log);
@@ -222,6 +223,7 @@ FWD_SHAPE_UNARY(DivideConstR);
 FWD_SHAPE_UNARY(DivideConstL);
 FWD_SHAPE_UNARY(PowConstR);
 FWD_SHAPE_UNARY(PowConstL);
+FWD_SHAPE_UNARY(Abs);
 FWD_SHAPE_UNARY(Sqrt);
 FWD_SHAPE_UNARY(Exp);
 FWD_SHAPE_UNARY(Log);
@@ -367,6 +369,7 @@ FORWARD(Flatten) { *y[0] = functions::flatten(*x[0]); }
 
 FORWARD(Positive) { *y[0] = *x[0]; }
 FORWARD(Negative) { *y[0] = -(*x[0]); }
+FORWARD(Abs) { *y[0] = functions::abs(*x[0]); }
 FORWARD(Sqrt) { *y[0] = functions::sqrt(*x[0]); }
 FORWARD(Exp) { *y[0] = functions::exp(*x[0]); }
 FORWARD(Log) { *y[0] = functions::log(*x[0]); }
@@ -546,6 +549,10 @@ BACKWARD(Negative) {
   UNUSED(x);
   UNUSED(y);
   *gx[0] -= *gy[0];
+}
+
+BACKWARD(Abs) {
+  gy[0]->device().abs_bw(*x[0], *y[0], *gy[0], *gx[0]);
 }
 
 BACKWARD(Sqrt) {

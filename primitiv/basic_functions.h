@@ -575,6 +575,14 @@ template<typename Var>
 type_traits::Identity<Var> matmul(const Var &a, const Var &b);
 
 /**
+ * Applies an elementwise absolute function.
+ * @param x A variable representing an argument \f$ x \f$.
+ * @return A variable representing \f$ \vert x \vert \f$.
+ */
+template<typename Var>
+type_traits::Identity<Var> abs(const Var &x);
+
+/**
  * Applies an elementwise square root function.
  * @param x A variable representing an argument \f$ x \f$.
  * @return A variable representing \f$ \sqrt{x} \f$.

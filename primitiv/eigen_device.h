@@ -55,6 +55,7 @@ private:
   void slice_bw_impl(const Tensor &gy, std::uint32_t dim, std::uint32_t offset, Tensor &gx) override;
 
   void negate_fw_impl(const Tensor &x, Tensor &y) override;
+  void abs_fw_impl(const Tensor &x, Tensor &y) override;
   void sqrt_fw_impl(const Tensor &x, Tensor &y) override;
   void exp_fw_impl(const Tensor &x, Tensor &y) override;
   void log_fw_impl(const Tensor &x, Tensor &y) override;
@@ -66,6 +67,7 @@ private:
   void tan_fw_impl(const Tensor &x, Tensor &y) override;
   void transpose_fw_impl(const Tensor &x, Tensor &y) override;
 
+  void abs_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void sqrt_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void exp_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void log_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;

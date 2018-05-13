@@ -238,6 +238,7 @@ public:
       CONFIGURE_KERNEL(slice_bw);
 
       CONFIGURE_KERNEL(negate_fw);
+      CONFIGURE_KERNEL(abs_fw);
       CONFIGURE_KERNEL(sqrt_fw);
       CONFIGURE_KERNEL(exp_fw);
       CONFIGURE_KERNEL(log_fw);
@@ -248,6 +249,7 @@ public:
       CONFIGURE_KERNEL(cos_fw);
       CONFIGURE_KERNEL(tan_fw);
 
+      CONFIGURE_KERNEL(abs_bw);
       CONFIGURE_KERNEL(sqrt_bw);
       CONFIGURE_KERNEL(exp_bw);
       CONFIGURE_KERNEL(log_bw);
@@ -372,6 +374,7 @@ public:
   DECL_KERNEL(slice_bw);
 
   DECL_KERNEL(negate_fw);
+  DECL_KERNEL(abs_fw);
   DECL_KERNEL(sqrt_fw);
   DECL_KERNEL(exp_fw);
   DECL_KERNEL(log_fw);
@@ -386,6 +389,7 @@ public:
   std::uint32_t transpose_fw_group_size_x;
   std::uint32_t transpose_fw_group_size_y;
 
+  DECL_KERNEL(abs_bw);
   DECL_KERNEL(sqrt_bw);
   DECL_KERNEL(exp_bw);
   DECL_KERNEL(log_bw);
@@ -1014,6 +1018,7 @@ void OpenCL::name##_bw_impl( \
 }
 
 OPENCLDEV_FW_X(negate);
+OPENCLDEV_FW_X(abs);
 OPENCLDEV_FW_X(sqrt);
 OPENCLDEV_FW_X(exp);
 OPENCLDEV_FW_X(log);
@@ -1024,6 +1029,7 @@ OPENCLDEV_FW_X(sin);
 OPENCLDEV_FW_X(cos);
 OPENCLDEV_FW_X(tan);
 
+OPENCLDEV_BW_X(abs);
 OPENCLDEV_BW_X(sqrt);
 OPENCLDEV_BW_X(exp);
 OPENCLDEV_BW_X(log);
