@@ -506,7 +506,7 @@ void Device::reverse_bw(const Tensor &gy, std::uint32_t dim, Tensor &gx) {
         << " != expected shape: " << gx.shape().to_string());
   }
   reverse_bw_impl(gy, dim, gx);
-
+}
 
 Tensor Device::max_fw(const Tensor &x, std::uint32_t dim) {
   CHECK_DEVICE(x);
