@@ -338,7 +338,7 @@ PRIMITIV_C_STATUS primitivApplyNodeElu(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitivTensoRelu(
+PRIMITIV_C_STATUS primitivApplyTensorElu(
     const primitivTensor_t *x, float a, primitivTensor_t **y) try {
   PRIMITIV_C_CHECK_NOT_NULL(x);
   PRIMITIV_C_CHECK_NOT_NULL(y);
