@@ -442,7 +442,7 @@ type_traits::Identity<Var> slice(
  *         ``split(x, dim, n)[i] == slice(x, dim, L(i), U(i))``,
  *         where ``L(i) := i * x.shape()[dim] / n``
  *         and ``U(i) := (i + 1) * x.shape()[dim] / n``.
- * @throw primitiv::Error ``n`` can not divide ``s.shape()[dim]`` wiout residue.
+ * @throw primitiv::Error ``n`` can not divide ``s.shape()[dim]`` without residue.
  */
 template<typename Var>
 std::vector<type_traits::Identity<Var>> split(
@@ -727,6 +727,66 @@ template<typename Var>
 type_traits::Identity<Var> elu(const Var &x, float a);
 
 /**
+ * Retrieves maximum values along an axis.
+ * Following examples show how this function work:
+ * @f[
+ *  \begin{array}{lcl}
+ *    x & := &
+ *      \left( \begin{array}{ccc}
+ *        1 & 6 & 7 \\ 2 & 5 & 9 \\ 3 & 4 & 8
+ *      \end{array} \right), \\
+ *    \mathrm{max}(x, 0) & = &
+ *      \left( \begin{array}{ccc}
+ *        3 & 6 & 9
+ *      \end{array} \right), \\
+ *    \mathrm{max}(x, 1) & = &
+ *      \left( \begin{array}{c}
+ *        7 \\ 9 \\ 8
+ *      \end{array} \right), \\
+ *    \mathrm{max}(x, 2) & = &
+ *      \left( \begin{array}{ccc}
+ *        1 & 6 & 7 \\ 2 & 5 & 9 \\ 3 & 4 & 8
+ *      \end{array} \right).
+ *  \end{array}
+ * @f]
+ * @param x A variable representing values before reduction.
+ * @param dim Axis to be processed.
+ * @return A new variable.
+ */
+template<typename Var>
+type_traits::Identity<Var> max(const Var &x, std::uint32_t dim);
+
+/**
+ * Retrieves minimum values along an axis.
+ * Following examples show how this function work:
+ * @f[
+ *  \begin{array}{lcl}
+ *    x & := &
+ *      \left( \begin{array}{ccc}
+ *        1 & 6 & 7 \\ 2 & 5 & 9 \\ 3 & 4 & 8
+ *      \end{array} \right), \\
+ *    \mathrm{min}(x, 0) & = &
+ *      \left( \begin{array}{ccc}
+ *        1 & 4 & 7
+ *      \end{array} \right), \\
+ *    \mathrm{min}(x, 1) & = &
+ *      \left( \begin{array}{c}
+ *        1 \\ 2 \\ 3
+ *      \end{array} \right), \\
+ *    \mathrm{min}(x, 2) & = &
+ *      \left( \begin{array}{ccc}
+ *        1 & 6 & 7 \\ 2 & 5 & 9 \\ 3 & 4 & 8
+ *      \end{array} \right).
+ *  \end{array}
+ * @f]
+ * @param x A variable representing values before reduction.
+ * @param dim Axis to be processed.
+ * @return A new variable.
+ */
+template<typename Var>
+type_traits::Identity<Var> min(const Var &x, std::uint32_t dim);
+
+/**
  * Applies summation along an axis.
  * Following examples show how this function work:
  * @f[
@@ -905,6 +965,90 @@ type_traits::Identity<Var> max_pool2d(
     std::uint32_t stride0, std::uint32_t stride1);
 
 namespace batch {
+
+/**
+ * Selects items from the batch by IDs.
+ * @param x A variable representing an original data.
+ * @param ids List of batch IDs. Each value must be lower than
+ *            `x.shape().batch()`.
+ * @return A new variable.
+ */
+template<typename Var>
+type_traits::Identity<Var> pick(
+    const Var &x, const std::vector<std::uint32_t> &ids);
+
+/**
+ * Extracts a specific range \f$ [L, U) \f$ of items along the batch axis.
+ * @param x A variable representing an original data.
+ * @param lower Lower bound \f$ L \f$ of the batch.
+ * @param upper Upper bound \f$ U \f$ of the batch.
+ * @return A new variable.
+ */
+template<typename Var>
+type_traits::Identity<Var> slice(
+    const Var &x, std::uint32_t lower, std::uint32_t upper);
+
+/**
+ * Splits a given variable into specified number of partitions along the batch.
+ * @param x A variable representing an original data.
+ * @param n The number of resulting partitions.
+ *          ``n`` should be able to divide ``x.shape().batch()`` without
+ *          residue.
+ * @return A list of `n` variables. Each variable is identical with:
+ *         ``batch::split(x, n)[i] == batch::slice(x, L(i), U(i))``,
+ *         where ``L(i) := i * x.shape().batch() / n``
+ *         and ``U(i) := (i + 1) * x.shape().batch() / n``.
+ * @throw primitiv::Error ``n`` can not divide ``s.shape().batch()`` without
+ *                        residue.
+ */
+template<typename Var>
+std::vector<type_traits::Identity<Var>> split(const Var &x, std::uint32_t n);
+
+/// @cond
+
+template<typename Var>
+type_traits::Identity<Var> concat(const std::vector<Var> &xs);
+
+template<typename Var>
+type_traits::Identity<Var> concat(const std::vector<const Var *> &xs);
+
+template<typename Var>
+inline type_traits::Identity<Var> concat(const std::initializer_list<Var> xs) {
+  return concat(std::vector<Var>(xs));
+}
+
+template<typename Var>
+inline type_traits::Identity<Var> concat(
+        const std::initializer_list<const Var *> xs) {
+  return concat(std::vector<const Var *>(xs));
+}
+
+/// @endcond
+
+/**
+ * Concatenates multiple variables along the batch axis.
+ * @param xs Iterable container of variables. `xs` must have both `begin()` and
+ *           `end()` functions that return the begin/end iterators.
+ * @return A new variable.
+ */
+template<typename Container>
+inline type_traits::Reduce<Container> concat(const Container &xs) {
+  using Var = type_traits::Reduce<Container>;
+  return concat(std::vector<Var>(xs.begin(), xs.end()));
+}
+
+/**
+ * Same as above, but `xs` has pointers of variables.
+ * @param xs Iterable container of pointers of variables. `xs` must have both
+ *           `begin()` and `end()` functions that return the begin/end
+ *           iterators.
+ * @return A new variable.
+ */
+template<typename Container>
+inline type_traits::ReducePtr<Container> concat(const Container &xs) {
+  using Var = type_traits::ReducePtr<Container>;
+  return concat(std::vector<const Var *>(xs.begin(), xs.end()));
+}
 
 /**
  * Applies summation along the minibatch.

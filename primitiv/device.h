@@ -209,10 +209,23 @@ public:
       Tensor &ga, Tensor &gb);
 
   // Dimension operations.
+  Tensor max_fw(const Tensor &x, std::uint32_t dim);
+  Tensor min_fw(const Tensor &x, std::uint32_t dim);
+  void max_bw(const Tensor &x, const Tensor &y, const Tensor &gy, std::uint32_t dim, Tensor &gx);
+  void min_bw(const Tensor &x, const Tensor &y, const Tensor &gy, std::uint32_t dim, Tensor &gx);
+
   Tensor sum_fw(const Tensor &x, std::uint32_t dim);
   Tensor logsumexp_fw(const Tensor &x, std::uint32_t dim);
   Tensor broadcast_fw(const Tensor &x, std::uint32_t dim, std::uint32_t size);
+
+  // Minibatch operations.
+  Tensor batch_pick_fw(const Tensor &x, const std::vector<std::uint32_t> &ids);
+  Tensor batch_slice_fw(const Tensor &x, std::uint32_t lower, std::uint32_t upper);
+  Tensor batch_concat_fw(const std::vector<const Tensor *> &xs);
   Tensor batch_sum_fw(const Tensor &x);
+
+  void batch_pick_bw(const Tensor &gy, const std::vector<std::uint32_t> &ids, Tensor &gx);
+  void batch_slice_bw(const Tensor &gy, std::uint32_t offset, Tensor &gx);
 
   // Convolution.
   Tensor conv2d_fw(
@@ -459,10 +472,23 @@ private:
       const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy,
       Tensor &ga, Tensor &gb) = 0;
 
+  virtual void max_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
+  virtual void min_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
+  virtual void max_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, std::uint32_t dim, Tensor &gx) = 0;
+  virtual void min_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, std::uint32_t dim, Tensor &gx) = 0;
+
   virtual void sum_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
   virtual void logsumexp_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
   virtual void broadcast_fw_impl(const Tensor &x, std::uint32_t dim, std::uint32_t size, Tensor &y) = 0;
+
+  virtual void batch_pick_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &ids, Tensor &y) = 0;
+  virtual void batch_slice_fw_impl(const Tensor &x, std::uint32_t offset, Tensor &y) = 0;
+  virtual void batch_concat_fw_impl(
+      const std::vector<const Tensor *> &xs, Tensor &y) = 0;
   virtual void batch_sum_fw_impl(const Tensor &x, Tensor &y) = 0;
+
+  virtual void batch_pick_bw_impl(const Tensor &gy, const std::vector<std::uint32_t> &ids, Tensor &gx) = 0;
+  virtual void batch_slice_bw_impl(const Tensor &gy, std::uint32_t offset, Tensor &gx) = 0;
 
   virtual void conv2d_fw_impl(
       const Tensor &x, const Tensor &w,

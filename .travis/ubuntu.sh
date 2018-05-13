@@ -10,7 +10,7 @@ docker exec travis-ci bash -c "apt update"
 docker exec travis-ci bash -c "apt install -y build-essential cmake googletest libeigen3-dev"
 
 # install OpenCL environment
-docker exec travis-ci bash -c "apt install -y opencl-headers git wget pkg-config libhwloc-dev libltdl-dev ocl-icd-dev ocl-icd-opencl-dev clang-3.8 llvm-3.8-dev libclang-3.8-dev libz-dev"
+docker exec travis-ci bash -c "apt install -y opencl-headers git wget pkg-config libhwloc-dev libltdl-dev ocl-icd-dev ocl-icd-opencl-dev clang llvm-dev libclang-dev libz-dev"
 docker exec travis-ci bash -c "wget https://github.com/CNugteren/CLBlast/archive/1.2.0.tar.gz -O ./clblast.tar.gz"
 docker exec travis-ci bash -c "mkdir ./clblast"
 docker exec travis-ci bash -c "tar xf ./clblast.tar.gz -C ./clblast --strip-components 1"

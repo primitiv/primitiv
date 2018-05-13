@@ -27,7 +27,7 @@ class MemoryPool : public mixins::Identifiable<MemoryPool> {
     void operator()(void *ptr) {
       try {
         MemoryPool::get_object(pool_id_).free(ptr);
-      } catch (primitiv::Error) {
+      } catch (const primitiv::Error&) {
         // Memory pool already has gone and the pointer is already deleted by
         // the memory pool.
       }
