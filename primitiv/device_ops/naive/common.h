@@ -7,7 +7,7 @@
 #define MDATA(x) static_cast<float *>(get_mutable_handle(x))
 
 #define REPEAT_OP(i, n, op) \
-  for (std::uint32_t (i) = 0; (i) < (n); ++(i)) { (op); }
+  for (std::uint32_t i = 0; i < (n); ++i) { (op); }
 
 #define CPUDEV_FW_X(name, op) \
 void Naive::name##_fw_impl(const Tensor &x, Tensor &y) { \
