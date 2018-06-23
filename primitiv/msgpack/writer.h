@@ -9,6 +9,7 @@
 #include <vector>
 #include <unordered_map>
 
+#include <primitiv/config.h>
 #include <primitiv/error.h>
 #include <primitiv/mixins.h>
 #include <primitiv/msgpack/objects.h>
