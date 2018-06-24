@@ -1,6 +1,8 @@
 #ifndef PRIMITIV_MSGPACK_WRITER_H_
 #define PRIMITIV_MSGPACK_WRITER_H_
 
+#include <primitiv/config.h>
+
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -9,7 +11,6 @@
 #include <vector>
 #include <unordered_map>
 
-#include <primitiv/config.h>
 #include <primitiv/error.h>
 #include <primitiv/mixins.h>
 #include <primitiv/msgpack/objects.h>
