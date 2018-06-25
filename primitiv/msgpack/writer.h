@@ -1,6 +1,8 @@
 #ifndef PRIMITIV_MSGPACK_WRITER_H_
 #define PRIMITIV_MSGPACK_WRITER_H_
 
+#include <primitiv/config.h>
+
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
