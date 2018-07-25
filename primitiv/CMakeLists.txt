@@ -24,7 +24,6 @@ install(
 set(primitiv_base_HDRS
   arithmetic.h
   basic_functions.h
-  composite_functions.h
   device.h
   error.h
   file_format.h
@@ -78,8 +77,18 @@ set(primitiv_msgpack_HDRS
 )
 install(FILES ${primitiv_msgpack_HDRS} DESTINATION include/primitiv/msgpack)
 
+# Contrib libraries.
+set(primitiv_contrib_HDRS
+  contrib/functions.h
+)
+install(FILES ${primitiv_contrib_HDRS} DESTINATION include/primitiv/contrib)
+
 # Core library: all of above libraries.
-set(primitiv_core_HDRS ${primitiv_base_HDRS} ${primitiv_msgpack_HDRS})
+set(primitiv_core_HDRS
+  ${primitiv_base_HDRS}
+  ${primitiv_msgpack_HDRS}
+  ${primitiv_contrib_HDRS}
+)
 set(primitiv_core_SRCS ${primitiv_base_SRCS})
 
 # Builds core library.

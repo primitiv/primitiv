@@ -1,5 +1,5 @@
-#ifndef PRIMITIV_COMPOSITE_FUNCTIONS_H_
-#define PRIMITIV_COMPOSITE_FUNCTIONS_H_
+#ifndef PRIMITIV_CONTRIB_FUNCTIONS_H_
+#define PRIMITIV_CONTRIB_FUNCTIONS_H_
 
 #include <limits>
 #include <primitiv/arithmetic.h>
@@ -305,4 +305,4 @@ inline type_traits::Identity<Var> dropout(
 }  // namespace functions
 }  // namespace primitiv
 
-#endif  // PRIMITIV_COMPOSITE_FUNCTIONS_H_
+#endif  // PRIMITIV_CONTRIB_FUNCTIONS_H_
