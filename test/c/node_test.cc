@@ -1,11 +1,14 @@
 #include <primitiv/config.h>
 
 #include <vector>
+
 #include <gtest/gtest.h>
+
 #include <primitiv/c/functions.h>
 #include <primitiv/c/graph.h>
 #include <primitiv/c/naive_device.h>
 #include <primitiv/c/status.h>
+
 #include <test_utils.h>
 
 namespace primitiv {

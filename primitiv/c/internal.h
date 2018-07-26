@@ -8,15 +8,15 @@
 #include <utility>
 #include <vector>
 
-#include <primitiv/device.h>
-#include <primitiv/error.h>
-#include <primitiv/graph.h>
-#include <primitiv/initializer.h>
-#include <primitiv/model.h>
-#include <primitiv/parameter.h>
-#include <primitiv/shape.h>
-#include <primitiv/tensor.h>
-#include <primitiv/optimizer.h>
+#include <primitiv/core/device.h>
+#include <primitiv/core/error.h>
+#include <primitiv/core/graph.h>
+#include <primitiv/core/initializer.h>
+#include <primitiv/core/model.h>
+#include <primitiv/core/parameter.h>
+#include <primitiv/core/shape.h>
+#include <primitiv/core/tensor.h>
+#include <primitiv/core/optimizer.h>
 
 #include <primitiv/c/define.h>
 

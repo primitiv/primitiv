@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include <primitiv/graph.h>
+#include <primitiv/core/graph.h>
 #include <primitiv/c/internal.h>
 #include <primitiv/c/graph.h>
 

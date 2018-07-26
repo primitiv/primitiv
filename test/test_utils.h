@@ -8,7 +8,8 @@
 #include <vector>
 #include <gtest/gtest.h>
 
-#include <primitiv/primitiv.h>
+#include <primitiv/core/device.h>
+#include <primitiv/core/error.h>
 
 #define IGNORE_NOT_IMPLEMENTED \
 catch (const primitiv::NotImplementedError &ex) { \

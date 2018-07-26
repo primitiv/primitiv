@@ -3,8 +3,10 @@
 #include <limits>
 #include <string>
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/string_utils.h>
+
+#include <primitiv/core/string_utils.h>
 
 using std::string;
 using std::vector;

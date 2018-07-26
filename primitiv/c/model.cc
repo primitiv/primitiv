@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include <primitiv/model.h>
+#include <primitiv/core/model.h>
 #include <primitiv/c/internal.h>
 #include <primitiv/c/model.h>
 

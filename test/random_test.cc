@@ -1,8 +1,11 @@
 #include <primitiv/config.h>
 
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/random.h>
+
+#include <primitiv/core/random.h>
+
 #include <test_utils.h>
 
 using std::vector;

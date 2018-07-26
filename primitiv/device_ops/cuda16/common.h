@@ -1,5 +1,5 @@
-#ifndef PRIMITIV_DEVICE_OPS_COMMON_CUDA16_H_
-#define PRIMITIV_DEVICE_OPS_COMMON_CUDA16_H_
+#ifndef PRIMITIV_DEVICE_OPS_CUDA16_COMMON_H_
+#define PRIMITIV_DEVICE_OPS_CUDA16_COMMON_H_
 
 #include <cuda_fp16.h>
 
@@ -204,4 +204,4 @@ void CUDA16::name##_bw_impl( \
       MDATA(half, ga), MDATA(half, gb)); \
 }
 
-#endif  // PRIMITIV_DEVICE_OPS_COMMON_CUDA16_H_
+#endif  // PRIMITIV_DEVICE_OPS_CUDA16_COMMON_H_

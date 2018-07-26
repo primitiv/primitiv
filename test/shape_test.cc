@@ -2,9 +2,12 @@
 
 #include <utility>
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/error.h>
-#include <primitiv/shape.h>
+
+#include <primitiv/core/error.h>
+#include <primitiv/core/shape.h>
+
 #include <test_utils.h>
 
 using std::pair;

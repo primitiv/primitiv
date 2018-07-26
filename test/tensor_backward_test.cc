@@ -3,10 +3,13 @@
 #include <algorithm>
 #include <cmath>
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/error.h>
-#include <primitiv/naive_device.h>
-#include <primitiv/tensor.h>
+
+#include <primitiv/core/error.h>
+#include <primitiv/core/naive_device.h>
+#include <primitiv/core/tensor.h>
+
 #include <test_utils.h>
 
 using std::vector;

@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#include <primitiv/eigen_device.h>
+#include <primitiv/core/eigen_device.h>
 #include <primitiv/device_ops/eigen/common.h>
 
 namespace primitiv {

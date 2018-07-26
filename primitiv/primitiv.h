@@ -5,27 +5,27 @@
 
 // This header file describes some include directives and may help users to use
 // the primitiv library.
-#include <primitiv/error.h>
-#include <primitiv/functions.h>
-#include <primitiv/graph.h>
-#include <primitiv/initializer_impl.h>
-#include <primitiv/model.h>
-#include <primitiv/naive_device.h>
-#include <primitiv/parameter.h>
-#include <primitiv/shape.h>
-#include <primitiv/tensor.h>
-#include <primitiv/optimizer_impl.h>
+#include <primitiv/core/error.h>
+#include <primitiv/core/functions.h>
+#include <primitiv/core/graph.h>
+#include <primitiv/core/initializer_impl.h>
+#include <primitiv/core/model.h>
+#include <primitiv/core/naive_device.h>
+#include <primitiv/core/parameter.h>
+#include <primitiv/core/shape.h>
+#include <primitiv/core/tensor.h>
+#include <primitiv/core/optimizer_impl.h>
 
 // Header files for specific device classes.
 #ifdef PRIMITIV_USE_EIGEN
-#include <primitiv/eigen_device.h>
+#include <primitiv/core/eigen_device.h>
 #endif  // PRIMITIV_USE_EIGEN
 #ifdef PRIMITIV_USE_CUDA
-#include <primitiv/cuda_device.h>
-#include <primitiv/cuda16_device.h>
+#include <primitiv/core/cuda_device.h>
+#include <primitiv/core/cuda16_device.h>
 #endif  // PRIMITIV_USE_CUDA
 #ifdef PRIMITIV_USE_OPENCL
-#include <primitiv/opencl_device.h>
+#include <primitiv/core/opencl_device.h>
 #endif  // PRIMITIV_USE_OPENCL
 
 #endif  // PRIMITIV_PRIMITIV_H_

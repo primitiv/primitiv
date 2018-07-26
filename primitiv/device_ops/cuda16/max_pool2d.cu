@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-#include <primitiv/cuda16_device.h>
+#include <primitiv/core/cuda16_device.h>
 #include <primitiv/internal/cuda_utils.h>
 #include <primitiv/device_ops/cuda16/common.h>
 

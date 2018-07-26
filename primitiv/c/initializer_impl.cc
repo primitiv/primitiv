@@ -1,6 +1,6 @@
 #include <primitiv/config.h>
 
-#include <primitiv/initializer_impl.h>
+#include <primitiv/core/initializer_impl.h>
 #include <primitiv/c/internal.h>
 #include <primitiv/c/initializer_impl.h>
 

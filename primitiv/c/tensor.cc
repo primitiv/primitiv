@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include <primitiv/tensor.h>
+#include <primitiv/core/tensor.h>
 #include <primitiv/c/internal.h>
 #include <primitiv/c/tensor.h>
 

@@ -1,6 +1,6 @@
 #include <primitiv/config.h>
 
-#include <primitiv/optimizer_impl.h>
+#include <primitiv/core/optimizer_impl.h>
 #include <primitiv/c/internal.h>
 #include <primitiv/c/optimizer_impl.h>
 

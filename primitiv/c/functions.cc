@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include <primitiv/functions.h>
+#include <primitiv/core/functions.h>
 #include <primitiv/c/internal.h>
 #include <primitiv/c/functions.h>
 

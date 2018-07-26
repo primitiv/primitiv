@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include <primitiv/cuda_device.h>
+#include <primitiv/core/cuda_device.h>
 #include <primitiv/internal/cuda_utils.h>
 #include <primitiv/device_ops/cuda/common.h>
 

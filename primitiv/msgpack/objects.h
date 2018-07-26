@@ -1,11 +1,13 @@
 #ifndef PRIMITIV_MSGPACK_OBJECTS_H_
 #define PRIMITIV_MSGPACK_OBJECTS_H_
 
+#include <primitiv/config.h>
+
 #include <cstddef>
 #include <cstdint>
 
-#include <primitiv/error.h>
-#include <primitiv/mixins.h>
+#include <primitiv/core/error.h>
+#include <primitiv/core/mixins.h>
 
 namespace primitiv {
 namespace msgpack {

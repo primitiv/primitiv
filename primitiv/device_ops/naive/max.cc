@@ -1,6 +1,6 @@
 #include <primitiv/config.h>
 
-#include <primitiv/naive_device.h>
+#include <primitiv/core/naive_device.h>
 #include <primitiv/device_ops/naive/common.h>
 
 namespace primitiv {

@@ -3,25 +3,25 @@
 #include <iostream>
 #include <vector>
 
-#include <primitiv/error.h>
+#include <primitiv/core/error.h>
 #include <test_utils.h>
 
-#include <primitiv/naive_device.h>
+#include <primitiv/core/naive_device.h>
 using primitiv::devices::Naive;
 
 #ifdef PRIMITIV_USE_EIGEN
-#include <primitiv/eigen_device.h>
+#include <primitiv/core/eigen_device.h>
 using primitiv::devices::Eigen;
 #endif  // PRIMITIV_USE_EIGEN
 
 #ifdef PRIMITIV_USE_CUDA
-#include <primitiv/cuda_device.h>
+#include <primitiv/core/cuda_device.h>
 using primitiv::devices::CUDA;
 using primitiv::devices::CUDA16;
 #endif  // PRIMITIV_USE_CUDA
 
 #ifdef PRIMITIV_USE_OPENCL
-#include <primitiv/opencl_device.h>
+#include <primitiv/core/opencl_device.h>
 using primitiv::devices::OpenCL;
 #endif  // PRIMITIV_USE_OPENCL
 

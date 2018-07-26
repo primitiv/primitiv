@@ -1,5 +1,5 @@
-#ifndef PRIMITIV_CUDA_UTILS_H_
-#define PRIMITIV_CUDA_UTILS_H_
+#ifndef PRIMITIV_INTERNAL_CUDA_UTILS_H_
+#define PRIMITIV_INTERNAL_CUDA_UTILS_H_
 
 #include <primitiv/config.h>
 
@@ -14,8 +14,8 @@
 #endif  // PRIMITIV_USE_CUDNN
 #include <curand.h>
 
-#include <primitiv/memory_pool.h>
-#include <primitiv/mixins.h>
+#include <primitiv/core/memory_pool.h>
+#include <primitiv/core/mixins.h>
 
 #define CUDA_CALL(f) { \
   ::cudaError_t err = (f); \
@@ -346,4 +346,4 @@ struct InternalState {
 }  // namespace cuda
 }  // namespace primitiv
 
-#endif  // PRIMITIV_CUDA_UTILS_H_
+#endif  // PRIMITIV_INTERNAL_CUDA_UTILS_H_

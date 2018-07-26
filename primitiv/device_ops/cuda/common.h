@@ -1,5 +1,5 @@
-#ifndef PRIMITIV_DEVICE_OPS_COMMON_CUDA_H_
-#define PRIMITIV_DEVICE_OPS_COMMON_CUDA_H_
+#ifndef PRIMITIV_DEVICE_OPS_CUDA_COMMON_H_
+#define PRIMITIV_DEVICE_OPS_CUDA_COMMON_H_
 
 /*
  * Macros for device functions.
@@ -150,4 +150,4 @@ void CUDA::name##_bw_impl( \
       a.shape().has_batch(), b.shape().has_batch(), MDATA(ga), MDATA(gb)); \
 }
 
-#endif  // PRIMITIV_DEVICE_OPS_COMMON_CUDA_H_
+#endif  // PRIMITIV_DEVICE_OPS_CUDA_COMMON_H_

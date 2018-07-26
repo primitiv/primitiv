@@ -1,5 +1,5 @@
-#ifndef PRIMITIV_DEVICE_OPS_COMMON_NAIVE_H_
-#define PRIMITIV_DEVICE_OPS_COMMON_NAIVE_H_
+#ifndef PRIMITIV_DEVICE_OPS_NAIVE_COMMON_H_
+#define PRIMITIV_DEVICE_OPS_NAIVE_COMMON_H_
 
 #define MAYBE_USED(x) static_cast<void>(x)
 
@@ -82,4 +82,4 @@ void Naive::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
   } \
 }
 
-#endif  // PRIMITIV_DEVICE_OPS_COMMON_NAIVE_H_
+#endif  // PRIMITIV_DEVICE_OPS_NAIVE_COMMON_H_

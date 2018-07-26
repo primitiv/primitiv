@@ -4,10 +4,13 @@
 #include <iterator>
 #include <numeric>
 #include <random>
+
 #include <gtest/gtest.h>
-#include <primitiv/functions.h>
-#include <primitiv/graph.h>
-#include <primitiv/naive_device.h>
+
+#include <primitiv/core/functions.h>
+#include <primitiv/core/graph.h>
+#include <primitiv/core/naive_device.h>
+
 #include <test_utils.h>
 
 using std::vector;

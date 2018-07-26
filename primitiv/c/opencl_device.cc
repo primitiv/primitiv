@@ -1,6 +1,6 @@
 #include <primitiv/config.h>
 
-#include <primitiv/opencl_device.h>
+#include <primitiv/core/opencl_device.h>
 #include <primitiv/c/internal.h>
 #include <primitiv/c/opencl_device.h>
 

@@ -2,14 +2,17 @@
 
 #include <sstream>
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/error.h>
-#include <primitiv/functions.h>
-#include <primitiv/graph.h>
-#include <primitiv/initializer_impl.h>
-#include <primitiv/naive_device.h>
-#include <primitiv/operator_impl.h>
-#include <primitiv/parameter.h>
+
+#include <primitiv/core/error.h>
+#include <primitiv/core/functions.h>
+#include <primitiv/core/graph.h>
+#include <primitiv/core/initializer_impl.h>
+#include <primitiv/core/naive_device.h>
+#include <primitiv/core/operator_impl.h>
+#include <primitiv/core/parameter.h>
+
 #include <test_utils.h>
 
 using std::vector;

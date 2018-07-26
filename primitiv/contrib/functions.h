@@ -2,8 +2,9 @@
 #define PRIMITIV_CONTRIB_FUNCTIONS_H_
 
 #include <limits>
-#include <primitiv/arithmetic.h>
-#include <primitiv/basic_functions.h>
+
+#include <primitiv/core/arithmetic.h>
+#include <primitiv/core/basic_functions.h>
 
 namespace primitiv {
 namespace functions {

@@ -1,6 +1,6 @@
 #include <primitiv/config.h>
 
-#include <primitiv/cuda_device.h>
+#include <primitiv/core/cuda_device.h>
 #include <primitiv/c/internal.h>
 #include <primitiv/c/cuda_device.h>
 

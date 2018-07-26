@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include <primitiv/parameter.h>
+#include <primitiv/core/parameter.h>
 #include <primitiv/c/internal.h>
 #include <primitiv/c/parameter.h>
 

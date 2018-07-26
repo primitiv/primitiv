@@ -1,6 +1,6 @@
 #include <primitiv/config.h>
 
-#include <primitiv/device.h>
+#include <primitiv/core/device.h>
 #include <primitiv/c/internal.h>
 #include <primitiv/c/device.h>
 

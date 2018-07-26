@@ -2,8 +2,11 @@
 
 #include <utility>
 #include <vector>
+
 #include <gtest/gtest.h>
+
 #include <primitiv/c/shape.h>
+
 #include <test_utils.h>
 
 using std::vector;
