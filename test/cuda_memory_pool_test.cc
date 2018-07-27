@@ -3,10 +3,10 @@
 #include <gtest/gtest.h>
 
 #include <primitiv/core/memory_pool.h>
-#include <primitiv/devices/cuda/device.h>
 #include <primitiv/core/error.h>
 #include <primitiv/core/shape.h>
-#include <primitiv/internal/cuda_utils.h>
+#include <primitiv/devices/cuda/device.h>
+#include <primitiv/internal/cuda/utils.h>
 
 namespace primitiv {
 

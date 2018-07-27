@@ -2,7 +2,7 @@
 
 #include <primitiv/devices/cuda16/device.h>
 #include <primitiv/devices/cuda16/ops/common.h>
-#include <primitiv/internal/cuda_utils.h>
+#include <primitiv/internal/cuda/utils.h>
 
 namespace {
 

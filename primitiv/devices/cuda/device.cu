@@ -4,7 +4,7 @@
 
 #include <primitiv/devices/cuda/device.h>
 #include <primitiv/error.h>
-#include <primitiv/internal/cuda_utils.h>
+#include <primitiv/internal/cuda/utils.h>
 
 namespace primitiv {
 namespace devices {

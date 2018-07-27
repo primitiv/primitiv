@@ -1,6 +1,6 @@
 #include <primitiv/config.h>
 
-#include <primitiv/internal/cuda_utils.h>
+#include <primitiv/internal/cuda/utils.h>
 
 namespace primitiv {
 namespace cuda {
