@@ -83,7 +83,7 @@ std::uint32_t calc_num_blocks(std::uint32_t size, std::uint32_t num_threads) {
 std::string generate_kernels() {
   return {
     // `opencl_device_kernel.inc` is generated from `opencl_device_kernel.cl`
-#include "primitiv/opencl_device_kernel.inc"
+#include "primitiv/core/opencl_device_kernel.inc"
   };
 }
 
