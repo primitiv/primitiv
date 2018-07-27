@@ -4,7 +4,7 @@
 #include <vector>
 
 #include <primitiv/core/graph.h>
-#include <primitiv/c/internal.h>
+#include <primitiv/c/internal/internal.h>
 #include <primitiv/c/graph.h>
 
 using primitiv::Node;

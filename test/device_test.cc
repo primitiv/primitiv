@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include <primitiv/core/naive_device.h>
+#include <primitiv/devices/naive/device.h>
 
 namespace primitiv {
 

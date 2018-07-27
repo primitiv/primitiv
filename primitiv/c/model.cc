@@ -4,7 +4,7 @@
 #include <vector>
 
 #include <primitiv/core/model.h>
-#include <primitiv/c/internal.h>
+#include <primitiv/c/internal/internal.h>
 #include <primitiv/c/model.h>
 
 using primitiv::Model;

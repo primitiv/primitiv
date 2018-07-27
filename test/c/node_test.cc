@@ -4,9 +4,9 @@
 
 #include <gtest/gtest.h>
 
+#include <primitiv/c/devices/naive/device.h>
 #include <primitiv/c/functions.h>
 #include <primitiv/c/graph.h>
-#include <primitiv/c/naive_device.h>
 #include <primitiv/c/status.h>
 
 #include <test_utils.h>

@@ -6,7 +6,7 @@
 
 #include <gtest/gtest.h>
 
-#include <primitiv/core/eigen_device.h>
+#include <primitiv/devices/eigen/device.h>
 #include <primitiv/core/error.h>
 #include <primitiv/core/shape.h>
 #include <primitiv/core/tensor.h>

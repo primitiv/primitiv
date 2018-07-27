@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include <primitiv/c/internal.h>
+#include <primitiv/c/internal/internal.h>
 #include <primitiv/c/status.h>
 
 using primitiv::c::internal::ErrorHandler;

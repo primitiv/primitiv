@@ -4,7 +4,7 @@
 #include <unordered_map>
 
 #include <primitiv/core/optimizer.h>
-#include <primitiv/c/internal.h>
+#include <primitiv/c/internal/internal.h>
 #include <primitiv/c/optimizer.h>
 
 using primitiv::Optimizer;

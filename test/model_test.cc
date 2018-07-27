@@ -8,7 +8,7 @@
 #include <gtest/gtest.h>
 
 #include <primitiv/core/model.h>
-#include <primitiv/core/naive_device.h>
+#include <primitiv/devices/naive/device.h>
 #include <primitiv/core/parameter.h>
 
 #include <test_utils.h>

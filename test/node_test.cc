@@ -9,7 +9,7 @@
 
 #include <primitiv/core/functions.h>
 #include <primitiv/core/graph.h>
-#include <primitiv/core/naive_device.h>
+#include <primitiv/devices/naive/device.h>
 
 #include <test_utils.h>
 

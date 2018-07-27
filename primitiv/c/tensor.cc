@@ -3,7 +3,7 @@
 #include <vector>
 
 #include <primitiv/core/tensor.h>
-#include <primitiv/c/internal.h>
+#include <primitiv/c/internal/internal.h>
 #include <primitiv/c/tensor.h>
 
 using primitiv::Tensor;

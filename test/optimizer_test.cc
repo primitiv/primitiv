@@ -4,7 +4,7 @@
 
 #include <primitiv/core/error.h>
 #include <primitiv/core/model.h>
-#include <primitiv/core/naive_device.h>
+#include <primitiv/devices/naive/device.h>
 #include <primitiv/core/optimizer.h>
 #include <primitiv/core/optimizer_impl.h>
 #include <primitiv/core/parameter.h>

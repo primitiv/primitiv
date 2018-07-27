@@ -3,7 +3,7 @@
 #include <vector>
 
 #include <primitiv/core/functions.h>
-#include <primitiv/c/internal.h>
+#include <primitiv/c/internal/internal.h>
 #include <primitiv/c/functions.h>
 
 using primitiv::Node;

@@ -10,7 +10,7 @@
 
 #include <primitiv/core/error.h>
 #include <primitiv/core/functions.h>
-#include <primitiv/core/naive_device.h>
+#include <primitiv/devices/naive/device.h>
 #include <primitiv/core/parameter.h>
 #include <primitiv/core/tensor.h>
 

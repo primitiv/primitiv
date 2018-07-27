@@ -11,7 +11,7 @@
 
 #include <primitiv/core/arithmetic.h>
 #include <primitiv/core/error.h>
-#include <primitiv/core/naive_device.h>
+#include <primitiv/devices/naive/device.h>
 #include <primitiv/core/tensor.h>
 
 #include <test_utils.h>

@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <primitiv/c/device.h>
-#include <primitiv/c/internal.h>
+#include <primitiv/c/internal/internal.h>
 #include <primitiv/c/status.h>
 #include <primitiv/c/tensor.h>
 

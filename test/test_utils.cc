@@ -6,22 +6,23 @@
 #include <primitiv/core/error.h>
 #include <test_utils.h>
 
-#include <primitiv/core/naive_device.h>
+#include <primitiv/devices/naive/device.h>
 using primitiv::devices::Naive;
 
 #ifdef PRIMITIV_USE_EIGEN
-#include <primitiv/core/eigen_device.h>
+#include <primitiv/devices/eigen/device.h>
 using primitiv::devices::Eigen;
 #endif  // PRIMITIV_USE_EIGEN
 
 #ifdef PRIMITIV_USE_CUDA
-#include <primitiv/core/cuda_device.h>
+#include <primitiv/devices/cuda/device.h>
+#include <primitiv/devices/cuda16/device.h>
 using primitiv::devices::CUDA;
 using primitiv::devices::CUDA16;
 #endif  // PRIMITIV_USE_CUDA
 
 #ifdef PRIMITIV_USE_OPENCL
-#include <primitiv/core/opencl_device.h>
+#include <primitiv/devices/opencl/device.h>
 using primitiv::devices::OpenCL;
 #endif  // PRIMITIV_USE_OPENCL
 

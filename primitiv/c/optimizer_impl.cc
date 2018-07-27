@@ -1,7 +1,7 @@
 #include <primitiv/config.h>
 
 #include <primitiv/core/optimizer_impl.h>
-#include <primitiv/c/internal.h>
+#include <primitiv/c/internal/internal.h>
 #include <primitiv/c/optimizer_impl.h>
 
 using primitiv::optimizers::SGD;

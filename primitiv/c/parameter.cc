@@ -3,7 +3,7 @@
 #include <vector>
 
 #include <primitiv/core/parameter.h>
-#include <primitiv/c/internal.h>
+#include <primitiv/c/internal/internal.h>
 #include <primitiv/c/parameter.h>
 
 using primitiv::Parameter;

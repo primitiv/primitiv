@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <primitiv/core/memory_pool.h>
-#include <primitiv/core/cuda_device.h>
+#include <primitiv/devices/cuda/device.h>
 #include <primitiv/core/error.h>
 #include <primitiv/core/shape.h>
 #include <primitiv/internal/cuda_utils.h>
