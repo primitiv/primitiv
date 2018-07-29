@@ -1,7 +1,9 @@
 #include <primitiv/config.h>
 
 #include <utility>
+
 #include <gtest/gtest.h>
+
 #include <primitiv/msgpack/objects.h>
 
 namespace primitiv {

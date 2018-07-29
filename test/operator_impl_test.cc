@@ -3,12 +3,15 @@
 #include <algorithm>
 #include <cmath>
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/functions.h>
-#include <primitiv/initializer_impl.h>
-#include <primitiv/naive_device.h>
-#include <primitiv/operator_impl.h>
-#include <primitiv/parameter.h>
+
+#include <primitiv/core/functions.h>
+#include <primitiv/core/initializer_impl.h>
+#include <primitiv/devices/naive/device.h>
+#include <primitiv/core/operator_impl.h>
+#include <primitiv/core/parameter.h>
+
 #include <test_utils.h>
 
 using std::vector;

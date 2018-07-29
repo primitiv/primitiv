@@ -1,8 +1,11 @@
 #include <primitiv/config.h>
 
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/c/internal.h>
+
+#include <primitiv/c/internal/internal.h>
+
 #include <test_utils.h>
 
 using std::string;

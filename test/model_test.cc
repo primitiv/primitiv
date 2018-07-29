@@ -4,10 +4,13 @@
 #include <map>
 #include <string>
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/model.h>
-#include <primitiv/naive_device.h>
-#include <primitiv/parameter.h>
+
+#include <primitiv/core/model.h>
+#include <primitiv/devices/naive/device.h>
+#include <primitiv/core/parameter.h>
+
 #include <test_utils.h>
 
 using std::map;

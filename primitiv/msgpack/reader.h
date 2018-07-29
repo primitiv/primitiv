@@ -1,6 +1,8 @@
 #ifndef PRIMITIV_MSGPACK_READER_H_
 #define PRIMITIV_MSGPACK_READER_H_
 
+#include <primitiv/config.h>
+
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -10,8 +12,8 @@
 #include <unordered_map>
 #include <utility>
 
-#include <primitiv/error.h>
-#include <primitiv/mixins.h>
+#include <primitiv/core/error.h>
+#include <primitiv/core/mixins.h>
 #include <primitiv/msgpack/objects.h>
 
 namespace primitiv {

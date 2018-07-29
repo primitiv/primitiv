@@ -3,8 +3,8 @@
 #include <string>
 #include <vector>
 
-#include <primitiv/shape.h>
-#include <primitiv/c/internal.h>
+#include <primitiv/core/shape.h>
+#include <primitiv/c/internal/internal.h>
 #include <primitiv/c/shape.h>
 
 using primitiv::Shape;

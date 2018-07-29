@@ -6,10 +6,14 @@
 #include <random>
 #include <utility>
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/error.h>
-#include <primitiv/naive_device.h>
-#include <primitiv/tensor.h>
+
+#include <primitiv/core/arithmetic.h>
+#include <primitiv/core/error.h>
+#include <primitiv/devices/naive/device.h>
+#include <primitiv/core/tensor.h>
+
 #include <test_utils.h>
 
 using std::vector;
