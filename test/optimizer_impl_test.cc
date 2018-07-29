@@ -1,11 +1,15 @@
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <cstdio>
+
 #include <gtest/gtest.h>
-#include <primitiv/error.h>
-#include <primitiv/naive_device.h>
-#include <primitiv/parameter.h>
-#include <primitiv/optimizer_impl.h>
+
+#include <primitiv/core/arithmetic.h>
+#include <primitiv/core/error.h>
+#include <primitiv/devices/naive/device.h>
+#include <primitiv/core/parameter.h>
+#include <primitiv/core/optimizer_impl.h>
+
 #include <test_utils.h>
 
 using std::vector;
@@ -82,20 +86,24 @@ TEST_F(OptimizerImplTest, CheckInvalidLoad) {
   const std::string path = "/tmp/primitiv_OptimizerImplTest_CheckInvalidLoad.data";
   sgd.save(path);
 
+  // NOTE(odashi):
+  // Below function calls work successfully, but do not update optimizer
+  // specific configurations that is not stored in the file.
+
   MomentumSGD momentumsgd;
-  EXPECT_THROW(momentumsgd.load(path), Error);
+  EXPECT_NO_THROW(momentumsgd.load(path));
 
   AdaGrad adagrad;
-  EXPECT_THROW(adagrad.load(path), Error);
+  EXPECT_NO_THROW(adagrad.load(path));
 
   RMSProp rmsprop;
-	EXPECT_THROW(rmsprop.load(path), Error);
+  EXPECT_NO_THROW(rmsprop.load(path));
 
   AdaDelta adadelta;
-  EXPECT_THROW(adadelta.load(path), Error);
+  EXPECT_NO_THROW(adadelta.load(path));
 
   Adam adam;
-  EXPECT_THROW(adam.load(path), Error);
+  EXPECT_NO_THROW(adam.load(path));
 
   std::remove(path.c_str());
 }
@@ -115,7 +123,7 @@ TEST_F(OptimizerImplTest, CheckSGDSaveLoad) {
   std::remove(path.c_str());
 
   EXPECT_EQ(1, optimizer2.eta());
-  EXPECT_EQ(2, optimizer2.get_epoch());
+  EXPECT_EQ(2u, optimizer2.get_epoch());
   EXPECT_EQ(3, optimizer2.get_learning_rate_scaling());
   EXPECT_EQ(4, optimizer2.get_weight_decay());
   EXPECT_EQ(5, optimizer2.get_gradient_clipping());
@@ -135,7 +143,7 @@ TEST_F(OptimizerImplTest, CheckSGDGetConfigs) {
   EXPECT_EQ(1u, uint_configs.size());
   EXPECT_EQ(4u, float_configs.size());
   EXPECT_EQ(1, float_configs.at("SGD.eta"));
-  EXPECT_EQ(2, uint_configs.at("Optimizer.epoch"));
+  EXPECT_EQ(2u, uint_configs.at("Optimizer.epoch"));
   EXPECT_EQ(3, float_configs.at("Optimizer.lr_scale"));
   EXPECT_EQ(4, float_configs.at("Optimizer.l2_strength"));
   EXPECT_EQ(5, float_configs.at("Optimizer.clip_threshold"));
@@ -160,7 +168,7 @@ TEST_F(OptimizerImplTest, CheckSGDSetConfigs) {
   optimizer.set_configs(uint_configs, float_configs);
 
   EXPECT_EQ(1, optimizer.eta());
-  EXPECT_EQ(2, optimizer.get_epoch());
+  EXPECT_EQ(2u, optimizer.get_epoch());
   EXPECT_EQ(3, optimizer.get_learning_rate_scaling());
   EXPECT_EQ(4, optimizer.get_weight_decay());
   EXPECT_EQ(5, optimizer.get_gradient_clipping());
@@ -210,7 +218,7 @@ TEST_F(OptimizerImplTest, CheckMomentumSGDSaveLoad) {
 
   EXPECT_EQ(1, optimizer2.eta());
   EXPECT_EQ(2, optimizer2.momentum());
-  EXPECT_EQ(3, optimizer2.get_epoch());
+  EXPECT_EQ(3u, optimizer2.get_epoch());
   EXPECT_EQ(4, optimizer2.get_learning_rate_scaling());
   EXPECT_EQ(5, optimizer2.get_weight_decay());
   EXPECT_EQ(6, optimizer2.get_gradient_clipping());
@@ -231,7 +239,7 @@ TEST_F(OptimizerImplTest, CheckMomentumSGDGetConfigs) {
   EXPECT_EQ(5u, float_configs.size());
   EXPECT_EQ(1, float_configs.at("MomentumSGD.eta"));
   EXPECT_EQ(2, float_configs.at("MomentumSGD.momentum"));
-  EXPECT_EQ(3, uint_configs.at("Optimizer.epoch"));
+  EXPECT_EQ(3u, uint_configs.at("Optimizer.epoch"));
   EXPECT_EQ(4, float_configs.at("Optimizer.lr_scale"));
   EXPECT_EQ(5, float_configs.at("Optimizer.l2_strength"));
   EXPECT_EQ(6, float_configs.at("Optimizer.clip_threshold"));
@@ -258,7 +266,7 @@ TEST_F(OptimizerImplTest, CheckMomentumSGDSetConfigs) {
 
   EXPECT_EQ(1, optimizer.eta());
   EXPECT_EQ(2, optimizer.momentum());
-  EXPECT_EQ(3, optimizer.get_epoch());
+  EXPECT_EQ(3u, optimizer.get_epoch());
   EXPECT_EQ(4, optimizer.get_learning_rate_scaling());
   EXPECT_EQ(5, optimizer.get_weight_decay());
   EXPECT_EQ(6, optimizer.get_gradient_clipping());
@@ -320,7 +328,7 @@ TEST_F(OptimizerImplTest, CheckAdaGradSaveLoad) {
 
   EXPECT_EQ(1, optimizer2.eta());
   EXPECT_EQ(2, optimizer2.eps());
-  EXPECT_EQ(3, optimizer2.get_epoch());
+  EXPECT_EQ(3u, optimizer2.get_epoch());
   EXPECT_EQ(4, optimizer2.get_learning_rate_scaling());
   EXPECT_EQ(5, optimizer2.get_weight_decay());
   EXPECT_EQ(6, optimizer2.get_gradient_clipping());
@@ -341,7 +349,7 @@ TEST_F(OptimizerImplTest, CheckAdaGradGetConfigs) {
   EXPECT_EQ(5u, float_configs.size());
   EXPECT_EQ(1, float_configs.at("AdaGrad.eta"));
   EXPECT_EQ(2, float_configs.at("AdaGrad.eps"));
-  EXPECT_EQ(3, uint_configs.at("Optimizer.epoch"));
+  EXPECT_EQ(3u, uint_configs.at("Optimizer.epoch"));
   EXPECT_EQ(4, float_configs.at("Optimizer.lr_scale"));
   EXPECT_EQ(5, float_configs.at("Optimizer.l2_strength"));
   EXPECT_EQ(6, float_configs.at("Optimizer.clip_threshold"));
@@ -368,7 +376,7 @@ TEST_F(OptimizerImplTest, CheckAdaGradSetConfigs) {
 
   EXPECT_EQ(1, optimizer.eta());
   EXPECT_EQ(2, optimizer.eps());
-  EXPECT_EQ(3, optimizer.get_epoch());
+  EXPECT_EQ(3u, optimizer.get_epoch());
   EXPECT_EQ(4, optimizer.get_learning_rate_scaling());
   EXPECT_EQ(5, optimizer.get_weight_decay());
   EXPECT_EQ(6, optimizer.get_gradient_clipping());
@@ -431,7 +439,7 @@ TEST_F(OptimizerImplTest, CheckRMSPropSaveLoad) {
   EXPECT_EQ(1, optimizer2.eta());
   EXPECT_EQ(2, optimizer2.alpha());
   EXPECT_EQ(3, optimizer2.eps());
-  EXPECT_EQ(4, optimizer2.get_epoch());
+  EXPECT_EQ(4u, optimizer2.get_epoch());
   EXPECT_EQ(5, optimizer2.get_learning_rate_scaling());
   EXPECT_EQ(6, optimizer2.get_weight_decay());
   EXPECT_EQ(7, optimizer2.get_gradient_clipping());
@@ -453,7 +461,7 @@ TEST_F(OptimizerImplTest, CheckRMSPropGetConfigs) {
   EXPECT_EQ(1, float_configs.at("RMSProp.eta"));
   EXPECT_EQ(2, float_configs.at("RMSProp.alpha"));
   EXPECT_EQ(3, float_configs.at("RMSProp.eps"));
-  EXPECT_EQ(4, uint_configs.at("Optimizer.epoch"));
+  EXPECT_EQ(4u, uint_configs.at("Optimizer.epoch"));
   EXPECT_EQ(5, float_configs.at("Optimizer.lr_scale"));
   EXPECT_EQ(6, float_configs.at("Optimizer.l2_strength"));
   EXPECT_EQ(7, float_configs.at("Optimizer.clip_threshold"));
@@ -482,7 +490,7 @@ TEST_F(OptimizerImplTest, CheckRMSPropSetConfigs) {
   EXPECT_EQ(1, optimizer.eta());
   EXPECT_EQ(2, optimizer.alpha());
   EXPECT_EQ(3, optimizer.eps());
-  EXPECT_EQ(4, optimizer.get_epoch());
+  EXPECT_EQ(4u, optimizer.get_epoch());
   EXPECT_EQ(5, optimizer.get_learning_rate_scaling());
   EXPECT_EQ(6, optimizer.get_weight_decay());
   EXPECT_EQ(7, optimizer.get_gradient_clipping());
@@ -544,7 +552,7 @@ TEST_F(OptimizerImplTest, CheckAdaDeltaSaveLoad) {
 
   EXPECT_EQ(1, optimizer2.rho());
   EXPECT_EQ(2, optimizer2.eps());
-  EXPECT_EQ(3, optimizer2.get_epoch());
+  EXPECT_EQ(3u, optimizer2.get_epoch());
   EXPECT_EQ(4, optimizer2.get_learning_rate_scaling());
   EXPECT_EQ(5, optimizer2.get_weight_decay());
   EXPECT_EQ(6, optimizer2.get_gradient_clipping());
@@ -565,7 +573,7 @@ TEST_F(OptimizerImplTest, CheckAdaDeltaGetConfigs) {
   EXPECT_EQ(5u, float_configs.size());
   EXPECT_EQ(1, float_configs.at("AdaDelta.rho"));
   EXPECT_EQ(2, float_configs.at("AdaDelta.eps"));
-  EXPECT_EQ(3, uint_configs.at("Optimizer.epoch"));
+  EXPECT_EQ(3u, uint_configs.at("Optimizer.epoch"));
   EXPECT_EQ(4, float_configs.at("Optimizer.lr_scale"));
   EXPECT_EQ(5, float_configs.at("Optimizer.l2_strength"));
   EXPECT_EQ(6, float_configs.at("Optimizer.clip_threshold"));
@@ -592,7 +600,7 @@ TEST_F(OptimizerImplTest, CheckAdaDeltaSetConfigs) {
 
   EXPECT_EQ(1, optimizer.rho());
   EXPECT_EQ(2, optimizer.eps());
-  EXPECT_EQ(3, optimizer.get_epoch());
+  EXPECT_EQ(3u, optimizer.get_epoch());
   EXPECT_EQ(4, optimizer.get_learning_rate_scaling());
   EXPECT_EQ(5, optimizer.get_weight_decay());
   EXPECT_EQ(6, optimizer.get_gradient_clipping());
@@ -668,7 +676,7 @@ TEST_F(OptimizerImplTest, CheckAdamSaveLoad) {
   EXPECT_EQ(2, optimizer2.beta1());
   EXPECT_EQ(3, optimizer2.beta2());
   EXPECT_EQ(4, optimizer2.eps());
-  EXPECT_EQ(5, optimizer2.get_epoch());
+  EXPECT_EQ(5u, optimizer2.get_epoch());
   EXPECT_EQ(6, optimizer2.get_learning_rate_scaling());
   EXPECT_EQ(7, optimizer2.get_weight_decay());
   EXPECT_EQ(8, optimizer2.get_gradient_clipping());
@@ -691,7 +699,7 @@ TEST_F(OptimizerImplTest, CheckAdamGetConfigs) {
   EXPECT_EQ(2, float_configs.at("Adam.beta1"));
   EXPECT_EQ(3, float_configs.at("Adam.beta2"));
   EXPECT_EQ(4, float_configs.at("Adam.eps"));
-  EXPECT_EQ(5, uint_configs.at("Optimizer.epoch"));
+  EXPECT_EQ(5u, uint_configs.at("Optimizer.epoch"));
   EXPECT_EQ(6, float_configs.at("Optimizer.lr_scale"));
   EXPECT_EQ(7, float_configs.at("Optimizer.l2_strength"));
   EXPECT_EQ(8, float_configs.at("Optimizer.clip_threshold"));
@@ -722,7 +730,7 @@ TEST_F(OptimizerImplTest, CheckAdamSetConfigs) {
   EXPECT_EQ(2, optimizer.beta1());
   EXPECT_EQ(3, optimizer.beta2());
   EXPECT_EQ(4, optimizer.eps());
-  EXPECT_EQ(5, optimizer.get_epoch());
+  EXPECT_EQ(5u, optimizer.get_epoch());
   EXPECT_EQ(6, optimizer.get_learning_rate_scaling());
   EXPECT_EQ(7, optimizer.get_weight_decay());
   EXPECT_EQ(8, optimizer.get_gradient_clipping());

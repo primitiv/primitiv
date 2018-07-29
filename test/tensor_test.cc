@@ -1,4 +1,4 @@
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <algorithm>
 #include <iterator>
@@ -7,10 +7,14 @@
 #include <thread>
 #include <utility>
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/error.h>
-#include <primitiv/naive_device.h>
-#include <primitiv/tensor.h>
+
+#include <primitiv/core/arithmetic.h>
+#include <primitiv/core/error.h>
+#include <primitiv/devices/naive/device.h>
+#include <primitiv/core/tensor.h>
+
 #include <test_utils.h>
 
 using std::vector;
@@ -773,18 +777,57 @@ TEST_F(TensorTest, CheckArgMaxDims) {
 TEST_F(TensorTest, CheckArgMaxLarge) {
   std::mt19937 rng;
   const vector<std::uint32_t> ns {
-    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025, 65535, 65536, 65537,
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024,
+    1025, 2047, 2048, 2049, 65535, 65536, 65537,
   };
 
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
+      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+        // NOTE(odashi):
+        // Half-precision types have only (10+1) bits resolution.
+        continue;
+      }
+
       vector<float> data(n);
       std::iota(begin(data), end(data), 0);
       std::shuffle(begin(data), end(data), rng);
       const auto it = std::find(begin(data), end(data), n - 1);
       const std::uint32_t pos = std::distance(begin(data), it);
       const Tensor a = dev->new_tensor_by_vector({n}, data);
-      EXPECT_EQ(pos, a.argmax(0)[0]);
+      const vector<std::uint32_t> expected {pos};
+      EXPECT_TRUE(vector_match(expected, a.argmax(0)));
+    }
+  }
+}
+
+TEST_F(TensorTest, CheckArgMaxMultipleLarge) {
+  std::mt19937 rng;
+  const vector<std::uint32_t> ns {
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024,
+    1025, 2047, 2048, 2049, 65535, 65536, 65537,
+  };
+
+  for (Device *dev : devices) {
+    for (const std::uint32_t n : ns) {
+      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+        // NOTE(vbkaisetsu):
+        // Half-precision types have only (10+1) bits resolution.
+        continue;
+      }
+      vector<float> data(n);
+      std::iota(begin(data), end(data), 0);
+      // NOTE(vbkaisetsu):
+      // Generates a tensor that has some duplicated maximum values.
+      for (std::uint32_t i = 0; i < 10 && i < n; ++i) {
+        data[i] = n - 1;
+      }
+      std::shuffle(begin(data), end(data), rng);
+      const auto it = std::find(begin(data), end(data), n - 1);
+      const std::uint32_t pos = std::distance(begin(data), it);
+      const Tensor a = dev->new_tensor_by_vector({n}, data);
+      const vector<std::uint32_t> expected {pos};
+      EXPECT_TRUE(vector_match(expected, a.argmax(0)));
     }
   }
 }
@@ -810,18 +853,56 @@ TEST_F(TensorTest, CheckArgMinDims) {
 TEST_F(TensorTest, CheckArgMinLarge) {
   std::mt19937 rng;
   const vector<std::uint32_t> ns {
-    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024, 1025, 65535, 65536, 65537,
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024,
+    1025, 2047, 2048, 2049, 65535, 65536, 65537,
   };
 
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
+      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+        // NOTE(odashi):
+        // Half-precision types have only (10+1) bits resolution.
+        continue;
+      }
       vector<float> data(n);
       std::iota(begin(data), end(data), 0);
       std::shuffle(begin(data), end(data), rng);
       const auto it = std::find(begin(data), end(data), 0);
       const std::uint32_t pos = std::distance(begin(data), it);
       const Tensor a = dev->new_tensor_by_vector({n}, data);
-      EXPECT_EQ(pos, a.argmin(0)[0]);
+      const vector<std::uint32_t> expected {pos};
+      EXPECT_TRUE(vector_match(expected, a.argmin(0)));
+    }
+  }
+}
+
+TEST_F(TensorTest, CheckArgMinMultipleLarge) {
+  std::mt19937 rng;
+  const vector<std::uint32_t> ns {
+    1, 2, 3, 15, 16, 17, 255, 256, 257, 1023, 1024,
+    1025, 2047, 2048, 2049, 65535, 65536, 65537,
+  };
+
+  for (Device *dev : devices) {
+    for (const std::uint32_t n : ns) {
+      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+        // NOTE(vbkaisetsu):
+        // Half-precision types have only (10+1) bits resolution.
+        continue;
+      }
+      vector<float> data(n);
+      std::iota(begin(data), end(data), 0);
+      // NOTE(vbkaisetsu):
+      // Generates a tensor that has some duplicated minimum values.
+      for (std::uint32_t i = 0; i < 10 && i < n; ++i) {
+        data[i] = 0;
+      }
+      std::shuffle(begin(data), end(data), rng);
+      const auto it = std::find(begin(data), end(data), 0);
+      const std::uint32_t pos = std::distance(begin(data), it);
+      const Tensor a = dev->new_tensor_by_vector({n}, data);
+      const vector<std::uint32_t> expected {pos};
+      EXPECT_TRUE(vector_match(expected, a.argmin(0)));
     }
   }
 }

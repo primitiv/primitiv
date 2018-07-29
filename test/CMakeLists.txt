@@ -1,5 +1,15 @@
 # test definitions
 
+# compiler settings
+
+# NOTE(vbkaisetsu):
+# x87 machines keep excess precision of floating-point variables
+# in registers. -ffloat-store option prevents this behavior and
+# suppresses errors between test cases and actual results.
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  set(CMAKE_CXX_FLAGS "-ffloat-store ${CMAKE_CXX_FLAGS}")
+endif()
+
 if(PRIMITIV_GTEST_SOURCE_DIR)
   include(ExternalProject)
   ExternalProject_Add(
@@ -69,8 +79,13 @@ primitiv_test(tensor)
 primitiv_test(tensor_backward)
 primitiv_test(tensor_forward)
 
+if(PRIMITIV_USE_EIGEN)
+  primitiv_test(eigen_device)
+endif()
+
 if(PRIMITIV_USE_CUDA)
   primitiv_test(cuda_device)
+  primitiv_test(cuda16_device)
   primitiv_test(cuda_memory_pool)
 endif()
 
@@ -94,5 +109,11 @@ if(PRIMITIV_BUILD_C_API)
     )
   endfunction()
 
+  primitiv_c_test(device)
+  primitiv_c_test(graph)
+  primitiv_c_test(internal)
+  primitiv_c_test(node)
+  primitiv_c_test(optimizer)
   primitiv_c_test(shape)
+  primitiv_c_test(status)
 endif()

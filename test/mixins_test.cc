@@ -1,8 +1,9 @@
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <thread>
 #include <gtest/gtest.h>
-#include <primitiv/mixins.h>
+
+#include <primitiv/core/mixins.h>
 
 namespace primitiv {
 namespace mixins {

@@ -1,17 +1,21 @@
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <chrono>
 #include <thread>
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/error.h>
-#include <primitiv/naive_device.h>
-#include <primitiv/shape.h>
-#include <primitiv/tensor.h>
+
+#include <primitiv/core/error.h>
+#include <primitiv/devices/naive/device.h>
+#include <primitiv/core/shape.h>
+#include <primitiv/core/tensor.h>
+
 #include <test_utils.h>
 
 using std::vector;
 using test_utils::vector_match;
+using test_utils::vector_near;
 
 namespace primitiv {
 
@@ -19,7 +23,7 @@ class NaiveDeviceTest : public testing::Test {};
 
 TEST_F(NaiveDeviceTest, CheckDeviceType) {
   devices::Naive dev;
-  EXPECT_EQ(Device::DeviceType::CPU, dev.type());
+  EXPECT_EQ(Device::DeviceType::NAIVE, dev.type());
 }
 
 TEST_F(NaiveDeviceTest, CheckNewDelete) {
@@ -166,7 +170,11 @@ TEST_F(NaiveDeviceTest, CheckRandomNormalWithSeed) {
 #endif
   devices::Naive dev(12345);
   const Tensor x = dev.random_normal(Shape({2, 2}, 2), 1, 3);
+#ifdef PRIMITIV_MAYBE_FPMATH_X87
+  EXPECT_TRUE(vector_near(expected, x.to_vector(), 1e-6));
+#else
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
+#endif
 }
 
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
@@ -211,7 +219,11 @@ TEST_F(NaiveDeviceTest, CheckRandomLogNormalWithSeed) {
 #endif
   devices::Naive dev(12345);
   const Tensor x = dev.random_log_normal(Shape({2, 2}, 2), 1, 3);
+#ifdef PRIMITIV_MAYBE_FPMATH_X87
+  EXPECT_TRUE(vector_near(expected, x.to_vector(), 1e-4));
+#else
   EXPECT_TRUE(vector_match(expected, x.to_vector()));
+#endif
 }
 
 }  // namespace primitiv

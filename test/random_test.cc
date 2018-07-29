@@ -1,12 +1,16 @@
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/random.h>
+
+#include <primitiv/core/random.h>
+
 #include <test_utils.h>
 
 using std::vector;
 using test_utils::vector_match;
+using test_utils::vector_near;
 
 namespace primitiv {
 
@@ -62,7 +66,11 @@ TEST_F(DefaultRandomizerTest, CheckFillNormal) {
   const std::size_t size = expected.size();
   vector<float> observed(size, -1e10);
   randomizer_.fill_normal(1, 3, size, observed.data());
+#ifdef PRIMITIV_MAYBE_FPMATH_X87
+  EXPECT_TRUE(vector_near(expected, observed, 1e-6));
+#else
   EXPECT_TRUE(vector_match(expected, observed));
+#endif
 }
 
 TEST_F(DefaultRandomizerTest, CheckFillLogNormal) {
@@ -84,7 +92,11 @@ TEST_F(DefaultRandomizerTest, CheckFillLogNormal) {
   const std::size_t size = expected.size();
   vector<float> observed(size, -1e10);
   randomizer_.fill_log_normal(1, 3, size, observed.data());
+#ifdef PRIMITIV_MAYBE_FPMATH_X87
+  EXPECT_TRUE(vector_near(expected, observed, 1e-4));
+#else
   EXPECT_TRUE(vector_match(expected, observed));
+#endif
 }
 
 }  // namespace primitiv

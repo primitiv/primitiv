@@ -1,230 +1,213 @@
-/* Copyright 2017 The primitiv Authors. All Rights Reserved. */
-#include <config.h>
+#include <primitiv/config.h>
 
-#include <algorithm>
 #include <string>
-#include <utility>
 #include <vector>
 
-#include <primitiv/graph.h>
-
-#include <primitiv/c/internal.h>
+#include <primitiv/core/graph.h>
+#include <primitiv/c/internal/internal.h>
 #include <primitiv/c/graph.h>
 
 using primitiv::Node;
 using primitiv::Graph;
+using primitiv::c::internal::to_c_ptr;
+using primitiv::c::internal::to_cpp_ptr;
+using primitiv::c::internal::to_c_ptr_from_value;
 
-extern "C" {
+PRIMITIV_C_STATUS primitivCreateNode(primitivNode_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr(new Node);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Node *primitiv_Node_new() {
-  return to_c(new Node);
-}
-primitiv_Node *safe_primitiv_Node_new(primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Node_new(), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivCloneNode(
+    const primitivNode_t *src, primitivNode_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(src);
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr(new Node(*to_cpp_ptr(src)));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Node *primitiv_Node_new_with_movement(primitiv_Node *node) {
-  return to_c(new Node(std::move(*to_cc(node))));
-}
-primitiv_Node *safe_primitiv_Node_new_with_movement(primitiv_Node *node,
-                                                    primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Node_new_with_movement(node), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivDeleteNode(primitivNode_t *node) try {
+  PRIMITIV_C_CHECK_NOT_NULL(node);
+  delete to_cpp_ptr(node);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Node_delete(primitiv_Node *node) {
-  delete to_cc(node);
-}
-void safe_primitiv_Node_delete(primitiv_Node *node, primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Node_delete(node), status);
-}
+PRIMITIV_C_STATUS primitivIsValidNode(
+    const primitivNode_t *node, PRIMITIV_C_BOOL *retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(node);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_cpp_ptr(node)->valid();
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-bool primitiv_Node_valid(const primitiv_Node *node) {
-  return to_cc(node)->valid();
-}
-bool safe_primitiv_Node_valid(const primitiv_Node *node,
-                              primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Node_valid(node), status, false);
-}
+PRIMITIV_C_STATUS primitivGetGraphFromNode(
+    const primitivNode_t *node, primitivGraph_t **retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(node);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_c_ptr(&to_cpp_ptr(node)->graph());
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Graph *primitiv_Node_graph(const primitiv_Node *node) {
-  return to_c(&to_cc(node)->graph());
-}
-primitiv_Graph *safe_primitiv_Node_graph(const primitiv_Node *node,
-                                         primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Node_graph(node), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivGetNodeOperatorId(
+    const primitivNode_t *node, uint32_t *retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(node);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_cpp_ptr(node)->operator_id();
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-uint32_t primitiv_Node_operator_id(const primitiv_Node *node) {
-  return to_cc(node)->operator_id();
-}
-uint32_t safe_primitiv_Node_operator_id(const primitiv_Node *node,
-                                        primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Node_operator_id(node), status, 0);
-}
+PRIMITIV_C_STATUS primitivGetNodeValueId(
+    const primitivNode_t *node, uint32_t *retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(node);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_cpp_ptr(node)->value_id();
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-uint32_t primitiv_Node_value_id(const primitiv_Node *node) {
-  return to_cc(node)->value_id();
-}
-uint32_t safe_primitiv_Node_value_id(const primitiv_Node *node,
-                                     primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Node_value_id(node), status, 0);
-}
+PRIMITIV_C_STATUS primitivGetNodeShape(
+    const primitivNode_t *node, primitivShape_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(node);
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(to_cpp_ptr(node)->shape());
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Shape *primitiv_Node_shape(const primitiv_Node *node) {
-  return to_c_from_value(to_cc(node)->shape());
-}
-primitiv_Shape *safe_primitiv_Node_shape(const primitiv_Node *node,
-                                         primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Node_shape(node), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivGetDeviceFromNode(
+    const primitivNode_t *node, primitivDevice_t **retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(node);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_c_ptr(&to_cpp_ptr(node)->device());
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Device *primitiv_Node_device(const primitiv_Node *node) {
-  return to_c(&to_cc(node)->device());
-}
-primitiv_Device *safe_primitiv_Node_device(const primitiv_Node *node,
-                                           primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Node_device(node), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivEvaluateNodeAsFloat(
+    const primitivNode_t *node, float *retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(node);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_cpp_ptr(node)->to_float();
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-float primitiv_Node_to_float(const primitiv_Node *node) {
-  return to_cc(node)->to_float();
-}
-float safe_primitiv_Node_to_float(const primitiv_Node *node,
-                                  primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Node_to_float(node), status, 0.0);
-}
+PRIMITIV_C_STATUS primitivEvaluateNodeAsArray(
+    const primitivNode_t *node, float *retval, size_t *size) try {
+  PRIMITIV_C_CHECK_NOT_NULL(node);
+  PRIMITIV_C_CHECK_NOT_NULL(size);
+  primitiv::c::internal::copy_vector_to_array(
+      to_cpp_ptr(node)->to_vector(), retval, size);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Node_to_array(const primitiv_Node *node, float *array) {
-  std::vector<float> v = to_cc(node)->to_vector();
-  std::copy(v.begin(), v.end(), array);
-}
-void safe_primitiv_Node_to_array(const primitiv_Node *node,
-                                 float *array,
-                                 primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Node_to_array(node, array), status);
-}
+PRIMITIV_C_STATUS primitivGetNodeArgmax(
+    const primitivNode_t *node, uint32_t dim, uint32_t *retval,
+    size_t *size) try {
+  PRIMITIV_C_CHECK_NOT_NULL(node);
+  PRIMITIV_C_CHECK_NOT_NULL(size);
+  primitiv::c::internal::copy_vector_to_array(
+      to_cpp_ptr(node)->argmax(dim), retval, size);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-uint32_t *primitiv_Node_argmax(const primitiv_Node *node, uint32_t dim) {
-  return &(to_cc(node)->argmax(dim))[0];
-}
-uint32_t *safe_primitiv_Node_argmax(const primitiv_Node *node,
-                                    uint32_t dim,
-                                    primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Node_argmax(node, dim), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivGetNodeArgmin(
+    const primitivNode_t *node, uint32_t dim, uint32_t *retval,
+    size_t *size) try {
+  PRIMITIV_C_CHECK_NOT_NULL(node);
+  PRIMITIV_C_CHECK_NOT_NULL(size);
+  primitiv::c::internal::copy_vector_to_array(
+      to_cpp_ptr(node)->argmin(dim), retval, size);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-uint32_t *primitiv_Node_argmin(const primitiv_Node *node, uint32_t dim) {
-  return &(to_cc(node)->argmin(dim))[0];
-}
-uint32_t *safe_primitiv_Node_argmin(const primitiv_Node *node,
-                                    uint32_t dim,
-                                    primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Node_argmin(node, dim), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivExecuteNodeBackward(const primitivNode_t *node) try {
+  PRIMITIV_C_CHECK_NOT_NULL(node);
+  to_cpp_ptr(node)->backward();
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Node_backward(const primitiv_Node *node) {
-  to_cc(node)->backward();
-}
-void safe_primitiv_Node_backward(const primitiv_Node *node,
-                                 primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Node_backward(node), status);
-}
+PRIMITIV_C_STATUS primitivCreateGraph(primitivGraph_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr(new Graph());
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Graph *primitiv_Graph_new() {
-  return to_c(new Graph());
-}
-primitiv_Graph *safe_primitiv_Graph_new(primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Graph_new(), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivDeleteGraph(primitivGraph_t *graph) try {
+  PRIMITIV_C_CHECK_NOT_NULL(graph);
+  delete to_cpp_ptr(graph);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Graph_delete(primitiv_Graph *graph) {
-  delete to_cc(graph);
-}
-void safe_primitiv_Graph_delete(primitiv_Graph *graph,
-                                primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Graph_delete(graph), status);
-}
+PRIMITIV_C_STATUS primitivGetDefaultGraph(primitivGraph_t **retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_c_ptr(&Graph::get_default());
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Graph *primitiv_Graph_get_default() {
-  return to_c(&Graph::get_default());
-}
-primitiv_Graph *safe_primitiv_Graph_get_default(primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Graph_get_default(), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivSetDefaultGraph(primitivGraph_t *graph) try {
+  PRIMITIV_C_CHECK_NOT_NULL(graph);
+  Graph::set_default(*to_cpp_ptr(graph));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Graph_set_default(primitiv_Graph *graph) {
-  Graph::set_default(*to_cc(graph));
-}
-void safe_primitiv_Graph_set_default(primitiv_Graph *graph,
-                                     primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Graph_set_default(graph), status);
-}
+PRIMITIV_C_STATUS primitivClearGraph(primitivGraph_t *graph) try {
+  PRIMITIV_C_CHECK_NOT_NULL(graph);
+  to_cpp_ptr(graph)->clear();
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Graph_clear(primitiv_Graph *graph) {
-  to_cc(graph)->clear();
-}
-void safe_primitiv_Graph_clear(primitiv_Graph *graph, primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Graph_clear(graph), status);
-}
+PRIMITIV_C_STATUS primitivExecuteGraphForward(
+    primitivGraph_t *graph, const primitivNode_t *node,
+    const primitivTensor_t **retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(graph);
+  PRIMITIV_C_CHECK_NOT_NULL(node);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_c_ptr(&to_cpp_ptr(graph)->forward(*to_cpp_ptr(node)));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-const primitiv_Tensor *primitiv_Graph_forward(primitiv_Graph *graph,
-                                              const primitiv_Node *node) {
-  return to_c(&to_cc(graph)->forward(*to_cc(node)));
-}
-const primitiv_Tensor *safe_primitiv_Graph_forward(primitiv_Graph *graph,
-                                                   const primitiv_Node *node,
-                                                   primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Graph_forward(graph, node), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivExecuteGraphBackward(
+    primitivGraph_t *graph, const primitivNode_t *node) try {
+  PRIMITIV_C_CHECK_NOT_NULL(graph);
+  PRIMITIV_C_CHECK_NOT_NULL(node);
+  to_cpp_ptr(graph)->backward(*to_cpp_ptr(node));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Graph_backward(primitiv_Graph *graph, const primitiv_Node *node) {
-  to_cc(graph)->backward(*to_cc(node));
-}
-void safe_primitiv_Graph_backward(primitiv_Graph *graph,
-                                  const primitiv_Node *node,
-                                  primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Graph_backward(graph, node), status);
-}
+PRIMITIV_C_STATUS primitivGetGraphShape(
+    const primitivGraph_t *graph, const primitivNode_t *node,
+    primitivShape_t **newobj) try {
+  PRIMITIV_C_CHECK_NOT_NULL(graph);
+  PRIMITIV_C_CHECK_NOT_NULL(node);
+  PRIMITIV_C_CHECK_NOT_NULL(newobj);
+  *newobj = to_c_ptr_from_value(
+      to_cpp_ptr(graph)->get_shape(*to_cpp_ptr(node)));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Shape *primitiv_Graph_get_shape(const primitiv_Graph *graph,
-                                         const primitiv_Node *node) {
-  return to_c_from_value(to_cc(graph)->get_shape(*to_cc(node)));
-}
-primitiv_Shape *safe_primitiv_Graph_get_shape(const primitiv_Graph *graph,
-                                              const primitiv_Node *node,
-                                              primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Graph_get_shape(graph, node), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivGetDeviceFromGraph(
+    const primitivGraph_t *graph, const primitivNode_t *node,
+    primitivDevice_t **retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(graph);
+  PRIMITIV_C_CHECK_NOT_NULL(node);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_c_ptr(&to_cpp_ptr(graph)->get_device(*to_cpp_ptr(node)));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Device *primitiv_Graph_get_device(const primitiv_Graph *graph,
-                                           const primitiv_Node *node) {
-  return to_c(&to_cc(graph)->get_device(*to_cc(node)));
-}
-primitiv_Device *safe_primitiv_Graph_get_device(const primitiv_Graph *graph,
-                                                const primitiv_Node *node,
-                                                primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Graph_get_device(graph, node), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivDumpGraph(
+    const primitivGraph_t *graph, const char *format, char *retval,
+    size_t *size) try {
+  PRIMITIV_C_CHECK_NOT_NULL(graph);
+  PRIMITIV_C_CHECK_NOT_NULL(format);
+  PRIMITIV_C_CHECK_NOT_NULL(size);
+  primitiv::c::internal::copy_string_to_array(
+      to_cpp_ptr(graph)->dump(format), retval, size);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-char *primitiv_Graph_dump(const primitiv_Graph *graph, const char *format) {
-  std::string str = to_cc(graph)->dump(format);
-  uint64_t len = str.length();
-  auto *c = new char[len + 1];
-  std::strncpy(c, str.c_str(), len);
-  return c;
-}
-char *safe_primitiv_Graph_dump(const primitiv_Graph *graph,
-                               const char *format,
-                               primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Graph_dump(graph, format), status, nullptr);
-}
-
-uint32_t primitiv_Graph_num_operators(const primitiv_Graph *graph) {
-  return to_cc(graph)->num_operators();
-}
-uint32_t safe_primitiv_Graph_num_operators(const primitiv_Graph *graph,
-                                           primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Graph_num_operators(graph), status, 0);
-}
-
-}  // end extern "C"
+PRIMITIV_C_STATUS primitivGetGraphNumOperators(
+    const primitivGraph_t *graph, uint32_t *retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(graph);
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_cpp_ptr(graph)->num_operators();
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS

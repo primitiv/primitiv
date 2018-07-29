@@ -14,9 +14,6 @@
 // Users also can include individual headers to suppress compilation cost.
 #include <primitiv/primitiv.h>
 
-// "primitiv_cuda.h" is required to use CUDA backend.
-//#include <primitiv/primitiv_cuda.h>
-
 // Shortcuts
 using namespace std;
 using namespace primitiv;
@@ -37,7 +34,10 @@ int main() {
 
   // If you want to use CUDA, uncomment below line (and comment out above) with
   // a specific device (GPU) ID.
-  //devices::CUDA dev(0);
+  //devices::CUDA dev(gpu_id);
+  // Other devices can be used. E.g.:
+  //devices::OpenCL dev(platform_id, device_id);
+  //devices::Eigen dev;
 
   // Parameters
   Parameter pw1({8, 2}, I::XavierUniform());

@@ -1,6 +1,9 @@
 matrix:
   include:
     - os: linux
+      env: SCRIPT=ubuntu-vanilla
+      sudo: required
+    - os: linux
       env: SCRIPT=ubuntu
       services: docker
     - os: linux
@@ -12,6 +15,12 @@ matrix:
     - os: osx
       osx_image: xcode8.3
       env: SCRIPT=osx
+    # FIXME(vbkaisetsu):
+    # The x86 support is currently unstable and test cases sometimes be failed.
+    # I temporally disable this test.
+    #- os: linux
+      #env: SCRIPT=debian-x86
+      #services: docker
 
 script:
   - $TRAVIS_BUILD_DIR/.travis/${SCRIPT}.sh

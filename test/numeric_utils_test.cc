@@ -1,9 +1,12 @@
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <cstdint>
+
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/numeric_utils.h>
+
+#include <primitiv/core/numeric_utils.h>
 
 namespace primitiv {
 namespace numeric_utils {

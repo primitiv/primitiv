@@ -1,12 +1,16 @@
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <cstdio>
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/error.h>
-#include <primitiv/initializer_impl.h>
-#include <primitiv/naive_device.h>
-#include <primitiv/parameter.h>
+
+#include <primitiv/core/arithmetic.h>
+#include <primitiv/core/error.h>
+#include <primitiv/core/initializer_impl.h>
+#include <primitiv/devices/naive/device.h>
+#include <primitiv/core/parameter.h>
+
 #include <test_utils.h>
 
 using std::vector;

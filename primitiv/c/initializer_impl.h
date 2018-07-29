@@ -1,111 +1,91 @@
-/* Copyright 2017 The primitiv Authors. All Rights Reserved. */
-
 #ifndef PRIMITIV_C_INITIALIZER_IMPL_H_
 #define PRIMITIV_C_INITIALIZER_IMPL_H_
 
 #include <primitiv/c/define.h>
 #include <primitiv/c/initializer.h>
-#include <primitiv/c/status.h>
 #include <primitiv/c/tensor.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+/**
+ * Creates a new Initializer object that generates a same-value tensor.
+ * @param k Constant value to fill a tensor.
+ * @param newobj Pointer to receive a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateConstantInitializer(
+    float k, primitivInitializer_t **newobj);
 
-CAPI extern primitiv_Initializer *primitiv_Constant_new(float k);
-CAPI extern primitiv_Initializer *safe_primitiv_Constant_new(
-    float k, primitiv_Status *status);
+/**
+ * Creates a new Initializer object that uses a parameterized uniform
+ * distribution (lower, upper].
+ * @param lower Lower boundary of the uniform distribution.
+ * @param upper Upper boundary of the uniform distribution.
+ * @param newobj Pointer to receive a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateUniformInitializer(
+    float lower, float upper, primitivInitializer_t **newobj);
 
-CAPI extern void primitiv_Constant_delete(primitiv_Initializer *initializer);
-CAPI extern void safe_primitiv_Constant_delete(
-    primitiv_Initializer *initializer, primitiv_Status *status);
+/**
+ * Creates a new Initializer object that uses a parameterized normal
+ * distribution N(mean, sd).
+ * @param mean Mean of the normal distribution.
+ * @param sd Standard deviation of the normal distribution.
+ * @param newobj Pointer to receive a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateNormalInitializer(
+    float mean, float sd, primitivInitializer_t **newobj);
 
-CAPI extern void primitiv_Constant_apply(
-    const primitiv_Initializer *initializer, primitiv_Tensor *x);
-CAPI extern void safe_primitiv_Constant_apply(
-    const primitiv_Initializer *initializer,
-    primitiv_Tensor *x,
-    primitiv_Status *status);
+/**
+ * Creates a new Initializer object that generates a identity tensor.
+ * @param newobj Pointer to receive a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateIdentityInitializer(
+    primitivInitializer_t **newobj);
 
-CAPI extern primitiv_Initializer *primitiv_Uniform_new(float lower,
-                                                       float upper);
-CAPI extern primitiv_Initializer *safe_primitiv_Uniform_new(
-    float lower, float upper, primitiv_Status *status);
+/**
+ * Creates a new Initializer object that generates a tensor by the Xavier matrix
+ * initialization with the uniform distribution.
+ * @param scale Constant value that determines the scale of the uniform
+ *              distribution.
+ * @param newobj Pointer to receive a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateXavierUniformInitializer(
+    float scale, primitivInitializer_t **newobj);
 
-CAPI extern void primitiv_Uniform_delete(primitiv_Initializer *initializer);
-CAPI extern void safe_primitiv_Uniform_delete(primitiv_Initializer *initializer,
-                                              primitiv_Status *status);
+/**
+ * Creates a new Initializer object that generates a tensor by the Xavier matrix
+ * initialization with the normal distribution.
+ * @param scale Constant value that determines the scale of the normal
+ *              distribution.
+ * @param newobj Pointer to receive a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateXavierNormalInitializer(
+    float scale, primitivInitializer_t **newobj);
 
-CAPI extern void primitiv_Uniform_apply(const primitiv_Initializer *initializer,
-                                        primitiv_Tensor *x);
-CAPI extern void safe_primitiv_Uniform_apply(
-    const primitiv_Initializer *initializer,
-    primitiv_Tensor *x,
-    primitiv_Status *status);
+/**
+ * Creates a new Initializer object that generates a tensor by the Xavier matrix
+ * initialization with the uniform distribution for conv2d filters.
+ * @param scale Constant value that determines the scale of the uniform
+ *              distribution.
+ * @param newobj Pointer to receive a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateXavierUniformConv2DInitializer(
+    float scale, primitivInitializer_t **newobj);
 
-CAPI extern primitiv_Initializer *primitiv_Normal_new(float mean, float sd);
-CAPI extern primitiv_Initializer *safe_primitiv_Normal_new(
-    float mean, float sd, primitiv_Status *status);
-
-CAPI extern void primitiv_Normal_delete(primitiv_Initializer *initializer);
-CAPI extern void safe_primitiv_Normal_delete(primitiv_Initializer *initializer,
-                                             primitiv_Status *status);
-
-CAPI extern void primitiv_Normal_apply(const primitiv_Initializer *initializer,
-                                       primitiv_Tensor *x);
-CAPI extern void safe_primitiv_Normal_apply(
-    const primitiv_Initializer *initializer,
-    primitiv_Tensor *x,
-    primitiv_Status *status);
-
-CAPI extern primitiv_Initializer *primitiv_Identity_new();
-CAPI extern primitiv_Initializer *safe_primitiv_Identity_new(
-    primitiv_Status *status);
-
-CAPI extern void primitiv_Identity_delete(primitiv_Initializer *initializer);
-CAPI extern void safe_primitiv_Identity_delete(
-    primitiv_Initializer *initializer, primitiv_Status *status);
-
-CAPI extern void primitiv_Identity_apply(
-    const primitiv_Initializer *initializer, primitiv_Tensor *x);
-CAPI extern void safe_primitiv_Identity_apply(
-    const primitiv_Initializer *initializer, primitiv_Tensor *x,
-    primitiv_Status *status);
-
-CAPI extern primitiv_Initializer *primitiv_XavierUniform_new(float scale);
-CAPI extern primitiv_Initializer *safe_primitiv_XavierUniform_new(
-    float scale, primitiv_Status *status);
-
-CAPI extern void primitiv_XavierUniform_delete(
-    primitiv_Initializer *initializer);
-CAPI extern void safe_primitiv_XavierUniform_delete(
-    primitiv_Initializer *initializer, primitiv_Status *status);
-
-CAPI extern void primitiv_XavierUniform_apply(
-    const primitiv_Initializer *initializer, primitiv_Tensor *x);
-CAPI extern void safe_primitiv_XavierUniform_apply(
-    const primitiv_Initializer *initializer,
-    primitiv_Tensor *x,
-    primitiv_Status *status);
-
-CAPI extern primitiv_Initializer *primitiv_XavierNormal_new(float scale);
-CAPI extern primitiv_Initializer *safe_primitiv_XavierNormal_new(
-    float scale, primitiv_Status *status);
-
-CAPI extern void primitiv_XavierNormal_delete(
-    primitiv_Initializer *initializer);
-CAPI extern void safe_primitiv_XavierNormal_delete(
-    primitiv_Initializer *initializer, primitiv_Status *status);
-
-CAPI extern void primitiv_XavierNormal_apply(
-    const primitiv_Initializer *initializer, primitiv_Tensor *x);
-CAPI extern void safe_primitiv_XavierNormal_apply(
-    const primitiv_Initializer *initializer,
-    primitiv_Tensor *x,
-    primitiv_Status *status);
-
-#ifdef __cplusplus
-}  // end extern "C"
-#endif
+/**
+ * Creates a new Initializer object that generates a tensor by the Xavier matrix
+ * initialization with the normal distribution for conv2d filters.
+ * @param scale Constant value that determines the scale of the normal
+ *              distribution.
+ * @param newobj Pointer to receive a handler.
+ * @return Status code.
+ */
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivCreateXavierNormalConv2DInitializer(
+    float scale, primitivInitializer_t **newobj);
 
 #endif  // PRIMITIV_C_INITIALIZER_IMPL_H_

@@ -1,0 +1,20 @@
+#ifndef PRIMITIV_CONFIG_H_
+#define PRIMITIV_CONFIG_H_
+
+#cmakedefine PRIMITIV_BUILD_TESTS_PROBABILISTIC
+#cmakedefine PRIMITIV_BUILD_STATIC_LIBRARY
+#cmakedefine PRIMITIV_USE_CACHE
+#cmakedefine PRIMITIV_USE_EIGEN
+#cmakedefine PRIMITIV_USE_CUDA
+#cmakedefine PRIMITIV_USE_CUDNN
+#cmakedefine PRIMITIV_USE_OPENCL
+
+#if defined(__x86_64__) || defined(__ppc64__)
+#define PRIMITIV_WORDSIZE_64
+#endif  // defined(__x86_64__) || defined(__ppc64__)
+
+#ifdef __i386
+#define PRIMITIV_MAYBE_FPMATH_X87
+#endif // __i386
+
+#endif  // PRIMITIV_CONFIG_H_

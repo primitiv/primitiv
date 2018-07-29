@@ -1,11 +1,13 @@
 #ifndef PRIMITIV_MSGPACK_OBJECTS_H_
 #define PRIMITIV_MSGPACK_OBJECTS_H_
 
+#include <primitiv/config.h>
+
 #include <cstddef>
 #include <cstdint>
 
-#include <primitiv/error.h>
-#include <primitiv/mixins.h>
+#include <primitiv/core/error.h>
+#include <primitiv/core/mixins.h>
 
 namespace primitiv {
 namespace msgpack {
@@ -79,7 +81,7 @@ public:
    * @throw primitiv::Error Object is invalid.
    */
   void check_valid() const {
-    if (!valid()) THROW_ERROR("MessagePack: Invalid 'Binary' object.");
+    if (!valid()) PRIMITIV_THROW_ERROR("MessagePack: Invalid 'Binary' object.");
   }
 
   /**
@@ -107,7 +109,9 @@ public:
    *          Users must not delete memory returned by this function.
    */
   char *allocate(std::size_t size) {
-    if (valid()) THROW_ERROR("MessagePack: 'Binary' object is already valid.");
+    if (valid()) {
+      PRIMITIV_THROW_ERROR("MessagePack: 'Binary' object is already valid.");
+    }
 
     // NOTE(odashi):
     // Allocation should be done at first (it may throws).
@@ -192,7 +196,9 @@ public:
    * @throw primitiv::Error Object is invalid.
    */
   void check_valid() const {
-    if (!valid()) THROW_ERROR("MessagePack: Invalid 'Extension' object.");
+    if (!valid()) {
+      PRIMITIV_THROW_ERROR("MessagePack: Invalid 'Extension' object.");
+    }
   }
 
   /**
@@ -230,7 +236,9 @@ public:
    *          Users must not delete memory returned by this function.
    */
   char *allocate(std::int8_t type, std::size_t size) {
-    if (valid()) THROW_ERROR("MessagePack: 'Extension' object is already valid.");
+    if (valid()) {
+      PRIMITIV_THROW_ERROR("MessagePack: 'Extension' object is already valid.");
+  }
 
     // NOTE(odashi):
     // Allocation should be done at first (it may throws).

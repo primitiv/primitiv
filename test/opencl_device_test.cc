@@ -1,17 +1,21 @@
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <chrono>
 #include <thread>
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/error.h>
-#include <primitiv/opencl_device.h>
-#include <primitiv/shape.h>
-#include <primitiv/tensor.h>
+
+#include <primitiv/core/error.h>
+#include <primitiv/devices/opencl/device.h>
+#include <primitiv/core/shape.h>
+#include <primitiv/core/tensor.h>
+
 #include <test_utils.h>
 
 using std::vector;
 using test_utils::vector_match;
+using test_utils::vector_near;
 
 namespace primitiv {
 
@@ -212,7 +216,11 @@ TEST_F(OpenCLDeviceTest, CheckRandomNormalWithSeed) {
   for (const Config &cfg : configs) {
     devices::OpenCL dev(cfg.pf_id, cfg.dev_id, 12345);
     const Tensor x = dev.random_normal(Shape({2, 2}, 2), 1, 3);
+#ifdef PRIMITIV_MAYBE_FPMATH_X87
+    EXPECT_TRUE(vector_near(expected, x.to_vector(), 1e-6));
+#else
     EXPECT_TRUE(vector_match(expected, x.to_vector()));
+#endif
   }
 }
 
@@ -261,7 +269,11 @@ TEST_F(OpenCLDeviceTest, CheckRandomLogNormalWithSeed) {
   for (const Config &cfg : configs) {
     devices::OpenCL dev(cfg.pf_id, cfg.dev_id, 12345);
     const Tensor x = dev.random_log_normal(Shape({2, 2}, 2), 1, 3);
+#ifdef PRIMITIV_MAYBE_FPMATH_X87
+    EXPECT_TRUE(vector_near(expected, x.to_vector(), 1e-4));
+#else
     EXPECT_TRUE(vector_match(expected, x.to_vector()));
+#endif
   }
 }
 

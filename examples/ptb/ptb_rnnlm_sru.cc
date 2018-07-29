@@ -22,7 +22,6 @@
 #include <vector>
 
 #include <primitiv/primitiv.h>
-//#include <primitiv/primitiv_cuda.h>
 
 #include "utils.h"
 
@@ -102,21 +101,17 @@ public:
   std::vector<Var> forward(const std::vector<Var> &xs) {
     const Var x = F::concat(xs, 1);
     const Var u = F::matmul(w_, x);
-    const Var j = F::slice(u, 0, 0, out_size_);
-    const Var f = F::sigmoid(
-        F::slice(u, 0, out_size_, 2 * out_size_)
-        + F::broadcast(bf_, 1, xs.size()));
-    const Var r = F::sigmoid(
-        F::slice(u, 0, 2 * out_size_, 3 * out_size_)
-        + F::broadcast(bf_, 1, xs.size()));
+    const std::vector<Var> v = F::split(u, 0, 3);
+    const Var f = F::sigmoid(v[1] + F::broadcast(bf_, 1, xs.size()));
+    const Var r = F::sigmoid(v[2] + F::broadcast(br_, 1, xs.size()));
     Var c = F::zeros<Var>({out_size_});
     std::vector<Var> hs;
+    const std::vector<Var> js = F::split(v[0], 1, xs.size());
+    const std::vector<Var> fs = F::split(f, 1, xs.size());
+    const std::vector<Var> rs = F::split(r, 1, xs.size());
     for (unsigned i = 0; i < xs.size(); ++i) {
-      const Var ji = F::slice(j, 1, i, i + 1);
-      const Var fi = F::slice(f, 1, i, i + 1);
-      const Var ri = F::slice(r, 1, i, i + 1);
-      c = fi * c + (1 - fi) * ji;
-      hs.emplace_back(ri * F::tanh(c) + (1 - ri) * xs[i]);
+      c = fs[i] * c + (1 - fs[i]) * js[i];
+      hs.emplace_back(rs[i] * F::tanh(c) + (1 - rs[i]) * xs[i]);
     }
     return hs;
   }
@@ -204,7 +199,7 @@ int main() {
   cout << "valid: " << num_valid_sents << " sentences, "
                     << num_valid_labels << " labels" << endl;
 
-  devices::Naive dev;  // devices::CUDA dev(0);
+  devices::CUDA dev(0);  // devices::CUDA dev(0);
   Device::set_default(dev);
   Graph g;
   Graph::set_default(g);

@@ -1,6 +1,8 @@
 #ifndef PRIMITIV_MSGPACK_READER_H_
 #define PRIMITIV_MSGPACK_READER_H_
 
+#include <primitiv/config.h>
+
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -10,8 +12,8 @@
 #include <unordered_map>
 #include <utility>
 
-#include <primitiv/error.h>
-#include <primitiv/mixins.h>
+#include <primitiv/core/error.h>
+#include <primitiv/core/mixins.h>
 #include <primitiv/msgpack/objects.h>
 
 namespace primitiv {
@@ -27,9 +29,10 @@ private:
   void check_eof() {
     if (!is_) {
       if (is_.eof()) {
-        THROW_ERROR("MessagePack: Stream reached EOF.");
+        PRIMITIV_THROW_ERROR("MessagePack: Stream reached EOF.");
       } else {
-        THROW_ERROR("MessagePack: An error occurred while reading the stream.");
+        PRIMITIV_THROW_ERROR(
+            "MessagePack: An error occurred while reading the stream.");
       }
     }
   }
@@ -54,16 +57,18 @@ private:
     return (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | c[3];
   }
 
-#define ULL(expr) static_cast<std::uint64_t>(expr)
+#define PRIMITIV_ULL(expr) static_cast<std::uint64_t>(expr)
   std::uint64_t get_uint64() {
     std::uint8_t c[8];
     is_.read(reinterpret_cast<char *>(c), 8);
     check_eof();
-    return (ULL(c[0]) << 56) | (ULL(c[1]) << 48) | (ULL(c[2]) << 40) |
-      (ULL(c[3]) << 32) | (ULL(c[4]) << 24) | (ULL(c[5]) << 16) |
-      (ULL(c[6]) << 8) | ULL(c[7]);
+    return
+      (PRIMITIV_ULL(c[0]) << 56) | (PRIMITIV_ULL(c[1]) << 48) |
+      (PRIMITIV_ULL(c[2]) << 40) | (PRIMITIV_ULL(c[3]) << 32) |
+      (PRIMITIV_ULL(c[4]) << 24) | (PRIMITIV_ULL(c[5]) << 16) |
+      (PRIMITIV_ULL(c[6]) << 8) | PRIMITIV_ULL(c[7]);
   }
-#undef ULL
+#undef PRIMITIV_ULL
 
   void read(char *ptr, std::size_t size) {
     is_.read(ptr, size);
@@ -73,7 +78,7 @@ private:
   void check_type(std::uint8_t expected) {
     std::uint8_t observed = get_uint8();
     if (observed != expected) {
-      THROW_ERROR(
+      PRIMITIV_THROW_ERROR(
           "MessagePack: Next object does not have a correct type. "
           "expected: " << std::hex << static_cast<int>(expected)
           << ", observed: " << std::hex << static_cast<int>(observed));
@@ -87,7 +92,7 @@ public:
    */
   Reader(std::istream &is) : is_(is) {}
 
-  Reader &operator>>(std::nullptr_t x) {
+  Reader &operator>>(std::nullptr_t) {
     // Do nothing. Only checking the type.
     check_type(0xc0);
     return *this;
@@ -98,7 +103,7 @@ public:
     if ((type & 0xfe) == 0xc2) {
       x = static_cast<bool>(type & 0x01);
     } else {
-      THROW_ERROR(
+      PRIMITIV_THROW_ERROR(
           "MessagePack: Next object does not have the 'bool' type. "
           "observed: " << type);
     }
@@ -181,7 +186,7 @@ public:
         case 0xda: size = get_uint16(); break;
         case 0xdb: size = get_uint32(); break;
         default:
-          THROW_ERROR(
+          PRIMITIV_THROW_ERROR(
               "MessagePack: Next object does not have the 'str' type. "
               "observed: " << type);
       }
@@ -201,7 +206,7 @@ public:
       case 0xc5: size = get_uint16(); break;
       case 0xc6: size = get_uint32(); break;
       default:
-        THROW_ERROR(
+        PRIMITIV_THROW_ERROR(
             "MessagePack: Next object does not have the 'bin' type. "
             "observed: " << type);
     }
@@ -225,7 +230,7 @@ public:
       case 0xc8: size = get_uint16(); break;
       case 0xc9: size = get_uint32(); break;
       default:
-        THROW_ERROR(
+        PRIMITIV_THROW_ERROR(
             "MessagePack: Next object does not have the 'ext' type. "
             "observed: " << type);
     }
@@ -247,7 +252,7 @@ public:
         case 0xdc: size = get_uint16(); break;
         case 0xdd: size = get_uint32(); break;
         default:
-          THROW_ERROR(
+          PRIMITIV_THROW_ERROR(
               "MessagePack: Next object does not have the 'array' type. "
               "observed: " << type);
       }
@@ -270,7 +275,7 @@ public:
         case 0xde: size = get_uint16(); break;
         case 0xdf: size = get_uint32(); break;
         default:
-          THROW_ERROR(
+          PRIMITIV_THROW_ERROR(
               "MessagePack: Next object does not have the 'map' type. "
               "observed: " << type);
       }

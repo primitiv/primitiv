@@ -1,15 +1,18 @@
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <sstream>
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/error.h>
-#include <primitiv/functions.h>
-#include <primitiv/graph.h>
-#include <primitiv/initializer_impl.h>
-#include <primitiv/naive_device.h>
-#include <primitiv/operator_impl.h>
-#include <primitiv/parameter.h>
+
+#include <primitiv/core/error.h>
+#include <primitiv/core/functions.h>
+#include <primitiv/core/graph.h>
+#include <primitiv/core/initializer_impl.h>
+#include <primitiv/devices/naive/device.h>
+#include <primitiv/core/operator_impl.h>
+#include <primitiv/core/parameter.h>
+
 #include <test_utils.h>
 
 using std::vector;
@@ -244,6 +247,116 @@ TEST_F(GraphTest, CheckForwardBackward) {
     EXPECT_TRUE(vector_match(expected_grads[i], val.to_vector()));
   }
 #endif
+}
+
+TEST_F(GraphTest, CheckImplicitForwardBackward) {
+  Device::set_default(dev);
+
+  Graph g;
+  Graph::set_default(g);
+
+  // Launches the forward calculation from Graph::backward().
+  const vector<float> data {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4};
+  const Node x = functions::input<Node>(Shape({2, 2}, 3), data);
+  const Node y = functions::exp(x);
+  EXPECT_NO_THROW(x.backward());
+  EXPECT_NO_THROW(y.backward());
+
+  // Does not launch the forward calculation,
+  // get_inner_values() will be called instead.
+  Parameter pw({2, 2}, initializers::Constant(0));
+  const Node w = functions::parameter<Node>(pw);
+  pw.reset_gradient();
+  EXPECT_NO_THROW(w.backward());
+}
+
+TEST_F(GraphTest, CheckMultipleBackward) {
+  Device::set_default(dev);
+
+  Graph g;
+  Graph::set_default(g);
+
+  Parameter pw({2, 2}, initializers::Constant(0));
+  const Node w = functions::parameter<Node>(pw);
+  const Node x = functions::input<Node>({2, 2}, {1, 2, 3, 4});
+  const Node y = w * x;
+
+  EXPECT_TRUE(vector_match(vector<float> {0, 0, 0, 0}, y.to_vector()));
+  pw.reset_gradient();
+
+  y.backward();
+  EXPECT_TRUE(vector_match(
+        vector<float> {1, 2, 3, 4}, pw.gradient().to_vector()));
+
+  y.backward();
+  EXPECT_TRUE(vector_match(
+        vector<float> {2, 4, 6, 8}, pw.gradient().to_vector()));
+
+  y.backward();
+  EXPECT_TRUE(vector_match(
+        vector<float> {3, 6, 9, 12}, pw.gradient().to_vector()));
+}
+
+TEST_F(GraphTest, CheckNonzeroArgs) {
+  Device::set_default(dev);
+
+  Graph g;
+  Graph::set_default(g);
+
+  const Node a = functions::input<Node>({}, {1});
+  const Node b = functions::input<Node>({}, {2});
+  const Node c = functions::input<Node>({}, {3});
+
+  vector<float> y_val;
+
+  Node y = functions::concat({a}, 0);
+  EXPECT_EQ(Shape {}, y.shape());
+  EXPECT_NO_THROW(y_val = y.to_vector());
+  EXPECT_TRUE(vector_match({1}, y_val));
+
+  y = functions::concat({a, b}, 0);
+  EXPECT_EQ(Shape {2}, y.shape());
+  EXPECT_NO_THROW(y_val = y.to_vector());
+  EXPECT_TRUE(vector_match({1, 2}, y_val));
+
+  y = functions::concat({a, b, c}, 0);
+  EXPECT_EQ(Shape {3}, y.shape());
+  EXPECT_NO_THROW(y_val = y.to_vector());
+  EXPECT_TRUE(vector_match({1, 2, 3}, y_val));
+
+  EXPECT_THROW(functions::concat(vector<Node> {}, 0), Error);
+}
+
+TEST_F(GraphTest, CheckMultipleReturnValues) {
+  Device::set_default(dev);
+
+  Graph g;
+  Graph::set_default(g);
+
+  Parameter px({9}, {1, 2, 3, 4, 5, 6, 7, 8, 9});
+  const Node x = functions::parameter<Node>(px);
+
+  vector<Node> ys;
+  EXPECT_NO_THROW(ys = functions::split(x, 0, 3));
+  EXPECT_TRUE(vector_match(vector<float> {1, 2, 3}, ys[0].to_vector()));
+  EXPECT_TRUE(vector_match(vector<float> {4, 5, 6}, ys[1].to_vector()));
+  EXPECT_TRUE(vector_match(vector<float> {7, 8, 9}, ys[2].to_vector()));
+
+  px.reset_gradient();
+
+  ys[1].backward();
+  EXPECT_TRUE(vector_match(
+        vector<float> {0, 0, 0, 1, 1, 1, 0, 0, 0}, px.gradient().to_vector()));
+
+  (ys[0] + ys[1]).backward();
+  EXPECT_TRUE(vector_match(
+        vector<float> {1, 1, 1, 2, 2, 2, 0, 0, 0}, px.gradient().to_vector()));
+
+  functions::sum(ys).backward();
+  EXPECT_TRUE(vector_match(
+        vector<float> {2, 2, 2, 3, 3, 3, 1, 1, 1}, px.gradient().to_vector()));
+
+  EXPECT_THROW(functions::split(x, 0, 2), Error);
 }
 
 TEST_F(GraphTest, CheckXor) {

@@ -1,28 +1,34 @@
-/* Copyright 2017 The primitiv Authors. All Rights Reserved. */
-#include <config.h>
+#include <primitiv/config.h>
 
-#include <primitiv/device.h>
-
-#include <primitiv/c/internal.h>
+#include <primitiv/core/device.h>
+#include <primitiv/c/internal/internal.h>
 #include <primitiv/c/device.h>
 
 using primitiv::Device;
+using primitiv::c::internal::to_c_ptr;
+using primitiv::c::internal::to_cpp_ptr;
 
-extern "C" {
+PRIMITIV_C_STATUS primitivGetDefaultDevice(primitivDevice_t **retval) try {
+  PRIMITIV_C_CHECK_NOT_NULL(retval);
+  *retval = to_c_ptr(&Device::get_default());
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-primitiv_Device *primitiv_Device_get_default() {
-  return to_c(&Device::get_default());
-}
-primitiv_Device *safe_primitiv_Device_get_default(primitiv_Status *status) {
-  SAFE_RETURN(primitiv_Device_get_default(), status, nullptr);
-}
+PRIMITIV_C_STATUS primitivSetDefaultDevice(primitivDevice_t *device) try {
+  PRIMITIV_C_CHECK_NOT_NULL(device);
+  Device::set_default(*to_cpp_ptr(device));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-void primitiv_Device_set_default(primitiv_Device *device) {
-  Device::set_default(*to_cc(device));
-}
-void safe_primitiv_Device_set_default(primitiv_Device *device,
-                                      primitiv_Status *status) {
-  SAFE_EXPR(primitiv_Device_set_default(device), status);
-}
+PRIMITIV_C_STATUS primitivDeleteDevice(primitivDevice_t *device) try {
+  PRIMITIV_C_CHECK_NOT_NULL(device);
+  delete to_cpp_ptr(device);
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
 
-}  // end extern "C"
+PRIMITIV_C_STATUS primitivDumpDeviceDescription(
+    const primitivDevice_t *device) try {
+  PRIMITIV_C_CHECK_NOT_NULL(device);
+  to_cpp_ptr(device)->dump_description();
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS

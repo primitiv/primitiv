@@ -1,4 +1,4 @@
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <cstdint>
 #include <initializer_list>
@@ -6,8 +6,11 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
 #include <gtest/gtest.h>
+
 #include <primitiv/msgpack/writer.h>
+
 #include <test_utils.h>
 
 using std::string;

@@ -13,10 +13,10 @@
 //   Run 'download_data.sh' in the same directory before using this code.
 //
 // [Compile]
-//   $ g++ \
-//     -std=c++11 \
-//     -I/path/to/primitiv/includes \ (typically -I../..)
-//     -L/path/to/primitiv/libs \     (typically -L../../build/primitiv)
+//   $ g++
+//     -std=c++11
+//     -I/path/to/primitiv/includes (typically -I../..)
+//     -L/path/to/primitiv/libs     (typically -L../../build/primitiv)
 //     encdec.cc -lprimitiv
 //
 // [Training]
@@ -32,7 +32,6 @@
 #include <random>
 
 #include <primitiv/primitiv.h>
-//#include <primitiv/primitiv_cuda.h>
 
 #include "lstm.h"
 #include "utils.h"
