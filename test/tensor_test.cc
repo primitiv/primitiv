@@ -466,10 +466,15 @@ TEST_F(TensorTest, CheckInplaceMultiplyConstRepeat) {
 
 TEST_F(TensorTest, CheckInplaceMultiplyConstRepeatMultithread) {
   for (Device *dev : devices) {
+    std::cout
+      << "Device: ptr=" << dev
+      << ", type=" << std::hex << static_cast<std::uint32_t>(dev->type())
+      << std::endl;
+
     Tensor a = dev->new_tensor_by_constant(Shape {}, 1);
 
     auto thread_proc = [&a] {
-      for (std::uint32_t i = 0; i < 2048; ++i) {
+      for (std::uint32_t i = 0; i < 4096; ++i) {
         a *= -2;
         a *= -.5;
       }
@@ -592,11 +597,24 @@ TEST_F(TensorTest, CheckInplaceAddRepeat) {
 
 TEST_F(TensorTest, CheckInplaceAddRepeatMultithread) {
   for (Device *dev : devices) {
+    const auto dev_type = dev->type();
+    std::cout
+      << "Device: ptr=" << dev
+      << ", type=" << std::hex << static_cast<std::uint32_t>(dev_type)
+      << std::endl;
+
+    // NOTE(odashi):
+    // This test counts up to 2048 = 2^11 for CUDA16 devices, which is the upper
+    // limit number with precision 1.0 in float16.
+    std::uint32_t repeat =
+      dev_type == Device::DeviceType::CUDA16 ? 1024
+      : 4096;
+
     Tensor a = dev->new_tensor_by_constant(Shape {}, 0);
     const Tensor b = dev->new_tensor_by_constant(Shape {}, 1);
 
-    auto thread_proc = [&a, &b] {
-      for (std::uint32_t i = 0; i < 2048; ++i) {
+    auto thread_proc = [&a, &b, repeat] {
+      for (std::uint32_t i = 0; i < repeat; ++i) {
         a += b;
       }
     };
@@ -607,7 +625,8 @@ TEST_F(TensorTest, CheckInplaceAddRepeatMultithread) {
     th1.join();
     th2.join();
 
-    EXPECT_TRUE(vector_match(vector<float> {4096}, a.to_vector()));
+    EXPECT_TRUE(vector_match(
+          vector<float> {2 * static_cast<float>(repeat)}, a.to_vector()));
   }
 }
 
@@ -717,11 +736,24 @@ TEST_F(TensorTest, CheckInplaceSubtractRepeat) {
 
 TEST_F(TensorTest, CheckInplaceSubtractRepeatMultithread) {
   for (Device *dev : devices) {
+    const auto dev_type = dev->type();
+    std::cout
+      << "Device: ptr=" << dev
+      << ", type=" << std::hex << static_cast<std::uint32_t>(dev_type)
+      << std::endl;
+
+    // NOTE(odashi):
+    // This test counts down to -2048 = -2^11 for CUDA16 devices, which is the
+    // lower limit number with precision 1.0 in float16.
+    std::uint32_t repeat =
+      dev_type == Device::DeviceType::CUDA16 ? 1024
+      : 4096;
+
     Tensor a = dev->new_tensor_by_constant(Shape {}, 0);
     const Tensor b = dev->new_tensor_by_constant(Shape {}, 1);
 
-    auto thread_proc = [&a, &b] {
-      for (std::uint32_t i = 0; i < 2048; ++i) {
+    auto thread_proc = [&a, &b, repeat] {
+      for (std::uint32_t i = 0; i < repeat; ++i) {
         a -= b;
       }
     };
@@ -732,7 +764,8 @@ TEST_F(TensorTest, CheckInplaceSubtractRepeatMultithread) {
     th1.join();
     th2.join();
 
-    EXPECT_TRUE(vector_match(vector<float> {-4096}, a.to_vector()));
+    EXPECT_TRUE(vector_match(
+          vector<float> {-2 * static_cast<float>(repeat)}, a.to_vector()));
   }
 }
 
