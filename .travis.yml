@@ -13,7 +13,6 @@ matrix:
       env: SCRIPT=fedora
       services: docker
     - os: osx
-      osx_image: xcode8.3
       env: SCRIPT=osx
     # FIXME(vbkaisetsu):
     # The x86 support is currently unstable and test cases sometimes be failed.
