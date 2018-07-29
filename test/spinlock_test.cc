@@ -1,9 +1,11 @@
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <mutex>
 #include <thread>
+
 #include <gtest/gtest.h>
-#include <primitiv/spinlock.h>
+
+#include <primitiv/core/spinlock.h>
 
 namespace primitiv {
 

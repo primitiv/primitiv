@@ -1,11 +1,13 @@
-#include <config.h>
+#include <primitiv/config.h>
 
 #include <chrono>
 #include <thread>
+
 #include <gtest/gtest.h>
-#include <primitiv/memory_pool.h>
-#include <primitiv/error.h>
-#include <primitiv/shape.h>
+
+#include <primitiv/core/error.h>
+#include <primitiv/core/memory_pool.h>
+#include <primitiv/core/shape.h>
 
 namespace primitiv {
 

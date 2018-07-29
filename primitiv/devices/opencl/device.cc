@@ -212,13 +212,9 @@ public:
       try {
         program.build({device});
       } catch (...) {
-<<<<<<< HEAD:primitiv/opencl_device.cc
-        THROW_ERROR(
-            "OpenCL kernel compile error:\n"
+        PRIMITIV_THROW_ERROR(
+            "OpenCL kernel compile error:" << std::endl
             << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
-=======
-        PRIMITIV_THROW_ERROR("OpenCL kernel compile error:" << std::endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
->>>>>>> develop:primitiv/devices/opencl/device.cc
       }
 
 #define CONFIGURE_KERNEL(name) \
@@ -1248,14 +1244,9 @@ void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   const std::uint32_t di = a.shape()[0];
   const std::uint32_t dj = a.shape()[1];
   const std::uint32_t dk = b.shape()[1];
-<<<<<<< HEAD:primitiv/opencl_device.cc
-  const float alpha = 1.f;
-  const float beta = 0.f;
 
   std::lock_guard<Spinlock> lock(state_->spinlock);
 
-=======
->>>>>>> develop:primitiv/devices/opencl/device.cc
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
     const std::uint32_t a_skip = di * dj;
@@ -1268,21 +1259,9 @@ void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
     std::vector<std::size_t> b_offsets(bs);
     std::vector<std::size_t> y_offsets(bs);
     for (std::uint32_t n = 0; n < bs; ++n) {
-<<<<<<< HEAD:primitiv/opencl_device.cc
-      ::clblasSgemm(
-          clblasColumnMajor, clblasNoTrans, clblasNoTrans,
-          di, dk, dj,
-          alpha,
-          CDATA(a)(), n * a_skip, di,
-          CDATA(b)(), n * b_skip, dj,
-          beta,
-          MDATA(y)(), n * y_skip, di,
-          1, &state_->queue(), 0, NULL, NULL);
-=======
       a_offsets[n] = n * a_skip;
       b_offsets[n] = n * b_skip;
       y_offsets[n] = n * y_skip;
->>>>>>> develop:primitiv/devices/opencl/device.cc
     }
     clblast::GemmBatched(
       clblast::Layout::kColMajor,
@@ -1297,17 +1276,6 @@ void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
       &state_->queue(), nullptr);
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
-<<<<<<< HEAD:primitiv/opencl_device.cc
-    ::clblasSgemm(
-        clblasColumnMajor, clblasNoTrans, clblasNoTrans,
-        di, dk * b.shape().batch(), dj,
-        alpha,
-        CDATA(a)(), 0, di,
-        CDATA(b)(), 0, dj,
-        beta,
-        MDATA(y)(), 0, di,
-        1, &state_->queue(), 0, NULL, NULL);
-=======
     const float alpha = 1.;
     const float beta = 0.;
     clblast::Gemm(
@@ -1320,7 +1288,6 @@ void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
       beta,
       MDATA(y)(), 0, di,
       &state_->queue(), nullptr);
->>>>>>> develop:primitiv/devices/opencl/device.cc
   }
 }
 
@@ -1358,14 +1325,9 @@ void OpenCL::matmul_bw_impl(
   const std::uint32_t di = a.shape()[0];
   const std::uint32_t dj = a.shape()[1];
   const std::uint32_t dk = b.shape()[1];
-<<<<<<< HEAD:primitiv/opencl_device.cc
-  const float alpha = 1.f;
-  const float beta = 1.f;
 
   std::lock_guard<Spinlock> lock(state_->spinlock);
 
-=======
->>>>>>> develop:primitiv/devices/opencl/device.cc
   if (a.shape().has_batch()) {
     // Do gemm multiple times.
     const std::uint32_t a_skip = di * dj;
@@ -1378,19 +1340,6 @@ void OpenCL::matmul_bw_impl(
     std::vector<std::size_t> b_offsets(bs);
     std::vector<std::size_t> y_offsets(bs);
     for (std::uint32_t n = 0; n < bs; ++n) {
-<<<<<<< HEAD:primitiv/opencl_device.cc
-      ::clblasSgemm(
-          clblasColumnMajor, clblasNoTrans, clblasTrans,
-          di, dj, dk,
-          alpha,
-          CDATA(gy)(), n * y_skip, di,
-          CDATA(b)(), n * b_skip, dj,
-          beta,
-          MDATA(ga)(), n * a_skip, di,
-          1, &state_->queue(), 0, NULL, NULL);
-      ::clblasSgemm(
-          clblasColumnMajor, clblasTrans, clblasNoTrans,
-=======
       a_offsets[n] = n * a_skip;
       b_offsets[n] = n * b_skip;
       y_offsets[n] = n * y_skip;
@@ -1428,7 +1377,6 @@ void OpenCL::matmul_bw_impl(
         clblast::Gemm(
           clblast::Layout::kColMajor,
           clblast::Transpose::kYes, clblast::Transpose::kNo,
->>>>>>> develop:primitiv/devices/opencl/device.cc
           dj, dk, di,
           alpha,
           CDATA(a)(), n * a_skip, di,
@@ -1440,26 +1388,6 @@ void OpenCL::matmul_bw_impl(
     }
   } else {
     // Do gemm only once to calculate the product with a combined matrix.
-<<<<<<< HEAD:primitiv/opencl_device.cc
-    ::clblasSgemm(
-        clblasColumnMajor, clblasNoTrans, clblasTrans,
-        di, dj, dk * b.shape().batch(),
-        alpha,
-        CDATA(gy)(), 0, di,
-        CDATA(b)(), 0, dj,
-        beta,
-        MDATA(ga)(), 0, di,
-        1, &state_->queue(), 0, NULL, NULL);
-    ::clblasSgemm(
-        clblasColumnMajor, clblasTrans, clblasNoTrans,
-        dj, dk * b.shape().batch(), di,
-        alpha,
-        CDATA(a)(), 0, di,
-        CDATA(gy)(), 0, di,
-        beta,
-        MDATA(gb)(), 0, dj,
-        1, &state_->queue(), 0, NULL, NULL);
-=======
     const float alpha = 1.;
     const float beta = 1.;
     clblast::Gemm(
@@ -1618,7 +1546,6 @@ void OpenCL::min_bw_impl(
     CASE(2, 1);
     CASE(1, 0);
 #undef CASE
->>>>>>> develop:primitiv/devices/opencl/device.cc
   }
 }
 
