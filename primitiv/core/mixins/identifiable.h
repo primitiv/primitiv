@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include <primitiv/core/error.h>
+#include <primitiv/core/spinlock.h>
 #include <primitiv/core/mixins/nonmovable.h>
 
 namespace primitiv {
@@ -18,18 +19,18 @@ template<typename T>
 class Identifiable : Nonmovable<Identifiable<T>> {
   static std::uint64_t next_id_;
   static std::unordered_map<std::uint64_t, T *> objects_;
-  static std::mutex mutex_;
+  static Spinlock spinlock_;
   std::uint64_t id_;
 
 protected:
   Identifiable() {
-    const std::lock_guard<std::mutex> lock(mutex_);
+    const std::lock_guard<Spinlock> lock(spinlock_);
     id_ = next_id_++;
     objects_.emplace(id_, static_cast<T *>(this));
   }
 
   ~Identifiable() {
-    const std::lock_guard<std::mutex> lock(mutex_);
+    const std::lock_guard<Spinlock> lock(spinlock_);
     objects_.erase(id_);
   }
 
@@ -40,7 +41,7 @@ public:
    * @throw primitiv::Error Object does not exist.
    */
   static T &get_object(std::uint64_t id) {
-    const std::lock_guard<std::mutex> lock(mutex_);
+    const std::lock_guard<Spinlock> lock(spinlock_);
     const auto it = objects_.find(id);
     if (it == objects_.end()) PRIMITIV_THROW_ERROR("Invalid object ID: " << id);
     return *it->second;
@@ -58,7 +59,7 @@ std::uint64_t Identifiable<T>::next_id_ = 0;
 template<typename T>
 std::unordered_map<std::uint64_t, T *> Identifiable<T>::objects_;
 template<typename T>
-std::mutex Identifiable<T>::mutex_;
+Spinlock Identifiable<T>::spinlock_;
 
 }  // namespace mixins
 }  // namespace primitiv
