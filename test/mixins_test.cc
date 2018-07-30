@@ -3,7 +3,10 @@
 #include <thread>
 #include <gtest/gtest.h>
 
-#include <primitiv/core/mixins.h>
+#include <primitiv/core/mixins/default_settable.h>
+#include <primitiv/core/mixins/identifiable.h>
+#include <primitiv/core/mixins/noncopyable.h>
+#include <primitiv/core/mixins/nonmovable.h>
 
 namespace primitiv {
 namespace mixins {

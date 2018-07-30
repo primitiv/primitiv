@@ -12,7 +12,7 @@
 #include <unordered_map>
 
 #include <primitiv/core/error.h>
-#include <primitiv/core/mixins.h>
+#include <primitiv/core/mixins/nonmovable.h>
 #include <primitiv/msgpack/objects.h>
 
 namespace primitiv {

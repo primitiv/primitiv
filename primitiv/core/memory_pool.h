@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include <primitiv/core/mixins.h>
+#include <primitiv/core/mixins/identifiable.h>
 #include <primitiv/core/spinlock.h>
 
 namespace primitiv {

@@ -3,10 +3,11 @@
 
 #include <cstdint>
 #include <memory>
+#include <unordered_map>
 #include <unordered_set>
 
 #include <primitiv/core/error.h>
-#include <primitiv/core/mixins.h>
+#include <primitiv/core/mixins/nonmovable.h>
 
 namespace primitiv {
 

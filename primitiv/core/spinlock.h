@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <thread>
 
-#include <primitiv/core/mixins.h>
+#include <primitiv/core/mixins/nonmovable.h>
 
 namespace primitiv {
 
