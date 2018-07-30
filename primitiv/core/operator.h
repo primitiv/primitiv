@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include <primitiv/core/mixins.h>
+#include <primitiv/core/mixins/nonmovable.h>
 #include <primitiv/core/shape.h>
 #include <primitiv/core/tensor.h>
 

@@ -6,7 +6,7 @@
 #include <unordered_map>
 
 #include <primitiv/core/error.h>
-#include <primitiv/mixins/nonmovable.h>
+#include <primitiv/core/mixins/nonmovable.h>
 
 namespace primitiv {
 namespace mixins {

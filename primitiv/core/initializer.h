@@ -1,7 +1,7 @@
 #ifndef PRIMITIV_CORE_INITIALIZER_H_
 #define PRIMITIV_CORE_INITIALIZER_H_
 
-#include <primitiv/core/mixins.h>
+#include <primitiv/core/mixins/nonmovable.h>
 
 namespace primitiv {
 

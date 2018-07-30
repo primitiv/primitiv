@@ -5,7 +5,8 @@
 #include <memory>
 #include <vector>
 
-#include <primitiv/core/mixins.h>
+#include <primitiv/core/mixins/default_settable.h>
+#include <primitiv/core/mixins/nonmovable.h>
 #include <primitiv/core/operator.h>
 #include <primitiv/core/shape.h>
 
