@@ -15,7 +15,7 @@
 #include <primitiv/core/error.h>
 #include <primitiv/core/memory_pool.h>
 #include <primitiv/core/random.h>
-#include <primitiv/core/epinlock.h>
+#include <primitiv/core/spinlock.h>
 #include <primitiv/devices/opencl/device.h>
 
 namespace {
