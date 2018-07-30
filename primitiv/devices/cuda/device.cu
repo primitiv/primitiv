@@ -2,8 +2,8 @@
 
 #include <random>
 
+#include <primitiv/core/error.h>
 #include <primitiv/devices/cuda/device.h>
-#include <primitiv/error.h>
 #include <primitiv/internal/cuda/utils.h>
 
 namespace primitiv {

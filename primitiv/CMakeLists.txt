@@ -106,6 +106,7 @@ if(PRIMITIV_USE_EIGEN)
   add_library(primitiv_eigen_OBJS OBJECT
     ${primitiv_core_HDRS}
     ${primitiv_eigen_HDRS}
+    ${primitiv_eigen_SRCS}
     ${primitiv_eigen_ops_HDRS}
     ${primitiv_eigen_ops_SRCS}
   )
@@ -116,8 +117,8 @@ endif()
 # Build rules of the CUDA backend.
 if(PRIMITIV_USE_CUDA)
   # Common files
-  file(GLOB primitiv_cuda_internal_HDRS "internal/cuda_*.h")
-  file(GLOB primitiv_cuda_internal_SRCS "internal/cuda_*.cu")
+  file(GLOB primitiv_cuda_internal_HDRS "internal/cuda/*.h")
+  file(GLOB primitiv_cuda_internal_SRCS "internal/cuda/*.cu")
   # devices::CUDA
   file(GLOB primitiv_cuda_HDRS "devices/cuda/*.h")
   file(GLOB primitiv_cuda_SRCS "devices/cuda/*.cu")
