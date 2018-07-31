@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include <primitiv/core/mixins.h>
+#include <primitiv/core/mixins/identifiable.h>
 
 namespace primitiv {
 

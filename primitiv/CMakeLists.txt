@@ -23,22 +23,28 @@ install(
 # Combined header (won't be used by the library itself)
 install(FILES primitiv.h DESTINATION include/primitiv)
 
-# Core libraries.
+# Files on ./core
 file(GLOB primitiv_core_HDRS "core/*.h")
 file(GLOB primitiv_core_SRCS "core/*.cc")
 install(FILES ${primitiv_core_HDRS} DESTINATION include/primitiv/core)
 
-# Contrib libraries.
+# Files on ./core/mixins
+file(GLOB primitiv_core_mixins_HDRS "core/mixins/*.h")
+file(GLOB primitiv_core_mixins_SRCS "core/mixins/*.cc")
+install(
+  FILES ${primitiv_core_mixins_HDRS} DESTINATION include/primitiv/core/mixins)
+
+# Files on ./contrib
 file(GLOB primitiv_contrib_HDRS "contrib/*.h")
 file(GLOB primitiv_contrib_SRCS "contrib/*.cc")
 install(FILES ${primitiv_contrib_HDRS} DESTINATION include/primitiv/contrib)
 
-# MessagePack libraries.
+# Files on ./msgpack
 file(GLOB primitiv_msgpack_HDRS "msgpack/*.h")
 file(GLOB primitiv_msgpack_SRCS "msgpack/*.cc")
 install(FILES ${primitiv_msgpack_HDRS} DESTINATION include/primitiv/msgpack)
 
-# Code for the Naive device.
+# Files on ./devices/naive
 file(GLOB primitiv_naive_HDRS "devices/naive/*.h")
 file(GLOB primitiv_naive_SRCS "devices/naive/*.cc")
 file(GLOB primitiv_naive_ops_HDRS "devices/naive/ops/*.h")
@@ -48,6 +54,7 @@ install(FILES ${primitiv_naive_HDRS} DESTINATION include/primitiv/devices/naive)
 # Minimal library: all of above.
 set(primitiv_minimal_HDRS
   ${primitiv_core_HDRS}
+  ${primitiv_core_mixins_HDRS}
   ${primitiv_contrib_HDRS}
   ${primitiv_msgpack_HDRS}
   ${primitiv_naive_HDRS}
@@ -55,6 +62,7 @@ set(primitiv_minimal_HDRS
 )
 set(primitiv_minimal_SRCS
   ${primitiv_core_SRCS}
+  ${primitiv_core_mixins_SRCS}
   ${primitiv_contrib_SRCS}
   ${primitiv_msgpack_SRCS}
   ${primitiv_naive_SRCS}

@@ -7,7 +7,7 @@
 #include <cstdint>
 
 #include <primitiv/core/error.h>
-#include <primitiv/core/mixins.h>
+#include <primitiv/core/mixins/noncopyable.h>
 
 namespace primitiv {
 namespace msgpack {

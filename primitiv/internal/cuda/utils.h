@@ -15,7 +15,7 @@
 #include <curand.h>
 
 #include <primitiv/core/memory_pool.h>
-#include <primitiv/core/mixins.h>
+#include <primitiv/core/mixins/nonmovable.h>
 
 #define CUDA_CALL(f) { \
   ::cudaError_t err = (f); \
