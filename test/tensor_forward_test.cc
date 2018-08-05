@@ -5,12 +5,15 @@
 #include <numeric>
 #include <utility>
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/error.h>
-#include <primitiv/functions.h>
-#include <primitiv/naive_device.h>
-#include <primitiv/parameter.h>
-#include <primitiv/tensor.h>
+
+#include <primitiv/core/error.h>
+#include <primitiv/core/functions.h>
+#include <primitiv/devices/naive/device.h>
+#include <primitiv/core/parameter.h>
+#include <primitiv/core/tensor.h>
+
 #include <test_utils.h>
 
 using std::vector;
@@ -1814,6 +1817,24 @@ TEST_F(TensorForwardTest, CheckInvalidMatMul) {
       const Tensor b = dev->new_tensor_by_constant(tc.b_shape, 0);
       EXPECT_THROW(matmul(a, b), Error);
     }
+  }
+}
+
+TEST_F(TensorForwardTest, CheckAbs) {
+  const vector<float> x_data {
+    .25, .5, .0, 1, 2, 4,
+    -.25, -.5, -.0, -1, -2, -4,
+  };
+  const vector<float> y_data {
+    .25, .5, .0, 1, 2, 4,
+    .25, .5, .0, 1, 2, 4,
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 2), x_data);
+    const Tensor y = abs(x);
+    EXPECT_EQ(Shape({2, 3}, 2), y.shape());
+    EXPECT_TRUE(vector_match_ulps(
+          y_data, y.to_vector(), get_default_ulps(*dev)));
   }
 }
 

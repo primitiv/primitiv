@@ -1,11 +1,12 @@
 #include <primitiv/config.h>
 
 #include <gtest/gtest.h>
-#include <primitiv/memory_pool.h>
-#include <primitiv/cuda_device.h>
-#include <primitiv/internal/cuda_utils.h>
-#include <primitiv/error.h>
-#include <primitiv/shape.h>
+
+#include <primitiv/core/memory_pool.h>
+#include <primitiv/core/error.h>
+#include <primitiv/core/shape.h>
+#include <primitiv/devices/cuda/device.h>
+#include <primitiv/internal/cuda/utils.h>
 
 namespace primitiv {
 

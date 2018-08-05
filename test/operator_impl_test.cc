@@ -3,12 +3,15 @@
 #include <algorithm>
 #include <cmath>
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/functions.h>
-#include <primitiv/initializer_impl.h>
-#include <primitiv/naive_device.h>
-#include <primitiv/operator_impl.h>
-#include <primitiv/parameter.h>
+
+#include <primitiv/core/functions.h>
+#include <primitiv/core/initializer_impl.h>
+#include <primitiv/devices/naive/device.h>
+#include <primitiv/core/operator_impl.h>
+#include <primitiv/core/parameter.h>
+
 #include <test_utils.h>
 
 using std::vector;
@@ -1125,6 +1128,16 @@ TEST_F(OperatorImplTest, CheckMatrixMultiply) {
     {3, 7, 3, 7, 0, 0, 0, 0, -3, -7, -3, -7},
   };
   TEST_2ARGS(MatrixMultiply);
+}
+
+TEST_F(OperatorImplTest, CheckAbs) {
+  // y = abs(x)
+  // dy/dx = sign(x)
+  setup_1arg();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {1, 2, 3, 4, 0, 0, 0, 0, 1, 2, 3, 4};
+  const vector<float> bw_grad = {1, 1, 1, 1, 0, 0, 0, 0, -1, -1, -1, -1};
+  TEST_1ARG(Abs);
 }
 
 TEST_F(OperatorImplTest, CheckSqrt) {

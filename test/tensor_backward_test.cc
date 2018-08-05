@@ -3,10 +3,13 @@
 #include <algorithm>
 #include <cmath>
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/error.h>
-#include <primitiv/naive_device.h>
-#include <primitiv/tensor.h>
+
+#include <primitiv/core/error.h>
+#include <primitiv/devices/naive/device.h>
+#include <primitiv/core/tensor.h>
+
 #include <test_utils.h>
 
 using std::vector;
@@ -360,6 +363,21 @@ TEST_F(TensorBackwardTest, CheckCopyAndPick) {
     dev->pick_bw(b, {0, 0, 0}, 2, a);
     EXPECT_TRUE(vector_match(y_data, a.to_vector()));
     EXPECT_TRUE(vector_match(a_data, copied.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckAbs) {
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_vector(
+        Shape({2, 2}, 2), {0.01, .0, 1, 2.5, -0.01, -.0, -1, -2.5});
+    const Tensor y = dev->abs_fw(x);
+    const Tensor gy = dev->new_tensor_by_vector(
+        y.shape(), {1, -1, 2, -2, 2, -2, 1, -1});
+    Tensor gx = dev->new_tensor_by_constant(x.shape(), 0);
+    dev->abs_bw(x, y, gy, gx);
+    const vector<float> gx_val { 1, 0, 2, -2, -2, 0, -1, 1 };
+    EXPECT_TRUE(vector_match_ulps(
+          gx_val, gx.to_vector(), get_default_ulps(*dev)));
   }
 }
 

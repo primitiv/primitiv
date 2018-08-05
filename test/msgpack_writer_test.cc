@@ -6,8 +6,11 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
 #include <gtest/gtest.h>
+
 #include <primitiv/msgpack/writer.h>
+
 #include <test_utils.h>
 
 using std::string;

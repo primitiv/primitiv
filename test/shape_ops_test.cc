@@ -1,10 +1,12 @@
 #include <primitiv/config.h>
 
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <primitiv/error.h>
-#include <primitiv/shape.h>
-#include <primitiv/shape_ops.h>
+
+#include <primitiv/core/error.h>
+#include <primitiv/core/shape.h>
+#include <primitiv/core/shape_ops.h>
 
 using std::vector;
 

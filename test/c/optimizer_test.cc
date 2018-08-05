@@ -1,7 +1,8 @@
 #include <primitiv/config.h>
 
 #include <gtest/gtest.h>
-#include <primitiv/c/naive_device.h>
+
+#include <primitiv/c/devices/naive/device.h>
 #include <primitiv/c/parameter.h>
 #include <primitiv/c/optimizer_impl.h>
 #include <primitiv/c/status.h>

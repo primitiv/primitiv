@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include <primitiv/functions.h>
-#include <primitiv/c/internal.h>
+#include <primitiv/core/functions.h>
+#include <primitiv/c/internal/internal.h>
 #include <primitiv/c/functions.h>
 
 using primitiv::Node;
@@ -320,6 +320,7 @@ PRIMITIV_C_STATUS primitivApplyTensorMatmul(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
+PRIMITIV_C_IMPL_UNARY_FUNC(Abs, abs);
 PRIMITIV_C_IMPL_UNARY_FUNC(Sqrt, sqrt);
 PRIMITIV_C_IMPL_UNARY_FUNC(Exp, exp);
 PRIMITIV_C_IMPL_UNARY_FUNC(Log, log);
@@ -356,7 +357,7 @@ PRIMITIV_C_STATUS primitivApplyNodeElu(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitivTensoRelu(
+PRIMITIV_C_STATUS primitivApplyTensorElu(
     const primitivTensor_t *x, float a, primitivTensor_t **y) try {
   PRIMITIV_C_CHECK_NOT_NULL(x);
   PRIMITIV_C_CHECK_NOT_NULL(y);

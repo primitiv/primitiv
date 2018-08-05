@@ -110,6 +110,7 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeMatmul(
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorMatmul(
     const primitivTensor_t *a, const primitivTensor_t *b, primitivTensor_t **y);
 
+PRIMITIV_C_DECL_UNARY_FUNC(Abs);
 PRIMITIV_C_DECL_UNARY_FUNC(Sqrt);
 PRIMITIV_C_DECL_UNARY_FUNC(Exp);
 PRIMITIV_C_DECL_UNARY_FUNC(Log);
