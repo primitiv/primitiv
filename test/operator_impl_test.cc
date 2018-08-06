@@ -1116,6 +1116,19 @@ TEST_F(OperatorImplTest, CheckTranspose) {
   TEST_1ARG(Transpose);
 }
 
+TEST_F(OperatorImplTest, CheckPermuteDims) {
+  // y = x^T
+  // dy/dx = 1^T
+  setup_1arg();
+  const Shape ret_shape({2, 2}, 3);
+  const vector<float> ret_data {1, 3, 2, 4, 0, 0, 0, 0, -1, -3, -2, -4};
+  const vector<float> bw_grad(arg_shapes[0]->size(), 1);
+  PermuteDims node({1, 0});
+  EXPECT_EQ("PermuteDims", node.name());
+  COMMON_PROC;
+  COMMON_CHECK;
+}
+
 TEST_F(OperatorImplTest, CheckMatrixMultiply) {
   // y = a . b
   // dy/da = b^T

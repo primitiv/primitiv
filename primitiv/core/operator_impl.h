@@ -302,6 +302,15 @@ PRIMITIV_DECL_BINARY(Divide);
 PRIMITIV_DECL_BINARY(Pow);
 
 PRIMITIV_DECL_UNARY(Transpose);
+
+class PermuteDims : public Operator {
+  PRIMITIV_DECL_DEFAULTS_AND_FORWARD(1, 1);
+public:
+  explicit PermuteDims(const std::vector<std::uint32_t> &perm) : perm_(perm) {}
+private:
+  std::vector<std::uint32_t> perm_;
+};
+
 PRIMITIV_DECL_BINARY(MatrixMultiply);
 
 PRIMITIV_DECL_UNARY(Abs);

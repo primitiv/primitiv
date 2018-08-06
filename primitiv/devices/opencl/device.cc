@@ -270,6 +270,9 @@ public:
           transpose_bw_group_size,
           transpose_bw_group_size_x, transpose_bw_group_size_y);
 
+      CONFIGURE_KERNEL(permute_dims_fw);
+      CONFIGURE_KERNEL(permute_dims_bw);
+
       CONFIGURE_KERNEL(add_const_fw);
       CONFIGURE_KERNEL(subtract_const_r_fw);
       CONFIGURE_KERNEL(subtract_const_l_fw);
@@ -388,6 +391,7 @@ public:
   DECL_KERNEL(transpose_fw);
   std::uint32_t transpose_fw_group_size_x;
   std::uint32_t transpose_fw_group_size_y;
+  DECL_KERNEL(permute_dims_fw);
 
   DECL_KERNEL(abs_bw);
   DECL_KERNEL(sqrt_bw);
@@ -403,6 +407,7 @@ public:
   DECL_KERNEL(transpose_bw);
   std::uint32_t transpose_bw_group_size_x;
   std::uint32_t transpose_bw_group_size_y;
+  DECL_KERNEL(permute_dims_bw);
 
   DECL_KERNEL(add_const_fw);
   DECL_KERNEL(subtract_const_r_fw);
@@ -1145,6 +1150,38 @@ void OpenCL::transpose_fw_impl(const Tensor &x, Tensor &y) {
         state_->transpose_fw_group_size_y, 1));
 }
 
+void OpenCL::permute_dims_fw_impl(
+    const Tensor &x, const std::vector<std::uint32_t> &perm,
+    Tensor &y) {
+  const std::uint32_t ndims = perm.size();
+  const std::uint32_t bs = x.shape().batch();
+  const std::uint32_t size = x.shape().volume();
+  const std::uint32_t num_blocks = ::calc_num_blocks(
+      size, state_->permute_dims_fw_group_size);
+  std::vector<std::uint32_t> x_strides(ndims);
+  std::vector<std::uint32_t> y_strides(ndims);
+  for (std::uint32_t i = 0; i < ndims; ++i) {
+    x_strides[ndims - i - 1] = x.shape().lower_volume(i);
+    y_strides[ndims - perm[i] - 1] = y.shape().lower_volume(i);
+  }
+  std::shared_ptr<void> x_strides_buf = state_->pool.allocate(
+      sizeof(std::uint32_t) * x_strides.size());
+  ::write_buffer(state_->queue, ::get_buffer(x_strides_buf), x_strides.data(), x_strides.size());
+  std::shared_ptr<void> y_strides_buf = state_->pool.allocate(
+      sizeof(std::uint32_t) * y_strides.size());
+  ::write_buffer(state_->queue, ::get_buffer(y_strides_buf), y_strides.data(), y_strides.size());
+  state_->permute_dims_fw_kernel.setArg(0, CDATA(x));
+  state_->permute_dims_fw_kernel.setArg(1, ndims);
+  state_->permute_dims_fw_kernel.setArg(2, ::get_buffer(x_strides_buf));
+  state_->permute_dims_fw_kernel.setArg(3, ::get_buffer(y_strides_buf));
+  state_->permute_dims_fw_kernel.setArg(4, size);
+  state_->permute_dims_fw_kernel.setArg(5, MDATA(y));
+  state_->queue.enqueueNDRangeKernel(
+      state_->permute_dims_fw_kernel, cl::NullRange,
+      cl::NDRange(num_blocks * state_->transpose_fw_group_size, bs),
+      cl::NDRange(state_->permute_dims_fw_group_size, 1));
+}
+
 void OpenCL::matmul_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) {
   const std::uint32_t di = a.shape()[0];
   const std::uint32_t dj = a.shape()[1];
@@ -1214,6 +1251,38 @@ void OpenCL::transpose_bw_impl(
       cl::NDRange(
         state_->transpose_bw_group_size_x,
         state_->transpose_bw_group_size_y, 1));
+}
+
+void OpenCL::permute_dims_bw_impl(
+    const Tensor &, const Tensor &, const Tensor &gy,
+    const std::vector<std::uint32_t> &perm, Tensor &gx) {
+  const std::uint32_t ndims = perm.size();
+  const std::uint32_t bs = gx.shape().batch();
+  const std::uint32_t size = gx.shape().volume();
+  const std::uint32_t num_blocks = ::calc_num_blocks(
+      size, state_->permute_dims_bw_group_size);
+  std::vector<std::uint32_t> x_strides(ndims);
+  std::vector<std::uint32_t> y_strides(ndims);
+  for (std::uint32_t i = 0; i < ndims; ++i) {
+    x_strides[ndims - i - 1] = gx.shape().lower_volume(i);
+    y_strides[ndims - perm[i] - 1] = gy.shape().lower_volume(i);
+  }
+  std::shared_ptr<void> x_strides_buf = state_->pool.allocate(
+      sizeof(std::uint32_t) * x_strides.size());
+  ::write_buffer(state_->queue, ::get_buffer(x_strides_buf), x_strides.data(), x_strides.size());
+  std::shared_ptr<void> y_strides_buf = state_->pool.allocate(
+      sizeof(std::uint32_t) * y_strides.size());
+  ::write_buffer(state_->queue, ::get_buffer(y_strides_buf), y_strides.data(), y_strides.size());
+  state_->permute_dims_bw_kernel.setArg(0, CDATA(gy));
+  state_->permute_dims_bw_kernel.setArg(1, ndims);
+  state_->permute_dims_bw_kernel.setArg(2, ::get_buffer(x_strides_buf));
+  state_->permute_dims_bw_kernel.setArg(3, ::get_buffer(y_strides_buf));
+  state_->permute_dims_bw_kernel.setArg(4, size);
+  state_->permute_dims_bw_kernel.setArg(5, MDATA(gx));
+  state_->queue.enqueueNDRangeKernel(
+      state_->permute_dims_bw_kernel, cl::NullRange,
+      cl::NDRange(num_blocks * state_->transpose_bw_group_size, bs),
+      cl::NDRange(state_->permute_dims_bw_group_size, 1));
 }
 
 void OpenCL::matmul_bw_impl(

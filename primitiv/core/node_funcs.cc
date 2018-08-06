@@ -183,6 +183,11 @@ Node transpose(const Node &x) {
 }
 
 template<>
+Node permute_dims(const Node &x, const std::vector<std::uint32_t> &perm) {
+  return REGX(x, PermuteDims(perm), x)[0];
+}
+
+template<>
 Node matmul(const Node &a, const Node &b) {
   return REGX(a, MatrixMultiply(), a, b)[0];
 }

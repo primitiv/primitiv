@@ -563,6 +563,60 @@ template<typename Var>
 type_traits::Identity<Var> transpose(const Var &x);
 
 /**
+ * Permutes dimensions of a tensor.
+ * @f[
+ *  \begin{array}{lcl}
+ *    x & := &
+ *      \left(
+ *        \left( \begin{array}{ccc}
+ *          1 & 4 \\ 2 & 5 \\ 3 & 6
+ *        \end{array} \right),
+ *        \left( \begin{array}{ccc}
+ *          11 & 14 \\ 12 & 15 \\ 13 & 16
+ *        \end{array} \right),
+ *        \left( \begin{array}{ccc}
+ *          21 & 24 \\ 22 & 25 \\ 23 & 26
+ *        \end{array} \right)
+ *      \right), \\
+ *    \mathrm{permute_dims}(x, [2, 0, 1]) & = &
+ *      \left(
+ *        \left( \begin{array}{ccc}
+ *          1 & 2 & 3 \\ 11 & 12 & 13 \\ 21 & 22 & 23
+ *        \end{array} \right),
+ *        \left( \begin{array}{ccc}
+ *          4 & 5 & 6 \\ 14 & 15 & 16 \\ 24 & 25 & 26
+ *        \end{array} \right)
+ *      \right), \\
+ *    \mathrm{permute_dims}(x, [0, 2, 1]) & = &
+ *      \left(
+ *        \left( \begin{array}{ccc}
+ *          1 & 11 & 21 \\ 2 & 12 & 22 \\ 3 & 13 & 23
+ *        \end{array} \right),
+ *        \left( \begin{array}{ccc}
+ *          4 & 14 & 24 \\ 5 & 15 & 25 \\ 6 & 16 & 16
+ *        \end{array} \right)
+ *    \right).
+ *  \end{array}
+ * @f]
+ * @param x A variable representing an original data.
+ * @param perm A list of dimensions for specifying permutation.
+ * @return A new variable.
+ */
+template<typename Var>
+type_traits::Identity<Var> permute_dims(const Var &x, const std::vector<std::uint32_t> &perm);
+
+/**
+ * Permutes dimensions of a tensor.
+ * @param x A variable representing an original data.
+ * @param perm A list of dimensions for specifying permutation.
+ * @return A new variable.
+ */
+template<typename Var>
+type_traits::Identity<Var> permute_dims(const Var &x, const std::initializer_list<std::uint32_t> perm) {
+  return permute_dims(x, std::vector<std::uint32_t>(perm));
+}
+
+/**
  * Applies a matrix multiplication between two matrices.
  * @param a A variable representing an argument \f$ A \f$. The shape of `a`
  *          must be either a scalar, a column vector or a matrix.

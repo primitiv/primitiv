@@ -303,6 +303,29 @@ TEST_F(ShapeOpsTest, CheckInvalidTranspose) {
   EXPECT_THROW(transpose(Shape({2, 3, 4}, 5)), Error);
 }
 
+TEST_F(ShapeOpsTest, CheckPermuteDims) {
+  EXPECT_EQ(Shape(), permute_dims({}, {1, 0}));
+  EXPECT_EQ(Shape({}, 5), permute_dims(Shape({}, 5), {1, 0}));
+  EXPECT_EQ(Shape({2}), permute_dims({1, 2}, {1, 0}));
+  EXPECT_EQ(Shape({2}, 5), permute_dims(Shape({1, 2}, 5), {1, 0}));
+  EXPECT_EQ(Shape({1, 2}), permute_dims({2}, {1, 0}));
+  EXPECT_EQ(Shape({1, 2}, 5), permute_dims(Shape({2}, 5), {1, 0}));
+  EXPECT_EQ(Shape({2, 3}), permute_dims({3, 2}, {1, 0}));
+  EXPECT_EQ(Shape({2, 3}, 5), permute_dims(Shape({3, 2}, 5), {1, 0}));
+  EXPECT_EQ(Shape({2, 3}, 5), permute_dims(Shape({3, 2}, 5), {1, 0}));
+  EXPECT_EQ(Shape({2}, 5), permute_dims(Shape({2}, 5), {0}));
+  EXPECT_EQ(Shape({3, 2, 4}, 5), permute_dims(Shape({2, 3, 4}, 5), {1, 0, 2}));
+}
+
+TEST_F(ShapeOpsTest, CheckInvalidPermuteDims) {
+  EXPECT_THROW(permute_dims({1, 1, 2}, {1, 0}), Error);
+  EXPECT_THROW(permute_dims(Shape({1, 1, 2}, 5), {1, 0}), Error);
+  EXPECT_THROW(permute_dims({1, 2, 2}, {1, 0}), Error);
+  EXPECT_THROW(permute_dims(Shape({1, 2, 2}, 5), {1, 0}), Error);
+  EXPECT_THROW(permute_dims({2, 3, 4}, {1, 0}), Error);
+  EXPECT_THROW(permute_dims(Shape({2, 3, 4}, 5), {1, 0}), Error);
+}
+
 TEST_F(ShapeOpsTest, CheckMatMul) {
   struct TestCase {
     vector<std::uint32_t> a, b, y;
