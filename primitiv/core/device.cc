@@ -492,14 +492,14 @@ void Device::max_pool2d_bw(
 #undef DEV_FW_AB
 #undef DEV_BW_AB
 
-Tensor Device::reverse_fw(const Tensor &x, std::uint32_t dim) {
+Tensor Device::flip_fw(const Tensor &x, std::uint32_t dim) {
   CHECK_DEVICE(x);
   Tensor y = new_raw_tensor(x.shape());
-  reverse_fw_impl(x, dim, y);
+  flip_fw_impl(x, dim, y);
   return y;
 }
 
-void Device::reverse_bw(const Tensor &gy, std::uint32_t dim, Tensor &gx) {
+void Device::flip_bw(const Tensor &gy, std::uint32_t dim, Tensor &gx) {
   CHECK_DEVICE(gy);
   CHECK_DEVICE(gx);
   if (gy.shape() != gx.shape()) {
@@ -507,7 +507,7 @@ void Device::reverse_bw(const Tensor &gy, std::uint32_t dim, Tensor &gx) {
         "Shape mismatched. gy.shape(): " << gy.shape().to_string()
         << " != expected shape: " << gx.shape().to_string());
   }
-  reverse_bw_impl(gy, dim, gx);
+  flip_bw_impl(gy, dim, gx);
 }
 
 Tensor Device::max_fw(const Tensor &x, std::uint32_t dim) {

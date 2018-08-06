@@ -6,7 +6,7 @@
 
 namespace {
 
-__global__ void reverse_fw_dev(
+__global__ void flip_fw_dev(
     const float *px, std::uint32_t skip, std::uint32_t n, std::uint32_t r, float *py) {
   const unsigned i = IDX;
   const unsigned j = IDY;
@@ -14,7 +14,7 @@ __global__ void reverse_fw_dev(
   if (i < r && j < n) py[offset + j * skip] = px[offset + (n - j - 1) * skip];
 }
 
-__global__ void reverse_bw_dev(
+__global__ void flip_bw_dev(
     const float *pgy, std::uint32_t skip, std::uint32_t n, std::uint32_t r, float *pgx) {
   const unsigned i = IDX;
   const unsigned j = IDY;
@@ -27,7 +27,7 @@ __global__ void reverse_bw_dev(
 namespace primitiv {
 namespace devices {
 
-void CUDA::reverse_fw_impl(
+void CUDA::flip_fw_impl(
     const Tensor &x, std::uint32_t dim, Tensor &y) {
   const Shape &s = x.shape();
   const std::uint32_t n = s[dim];
@@ -36,11 +36,11 @@ void CUDA::reverse_fw_impl(
   const std::uint32_t g1 = GRID_SIZE(n, dim2_x_);
   const std::uint32_t g2 = GRID_SIZE(r, dim2_y_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  ::reverse_fw_dev<<<dim3(g1, g2, 1), dim3(dim2_x_, dim2_y_, 1)>>>(
+  ::flip_fw_dev<<<dim3(g1, g2, 1), dim3(dim2_x_, dim2_y_, 1)>>>(
       CDATA(x), skip, n, r, MDATA(y));
 }
 
-void CUDA::reverse_bw_impl(
+void CUDA::flip_bw_impl(
     const Tensor &gy, std::uint32_t dim, Tensor &gx) {
   const Shape &s = gy.shape();
   const std::uint32_t n = s[dim];
@@ -49,7 +49,7 @@ void CUDA::reverse_bw_impl(
   const std::uint32_t g1 = GRID_SIZE(n, dim2_x_);
   const std::uint32_t g2 = GRID_SIZE(r, dim2_y_);
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  ::reverse_bw_dev<<<dim3(g1, g2, 1), dim3(dim2_x_, dim2_y_, 1)>>>(
+  ::flip_bw_dev<<<dim3(g1, g2, 1), dim3(dim2_x_, dim2_y_, 1)>>>(
       CDATA(gy), skip, n, r, MDATA(gx));
 }
 

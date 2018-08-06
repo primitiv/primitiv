@@ -183,8 +183,8 @@ Node transpose(const Node &x) {
 }
 
 template<>
-Node reverse(const Node &x, std::uint32_t dim) {
-  return REGX(x, Reverse(dim), x)[0];
+Node flip(const Node &x, std::uint32_t dim) {
+  return REGX(x, Flip(dim), x)[0];
 }
 
 template<>

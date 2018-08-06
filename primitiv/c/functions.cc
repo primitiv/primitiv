@@ -281,21 +281,21 @@ PRIMITIV_C_STATUS primitivApplyTensorReshape(
 PRIMITIV_C_IMPL_UNARY_FUNC(Flatten, flatten);
 PRIMITIV_C_IMPL_UNARY_FUNC(Transpose, transpose);
 
-PRIMITIV_C_STATUS primitivApplyNodeReverse(
+PRIMITIV_C_STATUS primitivApplyNodeFlip(
     const primitivNode_t *x, uint32_t dim, primitivNode_t **y) try {
   PRIMITIV_C_CHECK_NOT_NULL(x);
   PRIMITIV_C_CHECK_NOT_NULL(y);
   *y = to_c_ptr_from_value(
-      primitiv::functions::reverse(*to_cpp_ptr(x), dim));
+      primitiv::functions::flip(*to_cpp_ptr(x), dim));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
-PRIMITIV_C_STATUS primitivApplyTensorReverse(
+PRIMITIV_C_STATUS primitivApplyTensorFlip(
     const primitivTensor_t *x, uint32_t dim, primitivTensor_t **y) try {
   PRIMITIV_C_CHECK_NOT_NULL(x);
   PRIMITIV_C_CHECK_NOT_NULL(y);
   *y = to_c_ptr_from_value(
-      primitiv::functions::reverse(*to_cpp_ptr(x), dim));
+      primitiv::functions::flip(*to_cpp_ptr(x), dim));
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 

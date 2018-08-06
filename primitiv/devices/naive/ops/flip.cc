@@ -1,14 +1,12 @@
 #include <primitiv/config.h>
 
-#include <primitiv/devices/eigen/device.h>
-#include <primitiv/devices/eigen/ops/common.h>
+#include <primitiv/devices/naive/device.h>
+#include <primitiv/devices/naive/ops/common.h>
 
 namespace primitiv {
 namespace devices {
 
-void Eigen::reverse_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
-  // TODO(vbkaisetsu): Optimize this functions using Eigen operations.
-
+void Naive::flip_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   const Shape &s = x.shape();
   const std::uint32_t n = s[dim];
   const std::uint32_t skip = s.lower_volume(dim);
@@ -23,9 +21,7 @@ void Eigen::reverse_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
   }
 }
 
-void Eigen::reverse_bw_impl(const Tensor &gy, std::uint32_t dim, Tensor &gx) {
-  // TODO(vbkaisetsu): Optimize this functions using Eigen operations.
-
+void Naive::flip_bw_impl(const Tensor &gy, std::uint32_t dim, Tensor &gx) {
   const Shape &s = gx.shape();
   const std::uint32_t n = s[dim];
   const std::uint32_t skip = s.lower_volume(dim);

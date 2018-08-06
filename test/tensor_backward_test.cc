@@ -1009,7 +1009,7 @@ TEST_F(TensorBackwardTest, CheckTranspose) {
   }
 }
 
-TEST_F(TensorBackwardTest, CheckReverse) {
+TEST_F(TensorBackwardTest, CheckFlip) {
   for (Device *dev : devices) {
     const vector<float> gy_data {
       0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
@@ -1036,7 +1036,7 @@ TEST_F(TensorBackwardTest, CheckReverse) {
     const Tensor gy = dev->new_tensor_by_vector(Shape({3, 2, 2}, 2), gy_data);
     for (std::uint32_t i = 0; i < 4; ++i) {
       Tensor gx = dev->new_tensor_by_constant(Shape({3, 2, 2}, 2), 1);
-      dev->reverse_bw(gy, i, gx);
+      dev->flip_bw(gy, i, gx);
       EXPECT_TRUE(vector_match(gx_data[i], gx.to_vector()));
     }
   }

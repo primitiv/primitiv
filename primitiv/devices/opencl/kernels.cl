@@ -446,7 +446,7 @@ kernel void transpose_bw_kernel(
   if (i < rows && j < cols) px[ofs + i + j * rows] += py[ofs + j + i * cols];
 }
 
-kernel void reverse_fw_kernel(
+kernel void flip_fw_kernel(
     const global float *px, unsigned skip, unsigned n, unsigned r, global float *py) {
   const unsigned i = get_global_id(0);
   const unsigned j = get_global_id(1);
@@ -454,7 +454,7 @@ kernel void reverse_fw_kernel(
   if (i < r && j < n) py[offset + j * skip] = px[offset + (n - j - 1) * skip];
 }
 
-kernel void reverse_bw_kernel(
+kernel void flip_bw_kernel(
     const global float *py, unsigned skip, unsigned n, unsigned r, global float *px) {
   const unsigned i = get_global_id(0);
   const unsigned j = get_global_id(1);

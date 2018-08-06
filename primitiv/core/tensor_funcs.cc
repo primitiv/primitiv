@@ -198,8 +198,8 @@ Tensor transpose(const Tensor &x) {
 }
 
 template<>
-Tensor reverse(const Tensor &x, std::uint32_t dim) {
-  return x.device().reverse_fw(x, dim);
+Tensor flip(const Tensor &x, std::uint32_t dim) {
+  return x.device().flip_fw(x, dim);
 }
 
 template<>

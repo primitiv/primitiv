@@ -1589,20 +1589,20 @@ TEST_F(TensorForwardTest, CheckInvalidTranspose) {
   }
 }
 
-TEST_F(TensorForwardTest, CheckReverse01) {
+TEST_F(TensorForwardTest, CheckFlip01) {
   for (Device *dev : devices) {
     const vector<float> x_data {42};
     const vector<vector<float>> y_data {{42}, {42}, {42}, {42}};
     const Tensor x = dev->new_tensor_by_vector({}, x_data);
     for (std::uint32_t i = 0; i < 4; ++i) {
-      const Tensor y = reverse(x, i);
+      const Tensor y = flip(x, i);
       EXPECT_EQ(x.shape(), y.shape());
       EXPECT_TRUE(vector_match(y_data[i], y.to_vector()));
     }
   }
 }
 
-TEST_F(TensorForwardTest, CheckReverse11) {
+TEST_F(TensorForwardTest, CheckFlip11) {
   for (Device *dev : devices) {
     const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     const vector<vector<float>> y_data {
@@ -1613,14 +1613,14 @@ TEST_F(TensorForwardTest, CheckReverse11) {
     };
     const Tensor x = dev->new_tensor_by_vector({12}, x_data);
     for (std::uint32_t i = 0; i < 4; ++i) {
-      const Tensor y = reverse(x, i);
+      const Tensor y = flip(x, i);
       EXPECT_EQ(x.shape(), y.shape());
       EXPECT_TRUE(vector_match(y_data[i], y.to_vector()));
     }
   }
 }
 
-TEST_F(TensorForwardTest, CheckReverse21) {
+TEST_F(TensorForwardTest, CheckFlip21) {
   for (Device *dev : devices) {
     const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     const vector<vector<float>> y_data {
@@ -1631,14 +1631,14 @@ TEST_F(TensorForwardTest, CheckReverse21) {
     };
     const Tensor x = dev->new_tensor_by_vector({6, 2}, x_data);
     for (std::uint32_t i = 0; i < 4; ++i) {
-      const Tensor y = reverse(x, i);
+      const Tensor y = flip(x, i);
       EXPECT_EQ(x.shape(), y.shape());
       EXPECT_TRUE(vector_match(y_data[i], y.to_vector()));
     }
   }
 }
 
-TEST_F(TensorForwardTest, CheckReverse31) {
+TEST_F(TensorForwardTest, CheckFlip31) {
   for (Device *dev : devices) {
     const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     const vector<vector<float>> y_data {
@@ -1649,14 +1649,14 @@ TEST_F(TensorForwardTest, CheckReverse31) {
     };
     const Tensor x = dev->new_tensor_by_vector({3, 2, 2}, x_data);
     for (std::uint32_t i = 0; i < 4; ++i) {
-      const Tensor y = reverse(x, i);
+      const Tensor y = flip(x, i);
       EXPECT_EQ(x.shape(), y.shape());
       EXPECT_TRUE(vector_match(y_data[i], y.to_vector()));
     }
   }
 }
 
-TEST_F(TensorForwardTest, CheckReverse32) {
+TEST_F(TensorForwardTest, CheckFlip32) {
   for (Device *dev : devices) {
     const vector<float> x_data {
       1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
@@ -1682,7 +1682,7 @@ TEST_F(TensorForwardTest, CheckReverse32) {
     };
     const Tensor x = dev->new_tensor_by_vector(Shape({3, 2, 2}, 2), x_data);
     for (std::uint32_t i = 0; i < 4; ++i) {
-      const Tensor y = reverse(x, i);
+      const Tensor y = flip(x, i);
       EXPECT_EQ(x.shape(), y.shape());
       EXPECT_TRUE(vector_match(y_data[i], y.to_vector()));
     }

@@ -132,7 +132,7 @@ public:
   Tensor tan_fw(const Tensor &x);
   Tensor transpose_fw(const Tensor &x);
 
-  Tensor reverse_fw(const Tensor &x, std::uint32_t dim);
+  Tensor flip_fw(const Tensor &x, std::uint32_t dim);
 
   void abs_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void sqrt_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
@@ -146,7 +146,7 @@ public:
   void tan_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void transpose_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
 
-  void reverse_bw(const Tensor &gy, std::uint32_t dim, Tensor &gx);
+  void flip_bw(const Tensor &gy, std::uint32_t dim, Tensor &gx);
 
   // Tensor-constant operations.
   Tensor add_const_fw(const Tensor &x, float k);
@@ -401,7 +401,7 @@ private:
   virtual void tan_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void transpose_fw_impl(const Tensor &x, Tensor &y) = 0;
 
-  virtual void reverse_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
+  virtual void flip_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
 
   virtual void abs_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void sqrt_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
@@ -415,7 +415,7 @@ private:
   virtual void tan_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void transpose_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
 
-  virtual void reverse_bw_impl(const Tensor &gy, std::uint32_t dim, Tensor &gx) = 0;
+  virtual void flip_bw_impl(const Tensor &gy, std::uint32_t dim, Tensor &gx) = 0;
 
   virtual void add_const_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
   virtual void subtract_const_r_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
