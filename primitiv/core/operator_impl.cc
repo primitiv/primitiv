@@ -417,7 +417,7 @@ FORWARD(Pow) { *y[0] = functions::pow(*x[0], *x[1]); }
 FORWARD(Transpose) { *y[0] = functions::transpose(*x[0]); }
 FORWARD(MatrixMultiply) { *y[0] = functions::matmul(*x[0], *x[1]); }
 
-FORWARD(Flip) { *y[0] = functions::sum(*x[0], dim_); }
+FORWARD(Flip) { *y[0] = functions::flip(*x[0], dim_); }
 
 FORWARD(Sum) { *y[0] = functions::sum(*x[0], dim_); }
 FORWARD(LogSumExp) { *y[0] = functions::logsumexp(*x[0], dim_); }

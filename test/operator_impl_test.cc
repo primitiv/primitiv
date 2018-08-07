@@ -1366,6 +1366,36 @@ TEST_F(OperatorImplTest, CheckELU) {
   TEST_1ARG_K_NEAR(ELU, 1, 1e-6);
 }
 
+TEST_F(OperatorImplTest, CheckFlip) {
+  // y = flip(x, dim)
+  // dy/dx = flip(1, dim)
+  setup_1arg();
+  struct TestCase {
+    std::uint32_t dim;
+    Shape ret_shape;
+    vector<float> ret_data;
+  };
+  const vector<TestCase> test_cases {
+    {0, Shape({2, 2}, 3), {2, 1, 4, 3, 0, 0, 0, 0, -2, -1, -4, -3}},
+    {1, Shape({2, 2}, 3), {3, 4, 1, 2, 0, 0, 0, 0, -3, -4, -1, -2}},
+  };
+  for (const TestCase &tc : test_cases) {
+    Flip node(tc.dim);
+    Shape cur_shape;
+    Tensor cur_value;
+    node.forward_shape(arg_shapes, { &cur_shape });
+    node.forward(arg_values, { &cur_value });
+    const Tensor cur_grad = functions::ones<Tensor>(tc.ret_shape, *dev);
+    reset_gradients();
+    node.backward(arg_values, { &cur_value }, { &cur_grad }, arg_grads);
+    EXPECT_EQ("Flip(" + std::to_string(tc.dim) + ')', node.name());
+    EXPECT_EQ(tc.ret_shape, cur_shape);
+    EXPECT_EQ(nullptr, node.get_device());
+    EXPECT_TRUE(vector_match(tc.ret_data, cur_value.to_vector()));
+    EXPECT_TRUE(vector_match(vector<float>(12, 1), arg_grads[0]->to_vector()));
+  }
+}
+
 TEST_F(OperatorImplTest, CheckSum) {
   // y = sum(x, dim)
   // dy/dx = broadcast(1, dim, x.shape[dim])
