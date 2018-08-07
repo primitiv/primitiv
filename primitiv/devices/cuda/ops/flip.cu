@@ -10,16 +10,20 @@ __global__ void flip_fw_dev(
     const float *px, std::uint32_t skip, std::uint32_t n, std::uint32_t r, float *py) {
   const unsigned i = IDX;
   const unsigned j = IDY;
-  const unsigned offset = i * n - i % skip * (n - 1);
-  if (i < r && j < n) py[offset + j * skip] = px[offset + (n - j - 1) * skip];
+  const unsigned offset = j * n - j % skip * (n - 1);
+  if (i < n && j < r) {
+    py[offset + i * skip] = px[offset + (n - i - 1) * skip];
+  }
 }
 
 __global__ void flip_bw_dev(
     const float *pgy, std::uint32_t skip, std::uint32_t n, std::uint32_t r, float *pgx) {
   const unsigned i = IDX;
   const unsigned j = IDY;
-  const unsigned offset = i * n - i % skip * (n - 1);
-  if (i < r && j < n) pgx[offset + j * skip] += pgy[offset + (n - j - 1) * skip];
+  const unsigned offset = j * n - j % skip * (n - 1);
+  if (i < n && j < r) {
+    pgx[offset + i * skip] += pgy[offset + (n - i - 1) * skip];
+  }
 }
 
 }  // namespace
