@@ -990,25 +990,6 @@ TEST_F(TensorBackwardTest, CheckMinMultipleLarge) {
   }
 }
 
-TEST_F(TensorBackwardTest, CheckTranspose) {
-  for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor_by_constant(Shape({3, 4}, 2), 0);
-    const Tensor y = dev->transpose_fw(x);
-    const Tensor gy = dev->new_tensor_by_vector(
-        Shape({4, 3}, 2), {
-          0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-          12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
-        });
-    Tensor gx = dev->new_tensor_by_constant(Shape({3, 4}, 2), 0);
-    dev->transpose_bw(x, y, gy, gx);
-    const vector<float> gx_val {
-      0, 4, 8, 1, 5, 9, 2, 6, 10, 3, 7, 11,
-      12, 16, 20, 13, 17, 21, 14, 18, 22, 15, 19, 23,
-    };
-    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
-  }
-}
-
 TEST_F(TensorBackwardTest, CheckTranspose11) {
   const vector<float> gx_data {42};
   const vector<float> gy_data {42};
