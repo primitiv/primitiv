@@ -576,26 +576,33 @@ type_traits::Identity<Var> transpose(const Var &x);
  *        \end{array} \right),
  *        \left( \begin{array}{ccc}
  *          21 & 24 \\ 22 & 25 \\ 23 & 26
- *        \end{array} \right)
- *      \right), \\
- *    \mathrm{permute_dims}(x, [2, 0, 1]) & = &
- *      \left(
- *        \left( \begin{array}{ccc}
- *          1 & 2 & 3 \\ 11 & 12 & 13 \\ 21 & 22 & 23
  *        \end{array} \right),
  *        \left( \begin{array}{ccc}
- *          4 & 5 & 6 \\ 14 & 15 & 16 \\ 24 & 25 & 26
+ *          31 & 34 \\ 32 & 35 \\ 33 & 36
  *        \end{array} \right)
  *      \right), \\
- *    \mathrm{permute_dims}(x, [0, 2, 1]) & = &
+ *    \mathrm{permute\_dims}(x, [1, 2, 0]) & = &
  *      \left(
  *        \left( \begin{array}{ccc}
- *          1 & 11 & 21 \\ 2 & 12 & 22 \\ 3 & 13 & 23
+ *          1 & 11 & 21 & 31 \\ 4 & 14 & 24 & 34
  *        \end{array} \right),
  *        \left( \begin{array}{ccc}
- *          4 & 14 & 24 \\ 5 & 15 & 25 \\ 6 & 16 & 16
+ *          2 & 12 & 22 & 32 \\ 5 & 15 & 25 & 35
+ *        \end{array} \right),
+ *        \left( \begin{array}{ccc}
+ *          3 & 13 & 23 & 33 \\ 6 & 16 & 26 & 36
  *        \end{array} \right)
- *    \right).
+ *      \right), \\
+ *    \mathrm{permute\_dims}(x, [2, 0, 1]) & = &
+ *      \left(
+ *        \left( \begin{array}{ccc}
+ *          1 & 2 & 3 \\ 11 & 12 & 13 \\ 21 & 22 & 23 \\ 31 & 32 & 33
+ *        \end{array} \right),
+ *        \left( \begin{array}{ccc}
+ *          4 & 5 & 6 \\ 14 & 15 & 16 \\ 24 & 35 & 36 \\ 34 & 35 & 36
+ *        \end{array} \right)
+ *      \right), \\
+ *    \mathrm{permute\_dims}(x, [0, 1, 2]) & = & x. \\
  *  \end{array}
  * @f]
  * @param x A variable representing an original data.
