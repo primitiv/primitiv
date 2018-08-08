@@ -12,21 +12,24 @@ namespace primitiv {
 namespace string_utils {
 
 /**
- * Concatenates all strings in the vector using delimiter.
- * @param strs Strings to be concatenated.
+ * Concatenates all items in the vector using delimiter.
+ * @param strs Items to be concatenated.
  * @param delim Delimiter.
  * @return A concatenated string with following format:
  *           0 contents        : ""
- *           1 content         : strs[0]
- *           2 contents or more: strs[0] + delim + strs[1] + delim + ...
+ *           1 content         : xs[0]
+ *           2 contents or more: xs[0] + delim + xs[1] + delim + ...
+ *         If items are not strings, each item is converted to a string using
+ *         the default format of stringstream.
  */
+template<typename T>
 inline std::string join(
-    const std::vector<std::string> &strs,
+    const std::vector<T> &xs,
     const std::string &delim) {
-  if (strs.empty()) return std::string();
+  if (xs.empty()) return std::string();
   std::stringstream ss;
-  ss << strs[0];
-  for (std::uint32_t i = 1; i < strs.size(); ++i) ss << delim << strs[i];
+  ss << xs[0];
+  for (std::uint32_t i = 1; i < xs.size(); ++i) ss << delim << xs[i];
   return ss.str();
 }
 
