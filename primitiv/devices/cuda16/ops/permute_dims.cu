@@ -69,9 +69,13 @@ void CUDA16::permute_dims_fw_impl(
   const std::uint32_t g1 = GRID_SIZE(size, dim1_x_);
   std::vector<std::uint32_t> x_strides(ndims);
   std::vector<std::uint32_t> y_strides(ndims);
+  std::uint32_t x_stride_tmp = 1;
+  std::uint32_t y_stride_tmp = 1;
   for (std::uint32_t i = 0; i < ndims; ++i) {
-    x_strides[ndims - i - 1] = x.shape().lower_volume(i);
-    y_strides[ndims - perm[i] - 1] = y.shape().lower_volume(i);
+    x_strides[ndims - i - 1] = x_stride_tmp;
+    y_strides[ndims - perm[i] - 1] = y_stride_tmp;
+    x_stride_tmp *= x.shape()[i];
+    y_stride_tmp *= y.shape()[i];
   }
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CUDA_CALL(::cudaMemcpyToSymbol(
@@ -93,9 +97,13 @@ void CUDA16::permute_dims_bw_impl(
   const std::uint32_t g1 = GRID_SIZE(size, dim1_x_);
   std::vector<std::uint32_t> x_strides(ndims);
   std::vector<std::uint32_t> y_strides(ndims);
+  std::uint32_t x_stride_tmp = 1;
+  std::uint32_t y_stride_tmp = 1;
   for (std::uint32_t i = 0; i < ndims; ++i) {
-    x_strides[ndims - i - 1] = gx.shape().lower_volume(i);
-    y_strides[ndims - perm[i] - 1] = gy.shape().lower_volume(i);
+    x_strides[ndims - i - 1] = x_stride_tmp;
+    y_strides[ndims - perm[i] - 1] = y_stride_tmp;
+    x_stride_tmp *= gx.shape()[i];
+    y_stride_tmp *= gy.shape()[i];
   }
   CUDA_CALL(::cudaSetDevice(dev_id_));
   CUDA_CALL(::cudaMemcpyToSymbol(
