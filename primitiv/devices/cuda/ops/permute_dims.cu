@@ -47,7 +47,7 @@ __global__ void permute_dims_bw_dev(
 namespace primitiv {
 namespace devices {
 
-void CUDA::transpose_fw_impl(
+void CUDA::permute_dims_fw_impl(
     const Tensor &x, const std::vector<std::uint32_t> &perm,
     Tensor &y) {
   const std::uint32_t ndims = perm.size();
@@ -78,7 +78,7 @@ void CUDA::transpose_fw_impl(
       size, MDATA(y));
 }
 
-void CUDA::transpose_bw_impl(
+void CUDA::permute_dims_bw_impl(
     const Tensor &, const Tensor &, const Tensor &gy,
     const std::vector<std::uint32_t> &perm, Tensor &gx) {
   const std::uint32_t ndims = perm.size();
