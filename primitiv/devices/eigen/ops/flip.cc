@@ -20,8 +20,8 @@ void Eigen::flip_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) {
       yy.noalias() = xx.colwise().reverse();
     }
   } else if (dim == x.shape().depth() - 1) {
-    const std::uint32_t di = x.shape().lower_volume(dim);
     const std::uint32_t dj = x.shape()[dim];
+    const std::uint32_t di = x.shape().volume() / dj;
     const std::uint32_t skip = x.shape().volume();
     const std::uint32_t bs = x.shape().batch();
     for (std::uint32_t n = 0; n < bs; ++n) {
@@ -56,8 +56,8 @@ void Eigen::flip_bw_impl(const Tensor &gy, std::uint32_t dim, Tensor &gx) {
       gxx.noalias() += gyy.colwise().reverse();
     }
   } else if (dim == gx.shape().depth() - 1) {
-    const std::uint32_t di = gx.shape().lower_volume(dim);
     const std::uint32_t dj = gx.shape()[dim];
+    const std::uint32_t di = gx.shape().volume() / dj;
     const std::uint32_t skip = gx.shape().volume();
     const std::uint32_t bs = gx.shape().batch();
     for (std::uint32_t n = 0; n < bs; ++n) {
