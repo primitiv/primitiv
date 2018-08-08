@@ -22,6 +22,8 @@ __global__ void permute_dims_fw_dev(
   if (i < size) {
     std::uint32_t tmp = i;
     std::uint32_t j = 0;
+    // TODO(vbkaisetsu):
+    // Implove implementation
     for (std::uint32_t d = 0; d < ndims; ++d) {
       const std::uint32_t p = tmp / permute_dims_x_strides[d];
       tmp -= p * permute_dims_x_strides[d];
@@ -40,6 +42,8 @@ __global__ void permute_dims_bw_dev(
   if (i < size) {
     std::uint32_t tmp = i;
     std::uint32_t j = 0;
+    // TODO(vbkaisetsu):
+    // Implove implementation
     for (std::uint32_t d = 0; d < ndims; ++d) {
       const std::uint32_t p = tmp / permute_dims_x_strides[d];
       tmp -= p * permute_dims_x_strides[d];
