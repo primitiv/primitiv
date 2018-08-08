@@ -1170,10 +1170,12 @@ void OpenCL::permute_dims_fw_impl(
   }
   std::shared_ptr<void> x_strides_buf = state_->pool.allocate(
       sizeof(std::uint32_t) * x_strides.size());
-  ::write_buffer(state_->queue, ::get_buffer(x_strides_buf), x_strides.data(), x_strides.size());
   std::shared_ptr<void> y_strides_buf = state_->pool.allocate(
       sizeof(std::uint32_t) * y_strides.size());
-  ::write_buffer(state_->queue, ::get_buffer(y_strides_buf), y_strides.data(), y_strides.size());
+  if (perm.size() != 0) {
+    ::write_buffer(state_->queue, ::get_buffer(x_strides_buf), x_strides.data(), x_strides.size());
+    ::write_buffer(state_->queue, ::get_buffer(y_strides_buf), y_strides.data(), y_strides.size());
+  }
   state_->permute_dims_fw_kernel.setArg(0, CDATA(x));
   state_->permute_dims_fw_kernel.setArg(1, ndims);
   state_->permute_dims_fw_kernel.setArg(2, ::get_buffer(x_strides_buf));
@@ -1273,10 +1275,12 @@ void OpenCL::permute_dims_bw_impl(
   }
   std::shared_ptr<void> x_strides_buf = state_->pool.allocate(
       sizeof(std::uint32_t) * x_strides.size());
-  ::write_buffer(state_->queue, ::get_buffer(x_strides_buf), x_strides.data(), x_strides.size());
   std::shared_ptr<void> y_strides_buf = state_->pool.allocate(
       sizeof(std::uint32_t) * y_strides.size());
-  ::write_buffer(state_->queue, ::get_buffer(y_strides_buf), y_strides.data(), y_strides.size());
+  if (perm.size() != 0) {
+    ::write_buffer(state_->queue, ::get_buffer(x_strides_buf), x_strides.data(), x_strides.size());
+    ::write_buffer(state_->queue, ::get_buffer(y_strides_buf), y_strides.data(), y_strides.size());
+  }
   state_->permute_dims_bw_kernel.setArg(0, CDATA(gy));
   state_->permute_dims_bw_kernel.setArg(1, ndims);
   state_->permute_dims_bw_kernel.setArg(2, ::get_buffer(x_strides_buf));

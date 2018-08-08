@@ -304,26 +304,27 @@ TEST_F(ShapeOpsTest, CheckInvalidTranspose) {
 }
 
 TEST_F(ShapeOpsTest, CheckPermuteDims) {
-  EXPECT_EQ(Shape(), permute_dims({}, {1, 0}));
-  EXPECT_EQ(Shape({}, 5), permute_dims(Shape({}, 5), {1, 0}));
-  EXPECT_EQ(Shape({2}), permute_dims({1, 2}, {1, 0}));
-  EXPECT_EQ(Shape({2}, 5), permute_dims(Shape({1, 2}, 5), {1, 0}));
-  EXPECT_EQ(Shape({1, 2}), permute_dims({2}, {1, 0}));
-  EXPECT_EQ(Shape({1, 2}, 5), permute_dims(Shape({2}, 5), {1, 0}));
-  EXPECT_EQ(Shape({2, 3}), permute_dims({3, 2}, {1, 0}));
-  EXPECT_EQ(Shape({2, 3}, 5), permute_dims(Shape({3, 2}, 5), {1, 0}));
-  EXPECT_EQ(Shape({2, 3}, 5), permute_dims(Shape({3, 2}, 5), {1, 0}));
-  EXPECT_EQ(Shape({2}, 5), permute_dims(Shape({2}, 5), {0}));
-  EXPECT_EQ(Shape({3, 2, 4}, 5), permute_dims(Shape({2, 3, 4}, 5), {1, 0, 2}));
+  EXPECT_EQ(Shape({}, 2), permute_dims(Shape({}, 2), {}));
+  EXPECT_EQ(Shape({}, 2), permute_dims(Shape({}, 2), {0}));
+  EXPECT_EQ(Shape({2}, 3), permute_dims(Shape({2}, 3), {0}));
+  EXPECT_EQ(Shape({2, 3}, 2), permute_dims(Shape({2, 3}, 2), {0, 1}));
+  EXPECT_EQ(Shape({3, 2}, 3), permute_dims(Shape({2, 3}, 3), {1, 0}));
+  EXPECT_EQ(Shape({2, 3, 5}, 2), permute_dims(Shape({2, 3, 5}, 2), {0, 1, 2}));
+  EXPECT_EQ(Shape({5, 1, 3}, 3), permute_dims(Shape({3, 5}, 3), {1, 2, 0}));
+  EXPECT_EQ(Shape({5, 2, 3}, 2), permute_dims(Shape({2, 3, 5}, 2), {2, 0, 1}));
+  EXPECT_EQ(Shape({1, 3, 2}, 3), permute_dims(Shape({2, 3}, 3), {2, 1, 0}));
+  EXPECT_EQ(Shape({3, 2, 5}, 2), permute_dims(Shape({2, 3, 5}, 2), {1, 0, 2}));
+  EXPECT_EQ(Shape({1, 1, 1, 1, 3, 2, 7, 5}, 3), permute_dims(Shape({2, 3, 5, 7}, 3), {5, 4, 7, 6, 1, 0, 3, 2}));
+  EXPECT_EQ(Shape({2, 3, 5, 7, 3, 4, 8, 10}, 2), permute_dims(Shape({2, 3, 5, 7, 3, 4, 8, 10}, 2), {0, 1, 2, 3, 4, 5, 6, 7}));
+  EXPECT_EQ(Shape({4, 3, 10, 8, 3, 2, 7, 5}, 3), permute_dims(Shape({2, 3, 5, 7, 3, 4, 8, 10}, 3), {5, 4, 7, 6, 1, 0, 3, 2}));
 }
 
 TEST_F(ShapeOpsTest, CheckInvalidPermuteDims) {
-  EXPECT_THROW(permute_dims({1, 1, 2}, {1, 0}), Error);
-  EXPECT_THROW(permute_dims(Shape({1, 1, 2}, 5), {1, 0}), Error);
-  EXPECT_THROW(permute_dims({1, 2, 2}, {1, 0}), Error);
-  EXPECT_THROW(permute_dims(Shape({1, 2, 2}, 5), {1, 0}), Error);
-  EXPECT_THROW(permute_dims({2, 3, 4}, {1, 0}), Error);
-  EXPECT_THROW(permute_dims(Shape({2, 3, 4}, 5), {1, 0}), Error);
+  EXPECT_THROW(permute_dims(Shape({2}, 3), {}), Error);
+  EXPECT_THROW(permute_dims(Shape({2, 3}, 2), {0, 2}), Error);
+  EXPECT_THROW(permute_dims(Shape({2, 3}, 3), {0}), Error);
+  EXPECT_THROW(permute_dims(Shape({2, 3, 5}, 2), {4, 0, 1, 2}), Error);
+  EXPECT_THROW(permute_dims(Shape({2, 3, 5, 7, 3, 4, 8, 10}, 2), {0, 1, 2, 3, 4, 5, 6, 7, 8}), Error);
 }
 
 TEST_F(ShapeOpsTest, CheckMatMul) {

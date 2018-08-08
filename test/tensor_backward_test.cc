@@ -1055,6 +1055,19 @@ TEST_F(TensorBackwardTest, CheckTransposeMN) {
   }
 }
 
+TEST_F(TensorBackwardTest, CheckPermuteDims111) {
+  const vector<float> gx_data {42, 43};
+  const vector<float> gy_data {42, 43};
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_constant(Shape({}, 2), 0);
+    const Tensor y = dev->permute_dims_fw(x, {0});
+    const Tensor gy = dev->new_tensor_by_vector(Shape({}, 2), gy_data);
+    Tensor gx = dev->new_tensor_by_constant(Shape({}, 2), 0);
+    dev->permute_dims_bw(x, y, gy, {0}, gx);
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
+  }
+}
+
 TEST_F(TensorBackwardTest, CheckPermuteDimsN11) {
   const vector<float> gx_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
   const vector<float> gy_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};

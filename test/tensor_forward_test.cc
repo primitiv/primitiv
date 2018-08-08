@@ -1589,6 +1589,18 @@ TEST_F(TensorForwardTest, CheckInvalidTranspose) {
   }
 }
 
+TEST_F(TensorForwardTest, CheckPermuteDims111) {
+  const vector<float> x_data {42, 43};
+  const vector<float> y_data {42, 43};
+  for (Device *dev : devices) {
+    dev->dump_description();
+    const Tensor x = dev->new_tensor_by_vector(Shape({}, 2), x_data);
+    const Tensor y = permute_dims(x, {});
+    EXPECT_EQ(Shape({}, 2), y.shape());
+    EXPECT_TRUE(vector_match(y_data, y.to_vector()));
+  }
+}
+
 TEST_F(TensorForwardTest, CheckPermuteDimsN11) {
   const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
   const vector<float> y_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
