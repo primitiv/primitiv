@@ -568,28 +568,28 @@ type_traits::Identity<Var> transpose(const Var &x);
  *  \begin{array}{lcl}
  *    x & := &
  *      \left(
- *        \left( \begin{array}{ccc}
+ *        \left( \begin{array}{cc}
  *          1 & 4 \\ 2 & 5 \\ 3 & 6
  *        \end{array} \right),
- *        \left( \begin{array}{ccc}
+ *        \left( \begin{array}{cc}
  *          11 & 14 \\ 12 & 15 \\ 13 & 16
  *        \end{array} \right),
- *        \left( \begin{array}{ccc}
+ *        \left( \begin{array}{cc}
  *          21 & 24 \\ 22 & 25 \\ 23 & 26
  *        \end{array} \right),
- *        \left( \begin{array}{ccc}
+ *        \left( \begin{array}{cc}
  *          31 & 34 \\ 32 & 35 \\ 33 & 36
  *        \end{array} \right)
  *      \right), \\
  *    \mathrm{permute\_dims}(x, [1, 2, 0]) & = &
  *      \left(
- *        \left( \begin{array}{ccc}
+ *        \left( \begin{array}{cccc}
  *          1 & 11 & 21 & 31 \\ 4 & 14 & 24 & 34
  *        \end{array} \right),
- *        \left( \begin{array}{ccc}
+ *        \left( \begin{array}{cccc}
  *          2 & 12 & 22 & 32 \\ 5 & 15 & 25 & 35
  *        \end{array} \right),
- *        \left( \begin{array}{ccc}
+ *        \left( \begin{array}{cccc}
  *          3 & 13 & 23 & 33 \\ 6 & 16 & 26 & 36
  *        \end{array} \right)
  *      \right), \\
