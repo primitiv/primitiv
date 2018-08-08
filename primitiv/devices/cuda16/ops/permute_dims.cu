@@ -6,37 +6,48 @@
 
 namespace {
 
+__constant__ std::uint32_t permute_dims_x_strides[primitiv::Shape::MAX_DEPTH];
+__constant__ std::uint32_t permute_dims_y_strides[primitiv::Shape::MAX_DEPTH];
+
+// TODO(vbkaisetsu):
+// Implove implementation of permute_dims.
+// This function uses for-loops in the kernel code. It becomes slower than
+// no-loop implementation.
 __global__ void permute_dims_fw_dev(
-    const half *px, const std::uint32_t ndims, const std::uint32_t *x_strides,
-    const std::uint32_t *y_strides, const std::uint32_t size, half *py) {
+    const half *px, const std::uint32_t ndims, const std::uint32_t size,
+    half *py) {
   const std::uint32_t i = IDX;
   const std::uint32_t bid_z = IDY;
   const std::uint32_t ofs = bid_z * size;
   if (i < size) {
     std::uint32_t tmp = i;
     std::uint32_t j = 0;
+    // TODO(vbkaisetsu):
+    // Implove implementation
     for (std::uint32_t d = 0; d < ndims; ++d) {
-      const std::uint32_t p = tmp / x_strides[d];
-      tmp -= p * x_strides[d];
-      j += p * y_strides[d];
+      const std::uint32_t p = tmp / permute_dims_x_strides[d];
+      tmp -= p * permute_dims_x_strides[d];
+      j += p * permute_dims_y_strides[d];
     }
     py[ofs + j] = px[ofs + i];
   }
 }
 
 __global__ void permute_dims_bw_dev(
-    const half *py, const std::uint32_t ndims, const std::uint32_t *x_strides,
-    const std::uint32_t *y_strides, const std::uint32_t size, half *px) {
+    const half *py, const std::uint32_t ndims, const std::uint32_t size,
+    half *px) {
   const std::uint32_t i = IDX;
   const std::uint32_t bid_z = IDY;
   const std::uint32_t ofs = bid_z * size;
   if (i < size) {
     std::uint32_t tmp = i;
     std::uint32_t j = 0;
+    // TODO(vbkaisetsu):
+    // Implove implementation
     for (std::uint32_t d = 0; d < ndims; ++d) {
-      const std::uint32_t p = tmp / x_strides[d];
-      tmp -= p * x_strides[d];
-      j += p * y_strides[d];
+      const std::uint32_t p = tmp / permute_dims_x_strides[d];
+      tmp -= p * permute_dims_x_strides[d];
+      j += p * permute_dims_y_strides[d];
     }
     const std::size_t ox = ofs + i;
     const std::size_t oy = ofs + j;
@@ -62,22 +73,15 @@ void CUDA16::permute_dims_fw_impl(
     x_strides[ndims - i - 1] = x.shape().lower_volume(i);
     y_strides[ndims - perm[i] - 1] = y.shape().lower_volume(i);
   }
-  std::shared_ptr<void> x_strides_buf = state_->pool.allocate(
-      sizeof(std::uint32_t) * x_strides.size());
-  std::shared_ptr<void> y_strides_buf = state_->pool.allocate(
-      sizeof(std::uint32_t) * y_strides.size());
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  CUDA_CALL(::cudaMemcpy(
-        x_strides_buf.get(), x_strides.data(), sizeof(std::uint32_t) * x_strides.size(),
-        cudaMemcpyHostToDevice));
-  CUDA_CALL(::cudaMemcpy(
-        y_strides_buf.get(), y_strides.data(), sizeof(std::uint32_t) * y_strides.size(),
-        cudaMemcpyHostToDevice));
+  CUDA_CALL(::cudaMemcpyToSymbol(
+      permute_dims_x_strides, x_strides.data(),
+      sizeof(std::uint32_t) * x_strides.size()));
+  CUDA_CALL(::cudaMemcpyToSymbol(
+      permute_dims_y_strides, y_strides.data(),
+      sizeof(std::uint32_t) * y_strides.size()));
   ::permute_dims_fw_dev<<<dim3(g1, bs), dim1_x_>>>(
-      CDATA(half, x), ndims,
-      static_cast<const std::uint32_t *>(x_strides_buf.get()),
-      static_cast<const std::uint32_t *>(y_strides_buf.get()),
-      size, MDATA(half, y));
+      CDATA(half, x), ndims, size, MDATA(half, y));
 }
 
 void CUDA16::permute_dims_bw_impl(
@@ -93,22 +97,15 @@ void CUDA16::permute_dims_bw_impl(
     x_strides[ndims - i - 1] = gx.shape().lower_volume(i);
     y_strides[ndims - perm[i] - 1] = gy.shape().lower_volume(i);
   }
-  std::shared_ptr<void> x_strides_buf = state_->pool.allocate(
-      sizeof(std::uint32_t) * x_strides.size());
-  std::shared_ptr<void> y_strides_buf = state_->pool.allocate(
-      sizeof(std::uint32_t) * y_strides.size());
   CUDA_CALL(::cudaSetDevice(dev_id_));
-  CUDA_CALL(::cudaMemcpy(
-        x_strides_buf.get(), x_strides.data(), sizeof(std::uint32_t) * x_strides.size(),
-        cudaMemcpyHostToDevice));
-  CUDA_CALL(::cudaMemcpy(
-        y_strides_buf.get(), y_strides.data(), sizeof(std::uint32_t) * y_strides.size(),
-        cudaMemcpyHostToDevice));
+  CUDA_CALL(::cudaMemcpyToSymbol(
+      permute_dims_x_strides, x_strides.data(),
+      sizeof(std::uint32_t) * x_strides.size()));
+  CUDA_CALL(::cudaMemcpyToSymbol(
+      permute_dims_y_strides, y_strides.data(),
+      sizeof(std::uint32_t) * y_strides.size()));
   ::permute_dims_bw_dev<<<dim3(g1, bs), dim1_x_>>>(
-      CDATA(half, gy), ndims,
-      static_cast<const std::uint32_t *>(x_strides_buf.get()),
-      static_cast<const std::uint32_t *>(y_strides_buf.get()),
-      size, MDATA(half, gx));
+      CDATA(half, gy), ndims, size, MDATA(half, gx));
 }
 
 }  // namespace devices

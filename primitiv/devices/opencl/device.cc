@@ -1150,6 +1150,10 @@ void OpenCL::transpose_fw_impl(const Tensor &x, Tensor &y) {
         state_->transpose_fw_group_size_y, 1));
 }
 
+// TODO(vbkaisetsu):
+// Implove implementation of permute_dims.
+// This function uses for-loops in the kernel code. It becomes slower than
+// no-loop implementation.
 void OpenCL::permute_dims_fw_impl(
     const Tensor &x, const std::vector<std::uint32_t> &perm,
     Tensor &y) {

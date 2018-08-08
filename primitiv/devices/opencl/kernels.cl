@@ -455,6 +455,8 @@ kernel void permute_dims_fw_kernel(
   if (i < size) {
     unsigned tmp = i;
     unsigned j = 0;
+    // TODO(vbkaisetsu):
+    // Implove implementation
     for (unsigned d = 0; d < ndims; ++d) {
       const unsigned p = tmp / x_strides[d];
       tmp -= p * x_strides[d];
@@ -473,6 +475,8 @@ kernel void permute_dims_bw_kernel(
   if (i < size) {
     unsigned tmp = i;
     unsigned j = 0;
+    // TODO(vbkaisetsu):
+    // Implove implementation
     for (unsigned d = 0; d < ndims; ++d) {
       const unsigned p = tmp / x_strides[d];
       tmp -= p * x_strides[d];
