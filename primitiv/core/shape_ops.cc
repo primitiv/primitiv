@@ -4,7 +4,6 @@
 
 #include <primitiv/core/error.h>
 #include <primitiv/core/shape_ops.h>
-#include <primitiv/core/string_utils.h>
 
 namespace primitiv {
 namespace shape_ops {
@@ -126,21 +125,23 @@ Shape transpose(const Shape &x) {
 Shape permute_dims(const Shape &x, const std::vector<std::uint32_t> &perm) {
   if (perm.size() < x.depth()) {
     PRIMITIV_THROW_ERROR(
-        "Invalid permutation. shape: " << x.to_string()
-        << ", perm: {" << string_utils::join(perm, ",") << "}");
+        "Invalid perm to permute. shape: " << x.to_string()
+        << ", perm.size(): " << perm.size());
   }
   std::vector<std::uint32_t> dims(perm.size());
   std::vector<bool> picked(perm.size());
   for (std::uint32_t i = 0; i < perm.size(); ++i) {
     if (perm[i] >= perm.size()) {
       PRIMITIV_THROW_ERROR(
-          "Invalid permutation. shape: " << x.to_string()
-          << ", perm: {" << string_utils::join(perm, ",") << "}");
+          "Invalid perm to permute. shape: " << x.to_string()
+          << ", perm.size(): " << perm.size()
+          << ", perm[" << i << "]: " << perm[i]);
     }
     if (picked[perm[i]]) {
       PRIMITIV_THROW_ERROR(
-          "Invalid permutation. shape: " << x.to_string()
-          << ", perm: {" << string_utils::join(perm, ",") << "}");
+          "Invalid perm to permute. shape: " << x.to_string()
+          << ", perm[" << i << "]: " << perm[i]
+          << " (duplicated)");
     }
     picked[perm[i]] = true;
     dims[i] = x[perm[i]];
