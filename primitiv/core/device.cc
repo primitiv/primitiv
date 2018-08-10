@@ -305,6 +305,14 @@ DEV_FW_X(cos, static_cast<const Shape &>);
 DEV_FW_X(tan, static_cast<const Shape &>);
 DEV_FW_X(transpose, shape_ops::transpose);
 
+Tensor Device::permute_dims_fw(
+    const Tensor &x, const std::vector<std::uint32_t> &perm) {
+  CHECK_DEVICE(x);
+  Tensor y = new_raw_tensor(shape_ops::permute_dims(x.shape(), perm));
+  permute_dims_fw_impl(x, perm, y);
+  return y;
+}
+
 DEV_BW_X(abs, static_cast<const Shape &>);
 DEV_BW_X(sqrt, static_cast<const Shape &>);
 DEV_BW_X(exp, static_cast<const Shape &>);
@@ -316,6 +324,26 @@ DEV_BW_X(sin, static_cast<const Shape &>);
 DEV_BW_X(cos, static_cast<const Shape &>);
 DEV_BW_X(tan, static_cast<const Shape &>);
 DEV_BW_X(transpose, shape_ops::transpose);
+
+void Device::permute_dims_bw(
+    const Tensor &x, const Tensor &y, const Tensor &gy,
+    const std::vector<std::uint32_t> &perm, Tensor &gx) {
+  CHECK_DEVICE(x);
+  CHECK_DEVICE(y);
+  CHECK_DEVICE(gy);
+  CHECK_DEVICE(gx);
+  const Shape &s = x.shape();
+  const Shape sy = shape_ops::permute_dims(x.shape(), perm);
+  if (y.shape() != sy || gy.shape() != sy || gx.shape() != s) {
+    PRIMITIV_THROW_ERROR(
+        "Shape mismatched at permute_dims_bw"
+        << ". x.shape: " << s.to_string()
+        << ", y.shape: " << y.shape().to_string()
+        << ", gy.shape: " << gy.shape().to_string()
+        << ", gx.shape: " << gx.shape().to_string());
+  }
+  permute_dims_bw_impl(x, y, gy, perm, gx);
+}
 
 DEV_FW_X_CONST(add_const);
 DEV_FW_X_CONST(subtract_const_r);

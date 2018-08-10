@@ -299,6 +299,28 @@ PRIMITIV_C_STATUS primitivApplyTensorFlip(
   return PRIMITIV_C_OK;
 } PRIMITIV_C_HANDLE_EXCEPTIONS
 
+PRIMITIV_C_STATUS primitivApplyNodePermuteDims(
+    const primitivNode_t *x, const uint32_t *perm, size_t n,
+    primitivNode_t **y) try {
+  PRIMITIV_C_CHECK_NOT_NULL(x);
+  PRIMITIV_C_CHECK_NOT_NULL(perm);
+  PRIMITIV_C_CHECK_NOT_NULL(y);
+  *y = to_c_ptr_from_value(primitiv::functions::permute_dims(
+     *to_cpp_ptr(x), std::vector<uint32_t>(perm, perm + n)));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
+PRIMITIV_C_STATUS primitivApplyTensorPermuteDims(
+    const primitivTensor_t *x, const uint32_t *perm, size_t n,
+    primitivTensor_t **y) try {
+  PRIMITIV_C_CHECK_NOT_NULL(x);
+  PRIMITIV_C_CHECK_NOT_NULL(perm);
+  PRIMITIV_C_CHECK_NOT_NULL(y);
+  *y = to_c_ptr_from_value(primitiv::functions::permute_dims(
+      *to_cpp_ptr(x), std::vector<uint32_t>(perm, perm + n)));
+  return PRIMITIV_C_OK;
+} PRIMITIV_C_HANDLE_EXCEPTIONS
+
 PRIMITIV_C_STATUS primitivApplyNodeMatmul(
     const primitivNode_t *a, const primitivNode_t *b, primitivNode_t **y) try {
   PRIMITIV_C_CHECK_NOT_NULL(a);

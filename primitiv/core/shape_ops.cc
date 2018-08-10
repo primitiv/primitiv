@@ -122,6 +122,33 @@ Shape transpose(const Shape &x) {
   return Shape({x[1], x[0]}, x.batch());
 }
 
+Shape permute_dims(const Shape &x, const std::vector<std::uint32_t> &perm) {
+  if (perm.size() < x.depth()) {
+    PRIMITIV_THROW_ERROR(
+        "Invalid perm to permute. shape: " << x.to_string()
+        << ", perm.size(): " << perm.size());
+  }
+  std::vector<std::uint32_t> dims(perm.size());
+  std::vector<bool> picked(perm.size());
+  for (std::uint32_t i = 0; i < perm.size(); ++i) {
+    if (perm[i] >= perm.size()) {
+      PRIMITIV_THROW_ERROR(
+          "Invalid perm to permute. shape: " << x.to_string()
+          << ", perm.size(): " << perm.size()
+          << ", perm[" << i << "]: " << perm[i]);
+    }
+    if (picked[perm[i]]) {
+      PRIMITIV_THROW_ERROR(
+          "Invalid perm to permute. shape: " << x.to_string()
+          << ", perm[" << i << "]: " << perm[i]
+          << " (duplicated)");
+    }
+    picked[perm[i]] = true;
+    dims[i] = x[perm[i]];
+  }
+  return Shape(dims, x.batch());
+}
+
 Shape matmul(const Shape &l, const Shape &r) {
   if (!l.is_matrix() || !r.is_matrix() || l[1] != r[0] ||
       !l.has_compatible_batch(r)) {

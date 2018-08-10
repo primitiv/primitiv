@@ -203,6 +203,11 @@ Tensor flip(const Tensor &x, std::uint32_t dim) {
 }
 
 template<>
+Tensor permute_dims(const Tensor &x, const std::vector<std::uint32_t> &perm) {
+  return x.device().permute_dims_fw(x, perm);
+}
+
+template<>
 Tensor matmul(const Tensor &a, const Tensor &b) {
   return a.device().matmul_fw(a, b);
 }

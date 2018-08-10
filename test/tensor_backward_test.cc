@@ -990,22 +990,178 @@ TEST_F(TensorBackwardTest, CheckMinMultipleLarge) {
   }
 }
 
-TEST_F(TensorBackwardTest, CheckTranspose) {
+TEST_F(TensorBackwardTest, CheckTranspose11) {
+  const vector<float> gx_data {42};
+  const vector<float> gy_data {42};
   for (Device *dev : devices) {
-    const Tensor x = dev->new_tensor_by_constant(Shape({3, 4}, 2), 0);
+    const Tensor x = dev->new_tensor_by_constant({}, 0);
     const Tensor y = dev->transpose_fw(x);
-    const Tensor gy = dev->new_tensor_by_vector(
-        Shape({4, 3}, 2), {
-          0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-          12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
-        });
-    Tensor gx = dev->new_tensor_by_constant(Shape({3, 4}, 2), 0);
+    const Tensor gy = dev->new_tensor_by_vector({}, gy_data);
+    Tensor gx = dev->new_tensor_by_constant({}, 0);
     dev->transpose_bw(x, y, gy, gx);
-    const vector<float> gx_val {
-      0, 4, 8, 1, 5, 9, 2, 6, 10, 3, 7, 11,
-      12, 16, 20, 13, 17, 21, 14, 18, 22, 15, 19, 23,
-    };
-    EXPECT_TRUE(vector_match(gx_val, gx.to_vector()));
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckTransposeN1) {
+  const vector<float> gx_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  const vector<float> gy_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_constant({12}, 0);
+    const Tensor y = dev->transpose_fw(x);
+    const Tensor gy = dev->new_tensor_by_vector({1, 12}, gy_data);
+    Tensor gx = dev->new_tensor_by_constant({12}, 0);
+    dev->transpose_bw(x, y, gy, gx);
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckTranspose1N) {
+  const vector<float> gx_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  const vector<float> gy_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_constant(Shape({1, 3}, 4), 0);
+    const Tensor y = dev->transpose_fw(x);
+    const Tensor gy = dev->new_tensor_by_vector(Shape({3}, 4), gy_data);
+    Tensor gx = dev->new_tensor_by_constant(Shape({1, 3}, 4), 0);
+    dev->transpose_bw(x, y, gy, gx);
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckTransposeNN) {
+  const vector<float> gx_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  const vector<float> gy_data {1, 3, 2, 4, 5, 7, 6, 8, 9, 11, 10, 12};
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_constant(Shape({2, 2}, 3), 0);
+    const Tensor y = dev->transpose_fw(x);
+    const Tensor gy = dev->new_tensor_by_vector(Shape({2, 2}, 3), gy_data);
+    Tensor gx = dev->new_tensor_by_constant(Shape({2, 2}, 3), 0);
+    dev->transpose_bw(x, y, gy, gx);
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckTransposeMN) {
+  const vector<float> gx_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  const vector<float> gy_data {1, 3, 5, 2, 4, 6, 7, 9, 11, 8, 10, 12};
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_constant(Shape({2, 3}, 2), 0);
+    const Tensor y = dev->transpose_fw(x);
+    const Tensor gy = dev->new_tensor_by_vector(Shape({3, 2}, 2), gy_data);
+    Tensor gx = dev->new_tensor_by_constant(Shape({2, 3}, 2), 0);
+    dev->transpose_bw(x, y, gy, gx);
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckPermuteDims111) {
+  const vector<float> gx_data {42, 43};
+  const vector<float> gy_data {42, 43};
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_constant(Shape({}, 2), 0);
+    const Tensor y = dev->permute_dims_fw(x, {0});
+    const Tensor gy = dev->new_tensor_by_vector(Shape({}, 2), gy_data);
+    Tensor gx = dev->new_tensor_by_constant(Shape({}, 2), 0);
+    dev->permute_dims_bw(x, y, gy, {0}, gx);
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckPermuteDimsN11) {
+  const vector<float> gx_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  const vector<float> gy_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_constant(Shape({6}, 2), 0);
+    const Tensor y = dev->permute_dims_fw(x, {1, 0});
+    const Tensor gy = dev->new_tensor_by_vector(Shape({1, 6}, 2), gy_data);
+    Tensor gx = dev->new_tensor_by_constant(Shape({6}, 2), 0);
+    dev->permute_dims_bw(x, y, gy, {1, 0}, gx);
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckPermuteDims1N1) {
+  const vector<float> gx_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  const vector<float> gy_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_constant(Shape({1, 4}, 3), 0);
+    const Tensor y = dev->permute_dims_fw(x, {0, 2, 1});
+    const Tensor gy = dev->new_tensor_by_vector(Shape({1, 1, 4}, 3), gy_data);
+    Tensor gx = dev->new_tensor_by_constant(Shape({1, 4}, 3), 0);
+    dev->permute_dims_bw(x, y, gy, {0, 2, 1}, gx);
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckPermuteDims11N) {
+  const vector<float> gx_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  const vector<float> gy_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_constant(Shape({1, 1, 4}, 3), 0);
+    const Tensor y = dev->permute_dims_fw(x, {2, 0, 1});
+    const Tensor gy = dev->new_tensor_by_vector(Shape({4}, 3), gy_data);
+    Tensor gx = dev->new_tensor_by_constant(Shape({1, 1, 4}, 3), 0);
+    dev->permute_dims_bw(x, y, gy, {2, 0, 1}, gx);
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckPermuteDimsMN1) {
+  const vector<float> gx_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  const vector<float> gy_data {1, 3, 5, 2, 4, 6, 7, 9, 11, 8, 10, 12};
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_constant(Shape({2, 3}, 2), 0);
+    const Tensor y = dev->permute_dims_fw(x, {1, 2, 0});
+    const Tensor gy = dev->new_tensor_by_vector(Shape({3, 1, 2}, 2), gy_data);
+    Tensor gx = dev->new_tensor_by_constant(Shape({2, 3}, 2), 0);
+    dev->permute_dims_bw(x, y, gy, {1, 2, 0}, gx);
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckPermuteDimsM1N) {
+  const vector<float> gx_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  const vector<float> gy_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_constant(Shape({3, 1, 2}, 2), 0);
+    const Tensor y = dev->permute_dims_fw(x, {0, 2, 1});
+    const Tensor gy = dev->new_tensor_by_vector(Shape({3, 2}, 2), gy_data);
+    Tensor gx = dev->new_tensor_by_constant(Shape({3, 1, 2}, 2), 0);
+    dev->permute_dims_bw(x, y, gy, {0, 2, 1}, gx);
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckPermuteDims1MN) {
+  const vector<float> gx_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  const vector<float> gy_data {1, 4, 2, 5, 3, 6, 7, 10, 8, 11, 9, 12};
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_constant(Shape({1, 3, 2}, 2), 0);
+    const Tensor y = dev->permute_dims_fw(x, {2, 0, 1});
+    const Tensor gy = dev->new_tensor_by_vector(Shape({2, 1, 3}, 2), gy_data);
+    Tensor gx = dev->new_tensor_by_constant(Shape({1, 3, 2}, 2), 0);
+    dev->permute_dims_bw(x, y, gy, {2, 0, 1}, gx);
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
+  }
+}
+
+TEST_F(TensorBackwardTest, CheckPermuteDimsLMN) {
+  const vector<float> gx_data {
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+    13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+  };
+  const vector<float> gy_data {
+    1, 7, 2, 8, 3, 9, 4, 10, 5, 11, 6, 12,
+    13, 19, 14, 20, 15, 21, 16, 22, 17, 23, 18, 24,
+  };
+  for (Device *dev : devices) {
+    const Tensor x = dev->new_tensor_by_constant(Shape({2, 3, 2}, 2), 0);
+    const Tensor y = dev->permute_dims_fw(x, {2, 0, 1});
+    const Tensor gy = dev->new_tensor_by_vector(Shape({2, 2, 3}, 2), gy_data);
+    Tensor gx = dev->new_tensor_by_constant(Shape({2, 3, 2}, 2), 0);
+    dev->permute_dims_bw(x, y, gy, {2, 0, 1}, gx);
+    EXPECT_TRUE(vector_match(gx_data, gx.to_vector()));
   }
 }
 

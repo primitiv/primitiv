@@ -116,6 +116,7 @@ IMPL_NAME_0(Divide);
 IMPL_NAME_0(Pow);
 
 IMPL_NAME_0(Transpose);
+IMPL_NAME_0(PermuteDims);
 IMPL_NAME_0(MatrixMultiply);
 
 IMPL_NAME_1(Flip, dim_);
@@ -256,6 +257,7 @@ FWD_SHAPE_ELEMENTWISE(Multiply);
 FWD_SHAPE_ELEMENTWISE(Divide);
 FWD_SHAPE_ELEMENTWISE(Pow);
 FWD_SHAPE(Transpose) { *y[0] = shape_ops::transpose(*x[0]); }
+FWD_SHAPE(PermuteDims) { *y[0] = shape_ops::permute_dims(*x[0], perm_); }
 FWD_SHAPE(MatrixMultiply) { *y[0] = shape_ops::matmul(*x[0], *x[1]); }
 FWD_SHAPE(Max) { *y[0] = x[0]->resize_dim(dim_, 1); }
 FWD_SHAPE(Min) { *y[0] = x[0]->resize_dim(dim_, 1); }
@@ -415,6 +417,7 @@ FORWARD(Divide) { *y[0] = *x[0] / *x[1]; }
 FORWARD(Pow) { *y[0] = functions::pow(*x[0], *x[1]); }
 
 FORWARD(Transpose) { *y[0] = functions::transpose(*x[0]); }
+FORWARD(PermuteDims) { *y[0] = functions::permute_dims(*x[0], perm_); }
 FORWARD(MatrixMultiply) { *y[0] = functions::matmul(*x[0], *x[1]); }
 
 FORWARD(Flip) { *y[0] = functions::flip(*x[0], dim_); }
@@ -607,6 +610,10 @@ BACKWARD(LReLU) {
 
 BACKWARD(Transpose) {
   gy[0]->device().transpose_bw(*x[0], *y[0], *gy[0], *gx[0]);
+}
+
+BACKWARD(PermuteDims) {
+  gy[0]->device().permute_dims_bw(*x[0], *y[0], *gy[0], perm_, *gx[0]);
 }
 
 BACKWARD(AddConst) {

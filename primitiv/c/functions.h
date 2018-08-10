@@ -105,6 +105,13 @@ PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeFlip(
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorFlip(
     const primitivTensor_t *x, uint32_t dim, primitivTensor_t **y);
 
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodePermuteDims(
+    const primitivNode_t *x, const uint32_t *perm, size_t n,
+    primitivNode_t **y);
+PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorPermuteDims(
+    const primitivTensor_t *x, const uint32_t *perm, size_t n,
+    primitivTensor_t **y);
+
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyNodeMatmul(
     const primitivNode_t *a, const primitivNode_t *b, primitivNode_t **y);
 PRIMITIV_C_API PRIMITIV_C_STATUS primitivApplyTensorMatmul(

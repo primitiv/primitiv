@@ -92,6 +92,13 @@ Shape pick(const Shape &x, const std::vector<std::uint32_t> &ids, std::uint32_t 
  */
 Shape transpose(const Shape &x);
 
+/**
+ * Calculates a permuted shape.
+ * @param x A shape.
+ * @return Calculated shape.
+ */
+Shape permute_dims(const Shape &x, const std::vector<std::uint32_t> &perm);
+
 /** Calculates a shape of matrix products.
  * @param l Shape of the left hand side.
  * @param r Shape of the right hand side.

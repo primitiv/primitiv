@@ -131,6 +131,7 @@ public:
   Tensor cos_fw(const Tensor &x);
   Tensor tan_fw(const Tensor &x);
   Tensor transpose_fw(const Tensor &x);
+  Tensor permute_dims_fw(const Tensor &x, const std::vector<std::uint32_t> &perm);
 
   Tensor flip_fw(const Tensor &x, std::uint32_t dim);
 
@@ -145,6 +146,7 @@ public:
   void cos_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void tan_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void transpose_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
+  void permute_dims_bw(const Tensor &x, const Tensor &y, const Tensor &gy, const std::vector<std::uint32_t> &perm, Tensor &gx);
 
   void flip_bw(const Tensor &gy, std::uint32_t dim, Tensor &gx);
 
@@ -400,6 +402,7 @@ private:
   virtual void cos_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void tan_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void transpose_fw_impl(const Tensor &x, Tensor &y) = 0;
+  virtual void permute_dims_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &perm, Tensor &y) = 0;
 
   virtual void flip_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) = 0;
 
@@ -414,6 +417,7 @@ private:
   virtual void cos_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void tan_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void transpose_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
+  virtual void permute_dims_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, const std::vector<std::uint32_t> &perm, Tensor &gx) = 0;
 
   virtual void flip_bw_impl(const Tensor &gy, std::uint32_t dim, Tensor &gx) = 0;
 
