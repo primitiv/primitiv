@@ -131,6 +131,7 @@ public:
   Tensor cos_fw(const Tensor &x);
   Tensor tan_fw(const Tensor &x);
   Tensor transpose_fw(const Tensor &x);
+  Tensor permute_dims_fw(const Tensor &x, const std::vector<std::uint32_t> &perm);
 
   void abs_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void sqrt_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
@@ -143,6 +144,7 @@ public:
   void cos_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void tan_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
   void transpose_bw(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx);
+  void permute_dims_bw(const Tensor &x, const Tensor &y, const Tensor &gy, const std::vector<std::uint32_t> &perm, Tensor &gx);
 
   // Tensor-constant operations.
   Tensor add_const_fw(const Tensor &x, float k);
@@ -396,6 +398,7 @@ private:
   virtual void cos_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void tan_fw_impl(const Tensor &x, Tensor &y) = 0;
   virtual void transpose_fw_impl(const Tensor &x, Tensor &y) = 0;
+  virtual void permute_dims_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &perm, Tensor &y) = 0;
 
   virtual void abs_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void sqrt_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
@@ -408,6 +411,7 @@ private:
   virtual void cos_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void tan_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
   virtual void transpose_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) = 0;
+  virtual void permute_dims_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, const std::vector<std::uint32_t> &perm, Tensor &gx) = 0;
 
   virtual void add_const_fw_impl(const Tensor &x, float k, Tensor &y) = 0;
   virtual void subtract_const_r_fw_impl(const Tensor &x, float k, Tensor &y) = 0;

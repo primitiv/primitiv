@@ -563,6 +563,67 @@ template<typename Var>
 type_traits::Identity<Var> transpose(const Var &x);
 
 /**
+ * Permutes dimensions of a tensor.
+ * @f[
+ *  \begin{array}{lcl}
+ *    x & := &
+ *      \left(
+ *        \left( \begin{array}{cc}
+ *          1 & 4 \\ 2 & 5 \\ 3 & 6
+ *        \end{array} \right),
+ *        \left( \begin{array}{cc}
+ *          11 & 14 \\ 12 & 15 \\ 13 & 16
+ *        \end{array} \right),
+ *        \left( \begin{array}{cc}
+ *          21 & 24 \\ 22 & 25 \\ 23 & 26
+ *        \end{array} \right),
+ *        \left( \begin{array}{cc}
+ *          31 & 34 \\ 32 & 35 \\ 33 & 36
+ *        \end{array} \right)
+ *      \right), \\
+ *    \mathrm{permute\_dims}(x, [1, 2, 0]) & = &
+ *      \left(
+ *        \left( \begin{array}{cccc}
+ *          1 & 11 & 21 & 31 \\ 4 & 14 & 24 & 34
+ *        \end{array} \right),
+ *        \left( \begin{array}{cccc}
+ *          2 & 12 & 22 & 32 \\ 5 & 15 & 25 & 35
+ *        \end{array} \right),
+ *        \left( \begin{array}{cccc}
+ *          3 & 13 & 23 & 33 \\ 6 & 16 & 26 & 36
+ *        \end{array} \right)
+ *      \right), \\
+ *    \mathrm{permute\_dims}(x, [2, 0, 1]) & = &
+ *      \left(
+ *        \left( \begin{array}{ccc}
+ *          1 & 2 & 3 \\ 11 & 12 & 13 \\ 21 & 22 & 23 \\ 31 & 32 & 33
+ *        \end{array} \right),
+ *        \left( \begin{array}{ccc}
+ *          4 & 5 & 6 \\ 14 & 15 & 16 \\ 24 & 35 & 36 \\ 34 & 35 & 36
+ *        \end{array} \right)
+ *      \right), \\
+ *    \mathrm{permute\_dims}(x, [0, 1, 2]) & = & x. \\
+ *  \end{array}
+ * @f]
+ * @param x A variable representing an original data.
+ * @param perm A list of dimensions for specifying permutation.
+ * @return A new variable.
+ */
+template<typename Var>
+type_traits::Identity<Var> permute_dims(const Var &x, const std::vector<std::uint32_t> &perm);
+
+/**
+ * Permutes dimensions of a tensor.
+ * @param x A variable representing an original data.
+ * @param perm A list of dimensions for specifying permutation.
+ * @return A new variable.
+ */
+template<typename Var>
+type_traits::Identity<Var> permute_dims(const Var &x, const std::initializer_list<std::uint32_t> perm) {
+  return permute_dims(x, std::vector<std::uint32_t>(perm));
+}
+
+/**
  * Applies a matrix multiplication between two matrices.
  * @param a A variable representing an argument \f$ A \f$. The shape of `a`
  *          must be either a scalar, a column vector or a matrix.
