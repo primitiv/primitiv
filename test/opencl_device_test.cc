@@ -46,7 +46,7 @@ protected:
 TEST_F(OpenCLDeviceTest, CheckDeviceType) {
   for (const Config &cfg : configs) {
     devices::OpenCL dev(cfg.pf_id, cfg.dev_id);
-    EXPECT_EQ(Device::DeviceType::OPENCL, dev.type());
+    EXPECT_EQ(DeviceType::OPENCL, dev.type());
   }
 }
 

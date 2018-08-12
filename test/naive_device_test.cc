@@ -23,7 +23,7 @@ class NaiveDeviceTest : public testing::Test {};
 
 TEST_F(NaiveDeviceTest, CheckDeviceType) {
   devices::Naive dev;
-  EXPECT_EQ(Device::DeviceType::NAIVE, dev.type());
+  EXPECT_EQ(DeviceType::NAIVE, dev.type());
 }
 
 TEST_F(NaiveDeviceTest, CheckNewDelete) {

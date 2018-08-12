@@ -898,7 +898,7 @@ TEST_F(TensorForwardTest, CheckSubtract) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      = dev_type == DeviceType::CUDA16 ? 8192
       : get_default_ulps(*dev);
 
     {
@@ -960,7 +960,7 @@ TEST_F(TensorForwardTest, CheckMultiplyConst) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      = dev_type == DeviceType::CUDA16 ? 8192
       : get_default_ulps(*dev);
 
     {
@@ -992,7 +992,7 @@ TEST_F(TensorForwardTest, CheckMultiplyScalar) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      = dev_type == DeviceType::CUDA16 ? 8192
       : get_default_ulps(*dev);
 
     {
@@ -1025,7 +1025,7 @@ TEST_F(TensorForwardTest, CheckMultiplyScalarBatchBroadcast) {
 
       const auto dev_type = dev->type();
       const std::uint32_t ulps
-        = dev_type == Device::DeviceType::CUDA16 ? 8192
+        = dev_type == DeviceType::CUDA16 ? 8192
         : get_default_ulps(*dev);
 
       {
@@ -1056,7 +1056,7 @@ TEST_F(TensorForwardTest, CheckMultiplyScalarBatchBroadcast) {
 
       const auto dev_type = dev->type();
       const std::uint32_t ulps
-        = dev_type == Device::DeviceType::CUDA16 ? 8192
+        = dev_type == DeviceType::CUDA16 ? 8192
         : get_default_ulps(*dev);
 
       {
@@ -1089,7 +1089,7 @@ TEST_F(TensorForwardTest, CheckMultiply) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 16384
+      = dev_type == DeviceType::CUDA16 ? 16384
       : get_default_ulps(*dev);
 
     {
@@ -1153,7 +1153,7 @@ TEST_F(TensorForwardTest, CheckDivideConst) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      = dev_type == DeviceType::CUDA16 ? 8192
       : get_default_ulps(*dev);
 
     {
@@ -1186,7 +1186,7 @@ TEST_F(TensorForwardTest, CheckDivideScalar) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 16384
+      = dev_type == DeviceType::CUDA16 ? 16384
       : get_default_ulps(*dev);
 
     {
@@ -1220,7 +1220,7 @@ TEST_F(TensorForwardTest, CheckDivideScalarBatchBroadcast) {
 
       const auto dev_type = dev->type();
       const std::uint32_t ulps
-        = dev_type == Device::DeviceType::CUDA16 ? 16384
+        = dev_type == DeviceType::CUDA16 ? 16384
         : get_default_ulps(*dev);
 
       {
@@ -1252,7 +1252,7 @@ TEST_F(TensorForwardTest, CheckDivideScalarBatchBroadcast) {
 
       const auto dev_type = dev->type();
       const std::uint32_t ulps
-        = dev_type == Device::DeviceType::CUDA16 ? 8192
+        = dev_type == DeviceType::CUDA16 ? 8192
         : get_default_ulps(*dev);
 
       {
@@ -1288,7 +1288,7 @@ TEST_F(TensorForwardTest, CheckDivide) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      = dev_type == DeviceType::CUDA16 ? 8192
       : get_default_ulps(*dev);
 
     {
@@ -1837,7 +1837,7 @@ TEST_F(TensorForwardTest, CheckMatMulAB) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 16384
+      = dev_type == DeviceType::CUDA16 ? 16384
       : get_default_ulps(*dev);
     EXPECT_TRUE(vector_match_ulps(y_data, y.to_vector(), ulps));
   }
@@ -1897,7 +1897,7 @@ TEST_F(TensorForwardTest, CheckMatMulLarge) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 262144
+      = dev_type == DeviceType::CUDA16 ? 262144
       : get_default_ulps(*dev);
     EXPECT_TRUE(vector_match_ulps(y1_data, y1.to_vector(), ulps));
     EXPECT_TRUE(vector_match_ulps(y2_data, y2.to_vector(), ulps));
@@ -2136,13 +2136,13 @@ TEST_F(TensorForwardTest, CheckSigmoid) {
     const auto dev_type = dev->type();
 #ifdef PRIMITIV_MAYBE_FPMATH_X87
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::EIGEN ? 7
-      : dev_type == Device::DeviceType::OPENCL ? 6
+      = dev_type == DeviceType::EIGEN ? 7
+      : dev_type == DeviceType::OPENCL ? 6
       : get_default_ulps(*dev);
 #else
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::EIGEN ? 6
-      : dev_type == Device::DeviceType::OPENCL ? 6
+      = dev_type == DeviceType::EIGEN ? 6
+      : dev_type == DeviceType::OPENCL ? 6
       : get_default_ulps(*dev);
 #endif
     EXPECT_TRUE(vector_match_ulps(y_data, y.to_vector(), ulps));
@@ -2165,7 +2165,7 @@ TEST_F(TensorForwardTest, CheckSoftplus) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? get_default_ulps(*dev)
+      = dev_type == DeviceType::CUDA16 ? get_default_ulps(*dev)
       : 20;
     EXPECT_TRUE(vector_match_ulps(y_data, y.to_vector(), ulps));
   }
@@ -2337,7 +2337,7 @@ TEST_F(TensorForwardTest, CheckMaxLarge) {
 
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
-      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+      if (n >= (1 << 11) && dev->type() == DeviceType::CUDA16) {
         // NOTE(vbkaisetsu):
         // Half-precision types have only (10+1) bits resolution.
         continue;
@@ -2388,7 +2388,7 @@ TEST_F(TensorForwardTest, CheckMinLarge) {
 
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
-      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+      if (n >= (1 << 11) && dev->type() == DeviceType::CUDA16) {
         // NOTE(vbkaisetsu):
         // Half-precision types have only (10+1) bits resolution.
         continue;
@@ -2438,7 +2438,7 @@ TEST_F(TensorForwardTest, CheckSum2) {
   };
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
-      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+      if (n >= (1 << 11) && dev->type() == DeviceType::CUDA16) {
         // NOTE(odashi):
         // Half-precision types have only (10+1) bits resolution.
         continue;
@@ -2497,7 +2497,7 @@ TEST_F(TensorForwardTest, CheckLogSumExp2) {
 
         const auto dev_type = dev->type();
         const std::uint32_t ulps
-          = dev_type == Device::DeviceType::CUDA16 ? get_default_ulps(*dev)
+          = dev_type == DeviceType::CUDA16 ? get_default_ulps(*dev)
           : 320;
         EXPECT_TRUE(vector_match_ulps(
               vector<float>(1, k + std::log(n)), y.to_vector(), ulps));
@@ -2533,7 +2533,7 @@ TEST_F(TensorForwardTest, CheckLogSoftmax) {
 
       const auto dev_type = dev->type();
       const float err
-        = dev_type == Device::DeviceType::CUDA16 ? 1e-2
+        = dev_type == DeviceType::CUDA16 ? 1e-2
         : 1e-6;
       EXPECT_TRUE(vector_near(y_data[i], y.to_vector(), err));
     }
@@ -2554,7 +2554,7 @@ TEST_F(TensorForwardTest, CheckLogSoftmax2) {
 
         const auto dev_type = dev->type();
         const float err
-          = dev_type == Device::DeviceType::CUDA16 ? 1e-2
+          = dev_type == DeviceType::CUDA16 ? 1e-2
           : 1e-3;
         EXPECT_TRUE(vector_near(
               vector<float>(n, -std::log(n)), y.to_vector(), err));
@@ -2590,7 +2590,7 @@ TEST_F(TensorForwardTest, CheckSoftmax) {
 
       const auto dev_type = dev->type();
       const float err
-        = dev_type == Device::DeviceType::CUDA16 ? 1e-2
+        = dev_type == DeviceType::CUDA16 ? 1e-2
         : 1e-6;
       EXPECT_TRUE(vector_near(y_data[i], y.to_vector(), err));
     }
@@ -2611,7 +2611,7 @@ TEST_F(TensorForwardTest, CheckSoftmax2) {
 
         const auto dev_type = dev->type();
         const float err
-          = dev_type == Device::DeviceType::CUDA16 ? 1e-3
+          = dev_type == DeviceType::CUDA16 ? 1e-3
           : 1e-6;
         EXPECT_TRUE(
             vector_near(vector<float>(n, 1./n), y.to_vector(), err));
@@ -2956,7 +2956,7 @@ TEST_F(TensorForwardTest, CheckSoftmaxCrossEntropy) {
 
       const auto dev_type = dev->type();
       const std::uint32_t ulps
-        = dev_type == Device::DeviceType::CUDA16 ? 16384
+        = dev_type == DeviceType::CUDA16 ? 16384
         : get_default_ulps(*dev);
       EXPECT_TRUE(vector_match_ulps(y_data[dim], y.to_vector(), ulps));
     }
@@ -2987,7 +2987,7 @@ TEST_F(TensorForwardTest, CheckSoftmaxCrossEntropyBatchBroadcast) {
 
       const auto dev_type = dev->type();
       const std::uint32_t ulps
-        = dev_type == Device::DeviceType::CUDA16 ? 16384
+        = dev_type == DeviceType::CUDA16 ? 16384
         : get_default_ulps(*dev);
       EXPECT_TRUE(vector_match_ulps(tc.y_data, y.to_vector(), ulps));
     }
@@ -3056,7 +3056,7 @@ TEST_F(TensorForwardTest, CheckSparseSoftmaxCrossEntropy) {
 
       const auto dev_type = dev->type();
       const float err
-        = dev_type == Device::DeviceType::CUDA16 ? 1e-2
+        = dev_type == DeviceType::CUDA16 ? 1e-2
         : 1e-6;
       EXPECT_TRUE(vector_near(tc.y_data, y.to_vector(), err));
     }
@@ -3310,7 +3310,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x1_5x5x1x1) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 32768
+      = dev_type == DeviceType::CUDA16 ? 32768
       : get_default_ulps(*dev);
     EXPECT_TRUE(vector_match_ulps(y_data, y.to_vector(), ulps));
   } IGNORE_NOT_IMPLEMENTED
@@ -3389,7 +3389,7 @@ TEST_F(TensorForwardTest, CheckConv2D_5x5x3_2x2x3x3) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      = dev_type == DeviceType::CUDA16 ? 8192
       : get_default_ulps(*dev);
     EXPECT_TRUE(vector_match_ulps(y_data, y.to_vector(), ulps));
   } IGNORE_NOT_IMPLEMENTED

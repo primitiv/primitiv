@@ -680,7 +680,7 @@ TEST_F(TensorTest, CheckArgMaxLarge) {
 
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
-      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+      if (n >= (1 << 11) && dev->type() == DeviceType::CUDA16) {
         // NOTE(odashi):
         // Half-precision types have only (10+1) bits resolution.
         continue;
@@ -707,7 +707,7 @@ TEST_F(TensorTest, CheckArgMaxMultipleLarge) {
 
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
-      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+      if (n >= (1 << 11) && dev->type() == DeviceType::CUDA16) {
         // NOTE(vbkaisetsu):
         // Half-precision types have only (10+1) bits resolution.
         continue;
@@ -756,7 +756,7 @@ TEST_F(TensorTest, CheckArgMinLarge) {
 
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
-      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+      if (n >= (1 << 11) && dev->type() == DeviceType::CUDA16) {
         // NOTE(odashi):
         // Half-precision types have only (10+1) bits resolution.
         continue;
@@ -782,7 +782,7 @@ TEST_F(TensorTest, CheckArgMinMultipleLarge) {
 
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
-      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+      if (n >= (1 << 11) && dev->type() == DeviceType::CUDA16) {
         // NOTE(vbkaisetsu):
         // Half-precision types have only (10+1) bits resolution.
         continue;

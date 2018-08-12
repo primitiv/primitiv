@@ -38,7 +38,7 @@ protected:
 TEST_F(CUDADeviceTest, CheckDeviceType) {
   for (std::uint32_t dev_id : dev_ids) {
     devices::CUDA dev(dev_id);
-    EXPECT_EQ(Device::DeviceType::CUDA, dev.type());
+    EXPECT_EQ(DeviceType::CUDA, dev.type());
   }
 }
 

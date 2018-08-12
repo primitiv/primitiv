@@ -40,7 +40,7 @@ protected:
 TEST_F(CUDA16DeviceTest, CheckDeviceType) {
   for (std::uint32_t dev_id : dev_ids) {
     devices::CUDA16 dev(dev_id);
-    EXPECT_EQ(Device::DeviceType::CUDA16, dev.type());
+    EXPECT_EQ(DeviceType::CUDA16, dev.type());
   }
 }
 
