@@ -9,10 +9,10 @@ namespace devices {
 
 void CUDA::copy_tensor_impl(const Tensor &x, Tensor &y) {
   switch (x.device().type()) {
-    case Device::DeviceType::NAIVE:
+    case DeviceType::NAIVE:
       reset_tensor_by_array(CDATA(x), y);
       break;
-    case Device::DeviceType::CUDA:
+    case DeviceType::CUDA:
       CUDA_CALL(::cudaSetDevice(dev_id_));
       // NOTE(odashi):
       // If source/destination devices use the unified memory space on the 64
@@ -22,7 +22,7 @@ void CUDA::copy_tensor_impl(const Tensor &x, Tensor &y) {
             sizeof(float) * x.shape().size(),
             cudaMemcpyDeviceToDevice, 0));
       break;
-    //case Device::DeviceType::CUDA16:
+    //case DeviceType::CUDA16:
       // TODO(odashi): Implement this section.
     default:
       reset_tensor_by_vector(x.to_vector(), y);

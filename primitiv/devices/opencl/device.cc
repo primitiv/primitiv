@@ -704,10 +704,10 @@ void OpenCL::reset_tensor_by_array_impl(const float values[], Tensor &x) {
 
 void OpenCL::copy_tensor_impl(const Tensor &x, Tensor &y) {
   switch (x.device().type()) {
-    case Device::DeviceType::NAIVE:
+    case DeviceType::NAIVE:
       reset_tensor_by_array(static_cast<const float *>(get_handle(x)), y);
       break;
-    case Device::DeviceType::OPENCL:
+    case DeviceType::OPENCL:
       if(&x.device() == this) {
         const std::uint32_t size = x.shape().size();
         state_->queue.enqueueCopyBuffer(

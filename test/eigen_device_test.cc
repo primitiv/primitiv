@@ -23,7 +23,7 @@ class EigenDeviceTest : public testing::Test {};
 
 TEST_F(EigenDeviceTest, CheckDeviceType) {
   devices::Eigen dev;
-  EXPECT_EQ(Device::DeviceType::EIGEN, dev.type());
+  EXPECT_EQ(DeviceType::EIGEN, dev.type());
 }
 
 TEST_F(EigenDeviceTest, CheckNewDelete) {

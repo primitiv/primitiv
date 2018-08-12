@@ -8,10 +8,10 @@ namespace devices {
 
 void Eigen::copy_tensor_impl(const Tensor &x, Tensor &y) {
   switch (x.device().type()) {
-    case Device::DeviceType::NAIVE:
+    case DeviceType::NAIVE:
       reset_tensor_by_array(CDATA(x), y);
       break;
-    case Device::DeviceType::EIGEN:
+    case DeviceType::EIGEN:
       reset_tensor_by_array(CDATA(x), y);
       break;
     default:

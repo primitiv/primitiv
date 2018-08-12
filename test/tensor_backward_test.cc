@@ -445,7 +445,7 @@ TEST_F(TensorBackwardTest, CheckTanh) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 150000
+      = dev_type == DeviceType::CUDA16 ? 150000
       : 96;
     EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
   }
@@ -467,9 +467,9 @@ TEST_F(TensorBackwardTest, CheckSigmoid) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 32768
-      : dev_type == Device::DeviceType::EIGEN ? 6
-      : dev_type == Device::DeviceType::OPENCL ? 6
+      = dev_type == DeviceType::CUDA16 ? 32768
+      : dev_type == DeviceType::EIGEN ? 6
+      : dev_type == DeviceType::OPENCL ? 6
       : get_default_ulps(*dev);
     EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
   }
@@ -491,8 +491,8 @@ TEST_F(TensorBackwardTest, CheckSoftplus) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::EIGEN ? 6
-      : dev_type == Device::DeviceType::OPENCL ? 6
+      = dev_type == DeviceType::EIGEN ? 6
+      : dev_type == DeviceType::OPENCL ? 6
       : get_default_ulps(*dev);
     EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
   }
@@ -550,7 +550,7 @@ TEST_F(TensorBackwardTest, CheckTan) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      = dev_type == DeviceType::CUDA16 ? 8192
       : get_default_ulps(*dev);
     EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
   }
@@ -670,7 +670,7 @@ TEST_F(TensorBackwardTest, CheckDivideConstL) {
 
       const auto dev_type = dev->type();
       const std::uint32_t ulps
-        = dev_type == Device::DeviceType::CUDA16 ? 8192
+        = dev_type == DeviceType::CUDA16 ? 8192
         : get_default_ulps(*dev);
       EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
     }
@@ -695,7 +695,7 @@ TEST_F(TensorBackwardTest, CheckPowConstR) {
 
       const auto dev_type = dev->type();
       const std::uint32_t ulps
-        = dev_type == Device::DeviceType::CUDA16 ? 8192
+        = dev_type == DeviceType::CUDA16 ? 8192
         : get_default_ulps(*dev);
       EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
     }
@@ -720,7 +720,7 @@ TEST_F(TensorBackwardTest, CheckPowConstL) {
 
       const auto dev_type = dev->type();
       const std::uint32_t ulps
-        = dev_type == Device::DeviceType::CUDA16 ? 8192
+        = dev_type == DeviceType::CUDA16 ? 8192
         : get_default_ulps(*dev);
       EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
     }
@@ -765,7 +765,7 @@ TEST_F(TensorBackwardTest, CheckELU) {
 
       const auto dev_type = dev->type();
       const std::uint32_t ulps
-        = dev_type == Device::DeviceType::CUDA16 ? 75000
+        = dev_type == DeviceType::CUDA16 ? 75000
         : 12;
       EXPECT_TRUE(vector_match_ulps(gx_val, gx.to_vector(), ulps));
     }
@@ -817,7 +817,7 @@ TEST_F(TensorBackwardTest, CheckMaxLarge) {
 
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
-      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+      if (n >= (1 << 11) && dev->type() == DeviceType::CUDA16) {
         // NOTE(vbkaisetsu):
         // Half-precision types have only (10+1) bits resolution.
         continue;
@@ -851,7 +851,7 @@ TEST_F(TensorBackwardTest, CheckMaxMultipleLarge) {
 
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
-      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+      if (n >= (1 << 11) && dev->type() == DeviceType::CUDA16) {
         // NOTE(vbkaisetsu):
         // Half-precision types have only (10+1) bits resolution.
         continue;
@@ -926,7 +926,7 @@ TEST_F(TensorBackwardTest, CheckMinLarge) {
 
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
-      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+      if (n >= (1 << 11) && dev->type() == DeviceType::CUDA16) {
         // NOTE(vbkaisetsu):
         // Half-precision types have only (10+1) bits resolution.
         continue;
@@ -960,7 +960,7 @@ TEST_F(TensorBackwardTest, CheckMinMultipleLarge) {
 
   for (Device *dev : devices) {
     for (const std::uint32_t n : ns) {
-      if (n >= (1 << 11) && dev->type() == Device::DeviceType::CUDA16) {
+      if (n >= (1 << 11) && dev->type() == DeviceType::CUDA16) {
         // NOTE(vbkaisetsu):
         // Half-precision types have only (10+1) bits resolution.
         continue;
@@ -1404,7 +1404,7 @@ TEST_F(TensorBackwardTest, CheckDivide11) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      = dev_type == DeviceType::CUDA16 ? 8192
       : get_default_ulps(*dev);
     EXPECT_TRUE(vector_match_ulps(ga_val, ga.to_vector(), ulps));
     EXPECT_TRUE(vector_match_ulps(gb_val, gb.to_vector(), ulps));
@@ -1425,7 +1425,7 @@ TEST_F(TensorBackwardTest, CheckDivideNN) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      = dev_type == DeviceType::CUDA16 ? 8192
       : get_default_ulps(*dev);
     EXPECT_TRUE(vector_match_ulps(ga_val, ga.to_vector(), ulps));
     EXPECT_TRUE(vector_match_ulps(gb_val, gb.to_vector(), ulps));
@@ -1446,7 +1446,7 @@ TEST_F(TensorBackwardTest, CheckDivide1N) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      = dev_type == DeviceType::CUDA16 ? 8192
       : get_default_ulps(*dev);
     EXPECT_TRUE(vector_match_ulps(ga_val, ga.to_vector(), ulps));
     EXPECT_TRUE(vector_match_ulps(gb_val, gb.to_vector(), ulps));
@@ -1467,7 +1467,7 @@ TEST_F(TensorBackwardTest, CheckDivideN1) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      = dev_type == DeviceType::CUDA16 ? 8192
       : get_default_ulps(*dev);
     EXPECT_TRUE(vector_match_ulps(ga_val, ga.to_vector(), ulps));
     EXPECT_TRUE(vector_match_ulps(gb_val, gb.to_vector(), ulps));
@@ -1497,7 +1497,7 @@ TEST_F(TensorBackwardTest, CheckPow11) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      = dev_type == DeviceType::CUDA16 ? 8192
       : get_default_ulps(*dev);
     EXPECT_TRUE(vector_match_ulps(ga_val, ga.to_vector(), ulps));
     EXPECT_TRUE(vector_match_ulps(gb_val, gb.to_vector(), ulps));
@@ -1527,7 +1527,7 @@ TEST_F(TensorBackwardTest, CheckPowNN) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      = dev_type == DeviceType::CUDA16 ? 8192
       : get_default_ulps(*dev);
     EXPECT_TRUE(vector_match_ulps(ga_val, ga.to_vector(), ulps));
     EXPECT_TRUE(vector_match_ulps(gb_val, gb.to_vector(), ulps));
@@ -1558,7 +1558,7 @@ TEST_F(TensorBackwardTest, CheckPow1N) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      = dev_type == DeviceType::CUDA16 ? 8192
       : get_default_ulps(*dev);
     EXPECT_TRUE(vector_match_ulps(ga_val, ga.to_vector(), ulps));
     EXPECT_TRUE(vector_match_ulps(gb_val, gb.to_vector(), ulps));
@@ -1589,7 +1589,7 @@ TEST_F(TensorBackwardTest, CheckPowN1) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 8192
+      = dev_type == DeviceType::CUDA16 ? 8192
       : get_default_ulps(*dev);
     EXPECT_TRUE(vector_match_ulps(ga_val, ga.to_vector(), ulps));
     EXPECT_TRUE(vector_match_ulps(gb_val, gb.to_vector(), ulps));
@@ -2591,7 +2591,7 @@ TEST_F(TensorBackwardTest, CheckConv2D_VGG16FirstLayer) {
 
     const auto dev_type = dev->type();
     const std::uint32_t ulps
-      = dev_type == Device::DeviceType::CUDA16 ? 65536
+      = dev_type == DeviceType::CUDA16 ? 65536
       : get_default_ulps(*dev);
     EXPECT_TRUE(vector_match_ulps(gw_data, gw.to_vector(), ulps));
   } IGNORE_NOT_IMPLEMENTED
