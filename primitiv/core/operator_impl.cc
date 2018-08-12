@@ -119,6 +119,8 @@ IMPL_NAME_0(Transpose);
 IMPL_NAME_0(PermuteDims);
 IMPL_NAME_0(MatrixMultiply);
 
+IMPL_NAME_1(Flip, dim_);
+
 IMPL_NAME_0(Abs);
 IMPL_NAME_0(Sqrt);
 IMPL_NAME_0(Exp);
@@ -240,6 +242,7 @@ FWD_SHAPE_UNARY(LReLU);
 FWD_SHAPE_UNARY(PReLU);
 FWD_SHAPE_UNARY(ELU);
 FWD_SHAPE_UNARY(PowN);
+FWD_SHAPE_UNARY(Flip);
 FWD_SHAPE_SCALAR(AddScalar);
 FWD_SHAPE_SCALAR(SubtractScalarR);
 FWD_SHAPE_SCALAR(SubtractScalarL);
@@ -416,6 +419,8 @@ FORWARD(Pow) { *y[0] = functions::pow(*x[0], *x[1]); }
 FORWARD(Transpose) { *y[0] = functions::transpose(*x[0]); }
 FORWARD(PermuteDims) { *y[0] = functions::permute_dims(*x[0], perm_); }
 FORWARD(MatrixMultiply) { *y[0] = functions::matmul(*x[0], *x[1]); }
+
+FORWARD(Flip) { *y[0] = functions::flip(*x[0], dim_); }
 
 FORWARD(Sum) { *y[0] = functions::sum(*x[0], dim_); }
 FORWARD(LogSumExp) { *y[0] = functions::logsumexp(*x[0], dim_); }
@@ -728,6 +733,12 @@ BACKWARD(Pow) {
 
 BACKWARD(MatrixMultiply) {
   gy[0]->device().matmul_bw(*x[0], *x[1], *y[0], *gy[0], *gx[0], *gx[1]);
+}
+
+BACKWARD(Flip) {
+  UNUSED(x);
+  UNUSED(y);
+  gy[0]->device().flip_bw(*gy[0], dim_, *gx[0]);
 }
 
 BACKWARD(Max) {

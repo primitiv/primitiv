@@ -184,6 +184,14 @@ private:
   Shape shape_;
 };
 
+class Flip : public Operator {
+  PRIMITIV_DECL_DEFAULTS_AND_FORWARD(1, 1);
+public:
+  explicit Flip(std::uint32_t dim) : dim_(dim) {}
+private:
+  std::uint32_t dim_;
+};
+
 class Max : public Operator {
   PRIMITIV_DECL_DEFAULTS_AND_FORWARD(1, 1);
 public:

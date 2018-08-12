@@ -113,6 +113,8 @@ private:
   void transpose_fw_impl(const Tensor &x, Tensor &y) override;
   void permute_dims_fw_impl(const Tensor &x, const std::vector<std::uint32_t> &perm, Tensor &y) override;
 
+  void flip_fw_impl(const Tensor &x, std::uint32_t dim, Tensor &y) override;
+
   void abs_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void sqrt_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void exp_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
@@ -125,6 +127,8 @@ private:
   void tan_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void transpose_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) override;
   void permute_dims_bw_impl(const Tensor &x, const Tensor &y, const Tensor &gy, const std::vector<std::uint32_t> &perm, Tensor &gx) override;
+
+  void flip_bw_impl(const Tensor &gy, std::uint32_t dim, Tensor &gx) override;
 
   void add_const_fw_impl(const Tensor &x, float k, Tensor &y) override;
   void subtract_const_r_fw_impl(const Tensor &x, float k, Tensor &y) override;

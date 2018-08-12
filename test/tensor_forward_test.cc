@@ -1589,6 +1589,106 @@ TEST_F(TensorForwardTest, CheckInvalidTranspose) {
   }
 }
 
+TEST_F(TensorForwardTest, CheckFlip01) {
+  for (Device *dev : devices) {
+    const vector<float> x_data {42};
+    const vector<vector<float>> y_data {{42}, {42}, {42}, {42}};
+    const Tensor x = dev->new_tensor_by_vector({}, x_data);
+    for (std::uint32_t i = 0; i < 4; ++i) {
+      const Tensor y = flip(x, i);
+      EXPECT_EQ(x.shape(), y.shape());
+      EXPECT_TRUE(vector_match(y_data[i], y.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorForwardTest, CheckFlip11) {
+  for (Device *dev : devices) {
+    const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    const vector<vector<float>> y_data {
+      {12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1},
+      {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+      {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+      {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+    };
+    const Tensor x = dev->new_tensor_by_vector({12}, x_data);
+    for (std::uint32_t i = 0; i < 4; ++i) {
+      const Tensor y = flip(x, i);
+      EXPECT_EQ(x.shape(), y.shape());
+      EXPECT_TRUE(vector_match(y_data[i], y.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorForwardTest, CheckFlip21) {
+  for (Device *dev : devices) {
+    const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    const vector<vector<float>> y_data {
+      {6, 5, 4, 3, 2, 1, 12, 11, 10, 9, 8, 7},
+      {7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6},
+      {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+      {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+    };
+    const Tensor x = dev->new_tensor_by_vector({6, 2}, x_data);
+    for (std::uint32_t i = 0; i < 4; ++i) {
+      const Tensor y = flip(x, i);
+      EXPECT_EQ(x.shape(), y.shape());
+      EXPECT_TRUE(vector_match(y_data[i], y.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorForwardTest, CheckFlip31) {
+  for (Device *dev : devices) {
+    const vector<float> x_data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    const vector<vector<float>> y_data {
+      {3, 2, 1, 6, 5, 4, 9, 8, 7, 12, 11, 10},
+      {4, 5, 6, 1, 2, 3, 10, 11, 12, 7, 8, 9},
+      {7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6},
+      {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+    };
+    const Tensor x = dev->new_tensor_by_vector({3, 2, 2}, x_data);
+    for (std::uint32_t i = 0; i < 4; ++i) {
+      const Tensor y = flip(x, i);
+      EXPECT_EQ(x.shape(), y.shape());
+      EXPECT_TRUE(vector_match(y_data[i], y.to_vector()));
+    }
+  }
+}
+
+TEST_F(TensorForwardTest, CheckFlip32) {
+  for (Device *dev : devices) {
+    const vector<float> x_data {
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+      13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+    };
+    const vector<vector<float>> y_data {
+      {
+        3, 2, 1, 6, 5, 4, 9, 8, 7, 12, 11, 10,
+        15, 14, 13, 18, 17, 16, 21, 20, 19, 24, 23, 22,
+      },
+      {
+        4, 5, 6, 1, 2, 3, 10, 11, 12, 7, 8, 9,
+        16, 17, 18, 13, 14, 15, 22, 23, 24, 19, 20, 21,
+      },
+      {
+        7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6,
+        19, 20, 21, 22, 23, 24, 13, 14, 15, 16, 17, 18,
+      },
+      {
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+        13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+      },
+    };
+    const Tensor x = dev->new_tensor_by_vector(Shape({3, 2, 2}, 2), x_data);
+    for (std::uint32_t i = 0; i < 4; ++i) {
+      const Tensor y = flip(x, i);
+      EXPECT_EQ(x.shape(), y.shape());
+      EXPECT_TRUE(vector_match(y_data[i], y.to_vector()));
+    }
+  }
+}
+
 TEST_F(TensorForwardTest, CheckPermuteDims111) {
   const vector<float> x_data {42, 43};
   const vector<float> y_data {42, 43};

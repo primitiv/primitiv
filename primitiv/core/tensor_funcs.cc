@@ -198,6 +198,11 @@ Tensor transpose(const Tensor &x) {
 }
 
 template<>
+Tensor flip(const Tensor &x, std::uint32_t dim) {
+  return x.device().flip_fw(x, dim);
+}
+
+template<>
 Tensor permute_dims(const Tensor &x, const std::vector<std::uint32_t> &perm) {
   return x.device().permute_dims_fw(x, perm);
 }

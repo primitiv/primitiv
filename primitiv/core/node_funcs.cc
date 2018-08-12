@@ -183,6 +183,11 @@ Node transpose(const Node &x) {
 }
 
 template<>
+Node flip(const Node &x, std::uint32_t dim) {
+  return REGX(x, Flip(dim), x)[0];
+}
+
+template<>
 Node permute_dims(const Node &x, const std::vector<std::uint32_t> &perm) {
   return REGX(x, PermuteDims(perm), x)[0];
 }
