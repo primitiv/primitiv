@@ -8,6 +8,9 @@
 #include <string>
 #include <vector>
 
+#include <primitiv/core/data_type.h>
+#include <primitiv/core/error.h>
+
 namespace primitiv {
 namespace string_utils {
 
@@ -103,6 +106,27 @@ inline std::string to_string(long double value) {
   char buffer[std::numeric_limits<long double>::max_exponent10 + 10];
   std::sprintf(buffer, "%Lf", value);
   return buffer;
+}
+
+inline std::string to_string(DataType value) {
+#define PRIMITIV_DATA_TYPE_TO_STRING(x) if (value == DataType::x) { return #x; }
+  PRIMITIV_DATA_TYPE_TO_STRING(NONE);
+  PRIMITIV_DATA_TYPE_TO_STRING(BOOL);
+  PRIMITIV_DATA_TYPE_TO_STRING(INT8);
+  PRIMITIV_DATA_TYPE_TO_STRING(INT16);
+  PRIMITIV_DATA_TYPE_TO_STRING(INT32);
+  PRIMITIV_DATA_TYPE_TO_STRING(INT64);
+  PRIMITIV_DATA_TYPE_TO_STRING(UINT8);
+  PRIMITIV_DATA_TYPE_TO_STRING(UINT16);
+  PRIMITIV_DATA_TYPE_TO_STRING(UINT32);
+  PRIMITIV_DATA_TYPE_TO_STRING(UINT64);
+  PRIMITIV_DATA_TYPE_TO_STRING(FLOAT8);
+  PRIMITIV_DATA_TYPE_TO_STRING(FLOAT16);
+  PRIMITIV_DATA_TYPE_TO_STRING(FLOAT32);
+  PRIMITIV_DATA_TYPE_TO_STRING(FLOAT64);
+#undef PRIMITIV_DATA_TYPE_TO_STRING
+  PRIMITIV_THROW_ERROR(
+      "Unknown DataType: 0x" << std::hex << static_cast<std::uint32_t>(value))
 }
 
 }  // namespace string_utils
