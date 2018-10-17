@@ -22,12 +22,12 @@ using test_utils::vector_match;
 namespace primitiv {
 
 class ModelTest : public testing::Test {
+  devices::Naive dev;
+
 protected:
   void SetUp() override {
     Device::set_default(dev);
   }
-
-  devices::Naive dev;
 };
 
 TEST_F(ModelTest, CheckAddParameter) {
@@ -334,13 +334,14 @@ TEST_F(ModelTest, CheckGetTrainableParametersWithSubmodels) {
 
 TEST_F(ModelTest, CheckAddGradients) {
   Model m1, m2, m3, m4;
+  devices::Naive dev2;
   Parameter m1_p1 {{2, 2}, {3, 3, 3, 3}};
   Parameter m1_p2 {{3, 2}, {18, 18, 18, 18, 18, 18}};
-  Parameter m2_p1 {{2, 2}, {4, 4, 4, 4}};
-  Parameter m2_p2 {{3, 2}, {20, 20, 20, 20, 20, 20}};
-  Parameter m2_p3 {{2, 4}, {42, 42, 42, 42, 42, 42, 42, 42}};
+  Parameter m2_p1 {{2, 2}, {4, 4, 4, 4}, dev2};
+  Parameter m2_p2 {{3, 2}, {20, 20, 20, 20, 20, 20}, dev2};
+  Parameter m2_p3 {{2, 4}, {42, 42, 42, 42, 42, 42, 42, 42}, dev2};
   Parameter m3_p1 {{3, 3}, {81, 81, 81, 81, 81, 81, 81, 81, 81}};
-  Parameter m4_p1 {{3, 3}, {67, 67, 67, 67, 67, 67, 67, 67, 67}};
+  Parameter m4_p1 {{3, 3}, {67, 67, 67, 67, 67, 67, 67, 67, 67}, dev2};
   m1.add("p1", m1_p1);
   m1.add("p2", m1_p2);
   m2.add("p1", m2_p1);
@@ -355,10 +356,10 @@ TEST_F(ModelTest, CheckAddGradients) {
   const vector<float> m2_p2_grad_values {26, 25, 24, 23, 22, 21};
   const vector<float> m2_p3_grad_values {8, 8, 8, 8, 8, 8, 8, 8};
   const vector<float> m4_p1_grad_values {11, 13, 15, 17, 19, 21, 23, 25, 27};
-  const Tensor m2_p1_grad = dev.new_tensor_by_vector(m2_p1.shape(), m2_p1_grad_values);
-  const Tensor m2_p2_grad = dev.new_tensor_by_vector(m2_p2.shape(), m2_p2_grad_values);
-  const Tensor m2_p3_grad = dev.new_tensor_by_vector(m2_p3.shape(), m2_p3_grad_values);
-  const Tensor m4_p1_grad = dev.new_tensor_by_vector(m4_p1.shape(), m4_p1_grad_values);
+  const Tensor m2_p1_grad = dev2.new_tensor_by_vector(m2_p1.shape(), m2_p1_grad_values);
+  const Tensor m2_p2_grad = dev2.new_tensor_by_vector(m2_p2.shape(), m2_p2_grad_values);
+  const Tensor m2_p3_grad = dev2.new_tensor_by_vector(m2_p3.shape(), m2_p3_grad_values);
+  const Tensor m4_p1_grad = dev2.new_tensor_by_vector(m4_p1.shape(), m4_p1_grad_values);
 
   m1.add_gradients(m2);
   ASSERT_TRUE(vector_match({0, 0, 0, 0}, m1_p1.gradient().to_vector()));
