@@ -239,6 +239,11 @@ public:
     return get_all_parameters();
   }
 
+  /**
+   * Accumulates gradients from the source model.
+   */
+  void add_gradients(const Model &model);
+
 private:
   /**
    * Check whether specified model is contained or not in the submodel

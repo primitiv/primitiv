@@ -298,7 +298,8 @@ public:
    */
   Tensor &gradient() {
     if (!valid()) PRIMITIV_THROW_ERROR("Invalid parameter.");
-    return grad_; }
+    return grad_;
+  }
 
   /**
    * Returns the current opotional statistics tensor specified by given name.

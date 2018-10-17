@@ -5,6 +5,7 @@
 #include <primitiv/core/device.h>
 #include <primitiv/core/error.h>
 #include <primitiv/core/file_format.h>
+#include <primitiv/core/functions.h>
 #include <primitiv/core/model.h>
 #include <primitiv/core/parameter.h>
 #include <primitiv/core/string_utils.h>
@@ -174,6 +175,24 @@ std::map<std::vector<std::string>, Parameter *> Model::get_all_parameters(
     }
   }
   return params;
+}
+
+void Model::add_gradients(const Model &model) {
+  if (&model == this) {
+    PRIMITIV_THROW_ERROR("Can't add gradient from self.");
+  }
+  std::map<std::vector<std::string>, Parameter *> source = model.get_trainable_parameters();
+  for (auto &kv : get_trainable_parameters()) {
+    const auto it = source.find(kv.first);
+    if (it != source.end()) {
+      Device &target_device = kv.second->device();
+      if (&target_device == &it->second->device()) {
+        kv.second->gradient() += it->second->gradient();
+      } else {
+        kv.second->gradient() += target_device.copy_tensor(it->second->gradient());
+      }
+    }
+  }
 }
 
 bool Model::has_submodel(const Model &model) const {
