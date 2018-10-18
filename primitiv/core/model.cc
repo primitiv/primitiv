@@ -209,6 +209,15 @@ std::map<std::vector<std::string>, Parameter *> Model::get_all_parameters(
   return params;
 }
 
+void Model::reset_gradients() {
+  for (Parameter *param : param_set_) {
+    param->reset_gradient();
+  }
+  for (Model *submodel : submodel_set_) {
+    submodel->reset_gradients();
+  }
+}
+
 void Model::add_gradients(const Model &model) {
   if (&model == this) {
     PRIMITIV_THROW_ERROR("Can't add gradient from self.");

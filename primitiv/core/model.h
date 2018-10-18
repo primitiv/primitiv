@@ -246,6 +246,11 @@ public:
   }
 
   /**
+   * Resets gradients of all parameters.
+   */
+  void reset_gradients();
+
+  /**
    * Accumulates gradients from the source model.
    * @param model Source model to retrieve parameters.
    */
