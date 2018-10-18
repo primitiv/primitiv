@@ -75,6 +75,38 @@ void Model::save(const std::string &path, bool with_stats) const {
   }
 }
 
+void Model::copy(Model &dest) const {
+  if (&dest == this) {
+    PRIMITIV_THROW_ERROR("Can't copy the model into itself.");
+  }
+  for (const auto &kv : param_kv_) {
+    auto dest_kv = dest.param_kv_.find(kv.first);
+    if (dest_kv != dest.param_kv_.end()) {
+      if (dest_kv->second->shape() != kv.second->shape()) {
+        PRIMITIV_THROW_ERROR(
+            "Shape of the parameter `"
+            << kv.first << "` mismatched between source and destination.");
+      }
+      dest_kv->second->value() =
+          dest_kv->second->device().copy_tensor(kv.second->value());
+    } else {
+      PRIMITIV_THROW_ERROR(
+          "The destination model does not have the parameter `"
+          << kv.first << "`.");
+    }
+  }
+  for (const auto &kv : submodel_kv_) {
+    auto dest_kv = dest.submodel_kv_.find(kv.first);
+    if (dest_kv != dest.submodel_kv_.end()) {
+      kv.second->copy(*dest_kv->second);
+    } else {
+      PRIMITIV_THROW_ERROR(
+          "The destination model does not have the submodel `"
+          << kv.first << "`.");
+    }
+  }
+}
+
 void Model::add(const std::string &name, Parameter &param) {
   const auto kv = param_kv_.find(name);
   if (kv != param_kv_.end() && kv->second == &param) {

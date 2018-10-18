@@ -362,24 +362,69 @@ TEST_F(ModelTest, CheckAddGradients) {
   const Tensor m4_p1_grad = dev2.new_tensor_by_vector(m4_p1.shape(), m4_p1_grad_values);
 
   m1.add_gradients(m2);
-  ASSERT_TRUE(vector_match({0, 0, 0, 0}, m1_p1.gradient().to_vector()));
-  ASSERT_TRUE(vector_match({0, 0, 0, 0, 0, 0}, m1_p2.gradient().to_vector()));
-  ASSERT_TRUE(vector_match({0, 0, 0, 0, 0, 0, 0, 0, 0}, m3_p1.gradient().to_vector()));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0}, m1_p1.gradient().to_vector()));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0, 0, 0}, m1_p2.gradient().to_vector()));
+  EXPECT_TRUE(vector_match({0, 0, 0, 0, 0, 0, 0, 0, 0}, m3_p1.gradient().to_vector()));
 
   m2_p1.gradient() += m2_p1_grad;
   m2_p2.gradient() += m2_p2_grad;
   m2_p3.gradient() += m2_p3_grad;
   m4_p1.gradient() += m4_p1_grad;
   m1.add_gradients(m2);
-  ASSERT_TRUE(vector_match(m2_p1_grad_values, m1_p1.gradient().to_vector()));
-  ASSERT_TRUE(vector_match(m2_p2_grad_values, m1_p2.gradient().to_vector()));
-  ASSERT_TRUE(vector_match(m4_p1_grad_values, m3_p1.gradient().to_vector()));
+  EXPECT_TRUE(vector_match(m2_p1_grad_values, m1_p1.gradient().to_vector()));
+  EXPECT_TRUE(vector_match(m2_p2_grad_values, m1_p2.gradient().to_vector()));
+  EXPECT_TRUE(vector_match(m4_p1_grad_values, m3_p1.gradient().to_vector()));
 
   m1.add_gradients(m2);
   m1.add_gradients(m2);
-  ASSERT_TRUE(vector_match((m2_p1_grad * 3).to_vector(), m1_p1.gradient().to_vector()));
-  ASSERT_TRUE(vector_match((m2_p2_grad * 3).to_vector(), m1_p2.gradient().to_vector()));
-  ASSERT_TRUE(vector_match((m4_p1_grad * 3).to_vector(), m3_p1.gradient().to_vector()));
+  EXPECT_TRUE(vector_match((m2_p1_grad * 3).to_vector(), m1_p1.gradient().to_vector()));
+  EXPECT_TRUE(vector_match((m2_p2_grad * 3).to_vector(), m1_p2.gradient().to_vector()));
+  EXPECT_TRUE(vector_match((m4_p1_grad * 3).to_vector(), m3_p1.gradient().to_vector()));
+}
+
+TEST_F(ModelTest, CheckCopy) {
+  Model m1, m2, m3, m4;
+  devices::Naive dev2;
+  Parameter m1_p1 {{2, 2}, {1, 2, 3, 4}};
+  Parameter m1_p2 {{3, 2}, {19, 19, 19, 19, 19, 19}};
+  Parameter m2_p3 {{4, 2}, {4, 4, 4, 4, 4, 4, 4, 4}};
+  Parameter m3_p1 {{2, 2}, {0, 0, 0, 0}, dev2};
+  Parameter m3_p2 {{3, 2}, {0, 0, 0, 0, 0, 0}, dev2};
+  Parameter m4_p3 {{4, 2}, {0, 0, 0, 0, 0, 0, 0, 0}, dev2};
+  m1.add("p1", m1_p1);
+  m1.add("p2", m1_p2);
+  m2.add("p3", m2_p3);
+  m1.add("sm", m2);
+  m3.add("p1", m3_p1);
+  m3.add("p2", m3_p2);
+  m4.add("p3", m4_p3);
+  m3.add("sm", m4);
+  EXPECT_FALSE(vector_match(m1_p1.value().to_vector(), m3_p1.value().to_vector()));
+  EXPECT_FALSE(vector_match(m1_p2.value().to_vector(), m3_p2.value().to_vector()));
+  EXPECT_FALSE(vector_match(m2_p3.value().to_vector(), m4_p3.value().to_vector()));
+
+  ASSERT_NO_THROW(m1.copy(m3));
+  EXPECT_TRUE(vector_match(m1_p1.value().to_vector(), m3_p1.value().to_vector()));
+  EXPECT_TRUE(vector_match(m1_p2.value().to_vector(), m3_p2.value().to_vector()));
+  EXPECT_TRUE(vector_match(m2_p3.value().to_vector(), m4_p3.value().to_vector()));
+
+  m1_p1.value() *= 1.5;
+  EXPECT_FALSE(vector_match(m1_p1.value().to_vector(), m3_p1.value().to_vector()));
+  ASSERT_NO_THROW(m1.copy(m3));
+  EXPECT_TRUE(vector_match(m1_p1.value().to_vector(), m3_p1.value().to_vector()));
+
+  Parameter p4;
+  m3.add("p4", p4);
+  ASSERT_NO_THROW(m1.copy(m3));
+
+  Parameter p5;
+  m1.add("p5", p5);
+  ASSERT_THROW(m1.copy(m3), Error);
+
+  Model m5, m6;
+  m5.add("p", m3_p1);
+  m6.add("p", m3_p2);
+  ASSERT_THROW(m5.copy(m6), Error);
 }
 
 TEST_F(ModelTest, CheckSaveLoad_Same) {

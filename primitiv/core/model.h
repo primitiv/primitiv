@@ -75,6 +75,12 @@ public:
   }
 
   /**
+   * Copies all parameters to another model.
+   * @param dest Destination model into which the source model is copied.
+   */
+  void copy(Model &dest) const;
+
+  /**
    * Registers a new parameter.
    * @param name Name of the parameter.
    * @param param Reference to the parameter.
@@ -241,6 +247,7 @@ public:
 
   /**
    * Accumulates gradients from the source model.
+   * @param model Source model to retrieve parameters.
    */
   void add_gradients(const Model &model);
 
