@@ -30,7 +30,7 @@ MemoryPool::~MemoryPool() {
   release_reserved_blocks();
 }
 
-std::shared_ptr<void> MemoryPool::allocate(std::size_t size) {
+std::shared_ptr<void> MemoryPool::allocate(std::size_t size, std::size_t * const allocated_size) {
   static_assert(sizeof(std::size_t) <= sizeof(std::uint64_t), "");
 
   if (size == 0) return std::shared_ptr<void>();
@@ -40,17 +40,18 @@ std::shared_ptr<void> MemoryPool::allocate(std::size_t size) {
   if (shift > MAX_SHIFTS) PRIMITIV_THROW_ERROR("Invalid memory size: " << size);
 
   void *ptr;
+  std::size_t mem_size = 1ull << shift;
   if (reserved_[shift].empty()) {
     // Allocates a new block.
     try {
-      ptr = allocator_(1ull << shift);
+      ptr = allocator_(mem_size);
     } catch (...) {
       // Maybe out-of-memory.
       // Release other blocks and try allocation again.
       release_reserved_blocks();
       // Below allocation may throw an error when the memory allocation
       // process finally failed.
-      ptr = allocator_(1ull << shift);
+      ptr = allocator_(mem_size);
     }
     supplied_.emplace(ptr, shift);
   } else {
@@ -58,6 +59,14 @@ std::shared_ptr<void> MemoryPool::allocate(std::size_t size) {
     ptr = reserved_[shift].back();
     reserved_[shift].pop_back();
     supplied_.emplace(ptr, shift);
+  }
+
+  if (mem_size < size) {
+    PRIMITIV_THROW_ERROR(
+        "Could not allocate memory: requested = " << size << ", allocated = " << mem_size);
+  }
+  if (allocated_size) {
+      *allocated_size = mem_size;
   }
 
   return std::shared_ptr<void>(ptr, Deleter(id()));

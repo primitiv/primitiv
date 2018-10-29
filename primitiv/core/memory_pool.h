@@ -56,7 +56,17 @@ public:
    * @param size Size of the resulting memory.
    * @return Shared pointer of the allocated memory.
    */
-  std::shared_ptr<void> allocate(std::size_t size);
+  std::shared_ptr<void> allocate(std::size_t size) {
+    return allocate(size, nullptr);
+  }
+
+  /**
+   * Allocates a memory.
+   * @param size Size of the resulting memory.
+   * @param allocated_size Actual allocated memory size.
+   * @return Shared pointer of the allocated memory.
+   */
+  std::shared_ptr<void> allocate(std::size_t size, std::size_t * const allocated_size);
 
 private:
   /**

@@ -7,12 +7,12 @@
 namespace primitiv {
 namespace devices {
 
-std::shared_ptr<void> CUDA16::new_handle(const Shape &shape) {
+std::shared_ptr<void> CUDA16::new_handle(const Shape &shape, std::size_t * const allocated_size) {
   // NOTE(odashi):
   // Always acquires multiple-of-2 values to enable packed operation.
   std::size_t size = shape.size();
   size += size & 1;
-  return state_->pool.allocate(sizeof(half) * size);
+  return state_->pool.allocate(sizeof(half) * size, allocated_size);
 }
 
 }  // namespace devices

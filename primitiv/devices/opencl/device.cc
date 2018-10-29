@@ -605,8 +605,8 @@ void OpenCL::dump_description() const {
   std::cerr << std::endl;
 }
 
-std::shared_ptr<void> OpenCL::new_handle(const Shape &shape) {
-  return state_->pool.allocate(sizeof(float) * shape.size());
+std::shared_ptr<void> OpenCL::new_handle(const Shape &shape, std::size_t * const allocated_size) {
+  return state_->pool.allocate(sizeof(float) * shape.size(), allocated_size);
 }
 
 std::vector<float> OpenCL::tensor_to_vector_impl(const Tensor &x) {
