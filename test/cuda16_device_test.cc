@@ -121,6 +121,21 @@ TEST_F(CUDA16DeviceTest, CheckRandomBernoulliWithSeed) {
   }
 }
 
+TEST_F(CUDA16DeviceTest, CheckRandomBernoulliForOddElementsWithSeed) {
+  const vector<float> expected {
+    1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0,
+    1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,
+    0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0,
+  };
+  for (std::uint32_t dev_id : dev_ids) {
+    devices::CUDA16 dev(dev_id, 12345);
+    const Tensor x = dev.random_bernoulli(Shape({3, 3}, 7), 0.3);
+    EXPECT_TRUE(vector_match_ulps(
+          expected, x.to_vector(), get_default_ulps(dev)));
+  }
+}
+
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
 TEST_F(CUDA16DeviceTest, CheckRandomUniform) {
   vector<vector<float>> history;
@@ -156,6 +171,20 @@ TEST_F(CUDA16DeviceTest, CheckRandomUniformWithSeed) {
   for (std::uint32_t dev_id : dev_ids) {
     devices::CUDA16 dev(dev_id, 12345);
     const Tensor x = dev.random_uniform(Shape({2, 2}, 2), -9, 9);
+    EXPECT_TRUE(vector_match_ulps(
+          expected, x.to_vector(), get_default_ulps(dev)));
+  }
+}
+
+TEST_F(CUDA16DeviceTest, CheckRandomUniformForOddElementsWithSeed) {
+  const vector<float> expected {
+    -3.6198268e+00, 4.1064610e+00, -6.9007745e+00, 8.5519943e+00,
+    -7.7016129e+00, -4.6067810e+00, 8.7706423e+00, -4.9437490e+00,
+    -6.5142116e+00,
+  };
+  for (std::uint32_t dev_id : dev_ids) {
+    devices::CUDA16 dev(dev_id, 12345);
+    const Tensor x = dev.random_uniform(Shape({3}, 3), -9, 9);
     EXPECT_TRUE(vector_match_ulps(
           expected, x.to_vector(), get_default_ulps(dev)));
   }
