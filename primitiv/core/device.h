@@ -336,6 +336,14 @@ protected:
   }
 
   /**
+   * Returns the allocated memory size of a Tensor.
+   * @return Memory size.
+   */
+  static std::size_t allocated_size(const Tensor &x) {
+      return x.allocated_size();
+  }
+
+  /**
    * Reset internal values of the tensor using a constant.
    * @param k A value used to initialize each element.
    * @param x A tensor to be updated.

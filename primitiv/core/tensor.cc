@@ -57,12 +57,15 @@ void Tensor::reset_by_vector(const std::vector<float> &values) {
 
 Tensor Tensor::reshape(const Shape &new_shape) const {
   check_valid();
-  return Tensor(shape_ops::reshape(shape_, new_shape), *device_, handle_);
+  return Tensor(
+      shape_ops::reshape(shape_, new_shape),
+      *device_, handle_, allocated_size_);
 }
 
 Tensor Tensor::flatten() const {
   check_valid();
-  return Tensor(shape_ops::flatten(shape_), *device_, handle_);
+  return Tensor(
+      shape_ops::flatten(shape_), *device_, handle_, allocated_size_);
 }
 
 Tensor &Tensor::inplace_multiply_const(float k) {

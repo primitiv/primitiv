@@ -24,7 +24,8 @@ public:
   Tensor(Tensor &&src)
     : shape_(std::move(src.shape_))
     , device_(src.device_)
-    , handle_(std::move(src.handle_)) {
+    , handle_(std::move(src.handle_))
+    , allocated_size_(src.allocated_size_) {
       src.device_ = nullptr;
     }
 
@@ -35,6 +36,7 @@ public:
       shape_ = std::move(src.shape_);
       device_ = src.device_;
       handle_ = std::move(src.handle_);
+      allocated_size_ = src.allocated_size_;
       src.device_ = nullptr;
     }
     return *this;
@@ -43,7 +45,7 @@ public:
   /**
    * Creates an invalid Tensor.
    */
-  Tensor() : shape_(), device_(nullptr), handle_() {}
+  Tensor() : shape_(), device_(nullptr), handle_(), allocated_size_(0) {}
 
   /**
    * Check whether the object is valid or not.
@@ -119,6 +121,7 @@ public:
     // Not necessary to update `shape_` because it is never accessed anywhere.
     //shape_ = Shape();
     handle_.reset();
+    allocated_size_ = 0;
     device_ = nullptr;
   }
 
@@ -186,12 +189,14 @@ private:
    * @param shape Shape of the new Tensor.
    * @param device Device object to manage the internal memory.
    * @param handle Pointer of the device-specific object.
+   * @param allocated_size Allocated memory size.
    */
   template <typename ShapeT, typename SharedPtrT>
-  Tensor(ShapeT &&shape, Device &device, SharedPtrT &&handle)
+  Tensor(ShapeT &&shape, Device &device, SharedPtrT &&handle, size_t allocated_size)
     : shape_(std::forward<ShapeT>(shape))
     , device_(&device)
-    , handle_(std::forward<SharedPtrT>(handle)) {}
+    , handle_(std::forward<SharedPtrT>(handle))
+    , allocated_size_(allocated_size) {}
 
   /**
    * Returns the raw const-pointer of the internal memory.
@@ -208,9 +213,16 @@ private:
    */
   void *mutable_handle();
 
+  /**
+   * Returns the size of the allocated memory to store values.
+   * @return Memory size.
+   */
+  std::size_t allocated_size() const { return allocated_size_; }
+
   Shape shape_;
   Device *device_;
   std::shared_ptr<void> handle_;
+  std::size_t allocated_size_;
 };
 
 }  // namespace primitiv
