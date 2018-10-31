@@ -61,14 +61,9 @@ std::shared_ptr<void> MemoryPool::allocate(std::size_t size, std::size_t * const
     supplied_.emplace(ptr, shift);
   }
 
-  if (mem_size < size) {
-    PRIMITIV_THROW_ERROR(
-        "Could not allocate memory: requested = " << size << ", allocated = " << mem_size);
-  }
   if (allocated_size) {
       *allocated_size = mem_size;
   }
-
   return std::shared_ptr<void>(ptr, Deleter(id()));
 }
 
