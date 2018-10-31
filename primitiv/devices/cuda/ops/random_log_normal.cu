@@ -10,7 +10,7 @@ namespace devices {
 void CUDA::random_log_normal_impl(float mean, float sd, Tensor &y) {
   std::size_t size = y.shape().size();
   if (size % 2 != 0) {
-    std::size_t capacity = allocated_size(y) / sizeof(float);
+    std::size_t capacity = y.allocated_size() / sizeof(float);
     if (capacity <= size) {
       PRIMITIV_THROW_ERROR(
           "Could not generate " << size

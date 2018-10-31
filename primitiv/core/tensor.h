@@ -84,6 +84,12 @@ public:
   }
 
   /**
+   * Returns the size of the allocated memory to store values.
+   * @return Memory size.
+   */
+  std::size_t allocated_size() const { return allocated_size_; }
+
+  /**
    * Retrieves one internal value in the tensor.
    * @return An internal float value.
    * @remarks This function can be used only when the tensor is a scalar and
@@ -212,12 +218,6 @@ private:
    * @return Pointer of the internal memory.
    */
   void *mutable_handle();
-
-  /**
-   * Returns the size of the allocated memory to store values.
-   * @return Memory size.
-   */
-  std::size_t allocated_size() const { return allocated_size_; }
 
   Shape shape_;
   Device *device_;
