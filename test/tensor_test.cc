@@ -117,6 +117,8 @@ TEST_F(TensorTest, CheckAllocatedSize) {
       EXPECT_EQ(dev, &y.device());
       EXPECT_TRUE(vector_match(data, y.to_vector()));
       EXPECT_GE(y.allocated_size(), required_memsize);
+      y.invalidate();
+      EXPECT_EQ(y.allocated_size(), 0);
     }
   }
 }
