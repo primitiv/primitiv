@@ -94,6 +94,33 @@ TEST_F(TensorTest, CheckNewMatrixMinibatchWithData) {
   }
 }
 
+TEST_F(TensorTest, CheckAllocatedSize) {
+  vector<float> data;
+  for (std::uint32_t i = 1; i <= 10; ++i) {
+    data.emplace_back(2.0 * i);
+    for (Device *dev : devices) {
+      // NOTE(chantera):
+      // sizeof(half) is assumed to be sizeof(float) / 2.
+      const std::size_t required_memsize
+        = dev->type() == DeviceType::CUDA16 ? i * (sizeof(float) / 2) : i * sizeof(float);
+      Tensor x = dev->new_tensor_by_vector({i}, data);
+      EXPECT_TRUE(x.valid());
+      EXPECT_EQ(dev, &x.device());
+      EXPECT_TRUE(vector_match(data, x.to_vector()));
+      EXPECT_GE(x.allocated_size(), required_memsize);
+
+      Tensor y;
+      EXPECT_FALSE(y.valid());
+      EXPECT_EQ(y.allocated_size(), 0);
+      y = std::move(x);
+      EXPECT_TRUE(y.valid());
+      EXPECT_EQ(dev, &y.device());
+      EXPECT_TRUE(vector_match(data, y.to_vector()));
+      EXPECT_GE(y.allocated_size(), required_memsize);
+    }
+  }
+}
+
 TEST_F(TensorTest, CheckMoveValidToNew) {
   for (Device *dev : devices) {
     Tensor tmp = dev->new_tensor_by_vector(Shape({2}, 3), {1, 2, 3, 4, 5, 6});
