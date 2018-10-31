@@ -33,6 +33,9 @@ MemoryPool::~MemoryPool() {
 std::shared_ptr<void> MemoryPool::allocate(std::size_t size, std::size_t * const allocated_size) {
   static_assert(sizeof(std::size_t) <= sizeof(std::uint64_t), "");
 
+  if (allocated_size) {
+    *allocated_size = 0;
+  }
   if (size == 0) return std::shared_ptr<void>();
 
   static const std::uint64_t MAX_SHIFTS = 63;
@@ -62,7 +65,7 @@ std::shared_ptr<void> MemoryPool::allocate(std::size_t size, std::size_t * const
   }
 
   if (allocated_size) {
-      *allocated_size = mem_size;
+    *allocated_size = mem_size;
   }
   return std::shared_ptr<void>(ptr, Deleter(id()));
 }

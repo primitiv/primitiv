@@ -103,6 +103,27 @@ TEST_F(MemoryPoolTest_CUDA, CheckAllocate) {
   }
 }
 
+TEST_F(MemoryPoolTest_CUDA, CheckAllocatedSize) {
+  MemoryPool pool(allocator, deleter);
+  ::cudaDeviceProp prop;
+  CUDA_CALL(::cudaGetDeviceProperties(&prop, 0));
+
+  std::size_t allocated_size = 1llu;
+  EXPECT_NO_THROW(pool.allocate(0, &allocated_size));
+  EXPECT_EQ(0, allocated_size);
+
+  std::size_t size = 1llu;
+  while (size < prop.totalGlobalMem) {
+     ASSERT_NO_THROW(pool.allocate(size, &allocated_size));
+     EXPECT_EQ(size, allocated_size);
+     size <<= 1;
+  }
+
+  EXPECT_GT(allocated_size, 0);
+  EXPECT_THROW(pool.allocate(size << 1, &allocated_size), Error);
+  EXPECT_EQ(0, allocated_size);
+}
+
 TEST_F(MemoryPoolTest_CUDA, CheckInvalidAllocate) {
   MemoryPool pool(allocator, deleter);
 
