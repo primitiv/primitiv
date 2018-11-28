@@ -188,6 +188,15 @@ endif()
 
 # Build rules of the OpenCL backend.
 if(PRIMITIV_USE_OPENCL)
+  # Common files
+  file(GLOB primitiv_cuda_internal_HDRS "internal/opencl/*.h")
+  # devices::OpenCL
+  file(GLOB primitiv_opencl_HDRS "devices/opencl/*.h")
+  file(GLOB primitiv_opencl_SRCS "devices/opencl/*.cc")
+  file(GLOB primitiv_opencl_ops_SRCS "devices/opencl/ops/*.cc")
+  file(GLOB primitiv_opencl_kernels_SRCS "devices/opencl/kernels/*.cl")
+  list(REMOVE_ITEM primitiv_opencl_kernels_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/devices/opencl/kernels/common.cl")
+
   # Generates an embedded byte array of OpenCL kernels.
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/devices/opencl/kernels.inc
@@ -195,16 +204,17 @@ if(PRIMITIV_USE_OPENCL)
       ${CMAKE_COMMAND}
       -P
       ${PROJECT_SOURCE_DIR}/cmake/generate_char_array.cmake
-      ${CMAKE_CURRENT_SOURCE_DIR}/devices/opencl/kernels.cl
       ${CMAKE_CURRENT_BINARY_DIR}/devices/opencl/kernels.inc
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/devices/opencl/kernels.cl
+      ${CMAKE_CURRENT_SOURCE_DIR}/devices/opencl/kernels/common.cl
+      ${primitiv_opencl_kernels_SRCS}
+    DEPENDS
+      ${primitiv_opencl_kernels_SRCS}
+      ${CMAKE_CURRENT_SOURCE_DIR}/devices/opencl/kernels/common.cl
   )
   add_custom_target(primitiv_opencl_KERNELS DEPENDS
     ${CMAKE_CURRENT_BINARY_DIR}/devices/opencl/kernels.inc
   )
 
-  file(GLOB primitiv_opencl_HDRS "devices/opencl/*.h")
-  file(GLOB primitiv_opencl_SRCS "devices/opencl/*.cc")
   install(
     FILES ${primitiv_opencl_HDRS} DESTINATION include/primitiv/devices/opencl)
 
@@ -212,6 +222,7 @@ if(PRIMITIV_USE_OPENCL)
     ${primitiv_core_HDRS}
     ${primitiv_opencl_HDRS}
     ${primitiv_opencl_SRCS}
+    ${primitiv_opencl_ops_SRCS}
   )
   add_dependencies(primitiv_opencl_OBJS primitiv_opencl_KERNELS)
 
