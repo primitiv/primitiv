@@ -98,8 +98,10 @@ private:
 
 public:
   OpenCLInternalState(
-      std::uint32_t pf_id, std::uint32_t dev_id, std::uint32_t rng_seed)
+      std::uint32_t pf_id, std::uint32_t dev_id, std::uint32_t rng_seed,
+      const OpenCLKernelParameters &kernel_params)
     : randomizer_(rng_seed)
+    , kernel_params_(kernel_params)
     , device(::get_device(pf_id, dev_id))
     , context({ device })
     , queue(context, device, 0)
@@ -125,9 +127,13 @@ public:
     }
 
   void initialize_kernel(OpenCLKernel &kernel, std::string source, const char* name) {
+    std::stringstream build_options;
+    for (auto &param : kernel_params_.get_parameters(name)) {
+      build_options << " -D" << param.first << "=" << param.second;
+    }
     cl::Program program(context, source);
     try {
-      program.build({ device });
+      program.build({ device }, build_options.str().c_str());
     } catch (...) {
       PRIMITIV_THROW_ERROR(
           "OpenCL kernel compile error:" << std::endl
@@ -139,6 +145,7 @@ public:
   }
 
   DefaultRandomizer randomizer_;
+  OpenCLKernelParameters kernel_params_;
   cl::Device device;
   cl::Context context;
   cl::CommandQueue queue;

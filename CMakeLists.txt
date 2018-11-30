@@ -8,6 +8,7 @@ option(PRIMITIV_BUILD_C_API "Builds C API corresponding to the core library." OF
 option(PRIMITIV_BUILD_STATIC_LIBRARY "Builds static library." OFF)
 option(PRIMITIV_BUILD_TESTS "Builds test binaries." OFF)
 option(PRIMITIV_BUILD_TESTS_PROBABILISTIC "Builds test cases that probabilistically fails." OFF)
+option(PRIMITIV_BUILD_TUNERS "Builds tuner binaries." OFF)
 option(PRIMITIV_GTEST_SOURCE_DIR "Source directory of Google Test library." "")
 option(PRIMITIV_USE_CACHE "Enables cached values in some functions but needs more memory." OFF)
 option(PRIMITIV_USE_EIGEN "Enables the Eigen backend." OFF)
@@ -66,4 +67,9 @@ add_subdirectory(primitiv)
 if(PRIMITIV_BUILD_TESTS)
   enable_testing()
   add_subdirectory(test)
+endif()
+
+# tuners
+if(PRIMITIV_BUILD_TUNERS)
+  add_subdirectory(tuner)
 endif()

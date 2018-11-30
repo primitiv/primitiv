@@ -64,7 +64,7 @@ void OpenCL::assert_support(
 
 void OpenCL::initialize() {
   assert_support(pf_id_, dev_id_);
-  state_.reset(new OpenCLInternalState(pf_id_, dev_id_, rng_seed_));
+  state_.reset(new OpenCLInternalState(pf_id_, dev_id_, rng_seed_, kernel_params_));
 }
 
 OpenCL::OpenCL(std::uint32_t platform_id, std::uint32_t device_id)
@@ -79,6 +79,16 @@ OpenCL::OpenCL(
 : pf_id_(platform_id)
 , dev_id_(device_id)
 , rng_seed_(rng_seed) {
+  initialize();
+}
+
+OpenCL::OpenCL(
+    std::uint32_t platform_id, std::uint32_t device_id, std::uint32_t rng_seed,
+    const OpenCLKernelParameters &kernel_params)
+: pf_id_(platform_id)
+, dev_id_(device_id)
+, rng_seed_(rng_seed)
+, kernel_params_(kernel_params) {
   initialize();
 }
 

@@ -1,14 +1,58 @@
 #ifndef PRIMITIV_DEVICES_OPENCL_DEVICE_H_
 #define PRIMITIV_DEVICES_OPENCL_DEVICE_H_
 
+#include <fstream>
 #include <memory>
 
 #include <primitiv/core/device.h>
+#include <primitiv/msgpack/reader.h>
+#include <primitiv/msgpack/writer.h>
 
 namespace primitiv {
 namespace devices {
 
 struct OpenCLInternalState;
+
+class OpenCLKernelParameters {
+
+public:
+  OpenCLKernelParameters() = default;
+
+  void load(std::string path) {
+    std::ifstream ifs(path);
+    if (!ifs.is_open()) {
+      PRIMITIV_THROW_ERROR("Could not open file: " << path);
+    }
+    msgpack::Reader reader(ifs);
+
+    reader >> parameters_;
+  }
+
+  void save(std::string path) {
+    std::ofstream ofs(path);
+    if (!ofs.is_open()) {
+      PRIMITIV_THROW_ERROR("Could not open file: " << path);
+    }
+    msgpack::Writer writer(ofs);
+
+    writer << parameters_;
+  }
+
+  void set_parameter(std::string function, std::string name, std::size_t value) {
+    parameters_[function][name] = value;
+  }
+
+  void set_parameters(std::string function, const std::unordered_map<std::string, std::size_t> &params) {
+    parameters_[function] = params;
+  }
+
+  std::unordered_map<std::string, std::size_t> &get_parameters(std::string function) {
+    return parameters_[function];
+  }
+
+private:
+  std::unordered_map<std::string, std::unordered_map<std::string, std::size_t>> parameters_;
+};
 
 /**
  * Device class for OpenCL.
@@ -67,6 +111,15 @@ public:
    * @param rng_seed Seed value of the random number generator.
    */
   OpenCL(std::uint32_t platform_id, std::uint32_t device_id, std::uint32_t rng_seed);
+
+  /**
+   * Creates a new OpenCL device.
+   * @param platform_id Platform ID.
+   * @param device_id Device ID on the selected platform.
+   * @param rng_seed Seed value of the random number generator.
+   * @param kernel_params Parameters of OpenCL kernels.
+   */
+  OpenCL(std::uint32_t platform_id, std::uint32_t device_id, std::uint32_t rng_seed, const OpenCLKernelParameters &kernel_params);
 
   ~OpenCL() override;
 
@@ -249,6 +302,7 @@ private:
   std::uint32_t pf_id_;
   std::uint32_t dev_id_;
   std::uint32_t rng_seed_;
+  OpenCLKernelParameters kernel_params_;
   std::unique_ptr<OpenCLInternalState> state_;
 };
 
