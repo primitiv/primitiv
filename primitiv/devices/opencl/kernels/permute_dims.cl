@@ -1,4 +1,9 @@
-kernel void permute_dims_fw_kernel(
+#ifndef GROUP_SIZE
+  #define GROUP_SIZE 64
+#endif
+
+kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
+void permute_dims_fw_kernel(
     const global float *px, const unsigned ndims, constant unsigned *x_strides,
     constant unsigned *y_strides, const unsigned size, global float *py) {
   const unsigned i = get_global_id(0);
@@ -18,7 +23,8 @@ kernel void permute_dims_fw_kernel(
   }
 }
 
-kernel void permute_dims_bw_kernel(
+kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
+void permute_dims_bw_kernel(
     const global float *py, const unsigned ndims, constant unsigned *x_strides,
     constant unsigned *y_strides, const unsigned size, global float *px) {
   const unsigned i = get_global_id(0);

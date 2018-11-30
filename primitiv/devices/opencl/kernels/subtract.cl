@@ -1,14 +1,19 @@
+#ifndef GROUP_SIZE
+  #define GROUP_SIZE 64
+#endif
+
 inline float inline_sub(const float a, const float b) { return a - b; }
 
-OPENCLDEV_KERNEL_FW_X_CONST(subtract_const_r, px[i] - k)
-OPENCLDEV_KERNEL_FW_X_CONST(subtract_const_l, k - px[i])
-OPENCLDEV_KERNEL_BW_X_CONST(subtract_const_r, pgy[i])
-OPENCLDEV_KERNEL_BW_X_CONST(subtract_const_l, -pgy[i])
-OPENCLDEV_KERNEL_FW_X_SCALAR_R(subtract_scalar_r, inline_sub)
-OPENCLDEV_KERNEL_FW_X_SCALAR_L(subtract_scalar_l, inline_sub)
-OPENCLDEV_KERNEL_FW_AB(subtract, inline_sub)
+OPENCLDEV_KERNEL_FW_X_CONST(subtract_const_r, px[i] - k, GROUP_SIZE)
+OPENCLDEV_KERNEL_FW_X_CONST(subtract_const_l, k - px[i], GROUP_SIZE)
+OPENCLDEV_KERNEL_BW_X_CONST(subtract_const_r, pgy[i], GROUP_SIZE)
+OPENCLDEV_KERNEL_BW_X_CONST(subtract_const_l, -pgy[i], GROUP_SIZE)
+OPENCLDEV_KERNEL_FW_X_SCALAR_R(subtract_scalar_r, inline_sub, GROUP_SIZE)
+OPENCLDEV_KERNEL_FW_X_SCALAR_L(subtract_scalar_l, inline_sub, GROUP_SIZE)
+OPENCLDEV_KERNEL_FW_AB(subtract, inline_sub, GROUP_SIZE)
 
-kernel void subtract_bw_kernel(
+kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
+void subtract_bw_kernel(
     const global float *pa, const global float *pb,
     const global float *py, const global float *pgy,
     const unsigned size, const unsigned mba, const unsigned mbb,

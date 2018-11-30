@@ -1,11 +1,17 @@
-kernel void slice_fw_kernel(
+#ifndef GROUP_SIZE
+  #define GROUP_SIZE 64
+#endif
+
+kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
+void slice_fw_kernel(
     const global float *px, const unsigned shift, const unsigned span,
     const unsigned skip, const unsigned size, global float *py) {
   const unsigned i = get_global_id(0);
   if (i < size) py[i] = px[(i / span) * skip + (i % span) + shift];
 }
 
-kernel void slice_bw_kernel(
+kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
+void slice_bw_kernel(
     const global float *pgy, const unsigned wx, const unsigned wy,
     const unsigned nx, const unsigned ny,
     global float *pgx, const unsigned shift) {

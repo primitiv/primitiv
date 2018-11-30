@@ -5,133 +5,115 @@
 #define MDATA(x) (*static_cast<cl::Buffer *>(get_mutable_handle(x)))
 
 #define OPENCLDEV_FW_X(name) \
-void OpenCL::name##_fw_impl(const Tensor &x, Tensor &y) { \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = ::calc_num_blocks( \
-      size, state_->name##_fw_group_size); \
-  state_->name##_fw_kernel.setArg(0, CDATA(x)); \
-  state_->name##_fw_kernel.setArg(1, size); \
-  state_->name##_fw_kernel.setArg(2, MDATA(y)); \
+      size, state_->name##_fw_kernel.group_size()[0]); \
+  state_->name##_fw_kernel.kernel().setArg(0, CDATA(x)); \
+  state_->name##_fw_kernel.kernel().setArg(1, size); \
+  state_->name##_fw_kernel.kernel().setArg(2, MDATA(y)); \
   state_->queue.enqueueNDRangeKernel( \
-      state_->name##_fw_kernel, cl::NullRange, \
-      cl::NDRange(num_blocks * state_->name##_fw_group_size), \
-      cl::NDRange(state_->name##_fw_group_size)); \
-}
+      state_->name##_fw_kernel.kernel(), cl::NullRange, \
+      cl::NDRange(num_blocks * state_->name##_fw_kernel.group_size()[0]), \
+      cl::NDRange(state_->name##_fw_kernel.group_size()[0]));
 
 #define OPENCLDEV_BW_X(name) \
-void OpenCL::name##_bw_impl( \
-    const Tensor &x, const Tensor &y, const Tensor &gy, Tensor &gx) { \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = ::calc_num_blocks( \
-      size, state_->name##_bw_group_size); \
-  state_->name##_bw_kernel.setArg(0, CDATA(x)); \
-  state_->name##_bw_kernel.setArg(1, CDATA(y)); \
-  state_->name##_bw_kernel.setArg(2, CDATA(gy)); \
-  state_->name##_bw_kernel.setArg(3, size); \
-  state_->name##_bw_kernel.setArg(4, MDATA(gx)); \
+      size, state_->name##_bw_kernel.group_size()[0]); \
+  state_->name##_bw_kernel.kernel().setArg(0, CDATA(x)); \
+  state_->name##_bw_kernel.kernel().setArg(1, CDATA(y)); \
+  state_->name##_bw_kernel.kernel().setArg(2, CDATA(gy)); \
+  state_->name##_bw_kernel.kernel().setArg(3, size); \
+  state_->name##_bw_kernel.kernel().setArg(4, MDATA(gx)); \
   state_->queue.enqueueNDRangeKernel( \
-      state_->name##_bw_kernel, cl::NullRange, \
-      cl::NDRange(num_blocks * state_->name##_bw_group_size), \
-      cl::NDRange(state_->name##_bw_group_size)); \
-}
+      state_->name##_bw_kernel.kernel(), cl::NullRange, \
+      cl::NDRange(num_blocks * state_->name##_bw_kernel.group_size()[0]), \
+      cl::NDRange(state_->name##_bw_kernel.group_size()[0]));
 
 #define OPENCLDEV_FW_X_CONST(name) \
-void OpenCL::name##_fw_impl(const Tensor &x, float k, Tensor &y) { \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = ::calc_num_blocks( \
-      size, state_->name##_fw_group_size); \
-  state_->name##_fw_kernel.setArg(0, CDATA(x)); \
-  state_->name##_fw_kernel.setArg(1, k); \
-  state_->name##_fw_kernel.setArg(2, size); \
-  state_->name##_fw_kernel.setArg(3, MDATA(y)); \
+      size, state_->name##_fw_kernel.group_size()[0]); \
+  state_->name##_fw_kernel.kernel().setArg(0, CDATA(x)); \
+  state_->name##_fw_kernel.kernel().setArg(1, k); \
+  state_->name##_fw_kernel.kernel().setArg(2, size); \
+  state_->name##_fw_kernel.kernel().setArg(3, MDATA(y)); \
   state_->queue.enqueueNDRangeKernel( \
-      state_->name##_fw_kernel, cl::NullRange, \
-      cl::NDRange(num_blocks * state_->name##_fw_group_size), \
-      cl::NDRange(state_->name##_fw_group_size)); \
-}
+      state_->name##_fw_kernel.kernel(), cl::NullRange, \
+      cl::NDRange(num_blocks * state_->name##_fw_kernel.group_size()[0]), \
+      cl::NDRange(state_->name##_fw_kernel.group_size()[0]));
 
 #define OPENCLDEV_BW_X_CONST(name) \
-void OpenCL::name##_bw_impl( \
-    const Tensor &x, const Tensor &y, const Tensor &gy, float k, Tensor &gx) { \
   const std::uint32_t size = x.shape().size(); \
   const std::uint32_t num_blocks = ::calc_num_blocks( \
-      size, state_->name##_bw_group_size); \
-  state_->name##_bw_kernel.setArg(0, CDATA(x)); \
-  state_->name##_bw_kernel.setArg(1, CDATA(y)); \
-  state_->name##_bw_kernel.setArg(2, CDATA(gy)); \
-  state_->name##_bw_kernel.setArg(3, k); \
-  state_->name##_bw_kernel.setArg(4, size); \
-  state_->name##_bw_kernel.setArg(5, MDATA(gx)); \
+      size, state_->name##_bw_kernel.group_size()[0]); \
+  state_->name##_bw_kernel.kernel().setArg(0, CDATA(x)); \
+  state_->name##_bw_kernel.kernel().setArg(1, CDATA(y)); \
+  state_->name##_bw_kernel.kernel().setArg(2, CDATA(gy)); \
+  state_->name##_bw_kernel.kernel().setArg(3, k); \
+  state_->name##_bw_kernel.kernel().setArg(4, size); \
+  state_->name##_bw_kernel.kernel().setArg(5, MDATA(gx)); \
   state_->queue.enqueueNDRangeKernel( \
-      state_->name##_bw_kernel, cl::NullRange, \
-      cl::NDRange(num_blocks * state_->name##_bw_group_size), \
-      cl::NDRange(state_->name##_bw_group_size)); \
-}
+      state_->name##_bw_kernel.kernel(), cl::NullRange, \
+      cl::NDRange(num_blocks * state_->name##_bw_kernel.group_size()[0]), \
+      cl::NDRange(state_->name##_bw_kernel.group_size()[0]));
 
 #define OPENCLDEV_FW_X_SCALAR(name) \
-void OpenCL::name##_fw_impl(const Tensor &x, const Tensor &k, Tensor &y) { \
   const std::uint32_t size = y.shape().volume(); \
   const std::uint32_t g1 = ::calc_num_blocks( \
-      size, state_->name##_fw_group_size); \
+      size, state_->name##_fw_kernel.group_size()[0]); \
   const std::uint32_t g2 = y.shape().batch(); \
   const std::uint32_t mbx = x.shape().has_batch(); \
   const std::uint32_t mbk = k.shape().has_batch(); \
-  state_->name##_fw_kernel.setArg(0, CDATA(x)); \
-  state_->name##_fw_kernel.setArg(1, CDATA(k)); \
-  state_->name##_fw_kernel.setArg(2, size); \
-  state_->name##_fw_kernel.setArg(3, mbx); \
-  state_->name##_fw_kernel.setArg(4, mbk); \
-  state_->name##_fw_kernel.setArg(5, MDATA(y)); \
+  state_->name##_fw_kernel.kernel().setArg(0, CDATA(x)); \
+  state_->name##_fw_kernel.kernel().setArg(1, CDATA(k)); \
+  state_->name##_fw_kernel.kernel().setArg(2, size); \
+  state_->name##_fw_kernel.kernel().setArg(3, mbx); \
+  state_->name##_fw_kernel.kernel().setArg(4, mbk); \
+  state_->name##_fw_kernel.kernel().setArg(5, MDATA(y)); \
   state_->queue.enqueueNDRangeKernel( \
-      state_->name##_fw_kernel, cl::NullRange, \
-      cl::NDRange(g1 * state_->name##_fw_group_size, g2, 1), \
-      cl::NDRange(state_->name##_fw_group_size, 1, 1)); \
-}
+      state_->name##_fw_kernel.kernel(), cl::NullRange, \
+      cl::NDRange(g1 * state_->name##_fw_kernel.group_size()[0], g2, 1), \
+      cl::NDRange(state_->name##_fw_kernel.group_size()[0], 1, 1));
 
 #define OPENCLDEV_FW_AB(name) \
-void OpenCL::name##_fw_impl(const Tensor &a, const Tensor &b, Tensor &y) { \
   const std::uint32_t size = y.shape().volume(); \
   const std::uint32_t g1 = ::calc_num_blocks( \
-      size, state_->name##_fw_group_size); \
+      size, state_->name##_fw_kernel.group_size()[0]); \
   const std::uint32_t g2 = y.shape().batch(); \
   const std::uint32_t mba = a.shape().has_batch(); \
   const std::uint32_t mbb = b.shape().has_batch(); \
-  state_->name##_fw_kernel.setArg(0, CDATA(a)); \
-  state_->name##_fw_kernel.setArg(1, CDATA(b)); \
-  state_->name##_fw_kernel.setArg(2, size); \
-  state_->name##_fw_kernel.setArg(3, mba); \
-  state_->name##_fw_kernel.setArg(4, mbb); \
-  state_->name##_fw_kernel.setArg(5, MDATA(y)); \
+  state_->name##_fw_kernel.kernel().setArg(0, CDATA(a)); \
+  state_->name##_fw_kernel.kernel().setArg(1, CDATA(b)); \
+  state_->name##_fw_kernel.kernel().setArg(2, size); \
+  state_->name##_fw_kernel.kernel().setArg(3, mba); \
+  state_->name##_fw_kernel.kernel().setArg(4, mbb); \
+  state_->name##_fw_kernel.kernel().setArg(5, MDATA(y)); \
   state_->queue.enqueueNDRangeKernel( \
-      state_->name##_fw_kernel, cl::NullRange, \
-      cl::NDRange(g1 * state_->name##_fw_group_size, g2, 1), \
-      cl::NDRange(state_->name##_fw_group_size, 1, 1)); \
-}
+      state_->name##_fw_kernel.kernel(), cl::NullRange, \
+      cl::NDRange(g1 * state_->name##_fw_kernel.group_size()[0], g2, 1), \
+      cl::NDRange(state_->name##_fw_kernel.group_size()[0], 1, 1));
 
 #define OPENCLDEV_BW_AB(name) \
-void OpenCL::name##_bw_impl( \
-    const Tensor &a, const Tensor &b, const Tensor &y, const Tensor &gy, \
-    Tensor &ga, Tensor &gb) { \
   const std::uint32_t size = y.shape().volume(); \
   const std::uint32_t g1 = ::calc_num_blocks( \
-      size, state_->name##_bw_group_size); \
+      size, state_->name##_bw_kernel.group_size()[0]); \
   const std::uint32_t g2 = y.shape().batch(); \
   const std::uint32_t mba = a.shape().has_batch(); \
   const std::uint32_t mbb = b.shape().has_batch(); \
-  state_->name##_bw_kernel.setArg(0, CDATA(a)); \
-  state_->name##_bw_kernel.setArg(1, CDATA(b)); \
-  state_->name##_bw_kernel.setArg(2, CDATA(y)); \
-  state_->name##_bw_kernel.setArg(3, CDATA(gy)); \
-  state_->name##_bw_kernel.setArg(4, size); \
-  state_->name##_bw_kernel.setArg(5, mba); \
-  state_->name##_bw_kernel.setArg(6, mbb); \
-  state_->name##_bw_kernel.setArg(7, MDATA(ga)); \
-  state_->name##_bw_kernel.setArg(8, MDATA(gb)); \
+  state_->name##_bw_kernel.kernel().setArg(0, CDATA(a)); \
+  state_->name##_bw_kernel.kernel().setArg(1, CDATA(b)); \
+  state_->name##_bw_kernel.kernel().setArg(2, CDATA(y)); \
+  state_->name##_bw_kernel.kernel().setArg(3, CDATA(gy)); \
+  state_->name##_bw_kernel.kernel().setArg(4, size); \
+  state_->name##_bw_kernel.kernel().setArg(5, mba); \
+  state_->name##_bw_kernel.kernel().setArg(6, mbb); \
+  state_->name##_bw_kernel.kernel().setArg(7, MDATA(ga)); \
+  state_->name##_bw_kernel.kernel().setArg(8, MDATA(gb)); \
   state_->queue.enqueueNDRangeKernel( \
-      state_->name##_bw_kernel, cl::NullRange, \
-      cl::NDRange(g1 * state_->name##_bw_group_size, g2, 1), \
-      cl::NDRange(state_->name##_bw_group_size, 1, 1)); \
-}
+      state_->name##_bw_kernel.kernel(), cl::NullRange, \
+      cl::NDRange(g1 * state_->name##_bw_kernel.group_size()[0], g2, 1), \
+      cl::NDRange(state_->name##_bw_kernel.group_size()[0], 1, 1));
 
 namespace {
 

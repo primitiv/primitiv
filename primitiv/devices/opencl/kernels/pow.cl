@@ -1,12 +1,17 @@
-OPENCLDEV_KERNEL_FW_X_CONST(pow_const_r, pow(px[i], k))
-OPENCLDEV_KERNEL_FW_X_CONST(pow_const_l, pow(k, px[i]))
-OPENCLDEV_KERNEL_BW_X_CONST(pow_const_r, k * pgy[i] * py[i] / px[i])
-OPENCLDEV_KERNEL_BW_X_CONST(pow_const_l, log(k) * pgy[i] * py[i])
-OPENCLDEV_KERNEL_FW_X_SCALAR_R(pow_scalar_r, pow)
-OPENCLDEV_KERNEL_FW_X_SCALAR_L(pow_scalar_l, pow)
-OPENCLDEV_KERNEL_FW_AB(pow, pow)
+#ifndef GROUP_SIZE
+  #define GROUP_SIZE 64
+#endif
 
-kernel void pow_bw_kernel(
+OPENCLDEV_KERNEL_FW_X_CONST(pow_const_r, pow(px[i], k), GROUP_SIZE)
+OPENCLDEV_KERNEL_FW_X_CONST(pow_const_l, pow(k, px[i]), GROUP_SIZE)
+OPENCLDEV_KERNEL_BW_X_CONST(pow_const_r, k * pgy[i] * py[i] / px[i], GROUP_SIZE)
+OPENCLDEV_KERNEL_BW_X_CONST(pow_const_l, log(k) * pgy[i] * py[i], GROUP_SIZE)
+OPENCLDEV_KERNEL_FW_X_SCALAR_R(pow_scalar_r, pow, GROUP_SIZE)
+OPENCLDEV_KERNEL_FW_X_SCALAR_L(pow_scalar_l, pow, GROUP_SIZE)
+OPENCLDEV_KERNEL_FW_AB(pow, pow, GROUP_SIZE)
+
+kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
+void pow_bw_kernel(
     const global float *pa, const global float *pb,
     const global float *py, const global float *pgy,
     const unsigned size, const unsigned mba, const unsigned mbb,

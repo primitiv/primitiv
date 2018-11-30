@@ -188,33 +188,32 @@ endif()
 
 # Build rules of the OpenCL backend.
 if(PRIMITIV_USE_OPENCL)
+  # Generates an embedded byte array of OpenCL kernels.
+  file(GLOB primitiv_opencl_kernels_SRCS "devices/opencl/kernels/*.cl")
+  foreach (kernel_src IN LISTS primitiv_opencl_kernels_SRCS)
+    get_filename_component(kernel_name ${kernel_src} NAME_WE)
+    add_custom_command(
+      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/devices/opencl/kernels/${kernel_name}.inc
+      COMMAND
+        ${CMAKE_COMMAND}
+        -P
+        ${PROJECT_SOURCE_DIR}/cmake/generate_char_array.cmake
+        ${kernel_src}
+        ${CMAKE_CURRENT_BINARY_DIR}/devices/opencl/kernels/${kernel_name}.inc
+      DEPENDS
+        ${kernel_src}
+    )
+    list(APPEND kernel_src_inc_list ${CMAKE_CURRENT_BINARY_DIR}/devices/opencl/kernels/${kernel_name}.inc)
+  endforeach()
+  add_custom_target(primitiv_opencl_KERNELS DEPENDS
+    ${kernel_src_inc_list}
+  )
   # Common files
   file(GLOB primitiv_cuda_internal_HDRS "internal/opencl/*.h")
   # devices::OpenCL
   file(GLOB primitiv_opencl_HDRS "devices/opencl/*.h")
   file(GLOB primitiv_opencl_SRCS "devices/opencl/*.cc")
   file(GLOB primitiv_opencl_ops_SRCS "devices/opencl/ops/*.cc")
-  file(GLOB primitiv_opencl_kernels_SRCS "devices/opencl/kernels/*.cl")
-  list(REMOVE_ITEM primitiv_opencl_kernels_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/devices/opencl/kernels/common.cl")
-
-  # Generates an embedded byte array of OpenCL kernels.
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/devices/opencl/kernels.inc
-    COMMAND
-      ${CMAKE_COMMAND}
-      -P
-      ${PROJECT_SOURCE_DIR}/cmake/generate_char_array.cmake
-      ${CMAKE_CURRENT_BINARY_DIR}/devices/opencl/kernels.inc
-      ${CMAKE_CURRENT_SOURCE_DIR}/devices/opencl/kernels/common.cl
-      ${primitiv_opencl_kernels_SRCS}
-    DEPENDS
-      ${primitiv_opencl_kernels_SRCS}
-      ${CMAKE_CURRENT_SOURCE_DIR}/devices/opencl/kernels/common.cl
-  )
-  add_custom_target(primitiv_opencl_KERNELS DEPENDS
-    ${CMAKE_CURRENT_BINARY_DIR}/devices/opencl/kernels.inc
-  )
-
   install(
     FILES ${primitiv_opencl_HDRS} DESTINATION include/primitiv/devices/opencl)
 

@@ -1,4 +1,9 @@
-kernel void pick_fw_kernel(
+#ifndef GROUP_SIZE
+  #define GROUP_SIZE 64
+#endif
+
+kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
+void pick_fw_kernel(
     const global float *px, const global unsigned *pi,
     const unsigned wx, const unsigned wy, const unsigned sx,
     const unsigned si, const unsigned sy, global float *py) {
@@ -9,7 +14,8 @@ kernel void pick_fw_kernel(
   if (t < sy) py[oy + t] = px[ox + (t / wy) * wx + (t % wy)];
 }
 
-kernel void pick_bw_kernel(
+kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
+void pick_bw_kernel(
     const global float *pgy, const global unsigned *pi,
     const unsigned wx, const unsigned wy,
     const unsigned sx, const unsigned si, const unsigned sy,

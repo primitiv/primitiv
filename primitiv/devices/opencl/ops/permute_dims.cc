@@ -13,11 +13,16 @@ namespace devices {
 void OpenCL::permute_dims_fw_impl(
     const Tensor &x, const std::vector<std::uint32_t> &perm,
     Tensor &y) {
+  if (!state_->permute_dims_fw_kernel.initialized()) {
+    state_->initialize_kernel(state_->permute_dims_fw_kernel, std::string({
+#include "primitiv/devices/opencl/kernels/permute_dims.inc"
+    }), "permute_dims_fw_kernel");
+  }
   const std::uint32_t ndims = perm.size();
   const std::uint32_t bs = x.shape().batch();
   const std::uint32_t size = x.shape().volume();
   const std::uint32_t num_blocks = ::calc_num_blocks(
-      size, state_->permute_dims_fw_group_size);
+      size, state_->permute_dims_fw_kernel.group_size()[0]);
   std::vector<std::uint32_t> x_strides(ndims);
   std::vector<std::uint32_t> y_strides(ndims);
   std::uint32_t x_stride_tmp = 1;
@@ -36,26 +41,31 @@ void OpenCL::permute_dims_fw_impl(
     ::write_buffer(state_->queue, ::get_buffer(x_strides_buf), x_strides.data(), x_strides.size());
     ::write_buffer(state_->queue, ::get_buffer(y_strides_buf), y_strides.data(), y_strides.size());
   }
-  state_->permute_dims_fw_kernel.setArg(0, CDATA(x));
-  state_->permute_dims_fw_kernel.setArg(1, ndims);
-  state_->permute_dims_fw_kernel.setArg(2, ::get_buffer(x_strides_buf));
-  state_->permute_dims_fw_kernel.setArg(3, ::get_buffer(y_strides_buf));
-  state_->permute_dims_fw_kernel.setArg(4, size);
-  state_->permute_dims_fw_kernel.setArg(5, MDATA(y));
+  state_->permute_dims_fw_kernel.kernel().setArg(0, CDATA(x));
+  state_->permute_dims_fw_kernel.kernel().setArg(1, ndims);
+  state_->permute_dims_fw_kernel.kernel().setArg(2, ::get_buffer(x_strides_buf));
+  state_->permute_dims_fw_kernel.kernel().setArg(3, ::get_buffer(y_strides_buf));
+  state_->permute_dims_fw_kernel.kernel().setArg(4, size);
+  state_->permute_dims_fw_kernel.kernel().setArg(5, MDATA(y));
   state_->queue.enqueueNDRangeKernel(
-      state_->permute_dims_fw_kernel, cl::NullRange,
-      cl::NDRange(num_blocks * state_->transpose_fw_group_size, bs),
-      cl::NDRange(state_->permute_dims_fw_group_size, 1));
+      state_->permute_dims_fw_kernel.kernel(), cl::NullRange,
+      cl::NDRange(num_blocks * state_->permute_dims_fw_kernel.group_size()[0], bs),
+      cl::NDRange(state_->permute_dims_fw_kernel.group_size()[0], 1));
 }
 
 void OpenCL::permute_dims_bw_impl(
     const Tensor &, const Tensor &, const Tensor &gy,
     const std::vector<std::uint32_t> &perm, Tensor &gx) {
+  if (!state_->permute_dims_bw_kernel.initialized()) {
+    state_->initialize_kernel(state_->permute_dims_bw_kernel, std::string({
+#include "primitiv/devices/opencl/kernels/permute_dims.inc"
+    }), "permute_dims_bw_kernel");
+  }
   const std::uint32_t ndims = perm.size();
   const std::uint32_t bs = gx.shape().batch();
   const std::uint32_t size = gx.shape().volume();
   const std::uint32_t num_blocks = ::calc_num_blocks(
-      size, state_->permute_dims_bw_group_size);
+      size, state_->permute_dims_bw_kernel.group_size()[0]);
   std::vector<std::uint32_t> x_strides(ndims);
   std::vector<std::uint32_t> y_strides(ndims);
   std::uint32_t x_stride_tmp = 1;
@@ -74,16 +84,16 @@ void OpenCL::permute_dims_bw_impl(
     ::write_buffer(state_->queue, ::get_buffer(x_strides_buf), x_strides.data(), x_strides.size());
     ::write_buffer(state_->queue, ::get_buffer(y_strides_buf), y_strides.data(), y_strides.size());
   }
-  state_->permute_dims_bw_kernel.setArg(0, CDATA(gy));
-  state_->permute_dims_bw_kernel.setArg(1, ndims);
-  state_->permute_dims_bw_kernel.setArg(2, ::get_buffer(x_strides_buf));
-  state_->permute_dims_bw_kernel.setArg(3, ::get_buffer(y_strides_buf));
-  state_->permute_dims_bw_kernel.setArg(4, size);
-  state_->permute_dims_bw_kernel.setArg(5, MDATA(gx));
+  state_->permute_dims_bw_kernel.kernel().setArg(0, CDATA(gy));
+  state_->permute_dims_bw_kernel.kernel().setArg(1, ndims);
+  state_->permute_dims_bw_kernel.kernel().setArg(2, ::get_buffer(x_strides_buf));
+  state_->permute_dims_bw_kernel.kernel().setArg(3, ::get_buffer(y_strides_buf));
+  state_->permute_dims_bw_kernel.kernel().setArg(4, size);
+  state_->permute_dims_bw_kernel.kernel().setArg(5, MDATA(gx));
   state_->queue.enqueueNDRangeKernel(
-      state_->permute_dims_bw_kernel, cl::NullRange,
-      cl::NDRange(num_blocks * state_->transpose_bw_group_size, bs),
-      cl::NDRange(state_->permute_dims_bw_group_size, 1));
+      state_->permute_dims_bw_kernel.kernel(), cl::NullRange,
+      cl::NDRange(num_blocks * state_->permute_dims_bw_kernel.group_size()[0], bs),
+      cl::NDRange(state_->permute_dims_bw_kernel.group_size()[0], 1));
 }
 
 }  // namespace devices

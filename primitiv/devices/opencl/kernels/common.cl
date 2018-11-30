@@ -13,39 +13,44 @@ inline void atomic_add_float(global float *source, const float operand) {
   }
 }
 
-#define OPENCLDEV_KERNEL_FW_X(name, op) \
-kernel void name##_fw_kernel( \
+#define OPENCLDEV_KERNEL_FW_X(name, op, GROUP_SIZE) \
+kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1))) \
+void name##_fw_kernel( \
     const global float *px, const unsigned size, global float *py) { \
     const unsigned i = get_global_id(0); \
   if (i < size) py[i] = (op); \
 }
 
-#define OPENCLDEV_KERNEL_BW_X(name, op) \
-kernel void name##_bw_kernel( \
+#define OPENCLDEV_KERNEL_BW_X(name, op, GROUP_SIZE) \
+kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1))) \
+void name##_bw_kernel( \
     const global float *px, const global float *py, const global float *pgy, \
     const unsigned size, global float *pgx) { \
    const unsigned i = get_global_id(0); \
    if (i < size) pgx[i] += (op); \
 }
 
-#define OPENCLDEV_KERNEL_FW_X_CONST(name, op) \
-kernel void name##_fw_kernel( \
+#define OPENCLDEV_KERNEL_FW_X_CONST(name, op, GROUP_SIZE) \
+kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1))) \
+void name##_fw_kernel( \
     const global float *px, const float k, \
     const unsigned size, global float *py) { \
   const unsigned i = get_global_id(0); \
   if (i < size) py[i] = (op); \
  }
 
-#define OPENCLDEV_KERNEL_BW_X_CONST(name, op) \
-kernel void name##_bw_kernel( \
+#define OPENCLDEV_KERNEL_BW_X_CONST(name, op, GROUP_SIZE) \
+kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1))) \
+void name##_bw_kernel( \
     const global float *px, const global float *py, const global float *pgy, \
     const float k, const unsigned size, global float *pgx) { \
   const unsigned i = get_global_id(0); \
   if (i < size) pgx[i] += (op); \
 }
 
-#define OPENCLDEV_KERNEL_FW_X_SCALAR_R(name, op) \
-kernel void name##_fw_kernel( \
+#define OPENCLDEV_KERNEL_FW_X_SCALAR_R(name, op, GROUP_SIZE) \
+kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1))) \
+void name##_fw_kernel( \
     const global float *px, const global float *pk, const unsigned size, \
     const unsigned mbx, const unsigned mbk, global float *py) { \
   const unsigned i = get_global_id(0); \
@@ -56,8 +61,9 @@ kernel void name##_fw_kernel( \
   } \
 }
 
-#define OPENCLDEV_KERNEL_FW_X_SCALAR_L(name, op) \
-kernel void name##_fw_kernel( \
+#define OPENCLDEV_KERNEL_FW_X_SCALAR_L(name, op, GROUP_SIZE) \
+kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1))) \
+void name##_fw_kernel( \
     const global float *px, const global float *pk, const unsigned size, \
     const unsigned mbx, const unsigned mbk, global float *py) { \
   const unsigned i = get_global_id(0); \
@@ -68,8 +74,9 @@ kernel void name##_fw_kernel( \
   } \
 }
 
-#define OPENCLDEV_KERNEL_FW_AB(name, op) \
-kernel void name##_fw_kernel( \
+#define OPENCLDEV_KERNEL_FW_AB(name, op, GROUP_SIZE) \
+kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1))) \
+void name##_fw_kernel( \
     const global float *pa, const global float *pb, const unsigned size, \
     const unsigned mba, const unsigned mbb, global float *py) { \
   const unsigned i = get_global_id(0); \

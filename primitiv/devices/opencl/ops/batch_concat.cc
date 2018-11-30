@@ -8,19 +8,24 @@ namespace devices {
 
 void OpenCL::batch_concat_fw_impl(
     const std::vector<const Tensor *> &xs, Tensor &y) {
+  if (!state_->batch_concat_fw_kernel.initialized()) {
+    state_->initialize_kernel(state_->batch_concat_fw_kernel, std::string({
+#include "primitiv/devices/opencl/kernels/batch_concat.inc"
+    }), "batch_concat_fw_kernel");
+  }
   std::uint32_t offset = 0;
   for (const Tensor *x : xs) {
     const std::uint32_t span = x->shape().size();
     const std::uint32_t num_blocks = ::calc_num_blocks(
-        span, state_->batch_concat_fw_group_size);
-    state_->batch_concat_fw_kernel.setArg(0, CDATA(*x));
-    state_->batch_concat_fw_kernel.setArg(1, span);
-    state_->batch_concat_fw_kernel.setArg(2, MDATA(y));
-    state_->batch_concat_fw_kernel.setArg(3, offset);
+        span, state_->batch_concat_fw_kernel.group_size()[0]);
+    state_->batch_concat_fw_kernel.kernel().setArg(0, CDATA(*x));
+    state_->batch_concat_fw_kernel.kernel().setArg(1, span);
+    state_->batch_concat_fw_kernel.kernel().setArg(2, MDATA(y));
+    state_->batch_concat_fw_kernel.kernel().setArg(3, offset);
     state_->queue.enqueueNDRangeKernel(
-        state_->batch_concat_fw_kernel, cl::NullRange,
-        cl::NDRange(num_blocks * state_->batch_concat_fw_group_size),
-        cl::NDRange(state_->batch_concat_fw_group_size), nullptr, nullptr);
+        state_->batch_concat_fw_kernel.kernel(), cl::NullRange,
+        cl::NDRange(num_blocks * state_->batch_concat_fw_kernel.group_size()[0]),
+        cl::NDRange(state_->batch_concat_fw_kernel.group_size()[0]));
     offset += span;
   }
 }

@@ -1,11 +1,16 @@
+#ifndef GROUP_SIZE
+  #define GROUP_SIZE 64
+#endif
+
 inline float inline_mul(const float a, const float b) { return a * b; }
 
-OPENCLDEV_KERNEL_FW_X_CONST(multiply_const, px[i] * k)
-OPENCLDEV_KERNEL_BW_X_CONST(multiply_const, k * pgy[i])
-OPENCLDEV_KERNEL_FW_X_SCALAR_R(multiply_scalar, inline_mul)
-OPENCLDEV_KERNEL_FW_AB(multiply, inline_mul)
+OPENCLDEV_KERNEL_FW_X_CONST(multiply_const, px[i] * k, GROUP_SIZE)
+OPENCLDEV_KERNEL_BW_X_CONST(multiply_const, k * pgy[i], GROUP_SIZE)
+OPENCLDEV_KERNEL_FW_X_SCALAR_R(multiply_scalar, inline_mul, GROUP_SIZE)
+OPENCLDEV_KERNEL_FW_AB(multiply, inline_mul, GROUP_SIZE)
 
-kernel void multiply_bw_kernel(
+kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
+void multiply_bw_kernel(
     const global float *pa, const global float *pb,
     const global float *py, const global float *pgy,
     const unsigned size, const unsigned mba, const unsigned mbb,
