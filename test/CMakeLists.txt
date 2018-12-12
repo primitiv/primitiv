@@ -15,18 +15,16 @@ if(PRIMITIV_GTEST_SOURCE_DIR)
   ExternalProject_Add(
     GTest
     SOURCE_DIR ${PRIMITIV_GTEST_SOURCE_DIR}
+    BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
     INSTALL_COMMAND ""
+    TEST_COMMAND ""
   )
-  ExternalProject_Get_Property(GTest binary_dir)
-  add_library(gtest STATIC IMPORTED)
-  set_property(
-    TARGET gtest
-    PROPERTY IMPORTED_LOCATION ${binary_dir}/libgtest.a
-  )
-  add_library(gtest_main STATIC IMPORTED)
-  set_property(
-    TARGET gtest_main
-    PROPERTY IMPORTED_LOCATION ${binary_dir}/libgtest_main.a
+  add_subdirectory(
+    ${PRIMITIV_GTEST_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
+    EXCLUDE_FROM_ALL
   )
   set(GTEST_BOTH_LIBRARIES gtest gtest_main)
 else()
@@ -39,6 +37,7 @@ include_directories(
 )
 
 add_library(test_utils_OBJS OBJECT test_utils.h test_utils.cc)
+target_include_directories(test_utils_OBJS PUBLIC "${gtest_SOURCE_DIR}/include")
 
 function(primitiv_test name)
   add_executable(${name}_test
