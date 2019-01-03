@@ -26,6 +26,7 @@ public:
     , device_(src.device_)
     , handle_(std::move(src.handle_))
     , allocated_size_(src.allocated_size_) {
+      src.allocated_size_ = 0;
       src.device_ = nullptr;
     }
 
@@ -37,6 +38,7 @@ public:
       device_ = src.device_;
       handle_ = std::move(src.handle_);
       allocated_size_ = src.allocated_size_;
+      src.allocated_size_ = 0;
       src.device_ = nullptr;
     }
     return *this;
