@@ -135,9 +135,9 @@ TEST_F(MemoryPoolTest_CUDA, CheckAllocatedSize) {
      size <<= 1;
   }
 
-  EXPECT_GT(allocated_size, 0);
+  EXPECT_GT(allocated_size, 0u);
   EXPECT_THROW(pool.allocate(size << 1, &allocated_size), Error);
-  EXPECT_EQ(allocated_size, 0);
+  EXPECT_EQ(allocated_size, 0u);
 }
 
 TEST_F(MemoryPoolTest_CUDA, CheckAllocatedSizeWithMinimumSize) {

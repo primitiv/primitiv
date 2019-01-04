@@ -45,7 +45,7 @@ vector<Device *> TensorTest::devices;
     const std::size_t required_memsize = x.shape().size() * type_size; \
     EXPECT_GE(x.allocated_size(), required_memsize); \
   } else { \
-    EXPECT_EQ(x.allocated_size(), 0); \
+    EXPECT_EQ(x.allocated_size(), 0u); \
   } \
 }
 
@@ -129,14 +129,14 @@ TEST_F(TensorTest, CheckAllocatedSize) {
 
       Tensor y;
       EXPECT_FALSE(y.valid());
-      EXPECT_EQ(y.allocated_size(), 0);
+      EXPECT_EQ(y.allocated_size(), 0u);
       y = std::move(x);
       EXPECT_TRUE(y.valid());
       EXPECT_EQ(dev, &y.device());
       EXPECT_TRUE(vector_match(data, y.to_vector()));
       EXPECT_GE(y.allocated_size(), required_memsize);
       y.invalidate();
-      EXPECT_EQ(y.allocated_size(), 0);
+      EXPECT_EQ(y.allocated_size(), 0u);
     }
   }
 }
