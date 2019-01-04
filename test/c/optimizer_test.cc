@@ -155,7 +155,7 @@ TEST_F(COptimizerTest, CheckConfigs) {
   uint32_t uint_value = 0;
   EXPECT_EQ(PRIMITIV_C_OK, ::primitivGetOptimizerIntConfig(
       optimizer, "Optimizer.epoch", &uint_value));
-  EXPECT_EQ(2, uint_value);
+  EXPECT_EQ(2u, uint_value);
 
   uint_value = 0;
   EXPECT_EQ(PRIMITIV_C_OK, ::primitivGetOptimizerIntConfig(
@@ -167,7 +167,7 @@ TEST_F(COptimizerTest, CheckConfigs) {
   uint_value = 0;
   EXPECT_EQ(PRIMITIV_C_OK, ::primitivGetOptimizerIntConfig(
       optimizer, "Optimizer.epoch", &uint_value));
-  EXPECT_EQ(10, uint_value);
+  EXPECT_EQ(10u, uint_value);
 
   EXPECT_EQ(PRIMITIV_C_OK, ::primitivSetOptimizerIntConfig(
       optimizer, "foo", 50));
@@ -175,7 +175,7 @@ TEST_F(COptimizerTest, CheckConfigs) {
   uint_value = 1;
   EXPECT_EQ(PRIMITIV_C_OK, ::primitivGetOptimizerIntConfig(
       optimizer, "foo", &uint_value));
-  EXPECT_FLOAT_EQ(1, uint_value);
+  EXPECT_FLOAT_EQ(1u, uint_value);
 
   float float_value = 0.0;
   EXPECT_EQ(PRIMITIV_C_OK, ::primitivGetOptimizerFloatConfig(

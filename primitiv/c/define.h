@@ -35,13 +35,13 @@ typedef uint32_t PRIMITIV_C_BOOL;
  * Only substituting `PRIMITIV_C_TRUE` to `PRIMITIV_C_BOOL` variables is
  * allowed.
  */
-#define PRIMITIV_C_FALSE 0
-#define PRIMITIV_C_TRUE 1
+#define PRIMITIV_C_FALSE 0u
+#define PRIMITIV_C_TRUE 1u
 
 /*
  * Return codes.
  */
-typedef uint32_t PRIMITIV_C_STATUS;
+typedef int32_t PRIMITIV_C_STATUS;
 #define PRIMITIV_C_OK 0
 #define PRIMITIV_C_ERROR -1
 
