@@ -15,6 +15,7 @@
 
 using std::vector;
 using test_utils::get_default_ulps;
+using test_utils::float_eq;
 using test_utils::vector_match;
 using test_utils::vector_match_ulps;
 
@@ -244,6 +245,15 @@ TEST_F(CUDA16DeviceTest, CheckRandomNormalForOddElementsWithSeed) {
   }
 }
 
+TEST_F(CUDA16DeviceTest, CheckRandomNormalForOneElementWithSeed) {
+  for (std::uint32_t dev_id : dev_ids) {
+    devices::CUDA16 dev(dev_id, 12345);
+    const Tensor x = dev.random_normal({}, 1, 3);
+    EXPECT_TRUE(float_eq(
+          4.1702256e+00, x.to_float(), get_default_ulps(dev)));
+  }
+}
+
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
 TEST_F(CUDA16DeviceTest, CheckRandomLogNormal) {
   vector<vector<float>> history;
@@ -295,6 +305,15 @@ TEST_F(CUDA16DeviceTest, CheckRandomLogNormalForOddElementsWithSeed) {
     const Tensor x = dev.random_log_normal(Shape({3}, 3), 1, 3);
     EXPECT_TRUE(vector_match_ulps(
           expected, x.to_vector(), get_default_ulps(dev)));
+  }
+}
+
+TEST_F(CUDA16DeviceTest, CheckRandomLogNormalForOneElementWithSeed) {
+  for (std::uint32_t dev_id : dev_ids) {
+    devices::CUDA16 dev(dev_id, 12345);
+    const Tensor x = dev.random_log_normal({}, 1, 3);
+    EXPECT_TRUE(float_eq(
+          6.4730049e+01, x.to_float(), get_default_ulps(dev)));
   }
 }
 

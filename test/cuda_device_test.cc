@@ -236,6 +236,14 @@ TEST_F(CUDADeviceTest, CheckRandomNormalForOddElementsWithSeed) {
   }
 }
 
+TEST_F(CUDADeviceTest, CheckRandomNormalForOneElementWithSeed) {
+  for (std::uint32_t dev_id : dev_ids) {
+    devices::CUDA dev(dev_id, 12345);
+    const Tensor x = dev.random_normal({}, 1, 3);
+    EXPECT_FLOAT_EQ(4.1702256e+00, x.to_float());
+  }
+}
+
 #ifdef PRIMITIV_BUILD_TESTS_PROBABILISTIC
 TEST_F(CUDADeviceTest, CheckRandomLogNormal) {
   vector<vector<float>> history;
@@ -285,6 +293,14 @@ TEST_F(CUDADeviceTest, CheckRandomLogNormalForOddElementsWithSeed) {
     devices::CUDA dev(dev_id, 12345);
     const Tensor x = dev.random_log_normal(Shape({3}, 3), 1, 3);
     EXPECT_TRUE(vector_match(expected, x.to_vector()));
+  }
+}
+
+TEST_F(CUDADeviceTest, CheckRandomLogNormalForOneElementWithSeed) {
+  for (std::uint32_t dev_id : dev_ids) {
+    devices::CUDA dev(dev_id, 12345);
+    const Tensor x = dev.random_log_normal({}, 1, 3);
+    EXPECT_FLOAT_EQ(6.4730049e+01, x.to_float());
   }
 }
 
