@@ -38,16 +38,19 @@ class MemoryPool : public mixins::Identifiable<MemoryPool> {
   std::function<void(void *)> deleter_;
   std::vector<std::vector<void *>> reserved_;
   std::unordered_map<void *, std::uint32_t> supplied_;
+  std::size_t minimum_size_;
 
 public:
   /**
    * Creates a memory pool.
    * @param allocator Functor to allocate new memories.
    * @param deleter Functor to delete allocated memories.
+   * @param minimum_size Minimum size of the allocated memory.
    */
   explicit MemoryPool(
       std::function<void *(std::size_t)> allocator,
-      std::function<void(void *)> deleter);
+      std::function<void(void *)> deleter,
+      std::size_t minimum_size = 0);
 
   ~MemoryPool();
 

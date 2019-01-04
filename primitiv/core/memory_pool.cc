@@ -14,11 +14,13 @@ namespace primitiv {
 
 MemoryPool::MemoryPool(
     std::function<void *(std::size_t)> allocator,
-    std::function<void(void *)> deleter)
+    std::function<void(void *)> deleter,
+    std::size_t minimum_size)
 : allocator_(allocator)
 , deleter_(deleter)
 , reserved_(64)
-, supplied_() {}
+, supplied_()
+, minimum_size_(minimum_size) {}
 
 MemoryPool::~MemoryPool() {
   // NOTE(odashi):
@@ -37,6 +39,9 @@ std::shared_ptr<void> MemoryPool::allocate(std::size_t size, std::size_t * const
     *allocated_size = 0;
   }
   if (size == 0) return std::shared_ptr<void>();
+  if (size < minimum_size_) {
+      size = minimum_size_;
+  }
 
   static const std::uint64_t MAX_SHIFTS = 63;
   const std::uint64_t shift = numeric_utils::calculate_shifts(size);
