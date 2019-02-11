@@ -172,13 +172,13 @@ std::vector<Tensor> split(const Tensor &x, std::uint32_t dim, std::uint32_t n) {
 }
 
 template<>
-Tensor concat(const std::vector<const Tensor *> &xs, std::uint32_t dim) {
+Tensor concat<Tensor>(const std::vector<const Tensor *> &xs, std::uint32_t dim) {
   if (xs.empty()) PRIMITIV_THROW_ERROR("No tensors to be concatenated.");
   return xs[0]->device().concat_fw(xs, dim);
 }
 
 template<>
-Tensor concat(const std::vector<Tensor> &xs, std::uint32_t dim) {
+Tensor concat<Tensor>(const std::vector<Tensor> &xs, std::uint32_t dim) {
   return concat(::obj_to_ptr(xs), dim);
 }
 
@@ -384,13 +384,13 @@ std::vector<Tensor> split(const Tensor &x, std::uint32_t n) {
 }
 
 template<>
-Tensor concat(const std::vector<const Tensor *> &xs) {
+Tensor concat<Tensor>(const std::vector<const Tensor *> &xs) {
   if (xs.empty()) PRIMITIV_THROW_ERROR("No tensors to be concatenated.");
   return xs[0]->device().batch_concat_fw(xs);
 }
 
 template<>
-Tensor concat(const std::vector<Tensor> &xs) {
+Tensor concat<Tensor>(const std::vector<Tensor> &xs) {
   return concat(::obj_to_ptr(xs));
 }
 
