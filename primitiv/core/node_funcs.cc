@@ -155,7 +155,7 @@ std::vector<Node> split(const Node &x, std::uint32_t dim, std::uint32_t n) {
 }
 
 template<>
-Node concat(const std::vector<Node> &xs, std::uint32_t dim) {
+Node concat<Node>(const std::vector<Node> &xs, std::uint32_t dim) {
   if (xs.empty()) PRIMITIV_THROW_ERROR("No nodes to concat.");
   return xs[0].graph().add_operator(
       std::unique_ptr<Operator>(new operators::Concat(dim)), xs
@@ -163,7 +163,7 @@ Node concat(const std::vector<Node> &xs, std::uint32_t dim) {
 }
 
 template<>
-Node concat(const std::vector<const Node *> &xs, std::uint32_t dim) {
+Node concat<Node>(const std::vector<const Node *> &xs, std::uint32_t dim) {
   return concat(::ptr_to_obj(xs), dim);
 }
 
@@ -362,7 +362,7 @@ std::vector<Node> split(const Node &x, std::uint32_t n) {
 }
 
 template<>
-Node concat(const std::vector<Node> &xs) {
+Node concat<Node>(const std::vector<Node> &xs) {
   if (xs.empty()) PRIMITIV_THROW_ERROR("No nodes to concat.");
   return xs[0].graph().add_operator(
       std::unique_ptr<Operator>(new operators::BatchConcat()), xs
@@ -370,7 +370,7 @@ Node concat(const std::vector<Node> &xs) {
 }
 
 template<>
-Node concat(const std::vector<const Node *> &xs) {
+Node concat<Node>(const std::vector<const Node *> &xs) {
   return concat(::ptr_to_obj(xs));
 }
 
