@@ -22,7 +22,7 @@ docker exec travis-ci bash -c "mkdir /primitiv/eigen"
 docker exec travis-ci bash -c "tar xf ./eigen.tar.bz2 -C /primitiv/eigen --strip-components 1"
 
 # install OpenCL environment
-docker exec travis-ci bash -c "apt install -y opencl-headers git pkg-config libhwloc-dev libltdl-dev ocl-icd-dev ocl-icd-opencl-dev clang-3.8 llvm-3.8-dev libclang-3.8-dev libz-dev"
+docker exec travis-ci bash -c "apt install -y opencl-headers git pkg-config libhwloc-dev libltdl-dev ocl-icd-dev ocl-icd-opencl-dev clang-4.0 llvm-4.0-dev libclang-4.0-dev libz-dev"
 docker exec travis-ci bash -c "wget https://github.com/CNugteren/CLBlast/archive/1.2.0.tar.gz -O ./clblast.tar.gz"
 docker exec travis-ci bash -c "mkdir ./clblast"
 docker exec travis-ci bash -c "tar xf ./clblast.tar.gz -C ./clblast --strip-components 1"
