@@ -51,18 +51,15 @@ public:
    */
   bool try_lock() {
     const std::thread::id this_thread_id = std::this_thread::get_id();
-    if (lock_count_ == 0) {
-      if (ready_.test_and_set(std::memory_order_acquire)) {
+    if (ready_.test_and_set(std::memory_order_acquire)) {
+      if (locked_thread_id_ != this_thread_id) {
         return false;
       }
+    } else {
       locked_thread_id_ = this_thread_id;
-      ++lock_count_;
-      return true;
-    } else if (locked_thread_id_ == this_thread_id) {
-      ++lock_count_;
-      return true;
     }
-    return false;
+    ++lock_count_;
+    return true;
   }
 
   /**

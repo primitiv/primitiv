@@ -10,7 +10,12 @@
 // For more ditails, see:
 // http://eigen.tuxfamily.org/index.php?title=Main_Page#License
 #define EIGEN_MPL2_ONLY
+#pragma GCC diagnostic push
+#if __GNUC__ >= 9
+#pragma GCC diagnostic ignored "-Wdeprecated-copy"
+#endif  //  __GNUC__ >= 9
 #include <Eigen/Eigen>
+#pragma GCC diagnostic pop
 
 template<typename T>
 using EMap = ::Eigen::Map<T>;
