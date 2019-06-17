@@ -6,6 +6,7 @@ docker pull debian:stable
 docker run --name travis-ci -v $TRAVIS_BUILD_DIR:/primitiv -td debian:stable /bin/bash
 
 # install
+docker exec travis-ci bash -c "echo 'deb http://deb.debian.org/debian stretch-backports main' >> /etc/apt/sources.list"
 docker exec travis-ci bash -c "apt update"
 docker exec travis-ci bash -c "apt install -y build-essential cmake googletest"
 
@@ -22,7 +23,8 @@ docker exec travis-ci bash -c "mkdir /primitiv/eigen"
 docker exec travis-ci bash -c "tar xf ./eigen.tar.bz2 -C /primitiv/eigen --strip-components 1"
 
 # install OpenCL environment
-docker exec travis-ci bash -c "apt install -y opencl-headers git pkg-config libhwloc-dev libltdl-dev ocl-icd-dev ocl-icd-opencl-dev clang-4.0 llvm-4.0-dev libclang-4.0-dev libz-dev"
+docker exec travis-ci bash -c "apt install -y opencl-headers git pkg-config libhwloc-dev libltdl-dev ocl-icd-dev ocl-icd-opencl-dev libz-dev"
+docker exec travis-ci bash -c "apt -t stretch-backports install -y clang-6.0 llvm-6.0-dev libclang-6.0-dev"
 docker exec travis-ci bash -c "wget https://github.com/CNugteren/CLBlast/archive/1.2.0.tar.gz -O ./clblast.tar.gz"
 docker exec travis-ci bash -c "mkdir ./clblast"
 docker exec travis-ci bash -c "tar xf ./clblast.tar.gz -C ./clblast --strip-components 1"
