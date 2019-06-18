@@ -333,7 +333,13 @@ struct InternalState {
         },
         [](void *ptr) -> void {  // deleter
           CUDA_CALL(::cudaFree(ptr));
-        }) {}
+        },
+        // NOTE(chantera):
+        // Both `CUDA` and `CUDA16` devices need to allocate a memory at least
+        // `sizeof(float) * 2` bytes because cuRAND requires the even number of
+        // elements for random `float` (`half` is not supported) values
+        // generation from normal/log_normal distributions.
+        sizeof(float) * 2) {}  // minimum size
   CuBLASHandle cublas;
   CuRANDHandle curand;
 #ifdef PRIMITIV_USE_CUDNN

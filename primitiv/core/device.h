@@ -365,7 +365,7 @@ protected:
 private:
   // device-specific implementations.
 
-  virtual std::shared_ptr<void> new_handle(const Shape &shape) = 0;
+  virtual std::shared_ptr<void> new_handle(const Shape &shape, std::size_t * const allocated_size) = 0;
 
   virtual std::vector<float> tensor_to_vector_impl(const Tensor &x) = 0;
   virtual std::vector<std::uint32_t> argmax_impl(const Tensor &x, std::uint32_t dim) = 0;

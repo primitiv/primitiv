@@ -38,9 +38,21 @@ protected:
 
 vector<Device *> TensorTest::devices;
 
+#define TEST_ALLOCATED_SIZE(x) { \
+  if (x.valid()) { \
+    const std::size_t type_size \
+      = x.device().type() == DeviceType::CUDA16 ? sizeof(float) / 2 : sizeof(float); \
+    const std::size_t required_memsize = x.shape().size() * type_size; \
+    EXPECT_GE(x.allocated_size(), required_memsize); \
+  } else { \
+    EXPECT_EQ(x.allocated_size(), 0u); \
+  } \
+}
+
 TEST_F(TensorTest, CheckInvalid) {
   const Tensor x;
   EXPECT_FALSE(x.valid());
+  TEST_ALLOCATED_SIZE(x);
   EXPECT_THROW(x.shape(), Error);
   EXPECT_THROW(x.device(), Error);
   EXPECT_THROW(x.to_float(), Error);
@@ -51,8 +63,10 @@ TEST_F(TensorTest, CheckInvalidate) {
   for (Device *dev : devices) {
     Tensor x = dev->new_tensor_by_constant({}, 1);
     ASSERT_TRUE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
     x.invalidate();
     EXPECT_FALSE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
   }
 }
 
@@ -60,6 +74,7 @@ TEST_F(TensorTest, CheckNewScalarWithData) {
   for (Device *dev : devices) {
     const Tensor x = dev->new_tensor_by_constant({}, 1);
     EXPECT_TRUE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
     EXPECT_EQ(dev, &x.device());
     EXPECT_EQ(Shape(), x.shape());
     EXPECT_TRUE(vector_match(vector<float> {1}, x.to_vector()));
@@ -72,6 +87,7 @@ TEST_F(TensorTest, CheckNewMatrixWithData) {
     const vector<float> data {1, 2, 3, 4, 5, 6};
     const Tensor x = dev->new_tensor_by_vector({2, 3}, data);
     EXPECT_TRUE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
     EXPECT_EQ(dev, &x.device());
     EXPECT_EQ(Shape({2, 3}), x.shape());
     EXPECT_TRUE(vector_match(data, x.to_vector()));
@@ -87,10 +103,41 @@ TEST_F(TensorTest, CheckNewMatrixMinibatchWithData) {
     };
     const Tensor x = dev->new_tensor_by_vector(Shape({2, 3}, 4), data);
     EXPECT_TRUE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
     EXPECT_EQ(dev, &x.device());
     EXPECT_EQ(Shape({2, 3}, 4), x.shape());
     EXPECT_TRUE(vector_match(data, x.to_vector()));
     EXPECT_THROW(x.to_float(), Error);
+  }
+}
+
+TEST_F(TensorTest, CheckAllocatedSize) {
+  vector<float> data;
+  for (std::uint32_t i = 1; i <= 10; ++i) {
+    data.emplace_back(2.0 * i);
+    for (Device *dev : devices) {
+      // NOTE(chantera):
+      // sizeof(half) is assumed to be sizeof(float) / 2.
+      const std::size_t type_size
+        = dev->type() == DeviceType::CUDA16 ? sizeof(float) / 2 : sizeof(float);
+      const std::size_t required_memsize = i * type_size;
+      Tensor x = dev->new_tensor_by_vector({i}, data);
+      EXPECT_TRUE(x.valid());
+      EXPECT_EQ(dev, &x.device());
+      EXPECT_TRUE(vector_match(data, x.to_vector()));
+      EXPECT_GE(x.allocated_size(), required_memsize);
+
+      Tensor y;
+      EXPECT_FALSE(y.valid());
+      EXPECT_EQ(y.allocated_size(), 0u);
+      y = std::move(x);
+      EXPECT_TRUE(y.valid());
+      EXPECT_EQ(dev, &y.device());
+      EXPECT_TRUE(vector_match(data, y.to_vector()));
+      EXPECT_GE(y.allocated_size(), required_memsize);
+      y.invalidate();
+      EXPECT_EQ(y.allocated_size(), 0u);
+    }
   }
 }
 
@@ -100,7 +147,9 @@ TEST_F(TensorTest, CheckMoveValidToNew) {
 
     const Tensor x = std::move(tmp);
     EXPECT_TRUE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
     EXPECT_FALSE(tmp.valid());
+    TEST_ALLOCATED_SIZE(tmp);
     EXPECT_EQ(Shape({2}, 3), x.shape());
     EXPECT_TRUE(vector_match({1, 2, 3, 4, 5, 6}, x.to_vector()));
   }
@@ -112,10 +161,13 @@ TEST_F(TensorTest, CheckMoveValidToValid) {
 
     Tensor x = dev->new_tensor_by_constant({}, 1);
     ASSERT_TRUE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
 
     x = std::move(tmp);
     EXPECT_TRUE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
     EXPECT_FALSE(tmp.valid());
+    TEST_ALLOCATED_SIZE(tmp);
     EXPECT_EQ(Shape({6}), x.shape());
     EXPECT_TRUE(vector_match({2, 4, 6, 8, 10 ,12}, x.to_vector()));
   }
@@ -128,10 +180,13 @@ TEST_F(TensorTest, CheckMoveValidToInvalid) {
 
     Tensor x;
     ASSERT_FALSE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
 
     x = std::move(tmp);
     EXPECT_TRUE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
     EXPECT_FALSE(tmp.valid());
+    TEST_ALLOCATED_SIZE(tmp);
     EXPECT_EQ(Shape({1}, 6), x.shape());
     EXPECT_TRUE(vector_match({3, 6, 9, 12, 15, 18}, x.to_vector()));
   }
@@ -154,36 +209,47 @@ TEST_F(TensorTest, CheckMoveValidToThis) {
 TEST_F(TensorTest, CheckMoveInvalidToNew) {
   Tensor tmp;
   ASSERT_FALSE(tmp.valid());
+  TEST_ALLOCATED_SIZE(tmp);
 
   const Tensor x = std::move(tmp);
   EXPECT_FALSE(x.valid());
+  TEST_ALLOCATED_SIZE(x);
   EXPECT_FALSE(tmp.valid());
+  TEST_ALLOCATED_SIZE(tmp);
 }
 
 TEST_F(TensorTest, CheckMoveInvalidToValid) {
   for (Device *dev : devices) {
     Tensor tmp;
     ASSERT_FALSE(tmp.valid());
+    TEST_ALLOCATED_SIZE(tmp);
 
     Tensor x = dev->new_tensor_by_constant({}, 1);
     ASSERT_TRUE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
 
     x = std::move(tmp);
     EXPECT_FALSE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
     EXPECT_FALSE(tmp.valid());
+    TEST_ALLOCATED_SIZE(tmp);
   }
 }
 
 TEST_F(TensorTest, CheckMoveInvalidToInalid) {
   Tensor tmp;
   ASSERT_FALSE(tmp.valid());
+  TEST_ALLOCATED_SIZE(tmp);
 
   Tensor x;
   ASSERT_FALSE(x.valid());
+  TEST_ALLOCATED_SIZE(x);
 
   x = std::move(tmp);
   EXPECT_FALSE(x.valid());
+  TEST_ALLOCATED_SIZE(x);
   EXPECT_FALSE(tmp.valid());
+  TEST_ALLOCATED_SIZE(tmp);
 }
 
 #if 0
@@ -203,7 +269,9 @@ TEST_F(TensorTest, CheckCopyValidToNew) {
 
     const Tensor x = tmp;
     EXPECT_TRUE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
     EXPECT_TRUE(tmp.valid());
+    TEST_ALLOCATED_SIZE(tmp);
     EXPECT_EQ(Shape({2}, 3), x.shape());
     EXPECT_EQ(Shape({2}, 3), tmp.shape());
     EXPECT_TRUE(vector_match({1, 2, 3, 4, 5, 6}, x.to_vector()));
@@ -217,10 +285,13 @@ TEST_F(TensorTest, CheckCopyValidToValid) {
 
     Tensor x = dev->new_tensor_by_constant({}, 1);
     ASSERT_TRUE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
 
     x = tmp;
     EXPECT_TRUE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
     EXPECT_TRUE(tmp.valid());
+    TEST_ALLOCATED_SIZE(tmp);
     EXPECT_EQ(Shape({6}), x.shape());
     EXPECT_EQ(Shape({6}), tmp.shape());
     EXPECT_TRUE(vector_match({2, 4, 6, 8, 10 ,12}, x.to_vector()));
@@ -235,10 +306,13 @@ TEST_F(TensorTest, CheckCopyValidToInvalid) {
 
     Tensor x;
     ASSERT_FALSE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
 
     x = tmp;
     EXPECT_TRUE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
     EXPECT_TRUE(tmp.valid());
+    TEST_ALLOCATED_SIZE(tmp);
     EXPECT_EQ(Shape({1}, 6), x.shape());
     EXPECT_EQ(Shape({1}, 6), tmp.shape());
     EXPECT_TRUE(vector_match({3, 6, 9, 12, 15, 18}, x.to_vector()));
@@ -252,6 +326,7 @@ TEST_F(TensorTest, CheckCopyValidToThis) {
 
     x = x;
     EXPECT_TRUE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
     EXPECT_EQ(Shape({6}), x.shape());
     EXPECT_TRUE(vector_match({2, 4, 6, 8, 10 ,12}, x.to_vector()));
   }
@@ -260,44 +335,57 @@ TEST_F(TensorTest, CheckCopyValidToThis) {
 TEST_F(TensorTest, CheckCopyInvalidToNew) {
   const Tensor tmp;
   ASSERT_FALSE(tmp.valid());
+  TEST_ALLOCATED_SIZE(tmp);
 
   const Tensor x = tmp;
   EXPECT_FALSE(x.valid());
+  TEST_ALLOCATED_SIZE(x);
   EXPECT_FALSE(tmp.valid());
+  TEST_ALLOCATED_SIZE(tmp);
 }
 
 TEST_F(TensorTest, CheckCopyInvalidToValid) {
   for (Device *dev : devices) {
     const Tensor tmp;
     ASSERT_FALSE(tmp.valid());
+    TEST_ALLOCATED_SIZE(tmp);
 
     Tensor x = dev->new_tensor_by_constant({}, 1);
     ASSERT_TRUE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
 
     x = tmp;
     EXPECT_FALSE(x.valid());
+    TEST_ALLOCATED_SIZE(x);
     EXPECT_FALSE(tmp.valid());
+    TEST_ALLOCATED_SIZE(tmp);
   }
 }
 
 TEST_F(TensorTest, CheckCopyInvalidToInalid) {
   const Tensor tmp;
   ASSERT_FALSE(tmp.valid());
+  TEST_ALLOCATED_SIZE(tmp);
 
   Tensor x;
   ASSERT_FALSE(x.valid());
+  TEST_ALLOCATED_SIZE(x);
 
   x = tmp;
   EXPECT_FALSE(x.valid());
+  TEST_ALLOCATED_SIZE(x);
   EXPECT_FALSE(tmp.valid());
+  TEST_ALLOCATED_SIZE(tmp);
 }
 
 TEST_F(TensorTest, CheckCopyInvalidToThis) {
   Tensor x;
   ASSERT_FALSE(x.valid());
+  TEST_ALLOCATED_SIZE(x);
 
   x = x;
   EXPECT_FALSE(x.valid());
+  TEST_ALLOCATED_SIZE(x);
 }
 
 TEST_F(TensorTest, CheckResetValuesByConstant) {
@@ -803,5 +891,7 @@ TEST_F(TensorTest, CheckArgMinMultipleLarge) {
     }
   }
 }
+
+#undef TEST_ALLOCATED_SIZE
 
 }  // namespace primitiv

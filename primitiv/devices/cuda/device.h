@@ -66,7 +66,7 @@ public:
   DeviceType type() const override { return DeviceType::CUDA; }
 
 private:
-  std::shared_ptr<void> new_handle(const Shape &shape) override;
+  std::shared_ptr<void> new_handle(const Shape &shape, std::size_t * const allocated_size) override;
 
   std::vector<float> tensor_to_vector_impl(const Tensor &x) override;
   std::vector<std::uint32_t> argmax_impl(const Tensor &x, std::uint32_t dim) override;

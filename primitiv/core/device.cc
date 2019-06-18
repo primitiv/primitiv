@@ -18,24 +18,32 @@ using std::vector;
 namespace primitiv {
 
 Tensor Device::new_raw_tensor(const Shape &shape) {
-  return Tensor(shape, *this, new_handle(shape));
+  std::size_t allocated_size;
+  std::shared_ptr<void> handle = new_handle(shape, &allocated_size);
+  return Tensor(shape, *this, std::move(handle), allocated_size);
 }
 
 Tensor Device::new_tensor_by_constant(const Shape &shape, float k) {
-  Tensor ret(shape, *this, new_handle(shape));
+  std::size_t allocated_size;
+  std::shared_ptr<void> handle = new_handle(shape, &allocated_size);
+  Tensor ret(shape, *this, std::move(handle), allocated_size);
   reset_tensor(k, ret);
   return ret;
 }
 
 Tensor Device::new_tensor_by_array(const Shape &shape, const float values[]) {
-  Tensor ret(shape, *this, new_handle(shape));
+  std::size_t allocated_size;
+  std::shared_ptr<void> handle = new_handle(shape, &allocated_size);
+  Tensor ret(shape, *this, std::move(handle), allocated_size);
   reset_tensor_by_array(values, ret);
   return ret;
 }
 
 Tensor Device::new_tensor_by_vector(
     const Shape &shape, const vector<float> &values) {
-  Tensor ret(shape, *this, new_handle(shape));
+  std::size_t allocated_size;
+  std::shared_ptr<void> handle = new_handle(shape, &allocated_size);
+  Tensor ret(shape, *this, std::move(handle), allocated_size);
   reset_tensor_by_vector(values, ret);
   return ret;
 }

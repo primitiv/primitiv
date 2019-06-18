@@ -103,6 +103,69 @@ TEST_F(MemoryPoolTest_CUDA, CheckAllocate) {
   }
 }
 
+TEST_F(MemoryPoolTest_CUDA, CheckAllocatedSize) {
+  MemoryPool pool(allocator, deleter);
+  ::cudaDeviceProp prop;
+  CUDA_CALL(::cudaGetDeviceProperties(&prop, 0));
+
+  std::size_t allocated_size = 1llu;
+  const std::vector<std::size_t> sizes = {
+     0,  1,  2,  3,  4,  5,  6,  7,
+     8,  9, 10, 11, 12, 13, 14, 15,
+    16, 17, 18, 19, 20, 21, 22, 23,
+    24, 25, 26, 27, 28, 29, 30, 31,
+  };
+  const std::vector<std::size_t> expected_sizes = {
+     0,  1,  2,  4,  4,  8,  8,  8,
+     8, 16, 16, 16, 16, 16, 16, 16,
+    16, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+  };
+  std::uint32_t i = 0;
+  for (std::size_t size : sizes) {
+    EXPECT_NO_THROW(pool.allocate(size, &allocated_size));
+    EXPECT_GE(allocated_size, size);
+    EXPECT_EQ(allocated_size, expected_sizes[i++]);
+  }
+
+  std::size_t size = 1llu;
+  while (size < prop.totalGlobalMem) {
+     ASSERT_NO_THROW(pool.allocate(size, &allocated_size));
+     EXPECT_EQ(allocated_size, size);
+     size <<= 1;
+  }
+
+  EXPECT_GT(allocated_size, 0u);
+  EXPECT_THROW(pool.allocate(size << 1, &allocated_size), Error);
+  EXPECT_EQ(allocated_size, 0u);
+}
+
+TEST_F(MemoryPoolTest_CUDA, CheckAllocatedSizeWithMinimumSize) {
+  MemoryPool pool(allocator, deleter, 10);
+  ::cudaDeviceProp prop;
+  CUDA_CALL(::cudaGetDeviceProperties(&prop, 0));
+
+  std::size_t allocated_size = 1llu;
+  const std::vector<std::size_t> sizes = {
+     0,  1,  2,  3,  4,  5,  6,  7,
+     8,  9, 10, 11, 12, 13, 14, 15,
+    16, 17, 18, 19, 20, 21, 22, 23,
+    24, 25, 26, 27, 28, 29, 30, 31,
+  };
+  const std::vector<std::size_t> expected_sizes = {
+     0, 16, 16, 16, 16, 16, 16, 16,
+    16, 16, 16, 16, 16, 16, 16, 16,
+    16, 32, 32, 32, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32,
+  };
+  std::uint32_t i = 0;
+  for (std::size_t size : sizes) {
+    EXPECT_NO_THROW(pool.allocate(size, &allocated_size));
+    EXPECT_GE(allocated_size, size);
+    EXPECT_EQ(allocated_size, expected_sizes[i++]);
+  }
+}
+
 TEST_F(MemoryPoolTest_CUDA, CheckInvalidAllocate) {
   MemoryPool pool(allocator, deleter);
 
