@@ -23,7 +23,7 @@ catch (const primitiv::NotImplementedError &ex) { \
 namespace test_utils {
 
 // obtains the difference of ULPs.
-inline std::int32_t float_ulp_diff(float a, float b) {
+inline std::uint32_t float_ulp_diff(float a, float b) {
   static_assert(sizeof(std::int32_t) == sizeof(float), "");
   std::int32_t ai;
   std::memcpy(&ai, &a, sizeof(std::int32_t));
@@ -35,7 +35,7 @@ inline std::int32_t float_ulp_diff(float a, float b) {
 }
 
 // check whether or not two float values are near than the ULP-based threshold.
-inline bool float_eq(float a, float b, int max_ulps) {
+inline bool float_eq(float a, float b, std::uint32_t max_ulps) {
   return test_utils::float_ulp_diff(a, b) <= max_ulps;
 }
 
@@ -48,7 +48,7 @@ inline bool float_near(float a, float b, float err) {
 inline testing::AssertionResult vector_match_ulps(
     const std::vector<float> &expected,
     const std::vector<float> &actual,
-    int max_ulps) {
+    std::uint32_t max_ulps) {
   if (expected.size() != actual.size()) {
     return testing::AssertionFailure()
       << "expected.size(): " << expected.size()
@@ -90,7 +90,7 @@ template<>
 inline testing::AssertionResult vector_match(
     const std::vector<float> &expected,
     const std::vector<float> &actual) {
-  static const int FIXED_MAX_ULPS = 4;
+  static const std::uint32_t FIXED_MAX_ULPS = 4;
   return test_utils::vector_match_ulps(expected, actual, FIXED_MAX_ULPS);
 }
 
