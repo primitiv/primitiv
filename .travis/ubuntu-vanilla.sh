@@ -3,7 +3,7 @@ set -xe
 
 # install
 sudo apt update
-sudo apt install -y build-essential cmake3 libgtest-dev
+sudo apt install -y build-essential cmake libgtest-dev
 
 # download Eigen
 #
