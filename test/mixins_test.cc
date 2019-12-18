@@ -2,7 +2,10 @@
 
 #include <gtest/gtest.h>
 
-#define PRIMITIV_BUILD_LIBRARY
+#ifdef _WIN32
+# define PRIMITIV_BUILD_LIBRARY
+#endif
+
 #include <primitiv/core/mixins/default_settable.h>
 #include <primitiv/core/mixins/identifiable.h>
 #include <primitiv/core/mixins/noncopyable.h>
