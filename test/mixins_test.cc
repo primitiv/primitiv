@@ -2,9 +2,9 @@
 
 #include <gtest/gtest.h>
 
-#ifdef _WIN32
-# define PRIMITIV_BUILD_LIBRARY
-#endif
+// Require PRIMITIV_BUILD_LIBRARY
+// See https://github.com/primitiv/primitiv/pull/211
+#define PRIMITIV_BUILD_LIBRARY
 
 #include <primitiv/core/mixins/default_settable.h>
 #include <primitiv/core/mixins/identifiable.h>
