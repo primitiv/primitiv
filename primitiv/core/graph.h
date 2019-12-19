@@ -243,7 +243,6 @@ private:
     std::vector<NodeInfo> rets;
   };
 
-  static Graph *default_obj_;
   std::vector<OperatorInfo> ops_;
 };
 

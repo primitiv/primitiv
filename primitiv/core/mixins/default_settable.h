@@ -64,8 +64,10 @@ public:
   }
 };
 
+#ifdef PRIMITIV_BUILD_LIBRARY
 template<typename T>
 T *DefaultSettable<T>::default_obj_ = nullptr;
+#endif
 
 }  // namespace mixins
 }  // namespace primitiv

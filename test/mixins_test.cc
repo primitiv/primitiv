@@ -2,6 +2,10 @@
 
 #include <gtest/gtest.h>
 
+// Require PRIMITIV_BUILD_LIBRARY
+// See https://github.com/primitiv/primitiv/pull/211
+#define PRIMITIV_BUILD_LIBRARY
+
 #include <primitiv/core/mixins/default_settable.h>
 #include <primitiv/core/mixins/identifiable.h>
 #include <primitiv/core/mixins/noncopyable.h>

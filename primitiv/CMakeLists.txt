@@ -234,6 +234,8 @@ if(PRIMITIV_USE_OPENCL)
   )
 endif()
 
+add_definitions(-DPRIMITIV_BUILD_LIBRARY)
+
 # Builds the integrated binary.
 if(PRIMITIV_BUILD_STATIC_LIBRARY)
   add_library(primitiv STATIC ${primitiv_all_OBJS})
